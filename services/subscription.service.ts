@@ -1,0 +1,392 @@
+import {
+  SubscriptionPlanRecord,
+  CompanySubscriptionRecord,
+  TenantResourceUsage,
+  PlatformSubscriptionItem,
+  FeatureCode,
+  PlanCode,
+  BillingInterval,
+  PaymentGatewayType,
+  ConfigurableLimitType,
+  CustomLimitsOverride,
+  SubscriptionInvoiceRecord,
+  CreatePlanInput,
+  SubscriptionStatus,
+} from '@/types/subscription.types'
+
+export interface FeatureMeta {
+  code: FeatureCode
+  name: string
+  name_bn: string
+  description: string
+  description_bn?: string
+  minPlan: PlanCode
+  category: 'sales' | 'production' | 'management' | 'advanced'
+}
+
+export const FEATURE_METADATA: Record<FeatureCode, FeatureMeta> = {
+  basic_sales: {
+    code: 'basic_sales',
+    name: 'Basic Sales & POS',
+    name_bn: 'মৌলিক সেলস ও ক্যাশ মেমো',
+    description: 'Create estimates, cash sales, and bill printing.',
+    minPlan: 'starter',
+    category: 'sales',
+  },
+  basic_customers: {
+    code: 'basic_customers',
+    name: 'Basic Customers Directory',
+    name_bn: 'গ্রাহক তালিকা ও লেজার',
+    description: 'Maintain customer accounts, phone numbers, and balances.',
+    minPlan: 'starter',
+    category: 'sales',
+  },
+  quotation_pdf: {
+    code: 'quotation_pdf',
+    name: 'Quotation PDF Generator',
+    name_bn: 'কোটেশন পিডিএফ প্রস্তুতকরণ',
+    description: 'Download and print formal client quotations with company branding.',
+    minPlan: 'starter',
+    category: 'sales',
+  },
+  delivery_challan: {
+    code: 'delivery_challan',
+    name: 'Delivery Challan',
+    name_bn: 'ডেলিভারি চালান ও গেটপাস',
+    description: 'Print official delivery challans for dispatched orders.',
+    minPlan: 'starter',
+    category: 'sales',
+  },
+  multi_department: {
+    code: 'multi_department',
+    name: 'Multiple Departments',
+    name_bn: 'বহু বিভাগ ব্যবস্থাপনা',
+    description: 'Separate pre-press, offset, digital, solvent, and finishing departments.',
+    minPlan: 'business',
+    category: 'production',
+  },
+  inventory: {
+    code: 'inventory',
+    name: 'Inventory & Stock Management',
+    name_bn: 'ইনভেন্টরি ও কাঁচামাল স্টক',
+    description: 'Track media rolls, sheets, inks, eyelets, and purchase orders.',
+    minPlan: 'business',
+    category: 'production',
+  },
+  inventory_rolls: {
+    code: 'inventory_rolls',
+    name: 'Roll & Sheet Stock Ledger',
+    name_bn: 'রোল ও শিট স্টক লেজার',
+    description: 'Real-time linear foot, square foot, and ream balance calculations.',
+    minPlan: 'business',
+    category: 'production',
+  },
+  production: {
+    code: 'production',
+    name: 'Shop Floor Production',
+    name_bn: 'প্রোডাকশন ফ্লোর ও শিডিউলিং',
+    description: 'Machine queue, print operators job tickets, and QA signoff.',
+    minPlan: 'business',
+    category: 'production',
+  },
+  production_kanban: {
+    code: 'production_kanban',
+    name: 'Production Kanban Board',
+    name_bn: 'প্রোডাকশন কানবান বোর্ড',
+    description: 'Live interactive drag-and-drop workflow across production stages.',
+    minPlan: 'business',
+    category: 'production',
+  },
+  reports: {
+    code: 'reports',
+    name: 'Reports & Business Analytics',
+    name_bn: 'রিপোর্ট ও ব্যবসায়িক হিসাব',
+    description: 'P&L, daily collection, sales by product, and material wastage analysis.',
+    minPlan: 'business',
+    category: 'management',
+  },
+  reports_analytics: {
+    code: 'reports_analytics',
+    name: 'Executive Financial Reports',
+    name_bn: 'নির্বাহী আর্থিক বিশ্লেষণ',
+    description: 'Consolidated profit and revenue analytics with exportable spreadsheets.',
+    minPlan: 'business',
+    category: 'management',
+  },
+  hr: {
+    code: 'hr',
+    name: 'HR & Employee Management',
+    name_bn: 'মানবসম্পদ ও কর্মী প্রশাসন',
+    description: 'Employee roster, attendance, shifts, and leave records.',
+    minPlan: 'business',
+    category: 'management',
+  },
+  hr_payroll: {
+    code: 'hr_payroll',
+    name: 'Payroll & Salary Sheets',
+    name_bn: 'বেতন ও পে-রোল প্রস্তুতকরণ',
+    description: 'Monthly payroll generation, overtime calculations, and salary payslips.',
+    minPlan: 'business',
+    category: 'management',
+  },
+  job_costing: {
+    code: 'job_costing',
+    name: 'Job Costing & Profitability',
+    name_bn: 'জব কস্টিং ও প্রকৃত লাভ নিরীক্ষা',
+    description: 'Actual ink, media, electricity, and labor cost analysis per job ticket.',
+    minPlan: 'business',
+    category: 'management',
+  },
+  whatsapp_notifications: {
+    code: 'whatsapp_notifications',
+    name: 'WhatsApp Notifications',
+    name_bn: 'হোয়াটসঅ্যাপ নোটিফিকেশন',
+    description: 'Automated order status and delivery updates directly to client phones.',
+    minPlan: 'business',
+    category: 'advanced',
+  },
+  multi_branch: {
+    code: 'multi_branch',
+    name: 'Multiple Branches & Hubs',
+    name_bn: 'মাল্টি-ব্রাঞ্চ ও শাখা নিয়ন্ত্রণ',
+    description: 'Manage separate factory floors, retail counters, and regional hubs.',
+    minPlan: 'enterprise',
+    category: 'advanced',
+  },
+  advanced_analytics: {
+    code: 'advanced_analytics',
+    name: 'Advanced Analytics & Forecasting',
+    name_bn: 'উন্নত অ্যানালিটিক্স ও পূর্বাভাস',
+    description: 'Machine efficiency benchmarking and inventory reorder forecasting.',
+    minPlan: 'enterprise',
+    category: 'advanced',
+  },
+  advanced_permissions: {
+    code: 'advanced_permissions',
+    name: 'Advanced RBAC & Granular Overrides',
+    name_bn: 'উন্নত পারমিশন ও রোল কাস্টমাইজেশন',
+    description: 'Per-user permission matrix, module masks, and action-level controls.',
+    minPlan: 'enterprise',
+    category: 'advanced',
+  },
+  custom_workflows: {
+    code: 'custom_workflows',
+    name: 'Custom Approval Workflows',
+    name_bn: 'কাস্টম অনুমোদন ওয়ার্কফ্লো',
+    description: 'Multi-stage quotation signoffs and credit limit threshold approvals.',
+    minPlan: 'enterprise',
+    category: 'advanced',
+  },
+  api_access: {
+    code: 'api_access',
+    name: 'REST API & Webhooks',
+    name_bn: 'রেস্ট এপিআই ও ওয়েবহুক অ্যাক্সেস',
+    description: 'Direct programmatic API integration with ERP, accounting, or e-commerce.',
+    minPlan: 'enterprise',
+    category: 'advanced',
+  },
+  priority_support: {
+    code: 'priority_support',
+    name: 'Dedicated 24/7 Account Manager',
+    name_bn: 'ডেডিকেটেড ২৪/৭ অ্যাকাউন্ট সাপোর্ট',
+    description: 'Direct phone & on-site priority support with 99.9% uptime SLA.',
+    minPlan: 'enterprise',
+    category: 'advanced',
+  },
+}
+
+export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
+  {
+    id: 'sp-01',
+    code: 'starter',
+    name: 'Starter Plan',
+    name_bn: 'স্টার্টার প্ল্যান',
+    description: 'For small shops needing limited users, basic sales, and essential customer tracking.',
+    price_monthly: 1999,
+    price_yearly: 19990, // ~2 months free discount
+    max_users: 3,
+    max_branches: 1,
+    storage_gb: 1,
+    monthly_orders: 50,
+    max_customers: 100,
+    max_products: 100,
+    features: ['basic_sales', 'basic_customers', 'quotation_pdf', 'delivery_challan'],
+    is_active: true,
+    sort_order: 1,
+  },
+  {
+    id: 'sp-02',
+    code: 'business',
+    name: 'Business Plan',
+    name_bn: 'বিজনেস প্ল্যান',
+    description: 'For growing factories requiring multiple departments, inventory, production, reports, and HR.',
+    price_monthly: 4999,
+    price_yearly: 49990,
+    max_users: 10,
+    max_branches: 3,
+    storage_gb: 10,
+    monthly_orders: 500,
+    max_customers: 1000,
+    max_products: 1000,
+    features: [
+      'basic_sales',
+      'basic_customers',
+      'quotation_pdf',
+      'delivery_challan',
+      'multi_department',
+      'inventory',
+      'inventory_rolls',
+      'production',
+      'production_kanban',
+      'reports',
+      'reports_analytics',
+      'hr',
+      'hr_payroll',
+      'job_costing',
+      'whatsapp_notifications',
+    ],
+    is_active: true,
+    sort_order: 2,
+  },
+  {
+    id: 'sp-03',
+    code: 'enterprise',
+    name: 'Enterprise Plan',
+    name_bn: 'এন্টারপ্রাইজ প্ল্যান',
+    description: 'For enterprise sign makers requiring multiple branches, advanced analytics, permissions, and custom workflows.',
+    price_monthly: 9999,
+    price_yearly: 99990,
+    max_users: 999,
+    max_branches: 999,
+    storage_gb: 100,
+    monthly_orders: 99999,
+    max_customers: 99999,
+    max_products: 99999,
+    features: [
+      'basic_sales',
+      'basic_customers',
+      'quotation_pdf',
+      'delivery_challan',
+      'multi_department',
+      'inventory',
+      'inventory_rolls',
+      'production',
+      'production_kanban',
+      'reports',
+      'reports_analytics',
+      'hr',
+      'hr_payroll',
+      'job_costing',
+      'whatsapp_notifications',
+      'multi_branch',
+      'advanced_analytics',
+      'advanced_permissions',
+      'custom_workflows',
+      'api_access',
+      'priority_support',
+    ],
+    is_active: true,
+    sort_order: 3,
+  },
+]
+
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+
+export const DEFAULT_TENANT_SUBSCRIPTION: CompanySubscriptionRecord = {
+  id: 'sub-default',
+  company_id: 'default',
+  plan_id: 'sp-02',
+  plan_code: 'business',
+  status: 'active',
+  billing_interval: 'monthly',
+  current_period_start: new Date().toISOString(),
+  current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+  trial_ends_at: null,
+  payment_method_type: 'bkash',
+  last_payment_reference: '',
+  custom_limits_override: null,
+}
+
+export const DEMO_TENANT_SUBSCRIPTION = DEFAULT_TENANT_SUBSCRIPTION
+
+export function getTenantResourceUsage(companyId: string = 'default'): TenantResourceUsage {
+  const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+  const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+  const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+  const products = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+  const branches = PrintERPDataStore.get<any[]>(STORAGE_KEYS.BRANCHES) || []
+
+  return {
+    users_count: users.filter((u) => !u.company_id || u.company_id === companyId).length,
+    users_limit: 10,
+    branches_count: Math.max(1, branches.filter((b) => !b.company_id || b.company_id === companyId).length),
+    branches_limit: 3,
+    storage_used_gb: 0,
+    storage_limit_gb: 10,
+    orders_this_month: orders.filter((o) => !o.company_id || o.company_id === companyId).length,
+    orders_limit: 500,
+    customers_count: customers.filter((c) => !c.company_id || c.company_id === companyId).length,
+    customers_limit: 1000,
+    products_count: products.filter((p) => !p.company_id || p.company_id === companyId).length,
+    products_limit: 1000,
+  }
+}
+
+export const DEMO_RESOURCE_USAGE: TenantResourceUsage = {
+  users_count: 0,
+  users_limit: 10,
+  branches_count: 1,
+  branches_limit: 3,
+  storage_used_gb: 0,
+  storage_limit_gb: 10,
+  orders_this_month: 0,
+  orders_limit: 500,
+  customers_count: 0,
+  customers_limit: 1000,
+  products_count: 0,
+  products_limit: 1000,
+}
+
+export const DEMO_PLATFORM_SUBSCRIPTIONS: PlatformSubscriptionItem[] = []
+
+export const DEMO_SUBSCRIPTION_INVOICES: SubscriptionInvoiceRecord[] = []
+
+export function checkFeatureAccess(
+  planCode: PlanCode,
+  feature: FeatureCode,
+  plans: SubscriptionPlanRecord[] = DEFAULT_PLANS
+): boolean {
+  const plan = plans.find((p) => p.code === planCode)
+  if (!plan) return false
+  return plan.features.includes(feature)
+}
+
+export function getMinimumPlanForFeature(feature: FeatureCode): SubscriptionPlanRecord {
+  const meta = FEATURE_METADATA[feature]
+  const targetCode = meta ? meta.minPlan : 'enterprise'
+  return DEFAULT_PLANS.find((p) => p.code === targetCode) || DEFAULT_PLANS[1]
+}
+
+export function checkResourceLimit(
+  limitType: ConfigurableLimitType,
+  currentCount: number,
+  plan: SubscriptionPlanRecord,
+  override?: CustomLimitsOverride | null
+): {
+  limit: number
+  current: number
+  exceeded: boolean
+  warning: boolean
+  percentage: number
+} {
+  const effectiveLimit = override?.[limitType] ?? plan[limitType]
+  const percentage = effectiveLimit > 0 ? Math.round((currentCount / effectiveLimit) * 100) : 0
+
+  return {
+    limit: effectiveLimit,
+    current: currentCount,
+    exceeded: currentCount >= effectiveLimit,
+    warning: percentage >= 80 && currentCount < effectiveLimit,
+    percentage,
+  }
+}
