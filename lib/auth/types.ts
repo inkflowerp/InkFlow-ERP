@@ -1,5 +1,5 @@
 // ==============================================================================
-// PrintERP SaaS - Platform vs Tenant Authentication Types
+// PrintERP / InkFlow SaaS - Platform vs Tenant Authentication Types
 // Strictly segregates Platform Administration from Tenant / Business Users.
 // ==============================================================================
 
@@ -17,10 +17,35 @@ export interface PlatformUserRecord {
   email: string
   full_name: string
   role: PlatformRole
+  phone?: string
+  avatar_url?: string
   is_active: boolean
   mfa_enabled?: boolean
+  preferences?: {
+    language?: string
+    timezone?: string
+    date_format?: string
+    currency?: string
+  }
   last_login_at?: string
   created_at: string
+}
+
+export interface AuthenticatedPlatformContext {
+  userId: string
+  adminId: string
+  email: string
+  fullName: string
+  platformRole: PlatformRole
+  responsibilities: string[]
+  permissions: string[]
+  isActive: boolean
+  mfaEnabled?: boolean
+  phone?: string
+  avatarUrl?: string
+  preferences?: Record<string, any>
+  createdAt: string
+  lastLoginAt?: string
 }
 
 export const PLATFORM_SESSION_COOKIE = 'printerp_platform_session'
@@ -35,8 +60,6 @@ export interface PlatformSessionData {
   loginTime: string
   token: string
 }
-
-
 
 export type TenantRole =
   | 'business_owner'
@@ -90,12 +113,14 @@ export interface TenantContext {
 }
 
 export interface PlatformSupportSession {
+  sessionId?: string
   platformUserId: string
   platformUserEmail: string
   targetCompanyId: string
   targetCompanySlug: string
   targetCompanyName: string
   reason: string
+  accessLevel: 'read_only' | 'config_only' | 'full_support'
   startedAt: string
   expiresAt: string
 }

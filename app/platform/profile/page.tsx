@@ -54,8 +54,8 @@ export default function PlatformOwnerProfilePage() {
         email: sessionUser.email,
         full_name: sessionUser.full_name,
         role: sessionUser.role,
-        phone: (sessionUser as any).phone || '',
-        avatar_url: (sessionUser as any).avatar_url || '',
+        phone: sessionUser.phone || '',
+        avatar_url: sessionUser.avatar_url || '',
         is_active: sessionUser.is_active,
         mfa_enabled: Boolean(sessionUser.mfa_enabled),
         active_sessions_count: 1,
@@ -63,8 +63,8 @@ export default function PlatformOwnerProfilePage() {
         last_login_at: sessionUser.last_login_at,
       })
       setFullName(sessionUser.full_name)
-      setPhone((sessionUser as any).phone || '')
-      setAvatarUrl((sessionUser as any).avatar_url || '')
+      setPhone(sessionUser.phone || '')
+      setAvatarUrl(sessionUser.avatar_url || '')
     }
     setIsLoading(false)
   }

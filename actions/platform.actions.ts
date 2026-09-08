@@ -148,7 +148,7 @@ export async function startTenantSupportSessionAction(
       return { success: false, error: 'Unauthorized: You do not possess Support Access capability.' }
     }
 
-    const sessionRes = await PlatformService.createSupportSession(companyId, reason, accessLevel)
+    const sessionRes = await PlatformService.createSupportSession(companyId, reason, accessLevel, platformUser.id)
     if (!sessionRes.success || !sessionRes.data) {
       return { success: false, error: sessionRes.error || 'Failed to initiate support session.' }
     }
@@ -389,7 +389,7 @@ export async function updatePlatformOwnerProfileAction(
   updates: { full_name?: string; phone?: string; avatar_url?: string; preferences?: Record<string, any> }
 ) {
   const platformUser = await requirePlatformUser()
-  const result = await PlatformService.updatePlatformOwnerProfile(updates)
+  const result = await PlatformService.updatePlatformOwnerProfile(updates, platformUser.id)
   if (result.success) {
     revalidatePath('/platform/profile')
     revalidatePath('/platform', 'layout')
@@ -406,7 +406,9 @@ export async function changePlatformOwnerPasswordAction(
   const result = await PlatformService.changePlatformOwnerPassword(
     currentPassword,
     newPassword,
-    revokeOtherSessions
+    revokeOtherSessions,
+    platformUser.user_id,
+    platformUser.id
   )
   if (result.success) {
     revalidatePath('/platform/profile')
@@ -417,7 +419,7 @@ export async function changePlatformOwnerPasswordAction(
 
 export async function togglePlatformOwnerMFAAction(enable: boolean) {
   const platformUser = await requirePlatformUser()
-  const result = await PlatformService.togglePlatformOwnerMFA(enable)
+  const result = await PlatformService.togglePlatformOwnerMFA(enable, platformUser.id)
   if (result.success) {
     revalidatePath('/platform/profile')
     revalidatePath('/platform/security')
@@ -437,7 +439,7 @@ export async function revokePlatformSessionAction(sessionId: string) {
 
 export async function revokeAllOtherPlatformSessionsAction() {
   const platformUser = await requirePlatformUser()
-  const result = await PlatformService.revokeAllOtherPlatformSessions()
+  const result = await PlatformService.revokeAllOtherPlatformSessions(platformUser.id)
   if (result.success) {
     revalidatePath('/platform/security')
     revalidatePath('/platform/profile')

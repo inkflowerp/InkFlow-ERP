@@ -64,8 +64,8 @@ export function PlatformHeader() {
   }
 
   const userFullName = currentUser?.full_name || 'Platform Administrator'
-  const userEmail = currentUser?.email || 'admin@printerp.com.bd'
-  const userRole = currentUser?.role || 'platform_owner'
+  const userEmail = currentUser?.email || ''
+  const userRole = currentUser?.role || 'platform_readonly'
 
   // Extract initials (e.g. "Haji Mohammad Shamim" -> "MS")
   const nameParts = userFullName.replace(/^(Haji|Dr|Mr|Mrs|Ms)\s+/i, '').trim().split(/\s+/)

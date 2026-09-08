@@ -295,15 +295,24 @@ describe('Master User Account & Session Isolation Tests', () => {
   })
 
   test('6. Platform Administration Isolation: Tenant users cannot access /platform/* routes', () => {
-    const isPlatformAdmin = (userEmail: string) => {
-      const platformAdmins = ['admin@printerp.com.bd', 'platform-admin@example.com']
-      return platformAdmins.includes(userEmail.toLowerCase())
+    interface PlatformAdminRecord {
+      userId: string
+      role: string
+      isActive: boolean
+    }
+    const platformDirectory: PlatformAdminRecord[] = [
+      { userId: 'u-platform-root-99', role: 'platform_owner', isActive: true },
+    ]
+
+    const isPlatformAuthorized = (userId: string) => {
+      const record = platformDirectory.find((p) => p.userId === userId && p.isActive)
+      return !!record && (record.role === 'platform_owner' || record.role === 'platform_admin')
     }
 
-    assert.strictEqual(isPlatformAdmin(TEST_USERS.owner.email), false)
-    assert.strictEqual(isPlatformAdmin(TEST_USERS.manager.email), false)
-    assert.strictEqual(isPlatformAdmin(TEST_USERS.designer.email), false)
-    assert.strictEqual(isPlatformAdmin('admin@printerp.com.bd'), true)
+    assert.strictEqual(isPlatformAuthorized(TEST_USERS.owner.id), false)
+    assert.strictEqual(isPlatformAuthorized(TEST_USERS.manager.id), false)
+    assert.strictEqual(isPlatformAuthorized(TEST_USERS.designer.id), false)
+    assert.strictEqual(isPlatformAuthorized('u-platform-root-99'), true)
   })
 
   test('7. Financial Metric Isolation: Margins, Receivables & P&L are hidden from Designer and Operator', () => {

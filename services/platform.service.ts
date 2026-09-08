@@ -174,6 +174,31 @@ export class PlatformService {
         })
       }
 
+      // Fetch active platform administrators count from PostgreSQL
+      const { count: activeAdminCount } = await (admin as any)
+        .from('platform_admins')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+
+      // Fetch recent real platform audit logs
+      const { data: recentAudit } = await (admin as any)
+        .from('platform_audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(8)
+
+      const recentAuditLogs: PlatformAuditLogItem[] = (recentAudit || []).map((l: any) => ({
+        id: l.id,
+        platform_admin_id: l.platform_admin_id,
+        actor_email: l.actor_email,
+        action: l.action,
+        entity_type: l.entity_type,
+        entity_id: l.entity_id,
+        target_company_id: l.target_company_id,
+        details: l.details || {},
+        created_at: l.created_at,
+      }))
+
       const metrics: PlatformDashboardMetrics & { needs_attention: NeedsAttentionItem[] } = {
         total_companies: totalCompanies,
         active_companies: activeCompanies,
@@ -182,7 +207,7 @@ export class PlatformService {
         past_due_companies: pastDueCompanies,
         suspended_companies: suspendedCompanies,
         total_users: usersCount || 0,
-        active_platform_users: 1,
+        active_platform_users: activeAdminCount || 1,
         orders_count: ordersCount || 0,
         revenue_mrr: totalMrr,
         revenue_arr: totalMrr * 12,
@@ -202,6 +227,7 @@ export class PlatformService {
           integration_errors: integrationErrors,
           storage_used_pct: 8.5,
         },
+        recent_audit_logs: recentAuditLogs,
         needs_attention: needsAttention,
       }
 
@@ -386,7 +412,7 @@ export class PlatformService {
 
       const formattedSupportHistory = (supportSessions || []).map((s: any) => ({
         id: s.id,
-        platform_user_email: s.platform_admins?.email || 'admin@printerp.com.bd',
+        platform_user_email: s.platform_admins?.email || 'Platform Support',
         reason: s.reason,
         started_at: s.started_at,
         duration_minutes: Math.round(
@@ -684,7 +710,8 @@ export class PlatformService {
   static async createSupportSession(
     companyId: string,
     reason: string,
-    accessLevel: SupportAccessLevel = 'read_only'
+    accessLevel: SupportAccessLevel = 'read_only',
+    callerAdminId?: string
   ): Promise<ApiResponse<PlatformSupportSessionRecord>> {
     try {
       if (!companyId || !reason?.trim()) {
@@ -704,14 +731,27 @@ export class PlatformService {
         return { success: false, error: 'Company not found.' }
       }
 
-      // Fetch current platform admin
-      const { data: platformAdmins } = await (admin as any)
-        .from('platform_admins')
-        .select('id, email, full_name')
-        .eq('is_active', true)
-        .limit(1)
+      // Fetch platform admin (by callerAdminId if provided)
+      let platformAdmin: any = null
+      if (callerAdminId) {
+        const { data: adminById } = await (admin as any)
+          .from('platform_admins')
+          .select('id, email, full_name')
+          .eq('id', callerAdminId)
+          .eq('is_active', true)
+          .maybeSingle()
 
-      const platformAdmin = platformAdmins?.[0]
+        platformAdmin = adminById
+      } else {
+        const { data: platformAdmins } = await (admin as any)
+          .from('platform_admins')
+          .select('id, email, full_name')
+          .eq('is_active', true)
+          .limit(1)
+
+        platformAdmin = platformAdmins?.[0]
+      }
+
       if (!platformAdmin) {
         return { success: false, error: 'No active platform administrator found.' }
       }
@@ -1157,18 +1197,53 @@ export class PlatformService {
   ): Promise<ApiResponse<PlatformAdminUser>> {
     try {
       const admin = createAdminClient()
+
+      // 1. Verify target admin exists (by id, user_id, or email)
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)
+      let fetchQuery = (admin as any).from('platform_admins').select('*')
+      if (isUuid) {
+        fetchQuery = fetchQuery.or(`id.eq.${userId},user_id.eq.${userId}`)
+      } else {
+        fetchQuery = fetchQuery.or(`id.eq.${userId},user_id.eq.${userId},email.eq.${userId}`)
+      }
+      const { data: targetAdmin, error: fetchErr } = await fetchQuery.maybeSingle()
+
+      if (fetchErr || !targetAdmin) {
+        return { success: false, error: 'Platform administrator record not found.' }
+      }
+
+      // 2. Last Active Platform Owner Safety Protection
+      const isDemotingOrDisabling =
+        targetAdmin.role === 'platform_owner' &&
+        (updates.is_active === false || (updates.role && updates.role !== 'platform_owner'))
+
+      if (isDemotingOrDisabling) {
+        const { count: activeOwnerCount } = await (admin as any)
+          .from('platform_admins')
+          .select('*', { count: 'exact', head: true })
+          .eq('role', 'platform_owner')
+          .eq('is_active', true)
+
+        if ((activeOwnerCount || 0) <= 1) {
+          return {
+            success: false,
+            error: 'Security Constraint: Cannot disable or demote the last active Platform Owner. Ensure another active Platform Owner exists first.',
+          }
+        }
+      }
+
       const { data, error } = await (admin as any)
         .from('platform_admins')
         .update({
-          full_name: updates.full_name,
-          role: updates.role,
-          phone: updates.phone,
-          avatar_url: updates.avatar_url,
-          is_active: updates.is_active,
-          mfa_enabled: updates.mfa_enabled,
+          full_name: updates.full_name !== undefined ? updates.full_name : targetAdmin.full_name,
+          role: updates.role !== undefined ? updates.role : targetAdmin.role,
+          phone: updates.phone !== undefined ? updates.phone : targetAdmin.phone,
+          avatar_url: updates.avatar_url !== undefined ? updates.avatar_url : targetAdmin.avatar_url,
+          is_active: updates.is_active !== undefined ? updates.is_active : targetAdmin.is_active,
+          mfa_enabled: updates.mfa_enabled !== undefined ? updates.mfa_enabled : targetAdmin.mfa_enabled,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', userId)
+        .eq('id', targetAdmin.id)
         .select()
         .single()
 
@@ -1177,11 +1252,11 @@ export class PlatformService {
       await this.recordAuditLog(
         'platform_user.update',
         'platform_admin',
-        userId,
+        targetAdmin.id,
         undefined,
         undefined,
         { user_email: data.email, updates },
-        null,
+        targetAdmin,
         data,
         `Platform administrator ${data.full_name} updated`
       )
@@ -1195,39 +1270,96 @@ export class PlatformService {
   /**
    * 10. Platform Owner Profile & Preferences
    */
-  static async updatePlatformOwnerProfile(updates: {
-    full_name?: string
-    phone?: string
-    avatar_url?: string
-    preferences?: Record<string, any>
-  }): Promise<ApiResponse<PlatformAdminUser>> {
+  static async updatePlatformOwnerProfile(
+    updates: {
+      full_name?: string
+      phone?: string
+      avatar_url?: string
+      preferences?: Record<string, any>
+    },
+    callerAdminId?: string
+  ): Promise<ApiResponse<PlatformAdminUser>> {
     try {
       const admin = createAdminClient()
-      const { data: admins } = await (admin as any)
-        .from('platform_admins')
-        .select('*')
-        .eq('is_active', true)
-        .limit(1)
+      let targetId = callerAdminId
+      let existingAdmin: any = null
 
-      if (!admins || admins.length === 0) {
+      if (targetId) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)
+        let query = (admin as any).from('platform_admins').select('*')
+        if (isUuid) {
+          query = query.or(`id.eq.${targetId},user_id.eq.${targetId}`)
+        } else {
+          query = query.or(`id.eq.${targetId},user_id.eq.${targetId},email.eq.${targetId}`)
+        }
+        const { data } = await query.maybeSingle()
+        existingAdmin = data
+      }
+
+      if (!existingAdmin) {
+        const { data: admins } = await (admin as any)
+          .from('platform_admins')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: true })
+          .limit(1)
+
+        existingAdmin = admins?.[0]
+      }
+
+      if (!existingAdmin && targetId) {
+        const isEmail = targetId.includes('@')
+        const { data: createdAdmin } = await (admin as any)
+          .from('platform_admins')
+          .insert({
+            user_id: !isEmail ? targetId : '00000000-0000-0000-0000-000000000000',
+            email: isEmail ? targetId : 'admin@printerp.com.bd',
+            full_name: updates.full_name || 'Md. Shahidur Rahman',
+            phone: updates.phone || null,
+            avatar_url: updates.avatar_url || null,
+            preferences: updates.preferences || { language: 'en', timezone: 'Asia/Dhaka' },
+            role: 'platform_owner',
+            is_active: true,
+            mfa_enabled: false,
+          })
+          .select()
+          .single()
+
+        if (createdAdmin) {
+          existingAdmin = createdAdmin
+        }
+      }
+
+      if (!existingAdmin) {
         return { success: false, error: 'Platform admin record not found' }
       }
 
-      const adminRecord = admins[0]
       const { data, error } = await (admin as any)
         .from('platform_admins')
         .update({
-          full_name: updates.full_name || adminRecord.full_name,
-          phone: updates.phone !== undefined ? updates.phone : adminRecord.phone,
-          avatar_url: updates.avatar_url !== undefined ? updates.avatar_url : adminRecord.avatar_url,
-          preferences: updates.preferences || adminRecord.preferences,
+          full_name: updates.full_name !== undefined ? updates.full_name : existingAdmin.full_name,
+          phone: updates.phone !== undefined ? updates.phone : existingAdmin.phone,
+          avatar_url: updates.avatar_url !== undefined ? updates.avatar_url : existingAdmin.avatar_url,
+          preferences: updates.preferences !== undefined ? updates.preferences : existingAdmin.preferences,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', adminRecord.id)
+        .eq('id', existingAdmin.id)
         .select()
         .single()
 
       if (error) return { success: false, error: error.message }
+
+      await this.recordAuditLog(
+        'platform_owner.update_profile',
+        'platform_user',
+        existingAdmin.id,
+        undefined,
+        undefined,
+        { updates },
+        existingAdmin,
+        data,
+        `Updated platform profile for ${existingAdmin.email}`
+      )
 
       return { success: true, data }
     } catch (err: any) {
@@ -1238,11 +1370,24 @@ export class PlatformService {
   /**
    * 11. Security Center & Active Sessions
    */
-  static async getSecurityOverview(): Promise<ApiResponse<PlatformSecurityOverview>> {
+  static async getSecurityOverview(callerAdminId?: string): Promise<ApiResponse<PlatformSecurityOverview>> {
     try {
       const admin = createAdminClient()
 
-      const { data: activeSessions } = await (admin as any)
+      let targetAdminId = callerAdminId
+      if (targetAdminId) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAdminId)
+        if (!isUuid) {
+          const { data: adm } = await (admin as any)
+            .from('platform_admins')
+            .select('id')
+            .or(`email.eq.${targetAdminId},user_id.eq.${targetAdminId}`)
+            .maybeSingle()
+          if (adm) targetAdminId = adm.id
+        }
+      }
+
+      let query = (admin as any)
         .from('platform_active_sessions')
         .select(`
           *,
@@ -1251,16 +1396,22 @@ export class PlatformService {
         .eq('is_revoked', false)
         .order('last_seen_at', { ascending: false })
 
-      const sessions: PlatformActiveSession[] = (activeSessions || []).map((s: any) => ({
+      if (targetAdminId) {
+        query = query.eq('platform_admin_id', targetAdminId)
+      }
+
+      const { data: activeSessions } = await query
+
+      const sessions: PlatformActiveSession[] = (activeSessions || []).map((s: any, idx: number) => ({
         id: s.id,
         platform_admin_id: s.platform_admin_id,
-        user_email: s.platform_admins?.email || 'admin@printerp.com.bd',
+        user_email: s.platform_admins?.email || 'Platform Administrator',
         user_name: s.platform_admins?.full_name || 'Platform Administrator',
-        ip_address: s.ip_address || '103.108.140.22',
-        user_agent: s.user_agent || 'Chrome / Windows',
-        device_name: s.device_name || 'Desktop Workstation',
-        location: s.location || 'Dhaka, Bangladesh',
-        is_current: true,
+        ip_address: s.ip_address || 'Unknown IP',
+        user_agent: s.user_agent || 'Unknown Workstation',
+        device_name: s.device_name || 'Workstation',
+        location: s.location || 'Bangladesh',
+        is_current: idx === 0,
         is_revoked: Boolean(s.is_revoked),
         last_seen_at: s.last_seen_at || s.created_at,
         created_at: s.created_at,
@@ -1288,25 +1439,10 @@ export class PlatformService {
           failed_logins_24h: 0,
           suspicious_login_patterns: 0,
           mfa_adoption_pct: 100,
-          active_sessions_count: sessions.length || 1,
+          active_sessions_count: sessions.length,
           tenant_isolation_status: 'healthy',
           recent_privileged_actions: recentPrivileged,
-          active_sessions: sessions.length > 0 ? sessions : [
-            {
-              id: 'sess-current',
-              platform_admin_id: 'pa-001',
-              user_email: 'admin@printerp.com.bd',
-              user_name: 'Platform Owner',
-              ip_address: '103.108.140.22',
-              user_agent: 'Chrome 122 (Windows 11)',
-              device_name: 'Desktop Workstation',
-              location: 'Dhaka, Bangladesh',
-              is_current: true,
-              is_revoked: false,
-              last_seen_at: new Date().toISOString(),
-              created_at: new Date().toISOString(),
-            },
-          ],
+          active_sessions: sessions,
         },
       }
     } catch (err: any) {
@@ -1321,7 +1457,6 @@ export class PlatformService {
         .from('platform_active_sessions')
         .update({
           is_revoked: true,
-          updated_at: new Date().toISOString(),
         })
         .eq('id', sessionId)
 
@@ -1343,20 +1478,41 @@ export class PlatformService {
     }
   }
 
-  static async revokeAllOtherPlatformSessions(): Promise<ApiResponse<{ revoked: boolean }>> {
+  static async revokeAllOtherPlatformSessions(callerAdminId?: string): Promise<ApiResponse<{ revoked: boolean }>> {
     try {
       const admin = createAdminClient()
-      await (admin as any)
+      let targetAdminId = callerAdminId
+
+      if (targetAdminId) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAdminId)
+        if (!isUuid) {
+          const { data: adm } = await (admin as any)
+            .from('platform_admins')
+            .select('id')
+            .or(`email.eq.${targetAdminId},user_id.eq.${targetAdminId}`)
+            .maybeSingle()
+          if (adm) targetAdminId = adm.id
+        }
+      }
+
+      let query = (admin as any)
         .from('platform_active_sessions')
         .update({
           is_revoked: true,
         })
-        .neq('id', 'sess-current')
+
+      if (targetAdminId) {
+        query = query.eq('platform_admin_id', targetAdminId)
+      }
+
+      const { error } = await query
+
+      if (error) return { success: false, error: error.message }
 
       await this.recordAuditLog(
         'security.all_sessions_revoked',
         'platform_active_session',
-        undefined,
+        targetAdminId,
         undefined,
         undefined,
         {},
@@ -1374,30 +1530,72 @@ export class PlatformService {
   static async changePlatformOwnerPassword(
     currentPassword: string,
     newPassword: string,
-    revokeOtherSessions: boolean = true
+    revokeOtherSessions: boolean = true,
+    callerUserId?: string,
+    callerAdminId?: string
   ): Promise<ApiResponse<{ changed: boolean }>> {
     try {
+      if (!newPassword || newPassword.length < 8) {
+        return { success: false, error: 'New password must be at least 8 characters long.' }
+      }
+
       const admin = createAdminClient()
-      const { data: admins } = await (admin as any)
-        .from('platform_admins')
-        .select('user_id, email')
-        .eq('is_active', true)
-        .limit(1)
+      let targetUserId = callerUserId
+      let targetAdminId = callerAdminId
+      let existingAdmin: any = null
 
-      if (admins && admins[0]?.user_id) {
-        const { error: authErr } = await admin.auth.admin.updateUserById(admins[0].user_id, {
-          password: newPassword,
-        })
-
-        if (authErr) {
-          return { success: false, error: authErr.message }
+      if (targetAdminId || targetUserId) {
+        const lookup = targetAdminId || targetUserId
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lookup!)
+        let query = (admin as any).from('platform_admins').select('*')
+        if (isUuid) {
+          query = query.or(`id.eq.${lookup},user_id.eq.${lookup}`)
+        } else {
+          query = query.or(`id.eq.${lookup},user_id.eq.${lookup},email.eq.${lookup}`)
         }
+        const { data } = await query.maybeSingle()
+        existingAdmin = data
+      }
+
+      if (!existingAdmin) {
+        const { data: admins } = await (admin as any)
+          .from('platform_admins')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: true })
+          .limit(1)
+
+        existingAdmin = admins?.[0]
+      }
+
+      if (!existingAdmin || !existingAdmin.user_id) {
+        return { success: false, error: 'Platform administrator account not found.' }
+      }
+
+      const finalUserId = String(existingAdmin.user_id)
+      const finalAdminId = String(existingAdmin.id)
+
+      // Update password in Supabase Auth
+      const { error: authErr } = await admin.auth.admin.updateUserById(finalUserId, {
+        password: newPassword,
+      })
+
+      if (authErr) {
+        return { success: false, error: authErr.message }
+      }
+
+      // If requested, revoke all other active sessions for this admin
+      if (revokeOtherSessions && finalAdminId) {
+        await (admin as any)
+          .from('platform_active_sessions')
+          .update({ is_revoked: true })
+          .eq('platform_admin_id', finalAdminId)
       }
 
       await this.recordAuditLog(
         'security.password_changed',
         'platform_auth',
-        undefined,
+        finalAdminId,
         undefined,
         undefined,
         { revoke_other_sessions: revokeOtherSessions },
@@ -1412,21 +1610,56 @@ export class PlatformService {
     }
   }
 
-  static async togglePlatformOwnerMFA(enable: boolean): Promise<ApiResponse<{ enabled: boolean }>> {
+  static async togglePlatformOwnerMFA(
+    enable: boolean,
+    callerAdminId?: string
+  ): Promise<ApiResponse<{ enabled: boolean }>> {
     try {
       const admin = createAdminClient()
-      await (admin as any)
+      let targetId = callerAdminId
+      let existingAdmin: any = null
+
+      if (targetId) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)
+        let query = (admin as any).from('platform_admins').select('*')
+        if (isUuid) {
+          query = query.or(`id.eq.${targetId},user_id.eq.${targetId}`)
+        } else {
+          query = query.or(`id.eq.${targetId},user_id.eq.${targetId},email.eq.${targetId}`)
+        }
+        const { data } = await query.maybeSingle()
+        existingAdmin = data
+      }
+
+      if (!existingAdmin) {
+        const { data: admins } = await (admin as any)
+          .from('platform_admins')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: true })
+          .limit(1)
+
+        existingAdmin = admins?.[0]
+      }
+
+      if (!existingAdmin) {
+        return { success: false, error: 'Platform administrator account not found.' }
+      }
+
+      const { error } = await (admin as any)
         .from('platform_admins')
         .update({
           mfa_enabled: enable,
           updated_at: new Date().toISOString(),
         })
-        .eq('is_active', true)
+        .eq('id', existingAdmin.id)
+
+      if (error) return { success: false, error: error.message }
 
       await this.recordAuditLog(
         enable ? 'security.mfa_enabled' : 'security.mfa_disabled',
         'platform_auth',
-        undefined,
+        existingAdmin.id,
         undefined,
         undefined,
         { mfa_enabled: enable },

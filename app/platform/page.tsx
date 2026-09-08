@@ -457,28 +457,33 @@ export default function PlatformDashboardPage() {
         </CardHeader>
 
         <CardContent className="p-0 divide-y divide-slate-800">
-          {[
-            { action: 'company.change_plan', actor: 'admin@printerp.com.bd', company: 'Padma Digital & Signage Ltd.', desc: 'Upgraded Starter → Business (2 branches, 10 users)', time: '11:42 Today' },
-            { action: 'feature_flag.update', actor: 'admin@printerp.com.bd', company: 'Global Platform', desc: 'Enabled WhatsApp Cloud API proof preview rollout', time: '10:30 Today' },
-            { action: 'company.support_access', actor: 'support@printerp.com.bd', company: 'Padma Digital & Signage Ltd.', desc: 'Entered Support Mode: Investigating invoice formatting', time: '09:15 Today' },
-            { action: 'system.retry_job', actor: 'admin@printerp.com.bd', company: 'System Worker', desc: 'Retried failed background render cleanup job', time: '08:45 Today' },
-          ].map((act, idx) => (
-            <div key={idx} className="p-3.5 flex items-center justify-between text-xs hover:bg-slate-800/40 transition-colors">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-indigo-400 font-bold">{act.action}</span>
-                  <span className="text-slate-500">•</span>
-                  <span className="font-semibold text-white">{act.company}</span>
+          {(data.recent_audit_logs && data.recent_audit_logs.length > 0) ? (
+            data.recent_audit_logs.map((act) => (
+              <div key={act.id} className="p-3.5 flex items-center justify-between text-xs hover:bg-slate-800/40 transition-colors">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-indigo-400 font-bold">{act.action}</span>
+                    <span className="text-slate-500">•</span>
+                    <span className="font-semibold text-white">{act.target_company_name || act.entity_type || 'Platform'}</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">
+                    {act.reason || act.details?.description || act.details?.note || (typeof act.details === 'object' && Object.keys(act.details).length > 0 ? JSON.stringify(act.details).slice(0, 80) : 'Administrative action executed')}
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-400">{act.desc}</div>
-              </div>
 
-              <div className="text-right shrink-0">
-                <div className="font-mono text-[11px] text-slate-400">{act.time}</div>
-                <div className="text-[10px] text-slate-500">{act.actor}</div>
+                <div className="text-right shrink-0">
+                  <div className="font-mono text-[11px] text-slate-400">
+                    {new Date(act.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </div>
+                  <div className="text-[10px] text-slate-500">{act.actor_email}</div>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="p-6 text-center text-xs text-slate-500">
+              No recent administrative actions recorded yet.
             </div>
-          ))}
+          )}
         </CardContent>
       </Card>
     </div>

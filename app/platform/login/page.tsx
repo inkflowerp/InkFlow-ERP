@@ -85,11 +85,6 @@ function PlatformLoginForm() {
     }
   }
 
-  const fillDemoCredentials = () => {
-    setEmail('admin@printerp.com.bd')
-    setPassword('Admin@123456')
-    setError(null)
-  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 font-sans selection:bg-indigo-500 selection:text-white">
@@ -278,17 +273,6 @@ function PlatformLoginForm() {
                     />
                   </div>
 
-                  {/* Quick Dev/Demo Credentials Helper */}
-                  <div className="flex items-center justify-between text-[11px] px-1 text-slate-400">
-                    <span className="text-slate-500">Root Admin Demo:</span>
-                    <button
-                      type="button"
-                      onClick={fillDemoCredentials}
-                      className="text-indigo-400 hover:text-indigo-300 font-mono font-semibold underline underline-offset-2 cursor-pointer transition-colors"
-                    >
-                      Fill Default Credentials
-                    </button>
-                  </div>
 
                   {/* Security Notice */}
                   <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">

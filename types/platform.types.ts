@@ -83,6 +83,7 @@ export interface PlatformDashboardMetrics {
     integration_errors: number
     storage_used_pct: number
   }
+  recent_audit_logs?: PlatformAuditLogItem[]
 }
 
 export interface PlatformTenantCompany {

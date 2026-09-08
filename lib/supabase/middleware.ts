@@ -45,27 +45,7 @@ export async function updateSession(request: NextRequest) {
     pathname === '/sitemap.xml' ||
     pathname.startsWith('/icons/')
 
-  // Check platform session cookie
-  const platformSessionCookie = request.cookies.get(PLATFORM_SESSION_COOKIE)?.value
-  let hasValidPlatformCookie = false
-  if (platformSessionCookie) {
-    try {
-      let raw = platformSessionCookie
-      try {
-        raw = decodeURIComponent(platformSessionCookie)
-      } catch {
-        // Ignored
-      }
-      const parsed = typeof raw === 'string' && raw.startsWith('{') ? JSON.parse(raw) : JSON.parse(platformSessionCookie)
-      if (parsed && (parsed.email || parsed.userId) && parsed.role) {
-        hasValidPlatformCookie = true
-      }
-    } catch {
-      // Invalid cookie
-    }
-  }
-
-  // Check tenant session cookie
+  // Check tenant session cookie for tenant workspace routing
   const tenantSessionCookie = request.cookies.get(TENANT_SESSION_COOKIE)?.value
   let hasValidTenantCookie = false
   let tenantSessionData: any = null
@@ -85,18 +65,6 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     'placeholder-anon-key'
-
-  // If using placeholder during local dev, enforce cookie-based platform checks
-  if (supabaseUrl.includes('placeholder') || supabaseUrl.includes('dummy')) {
-    if (isPlatformProtectedPage && !hasValidPlatformCookie) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/platform/login'
-      url.searchParams.set('redirectTo', pathname)
-      return NextResponse.redirect(url)
-    }
-
-    return supabaseResponse
-  }
 
   const supabase = createServerClient<Database>(
     supabaseUrl,
@@ -123,19 +91,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isPlatformUser =
-    hasValidPlatformCookie ||
-    (user && user.app_metadata?.role?.startsWith('platform_'))
-
-  // 1. Platform Protected Page Guard: Tenant users can NEVER access /platform/*
+  // 1. Platform Protected Page Guard: Non-authenticated users cannot access /platform/*
   if (isPlatformProtectedPage) {
-    if (!hasValidPlatformCookie && !isPlatformUser) {
+    if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/platform/login'
       url.searchParams.set('redirectTo', pathname)
-      if (user || hasValidTenantCookie) {
-        url.searchParams.set('error', 'unauthorized')
-      }
       return NextResponse.redirect(url)
     }
   }

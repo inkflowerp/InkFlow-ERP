@@ -19,7 +19,32 @@ export interface PlatformUser {
 }
 
 export const PLATFORM_ROLE_PERMISSIONS: Record<PlatformUserRole, string[]> = {
-  platform_owner: ['*'],
+  platform_owner: [
+    'platform.dashboard',
+    'company.view',
+    'company.create',
+    'company.suspend',
+    'company.reactivate',
+    'company.export',
+    'company.support_mode',
+    'company.activity',
+    'plan.view',
+    'plan.change',
+    'subscription.manage',
+    'feature_flags.view',
+    'feature_flags.manage',
+    'system.health',
+    'system.incidents',
+    'system.job_retry',
+    'system.integrations',
+    'billing.reconcile',
+    'audit.view',
+    'security.view',
+    'security.manage',
+    'security.revoke_session',
+    'emergency_controls.manage',
+    'system.emergency_controls',
+  ],
   platform_admin: [
     'platform.dashboard',
     'company.view',
@@ -77,7 +102,6 @@ export const PLATFORM_ROLE_PERMISSIONS: Record<PlatformUserRole, string[]> = {
 export function hasPlatformPermission(user: PlatformUser | null | undefined, permission: string): boolean {
   if (!user || !user.is_active) return false
   const perms = PLATFORM_ROLE_PERMISSIONS[user.role] || []
-  if (perms.includes('*')) return true
   return perms.includes(permission)
 }
 

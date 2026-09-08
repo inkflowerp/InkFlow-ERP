@@ -29,48 +29,32 @@ export async function getCurrentTenant(requestedSlugOrId?: string): Promise<Tena
         const supportSession = JSON.parse(supportSessionCookie)
         const platformUser = await getCurrentPlatformUser()
 
-        if (platformUser && platformUser.is_active && supportSession.targetCompanyId) {
-          // Check expiration: session must be active and not expired
+        if (platformUser && platformUser.is_active && supportSession.targetCompanyId && supportSession.sessionId) {
           const now = new Date().getTime()
-          const expiresAt = supportSession.expiresAt ? new Date(supportSession.expiresAt).getTime() : 0
-          const startedAt = supportSession.startedAt ? new Date(supportSession.startedAt).getTime() : 0
-          const maxTtlMs = 2 * 60 * 60 * 1000 // 2 hours max TTL
+          const adminClient = createAdminClient()
 
-          const isExpired = expiresAt > 0 ? now > expiresAt : (now - startedAt) > maxTtlMs
+          // Authoritative DB verification for support session (Strict Fail-Closed)
+          const { data: dbSession, error: sessErr } = await (adminClient as any)
+            .from('platform_support_sessions')
+            .select('id, platform_admin_id, company_id, status, expires_at, access_level')
+            .eq('id', supportSession.sessionId)
+            .eq('company_id', supportSession.targetCompanyId)
+            .maybeSingle()
 
-          if (!isExpired) {
-            // Verify in PostgreSQL platform_support_sessions if session token exists
-            let dbValid = true
-            if (supportSession.sessionId) {
-              try {
-                const adminClient = createAdminClient()
-                const { data: dbSession } = await (adminClient as any)
-                  .from('platform_support_sessions')
-                  .select('status, expires_at, access_level')
-                  .eq('id', supportSession.sessionId)
-                  .eq('company_id', supportSession.targetCompanyId)
-                  .maybeSingle()
-
-                if (dbSession) {
-                  if (dbSession.status !== 'active' || new Date(dbSession.expires_at).getTime() < now) {
-                    dbValid = false
-                  }
-                }
-              } catch {
-                // Ignore DB error and fallback to cryptographic/timestamp check
-              }
-            }
-
-            if (dbValid) {
+          if (!sessErr && dbSession && dbSession.status === 'active') {
+            const expiresAtMs = new Date(dbSession.expires_at).getTime()
+            if (expiresAtMs > now && dbSession.platform_admin_id === platformUser.id) {
               const company = await TenantRepository.getCompanyById(supportSession.targetCompanyId)
               if (company && company.is_active) {
-                // Least privilege: Support users get read/view capabilities by default
+                // Least privilege: Support users get capabilities scoped to granted access level
+                const accessLevel = dbSession.access_level || supportSession.accessLevel || 'read_only'
                 const supportPerms: string[] = []
+
                 for (const [mod, spec] of Object.entries(MODULE_ACTION_SPECS)) {
                   for (const act of spec.actions) {
-                    if (supportSession.accessLevel === 'full_support') {
+                    if (accessLevel === 'full_support') {
                       supportPerms.push(`${mod}.${act}`)
-                    } else if (supportSession.accessLevel === 'config_only') {
+                    } else if (accessLevel === 'config_only') {
                       if (mod === 'settings' || act === 'view') {
                         supportPerms.push(`${mod}.${act}`)
                       }
@@ -101,7 +85,7 @@ export async function getCurrentTenant(requestedSlugOrId?: string): Promise<Tena
           }
         }
       } catch {
-        // Invalid support cookie format
+        // Invalid support cookie format -> Fail closed
       }
     }
 
