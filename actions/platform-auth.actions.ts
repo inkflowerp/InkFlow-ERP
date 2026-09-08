@@ -86,7 +86,10 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
       )
       return {
         success: false,
-        error: 'Invalid platform credentials. Please verify your email and password.',
+        error:
+          authErr?.message === 'Invalid login credentials'
+            ? 'Invalid platform credentials. Please verify your email and password.'
+            : authErr?.message || 'Invalid platform credentials. Please verify your email and password.',
       }
     }
 
