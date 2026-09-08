@@ -15,13 +15,12 @@ import {
   HeartPulse,
   Menu,
   Laptop,
+  Key,
 } from 'lucide-react'
 import { GlobalSearchDialog } from './global-search-dialog'
 import { PlatformNotificationsPopover } from './platform-notifications-popover'
 import { platformLogoutAction, getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
 import { PlatformUserRecord } from '@/lib/auth/types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { PlatformAdminUser } from '@/types/platform.types'
 
 export function PlatformHeader() {
   const [searchOpen, setSearchOpen] = useState(false)
@@ -30,47 +29,12 @@ export function PlatformHeader() {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
 
-  const syncUserFromStore = () => {
-    const cachedAdmins = PrintERPDataStore.get<PlatformAdminUser[]>(STORAGE_KEYS.PLATFORM_USERS)
-    const owner = cachedAdmins?.find((p) => p.role === 'platform_owner') || cachedAdmins?.[0]
-    if (owner) {
-      setCurrentUser((prev) =>
-        prev
-          ? { ...prev, full_name: owner.full_name, email: owner.email }
-          : {
-              id: owner.id,
-              user_id: owner.user_id,
-              email: owner.email,
-              full_name: owner.full_name,
-              role: owner.role,
-              is_active: owner.is_active,
-              created_at: owner.created_at,
-            }
-      )
-    }
-  }
-
   useEffect(() => {
-    syncUserFromStore()
-
     getPlatformSessionUserAction().then((user) => {
       if (user) {
-        // Prefer cached store name if available
-        const cachedAdmins = PrintERPDataStore.get<PlatformAdminUser[]>(STORAGE_KEYS.PLATFORM_USERS)
-        const owner = cachedAdmins?.find((p) => p.role === 'platform_owner') || cachedAdmins?.[0]
-        setCurrentUser({
-          ...user,
-          full_name: owner?.full_name || user.full_name,
-        })
+        setCurrentUser(user)
       }
     })
-
-    const handleSync = () => {
-      syncUserFromStore()
-    }
-
-    window.addEventListener('printerp_data_sync', handleSync)
-    return () => window.removeEventListener('printerp_data_sync', handleSync)
   }, [])
 
   // Global keyboard shortcut '/' to open search
@@ -91,9 +55,12 @@ export function PlatformHeader() {
   const handleLogout = async () => {
     if (isLoggingOut) return
     setIsLoggingOut(true)
-    const res = await platformLogoutAction()
-    router.push(res.redirectUrl || '/platform/login')
-    router.refresh()
+    try {
+      const res = await platformLogoutAction()
+      window.location.href = res.redirectUrl || '/platform/login'
+    } catch {
+      window.location.href = '/platform/login'
+    }
   }
 
   const userFullName = currentUser?.full_name || 'Platform Administrator'
@@ -219,6 +186,15 @@ export function PlatformHeader() {
                     >
                       <Shield className="h-3.5 w-3.5 text-cyan-400" />
                       <span>Security & MFA</span>
+                    </Link>
+
+                    <Link
+                      href="/platform/support"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                    >
+                      <Key className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Support Access</span>
                     </Link>
 
                     <Link

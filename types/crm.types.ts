@@ -137,3 +137,15 @@ export interface SupplierMaterialPrice {
   notes?: string | null
   created_at: string
 }
+
+export interface DuplicateMatchResult {
+  customer: CustomerRecord
+  matchReason: string
+  matchField: 'mobile' | 'whatsapp' | 'name' | 'company_name'
+  confidence: 'exact' | 'high' | 'possible'
+}
+
+export interface DuplicateCheckResponse {
+  hasDuplicate: boolean
+  matches: DuplicateMatchResult[]
+}

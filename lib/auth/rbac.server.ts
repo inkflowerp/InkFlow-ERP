@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { PrimaryRole } from '@/types/rbac.types'
+import { TenantRepository } from '@/lib/repositories/tenant.repository'
 
 export class UnauthorizedError extends Error {
   constructor(message = 'Access forbidden: insufficient permissions') {
@@ -17,19 +18,38 @@ export async function hasPermission(
 ): Promise<boolean> {
   try {
     const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return false
+
+    // Try live RPC first
     const { data, error } = await supabase.rpc('auth_user_has_permission', {
       target_company_id: companyId,
       required_permission: permissionCode,
     })
 
-    if (error) {
-      // In local dev fallback mode without live Supabase RPC
+    if (!error && typeof data === 'boolean') {
+      return data
+    }
+
+    // Fallback to direct resolution via repository
+    const membership = await TenantRepository.resolveUserMembership(user.id, companyId)
+    if (!membership) return false
+
+    const responsibilities = membership.companyUser.responsibilities || []
+    if (membership.primaryRole === 'business_owner' || responsibilities.includes('business_owner') || responsibilities.includes('owner')) {
       return true
     }
 
-    return Boolean(data)
+    const [mod] = permissionCode.split('.')
+    return (
+      membership.effectivePermissions.includes(permissionCode) ||
+      membership.effectivePermissions.includes(`${mod}.full_control`)
+    )
   } catch {
-    return true // Safe dev fallback
+    return false
   }
 }
 
@@ -53,18 +73,27 @@ export async function requireRole(
   companyId: string,
   allowedRoles: PrimaryRole[]
 ): Promise<void> {
-  try {
-    const supabase = await createClient()
-    const { data: roleSlug } = await supabase.rpc('auth_get_user_company_role', {
-      target_company_id: companyId,
-    })
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-    if (roleSlug && !allowedRoles.includes(roleSlug as PrimaryRole)) {
-      throw new UnauthorizedError(`Role '${roleSlug}' does not have access to this action`)
-    }
-  } catch (err: unknown) {
-    if (err instanceof UnauthorizedError) throw err
-    // Dev fallback pass
+  if (!user) {
+    throw new UnauthorizedError('Authentication required.')
+  }
+
+  const membership = await TenantRepository.resolveUserMembership(user.id, companyId)
+  if (!membership) {
+    throw new UnauthorizedError('User does not belong to this organization.')
+  }
+
+  const responsibilities = membership.companyUser.responsibilities || []
+  const hasMatchingRole = responsibilities.some((r) =>
+    allowedRoles.includes(r as PrimaryRole)
+  )
+
+  if (!hasMatchingRole && !allowedRoles.includes(membership.primaryRole as PrimaryRole)) {
+    throw new UnauthorizedError(`Role '${membership.primaryRole}' does not have access to this action`)
   }
 }
 
@@ -74,8 +103,24 @@ export async function requireRole(
 export async function isPlatformOwner(): Promise<boolean> {
   try {
     const supabase = await createClient()
-    const { data } = await supabase.rpc('auth_is_platform_owner')
-    return Boolean(data)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return false
+
+    const { data } = await (supabase as any).rpc('auth_is_platform_owner')
+    if (typeof data === 'boolean') return data
+
+    // Fallback: check platform_admins table
+    const { data: adminRow } = await (supabase as any)
+      .from('platform_admins')
+      .select('id, is_active')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    return Boolean(adminRow)
   } catch {
     return false
   }

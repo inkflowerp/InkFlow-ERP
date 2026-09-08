@@ -55,6 +55,66 @@ export async function loginAction(formData: FormData) {
   redirect(targetUrl)
 }
 
+export async function signInAction(email: string, pass: string) {
+  if (!email || !pass) {
+    return { success: false, error: 'Email and password are required' }
+  }
+
+  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: `Too many login attempts. Please wait ${rateLimit.resetSeconds} seconds before trying again.`,
+    }
+  }
+
+  const result = await AuthService.signIn(email, pass)
+  if (!result.success || !result.data) {
+    return result
+  }
+
+  const session = result.data.session
+  const cookieStore = await cookies()
+  cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(session), {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  })
+
+  try {
+    await AuditService.trackLogin(session.companyId, session.userId, session.userEmail)
+  } catch {
+    // Non-blocking
+  }
+
+  return result
+}
+
+export async function signUpAction(data: {
+  email: string
+  password?: string
+  fullName: string
+  companyName?: string
+  phone?: string
+  locale?: string
+}) {
+  return await AuthService.signUp(
+    data.email,
+    data.password || 'TemporaryPass123!',
+    data.fullName,
+    data.phone
+  )
+}
+
+export async function forgotPasswordAction(email: string) {
+  return await AuthService.forgotPassword(email)
+}
+
+export async function resetPasswordAction(newPassword: string) {
+  return await AuthService.resetPassword(newPassword)
+}
+
 export async function signOutAction() {
   const currentTenant = await getCurrentTenant()
 
@@ -70,7 +130,6 @@ export async function signOutAction() {
     }
   }
 
-  // Clear server-side tenant session cookie
   const cookieStore = await cookies()
   cookieStore.delete(TENANT_SESSION_COOKIE)
 
@@ -78,4 +137,5 @@ export async function signOutAction() {
   revalidatePath('/', 'layout')
   redirect('/login')
 }
+
 

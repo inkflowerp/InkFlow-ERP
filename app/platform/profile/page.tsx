@@ -25,10 +25,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { PlatformService } from '@/services/platform.service'
 import { PlatformAdminUser } from '@/types/platform.types'
 import { updatePlatformOwnerProfileAction } from '@/actions/platform.actions'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
 
 export default function PlatformOwnerProfilePage() {
   const [profile, setProfile] = useState<PlatformAdminUser | null>(null)
@@ -47,74 +46,45 @@ export default function PlatformOwnerProfilePage() {
 
   const loadProfile = async () => {
     setIsLoading(true)
-    const cachedAdmins = PrintERPDataStore.get<PlatformAdminUser[]>(STORAGE_KEYS.PLATFORM_USERS)
-    const cachedOwner = cachedAdmins?.find((p) => p.role === 'platform_owner') || cachedAdmins?.[0]
-    
-    if (cachedOwner) {
-      setProfile(cachedOwner)
-      setFullName(cachedOwner.full_name)
-      setPhone(cachedOwner.phone || '')
-      setAvatarUrl(cachedOwner.avatar_url || '')
-      setIsLoading(false)
-      return
-    }
-
-    const res = await PlatformService.getPlatformOwnerProfile()
-    if (res.success && res.data) {
-      setProfile(res.data)
-      setFullName(res.data.full_name)
-      setPhone(res.data.phone || '')
-      setAvatarUrl(res.data.avatar_url || '')
+    const sessionUser = await getPlatformSessionUserAction()
+    if (sessionUser) {
+      setProfile({
+        id: sessionUser.id,
+        user_id: sessionUser.user_id,
+        email: sessionUser.email,
+        full_name: sessionUser.full_name,
+        role: sessionUser.role,
+        phone: (sessionUser as any).phone || '',
+        avatar_url: (sessionUser as any).avatar_url || '',
+        is_active: sessionUser.is_active,
+        mfa_enabled: Boolean(sessionUser.mfa_enabled),
+        active_sessions_count: 1,
+        created_at: sessionUser.created_at,
+        last_login_at: sessionUser.last_login_at,
+      })
+      setFullName(sessionUser.full_name)
+      setPhone((sessionUser as any).phone || '')
+      setAvatarUrl((sessionUser as any).avatar_url || '')
     }
     setIsLoading(false)
   }
 
   const isDirty = profile ? (fullName !== profile.full_name || phone !== (profile.phone || '') || avatarUrl !== (profile.avatar_url || '')) : false
   const isDirtyRef = useRef(false)
-  isDirtyRef.current = isDirty
+
+  useEffect(() => {
+    isDirtyRef.current = isDirty
+  }, [isDirty])
 
   useEffect(() => {
     loadProfile()
-
-    const handleSync = (e: Event) => {
-      const customEvent = e as CustomEvent<{ key?: string; all?: boolean }>
-      if (customEvent.detail && customEvent.detail.key && customEvent.detail.key !== STORAGE_KEYS.PLATFORM_USERS && !customEvent.detail.all) {
-        return
-      }
-      // If user has unsaved edits, do not blow them away
-      if (isDirtyRef.current) return
-
-      const cachedAdmins = PrintERPDataStore.get<PlatformAdminUser[]>(STORAGE_KEYS.PLATFORM_USERS)
-      const cachedOwner = cachedAdmins?.find((p) => p.role === 'platform_owner') || cachedAdmins?.[0]
-      if (cachedOwner) {
-        setProfile(cachedOwner)
-        setFullName(cachedOwner.full_name)
-        setPhone(cachedOwner.phone || '')
-        setAvatarUrl(cachedOwner.avatar_url || '')
-      }
-    }
-
-    window.addEventListener('printerp_data_sync', handleSync)
-    return () => window.removeEventListener('printerp_data_sync', handleSync)
   }, [])
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
 
-    // 1. Instant local persistence in PrintERPDataStore
-    const localRes = await PlatformService.updatePlatformOwnerProfile({
-      full_name: fullName,
-      phone,
-      avatar_url: avatarUrl,
-    })
-
-    if (localRes.success && localRes.data) {
-      setProfile(localRes.data)
-      window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: STORAGE_KEYS.PLATFORM_USERS } }))
-    }
-
-    // 2. Server Action for session cookie, audit log, and Next.js cache revalidation
+    // Server Action for PostgreSQL update, session cookie sync, audit log, and Next.js cache revalidation
     const res = await updatePlatformOwnerProfileAction({
       full_name: fullName,
       phone,
@@ -123,8 +93,6 @@ export default function PlatformOwnerProfilePage() {
 
     if (res.success && res.data) {
       setProfile(res.data)
-      showToast('success', 'Platform Owner profile updated successfully.')
-    } else if (localRes.success) {
       showToast('success', 'Platform Owner profile updated successfully.')
     } else {
       showToast('error', res.error || 'Failed to update profile.')

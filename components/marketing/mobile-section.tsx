@@ -150,7 +150,7 @@ export function MobileSection() {
                 {mobileScreen === 'sales' && (
                   <div className="space-y-2.5 sm:space-y-3 animate-in fade-in-0 duration-200">
                     <div className="p-2.5 sm:p-3 rounded-xl bg-slate-950 border border-slate-800">
-                      <span className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-mono">Today's Revenue</span>
+                      <span className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-mono">Today&apos;s Revenue</span>
                       <div className="text-lg sm:text-xl font-black text-white tabular-nums mt-0.5">৳ 48,500</div>
                       <span className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">+18% vs Yesterday</span>
                     </div>

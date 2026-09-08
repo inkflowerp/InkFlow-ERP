@@ -46,16 +46,14 @@ export function useDataStore<T = any>(
   initialSeed?: T,
   customTenantSlug?: string
 ): DataStoreResult<T> {
-  const initialSeedRef = useRef(initialSeed)
-
   const [data, setData] = useState<T>(() => {
     const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
     if (slug !== 'padma-digital' && isTransactionalKey(key)) {
       const stored = PrintERPDataStore.get<T>(key, slug)
       return (stored !== undefined && stored !== null ? stored : ([] as unknown as T))
     }
-    if (initialSeedRef.current !== undefined) {
-      return initialSeedRef.current
+    if (initialSeed !== undefined) {
+      return initialSeed
     }
     const seed = getInitialSeedData(key, slug)
     if (seed !== null && seed !== undefined) {
@@ -71,10 +69,10 @@ export function useDataStore<T = any>(
       setData(latest)
     } else if (slug !== 'padma-digital' && isTransactionalKey(key)) {
       setData([] as unknown as T)
-    } else if (initialSeedRef.current !== undefined) {
-      setData(initialSeedRef.current)
+    } else if (initialSeed !== undefined) {
+      setData(initialSeed)
     }
-  }, [key, customTenantSlug])
+  }, [key, customTenantSlug, initialSeed])
 
   useEffect(() => {
     // Initial sync on mount

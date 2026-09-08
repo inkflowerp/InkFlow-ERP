@@ -29,7 +29,6 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { usePermissions } from '@/hooks/use-permissions'
 import { GeoService } from '@/services/geo.service'
-import { CrmService, DuplicateMatchResult } from '@/services/crm.service'
 import { createCustomerAction, checkCustomerDuplicateAction } from '@/actions/customer.actions'
 import {
   CustomerRecord,
@@ -37,6 +36,7 @@ import {
   CustomerCategory,
   CustomerRateLevel,
   CustomerPaymentTerms,
+  DuplicateMatchResult,
 } from '@/types/crm.types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
@@ -238,7 +238,7 @@ export function NewCustomerModal({
       return
     }
 
-    const cleanedPhone = CrmService.cleanPhoneDigits(mobile)
+    const cleanedPhone = mobile.replace(/\D/g, '')
     if (cleanedPhone.length < 10) {
       setErrorMessage('Please enter a valid 11-digit Bangladesh phone number (01XXXXXXXXX).')
       return
@@ -288,35 +288,15 @@ export function NewCustomerModal({
         is_active: isActive,
       }
 
-      let res
-      try {
-        res = await createCustomerAction(payload)
-      } catch {
-        // Client-side fallback if server action has network/session timeout
-        const directCreated = await CrmService.createCustomer(
-          payload,
-          company?.id || companyId,
-          'usr-01'
-        )
-        res = { success: true, data: directCreated }
-      }
+      const res = await createCustomerAction(payload)
 
       if (!res || !res.success || !res.data) {
-        if (res?.error && res.error.includes('Unauthorized')) {
-          setErrorMessage(res.error)
-          setIsSubmitting(false)
-          return
-        }
-        // Client-side fallback for demo/offline workflow
-        const directCreated = await CrmService.createCustomer(
-          payload,
-          company?.id || companyId,
-          'usr-01'
-        )
-        res = { success: true, data: directCreated }
+        setErrorMessage(res?.error || 'Failed to create customer in database.')
+        setIsSubmitting(false)
+        return
       }
 
-      const createdCustomer = res?.data
+      const createdCustomer = res.data
       if (createdCustomer) {
         PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMERS, createdCustomer)
       }

@@ -34,7 +34,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import {
   isRenderableFormat,
   getFormatBadgeColor,
-} from '@/services/design.service'
+} from '@/lib/formatters'
 import {
   DesignJobRecord,
   DesignVersionRecord,

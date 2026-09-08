@@ -1,8 +1,17 @@
 // ==============================================================================
-// PrintERP SaaS - Unified DataStore & Persistence Engine (Production Clean)
-// Provides unified client & server in-memory caching with reactive LocalStorage
-// persistence and cross-module synchronization for all business entities.
-// ZERO demo data fallbacks or hardcoded fake records.
+// LEGACY — NOT FOR PRODUCTION BUSINESS DATA
+// Authoritative data persistence has migrated to Supabase PostgreSQL Repositories:
+//  - CustomerRepository (PostgreSQL: customers, communications)
+//  - BillingRepository (PostgreSQL: invoices, payments, payment_adjustments)
+//  - InventoryRepository (PostgreSQL: materials, stock_ledger)
+//  - OrderRepository (PostgreSQL: sales_orders, job_orders, timeline)
+//  - DesignRepository (PostgreSQL: design_jobs, design_versions)
+//  - ProductionRepository (PostgreSQL: production_jobs, production_reworks)
+//  - LogisticsRepository (PostgreSQL: delivery_challans, installations)
+//  - AuditRepository (PostgreSQL: audit_logs)
+//  - TenantRepository (PostgreSQL: companies, company_users, roles, permissions)
+//
+// This module is retained exclusively for transient local client UI state.
 // ==============================================================================
 
 import {
@@ -147,7 +156,6 @@ export const STORAGE_KEYS = {
   OPERATOR_JOBS: 'printerp_tenant_operator_jobs',
   AUDIT_LOGS: 'printerp_tenant_audit_logs',
   USER_OVERRIDES: 'printerp_tenant_user_overrides',
-  REGISTERED_USERS: 'printerp_registered_users',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -160,7 +168,6 @@ export function isPlatformKey(key: string): boolean {
     key === STORAGE_KEYS.PLATFORM_USERS ||
     key === STORAGE_KEYS.PLATFORM_INCIDENTS ||
     key === STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS ||
-    key === STORAGE_KEYS.REGISTERED_USERS ||
     key === STORAGE_KEYS.COMPANY_USERS
   )
 }
@@ -207,8 +214,7 @@ export function isTransactionalKey(key: string): boolean {
     key === STORAGE_KEYS.PLATFORM_COMPANIES ||
     key === STORAGE_KEYS.PLATFORM_USERS ||
     key === STORAGE_KEYS.PLATFORM_INCIDENTS ||
-    key === STORAGE_KEYS.USER_OVERRIDES ||
-    key === STORAGE_KEYS.REGISTERED_USERS
+    key === STORAGE_KEYS.USER_OVERRIDES
   )
 }
 

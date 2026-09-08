@@ -43,8 +43,8 @@ export async function toggleUserStatusAction(
 
   const result =
     newStatus === 'active'
-      ? await CompanyUsersService.activateUser(companyUserId, tenant.fullName || 'Admin')
-      : await CompanyUsersService.disableUser(companyUserId, tenant.fullName || 'Admin')
+      ? await CompanyUsersService.activateUser(companyUserId, tenant.companyId, tenant.fullName || 'Admin')
+      : await CompanyUsersService.disableUser(companyUserId, tenant.companyId, tenant.fullName || 'Admin')
 
   revalidatePath(`/${tenantSlug}/settings/users`)
   return result
@@ -69,8 +69,7 @@ export async function changeUserRoleAction(
   const result = await CompanyUsersService.changeUserRole(
     companyUserId,
     newRoleId,
-    tenant.companyId,
-    tenant.fullName || 'Admin'
+    tenant.companyId
   )
   revalidatePath(`/${tenantSlug}/settings/users`)
   return result
@@ -96,6 +95,47 @@ export async function assignUserBranchAction(
   return result
 }
 
+export async function listCompanyUsersAction(companyId: string) {
+  return await CompanyUsersService.listCompanyUsers(companyId)
+}
+
+export async function listRolesAction(companyId?: string) {
+  return await CompanyUsersService.listRoles(companyId)
+}
+
+export async function listBranchesAction(companyId: string) {
+  return await CompanyUsersService.listBranches(companyId)
+}
+
+export async function updateUserAccessAndPermissionsAction(params: {
+  companyUserId: string
+  companyId?: string
+  responsibilities?: string[]
+  overrides?: Record<string, boolean>
+  dataScopes?: any
+  department?: string | null
+  branchId?: string | null
+  actorName?: string
+  actorId?: string
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('*') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Insufficient permissions to modify user access.' }
+  }
+
+  return await CompanyUsersService.updateUserAccessAndPermissions({
+    ...params,
+    companyId: tenant.companyId,
+    actorName: tenant.fullName || params.actorName || 'Owner',
+    actorId: tenant.userId || params.actorId || 'system',
+  })
+}
+
 export async function resetUserAccessAction(email: string) {
   const tenant = await getCurrentTenant()
   if (
@@ -104,7 +144,7 @@ export async function resetUserAccessAction(email: string) {
       !tenant.permissions.includes('*') &&
       !tenant.permissions.includes('settings.edit'))
   ) {
-    return { success: false, message: 'Unauthorized: Insufficient permissions to reset access.' }
+    return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
   }
 
   return await CompanyUsersService.resetAccess(email)

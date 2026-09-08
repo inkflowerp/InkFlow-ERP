@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformUsageTrendsAction, getPlatformCompaniesAction } from '@/actions/platform-data.actions'
 import { UsageTrendsData, PlatformTenantCompany } from '@/types/platform.types'
 
 export default function PlatformUsagePage() {
@@ -28,14 +28,14 @@ export default function PlatformUsagePage() {
   const loadData = async () => {
     setLoading(true)
     const [usageRes, compRes] = await Promise.all([
-      PlatformService.getUsageTrends(selectedCompanyId === 'all' ? undefined : selectedCompanyId, period),
-      PlatformService.getCompanies(),
+      getPlatformUsageTrendsAction(selectedCompanyId === 'all' ? undefined : selectedCompanyId, period as any),
+      getPlatformCompaniesAction(),
     ])
     if (usageRes.success && usageRes.data) {
       setData(usageRes.data)
     }
     if (compRes.success && compRes.data) {
-      setCompanies(compRes.data)
+      setCompanies(Array.isArray(compRes.data) ? compRes.data : (compRes.data?.companies || []))
     }
     setLoading(false)
   }

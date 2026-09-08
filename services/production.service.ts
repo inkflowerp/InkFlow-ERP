@@ -1,9 +1,9 @@
 import {
   ProductionJobRecord,
   ProductionReworkRecord,
-  ProductionDepartment,
   DepartmentKanbanColumn,
 } from '@/types/production.types'
+import { ProductionRepository } from '@/lib/repositories/production.repository'
 
 export function getDepartmentColumns(department: string): DepartmentKanbanColumn[] {
   switch (department) {
@@ -44,93 +44,74 @@ export function getDepartmentColumns(department: string): DepartmentKanbanColumn
   }
 }
 
-
-
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-
 export class ProductionService {
-  static async getJobs(department?: string, companyId: string = 'c-01'): Promise<ProductionJobRecord[]> {
-    const jobs = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
-    return jobs.filter((j) => {
-      const matchCompany = !j.company_id || j.company_id === companyId
-      const matchDept = !department || department === 'all' || j.department === department
-      return matchCompany && matchDept
+  static async getJobs(department?: string, companyId?: string): Promise<ProductionJobRecord[]> {
+    if (!companyId) return []
+    try {
+      const jobs = await ProductionRepository.getProductionJobs(companyId)
+      if (!department || department === 'all') return jobs
+      return jobs.filter((j) => j.department === department)
+    } catch (error) {
+      console.error('Error in ProductionService.getJobs:', error)
+      throw error
+    }
+  }
+
+  static async getJobById(id: string, companyId: string): Promise<ProductionJobRecord | null> {
+    if (!companyId || !id) return null
+    try {
+      return await ProductionRepository.getProductionJobById(id, companyId)
+    } catch (error) {
+      console.error('Error in ProductionService.getJobById:', error)
+      throw error
+    }
+  }
+
+  static async createJob(data: {
+    company_id: string
+    title: string
+    customer_name: string
+    quantity: number
+    [key: string]: any
+  }): Promise<ProductionJobRecord> {
+    if (!data.company_id) throw new Error('Company ID is required to create a production job')
+    if (!data.title) throw new Error('Job title is required')
+    if (!data.customer_name) throw new Error('Customer name is required')
+    if (!data.quantity || data.quantity <= 0) throw new Error('Quantity must be greater than 0')
+
+    return await ProductionRepository.createProductionJob({
+      ...data,
+      company_id: data.company_id,
+      title: data.title,
+      customer_name: data.customer_name,
+      quantity: data.quantity,
     })
   }
 
-  static async getJobById(id: string, companyId: string = 'c-01'): Promise<ProductionJobRecord | null> {
-    const jobs = await this.getJobs(undefined, companyId)
-    return jobs.find((j) => j.id === id || j.production_job_number === id) || null
+  static async updateJobStatus(
+    id: string,
+    status: 'queued' | 'in_progress' | 'completed' | 'on_hold' | 'cancelled',
+    companyId: string,
+    extraUpdates?: Partial<ProductionJobRecord>
+  ): Promise<ProductionJobRecord> {
+    if (!companyId) throw new Error('Company ID is required')
+    return await ProductionRepository.updateJobStatus(id, status, companyId, extraUpdates)
   }
 
-  static async createJob(data: Partial<ProductionJobRecord>): Promise<ProductionJobRecord> {
-    const id = data.id || `prd-${Date.now()}`
-    const num = data.production_job_number || `PRD-${Date.now().toString().slice(-4)}`
-    const newJob: ProductionJobRecord = {
-      id,
-      company_id: data.company_id || 'c-01',
-      production_job_number: num,
-      job_order_id: data.job_order_id || `job-${Date.now()}`,
-      sales_order_id: data.sales_order_id || `ord-${Date.now()}`,
-      customer_name: data.customer_name || 'Customer',
-      product_name: data.product_name || 'Signage Item',
-      department: data.department || 'printing',
-      stage: data.stage || 'printing',
-      status: data.status || 'queued',
-      priority: data.priority || 'normal',
-      deadline: data.deadline || 'Tomorrow 18:00',
-      dimensions_spec: data.dimensions_spec || '10ft × 4ft',
-      quantity: data.quantity || 1,
-      material_spec: data.material_spec || 'Standard Media',
-      production_instructions: data.production_instructions || 'Standard production.',
-      assigned_workers: data.assigned_workers || ['Operator 1'],
-      has_rework: false,
-      rework_count: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, newJob)
-    return newJob
-  }
+  static async logRework(rework: {
+    company_id: string
+    production_job_id: string
+    reason: string
+    rework_quantity: number
+    estimated_cost?: number
+    reported_by_name: string
+  }): Promise<ProductionReworkRecord> {
+    if (!rework.company_id) throw new Error('Company ID is required')
+    if (!rework.production_job_id) throw new Error('Production Job ID is required')
+    if (!rework.reason) throw new Error('Rework reason is required')
 
-  static async updateJob(id: string, data: Partial<ProductionJobRecord>): Promise<ProductionJobRecord | null> {
-    return PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, id, data)
-  }
-
-  static async updateJobStatus(id: string, status: any, stage?: any): Promise<ProductionJobRecord | null> {
-    const updates: Partial<ProductionJobRecord> = { status }
-    if (stage) updates.stage = stage
-    return PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, id, updates)
-  }
-
-  static async getReworks(): Promise<ProductionReworkRecord[]> {
-    return PrintERPDataStore.get<ProductionReworkRecord[]>(STORAGE_KEYS.REWORKS) || []
-  }
-
-  static async logRework(rework: Partial<ProductionReworkRecord>): Promise<ProductionReworkRecord> {
-    const id = rework.id || `rwk-${Date.now()}`
-    const newRework: ProductionReworkRecord = {
-      id,
-      production_job_id: rework.production_job_id || '',
-      rework_number: `RWK-${Date.now().toString().slice(-4)}`,
-      reason: rework.reason || 'Quality re-processing',
-      responsible_department: rework.responsible_department || 'printing',
-      material_wastage: rework.material_wastage || 'Wasted material',
-      extra_labor_hours: rework.extra_labor_hours || 1,
-      additional_time_hours: rework.additional_time_hours || 1,
-      estimated_wastage_cost: rework.estimated_wastage_cost || 1000,
-      reported_by_name: rework.reported_by_name || 'Operator',
-      status: 'in_rework',
-      created_at: new Date().toLocaleString(),
-    }
-    PrintERPDataStore.addItem(STORAGE_KEYS.REWORKS, newRework)
-    if (rework.production_job_id) {
-      PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, rework.production_job_id, {
-        has_rework: true,
-        status: 'rework',
-      })
-    }
-    return newRework
+    return await ProductionRepository.recordRework(rework)
   }
 }
+
 

@@ -23,7 +23,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformCustomerSuccessMetricsAction } from '@/actions/platform-data.actions'
 import { CustomerSuccessData } from '@/types/platform.types'
 
 export default function CustomerSuccessPage() {
@@ -32,7 +32,7 @@ export default function CustomerSuccessPage() {
 
   const loadData = async () => {
     setLoading(true)
-    const res = await PlatformService.getCustomerSuccessMetrics()
+    const res = await getPlatformCustomerSuccessMetricsAction()
     if (res.success && res.data) {
       setData(res.data)
     }

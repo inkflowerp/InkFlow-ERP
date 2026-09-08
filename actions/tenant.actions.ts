@@ -31,3 +31,32 @@ export async function switchCompanyAction(slug: string) {
   revalidatePath('/', 'layout')
   redirect(`/${slug}/dashboard`)
 }
+
+export async function updateCompanyAction(companyId: string, data: any) {
+  const tenant = await getCurrentTenant(companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('*') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, error: 'Unauthorized: Insufficient permissions to modify company details.' }
+  }
+
+  return await TenantService.updateCompany(tenant.companyId, data)
+}
+
+export async function updateCompanySettingsAction(companyId: string, settings: any) {
+  const tenant = await getCurrentTenant(companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('*') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, error: 'Unauthorized: Insufficient permissions to modify company settings.' }
+  }
+
+  return await TenantService.updateCompanySettings(tenant.companyId, settings)
+}
+

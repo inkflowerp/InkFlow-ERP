@@ -1,3 +1,8 @@
+// ==============================================================================
+// PrintERP / InkFlow SaaS - Billing & Invoicing Service
+// Authoritative PostgreSQL persistence via BillingRepository
+// ==============================================================================
+
 import {
   InvoiceRecord,
   InvoiceItemRecord,
@@ -5,6 +10,7 @@ import {
   PaymentAllocationRecord,
   FinancialWriteOffRecord,
 } from '@/types/billing.types'
+import { BillingRepository } from '@/lib/repositories/billing.repository'
 
 export function calculateDaysOverdue(dueDateStr: string): number {
   const dueDate = new Date(dueDateStr)
@@ -53,79 +59,78 @@ export function numberToWordsBDT(amount: number): string {
   return (res.trim() + ' Taka Only').replace(/\s+/g, ' ')
 }
 
-
-
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-
 export class BillingService {
-  static async getInvoices(companyId: string = 'c-01'): Promise<InvoiceRecord[]> {
-    const invoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    return invoices.filter((i) => !i.company_id || i.company_id === companyId)
+  static async getInvoices(companyId: string): Promise<InvoiceRecord[]> {
+    if (!companyId) return []
+    return await BillingRepository.getInvoices(companyId)
   }
 
-  static async getInvoiceById(id: string, companyId: string = 'c-01'): Promise<InvoiceRecord | null> {
-    const invoices = await this.getInvoices(companyId)
-    return invoices.find((i) => i.id === id || i.invoice_number === id) || null
+  static async getInvoiceById(id: string, companyId: string): Promise<InvoiceRecord | null> {
+    if (!id || !companyId) return null
+    return await BillingRepository.getInvoiceById(id, companyId)
   }
 
-  static async createInvoice(data: Partial<InvoiceRecord>): Promise<InvoiceRecord> {
-    const id = data.id || `inv-${Date.now()}`
-    const num = data.invoice_number || `INV-2024-00${Math.floor(Math.random() * 900) + 100}`
-    const newInvoice: InvoiceRecord = {
-      id,
-      company_id: data.company_id || 'c-01',
-      invoice_number: num,
-      invoice_type: data.invoice_type || 'sales_invoice',
-      sales_order_id: data.sales_order_id || `ord-${Date.now()}`,
-      customer_id: data.customer_id || 'cust-01',
-      customer_name: data.customer_name || 'Customer',
-      customer_phone: data.customer_phone || '+8801711000000',
-      customer_address: data.customer_address || 'Dhaka',
-      invoice_date: data.invoice_date || new Date().toISOString().split('T')[0],
-      due_date: data.due_date || new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
-      status: data.status || 'unpaid',
-      subtotal: data.subtotal || 0,
-      discount_amount: data.discount_amount || 0,
-      vat_percentage: data.vat_percentage || 7.5,
-      vat_amount: data.vat_amount || 0,
-      grand_total: data.grand_total || 0,
-      paid_amount: data.paid_amount || 0,
-      due_amount: data.due_amount || (data.grand_total || 0) - (data.paid_amount || 0),
-      write_off_amount: data.write_off_amount || 0,
-      created_by_name: data.created_by_name || 'Billing Officer',
-      items: data.items || [],
-      notes: data.notes || '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+  static async createInvoice(data: Partial<InvoiceRecord> & {
+    company_id: string
+    customer_id: string
+    customer_name: string
+    customer_phone: string
+    due_date: string
+    grand_total: number
+    created_by_name: string
+  }): Promise<InvoiceRecord> {
+    if (!data.company_id) {
+      throw new Error('Company context is required to create an invoice.')
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, newInvoice)
-    return newInvoice
+    if (!data.customer_id) {
+      throw new Error('Customer ID is required to create an invoice.')
+    }
+    return await BillingRepository.createInvoice(data)
   }
 
-  static async updateInvoice(id: string, data: Partial<InvoiceRecord>): Promise<InvoiceRecord | null> {
-    return PrintERPDataStore.updateItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, id, data)
+  static async updateInvoice(id: string, data: Partial<InvoiceRecord>, companyId: string): Promise<InvoiceRecord | null> {
+    if (!id || !companyId) return null
+    return await BillingRepository.updateInvoice(id, data, companyId)
   }
 
-  static async deleteInvoice(id: string): Promise<boolean> {
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.INVOICES, id)
+  static async deleteInvoice(id: string, companyId: string): Promise<boolean> {
+    // Financial records prefer voiding/cancelling rather than direct delete
+    if (!id || !companyId) return false
+    await BillingRepository.updateInvoice(id, { status: 'cancelled' }, companyId)
+    return true
   }
 
-  static async getPayments(customerId?: string): Promise<PaymentRecord[]> {
-    const payments = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
-    if (customerId) return payments.filter((p) => p.customer_id === customerId)
-    return payments
+  static async getPayments(companyId: string, customerId?: string): Promise<PaymentRecord[]> {
+    if (!companyId) return []
+    return await BillingRepository.getPayments(companyId, customerId)
   }
 
   static async recordPayment(params: {
+    companyId: string
     customerId: string
-    orderId?: string
-    invoiceId?: string
+    customerName: string
     amount: number
-    paymentMethod: string
+    paymentMethod: 'cash' | 'bank' | 'cheque' | 'bkash' | 'nagad' | 'other_mfs'
+    invoiceId?: string
     notes?: string
-    receivedByName?: string
+    receivedByName: string
   }): Promise<PaymentRecord> {
-    return PrintERPDataStore.recordPaymentCollection(params)
+    if (!params.companyId) {
+      throw new Error('Company context is required to record payment.')
+    }
+    if (params.amount <= 0) {
+      throw new Error('Payment amount must be greater than zero.')
+    }
+
+    return await BillingRepository.recordPayment({
+      company_id: params.companyId,
+      customer_id: params.customerId,
+      customer_name: params.customerName,
+      amount: params.amount,
+      payment_method: params.paymentMethod,
+      invoice_id: params.invoiceId,
+      notes: params.notes,
+      received_by_name: params.receivedByName,
+    })
   }
 }
-

@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Lock, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { resetPasswordSchema, ResetPasswordFormData } from '@/features/auth/auth.schemas'
-import { AuthService } from '@/services/auth.service'
+import { resetPasswordAction } from '@/actions/auth.actions'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -29,13 +29,12 @@ export default function ResetPasswordPage() {
   const onSubmit = async (data: ResetPasswordFormData) => {
     setIsLoading(true)
     setError(null)
-    const res = await AuthService.resetPassword(data.password)
+    const res = await resetPasswordAction(data.password)
     if (res.success) {
       setIsSuccess(true)
       setTimeout(() => router.push('/login'), 2000)
     } else {
-      setIsSuccess(true) // local dev mode
-      setTimeout(() => router.push('/login'), 2000)
+      setError(res.error || 'Failed to update password.')
     }
     setIsLoading(false)
   }

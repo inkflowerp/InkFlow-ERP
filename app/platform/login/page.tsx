@@ -66,8 +66,7 @@ function PlatformLoginForm() {
       const res = await platformLoginAction(formData)
 
       if (res.success && res.redirectUrl) {
-        router.push(res.redirectUrl)
-        router.refresh()
+        window.location.href = res.redirectUrl
       } else if (res.requiresMfa || res.mfaRequired) {
         setRequiresMfa(true)
         setError(res.error || null)
@@ -84,6 +83,12 @@ function PlatformLoginForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const fillDemoCredentials = () => {
+    setEmail('admin@printerp.com.bd')
+    setPassword('Admin@123456')
+    setError(null)
   }
 
   return (
@@ -271,6 +276,18 @@ function PlatformLoginForm() {
                         </button>
                       }
                     />
+                  </div>
+
+                  {/* Quick Dev/Demo Credentials Helper */}
+                  <div className="flex items-center justify-between text-[11px] px-1 text-slate-400">
+                    <span className="text-slate-500">Root Admin Demo:</span>
+                    <button
+                      type="button"
+                      onClick={fillDemoCredentials}
+                      className="text-indigo-400 hover:text-indigo-300 font-mono font-semibold underline underline-offset-2 cursor-pointer transition-colors"
+                    >
+                      Fill Default Credentials
+                    </button>
                   </div>
 
                   {/* Security Notice */}

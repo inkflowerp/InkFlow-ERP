@@ -20,7 +20,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformBillingReconciliationAction } from '@/actions/platform-data.actions'
 import { BillingOverviewMetrics } from '@/types/platform.types'
 
 export default function PlatformBillingPage() {
@@ -31,7 +31,7 @@ export default function PlatformBillingPage() {
 
   const loadData = async () => {
     setLoading(true)
-    const res = await PlatformService.getBillingReconciliation()
+    const res = await getPlatformBillingReconciliationAction()
     if (res.success && res.data) {
       setData(res.data)
     }

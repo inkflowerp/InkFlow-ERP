@@ -1,10 +1,9 @@
 // ==============================================================================
-// PrintERP SaaS - Phase 22: Comprehensive Audit Logging Service
-// Tracks 15 Critical Enterprise Events with Immutable Audit Trail & Metadata
+// InkFlow SaaS - Enterprise Audit Logging Service
+// Authoritative Supabase Database Audit Trail & Metadata
 // ==============================================================================
 
-import { createClient } from '@/lib/supabase/client'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { AuditRepository } from '@/lib/repositories/audit.repository'
 import {
   AuditLogEntry,
   AUDIT_ACTIONS,
@@ -13,15 +12,10 @@ import {
   DeviceMetadata,
 } from '@/types/audit.types'
 import { ApiResponse } from '@/types/common.types'
-import { sanitizeForLog } from '@/lib/security/secrets'
-
-export const DEMO_TENANT_AUDIT_LOGS: AuditLogEntry[] = []
-
-let memoryAuditLogs: AuditLogEntry[] = []
 
 export class AuditService {
   /**
-   * Universal audit logger: captures action, diff, timestamp, and device metadata
+   * Universal audit logger: captures action, diff, timestamp, and device metadata via Supabase
    */
   static async logEvent(
     companyId: string,
@@ -35,50 +29,24 @@ export class AuditService {
     description?: string,
     deviceMetadata?: DeviceMetadata | null
   ): Promise<AuditLogEntry> {
-    const sanitizedPrev = previousValue ? sanitizeForLog(previousValue) : null
-    const sanitizedNew = newValue ? sanitizeForLog(newValue) : null
+    if (!companyId) {
+      console.warn('[AuditService] Skipping logEvent without companyId')
+      return {} as AuditLogEntry
+    }
 
-    const entry: AuditLogEntry = {
-      id: `aud-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-      company_id: companyId,
-      user_id: userId,
-      user_email: userEmail || 'authenticated_user@printerp.com.bd',
+    return await AuditRepository.logEvent({
+      companyId,
+      userId,
+      userEmail,
       action,
       entity,
-      entity_id: entityId,
-      previous_value: sanitizedPrev,
-      new_value: sanitizedNew,
-      timestamp: new Date().toISOString(),
-      ip_address: '103.140.180.25',
-      device_metadata: deviceMetadata || {
-        browser: 'Browser Session',
-        os: 'Windows/MacOS',
-        device_type: 'desktop',
-      },
+      entityId,
+      previousValue,
+      newValue,
       description,
-    }
-
-    memoryAuditLogs = [entry, ...memoryAuditLogs]
-
-    try {
-      const supabase = createAdminClient()
-      await (supabase as any).from('audit_logs').insert({
-        company_id: companyId,
-        user_id: userId,
-        user_email: entry.user_email,
-        action,
-        entity,
-        entity_id: entityId,
-        previous_value: sanitizedPrev,
-        new_value: sanitizedNew,
-        ip_address: entry.ip_address,
-        device_metadata: entry.device_metadata,
-      })
-    } catch {
-      // In local dev without Supabase, in-memory log persists
-    }
-
-    return entry
+      ipAddress: null, // Do not fabricate fake IP addresses
+      deviceMetadata: deviceMetadata || null,
+    })
   }
 
   // 1. Auth: Login
@@ -412,7 +380,7 @@ export class AuditService {
   }
 
   /**
-   * Fetch audit logs for a company with optional filters
+   * Fetch audit logs for a company from Supabase
    */
   static async getAuditLogs(
     companyId: string,
@@ -421,13 +389,17 @@ export class AuditService {
     entity?: string
   ): Promise<ApiResponse<AuditLogEntry[]>> {
     try {
-      let results = memoryAuditLogs.filter(
-        (l) => l.company_id === companyId || l.company_id === 'c-01'
-      )
+      if (!companyId) {
+        return { success: false, error: 'Company ID is required' }
+      }
+      let logs = await AuditRepository.getLogs(companyId, {
+        action: action && action !== 'all' ? action : undefined,
+        entity: entity && entity !== 'all' ? entity : undefined,
+      })
 
       if (query && query.trim()) {
         const q = query.toLowerCase().trim()
-        results = results.filter(
+        logs = logs.filter(
           (l) =>
             l.action.toLowerCase().includes(q) ||
             l.entity.toLowerCase().includes(q) ||
@@ -437,17 +409,10 @@ export class AuditService {
         )
       }
 
-      if (action && action !== 'all') {
-        results = results.filter((l) => l.action === action)
-      }
-
-      if (entity && entity !== 'all') {
-        results = results.filter((l) => l.entity === entity)
-      }
-
-      return { success: true, data: results }
+      return { success: true, data: logs }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to fetch audit logs' }
     }
   }
 }
+

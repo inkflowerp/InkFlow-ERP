@@ -21,7 +21,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { AuditService } from '@/services/audit.service'
+import { getAuditLogsAction } from '@/actions/audit.actions'
 import { AuditLogEntry, AUDIT_ACTIONS } from '@/types/audit.types'
 
 const CATEGORY_GROUPS: Record<string, { label: string; actions: string[] }> = {
@@ -47,7 +47,7 @@ export default function TenantAuditLogsPage() {
 
   const loadLogs = async () => {
     setLoading(true)
-    const res = await AuditService.getAuditLogs('c-01', search)
+    const res = await getAuditLogsAction(search)
     if (res.success && res.data) {
       let filtered = res.data
       if (category !== 'all') {
@@ -216,7 +216,7 @@ export default function TenantAuditLogsPage() {
                       </div>
                       <div className="text-[10px] font-mono text-slate-500 flex items-center gap-1 mt-0.5">
                         <Globe className="h-2.5 w-2.5 text-slate-500" />
-                        <span>{log.ip_address || '103.140.180.25'}</span>
+                        <span>{log.ip_address || 'unavailable'}</span>
                         {log.device_metadata?.browser && (
                           <span className="text-slate-600">• {log.device_metadata.browser}</span>
                         )}
@@ -321,7 +321,7 @@ export default function TenantAuditLogsPage() {
               <div>
                 <span className="text-slate-500">IP Address:</span>
                 <div className="font-bold text-slate-300 font-mono mt-0.5">
-                  {selectedLog.ip_address || '103.140.180.25'}
+                  {selectedLog.ip_address || 'unavailable'}
                 </div>
               </div>
               <div>

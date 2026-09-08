@@ -1,9 +1,15 @@
+// ==============================================================================
+// PrintERP / InkFlow SaaS - Graphic Design & Vector Management Service
+// Authoritative PostgreSQL persistence via DesignRepository
+// ==============================================================================
+
 import {
   DesignJobRecord,
   DesignVersionRecord,
   DesignFeedbackRecord,
   DesignFormat,
 } from '@/types/design.types'
+import { DesignRepository } from '@/lib/repositories/design.repository'
 
 export function isRenderableFormat(format: DesignFormat): boolean {
   return ['jpg', 'png', 'svg', 'pdf'].includes(format.toLowerCase())
@@ -28,57 +34,51 @@ export function getFormatBadgeColor(format: DesignFormat): string {
   }
 }
 
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-
 export class DesignService {
-  static async getJobs(companyId: string = 'c-01'): Promise<DesignJobRecord[]> {
-    const jobs = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    return jobs.filter((j) => !j.company_id || j.company_id === companyId)
+  static async getJobs(companyId: string): Promise<DesignJobRecord[]> {
+    if (!companyId) return []
+    return await DesignRepository.getDesignJobs(companyId)
   }
 
-  static async getJobById(id: string, companyId: string = 'c-01'): Promise<DesignJobRecord | null> {
-    const jobs = await this.getJobs(companyId)
-    return jobs.find((j) => j.id === id || j.design_number === id) || null
+  static async getJobById(id: string, companyId: string): Promise<DesignJobRecord | null> {
+    if (!id || !companyId) return null
+    return await DesignRepository.getDesignJobById(id, companyId)
   }
 
-  static async createJob(data: Partial<DesignJobRecord>): Promise<DesignJobRecord> {
-    const id = data.id || `dsn-${Date.now()}`
-    const num = data.design_number || `DSN-2024-00${Math.floor(Math.random() * 900) + 100}`
-    const newJob: DesignJobRecord = {
-      id,
-      company_id: data.company_id || 'c-01',
-      design_number: num,
-      customer_id: data.customer_id || 'cust-01',
-      customer_name: data.customer_name || 'Customer',
-      title: data.title || 'Graphic Design & Vector Prep',
-      designer_id: data.designer_id || 'u-des-01',
-      designer_name: data.designer_name || 'Lead Designer',
-      priority: data.priority || 'normal',
-      status: data.status || 'designing',
-      deadline: data.deadline || 'Tomorrow 18:00',
-      instructions: data.instructions || 'Prepare print-ready vectors.',
-      dimensions_spec: data.dimensions_spec || '10ft × 4ft',
-      current_version: 1,
-      revision_count: 0,
-      is_locked: false,
-      versions: data.versions || [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+  static async createJob(data: Partial<DesignJobRecord> & {
+    company_id: string
+    title: string
+    customer_id: string
+    customer_name: string
+  }): Promise<DesignJobRecord> {
+    if (!data.company_id) {
+      throw new Error('Company context is required to create a design job.')
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newJob)
-    return newJob
+    return await DesignRepository.createDesignJob(data)
   }
 
-  static async updateJob(id: string, data: Partial<DesignJobRecord>): Promise<DesignJobRecord | null> {
-    return PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, id, data)
+  static async addVersion(version: {
+    company_id: string
+    design_job_id: string
+    version_number: number
+    file_name: string
+    file_url: string
+    file_type?: string | null
+    file_size_bytes?: number | null
+    preview_url?: string | null
+    notes?: string | null
+    created_by_name: string
+  }): Promise<DesignVersionRecord> {
+    return await DesignRepository.addDesignVersion(version)
   }
 
-  static async updateJobStatus(id: string, status: any): Promise<DesignJobRecord | null> {
-    return PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, id, { status })
-  }
-
-  static async deleteJob(id: string): Promise<boolean> {
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.DESIGN_JOBS, id)
+  static async updateVersionApproval(params: {
+    company_id: string
+    version_id: string
+    approval_status: 'approved' | 'rejected' | 'changes_requested'
+    customer_feedback?: string | null
+    design_job_id: string
+  }): Promise<void> {
+    return await DesignRepository.updateVersionApproval(params)
   }
 }
-

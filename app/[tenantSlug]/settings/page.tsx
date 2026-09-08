@@ -13,7 +13,7 @@ import {
   Percent,
 } from 'lucide-react'
 import { companySettingsSchema, CompanySettingsFormData } from '@/features/tenant/tenant.schemas'
-import { TenantService } from '@/services/tenant.service'
+import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
@@ -44,15 +44,15 @@ export default function CompanySettingsPage() {
       name: company?.name || '',
       name_bn: company?.name_bn || '',
       logo_url: company?.logo_url || '',
-      phone: company?.phone || settings?.phone || '+8801711000000',
-      whatsapp: company?.whatsapp || settings?.whatsapp || '+8801711000000',
-      email: company?.email || settings?.email || 'info@company.com.bd',
-      address: company?.address || 'Motijheel Printing Market, Dhaka',
-      address_bn: company?.address_bn || 'মতিঝিল প্রিন্টিং মার্কেট, ঢাকা',
-      area: company?.area || 'Motijheel',
-      bin_no: company?.bin_no || '004819284-0101',
-      tin_no: company?.tin_no || '8492049182',
-      trade_license_no: company?.trade_license_no || 'TRAD/DNCC/049281/2023',
+      phone: company?.phone || settings?.phone || '',
+      whatsapp: company?.whatsapp || settings?.whatsapp || '',
+      email: company?.email || settings?.email || '',
+      address: company?.address || '',
+      address_bn: company?.address_bn || '',
+      area: company?.area || '',
+      bin_no: company?.bin_no || '',
+      tin_no: company?.tin_no || '',
+      trade_license_no: company?.trade_license_no || '',
       invoice_prefix: settings?.invoice_prefix || 'INV',
       quotation_prefix: settings?.quotation_prefix || 'QT',
       challan_prefix: settings?.challan_prefix || 'CH',
@@ -63,18 +63,18 @@ export default function CompanySettingsPage() {
     },
   })
 
+  // Synchronize form when company data loads asynchronously from database
   useEffect(() => {
-    if (company) {
-      // Only reset if it's the first time loading this company or if company ID changed, OR if form is not dirty
-      if (lastLoadedCompanyIdRef.current !== company.id || !isDirty) {
+    if (company && (!lastLoadedCompanyIdRef.current || lastLoadedCompanyIdRef.current !== company.id)) {
+      if (!isDirty) {
         lastLoadedCompanyIdRef.current = company.id
         reset({
-          name: company.name,
+          name: company.name || '',
           name_bn: company.name_bn || '',
           logo_url: company.logo_url || '',
-          phone: company.phone || '+8801711000000',
-          whatsapp: company.whatsapp || '+8801711000000',
-          email: company.email || 'info@padmadigital.com.bd',
+          phone: company.phone || settings?.phone || '',
+          whatsapp: company.whatsapp || settings?.whatsapp || '',
+          email: company.email || settings?.email || '',
           address: company.address || '',
           address_bn: company.address_bn || '',
           area: company.area || '',
@@ -102,7 +102,7 @@ export default function CompanySettingsPage() {
 
     try {
       // 1. Update company record
-      await TenantService.updateCompany(company.id, {
+      await updateCompanyAction(company.id, {
         name: data.name,
         name_bn: data.name_bn || null,
         phone: data.phone,
@@ -116,7 +116,7 @@ export default function CompanySettingsPage() {
       })
 
       // 2. Update company settings record
-      await TenantService.updateCompanySettings(company.id, {
+      await updateCompanySettingsAction(company.id, {
         invoice_prefix: data.invoice_prefix,
         quotation_prefix: data.quotation_prefix,
         challan_prefix: data.challan_prefix,

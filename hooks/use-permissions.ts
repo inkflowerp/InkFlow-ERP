@@ -59,12 +59,12 @@ export function usePermissions() {
       rawModule: string,
       recordContext?: Partial<ScopeCheckContext>
     ): boolean => {
-      const module = normalizeModuleKey(rawModule)
-      const detail = getPermissionDetail(userCtx, module, action)
+      const moduleKey = normalizeModuleKey(rawModule)
+      const detail = getPermissionDetail(userCtx, moduleKey, action)
       if (!detail.isGranted) return false
 
       if (recordContext && userCtx.userId) {
-        const userScope = getEffectiveDataScope(userCtx, module)
+        const userScope = getEffectiveDataScope(userCtx, moduleKey)
         const isOwnerOrAdmin =
           userCtx.isOwner ||
           userCtx.primaryRole === 'business_owner' ||

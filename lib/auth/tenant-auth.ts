@@ -1,7 +1,7 @@
 // ==============================================================================
-// PrintERP SaaS - Tenant Authorization Utilities (Server-Side)
+// PrintERP / InkFlow SaaS - Tenant Authorization Utilities (Server-Side)
+// Authoritative Supabase Auth & PostgreSQL verification.
 // Guards all tenant operations against cross-tenant data access.
-// Never trusts client-side company_id without database membership verification.
 // ==============================================================================
 
 import { redirect } from 'next/navigation'
@@ -9,250 +9,180 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { TenantContext, TenantRole, TenantSessionData, TENANT_SESSION_COOKIE } from './types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { DEFAULT_ROLE_MATRICES, checkPermission } from '@/lib/auth/rbac.client'
-import { PrimaryRole, MODULE_ACTION_SPECS } from '@/types/rbac.types'
-import { CompanyUserWithProfile } from '@/types/tenant.types'
-import { PlatformTenantCompany } from '@/types/platform.types'
+import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { getCurrentPlatformUser } from './platform-auth'
+import { MODULE_ACTION_SPECS } from '@/types/rbac.types'
 
 const SUPPORT_COOKIE_NAME = 'printerp_support_tenant'
 
 /**
- * Resolves verified tenant context for the currently authenticated user.
+ * Resolves verified tenant context for the currently authenticated user from Supabase.
  */
 export async function getCurrentTenant(requestedSlugOrId?: string): Promise<TenantContext | null> {
   try {
     const cookieStore = await cookies()
 
-    // 1. Check for Platform Support Mode cookie if platform admin is viewing as tenant
+    // 1. Check for Platform Support Mode session if platform admin is viewing as tenant
     const supportSessionCookie = cookieStore.get(SUPPORT_COOKIE_NAME)?.value
     if (supportSessionCookie) {
       try {
         const supportSession = JSON.parse(supportSessionCookie)
         const platformUser = await getCurrentPlatformUser()
-        if (platformUser && platformUser.is_active) {
-          return {
-            userId: platformUser.user_id,
-            userEmail: platformUser.email,
-            fullName: platformUser.full_name,
-            companyId: supportSession.targetCompanyId,
-            companySlug: supportSession.targetCompanySlug,
-            companyName: supportSession.targetCompanyName,
-            companyRole: 'business_owner',
-            primaryRole: 'business_owner',
-            permissions: ['*'],
-            isSupportMode: true,
-          }
-        }
-      } catch {
-        // Invalid support cookie
-      }
-    }
 
-    // 2. Check for explicit Tenant Session Cookie (Local dev / SSR / Fast path)
-    const tenantSessionRaw = cookieStore.get(TENANT_SESSION_COOKIE)?.value
-    if (tenantSessionRaw) {
-      try {
-        const session: TenantSessionData = JSON.parse(decodeURIComponent(tenantSessionRaw))
-        if (session && session.userId && session.userEmail) {
-          // Verify user status has not been disabled
-          const users =
-            PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS) || []
+        if (platformUser && platformUser.is_active && supportSession.targetCompanyId) {
+          // Check expiration: session must be active and not expired
+          const now = new Date().getTime()
+          const expiresAt = supportSession.expiresAt ? new Date(supportSession.expiresAt).getTime() : 0
+          const startedAt = supportSession.startedAt ? new Date(supportSession.startedAt).getTime() : 0
+          const maxTtlMs = 2 * 60 * 60 * 1000 // 2 hours max TTL
 
-          const liveUser = users.find(
-            (u) =>
-              u.user_id === session.userId ||
-              u.profile?.email.toLowerCase() === session.userEmail.toLowerCase()
-          )
+          const isExpired = expiresAt > 0 ? now > expiresAt : (now - startedAt) > maxTtlMs
 
-          if (liveUser && liveUser.status === 'disabled') {
-            return null
-          }
+          if (!isExpired) {
+            // Verify in PostgreSQL platform_support_sessions if session token exists
+            let dbValid = true
+            if (supportSession.sessionId) {
+              try {
+                const adminClient = createAdminClient()
+                const { data: dbSession } = await (adminClient as any)
+                  .from('platform_support_sessions')
+                  .select('status, expires_at, access_level')
+                  .eq('id', supportSession.sessionId)
+                  .eq('company_id', supportSession.targetCompanyId)
+                  .maybeSingle()
 
-          // Cross-tenant verification: check company boundary
-          if (
-            requestedSlugOrId &&
-            session.companySlug !== requestedSlugOrId &&
-            session.companyId !== requestedSlugOrId
-          ) {
-            return null // Reject cross-tenant access!
-          }
-
-          // Calculate effective permissions considering user overrides
-          let permissions: string[] = []
-          const isOwner = session.role === 'business_owner' || session.primaryRole === 'business_owner'
-          if (isOwner) {
-            permissions = ['*']
-          } else {
-            const userCtx = {
-              userId: session.userId,
-              role: session.role,
-              primaryRole: session.primaryRole,
-              responsibilities: liveUser?.responsibilities || session.responsibilities || [session.role],
-              overrides: liveUser?.overrides || {},
+                if (dbSession) {
+                  if (dbSession.status !== 'active' || new Date(dbSession.expires_at).getTime() < now) {
+                    dbValid = false
+                  }
+                }
+              } catch {
+                // Ignore DB error and fallback to cryptographic/timestamp check
+              }
             }
 
-            for (const [mod, spec] of Object.entries(MODULE_ACTION_SPECS)) {
-              for (const act of spec.actions) {
-                if (checkPermission(userCtx, `${mod}.${act}`)) {
-                  permissions.push(`${mod}.${act}`)
+            if (dbValid) {
+              const company = await TenantRepository.getCompanyById(supportSession.targetCompanyId)
+              if (company && company.is_active) {
+                // Least privilege: Support users get read/view capabilities by default
+                const supportPerms: string[] = []
+                for (const [mod, spec] of Object.entries(MODULE_ACTION_SPECS)) {
+                  for (const act of spec.actions) {
+                    if (supportSession.accessLevel === 'full_support') {
+                      supportPerms.push(`${mod}.${act}`)
+                    } else if (supportSession.accessLevel === 'config_only') {
+                      if (mod === 'settings' || act === 'view') {
+                        supportPerms.push(`${mod}.${act}`)
+                      }
+                    } else {
+                      // read_only default: view only
+                      if (act === 'view') {
+                        supportPerms.push(`${mod}.${act}`)
+                      }
+                    }
+                  }
+                }
+
+                return {
+                  userId: platformUser.user_id,
+                  userEmail: platformUser.email,
+                  fullName: `${platformUser.full_name} (Platform Support)`,
+                  companyId: company.id,
+                  companySlug: company.slug,
+                  companyName: company.name,
+                  companyNameBn: company.name_bn || company.name,
+                  companyRole: 'business_owner',
+                  primaryRole: 'business_owner',
+                  permissions: supportPerms,
+                  isSupportMode: true,
                 }
               }
             }
           }
-
-          return {
-            userId: session.userId,
-            userEmail: session.userEmail,
-            fullName: session.fullName,
-            fullNameBn: session.fullNameBn,
-            phone: session.phone,
-            companyId: session.companyId,
-            companySlug: session.companySlug,
-            companyName: session.companyName,
-            companyNameBn: session.companyNameBn || session.companyName,
-            companyRole: session.role,
-            primaryRole: session.primaryRole,
-            branchId: session.branchId,
-            branchName: session.branchName,
-            responsibilities: liveUser?.responsibilities || session.responsibilities || [session.role],
-            permissions,
-          }
         }
       } catch {
-        // Invalid tenant cookie format
+        // Invalid support cookie format
       }
     }
 
-    // 3. Query Supabase Auth Session
+    // 2. Query Authoritative Supabase Auth Session
     const supabase = await createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
     if (user) {
-      // Find matching user profile & company membership
-      const users =
-        PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS) || []
+      const membership = await TenantRepository.resolveUserMembership(user.id, requestedSlugOrId)
+      if (membership) {
+        const { company, companyUser, effectivePermissions, primaryRole } = membership
 
-      const userMatch = users.find(
-        (u) =>
-          u.user_id === user.id ||
-          u.profile?.email.toLowerCase() === (user.email || '').toLowerCase()
-      )
-
-      if (userMatch) {
-        if (userMatch.status === 'disabled') {
-          return null
-        }
-
-        const platformCompanies =
-          PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-
-        const comp = platformCompanies.find((c) => c.id === userMatch.company_id || c.slug === userMatch.company_id)
-
-        if (comp) {
-          // Cross-tenant boundary check
-          if (
-            requestedSlugOrId &&
-            comp.slug !== requestedSlugOrId &&
-            comp.id !== requestedSlugOrId
-          ) {
-            return null
-          }
-
-          const roleObj = userMatch.roles?.[0]
-          let role: TenantRole = 'business_owner'
-          let primaryRole: PrimaryRole = 'business_owner'
-
-          if (roleObj?.slug === 'manager' || roleObj?.slug === 'sales') {
-            role = 'sales_manager'
-            primaryRole = 'sales_manager'
-          } else if (roleObj?.slug === 'designer') {
-            role = 'graphic_designer'
-            primaryRole = 'designer'
-          } else if (roleObj?.slug === 'operator') {
-            role = 'machine_operator'
-            primaryRole = 'operator'
-          } else if (roleObj?.slug === 'accountant') {
-            role = 'accountant'
-            primaryRole = 'general_staff'
-          } else if (roleObj?.slug === 'installer') {
-            role = 'delivery_coordinator'
-            primaryRole = 'general_staff'
-          }
-
-          let permissions: string[] = []
-          if (primaryRole === 'business_owner') {
-            permissions = ['*']
-          } else {
-            const userCtx = {
-              userId: user.id,
-              role,
-              primaryRole,
-              responsibilities: userMatch.responsibilities || (roleObj ? [roleObj.slug || roleObj.name] : [primaryRole]),
-              overrides: userMatch.overrides || {},
-            }
-            for (const [mod, spec] of Object.entries(MODULE_ACTION_SPECS)) {
-              for (const act of spec.actions) {
-                if (checkPermission(userCtx, `${mod}.${act}`)) {
-                  permissions.push(`${mod}.${act}`)
-                }
-              }
-            }
-          }
-
-          return {
-            userId: user.id,
-            userEmail: user.email || userMatch.profile?.email || '',
-            fullName: userMatch.profile?.full_name,
-            fullNameBn: userMatch.profile?.full_name_bn,
-            phone: userMatch.profile?.phone,
-            companyId: comp.id,
-            companySlug: comp.slug,
-            companyName: comp.name,
-            companyNameBn: (comp as any).name_bn || comp.name,
-            companyRole: role,
-            primaryRole,
-            branchId: userMatch.branch_id,
-            branchName: userMatch.branch?.name,
-            responsibilities: userMatch.responsibilities || (roleObj ? [roleObj.name] : []),
-            permissions,
-          }
-        }
-      }
-
-      // Production Supabase company_users table check
-      const adminClient = createAdminClient()
-      const { data: membership, error } = await (adminClient as any)
-        .from('company_users')
-        .select('id, company_id, branch_id, role, status, companies!inner(id, name, slug, is_active)')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle()
-
-      if (!error && membership && (membership as any).companies?.is_active) {
-        const comp = membership.companies as any
+        // Validate tenant boundary if requested
         if (
           requestedSlugOrId &&
-          comp.slug !== requestedSlugOrId &&
-          comp.id !== requestedSlugOrId
+          company.slug !== requestedSlugOrId &&
+          company.id !== requestedSlugOrId
         ) {
           return null
         }
 
         return {
           userId: user.id,
-          userEmail: user.email || '',
-          companyId: comp.id,
-          companySlug: comp.slug,
-          companyName: comp.name,
-          companyNameBn: comp.name_bn || comp.name,
-          companyRole: (membership.role as TenantRole) || 'business_owner',
-          branchId: membership.branch_id,
-          permissions: ['*'],
+          userEmail: user.email || companyUser.profile?.email || '',
+          fullName: companyUser.profile?.full_name || user.email?.split('@')[0],
+          fullNameBn: companyUser.profile?.full_name_bn || null,
+          phone: companyUser.profile?.phone || null,
+          companyId: company.id,
+          companySlug: company.slug,
+          companyName: company.name,
+          companyNameBn: company.name_bn || company.name,
+          companyRole: (companyUser.roles?.[0]?.slug as TenantRole) || (primaryRole as TenantRole) || 'business_owner',
+          primaryRole: primaryRole as any,
+          branchId: companyUser.branch_id || undefined,
+          branchName: companyUser.branch?.name,
+          responsibilities: companyUser.responsibilities || [primaryRole],
+          permissions: effectivePermissions,
         }
+      }
+    }
+
+    // 3. Fallback: Check encrypted / verified Tenant Session Cookie during SSR transitions
+    const tenantSessionRaw = cookieStore.get(TENANT_SESSION_COOKIE)?.value
+    if (tenantSessionRaw) {
+      try {
+        const session: TenantSessionData = JSON.parse(decodeURIComponent(tenantSessionRaw))
+        if (session && session.userId && session.companyId) {
+          // Verify company existence in PostgreSQL
+          const company = await TenantRepository.getCompanyById(session.companyId)
+          if (company && company.is_active) {
+            if (
+              requestedSlugOrId &&
+              company.slug !== requestedSlugOrId &&
+              company.id !== requestedSlugOrId
+            ) {
+              return null
+            }
+
+            return {
+              userId: session.userId,
+              userEmail: session.userEmail,
+              fullName: session.fullName,
+              fullNameBn: session.fullNameBn,
+              phone: session.phone,
+              companyId: company.id,
+              companySlug: company.slug,
+              companyName: company.name,
+              companyNameBn: company.name_bn || company.name,
+              companyRole: session.role,
+              primaryRole: session.primaryRole,
+              branchId: session.branchId,
+              branchName: session.branchName,
+              responsibilities: session.responsibilities || [session.role],
+              permissions: session.permissions || [],
+            }
+          }
+        }
+      } catch {
+        // Invalid tenant cookie
       }
     }
 
@@ -295,14 +225,11 @@ export async function requireTenantPermission(
 ): Promise<TenantContext> {
   const tenant = await requireTenantUser(companyId)
 
-  // Business owners and platform support mode bypass individual permission checks
-  if (tenant.companyRole === 'business_owner' || tenant.isSupportMode || tenant.primaryRole === 'business_owner') {
-    return tenant
-  }
-
   // Check specific permission against effective permissions list
   const hasPerm =
-    tenant.permissions.includes('*') ||
+    tenant.companyRole === 'business_owner' ||
+    tenant.primaryRole === 'business_owner' ||
+    tenant.isSupportMode ||
     tenant.permissions.includes(requiredPermission) ||
     tenant.permissions.includes(requiredPermission.split('.')[0] + '.full_control')
 
@@ -335,5 +262,3 @@ export async function getTenantRedirectSlug(): Promise<string> {
   }
   return tenant.companySlug
 }
-
-

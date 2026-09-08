@@ -22,7 +22,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformBackupStatusAction, getPlatformSettingsAction } from '@/actions/platform-data.actions'
 import { PlatformBackupStatus, PlatformSystemSettings } from '@/types/platform.types'
 import { updatePlatformSettingsAction } from '@/actions/platform.actions'
 
@@ -42,8 +42,8 @@ export default function PlatformSettingsPage() {
   const loadData = async () => {
     setLoading(true)
     const [backupRes, settingsRes] = await Promise.all([
-      PlatformService.getBackupStatus(),
-      PlatformService.getPlatformSettings(),
+      getPlatformBackupStatusAction(),
+      getPlatformSettingsAction(),
     ])
     if (backupRes.success && backupRes.data) setBackup(backupRes.data)
     if (settingsRes.success && settingsRes.data) setSettings(settingsRes.data)
@@ -61,12 +61,11 @@ export default function PlatformSettingsPage() {
       settings,
       reason.trim() || 'Updated platform system settings and thresholds'
     )
-    if (res.success && res.data) {
-      setSettings(res.data)
+    if (res.success) {
       showNotification('Platform parameters updated and recorded to audit trail.', 'success')
       setReason('')
     } else {
-      showNotification(res.error || 'Failed to update settings', 'error')
+      showNotification((res as any).error || 'Failed to update settings', 'error')
     }
     setSaving(false)
   }

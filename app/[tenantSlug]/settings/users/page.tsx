@@ -15,7 +15,16 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
-import { CompanyUsersService } from '@/services/company-users.service'
+import {
+  listCompanyUsersAction,
+  listRolesAction,
+  listBranchesAction,
+  inviteUserAction,
+  toggleUserStatusAction,
+  changeUserRoleAction,
+  assignUserBranchAction,
+  resetUserAccessAction,
+} from '@/actions/company-users.actions'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,6 +35,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { UserPermissionsDrawer } from '@/components/users/user-permissions-drawer'
+import { cn } from '@/lib/utils'
 
 export default function UsersManagementPage() {
   const { company } = useTenant()
@@ -34,7 +44,10 @@ export default function UsersManagementPage() {
   const [roles, setRoles] = useState<RoleRow[]>([])
   const [branches, setBranches] = useState<BranchRow[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [_isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [roleFilter, setRoleFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [branchFilter, setBranchFilter] = useState<string>('all')
 
   // Dialog states
   const [isInviteOpen, setIsInviteOpen] = useState(false)
@@ -73,9 +86,9 @@ export default function UsersManagementPage() {
       if (!company) return
       setIsLoading(true)
       const [uRes, rRes, bRes] = await Promise.all([
-        CompanyUsersService.listCompanyUsers(company.id),
-        CompanyUsersService.listRoles(company.id),
-        CompanyUsersService.listBranches(company.id),
+        listCompanyUsersAction(company.id),
+        listRolesAction(company.id),
+        listBranchesAction(company.id),
       ])
 
       if (uRes.data) setUsers(uRes.data)
@@ -109,14 +122,15 @@ export default function UsersManagementPage() {
     e.preventDefault()
     if (!company || !inviteEmail) return
 
-    await CompanyUsersService.inviteUser(
+    await inviteUserAction(
       company.id,
+      company.slug,
       inviteEmail,
       inviteRoleId,
       inviteBranchId || null
     )
 
-    const uRes = await CompanyUsersService.listCompanyUsers(company.id)
+    const uRes = await listCompanyUsersAction(company.id)
     if (uRes.data) setUsers(uRes.data)
 
     setIsInviteOpen(false)
@@ -128,16 +142,15 @@ export default function UsersManagementPage() {
     e.preventDefault()
     if (!company || !addEmail || !addFullName) return
 
-    await CompanyUsersService.inviteUser(
+    await inviteUserAction(
       company.id,
+      company.slug,
       addEmail,
       addRoleId,
-      addBranchId || null,
-      addFullName,
-      addPhone
+      addBranchId || null
     )
 
-    const uRes = await CompanyUsersService.listCompanyUsers(company.id)
+    const uRes = await listCompanyUsersAction(company.id)
     if (uRes.data) setUsers(uRes.data)
 
     setIsAddUserOpen(false)
@@ -149,10 +162,9 @@ export default function UsersManagementPage() {
   }
 
   const handleToggleStatus = async (user: CompanyUserWithProfile) => {
+    if (!company) return
     const nextStatus = user.status === 'active' ? 'disabled' : 'active'
-    await (nextStatus === 'active'
-      ? CompanyUsersService.activateUser(user.id)
-      : CompanyUsersService.disableUser(user.id))
+    await toggleUserStatusAction(user.id, nextStatus, company.slug)
 
     setUsers(
       users.map((u) =>
@@ -169,7 +181,7 @@ export default function UsersManagementPage() {
 
   const handleChangeRole = async () => {
     if (!selectedUser || !company || !targetRoleId) return
-    await CompanyUsersService.changeUserRole(selectedUser.id, targetRoleId, company.id)
+    await changeUserRoleAction(selectedUser.id, targetRoleId, company.id, company.slug)
     const newRole = roles.find((r) => r.id === targetRoleId)
     setUsers(
       users.map((u) =>
@@ -181,8 +193,8 @@ export default function UsersManagementPage() {
   }
 
   const handleAssignBranch = async () => {
-    if (!selectedUser) return
-    await CompanyUsersService.assignBranch(selectedUser.id, targetBranchId || null)
+    if (!selectedUser || !company) return
+    await assignUserBranchAction(selectedUser.id, targetBranchId || null, company.slug)
     const newBranch = branches.find((b) => b.id === targetBranchId) || null
     setUsers(
       users.map((u) =>
@@ -196,7 +208,7 @@ export default function UsersManagementPage() {
   const handleResetAccess = async (user: CompanyUserWithProfile) => {
     const email = user.profile?.email || user.invited_email
     if (!email) return
-    await CompanyUsersService.resetAccess(email)
+    await resetUserAccessAction(email)
     showNotification(`Password reset dispatch sent to ${email}`)
   }
 
@@ -751,7 +763,7 @@ export default function UsersManagementPage() {
         }}
         onSaved={async () => {
           if (company) {
-            const uRes = await CompanyUsersService.listCompanyUsers(company.id)
+            const uRes = await listCompanyUsersAction(company.id)
             if (uRes.data) setUsers(uRes.data)
           }
           setIsPermissionsDrawerOpen(false)

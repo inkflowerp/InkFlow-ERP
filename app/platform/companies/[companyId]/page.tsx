@@ -36,7 +36,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformCompany360Action } from '@/actions/platform-data.actions'
 import { Company360Data, PlatformPlanCode, PlatformCompanyStatus } from '@/types/platform.types'
 import {
   startTenantSupportSessionAction,
@@ -78,7 +78,7 @@ export default function Company360Page() {
 
   const loadData = async () => {
     setLoading(true)
-    const res = await PlatformService.getCompany360(companyId)
+    const res = await getPlatformCompany360Action(companyId)
     if (res.success && res.data) {
       setData(res.data)
       setTargetPlan(res.data.company.plan)

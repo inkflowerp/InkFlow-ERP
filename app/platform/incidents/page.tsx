@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformIncidentsAction } from '@/actions/platform-data.actions'
 import { PlatformIncidentItem } from '@/types/platform.types'
 import { updateIncidentStatusAction } from '@/actions/platform.actions'
 
@@ -35,7 +35,7 @@ export default function PlatformIncidentsPage() {
 
   const loadIncidents = async () => {
     setLoading(true)
-    const res = await PlatformService.getIncidents()
+    const res = await getPlatformIncidentsAction()
     if (res.success && res.data) {
       setIncidents(res.data)
     }

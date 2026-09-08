@@ -71,11 +71,14 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     ],
   },
   {
-    title: 'Governance & RBAC',
+    title: 'Governance & Security',
     items: [
+      { title: 'Support Access', href: '/platform/support', icon: ShieldAlert },
       { title: 'Platform Users', href: '/platform/users', icon: Users },
       { title: 'Platform RBAC', href: '/platform/rbac', icon: Sliders },
       { title: 'Feature Flags', href: '/platform/feature-flags', icon: Flag },
+      { title: 'Security Center', href: '/platform/security', icon: Shield },
+      { title: 'Platform Audit', href: '/platform/audit', icon: FileClock },
     ],
   },
   {
@@ -86,18 +89,9 @@ const SIDEBAR_SECTIONS: NavSection[] = [
         title: 'Incidents',
         href: '/platform/incidents',
         icon: AlertOctagon,
-        badge: '1 Active',
-        badgeColor: 'bg-red-500/20 text-red-300 border border-red-500/30',
       },
       { title: 'Background Jobs', href: '/platform/jobs', icon: Cpu },
       { title: 'Integrations', href: '/platform/integrations', icon: Layers },
-    ],
-  },
-  {
-    title: 'Security & Audit',
-    items: [
-      { title: 'Security Center', href: '/platform/security', icon: Shield },
-      { title: 'Platform Audit', href: '/platform/audit', icon: FileClock },
     ],
   },
   {

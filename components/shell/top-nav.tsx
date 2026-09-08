@@ -24,7 +24,7 @@ import {
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { PrimaryRole } from '@/types/rbac.types'
-import { AuthService } from '@/services/auth.service'
+import { signInAction } from '@/actions/auth.actions'
 import { cn } from '@/lib/utils'
 
 export function TopNav() {
@@ -121,7 +121,7 @@ export function TopNav() {
 
   const handleSelectPersona = async (p: typeof personas[0]) => {
     setIsPersonaOpen(false)
-    const res = await AuthService.signIn(p.email, 'printerp1234')
+    const res = await signInAction(p.email, 'printerp1234')
     if (res.success) {
       router.push(p.route)
     }

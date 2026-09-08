@@ -29,7 +29,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformSecurityOverviewAction } from '@/actions/platform-data.actions'
 import { PlatformSecurityOverview, PlatformActiveSession, PlatformLoginHistoryItem } from '@/types/platform.types'
 import {
   changePlatformOwnerPasswordAction,
@@ -66,7 +66,7 @@ export default function PlatformSecurityPage() {
 
   const loadSecurity = async () => {
     setLoading(true)
-    const res = await PlatformService.getSecurityOverview()
+    const res = await getPlatformSecurityOverviewAction()
     if (res.success && res.data) {
       setData(res.data)
     }
@@ -124,7 +124,7 @@ export default function PlatformSecurityPage() {
   const handleRevokeAllOtherSessions = async () => {
     const res = await revokeAllOtherPlatformSessionsAction()
     if (res.success) {
-      showToast('success', `Revoked ${res.data?.revoked_count || 'all'} other active sessions.`)
+      showToast('success', 'All other active sessions revoked successfully.')
       loadSecurity()
     } else {
       showToast('error', res.error || 'Failed to revoke sessions.')

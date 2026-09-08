@@ -31,9 +31,6 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
-import {
-  calculateDaysOverdue,
-} from '@/services/billing.service'
 import { CustomerRecord } from '@/types/crm.types'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import {
@@ -44,7 +41,7 @@ import {
   PaymentRecord,
   FinancialWriteOffRecord,
 } from '@/types/billing.types'
-import { formatBDT } from '@/lib/formatters'
+import { formatBDT, calculateDaysOverdue } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { usePermissions } from '@/hooks/use-permissions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'

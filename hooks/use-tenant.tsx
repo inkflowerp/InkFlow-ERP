@@ -10,8 +10,6 @@ import {
   CompanySettingsRow,
   CompanyUserWithProfile,
 } from '@/types/tenant.types'
-import { DEMO_BRANCHES, DEMO_COMPANY_USERS, DEMO_ROLES } from '@/services/company-users.service'
-import { DEMO_COMPANY_SETTINGS } from '@/services/tenant.service'
 import { TENANT_SESSION_COOKIE, TenantSessionData, TenantContext as ServerTenantContext } from '@/lib/auth/types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { PlatformTenantCompany } from '@/types/platform.types'
@@ -191,9 +189,25 @@ export function TenantProvider({
     return resolveCompanyBySlug(targetSlug)
   })
 
-  const [branches] = useState<BranchRow[]>(DEMO_BRANCHES)
+  const [branches] = useState<BranchRow[]>([])
   const [settings, setSettings] = useState<CompanySettingsRow | null>(() => {
-    return DEMO_COMPANY_SETTINGS
+    return {
+      id: 'cs-default',
+      company_id: '',
+      invoice_prefix: 'INV',
+      quotation_prefix: 'QUO',
+      challan_prefix: 'CHL',
+      vat_enabled: false,
+      vat_rate: 0,
+      default_currency: 'BDT',
+      default_language: 'bn',
+      phone: null,
+      whatsapp: null,
+      email: null,
+      logo_url: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
   })
   const [isLoading, setIsLoading] = useState(false)
 
@@ -218,8 +232,7 @@ export function TenantProvider({
   const currentUser: CompanyUserWithProfile | null = useMemo(() => {
     if (!session) return null
     const users =
-      PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS) ||
-      DEMO_COMPANY_USERS
+      PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS) || []
 
     const matched = users.find(
       (u) =>
@@ -246,7 +259,7 @@ export function TenantProvider({
         email: session.userEmail,
         full_name: session.fullName,
         full_name_bn: session.fullNameBn || null,
-        phone: session.phone || '+8801711000000',
+        phone: session.phone || null,
         avatar_url: null,
         preferred_locale: 'bn',
         is_active: true,

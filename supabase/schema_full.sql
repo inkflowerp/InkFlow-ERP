@@ -124,17 +124,21 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists update_companies_modtime on public.companies;
 create trigger update_companies_modtime
     before update on public.companies
     for each row execute function public.update_updated_at_column();
 
+drop trigger if exists update_profiles_modtime on public.profiles;
 create trigger update_profiles_modtime
     before update on public.profiles
     for each row execute function public.update_updated_at_column();
 
+drop trigger if exists update_memberships_modtime on public.tenant_memberships;
 create trigger update_memberships_modtime
     before update on public.tenant_memberships
     for each row execute function public.update_updated_at_column();
+
 
 
 -- >>> FILE: 002_bangladesh_geo.sql <<<
@@ -319,16 +323,16 @@ alter table public.upazilas enable row level security;
 
 -- 1. PUBLIC REFERENCE TABLES (Divisions, Districts, Upazilas)
 -- Read-only access for all authenticated and anon users
-create policy "Allow read access to divisions"
-    on public.divisions for select
+drop policy if exists "Allow read access to divisions" on public.divisions;
+create policy "Allow read access to divisions" on public.divisions for select
     using (true);
 
-create policy "Allow read access to districts"
-    on public.districts for select
+drop policy if exists "Allow read access to districts" on public.districts;
+create policy "Allow read access to districts" on public.districts for select
     using (true);
 
-create policy "Allow read access to upazilas"
-    on public.upazilas for select
+drop policy if exists "Allow read access to upazilas" on public.upazilas;
+create policy "Allow read access to upazilas" on public.upazilas for select
     using (true);
 
 -- 2. SECURITY HELPER FUNCTIONS
@@ -362,53 +366,53 @@ $$ language plpgsql security definer;
 
 -- 3. PROFILES POLICIES
 -- Users can view and update their own profile
-create policy "Users can view own profile"
-    on public.profiles for select
+drop policy if exists "Users can view own profile" on public.profiles;
+create policy "Users can view own profile" on public.profiles for select
     using (auth.uid() = id);
 
-create policy "Users can update own profile"
-    on public.profiles for update
+drop policy if exists "Users can update own profile" on public.profiles;
+create policy "Users can update own profile" on public.profiles for update
     using (auth.uid() = id);
 
-create policy "Users can insert own profile"
-    on public.profiles for insert
+drop policy if exists "Users can insert own profile" on public.profiles;
+create policy "Users can insert own profile" on public.profiles for insert
     with check (auth.uid() = id);
 
 -- 4. COMPANIES (TENANTS) POLICIES
 -- Users can view companies they belong to
-create policy "Members can view company details"
-    on public.companies for select
+drop policy if exists "Members can view company details" on public.companies;
+create policy "Members can view company details" on public.companies for select
     using (public.auth_user_has_company_access(id));
 
 -- Only owners and admins can update company details
-create policy "Owners and Admins can update company"
-    on public.companies for update
+drop policy if exists "Owners and Admins can update company" on public.companies;
+create policy "Owners and Admins can update company" on public.companies for update
     using (public.auth_user_get_role(id) in ('owner', 'admin'));
 
 -- Any authenticated user can create a new company (for onboarding)
-create policy "Authenticated users can create companies"
-    on public.companies for insert
+drop policy if exists "Authenticated users can create companies" on public.companies;
+create policy "Authenticated users can create companies" on public.companies for insert
     with check (auth.uid() is not null);
 
 -- 5. TENANT MEMBERSHIPS POLICIES
 -- Users can see memberships for companies they belong to
-create policy "Members can view company members"
-    on public.tenant_memberships for select
+drop policy if exists "Members can view company members" on public.tenant_memberships;
+create policy "Members can view company members" on public.tenant_memberships for select
     using (public.auth_user_has_company_access(company_id));
 
 -- Users can also see their own memberships anywhere (to list companies)
-create policy "Users can view own memberships"
-    on public.tenant_memberships for select
+drop policy if exists "Users can view own memberships" on public.tenant_memberships;
+create policy "Users can view own memberships" on public.tenant_memberships for select
     using (auth.uid() = user_id);
 
 -- Owners and Admins can manage memberships (invite, remove, update roles)
-create policy "Admins can manage company memberships"
-    on public.tenant_memberships for all
+drop policy if exists "Admins can manage company memberships" on public.tenant_memberships;
+create policy "Admins can manage company memberships" on public.tenant_memberships for all
     using (public.auth_user_get_role(company_id) in ('owner', 'admin'));
 
 -- Creator of a company can add their own owner membership
-create policy "Company creators can insert owner membership"
-    on public.tenant_memberships for insert
+drop policy if exists "Company creators can insert owner membership" on public.tenant_memberships;
+create policy "Company creators can insert owner membership" on public.tenant_memberships for insert
     with check (
         auth.uid() = user_id 
         and role = 'owner'
@@ -416,12 +420,12 @@ create policy "Company creators can insert owner membership"
 
 -- 6. AUDIT LOGS POLICIES
 -- Members can view audit logs for their company if admin/owner
-create policy "Admins can view company audit logs"
-    on public.audit_logs for select
+drop policy if exists "Admins can view company audit logs" on public.audit_logs;
+create policy "Admins can view company audit logs" on public.audit_logs for select
     using (public.auth_user_get_role(company_id) in ('owner', 'admin'));
 
-create policy "System and users can insert audit logs"
-    on public.audit_logs for insert
+drop policy if exists "System and users can insert audit logs" on public.audit_logs;
+create policy "System and users can insert audit logs" on public.audit_logs for insert
     with check (public.auth_user_has_company_access(company_id));
 
 
@@ -494,11 +498,11 @@ on conflict (code) do update set
 alter table public.business_categories enable row level security;
 alter table public.measurement_units enable row level security;
 
-create policy "Allow read access to business categories"
-    on public.business_categories for select using (true);
+drop policy if exists "Allow read access to business categories" on public.business_categories;
+create policy "Allow read access to business categories" on public.business_categories for select using (true);
 
-create policy "Allow read access to measurement units"
-    on public.measurement_units for select using (true);
+drop policy if exists "Allow read access to measurement units" on public.measurement_units;
+create policy "Allow read access to measurement units" on public.measurement_units for select using (true);
 
 
 -- >>> FILE: 005_core_multitenant_entities.sql <<<
@@ -764,27 +768,27 @@ end;
 $$ language plpgsql security definer;
 
 -- 3. RLS POLICIES FOR USER_PROFILES
-create policy "Users can view own user_profile"
-    on public.user_profiles for select
+drop policy if exists "Users can view own user_profile" on public.user_profiles;
+create policy "Users can view own user_profile" on public.user_profiles for select
     using (auth.uid() = id);
 
-create policy "Users can update own user_profile"
-    on public.user_profiles for update
+drop policy if exists "Users can update own user_profile" on public.user_profiles;
+create policy "Users can update own user_profile" on public.user_profiles for update
     using (auth.uid() = id);
 
-create policy "Users can insert own user_profile"
-    on public.user_profiles for insert
+drop policy if exists "Users can insert own user_profile" on public.user_profiles;
+create policy "Users can insert own user_profile" on public.user_profiles for insert
     with check (auth.uid() = id);
 
 -- 4. RLS POLICIES FOR COMPANY_SETTINGS
 -- Active members can view company settings
-create policy "Active members can view company settings"
-    on public.company_settings for select
+drop policy if exists "Active members can view company settings" on public.company_settings;
+create policy "Active members can view company settings" on public.company_settings for select
     using (public.auth_is_active_company_user(company_id));
 
 -- Only owners, admins, or users with settings.manage can update company settings
-create policy "Admins can update company settings"
-    on public.company_settings for update
+drop policy if exists "Admins can update company settings" on public.company_settings;
+create policy "Admins can update company settings" on public.company_settings for update
     using (
         public.auth_is_active_company_user(company_id) 
         and (
@@ -793,17 +797,17 @@ create policy "Admins can update company settings"
         )
     );
 
-create policy "Authenticated users can insert company settings for created companies"
-    on public.company_settings for insert
+drop policy if exists "Authenticated users can insert company settings for created companies" on public.company_settings;
+create policy "Authenticated users can insert company settings for created companies" on public.company_settings for insert
     with check (auth.uid() is not null);
 
 -- 5. RLS POLICIES FOR BRANCHES
-create policy "Active members can view branches"
-    on public.branches for select
+drop policy if exists "Active members can view branches" on public.branches;
+create policy "Active members can view branches" on public.branches for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Admins can manage branches"
-    on public.branches for all
+drop policy if exists "Admins can manage branches" on public.branches;
+create policy "Admins can manage branches" on public.branches for all
     using (
         public.auth_is_active_company_user(company_id) 
         and (
@@ -814,15 +818,15 @@ create policy "Admins can manage branches"
 
 -- 6. RLS POLICIES FOR COMPANY_USERS
 -- Users can view company_users in companies they are active in
-create policy "Active members can view company users"
-    on public.company_users for select
+drop policy if exists "Active members can view company users" on public.company_users;
+create policy "Active members can view company users" on public.company_users for select
     using (
         public.auth_is_active_company_user(company_id)
         or auth.uid() = user_id -- Allows users to discover which companies they belong to
     );
 
-create policy "Admins can manage company users"
-    on public.company_users for all
+drop policy if exists "Admins can manage company users" on public.company_users;
+create policy "Admins can manage company users" on public.company_users for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -832,35 +836,35 @@ create policy "Admins can manage company users"
     );
 
 -- 7. RLS POLICIES FOR ROLES & PERMISSIONS
-create policy "Anyone can read permissions catalog"
-    on public.permissions for select
+drop policy if exists "Anyone can read permissions catalog" on public.permissions;
+create policy "Anyone can read permissions catalog" on public.permissions for select
     using (true);
 
-create policy "Users can view roles available in their company"
-    on public.roles for select
+drop policy if exists "Users can view roles available in their company" on public.roles;
+create policy "Users can view roles available in their company" on public.roles for select
     using (
         company_id is null -- System roles are visible to all
         or public.auth_is_active_company_user(company_id)
     );
 
-create policy "Admins can manage custom roles"
-    on public.roles for all
+drop policy if exists "Admins can manage custom roles" on public.roles;
+create policy "Admins can manage custom roles" on public.roles for all
     using (
         company_id is not null
         and public.auth_is_active_company_user(company_id)
         and public.auth_get_user_company_role(company_id) in ('owner', 'admin')
     );
 
-create policy "Users can view role_permissions"
-    on public.role_permissions for select
+drop policy if exists "Users can view role_permissions" on public.role_permissions;
+create policy "Users can view role_permissions" on public.role_permissions for select
     using (true);
 
-create policy "Active members can view user_roles"
-    on public.user_roles for select
+drop policy if exists "Active members can view user_roles" on public.user_roles;
+create policy "Active members can view user_roles" on public.user_roles for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Admins can manage user_roles"
-    on public.user_roles for all
+drop policy if exists "Admins can manage user_roles" on public.user_roles;
+create policy "Admins can manage user_roles" on public.user_roles for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_get_user_company_role(company_id) in ('owner', 'admin')
@@ -1229,24 +1233,24 @@ end;
 $$ language plpgsql security definer;
 
 -- 10. RLS POLICIES FOR PLATFORM TABLES
-create policy "Platform owners can view and manage platform_admins"
-    on public.platform_admins for all
+drop policy if exists "Platform owners can view and manage platform_admins" on public.platform_admins;
+create policy "Platform owners can view and manage platform_admins" on public.platform_admins for all
     using (public.auth_is_platform_owner());
 
-create policy "Platform owners can manage platform_plans"
-    on public.platform_plans for all
+drop policy if exists "Platform owners can manage platform_plans" on public.platform_plans;
+create policy "Platform owners can manage platform_plans" on public.platform_plans for all
     using (public.auth_is_platform_owner() or auth.uid() is not null);
 
-create policy "Platform owners can manage platform_feature_flags"
-    on public.platform_feature_flags for all
+drop policy if exists "Platform owners can manage platform_feature_flags" on public.platform_feature_flags;
+create policy "Platform owners can manage platform_feature_flags" on public.platform_feature_flags for all
     using (public.auth_is_platform_owner() or auth.uid() is not null);
 
-create policy "Users can view overrides in their company"
-    on public.user_permission_overrides for select
+drop policy if exists "Users can view overrides in their company" on public.user_permission_overrides;
+create policy "Users can view overrides in their company" on public.user_permission_overrides for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Admins can manage user_permission_overrides"
-    on public.user_permission_overrides for all
+drop policy if exists "Admins can manage user_permission_overrides" on public.user_permission_overrides;
+create policy "Admins can manage user_permission_overrides" on public.user_permission_overrides for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -1294,12 +1298,12 @@ create table if not exists public.document_sequences (
 create index if not exists idx_doc_sequences_company on public.document_sequences(company_id);
 alter table public.document_sequences enable row level security;
 
-create policy "Active company users can view document sequences"
-    on public.document_sequences for select
+drop policy if exists "Active company users can view document sequences" on public.document_sequences;
+create policy "Active company users can view document sequences" on public.document_sequences for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Admins can manage document sequences"
-    on public.document_sequences for all
+drop policy if exists "Admins can manage document sequences" on public.document_sequences;
+create policy "Admins can manage document sequences" on public.document_sequences for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -1376,8 +1380,8 @@ create index if not exists idx_audit_logs_company on public.audit_logs(company_i
 create index if not exists idx_audit_logs_created on public.audit_logs(created_at desc);
 alter table public.audit_logs enable row level security;
 
-create policy "Admins can view audit logs"
-    on public.audit_logs for select
+drop policy if exists "Admins can view audit logs" on public.audit_logs;
+create policy "Admins can view audit logs" on public.audit_logs for select
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -1530,45 +1534,45 @@ create index if not exists idx_supp_prices_supp on public.supplier_material_pric
 alter table public.supplier_material_prices enable row level security;
 
 -- 5. RLS POLICIES FOR CUSTOMERS & SUPPLIERS
-create policy "Active company users can view customers"
-    on public.customers for select
+drop policy if exists "Active company users can view customers" on public.customers;
+create policy "Active company users can view customers" on public.customers for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert customers"
-    on public.customers for insert
+drop policy if exists "Authorized company users can insert customers" on public.customers;
+create policy "Authorized company users can insert customers" on public.customers for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'customer.create')
     );
 
-create policy "Authorized company users can update customers"
-    on public.customers for update
+drop policy if exists "Authorized company users can update customers" on public.customers;
+create policy "Authorized company users can update customers" on public.customers for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'customer.edit')
     );
 
-create policy "Authorized company users can delete customers"
-    on public.customers for delete
+drop policy if exists "Authorized company users can delete customers" on public.customers;
+create policy "Authorized company users can delete customers" on public.customers for delete
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'customer.delete')
     );
 
-create policy "Active company users can view communications"
-    on public.customer_communications for select
+drop policy if exists "Active company users can view communications" on public.customer_communications;
+create policy "Active company users can view communications" on public.customer_communications for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Active company users can create communications"
-    on public.customer_communications for insert
+drop policy if exists "Active company users can create communications" on public.customer_communications;
+create policy "Active company users can create communications" on public.customer_communications for insert
     with check (public.auth_is_active_company_user(company_id));
 
-create policy "Active company users can view suppliers"
-    on public.suppliers for select
+drop policy if exists "Active company users can view suppliers" on public.suppliers;
+create policy "Active company users can view suppliers" on public.suppliers for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage suppliers"
-    on public.suppliers for all
+drop policy if exists "Authorized company users can manage suppliers" on public.suppliers;
+create policy "Authorized company users can manage suppliers" on public.suppliers for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -1577,12 +1581,12 @@ create policy "Authorized company users can manage suppliers"
         )
     );
 
-create policy "Active company users can view supplier material prices"
-    on public.supplier_material_prices for select
+drop policy if exists "Active company users can view supplier material prices" on public.supplier_material_prices;
+create policy "Active company users can view supplier material prices" on public.supplier_material_prices for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage supplier material prices"
-    on public.supplier_material_prices for all
+drop policy if exists "Authorized company users can manage supplier material prices" on public.supplier_material_prices;
+create policy "Authorized company users can manage supplier material prices" on public.supplier_material_prices for all
     using (public.auth_is_active_company_user(company_id));
 
 
@@ -1662,45 +1666,45 @@ create index if not exists idx_price_overrides_company on public.price_overrides
 alter table public.price_overrides enable row level security;
 
 -- 4. RLS POLICIES FOR PRODUCTS & PRICING
-create policy "Active company users can view products"
-    on public.products for select
+drop policy if exists "Active company users can view products" on public.products;
+create policy "Active company users can view products" on public.products for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert products"
-    on public.products for insert
+drop policy if exists "Authorized company users can insert products" on public.products;
+create policy "Authorized company users can insert products" on public.products for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'inventory.create')
     );
 
-create policy "Authorized company users can update products"
-    on public.products for update
+drop policy if exists "Authorized company users can update products" on public.products;
+create policy "Authorized company users can update products" on public.products for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'inventory.edit')
     );
 
-create policy "Authorized company users can delete products"
-    on public.products for delete
+drop policy if exists "Authorized company users can delete products" on public.products;
+create policy "Authorized company users can delete products" on public.products for delete
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'inventory.delete')
     );
 
-create policy "Active company users can view price history"
-    on public.product_price_history for select
+drop policy if exists "Active company users can view price history" on public.product_price_history;
+create policy "Active company users can view price history" on public.product_price_history for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Active company users can insert price history"
-    on public.product_price_history for insert
+drop policy if exists "Active company users can insert price history" on public.product_price_history;
+create policy "Active company users can insert price history" on public.product_price_history for insert
     with check (public.auth_is_active_company_user(company_id));
 
-create policy "Active company users can view price overrides"
-    on public.price_overrides for select
+drop policy if exists "Active company users can view price overrides" on public.price_overrides;
+create policy "Active company users can view price overrides" on public.price_overrides for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Active company users can log price overrides"
-    on public.price_overrides for insert
+drop policy if exists "Active company users can log price overrides" on public.price_overrides;
+create policy "Active company users can log price overrides" on public.price_overrides for insert
     with check (public.auth_is_active_company_user(company_id));
 
 
@@ -1797,33 +1801,33 @@ create index if not exists idx_quotation_activities_quote on public.quotation_ac
 alter table public.quotation_activities enable row level security;
 
 -- 4. RLS POLICIES FOR QUOTATIONS
-create policy "Active company users can view quotations"
-    on public.quotations for select
+drop policy if exists "Active company users can view quotations" on public.quotations;
+create policy "Active company users can view quotations" on public.quotations for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert quotations"
-    on public.quotations for insert
+drop policy if exists "Authorized company users can insert quotations" on public.quotations;
+create policy "Authorized company users can insert quotations" on public.quotations for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'quotation.create')
     );
 
-create policy "Authorized company users can update quotations"
-    on public.quotations for update
+drop policy if exists "Authorized company users can update quotations" on public.quotations;
+create policy "Authorized company users can update quotations" on public.quotations for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'quotation.edit')
     );
 
-create policy "Authorized company users can delete quotations"
-    on public.quotations for delete
+drop policy if exists "Authorized company users can delete quotations" on public.quotations;
+create policy "Authorized company users can delete quotations" on public.quotations for delete
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'quotation.delete')
     );
 
-create policy "Active company users can view quotation items"
-    on public.quotation_items for select
+drop policy if exists "Active company users can view quotation items" on public.quotation_items;
+create policy "Active company users can view quotation items" on public.quotation_items for select
     using (
         exists (
             select 1 from public.quotations q
@@ -1832,8 +1836,8 @@ create policy "Active company users can view quotation items"
         )
     );
 
-create policy "Authorized company users can manage quotation items"
-    on public.quotation_items for all
+drop policy if exists "Authorized company users can manage quotation items" on public.quotation_items;
+create policy "Authorized company users can manage quotation items" on public.quotation_items for all
     using (
         exists (
             select 1 from public.quotations q
@@ -1842,8 +1846,8 @@ create policy "Authorized company users can manage quotation items"
         )
     );
 
-create policy "Active company users can view quotation activities"
-    on public.quotation_activities for select
+drop policy if exists "Active company users can view quotation activities" on public.quotation_activities;
+create policy "Active company users can view quotation activities" on public.quotation_activities for select
     using (
         exists (
             select 1 from public.quotations q
@@ -1852,8 +1856,8 @@ create policy "Active company users can view quotation activities"
         )
     );
 
-create policy "Active company users can insert quotation activities"
-    on public.quotation_activities for insert
+drop policy if exists "Active company users can insert quotation activities" on public.quotation_activities;
+create policy "Active company users can insert quotation activities" on public.quotation_activities for insert
     with check (
         exists (
             select 1 from public.quotations q
@@ -1982,37 +1986,37 @@ create index if not exists idx_order_timeline_order on public.order_timeline_eve
 alter table public.order_timeline_events enable row level security;
 
 -- 5. RLS POLICIES FOR ORDERS & JOBS
-create policy "Active company users can view sales orders"
-    on public.sales_orders for select
+drop policy if exists "Active company users can view sales orders" on public.sales_orders;
+create policy "Active company users can view sales orders" on public.sales_orders for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert sales orders"
-    on public.sales_orders for insert
+drop policy if exists "Authorized company users can insert sales orders" on public.sales_orders;
+create policy "Authorized company users can insert sales orders" on public.sales_orders for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'order.create')
     );
 
-create policy "Authorized company users can update sales orders"
-    on public.sales_orders for update
+drop policy if exists "Authorized company users can update sales orders" on public.sales_orders;
+create policy "Authorized company users can update sales orders" on public.sales_orders for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'order.edit')
     );
 
-create policy "Authorized company users can delete sales orders"
-    on public.sales_orders for delete
+drop policy if exists "Authorized company users can delete sales orders" on public.sales_orders;
+create policy "Authorized company users can delete sales orders" on public.sales_orders for delete
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'order.delete')
     );
 
-create policy "Active company users can view job orders"
-    on public.job_orders for select
+drop policy if exists "Active company users can view job orders" on public.job_orders;
+create policy "Active company users can view job orders" on public.job_orders for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage job orders"
-    on public.job_orders for all
+drop policy if exists "Authorized company users can manage job orders" on public.job_orders;
+create policy "Authorized company users can manage job orders" on public.job_orders for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2022,8 +2026,8 @@ create policy "Authorized company users can manage job orders"
         )
     );
 
-create policy "Active company users can view timeline"
-    on public.order_timeline_events for select
+drop policy if exists "Active company users can view timeline" on public.order_timeline_events;
+create policy "Active company users can view timeline" on public.order_timeline_events for select
     using (
         exists (
             select 1 from public.sales_orders o
@@ -2032,8 +2036,8 @@ create policy "Active company users can view timeline"
         )
     );
 
-create policy "Active company users can insert timeline"
-    on public.order_timeline_events for insert
+drop policy if exists "Active company users can insert timeline" on public.order_timeline_events;
+create policy "Active company users can insert timeline" on public.order_timeline_events for insert
     with check (
         exists (
             select 1 from public.sales_orders o
@@ -2129,12 +2133,12 @@ create index if not exists idx_design_feedback_job on public.design_feedback_log
 alter table public.design_feedback_logs enable row level security;
 
 -- 4. RLS POLICIES
-create policy "Active company users can view design jobs"
-    on public.design_jobs for select
+drop policy if exists "Active company users can view design jobs" on public.design_jobs;
+create policy "Active company users can view design jobs" on public.design_jobs for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert design jobs"
-    on public.design_jobs for insert
+drop policy if exists "Authorized company users can insert design jobs" on public.design_jobs;
+create policy "Authorized company users can insert design jobs" on public.design_jobs for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2143,15 +2147,15 @@ create policy "Authorized company users can insert design jobs"
         )
     );
 
-create policy "Authorized company users can update design jobs"
-    on public.design_jobs for update
+drop policy if exists "Authorized company users can update design jobs" on public.design_jobs;
+create policy "Authorized company users can update design jobs" on public.design_jobs for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'design.edit')
     );
 
-create policy "Active company users can view design versions"
-    on public.design_versions for select
+drop policy if exists "Active company users can view design versions" on public.design_versions;
+create policy "Active company users can view design versions" on public.design_versions for select
     using (
         exists (
             select 1 from public.design_jobs dj
@@ -2160,8 +2164,8 @@ create policy "Active company users can view design versions"
         )
     );
 
-create policy "Authorized company users can manage design versions"
-    on public.design_versions for all
+drop policy if exists "Authorized company users can manage design versions" on public.design_versions;
+create policy "Authorized company users can manage design versions" on public.design_versions for all
     using (
         exists (
             select 1 from public.design_jobs dj
@@ -2171,8 +2175,8 @@ create policy "Authorized company users can manage design versions"
         )
     );
 
-create policy "Active company users can view feedback"
-    on public.design_feedback_logs for select
+drop policy if exists "Active company users can view feedback" on public.design_feedback_logs;
+create policy "Active company users can view feedback" on public.design_feedback_logs for select
     using (
         exists (
             select 1 from public.design_jobs dj
@@ -2181,8 +2185,8 @@ create policy "Active company users can view feedback"
         )
     );
 
-create policy "Active company users can insert feedback"
-    on public.design_feedback_logs for insert
+drop policy if exists "Active company users can insert feedback" on public.design_feedback_logs;
+create policy "Active company users can insert feedback" on public.design_feedback_logs for insert
     with check (
         exists (
             select 1 from public.design_jobs dj
@@ -2265,12 +2269,12 @@ create index if not exists idx_production_reworks_job on public.production_rewor
 alter table public.production_reworks enable row level security;
 
 -- 3. RLS POLICIES
-create policy "Active company users can view production jobs"
-    on public.production_jobs for select
+drop policy if exists "Active company users can view production jobs" on public.production_jobs;
+create policy "Active company users can view production jobs" on public.production_jobs for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage production jobs"
-    on public.production_jobs for all
+drop policy if exists "Authorized company users can manage production jobs" on public.production_jobs;
+create policy "Authorized company users can manage production jobs" on public.production_jobs for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2280,8 +2284,8 @@ create policy "Authorized company users can manage production jobs"
         )
     );
 
-create policy "Active company users can view reworks"
-    on public.production_reworks for select
+drop policy if exists "Active company users can view reworks" on public.production_reworks;
+create policy "Active company users can view reworks" on public.production_reworks for select
     using (
         exists (
             select 1 from public.production_jobs pj
@@ -2290,8 +2294,8 @@ create policy "Active company users can view reworks"
         )
     );
 
-create policy "Authorized company users can insert reworks"
-    on public.production_reworks for insert
+drop policy if exists "Authorized company users can insert reworks" on public.production_reworks;
+create policy "Authorized company users can insert reworks" on public.production_reworks for insert
     with check (
         exists (
             select 1 from public.production_jobs pj
@@ -2413,12 +2417,12 @@ create index if not exists idx_material_wastages_material on public.material_was
 alter table public.material_wastages enable row level security;
 
 -- 5. RLS POLICIES
-create policy "Active company users can view materials"
-    on public.materials for select
+drop policy if exists "Active company users can view materials" on public.materials;
+create policy "Active company users can view materials" on public.materials for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage materials"
-    on public.materials for all
+drop policy if exists "Authorized company users can manage materials" on public.materials;
+create policy "Authorized company users can manage materials" on public.materials for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2428,8 +2432,8 @@ create policy "Authorized company users can manage materials"
         )
     );
 
-create policy "Active company users can view inventory rolls"
-    on public.inventory_rolls for select
+drop policy if exists "Active company users can view inventory rolls" on public.inventory_rolls;
+create policy "Active company users can view inventory rolls" on public.inventory_rolls for select
     using (
         exists (
             select 1 from public.materials m
@@ -2438,8 +2442,8 @@ create policy "Active company users can view inventory rolls"
         )
     );
 
-create policy "Authorized company users can manage inventory rolls"
-    on public.inventory_rolls for all
+drop policy if exists "Authorized company users can manage inventory rolls" on public.inventory_rolls;
+create policy "Authorized company users can manage inventory rolls" on public.inventory_rolls for all
     using (
         exists (
             select 1 from public.materials m
@@ -2448,12 +2452,12 @@ create policy "Authorized company users can manage inventory rolls"
         )
     );
 
-create policy "Active company users can view stock ledger"
-    on public.stock_ledger for select
+drop policy if exists "Active company users can view stock ledger" on public.stock_ledger;
+create policy "Active company users can view stock ledger" on public.stock_ledger for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert stock ledger"
-    on public.stock_ledger for insert
+drop policy if exists "Authorized company users can insert stock ledger" on public.stock_ledger;
+create policy "Authorized company users can insert stock ledger" on public.stock_ledger for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2463,12 +2467,12 @@ create policy "Authorized company users can insert stock ledger"
         )
     );
 
-create policy "Active company users can view wastages"
-    on public.material_wastages for select
+drop policy if exists "Active company users can view wastages" on public.material_wastages;
+create policy "Active company users can view wastages" on public.material_wastages for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert wastages"
-    on public.material_wastages for insert
+drop policy if exists "Authorized company users can insert wastages" on public.material_wastages;
+create policy "Authorized company users can insert wastages" on public.material_wastages for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'inventory.edit')
@@ -2597,12 +2601,12 @@ create index if not exists idx_supplier_payments_supp on public.supplier_payment
 alter table public.supplier_payments enable row level security;
 
 -- 6. RLS POLICIES
-create policy "Active company users can view purchase orders"
-    on public.purchase_orders for select
+drop policy if exists "Active company users can view purchase orders" on public.purchase_orders;
+create policy "Active company users can view purchase orders" on public.purchase_orders for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage purchase orders"
-    on public.purchase_orders for all
+drop policy if exists "Authorized company users can manage purchase orders" on public.purchase_orders;
+create policy "Authorized company users can manage purchase orders" on public.purchase_orders for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2612,8 +2616,8 @@ create policy "Authorized company users can manage purchase orders"
         )
     );
 
-create policy "Active company users can view po items"
-    on public.purchase_order_items for select
+drop policy if exists "Active company users can view po items" on public.purchase_order_items;
+create policy "Active company users can view po items" on public.purchase_order_items for select
     using (
         exists (
             select 1 from public.purchase_orders po
@@ -2622,8 +2626,8 @@ create policy "Active company users can view po items"
         )
     );
 
-create policy "Authorized company users can manage po items"
-    on public.purchase_order_items for all
+drop policy if exists "Authorized company users can manage po items" on public.purchase_order_items;
+create policy "Authorized company users can manage po items" on public.purchase_order_items for all
     using (
         exists (
             select 1 from public.purchase_orders po
@@ -2632,20 +2636,20 @@ create policy "Authorized company users can manage po items"
         )
     );
 
-create policy "Active company users can view price history"
-    on public.supplier_price_history for select
+drop policy if exists "Active company users can view price history" on public.supplier_price_history;
+create policy "Active company users can view price history" on public.supplier_price_history for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert price history"
-    on public.supplier_price_history for insert
+drop policy if exists "Authorized company users can insert price history" on public.supplier_price_history;
+create policy "Authorized company users can insert price history" on public.supplier_price_history for insert
     with check (public.auth_is_active_company_user(company_id));
 
-create policy "Active company users can view supplier payments"
-    on public.supplier_payments for select
+drop policy if exists "Active company users can view supplier payments" on public.supplier_payments;
+create policy "Active company users can view supplier payments" on public.supplier_payments for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert supplier payments"
-    on public.supplier_payments for insert
+drop policy if exists "Authorized company users can insert supplier payments" on public.supplier_payments;
+create policy "Authorized company users can insert supplier payments" on public.supplier_payments for insert
     with check (public.auth_is_active_company_user(company_id));
 
 
@@ -2778,12 +2782,12 @@ create index if not exists idx_financial_write_offs_invoice on public.financial_
 alter table public.financial_write_offs enable row level security;
 
 -- 6. RLS POLICIES
-create policy "Active company users can view invoices"
-    on public.invoices for select
+drop policy if exists "Active company users can view invoices" on public.invoices;
+create policy "Active company users can view invoices" on public.invoices for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage invoices"
-    on public.invoices for all
+drop policy if exists "Authorized company users can manage invoices" on public.invoices;
+create policy "Authorized company users can manage invoices" on public.invoices for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2793,8 +2797,8 @@ create policy "Authorized company users can manage invoices"
         )
     );
 
-create policy "Active company users can view invoice items"
-    on public.invoice_items for select
+drop policy if exists "Active company users can view invoice items" on public.invoice_items;
+create policy "Active company users can view invoice items" on public.invoice_items for select
     using (
         exists (
             select 1 from public.invoices inv
@@ -2803,8 +2807,8 @@ create policy "Active company users can view invoice items"
         )
     );
 
-create policy "Authorized company users can manage invoice items"
-    on public.invoice_items for all
+drop policy if exists "Authorized company users can manage invoice items" on public.invoice_items;
+create policy "Authorized company users can manage invoice items" on public.invoice_items for all
     using (
         exists (
             select 1 from public.invoices inv
@@ -2813,12 +2817,12 @@ create policy "Authorized company users can manage invoice items"
         )
     );
 
-create policy "Active company users can view payments"
-    on public.payments for select
+drop policy if exists "Active company users can view payments" on public.payments;
+create policy "Active company users can view payments" on public.payments for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage payments"
-    on public.payments for all
+drop policy if exists "Authorized company users can manage payments" on public.payments;
+create policy "Authorized company users can manage payments" on public.payments for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2827,8 +2831,8 @@ create policy "Authorized company users can manage payments"
         )
     );
 
-create policy "Active company users can view allocations"
-    on public.payment_allocations for select
+drop policy if exists "Active company users can view allocations" on public.payment_allocations;
+create policy "Active company users can view allocations" on public.payment_allocations for select
     using (
         exists (
             select 1 from public.payments p
@@ -2837,8 +2841,8 @@ create policy "Active company users can view allocations"
         )
     );
 
-create policy "Authorized company users can manage allocations"
-    on public.payment_allocations for all
+drop policy if exists "Authorized company users can manage allocations" on public.payment_allocations;
+create policy "Authorized company users can manage allocations" on public.payment_allocations for all
     using (
         exists (
             select 1 from public.payments p
@@ -2847,12 +2851,12 @@ create policy "Authorized company users can manage allocations"
         )
     );
 
-create policy "Active company users can view write offs"
-    on public.financial_write_offs for select
+drop policy if exists "Active company users can view write offs" on public.financial_write_offs;
+create policy "Active company users can view write offs" on public.financial_write_offs for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert write offs"
-    on public.financial_write_offs for insert
+drop policy if exists "Authorized company users can insert write offs" on public.financial_write_offs;
+create policy "Authorized company users can insert write offs" on public.financial_write_offs for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'billing.edit')
@@ -2962,12 +2966,12 @@ create index if not exists idx_installations_date on public.installations(compan
 alter table public.installations enable row level security;
 
 -- 4. RLS POLICIES
-create policy "Active company users can view delivery challans"
-    on public.delivery_challans for select
+drop policy if exists "Active company users can view delivery challans" on public.delivery_challans;
+create policy "Active company users can view delivery challans" on public.delivery_challans for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage delivery challans"
-    on public.delivery_challans for all
+drop policy if exists "Authorized company users can manage delivery challans" on public.delivery_challans;
+create policy "Authorized company users can manage delivery challans" on public.delivery_challans for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2977,8 +2981,8 @@ create policy "Authorized company users can manage delivery challans"
         )
     );
 
-create policy "Active company users can view challan items"
-    on public.challan_items for select
+drop policy if exists "Active company users can view challan items" on public.challan_items;
+create policy "Active company users can view challan items" on public.challan_items for select
     using (
         exists (
             select 1 from public.delivery_challans ch
@@ -2987,8 +2991,8 @@ create policy "Active company users can view challan items"
         )
     );
 
-create policy "Authorized company users can manage challan items"
-    on public.challan_items for all
+drop policy if exists "Authorized company users can manage challan items" on public.challan_items;
+create policy "Authorized company users can manage challan items" on public.challan_items for all
     using (
         exists (
             select 1 from public.delivery_challans ch
@@ -2997,12 +3001,12 @@ create policy "Authorized company users can manage challan items"
         )
     );
 
-create policy "Active company users can view installations"
-    on public.installations for select
+drop policy if exists "Active company users can view installations" on public.installations;
+create policy "Active company users can view installations" on public.installations for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage installations"
-    on public.installations for all
+drop policy if exists "Authorized company users can manage installations" on public.installations;
+create policy "Authorized company users can manage installations" on public.installations for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3089,12 +3093,12 @@ create index if not exists idx_cash_book_date on public.cash_book_entries(compan
 alter table public.cash_book_entries enable row level security;
 
 -- 4. RLS POLICIES
-create policy "Active company users can view expenses"
-    on public.expenses for select
+drop policy if exists "Active company users can view expenses" on public.expenses;
+create policy "Active company users can view expenses" on public.expenses for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage expenses"
-    on public.expenses for all
+drop policy if exists "Authorized company users can manage expenses" on public.expenses;
+create policy "Authorized company users can manage expenses" on public.expenses for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3104,23 +3108,23 @@ create policy "Authorized company users can manage expenses"
         )
     );
 
-create policy "Active company users can view bank accounts"
-    on public.bank_accounts for select
+drop policy if exists "Active company users can view bank accounts" on public.bank_accounts;
+create policy "Active company users can view bank accounts" on public.bank_accounts for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage bank accounts"
-    on public.bank_accounts for all
+drop policy if exists "Authorized company users can manage bank accounts" on public.bank_accounts;
+create policy "Authorized company users can manage bank accounts" on public.bank_accounts for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'accounting.edit')
     );
 
-create policy "Active company users can view cash book"
-    on public.cash_book_entries for select
+drop policy if exists "Active company users can view cash book" on public.cash_book_entries;
+create policy "Active company users can view cash book" on public.cash_book_entries for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can insert cash book"
-    on public.cash_book_entries for insert
+drop policy if exists "Authorized company users can insert cash book" on public.cash_book_entries;
+create policy "Authorized company users can insert cash book" on public.cash_book_entries for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3289,12 +3293,12 @@ create index if not exists idx_daily_labor_date on public.daily_labor_logs(compa
 alter table public.daily_labor_logs enable row level security;
 
 -- 7. RLS POLICIES
-create policy "Active company users can view employees"
-    on public.employees for select
+drop policy if exists "Active company users can view employees" on public.employees;
+create policy "Active company users can view employees" on public.employees for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage employees"
-    on public.employees for all
+drop policy if exists "Authorized company users can manage employees" on public.employees;
+create policy "Authorized company users can manage employees" on public.employees for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3304,12 +3308,12 @@ create policy "Authorized company users can manage employees"
         )
     );
 
-create policy "Active company users can view attendances"
-    on public.attendances for select
+drop policy if exists "Active company users can view attendances" on public.attendances;
+create policy "Active company users can view attendances" on public.attendances for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage attendances"
-    on public.attendances for all
+drop policy if exists "Authorized company users can manage attendances" on public.attendances;
+create policy "Authorized company users can manage attendances" on public.attendances for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3318,19 +3322,19 @@ create policy "Authorized company users can manage attendances"
         )
     );
 
-create policy "Active company users can view payroll periods"
-    on public.payroll_periods for select
+drop policy if exists "Active company users can view payroll periods" on public.payroll_periods;
+create policy "Active company users can view payroll periods" on public.payroll_periods for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage payroll periods"
-    on public.payroll_periods for all
+drop policy if exists "Authorized company users can manage payroll periods" on public.payroll_periods;
+create policy "Authorized company users can manage payroll periods" on public.payroll_periods for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'payroll.edit')
     );
 
-create policy "Active company users can view payroll items"
-    on public.payroll_items for select
+drop policy if exists "Active company users can view payroll items" on public.payroll_items;
+create policy "Active company users can view payroll items" on public.payroll_items for select
     using (
         exists (
             select 1 from public.payroll_periods pp
@@ -3339,8 +3343,8 @@ create policy "Active company users can view payroll items"
         )
     );
 
-create policy "Authorized company users can manage payroll items"
-    on public.payroll_items for all
+drop policy if exists "Authorized company users can manage payroll items" on public.payroll_items;
+create policy "Authorized company users can manage payroll items" on public.payroll_items for all
     using (
         exists (
             select 1 from public.payroll_periods pp
@@ -3349,12 +3353,12 @@ create policy "Authorized company users can manage payroll items"
         )
     );
 
-create policy "Active company users can view daily labor logs"
-    on public.daily_labor_logs for select
+drop policy if exists "Active company users can view daily labor logs" on public.daily_labor_logs;
+create policy "Active company users can view daily labor logs" on public.daily_labor_logs for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage daily labor logs"
-    on public.daily_labor_logs for all
+drop policy if exists "Authorized company users can manage daily labor logs" on public.daily_labor_logs;
+create policy "Authorized company users can manage daily labor logs" on public.daily_labor_logs for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3437,12 +3441,12 @@ create index if not exists idx_job_costings_status on public.job_costings(compan
 alter table public.job_costings enable row level security;
 
 -- 2. RLS POLICIES
-create policy "Active company users can view job costings"
-    on public.job_costings for select
+drop policy if exists "Active company users can view job costings" on public.job_costings;
+create policy "Active company users can view job costings" on public.job_costings for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage job costings"
-    on public.job_costings for all
+drop policy if exists "Authorized company users can manage job costings" on public.job_costings;
+create policy "Authorized company users can manage job costings" on public.job_costings for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3674,42 +3678,42 @@ create index if not exists idx_comm_logs_created on public.communication_logs(co
 alter table public.communication_logs enable row level security;
 
 -- 5. RLS POLICIES
-create policy "Active company users can view in-app notifications"
-    on public.in_app_notifications for select
+drop policy if exists "Active company users can view in-app notifications" on public.in_app_notifications;
+create policy "Active company users can view in-app notifications" on public.in_app_notifications for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Active company users can update their notifications"
-    on public.in_app_notifications for update
+drop policy if exists "Active company users can update their notifications" on public.in_app_notifications;
+create policy "Active company users can update their notifications" on public.in_app_notifications for update
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Active company users can view channel configs"
-    on public.communication_channels_config for select
+drop policy if exists "Active company users can view channel configs" on public.communication_channels_config;
+create policy "Active company users can view channel configs" on public.communication_channels_config for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company admins can manage channel configs"
-    on public.communication_channels_config for all
+drop policy if exists "Authorized company admins can manage channel configs" on public.communication_channels_config;
+create policy "Authorized company admins can manage channel configs" on public.communication_channels_config for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
     );
 
-create policy "Active company users can view templates"
-    on public.message_templates for select
+drop policy if exists "Active company users can view templates" on public.message_templates;
+create policy "Active company users can view templates" on public.message_templates for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company users can manage templates"
-    on public.message_templates for all
+drop policy if exists "Authorized company users can manage templates" on public.message_templates;
+create policy "Authorized company users can manage templates" on public.message_templates for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
     );
 
-create policy "Active company users can view communication logs"
-    on public.communication_logs for select
+drop policy if exists "Active company users can view communication logs" on public.communication_logs;
+create policy "Active company users can view communication logs" on public.communication_logs for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "System and authorized users can append communication logs"
-    on public.communication_logs for insert
+drop policy if exists "System and authorized users can append communication logs" on public.communication_logs;
+create policy "System and authorized users can append communication logs" on public.communication_logs for insert
     with check (public.auth_is_active_company_user(company_id));
 
 
@@ -3834,23 +3838,23 @@ end;
 $$;
 
 -- 5. RLS POLICIES
-create policy "Active company users can view tax settings"
-    on public.company_tax_settings for select
+drop policy if exists "Active company users can view tax settings" on public.company_tax_settings;
+create policy "Active company users can view tax settings" on public.company_tax_settings for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company admins can manage tax settings"
-    on public.company_tax_settings for all
+drop policy if exists "Authorized company admins can manage tax settings" on public.company_tax_settings;
+create policy "Authorized company admins can manage tax settings" on public.company_tax_settings for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
     );
 
-create policy "Active company users can view document templates"
-    on public.document_templates_config for select
+drop policy if exists "Active company users can view document templates" on public.document_templates_config;
+create policy "Active company users can view document templates" on public.document_templates_config for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company admins can manage document templates"
-    on public.document_templates_config for all
+drop policy if exists "Authorized company admins can manage document templates" on public.document_templates_config;
+create policy "Authorized company admins can manage document templates" on public.document_templates_config for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
@@ -3981,16 +3985,16 @@ create table if not exists public.platform_admins (
 );
 
 -- 4. RLS POLICIES
-create policy "Anyone can view active subscription plans"
-    on public.subscription_plans for select
+drop policy if exists "Anyone can view active subscription plans" on public.subscription_plans;
+create policy "Anyone can view active subscription plans" on public.subscription_plans for select
     using (is_active = true);
 
-create policy "Active company users can view their subscription"
-    on public.company_subscriptions for select
+drop policy if exists "Active company users can view their subscription" on public.company_subscriptions;
+create policy "Active company users can view their subscription" on public.company_subscriptions for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized company admins can update their subscription"
-    on public.company_subscriptions for update
+drop policy if exists "Authorized company admins can update their subscription" on public.company_subscriptions;
+create policy "Authorized company admins can update their subscription" on public.company_subscriptions for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
@@ -4225,36 +4229,36 @@ $$ language plpgsql security definer;
 -- 8. STRICT RLS POLICIES FOR PLATFORM TABLES
 -- These tables MUST NOT be queryable by standard tenant users. Only platform owners can query or mutate them.
 
-create policy "Platform owners can view platform audit logs"
-    on public.platform_audit_logs for select
+drop policy if exists "Platform owners can view platform audit logs" on public.platform_audit_logs;
+create policy "Platform owners can view platform audit logs" on public.platform_audit_logs for select
     using (public.auth_is_platform_owner());
 
-create policy "Platform owners can manage platform tenant feature flags"
-    on public.platform_tenant_feature_flags for all
+drop policy if exists "Platform owners can manage platform tenant feature flags" on public.platform_tenant_feature_flags;
+create policy "Platform owners can manage platform tenant feature flags" on public.platform_tenant_feature_flags for all
     using (public.auth_is_platform_owner());
 
-create policy "Tenant users can view their own tenant feature flags"
-    on public.platform_tenant_feature_flags for select
+drop policy if exists "Tenant users can view their own tenant feature flags" on public.platform_tenant_feature_flags;
+create policy "Tenant users can view their own tenant feature flags" on public.platform_tenant_feature_flags for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Platform owners can manage platform role templates"
-    on public.platform_role_templates for all
+drop policy if exists "Platform owners can manage platform role templates" on public.platform_role_templates;
+create policy "Platform owners can manage platform role templates" on public.platform_role_templates for all
     using (public.auth_is_platform_owner());
 
-create policy "Authenticated users can read platform role templates"
-    on public.platform_role_templates for select
+drop policy if exists "Authenticated users can read platform role templates" on public.platform_role_templates;
+create policy "Authenticated users can read platform role templates" on public.platform_role_templates for select
     using (auth.uid() is not null);
 
-create policy "Platform owners can manage platform role template permissions"
-    on public.platform_role_template_permissions for all
+drop policy if exists "Platform owners can manage platform role template permissions" on public.platform_role_template_permissions;
+create policy "Platform owners can manage platform role template permissions" on public.platform_role_template_permissions for all
     using (public.auth_is_platform_owner());
 
-create policy "Authenticated users can read platform role template permissions"
-    on public.platform_role_template_permissions for select
+drop policy if exists "Authenticated users can read platform role template permissions" on public.platform_role_template_permissions;
+create policy "Authenticated users can read platform role template permissions" on public.platform_role_template_permissions for select
     using (auth.uid() is not null);
 
-create policy "Platform owners can view and manage system health events"
-    on public.platform_system_health_events for all
+drop policy if exists "Platform owners can view and manage system health events" on public.platform_system_health_events;
+create policy "Platform owners can view and manage system health events" on public.platform_system_health_events for all
     using (public.auth_is_platform_owner());
 
 
@@ -4437,8 +4441,8 @@ end;
 $$ language plpgsql security definer;
 
 -- 5. ROW LEVEL SECURITY (RLS) POLICIES
-create policy "Company members can view audit logs"
-    on public.audit_logs for select
+drop policy if exists "Company members can view audit logs" on public.audit_logs;
+create policy "Company members can view audit logs" on public.audit_logs for select
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -4448,19 +4452,19 @@ create policy "Company members can view audit logs"
         )
     );
 
-create policy "System and authorized users can insert audit logs"
-    on public.audit_logs for insert
+drop policy if exists "System and authorized users can insert audit logs" on public.audit_logs;
+create policy "System and authorized users can insert audit logs" on public.audit_logs for insert
     with check (
         public.auth_is_active_company_user(company_id)
         or public.auth_is_platform_owner()
     );
 
-create policy "Company members can view payment adjustments"
-    on public.payment_adjustments for select
+drop policy if exists "Company members can view payment adjustments" on public.payment_adjustments;
+create policy "Company members can view payment adjustments" on public.payment_adjustments for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized billing users can record payment adjustments"
-    on public.payment_adjustments for insert
+drop policy if exists "Authorized billing users can record payment adjustments" on public.payment_adjustments;
+create policy "Authorized billing users can record payment adjustments" on public.payment_adjustments for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and (
@@ -4542,12 +4546,12 @@ create index if not exists idx_wf_exec_logs_comp on public.workflow_execution_lo
 alter table public.workflow_execution_logs enable row level security;
 
 -- 3. ROW LEVEL SECURITY (RLS) POLICIES
-create policy "Company members can view workflow rules"
-    on public.workflow_rules for select
+drop policy if exists "Company members can view workflow rules" on public.workflow_rules;
+create policy "Company members can view workflow rules" on public.workflow_rules for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "Authorized users can manage workflow rules"
-    on public.workflow_rules for all
+drop policy if exists "Authorized users can manage workflow rules" on public.workflow_rules;
+create policy "Authorized users can manage workflow rules" on public.workflow_rules for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -4556,12 +4560,12 @@ create policy "Authorized users can manage workflow rules"
         )
     );
 
-create policy "Company members can view workflow logs"
-    on public.workflow_execution_logs for select
+drop policy if exists "Company members can view workflow logs" on public.workflow_execution_logs;
+create policy "Company members can view workflow logs" on public.workflow_execution_logs for select
     using (public.auth_is_active_company_user(company_id));
 
-create policy "System can insert workflow execution logs"
-    on public.workflow_execution_logs for insert
+drop policy if exists "System can insert workflow execution logs" on public.workflow_execution_logs;
+create policy "System can insert workflow execution logs" on public.workflow_execution_logs for insert
     with check (
         public.auth_is_active_company_user(company_id)
         or public.auth_is_platform_owner()
@@ -4828,23 +4832,110 @@ create index if not exists idx_tenant_exports_comp on public.platform_tenant_exp
 alter table public.platform_tenant_exports enable row level security;
 
 -- 6. RLS POLICIES FOR PLATFORM GOVERNANCE
-create policy "Platform owners have full control on incidents"
-    on public.platform_incidents for all
+drop policy if exists "Platform owners have full control on incidents" on public.platform_incidents;
+create policy "Platform owners have full control on incidents" on public.platform_incidents for all
     using (public.auth_is_platform_owner());
 
-create policy "Platform owners have full control on background jobs"
-    on public.platform_background_jobs for all
+drop policy if exists "Platform owners have full control on background jobs" on public.platform_background_jobs;
+create policy "Platform owners have full control on background jobs" on public.platform_background_jobs for all
     using (public.auth_is_platform_owner());
 
-create policy "Platform owners have full control on emergency controls"
-    on public.platform_emergency_controls for all
+drop policy if exists "Platform owners have full control on emergency controls" on public.platform_emergency_controls;
+create policy "Platform owners have full control on emergency controls" on public.platform_emergency_controls for all
     using (public.auth_is_platform_owner());
 
-create policy "Platform owners have full control on active sessions"
-    on public.platform_active_sessions for all
+drop policy if exists "Platform owners have full control on active sessions" on public.platform_active_sessions;
+create policy "Platform owners have full control on active sessions" on public.platform_active_sessions for all
     using (public.auth_is_platform_owner());
 
-create policy "Platform owners have full control on tenant exports"
-    on public.platform_tenant_exports for all
+drop policy if exists "Platform owners have full control on tenant exports" on public.platform_tenant_exports;
+create policy "Platform owners have full control on tenant exports" on public.platform_tenant_exports for all
     using (public.auth_is_platform_owner());
+
+
+-- >>> FILE: 031_platform_support_sessions_and_hardening.sql <<<
+-- ==============================================================================
+-- PrintERP / InkFlow SaaS - Migration 031: Platform Support Sessions & Control Plane Hardening
+-- ==============================================================================
+
+-- 1. PLATFORM SUPPORT SESSIONS TABLE
+create table if not exists public.platform_support_sessions (
+    id uuid primary key default gen_random_uuid(),
+    platform_admin_id uuid not null references public.platform_admins(id) on delete cascade,
+    company_id uuid not null references public.companies(id) on delete cascade,
+    reason text not null,
+    access_level text not null default 'read_only' check (access_level in ('read_only', 'config_only', 'full_support')),
+    session_token_hash text not null unique,
+    status text not null default 'active' check (status in ('active', 'expired', 'revoked')),
+    started_at timestamptz not null default now(),
+    expires_at timestamptz not null default now() + interval '2 hours',
+    revoked_at timestamptz,
+    revoked_by uuid references public.platform_admins(id) on delete set null,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_platform_support_sessions_company on public.platform_support_sessions(company_id);
+create index if not exists idx_platform_support_sessions_admin on public.platform_support_sessions(platform_admin_id);
+create index if not exists idx_platform_support_sessions_status on public.platform_support_sessions(status);
+create index if not exists idx_platform_support_sessions_token on public.platform_support_sessions(session_token_hash);
+create index if not exists idx_platform_support_sessions_expires on public.platform_support_sessions(expires_at desc);
+
+alter table public.platform_support_sessions enable row level security;
+
+-- 2. SUPPORT SESSION VALIDATION FUNCTION
+create or replace function public.auth_validate_support_session(
+    p_company_id uuid,
+    p_token_hash text
+)
+returns table (
+    is_valid boolean,
+    access_level text,
+    admin_id uuid,
+    admin_email text,
+    admin_name text,
+    expires_at timestamptz
+) as $$
+begin
+    return query
+    select 
+        (pss.status = 'active' and pss.expires_at > now()) as is_valid,
+        pss.access_level,
+        pa.id as admin_id,
+        pa.email as admin_email,
+        pa.full_name as admin_name,
+        pss.expires_at
+    from public.platform_support_sessions pss
+    join public.platform_admins pa on pa.id = pss.platform_admin_id
+    where pss.company_id = p_company_id
+      and pss.session_token_hash = p_token_hash
+      and pa.is_active = true
+    limit 1;
+end;
+$$ language plpgsql security definer;
+
+-- 3. RLS POLICIES FOR SUPPORT SESSIONS
+drop policy if exists "Platform owners have full control on support sessions" on public.platform_support_sessions;
+create policy "Platform owners have full control on support sessions" on public.platform_support_sessions for all
+    using (public.auth_is_platform_owner());
+
+-- 4. ENSURE PLATFORM ADMIN COLUMNS
+alter table public.platform_admins
+    add column if not exists mfa_enabled boolean not null default false,
+    add column if not exists last_login_at timestamptz,
+    add column if not exists phone text,
+    add column if not exists avatar_url text,
+    add column if not exists preferences jsonb not null default '{"language": "en", "timezone": "Asia/Dhaka", "date_format": "YYYY-MM-DD", "currency": "BDT"}'::jsonb;
+
+-- 5. ENSURE COMPANY STATUS CHECK CONSTRAINT SUPPORTS ALL 7 LIFECYCLE STATES
+do $$
+begin
+    alter table public.companies
+        add column if not exists suspension_reason text,
+        add column if not exists suspended_at timestamptz,
+        add column if not exists suspended_by uuid references public.platform_admins(id) on delete set null,
+        add column if not exists cancelled_at timestamptz,
+        add column if not exists cancellation_reason text,
+        add column if not exists archived_at timestamptz;
+end $$;
+
 

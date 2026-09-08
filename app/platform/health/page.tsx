@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformSystemHealthAction } from '@/actions/platform-data.actions'
 import {
   SystemHealthEvent,
   SystemHealthSummary,
@@ -48,7 +48,7 @@ export default function PlatformHealthPage() {
 
   const loadHealth = async () => {
     setLoading(true)
-    const res = await PlatformService.getSystemHealth()
+    const res = await getPlatformSystemHealthAction()
     if (res.success && res.data) {
       setSummary(res.data.summary)
       setEvents(res.data.events)
@@ -64,10 +64,9 @@ export default function PlatformHealthPage() {
   const handleRetryJob = async (eventId: string) => {
     setActionInProgress(eventId)
     const res = await retryFailedJobAction(eventId)
-    if (res.success && res.data) {
-      setEvents((prev) => prev.map((e) => (e.id === eventId ? res.data! : e)))
-      showNotification(`Job triggered for re-execution: ${res.data.service_name}.`)
-      loadHealth()
+    if (res.success) {
+      showNotification('Job triggered for re-execution.')
+      await loadHealth()
     } else {
       showNotification('Failed to retry job', 'error')
     }
@@ -78,10 +77,9 @@ export default function PlatformHealthPage() {
   const handleResolveAlert = async (eventId: string) => {
     setActionInProgress(eventId)
     const res = await resolveHealthEventAction(eventId)
-    if (res.success && res.data) {
-      setEvents((prev) => prev.map((e) => (e.id === eventId ? res.data! : e)))
-      showNotification(`Alert marked as resolved: ${res.data.service_name}.`)
-      loadHealth()
+    if (res.success) {
+      showNotification('Alert marked as resolved.')
+      await loadHealth()
     } else {
       showNotification('Failed to resolve alert', 'error')
     }

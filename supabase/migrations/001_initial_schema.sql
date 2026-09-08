@@ -117,14 +117,18 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists update_companies_modtime on public.companies;
 create trigger update_companies_modtime
     before update on public.companies
     for each row execute function public.update_updated_at_column();
 
+drop trigger if exists update_profiles_modtime on public.profiles;
 create trigger update_profiles_modtime
     before update on public.profiles
     for each row execute function public.update_updated_at_column();
 
+drop trigger if exists update_memberships_modtime on public.tenant_memberships;
 create trigger update_memberships_modtime
     before update on public.tenant_memberships
     for each row execute function public.update_updated_at_column();
+

@@ -14,7 +14,7 @@ import {
   EyeOff,
 } from 'lucide-react'
 import { loginSchema, LoginFormData } from '@/features/auth/auth.schemas'
-import { AuthService } from '@/services/auth.service'
+import { signInAction } from '@/actions/auth.actions'
 import { GoogleOAuthProvider } from '@/lib/auth/auth-providers'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -57,7 +57,7 @@ function LoginForm() {
     setIsLoading(true)
     setError(null)
 
-    const res = await AuthService.signIn(email, pass)
+    const res = await signInAction(email, pass)
     if (res.success && res.data) {
       const targetSlug = res.data.session.companySlug || 'default'
       const paramRedirect = searchParams.get('redirectTo')

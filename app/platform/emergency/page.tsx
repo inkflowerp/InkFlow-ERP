@@ -23,7 +23,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformEmergencyControlsAction } from '@/actions/platform-data.actions'
 import { EmergencyControlItem } from '@/types/platform.types'
 import { setEmergencyControlAction } from '@/actions/platform.actions'
 
@@ -55,7 +55,7 @@ export default function PlatformEmergencyPage() {
 
   const loadControls = async () => {
     setLoading(true)
-    const res = await PlatformService.getEmergencyControls()
+    const res = await getPlatformEmergencyControlsAction()
     if (res.success && res.data) {
       setControls(res.data)
     }
@@ -98,9 +98,13 @@ export default function PlatformEmergencyPage() {
       reason.trim()
     )
 
-    if (res.success && res.data) {
+    if (res.success) {
       setControls((prev) =>
-        prev.map((c) => (c.control_key === activeModalControl.control_key ? res.data! : c))
+        prev.map((c) =>
+          c.control_key === activeModalControl.control_key
+            ? { ...c, is_active: targetState, reason: reason.trim(), activated_at: targetState ? new Date().toISOString() : undefined }
+            : c
+        )
       )
       showNotification(
         `Emergency control "${activeModalControl.name}" is now ${targetState ? 'ACTIVE' : 'DEACTIVATED'}.`,

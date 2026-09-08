@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
-import { AuthService } from '@/services/auth.service'
+import { forgotPasswordAction } from '@/actions/auth.actions'
 
 export default function PlatformForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -22,7 +22,7 @@ export default function PlatformForgotPasswordPage() {
     setError(null)
 
     try {
-      await AuthService.forgotPassword(email)
+      await forgotPasswordAction(email)
       // Generic security message regardless of whether the account exists in DB
       setIsSubmitted(true)
     } catch (err: any) {

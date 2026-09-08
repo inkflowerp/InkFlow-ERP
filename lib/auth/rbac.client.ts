@@ -343,8 +343,8 @@ export function getPermissionDetail(
   rawModule: string,
   action: PermissionAction
 ): EffectivePermissionDetail {
-  const module = normalizeModuleKey(rawModule)
-  const code = `${module}.${action}`
+  const permModule = normalizeModuleKey(rawModule)
+  const code = `${permModule}.${action}`
   const userCtx: UserPermissionContext =
     typeof user === 'string' ? { primaryRole: user } : user
 
@@ -361,7 +361,7 @@ export function getPermissionDetail(
   // 1. Check EXPLICIT USER DENY (Highest Priority)
   if (overrides[code] === false || overrides[`${rawModule}.${action}`] === false) {
     return {
-      module,
+      module: permModule,
       action,
       isGranted: false,
       source: 'override_deny',
@@ -373,11 +373,11 @@ export function getPermissionDetail(
   if (
     overrides[code] === true ||
     overrides[`${rawModule}.${action}`] === true ||
-    overrides[`${module}.full_control`] === true ||
+    overrides[`${permModule}.full_control`] === true ||
     overrides[`${rawModule}.full_control`] === true
   ) {
     return {
-      module,
+      module: permModule,
       action,
       isGranted: true,
       source: 'override_allow',
@@ -388,7 +388,7 @@ export function getPermissionDetail(
   // If Business Owner (and no explicit deny) -> UNIVERSAL ALLOW
   if (isOwner) {
     return {
-      module,
+      module: permModule,
       action,
       isGranted: true,
       source: 'owner',
@@ -400,9 +400,9 @@ export function getPermissionDetail(
   const responsibilities = extractResponsibilities(userCtx)
   for (const resp of responsibilities) {
     const matrix = DEFAULT_RESPONSIBILITY_MATRICES[resp]
-    if (matrix && matrix[module]?.[action]) {
+    if (matrix && matrix[permModule]?.[action]) {
       return {
-        module,
+        module: permModule,
         action,
         isGranted: true,
         source: 'inherited',
@@ -413,7 +413,7 @@ export function getPermissionDetail(
 
   // 4. DEFAULT DENY
   return {
-    module,
+    module: permModule,
     action,
     isGranted: false,
     source: 'default_deny',
@@ -458,11 +458,11 @@ export function getEffectiveDataScope(
   user: UserPermissionContext,
   rawModule: string
 ): DataScope {
-  const module = normalizeModuleKey(rawModule)
+  const permModule = normalizeModuleKey(rawModule)
 
   // 1. User specific scope override
-  if (user.data_scopes && user.data_scopes[module]) {
-    return user.data_scopes[module]
+  if (user.data_scopes && user.data_scopes[permModule]) {
+    return user.data_scopes[permModule]
   }
 
   // 2. Owner has company scope
@@ -482,7 +482,7 @@ export function getEffectiveDataScope(
   }
 
   // 4. Default from spec
-  return MODULE_ACTION_SPECS[module]?.defaultScope || 'assigned'
+  return MODULE_ACTION_SPECS[permModule]?.defaultScope || 'assigned'
 }
 
 export interface ScopeCheckContext {

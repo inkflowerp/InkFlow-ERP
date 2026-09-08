@@ -28,7 +28,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { SupplierRecord, SupplierCategory, SupplierPaymentTerms } from '@/types/crm.types'
-import { normalizeBdPhone } from '@/services/crm.service'
+import { normalizeBdPhone } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 

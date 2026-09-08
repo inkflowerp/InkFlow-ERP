@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformRBACTemplatesAction } from '@/actions/platform-data.actions'
 import { PlatformRBACTemplate, PermissionActionKey } from '@/types/platform.types'
 import { updateRBACTemplatePermissionAction } from '@/actions/platform.actions'
 
@@ -60,7 +60,7 @@ export default function PlatformRBACPage() {
 
   const loadTemplates = async () => {
     setLoading(true)
-    const res = await PlatformService.getRBACTemplates()
+    const res = await getPlatformRBACTemplatesAction()
     if (res.success && res.data) {
       setTemplates(res.data)
     }
@@ -137,8 +137,18 @@ export default function PlatformRBACPage() {
   const handleSaveAll = async () => {
     setSaving(true)
     try {
-      const { PrintERPDataStore, STORAGE_KEYS } = await import('@/lib/db/data-store')
-      PrintERPDataStore.set(STORAGE_KEYS.ROLES as any, templates)
+      if (currentTemplate) {
+        for (const [resource, actionMap] of Object.entries(currentTemplate.permissions)) {
+          for (const [action, isAllowed] of Object.entries(actionMap)) {
+            await updateRBACTemplatePermissionAction(
+              currentTemplate.slug,
+              resource,
+              action as PermissionActionKey,
+              isAllowed
+            )
+          }
+        }
+      }
       showNotification(`Template "${currentTemplate?.name || 'RBAC'}" configuration saved to root database.`)
     } catch {
       showNotification('Failed to save templates.')

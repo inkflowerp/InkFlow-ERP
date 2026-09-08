@@ -65,14 +65,14 @@ export function MarketingFooter() {
             <h4 className="text-xs font-bold uppercase tracking-wider text-white">Product</h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <a href="/#features" className="hover:text-cyan-400 transition-colors">
+                <Link href="/#features" className="hover:text-cyan-400 transition-colors">
                   Features & Tools
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#pricing" className="hover:text-cyan-400 transition-colors">
+                <Link href="/#pricing" className="hover:text-cyan-400 transition-colors">
                   Pricing Plans in BDT
-                </a>
+                </Link>
               </li>
               <li>
                 <Link href="/about" className="hover:text-cyan-400 transition-colors">

@@ -35,7 +35,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import {
   getDepartmentColumns,
-} from '@/services/production.service'
+} from '@/lib/formatters'
 import {
   ProductionJobRecord,
   ProductionDepartment,

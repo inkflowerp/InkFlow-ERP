@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformBackgroundJobsAction } from '@/actions/platform-data.actions'
 import { PlatformBackgroundJobItem } from '@/types/platform.types'
 import { retryBackgroundJobAction } from '@/actions/platform.actions'
 
@@ -33,7 +33,7 @@ export default function PlatformJobsPage() {
 
   const loadJobs = async () => {
     setLoading(true)
-    const res = await PlatformService.getBackgroundJobs()
+    const res = await getPlatformBackgroundJobsAction()
     if (res.success && res.data) {
       setJobs(res.data)
     }

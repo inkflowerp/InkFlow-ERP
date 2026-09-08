@@ -25,13 +25,12 @@ import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CurrencyDisplay } from '@/components/shared/currency-display'
 import {
   calculateDaysOverdue,
   numberToWordsBDT,
-} from '@/services/billing.service'
+  formatBDT,
+} from '@/lib/formatters'
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
-import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 

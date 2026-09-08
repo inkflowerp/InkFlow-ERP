@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { User, Mail, Phone, Lock, ArrowRight } from 'lucide-react'
 import { registerSchema, RegisterFormData } from '@/features/auth/auth.schemas'
-import { AuthService } from '@/services/auth.service'
+import { signUpAction } from '@/actions/auth.actions'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -38,18 +38,17 @@ export default function RegisterPage() {
     setIsLoading(true)
     setError(null)
 
-    const res = await AuthService.signUp(
-      data.email,
-      data.password,
-      data.fullName,
-      data.phone
-    )
+    const res = await signUpAction({
+      email: data.email,
+      password: data.password,
+      fullName: data.fullName,
+      phone: data.phone,
+    })
 
     if (res.success) {
       router.push('/onboarding')
     } else {
-      // Local dev fallback
-      router.push('/onboarding')
+      setError(res.error || 'Registration failed. Please check your credentials.')
     }
     setIsLoading(false)
   }

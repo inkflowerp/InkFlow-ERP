@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/unit/*.test.ts tests/integration/*.test.ts tests/security/*.test.ts tests/roles/*.test.ts tests/edge-cases/*.test.ts tests/acceptance/*.test.ts"
   },
   "dependencies": {

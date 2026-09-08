@@ -20,7 +20,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformUsersAction } from '@/actions/platform-data.actions'
 import { PlatformAdminUser, PlatformUserRole } from '@/types/platform.types'
 import { updatePlatformUserAction } from '@/actions/platform.actions'
 
@@ -40,7 +40,7 @@ export default function PlatformUsersPage() {
 
   const loadUsers = async () => {
     setLoading(true)
-    const res = await PlatformService.getPlatformUsers()
+    const res = await getPlatformUsersAction()
     if (res.success && res.data) {
       setUsers(res.data)
     }

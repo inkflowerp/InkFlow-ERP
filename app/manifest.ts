@@ -1,0 +1,49 @@
+import type { MetadataRoute } from 'next'
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'PrintERP SaaS - Printing & Signage OS',
+    short_name: 'PrintERP',
+    description: 'Operating System for Digital Printing, Offset Press, Packaging, and LED Signage in Bangladesh.',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#020617',
+    theme_color: '#020617',
+    orientation: 'portrait-primary',
+    icons: [
+      {
+        src: '/globe.svg',
+        sizes: '192x192',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+      {
+        src: '/globe.svg',
+        sizes: '512x512',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+    ],
+    shortcuts: [
+      {
+        name: 'Quick Quote',
+        short_name: 'Quote',
+        description: 'Calculate instant print estimate in BDT',
+        url: '/padma-digital/mobile?tab=owner&action=quote',
+      },
+      {
+        name: 'Production Floor',
+        short_name: 'Production',
+        description: 'View assigned print jobs and press queue',
+        url: '/padma-digital/mobile?tab=production',
+      },
+      {
+        name: 'Today\'s Sales',
+        short_name: 'Sales',
+        description: 'Owner daily sales and collection KPI',
+        url: '/padma-digital/mobile?tab=owner',
+      },
+    ],
+    categories: ['business', 'productivity', 'utilities'],
+  }
+}

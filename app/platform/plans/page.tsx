@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CreditCard,
   Check,
@@ -32,11 +32,14 @@ import {
   PlanCode,
   CreatePlanInput,
 } from '@/types/subscription.types'
+import { getPlatformPlansAction } from '@/actions/platform-data.actions'
+import { savePlanAction, archivePlanAction } from '@/actions/platform.actions'
 
 const ALL_FEATURES = Object.keys(FEATURE_METADATA) as FeatureCode[]
 
 export default function PlatformPlansPage() {
   const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(DEFAULT_PLANS)
+  const [loading, setLoading] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingLimitsPlan, setEditingLimitsPlan] = useState<SubscriptionPlanRecord | null>(null)
@@ -59,63 +62,95 @@ export default function PlatformPlansPage() {
     is_active: true,
   })
 
+  const loadPlans = async () => {
+    setLoading(true)
+    const res = await getPlatformPlansAction()
+    if (res.success && res.data && res.data.length > 0) {
+      setPlans(res.data)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    loadPlans()
+  }, [])
+
   const showNotification = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
   }
 
   // Price adjustment
-  const handlePriceChange = (planId: string, field: 'price_monthly' | 'price_yearly', val: number) => {
-    setPlans(
-      plans.map((p) => {
-        if (p.id !== planId) return p
-        if (field === 'price_monthly') {
-          return { ...p, price_monthly: val, price_yearly: val * 10 }
-        }
-        return { ...p, price_yearly: val }
-      })
-    )
+  const handlePriceChange = async (planId: string, field: 'price_monthly' | 'price_yearly', val: number) => {
+    const updated = plans.map((p) => {
+      if (p.id !== planId) return p
+      if (field === 'price_monthly') {
+        return { ...p, price_monthly: val, price_yearly: val * 10 }
+      }
+      return { ...p, price_yearly: val }
+    })
+    setPlans(updated)
+    const target = updated.find((p) => p.id === planId)
+    if (target) {
+      await savePlanAction(target)
+    }
   }
 
   // Feature toggle
-  const handleToggleFeature = (planId: string, feature: FeatureCode) => {
-    setPlans(
-      plans.map((p) => {
-        if (p.id !== planId) return p
-        const has = p.features.includes(feature)
-        const updatedFeatures = has
-          ? p.features.filter((f) => f !== feature)
-          : [...p.features, feature]
-        return { ...p, features: updatedFeatures }
-      })
-    )
+  const handleToggleFeature = async (planId: string, feature: FeatureCode) => {
+    const updated = plans.map((p) => {
+      if (p.id !== planId) return p
+      const has = p.features.includes(feature)
+      const updatedFeatures = has
+        ? p.features.filter((f) => f !== feature)
+        : [...p.features, feature]
+      return { ...p, features: updatedFeatures }
+    })
+    setPlans(updated)
+    const target = updated.find((p) => p.id === planId)
+    if (target) {
+      await savePlanAction(target)
+    }
     showNotification(`Feature access gating updated for plan.`)
   }
 
   // Save modified limits
-  const handleSaveLimits = (e: React.FormEvent) => {
+  const handleSaveLimits = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingLimitsPlan) return
-    setPlans(plans.map((p) => (p.id === editingLimitsPlan.id ? editingLimitsPlan : p)))
+    const updated = plans.map((p) => (p.id === editingLimitsPlan.id ? editingLimitsPlan : p))
+    setPlans(updated)
+    await savePlanAction(editingLimitsPlan)
     setEditingLimitsPlan(null)
     showNotification(`Configurable resource limits updated for ${editingLimitsPlan.name}.`)
   }
 
   // Create new plan
-  const handleCreatePlan = (e: React.FormEvent) => {
+  const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newPlan.name || !newPlan.code) return
 
-    const created: SubscriptionPlanRecord = {
+    const res = await savePlanAction({
       ...newPlan,
-      id: `sp-${Date.now().toString().slice(-4)}`,
       is_active: true,
       sort_order: plans.length + 1,
-    }
+    })
 
-    setPlans([...plans, created])
-    setIsCreateOpen(false)
-    showNotification(`New subscription plan "${created.name}" created successfully!`)
+    if (res.success && res.data) {
+      setPlans([...plans, res.data])
+      setIsCreateOpen(false)
+      showNotification(`New subscription plan "${newPlan.name}" created successfully!`)
+    } else {
+      showNotification(res.error || 'Failed to create plan')
+    }
+  }
+
+  const handleArchivePlan = async (planId: string) => {
+    const res = await archivePlanAction(planId)
+    if (res.success) {
+      setPlans(plans.map((p) => (p.id === planId ? { ...p, is_active: false } : p)))
+      showNotification('Plan archived successfully.')
+    }
   }
 
   return (

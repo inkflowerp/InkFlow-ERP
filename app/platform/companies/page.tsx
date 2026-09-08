@@ -37,7 +37,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformCompaniesAction } from '@/actions/platform-data.actions'
 import {
   PlatformTenantCompany,
   CompanyUsageMetrics,
@@ -50,6 +50,7 @@ import {
   changeCompanyPlanAction,
   startTenantSupportSessionAction,
   exportTenantDataAction,
+  createBusinessAction,
 } from '@/actions/platform.actions'
 
 export default function PlatformCompaniesPage() {
@@ -60,6 +61,11 @@ export default function PlatformCompaniesPage() {
   const [healthFilter, setHealthFilter] = useState<string>('all')
   const [divisionFilter, setDivisionFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
+
+  // Create Business Modal
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [isCreatingBusiness, setIsCreatingBusiness] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   // Status Change Modal
   const [statusModalCompany, setStatusModalCompany] = useState<PlatformTenantCompany | null>(null)
@@ -95,15 +101,13 @@ export default function PlatformCompaniesPage() {
 
   const loadCompanies = async () => {
     setLoading(true)
-    const res = await PlatformService.getCompanies({
-      search,
-      status: statusFilter,
-      plan: planFilter,
-      health: healthFilter,
-      division: divisionFilter,
+    const res = await getPlatformCompaniesAction({
+      search: search || undefined,
+      status: statusFilter !== 'all' ? (statusFilter as PlatformCompanyStatus) : undefined,
+      plan: planFilter !== 'all' ? (planFilter as PlatformPlanCode) : undefined,
     })
     if (res.success && res.data) {
-      setCompanies(res.data)
+      setCompanies(Array.isArray(res.data) ? res.data : (res.data?.companies || []))
     }
     setLoading(false)
   }
@@ -171,7 +175,7 @@ export default function PlatformCompaniesPage() {
       'inventory',
       'audit_logs',
     ])
-    if (res.success && res.data) {
+    if (res.success) {
       showNotification(`Controlled tenant export generated. Token expires in 24 hours.`)
       setExportCompany(null)
     } else {
@@ -201,9 +205,20 @@ export default function PlatformCompaniesPage() {
         <div className="flex items-center gap-2">
           <Button
             size="sm"
+            onClick={() => {
+              setCreateError(null)
+              setShowCreateModal(true)
+            }}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs h-9 shadow-md cursor-pointer"
+          >
+            + Create Business
+          </Button>
+
+          <Button
+            size="sm"
             variant="outline"
             onClick={loadCompanies}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9"
+            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9 cursor-pointer"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -791,6 +806,173 @@ export default function PlatformCompaniesPage() {
                 {isExporting ? 'Generating...' : 'Download Export Archive'}
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Business Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2 font-bold text-white text-base">
+                <Building2 className="h-5 w-5 text-indigo-400" />
+                <span>Create New Business Tenant</span>
+              </div>
+              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {createError && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs">
+                {createError}
+              </div>
+            )}
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault()
+                setIsCreatingBusiness(true)
+                setCreateError(null)
+                const form = e.currentTarget
+                const formData = new FormData(form)
+
+                try {
+                  const res = await createBusinessAction(formData)
+                  if (res.success) {
+                    showNotification(`Tenant "${formData.get('name')}" successfully provisioned.`)
+                    setShowCreateModal(false)
+                    loadCompanies()
+                  } else {
+                    setCreateError(res.error || 'Failed to create business.')
+                  }
+                } catch (err: any) {
+                  setCreateError(err.message || 'An error occurred')
+                } finally {
+                  setIsCreatingBusiness(false)
+                }
+              }}
+              className="space-y-3.5"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Business Name <span className="text-red-400">*</span>
+                  </label>
+                  <Input
+                    name="name"
+                    required
+                    placeholder="e.g. Meghna Offset Printers"
+                    className="bg-slate-950 border-slate-800 text-xs text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Slug (URL Identifier) <span className="text-red-400">*</span>
+                  </label>
+                  <Input
+                    name="slug"
+                    required
+                    placeholder="meghna-offset"
+                    className="bg-slate-950 border-slate-800 text-xs text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Bengali Name (Optional)
+                  </label>
+                  <Input
+                    name="name_bn"
+                    placeholder="মেঘনা অফসেট প্রিন্টার্স"
+                    className="bg-slate-950 border-slate-800 text-xs text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Business Type
+                  </label>
+                  <select
+                    name="business_type"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  >
+                    <option value="commercial_printing">Commercial Printing &amp; Offset</option>
+                    <option value="signage_flex">Outdoor Signage &amp; Flex Banner</option>
+                    <option value="digital_press">Digital Press &amp; Laser Print</option>
+                    <option value="packaging">Packaging &amp; Die Cutting</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-800/80 pt-3">
+                <h4 className="text-xs font-bold text-indigo-400 mb-2">Business Owner Information</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Owner Name</label>
+                    <Input
+                      name="owner_name"
+                      placeholder="e.g. Al-Haj Rafiqul Islam"
+                      className="bg-slate-950 border-slate-800 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Owner Phone</label>
+                    <Input
+                      name="owner_phone"
+                      placeholder="01711-XXXXXX"
+                      className="bg-slate-950 border-slate-800 text-xs text-white font-mono"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2.5">
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Owner Email</label>
+                  <Input
+                    name="owner_email"
+                    type="email"
+                    placeholder="owner@meghna-offset.com"
+                    className="bg-slate-950 border-slate-800 text-xs text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-slate-800/80 pt-3">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Initial Subscription Plan
+                </label>
+                <select
+                  name="plan"
+                  defaultValue="starter"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                >
+                  <option value="starter">Starter Press (৳2,500/mo • 3 Users • 1 Branch)</option>
+                  <option value="growth">Growth Signage (৳6,000/mo • 10 Users • 3 Branches)</option>
+                  <option value="enterprise">Enterprise Factory (৳15,000/mo • 50 Users • 10 Branches)</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCreateModal(false)}
+                  className="border-slate-700 text-slate-300 text-xs cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isCreatingBusiness}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md cursor-pointer"
+                >
+                  {isCreatingBusiness ? 'Creating Tenant...' : 'Create Business'}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

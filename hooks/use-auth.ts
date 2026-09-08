@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AuthUser } from '@/types/auth.types'
 import { TENANT_SESSION_COOKIE, TenantSessionData } from '@/lib/auth/types'
-import { AuthService } from '@/services/auth.service'
+import { signOutAction } from '@/actions/auth.actions'
 
 function getSessionFromCookie(): TenantSessionData | null {
   if (typeof document === 'undefined') return null
@@ -37,7 +37,7 @@ export function useAuth() {
           id: session.userId,
           full_name: session.fullName,
           full_name_bn: session.fullNameBn || null,
-          phone: session.phone || '+8801711000000',
+          phone: session.phone || null,
           avatar_url: null,
           preferred_locale: 'bn',
           created_at: session.loginTime,
@@ -87,7 +87,7 @@ export function useAuth() {
 
   const signOut = async () => {
     setIsLoading(true)
-    await AuthService.signOut()
+    await signOutAction()
     setUser(null)
     router.push('/login')
     setIsLoading(false)

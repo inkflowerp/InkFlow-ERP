@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformIntegrationsHealthAction } from '@/actions/platform-data.actions'
 import { IntegrationProviderStatus } from '@/types/platform.types'
 
 export default function PlatformIntegrationsPage() {
@@ -25,7 +25,7 @@ export default function PlatformIntegrationsPage() {
 
   const loadIntegrations = async () => {
     setLoading(true)
-    const res = await PlatformService.getIntegrationsHealth()
+    const res = await getPlatformIntegrationsHealthAction()
     if (res.success && res.data) {
       setIntegrations(res.data)
     }

@@ -22,7 +22,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformCompaniesAction } from '@/actions/platform-data.actions'
 import { PlatformTenantCompany, PlatformPlanCode, PlatformCompanyStatus } from '@/types/platform.types'
 import { changeCompanyPlanAction, updateCompanyStatusAction } from '@/actions/platform.actions'
 
@@ -49,9 +49,9 @@ export default function PlatformSubscriptionsPage() {
 
   const loadData = async () => {
     setLoading(true)
-    const res = await PlatformService.getCompanies()
+    const res = await getPlatformCompaniesAction()
     if (res.success && res.data) {
-      setCompanies(res.data)
+      setCompanies(Array.isArray(res.data) ? res.data : (res.data?.companies || []))
     }
     setLoading(false)
   }

@@ -13,8 +13,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
-import { numberToWordsBDT } from '@/services/billing.service'
-import { formatBDT } from '@/lib/formatters'
+import { formatBDT, numberToWordsBDT } from '@/lib/formatters'
 import { PayrollPeriodRecord } from '@/types/hr.types'
 
 interface PayrollDetailPageProps {

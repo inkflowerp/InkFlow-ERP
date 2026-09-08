@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { forgotPasswordSchema, ForgotPasswordFormData } from '@/features/auth/auth.schemas'
-import { AuthService } from '@/services/auth.service'
+import { forgotPasswordAction } from '@/actions/auth.actions'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -30,11 +30,11 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true)
     setError(null)
-    const res = await AuthService.forgotPassword(data.email)
+    const res = await forgotPasswordAction(data.email)
     if (res.success) {
       setIsSent(true)
     } else {
-      setIsSent(true) // local demo mode
+      setError(res.error || 'Failed to send password reset email.')
     }
     setIsLoading(false)
   }

@@ -3,13 +3,6 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database.types'
 import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '@/lib/auth/types'
 
-const KNOWN_PLATFORM_EMAILS = [
-  'admin@printerp.com.bd',
-  'platform-admin@example.com',
-  'support@printerp.com.bd',
-  'finance@printerp.com.bd',
-]
-
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -41,15 +34,29 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/about') ||
     pathname.startsWith('/contact') ||
     pathname.startsWith('/faq') ||
+    pathname.startsWith('/terms') ||
+    pathname.startsWith('/privacy') ||
     pathname.startsWith('/auth/callback') ||
-    pathname.startsWith('/api')
+    pathname.startsWith('/api') ||
+    pathname === '/manifest.json' ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/sw.js' ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
+    pathname.startsWith('/icons/')
 
   // Check platform session cookie
   const platformSessionCookie = request.cookies.get(PLATFORM_SESSION_COOKIE)?.value
   let hasValidPlatformCookie = false
   if (platformSessionCookie) {
     try {
-      const parsed = JSON.parse(platformSessionCookie)
+      let raw = platformSessionCookie
+      try {
+        raw = decodeURIComponent(platformSessionCookie)
+      } catch {
+        // Ignored
+      }
+      const parsed = typeof raw === 'string' && raw.startsWith('{') ? JSON.parse(raw) : JSON.parse(platformSessionCookie)
       if (parsed && (parsed.email || parsed.userId) && parsed.role) {
         hasValidPlatformCookie = true
       }
@@ -88,12 +95,6 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    if (isPlatformAuthPage && hasValidPlatformCookie && pathname === '/platform/login') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/platform'
-      return NextResponse.redirect(url)
-    }
-
     return supabaseResponse
   }
 
@@ -124,7 +125,7 @@ export async function updateSession(request: NextRequest) {
 
   const isPlatformUser =
     hasValidPlatformCookie ||
-    (user && (KNOWN_PLATFORM_EMAILS.includes(user.email?.toLowerCase() || '') || user.app_metadata?.role?.startsWith('platform_')))
+    (user && user.app_metadata?.role?.startsWith('platform_'))
 
   // 1. Platform Protected Page Guard: Tenant users can NEVER access /platform/*
   if (isPlatformProtectedPage) {
@@ -156,13 +157,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (hasValidPlatformCookie && isPlatformAuthPage && pathname === '/platform/login') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/platform'
-    return NextResponse.redirect(url)
-  }
-
   return supabaseResponse
 }
-
-

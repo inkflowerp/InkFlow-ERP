@@ -19,8 +19,8 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { onboardingSchema, OnboardingFormData } from '@/features/tenant/tenant.schemas'
-import { TenantService } from '@/services/tenant.service'
-import { AuthService } from '@/services/auth.service'
+import { createCompanyAction } from '@/actions/tenant.actions'
+import { signInAction } from '@/actions/auth.actions'
 import { ONBOARDING_BUSINESS_TYPES } from '@/config/business-types.config'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -116,38 +116,35 @@ export default function OnboardingPage() {
 
     try {
       // 1. Create company and auto-assign owner role with 14-day evaluation trial
-      const res = await TenantService.createCompany(
-        {
-          name: data.name,
-          name_bn: data.name_bn,
-          slug: data.slug,
-          business_type: data.business_type,
-          phone: data.phone,
-          whatsapp: data.whatsapp || data.phone,
-          email: data.email,
-          division_id: data.division_id,
-          district_id: data.district_id,
-          upazila_id: data.upazila_id,
-          address: data.address,
-          address_bn: data.address_bn,
-          currency: data.currency,
-          owner_name: data.owner_name,
-          owner_email: data.owner_email,
-          owner_phone: data.owner_phone,
-          owner_password: data.owner_password,
-          plan: 'starter',
-        },
-        'owner-user-' + Date.now()
-      )
+      const res = await createCompanyAction({
+        name: data.name,
+        name_bn: data.name_bn,
+        slug: data.slug,
+        business_type: data.business_type,
+        phone: data.phone,
+        whatsapp: data.whatsapp || data.phone,
+        email: data.email,
+        division_id: data.division_id,
+        district_id: data.district_id,
+        upazila_id: data.upazila_id,
+        address: data.address,
+        address_bn: data.address_bn,
+        currency: data.currency,
+        owner_name: data.owner_name,
+        owner_email: data.owner_email,
+        owner_phone: data.owner_phone,
+        owner_password: data.owner_password,
+        plan: 'starter',
+      })
 
-      if (!res.success || !res.data) {
-        setError(res.error || 'Failed to setup organization')
+      if (!res?.success || !res?.data) {
+        setError(res?.error || 'Failed to setup organization')
         setIsLoading(false)
         return
       }
 
       // 2. Establish authenticated session for new trial owner
-      await AuthService.signIn(data.owner_email, data.owner_password, res.data.slug)
+      await signInAction(data.owner_email, data.owner_password)
 
       // 3. Hard redirect directly to the new company dashboard
       window.location.href = `/${res.data.slug}/dashboard`

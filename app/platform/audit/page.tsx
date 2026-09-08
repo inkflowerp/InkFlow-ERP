@@ -18,7 +18,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformAuditLogsAction } from '@/actions/platform-data.actions'
 import { PlatformAuditLogItem } from '@/types/platform.types'
 
 export default function PlatformAuditPage() {
@@ -31,13 +31,12 @@ export default function PlatformAuditPage() {
 
   const loadLogs = async () => {
     setLoading(true)
-    const res = await PlatformService.getAuditLogs(
-      search,
-      actionCategory,
-      entityTypeFilter
-    )
+    const res = await getPlatformAuditLogsAction({
+      action: actionCategory !== 'all' ? actionCategory : search || undefined,
+      pageSize: 100,
+    })
     if (res.success && res.data) {
-      setLogs(res.data)
+      setLogs(res.data.logs)
     }
     setLoading(false)
   }

@@ -11,6 +11,27 @@ export type PlatformCompanyStatus =
   | 'cancelled'
   | 'archived'
 
+export type SupportAccessLevel = 'read_only' | 'config_only' | 'full_support'
+
+export interface PlatformSupportSessionRecord {
+  id: string
+  platform_admin_id: string
+  company_id: string
+  company_name?: string
+  company_slug?: string
+  admin_email?: string
+  admin_name?: string
+  reason: string
+  access_level: SupportAccessLevel
+  session_token_hash: string
+  status: 'active' | 'expired' | 'revoked'
+  started_at: string
+  expires_at: string
+  revoked_at?: string | null
+  revoked_by?: string | null
+  created_at: string
+}
+
 export type PlatformPlanCode = 'starter' | 'business' | 'enterprise' | 'growth' | 'custom'
 
 export type TenantHealthStatus = 'healthy' | 'at_risk' | 'critical' | 'suspended'

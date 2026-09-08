@@ -26,7 +26,7 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { PageHeader } from '@/components/shared/page-header'
 import { cn } from '@/lib/utils'
-import { CompanyUsersService, DEMO_COMPANY_USERS } from '@/services/company-users.service'
+import { updateUserAccessAndPermissionsAction } from '@/actions/company-users.actions'
 import { CompanyUserWithProfile } from '@/types/tenant.types'
 
 export default function RolesMatrixPage() {
@@ -126,9 +126,9 @@ export default function RolesMatrixPage() {
     setTimeout(() => setIsSaved(false), 3500)
   }
 
-  const handleSaveUserOverrides = () => {
+  const handleSaveUserOverrides = async () => {
     if (targetUser) {
-      CompanyUsersService.updateUserAccessAndPermissions({
+      await updateUserAccessAndPermissionsAction({
         companyUserId: targetUser.id,
         overrides: userOverrides,
         actorName: 'Business Owner',

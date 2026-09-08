@@ -14,7 +14,7 @@ import {
   X,
   Sparkles,
 } from 'lucide-react'
-import { PlatformService } from '@/services/platform.service'
+import { searchPlatformGlobalAction } from '@/actions/platform-data.actions'
 import { GlobalSearchResult } from '@/types/platform.types'
 
 interface GlobalSearchDialogProps {
@@ -62,7 +62,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
 
     const timer = setTimeout(async () => {
       setLoading(true)
-      const res = await PlatformService.globalSearch(query)
+      const res = await searchPlatformGlobalAction(query)
       if (res.success && res.data) {
         setResults(res.data)
       }

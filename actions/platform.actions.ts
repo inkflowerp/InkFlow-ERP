@@ -3,22 +3,33 @@
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import { PlatformService } from '@/services/platform.service'
+import { TenantService } from '@/services/tenant.service'
 import {
   PlatformCompanyStatus,
   PlatformPlanCode,
   PermissionActionKey,
   PlatformAdminUser,
+  SupportAccessLevel,
 } from '@/types/platform.types'
-import { requirePlatformUser, hasPlatformPermission, PLATFORM_SESSION_COOKIE } from '@/lib/auth/platform-auth'
+import { SubscriptionPlanRecord } from '@/types/subscription.types'
+import {
+  requirePlatformUser,
+  requirePlatformPermission,
+  hasPlatformPermission,
+  PLATFORM_SESSION_COOKIE,
+} from '@/lib/auth/platform-auth'
 
+/**
+ * 1. Tenant Lifecycle Actions
+ */
 export async function updateCompanyStatusAction(
   companyId: string,
   newStatus: PlatformCompanyStatus,
   reason?: string
 ) {
   const platformUser = await requirePlatformUser()
-  if (!hasPlatformPermission(platformUser, 'company.edit')) {
-    return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+  if (!hasPlatformPermission(platformUser, 'tenant.edit') && !hasPlatformPermission(platformUser, 'company.edit')) {
+    return { success: false, error: 'Unauthorized: Insufficient platform permissions to change tenant status.' }
   }
 
   const result = await PlatformService.updateCompanyStatus(companyId, newStatus, reason)
@@ -36,8 +47,8 @@ export async function changeCompanyPlanAction(
   reason?: string
 ) {
   const platformUser = await requirePlatformUser()
-  if (!hasPlatformPermission(platformUser, 'subscription.edit')) {
-    return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+  if (!hasPlatformPermission(platformUser, 'subscription.manage') && !hasPlatformPermission(platformUser, 'subscription.edit')) {
+    return { success: false, error: 'Unauthorized: Insufficient platform permissions to change subscription plan.' }
   }
 
   const result = await PlatformService.changeCompanyPlan(companyId, newPlan, reason)
@@ -46,18 +57,201 @@ export async function changeCompanyPlanAction(
     revalidatePath('/platform/companies')
     revalidatePath(`/platform/companies/${companyId}`)
     revalidatePath('/platform/subscriptions')
-    revalidatePath('/platform/billing')
   }
   return result
 }
 
+/**
+ * 2. Create Business (Atomic Platform Provisioning Flow)
+ */
+export async function createBusinessAction(formData: FormData) {
+  const platformUser = await requirePlatformUser()
+  if (!hasPlatformPermission(platformUser, 'tenant.create') && !hasPlatformPermission(platformUser, 'company.create')) {
+    return { success: false, error: 'Unauthorized: Insufficient platform permissions to create a new tenant.' }
+  }
+
+  const name = (formData.get('name') as string)?.trim()
+  const nameBn = (formData.get('name_bn') as string)?.trim() || undefined
+  const slug = (formData.get('slug') as string)?.trim()?.toLowerCase()
+  const businessType = (formData.get('business_type') as string) || 'commercial_printing'
+  const email = (formData.get('email') as string)?.trim() || undefined
+  const phone = (formData.get('phone') as string)?.trim() || undefined
+  const ownerName = (formData.get('owner_name') as string)?.trim() || undefined
+  const ownerEmail = (formData.get('owner_email') as string)?.trim() || undefined
+  const ownerPhone = (formData.get('owner_phone') as string)?.trim() || undefined
+  const plan = (formData.get('plan') as any) || 'starter'
+
+  if (!name || !slug) {
+    return { success: false, error: 'Company Name and unique Slug are required.' }
+  }
+
+  try {
+    const createRes = await TenantService.createCompany({
+      name,
+      name_bn: nameBn,
+      slug,
+      business_type: businessType,
+      email: email || ownerEmail,
+      phone: phone || ownerPhone,
+      owner_name: ownerName,
+      owner_email: ownerEmail,
+      owner_phone: ownerPhone,
+      plan,
+    })
+
+    if (!createRes.success || !createRes.data) {
+      return { success: false, error: createRes.error || 'Failed to create business.' }
+    }
+
+    const newCompany = createRes.data
+
+    // Record platform audit
+    await PlatformService.recordAuditLog(
+      'company.create',
+      'company',
+      newCompany.id,
+      newCompany.id,
+      newCompany.name,
+      {
+        slug: newCompany.slug,
+        owner_name: ownerName,
+        owner_email: ownerEmail,
+        plan,
+      },
+      null,
+      newCompany,
+      `New tenant ${newCompany.name} created by platform administrator`
+    )
+
+    revalidatePath('/platform', 'layout')
+    revalidatePath('/platform/companies')
+
+    return { success: true, data: newCompany }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An error occurred during tenant creation.' }
+  }
+}
+
+/**
+ * 3. Temporary Support Access Workflow
+ */
+export async function startTenantSupportSessionAction(
+  companyId: string,
+  companySlug: string,
+  companyName: string,
+  reason: string,
+  accessLevel: SupportAccessLevel = 'read_only'
+): Promise<{ success: true; redirectUrl: string } | { success: false; error: string }> {
+  try {
+    const platformUser = await requirePlatformUser()
+    if (!hasPlatformPermission(platformUser, 'support.access') && !hasPlatformPermission(platformUser, 'company.support_access')) {
+      return { success: false, error: 'Unauthorized: You do not possess Support Access capability.' }
+    }
+
+    const sessionRes = await PlatformService.createSupportSession(companyId, reason, accessLevel)
+    if (!sessionRes.success || !sessionRes.data) {
+      return { success: false, error: sessionRes.error || 'Failed to initiate support session.' }
+    }
+
+    const supportRecord = sessionRes.data
+    const cookieStore = await cookies()
+    const supportPayload = {
+      sessionId: supportRecord.id,
+      platformUserId: platformUser.id,
+      platformUserEmail: platformUser.email,
+      targetCompanyId: companyId,
+      targetCompanySlug: companySlug,
+      targetCompanyName: companyName,
+      reason,
+      accessLevel,
+      startedAt: supportRecord.started_at,
+      expiresAt: supportRecord.expires_at,
+    }
+
+    cookieStore.set('printerp_support_tenant', JSON.stringify(supportPayload), {
+      path: '/',
+      maxAge: 60 * 60 * 2, // 2 hours
+      sameSite: 'lax',
+    })
+
+    return { success: true, redirectUrl: `/${companySlug}/dashboard` }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to initiate support session' }
+  }
+}
+
+export async function exitTenantSupportSessionAction() {
+  const cookieStore = await cookies()
+  const existing = cookieStore.get('printerp_support_tenant')?.value
+
+  if (existing) {
+    try {
+      const parsed = JSON.parse(existing)
+      if (parsed.sessionId) {
+        await PlatformService.revokeSupportSession(parsed.sessionId, 'Support session exited by platform user')
+      }
+    } catch {
+      // Ignored
+    }
+  }
+
+  cookieStore.delete('printerp_support_tenant')
+  revalidatePath('/platform', 'layout')
+  return { success: true }
+}
+
+export async function revokeSupportSessionAction(sessionId: string, reason?: string) {
+  const platformUser = await requirePlatformUser()
+  if (!hasPlatformPermission(platformUser, 'support.access')) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  const result = await PlatformService.revokeSupportSession(sessionId, reason)
+  if (result.success) {
+    revalidatePath('/platform/support')
+  }
+  return result
+}
+
+/**
+ * 4. Subscription Plans Management
+ */
+export async function savePlanAction(planData: Partial<SubscriptionPlanRecord>) {
+  const platformUser = await requirePlatformUser()
+  if (!hasPlatformPermission(platformUser, 'plan.create') && !hasPlatformPermission(platformUser, 'plan.edit')) {
+    return { success: false, error: 'Unauthorized: Insufficient platform permissions to manage plans.' }
+  }
+
+  const result = await PlatformService.savePlan(planData)
+  if (result.success) {
+    revalidatePath('/platform/plans')
+  }
+  return result
+}
+
+export async function archivePlanAction(planId: string) {
+  const platformUser = await requirePlatformUser()
+  if (!hasPlatformPermission(platformUser, 'plan.archive')) {
+    return { success: false, error: 'Unauthorized: Insufficient platform permissions to archive plans.' }
+  }
+
+  const result = await PlatformService.archivePlan(planId)
+  if (result.success) {
+    revalidatePath('/platform/plans')
+  }
+  return result
+}
+
+/**
+ * 5. Feature Flags & Overrides
+ */
 export async function toggleGlobalFeatureFlagAction(
   flagId: string,
   isEnabled: boolean,
   reason?: string
 ) {
   const platformUser = await requirePlatformUser()
-  if (!hasPlatformPermission(platformUser, 'platform.feature_flags')) {
+  if (!hasPlatformPermission(platformUser, 'feature.manage')) {
     return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
   }
 
@@ -75,7 +269,7 @@ export async function setTenantFeatureFlagAction(
   notes?: string
 ) {
   const platformUser = await requirePlatformUser()
-  if (!hasPlatformPermission(platformUser, 'platform.feature_flags')) {
+  if (!hasPlatformPermission(platformUser, 'feature.manage')) {
     return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
   }
 
@@ -92,7 +286,7 @@ export async function removeTenantFeatureFlagAction(
   companyId: string
 ) {
   const platformUser = await requirePlatformUser()
-  if (!hasPlatformPermission(platformUser, 'platform.feature_flags')) {
+  if (!hasPlatformPermission(platformUser, 'feature.manage')) {
     return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
   }
 
@@ -104,24 +298,9 @@ export async function removeTenantFeatureFlagAction(
   return result
 }
 
-export async function updateRBACTemplatePermissionAction(
-  templateId: string,
-  resource: string,
-  action: PermissionActionKey,
-  isAllowed: boolean
-) {
-  const platformUser = await requirePlatformUser()
-  if (!hasPlatformPermission(platformUser, 'platform.rbac')) {
-    return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
-  }
-
-  const result = await PlatformService.updateRBACTemplatePermission(templateId, resource, action, isAllowed)
-  if (result.success) {
-    revalidatePath('/platform/rbac')
-  }
-  return result
-}
-
+/**
+ * 6. System Health, Background Jobs, & Emergency Controls
+ */
 export async function retryFailedJobAction(eventId: string) {
   const platformUser = await requirePlatformUser()
   if (!hasPlatformPermission(platformUser, 'system.job_retry')) {
@@ -150,25 +329,6 @@ export async function resolveHealthEventAction(eventId: string) {
   return result
 }
 
-export async function updateIncidentStatusAction(
-  incidentId: string,
-  status: 'investigating' | 'identified' | 'monitoring' | 'resolved',
-  resolutionNotes?: string
-) {
-  const platformUser = await requirePlatformUser()
-  if (!hasPlatformPermission(platformUser, 'system.incidents')) {
-    return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
-  }
-
-  const result = await PlatformService.updateIncidentStatus(incidentId, status, resolutionNotes)
-  if (result.success) {
-    revalidatePath('/platform/incidents')
-    revalidatePath('/platform/health')
-    revalidatePath('/platform')
-  }
-  return result
-}
-
 export async function retryBackgroundJobAction(jobId: string) {
   const platformUser = await requirePlatformUser()
   if (!hasPlatformPermission(platformUser, 'system.job_retry')) {
@@ -180,23 +340,6 @@ export async function retryBackgroundJobAction(jobId: string) {
     revalidatePath('/platform/jobs')
     revalidatePath('/platform/health')
     revalidatePath('/platform')
-  }
-  return result
-}
-
-export async function updatePlatformUserAction(
-  userId: string,
-  updates: Partial<PlatformAdminUser>
-) {
-  const platformUser = await requirePlatformUser()
-  if (platformUser.role !== 'platform_owner' && platformUser.role !== 'platform_admin') {
-    return { success: false, error: 'Unauthorized: Only platform owners can manage platform users.' }
-  }
-
-  const result = await PlatformService.updatePlatformUser(userId, updates)
-  if (result.success) {
-    revalidatePath('/platform/users')
-    revalidatePath('/platform/security')
   }
   return result
 }
@@ -219,147 +362,35 @@ export async function setEmergencyControlAction(
   return result
 }
 
-export async function exportTenantDataAction(
-  companyId: string,
-  modules: string[]
+/**
+ * 7. Platform Users Management
+ */
+export async function updatePlatformUserAction(
+  userId: string,
+  updates: Partial<PlatformAdminUser>
 ) {
   const platformUser = await requirePlatformUser()
-  if (!hasPlatformPermission(platformUser, 'company.export')) {
-    return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+  if (platformUser.role !== 'platform_owner' && platformUser.role !== 'platform_admin') {
+    return { success: false, error: 'Unauthorized: Only platform owners can manage platform users.' }
   }
 
-  const result = await PlatformService.exportTenantData(companyId, modules)
-  return result
-}
-
-export async function startTenantSupportSessionAction(
-  companyId: string,
-  companySlug: string,
-  companyName: string,
-  reason: string
-): Promise<{ success: true; redirectUrl: string } | { success: false; error: string }> {
-  try {
-    const { cookies } = await import('next/headers')
-    const platformUser = await requirePlatformUser()
-
-    // Record audit log entry in platform_audit_logs
-    await PlatformService.recordAuditLog(
-      'company.support_access',
-      'company',
-      companyId,
-      companyId,
-      companyName,
-      {
-        reason,
-        platform_user_id: platformUser.id,
-        platform_user_email: platformUser.email,
-        company_slug: companySlug,
-        company_name: companyName,
-        started_at: new Date().toISOString(),
-      },
-      null,
-      { support_mode_active: true },
-      reason
-    )
-
-    // Set explicit support session cookie
-    const cookieStore = await cookies()
-    const supportPayload = {
-      platformUserId: platformUser.id,
-      platformUserEmail: platformUser.email,
-      targetCompanyId: companyId,
-      targetCompanySlug: companySlug,
-      targetCompanyName: companyName,
-      reason,
-      startedAt: new Date().toISOString(),
-    }
-
-    cookieStore.set('printerp_support_tenant', JSON.stringify(supportPayload), {
-      path: '/',
-      maxAge: 60 * 60 * 2, // 2 hours
-      sameSite: 'lax',
-    })
-
-    return { success: true, redirectUrl: `/${companySlug}/dashboard` }
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Failed to initiate support session' }
-  }
-}
-
-export async function exitTenantSupportSessionAction() {
-  const { cookies } = await import('next/headers')
-  const cookieStore = await cookies()
-  
-  const existing = cookieStore.get('printerp_support_tenant')?.value
-  if (existing) {
-    try {
-      const parsed = JSON.parse(existing)
-      await PlatformService.recordAuditLog(
-        'company.support_exit',
-        'company',
-        parsed.targetCompanyId,
-        parsed.targetCompanyId,
-        parsed.targetCompanyName,
-        {
-          exited_at: new Date().toISOString(),
-          reason: parsed.reason,
-        },
-        { support_mode_active: true },
-        { support_mode_active: false },
-        'Platform admin exited support mode'
-      )
-    } catch {
-      // Ignored
-    }
-  }
-
-  cookieStore.delete('printerp_support_tenant')
-  return { success: true }
-}
-
-export async function updatePlatformSettingsAction(
-  settings: Record<string, any>,
-  reason?: string
-) {
-  const platformUser = await requirePlatformUser()
-  if (platformUser.role !== 'platform_owner') {
-    return { success: false, error: 'Unauthorized: Only the root Platform Owner can modify global platform parameters.' }
-  }
-
-  const result = await PlatformService.updatePlatformSettings(settings, reason)
+  const result = await PlatformService.updatePlatformUser(userId, updates)
   if (result.success) {
-    revalidatePath('/platform/settings')
-    revalidatePath('/platform')
+    revalidatePath('/platform/users')
+    revalidatePath('/platform/security')
   }
   return result
 }
 
+/**
+ * 8. Platform Owner Profile, Security, & Session Revocation
+ */
 export async function updatePlatformOwnerProfileAction(
-  updates: { full_name?: string; phone?: string; avatar_url?: string }
+  updates: { full_name?: string; phone?: string; avatar_url?: string; preferences?: Record<string, any> }
 ) {
   const platformUser = await requirePlatformUser()
   const result = await PlatformService.updatePlatformOwnerProfile(updates)
-  if (result.success && result.data) {
-    try {
-      const cookieStore = await cookies()
-      const sessionCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
-      if (sessionCookie) {
-        const sessionData = JSON.parse(sessionCookie)
-        if (updates.full_name) {
-          sessionData.fullName = updates.full_name.trim()
-        }
-        cookieStore.set(PLATFORM_SESSION_COOKIE, JSON.stringify(sessionData), {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7,
-          path: '/',
-        })
-      }
-    } catch {
-      // Ignored
-    }
-
+  if (result.success) {
     revalidatePath('/platform/profile')
     revalidatePath('/platform', 'layout')
   }
@@ -410,6 +441,56 @@ export async function revokeAllOtherPlatformSessionsAction() {
   if (result.success) {
     revalidatePath('/platform/security')
     revalidatePath('/platform/profile')
+  }
+  return result
+}
+
+export async function exportTenantDataAction(companyId: string, modules: string[]) {
+  const platformUser = await requirePlatformUser()
+  if (!hasPlatformPermission(platformUser, 'tenant.view') && !hasPlatformPermission(platformUser, 'company.view')) {
+    return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+  }
+  return PlatformService.exportTenantData(companyId, modules)
+}
+
+export async function updateIncidentStatusAction(incidentId: string, status: any, resolutionNotes?: string) {
+  const platformUser = await requirePlatformUser()
+  if (!hasPlatformPermission(platformUser, 'system.manage')) {
+    return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+  }
+  const result = await PlatformService.updateIncidentStatus(incidentId, status, resolutionNotes)
+  if (result.success) {
+    revalidatePath('/platform/incidents')
+    revalidatePath('/platform/health')
+  }
+  return result
+}
+
+export async function updateRBACTemplatePermissionAction(
+  templateId: string,
+  resource: string,
+  action: PermissionActionKey,
+  isAllowed: boolean
+) {
+  const platformUser = await requirePlatformUser()
+  if (platformUser.role !== 'platform_owner') {
+    return { success: false, error: 'Unauthorized: Only platform owner can modify global RBAC templates.' }
+  }
+  const result = await PlatformService.updateRBACTemplatePermission(templateId, resource, action, isAllowed)
+  if (result.success) {
+    revalidatePath('/platform/rbac')
+  }
+  return result
+}
+
+export async function updatePlatformSettingsAction(settings: Record<string, any>, reason?: string) {
+  const platformUser = await requirePlatformUser()
+  if (platformUser.role !== 'platform_owner') {
+    return { success: false, error: 'Unauthorized: Only platform owner can modify system settings.' }
+  }
+  const result = await PlatformService.updatePlatformSettings(settings, reason)
+  if (result.success) {
+    revalidatePath('/platform/settings')
   }
   return result
 }

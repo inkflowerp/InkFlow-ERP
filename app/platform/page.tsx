@@ -30,7 +30,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformDashboardOverviewAction } from '@/actions/platform-data.actions'
 import { PlatformDashboardMetrics, NeedsAttentionItem } from '@/types/platform.types'
 
 export default function PlatformDashboardPage() {
@@ -40,7 +40,7 @@ export default function PlatformDashboardPage() {
 
   const loadData = async () => {
     setLoading(true)
-    const res = await PlatformService.getDashboardOverview()
+    const res = await getPlatformDashboardOverviewAction()
     if (res.success && res.data) {
       setData(res.data)
     }

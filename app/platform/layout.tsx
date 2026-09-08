@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { PlatformHeader } from '@/components/platform/platform-header'
 import { PlatformSidebar } from '@/components/platform/platform-sidebar'
-import { usePathname, useRouter } from 'next/navigation'
-import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
+import { usePathname } from 'next/navigation'
 
 export default function PlatformLayout({
   children,
@@ -12,40 +11,14 @@ export default function PlatformLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const router = useRouter()
-  const [checkingAuth, setCheckingAuth] = useState(true)
 
   const isAuthPage =
     pathname === '/platform/login' ||
     pathname === '/platform/forgot-password' ||
     pathname === '/platform/reset-password'
 
-  useEffect(() => {
-    if (isAuthPage) {
-      setCheckingAuth(false)
-      return
-    }
-
-    getPlatformSessionUserAction().then((user) => {
-      if (!user || !user.is_active) {
-        router.push(`/platform/login?redirectTo=${encodeURIComponent(pathname)}`)
-      } else {
-        setCheckingAuth(false)
-      }
-    })
-  }, [pathname, isAuthPage, router])
-
   if (isAuthPage) {
     return <>{children}</>
-  }
-
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
-        <div className="h-8 w-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-        <span className="text-xs font-mono text-indigo-300">Verifying Platform Authorization...</span>
-      </div>
-    )
   }
 
   return (
@@ -66,3 +39,4 @@ export default function PlatformLayout({
     </div>
   )
 }
+

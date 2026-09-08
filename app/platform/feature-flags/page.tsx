@@ -23,7 +23,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { PlatformService } from '@/services/platform.service'
+import { getPlatformFeatureFlagsAction, getPlatformCompaniesAction } from '@/actions/platform-data.actions'
 import {
   PlatformFeatureFlagItem,
   PlatformTenantCompany,
@@ -66,14 +66,15 @@ export default function PlatformFeatureFlagsPage() {
   const loadData = async () => {
     setLoading(true)
     const [flagRes, compRes] = await Promise.all([
-      PlatformService.getFeatureFlags(),
-      PlatformService.getCompanies(),
+      getPlatformFeatureFlagsAction(),
+      getPlatformCompaniesAction(),
     ])
     if (flagRes.success && flagRes.data) setFlags(flagRes.data)
     if (compRes.success && compRes.data) {
-      setCompanies(compRes.data)
-      if (compRes.data.length > 0 && !selectedCompanyId) {
-        setSelectedCompanyId(compRes.data[0].id)
+      const compList = Array.isArray(compRes.data) ? compRes.data : (compRes.data?.companies || [])
+      setCompanies(compList)
+      if (compList.length > 0 && !selectedCompanyId) {
+        setSelectedCompanyId(compList[0].id)
       }
     }
     setLoading(false)
@@ -120,10 +121,8 @@ export default function PlatformFeatureFlagsPage() {
       overrideNotes || 'Custom tenant override set by platform owner'
     )
 
-    if (res.success && res.data) {
-      setFlags((prev) =>
-        prev.map((f) => (f.key === overrideModalFlag.key ? res.data! : f))
-      )
+    if (res.success) {
+      await loadData()
       const compName = companies.find((c) => c.id === overrideCompanyId)?.name || 'Tenant'
       showNotification(
         `Assigned tenant override for ${compName}: ${overrideState ? 'ENABLED' : 'DISABLED'}.`
@@ -138,8 +137,8 @@ export default function PlatformFeatureFlagsPage() {
   // Remove Tenant Override
   const handleRemoveOverride = async (flagKey: string, companyId: string) => {
     const res = await removeTenantFeatureFlagAction(flagKey, companyId)
-    if (res.success && res.data) {
-      setFlags((prev) => prev.map((f) => (f.key === flagKey ? res.data! : f)))
+    if (res.success) {
+      await loadData()
       showNotification('Reverted tenant override back to platform global default.')
     } else {
       showNotification('Failed to remove override', 'error')

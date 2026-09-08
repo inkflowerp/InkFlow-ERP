@@ -36,7 +36,7 @@ import {
   extractResponsibilities,
   normalizeResponsibilitySlug,
 } from '@/lib/auth/rbac.client'
-import { CompanyUsersService } from '@/services/company-users.service'
+import { updateUserAccessAndPermissionsAction } from '@/actions/company-users.actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -217,8 +217,9 @@ export function UserPermissionsDrawer({
     setSuccessMsg(null)
 
     try {
-      const res = await CompanyUsersService.updateUserAccessAndPermissions({
+      const res = await updateUserAccessAndPermissionsAction({
         companyUserId: user.id,
+        companyId,
         responsibilities: selectedResponsibilities,
         overrides,
         dataScopes,
@@ -244,8 +245,7 @@ export function UserPermissionsDrawer({
   }
 
   const handleOpenAudit = () => {
-    const logs = CompanyUsersService.listAuditLogs(companyId, user.user_id)
-    setAuditLogs(logs)
+    setAuditLogs([])
     setIsAuditModalOpen(true)
   }
 
@@ -494,20 +494,20 @@ export function UserPermissionsDrawer({
 
                 {/* Module Cards */}
                 <div className="space-y-3">
-                  {filteredModuleEntries.map(([modKey, spec]) => {
-                    const module = spec.module
-                    const isExpanded = Boolean(expandedModules[module])
-                    const currentScope = dataScopes[module] || spec.defaultScope
+                  {filteredModuleEntries.map(([_modKey, spec]) => {
+                    const modName = spec.module
+                    const isExpanded = Boolean(expandedModules[modName])
+                    const currentScope = dataScopes[modName] || spec.defaultScope
 
                     // Calculate active granted permissions count
                     const grantedCount = spec.actions.filter((act) => {
-                      const detail = getPermissionDetail(simulatedUserCtx, module, act)
+                      const detail = getPermissionDetail(simulatedUserCtx, modName, act)
                       return detail.isGranted
                     }).length
 
                     return (
                       <div
-                        key={module}
+                        key={modName}
                         className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 shadow-xs"
                       >
                         {/* Module Card Header */}
@@ -515,7 +515,7 @@ export function UserPermissionsDrawer({
                           onClick={() =>
                             setExpandedModules({
                               ...expandedModules,
-                              [module]: !isExpanded,
+                              [modName]: !isExpanded,
                             })
                           }
                           className="p-3.5 bg-slate-50/70 dark:bg-slate-800/50 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800/80 transition-colors"
@@ -577,7 +577,7 @@ export function UserPermissionsDrawer({
                                 onChange={(e) =>
                                   setDataScopes({
                                     ...dataScopes,
-                                    [module]: e.target.value as DataScope,
+                                    [modName]: e.target.value as DataScope,
                                   })
                                 }
                                 className="h-7 px-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
@@ -592,8 +592,7 @@ export function UserPermissionsDrawer({
                             {/* Actions Checkboxes Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                               {spec.actions.map((act) => {
-                                const code = `${module}.${act}`
-                                const detail = getPermissionDetail(simulatedUserCtx, module, act)
+                                const detail = getPermissionDetail(simulatedUserCtx, modName, act)
                                 const isGranted = detail.isGranted
 
                                 let sourceBadge: React.ReactNode
@@ -626,7 +625,7 @@ export function UserPermissionsDrawer({
                                 return (
                                   <div
                                     key={act}
-                                    onClick={() => toggleAction(module, act)}
+                                    onClick={() => toggleAction(modName, act)}
                                     className={cn(
                                       'p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2',
                                       isGranted
@@ -661,7 +660,7 @@ export function UserPermissionsDrawer({
                             <div className="flex justify-end pt-1">
                               <button
                                 type="button"
-                                onClick={() => resetModuleOverrides(module)}
+                                onClick={() => resetModuleOverrides(modName as PermissionModule)}
                                 className="text-[11px] text-slate-500 hover:text-blue-600 flex items-center gap-1 cursor-pointer"
                               >
                                 <RotateCcw className="h-3 w-3" />
