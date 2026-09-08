@@ -6,6 +6,7 @@
 // ==============================================================================
 
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -315,24 +316,42 @@ export async function getPlatformUser(userIdOrEmail?: string): Promise<PlatformU
  */
 export async function getCurrentPlatformUser(): Promise<PlatformUserRecord | null> {
   const context = await getAuthenticatedPlatformContext()
-  if (!context || !context.isActive) {
-    return null
+  if (context && context.isActive) {
+    return {
+      id: context.adminId,
+      user_id: context.userId,
+      email: context.email,
+      full_name: context.fullName,
+      role: context.platformRole,
+      phone: context.phone,
+      avatar_url: context.avatarUrl,
+      preferences: context.preferences,
+      is_active: context.isActive,
+      mfa_enabled: context.mfaEnabled,
+      last_login_at: context.lastLoginAt,
+      created_at: context.createdAt,
+    }
   }
 
-  return {
-    id: context.adminId,
-    user_id: context.userId,
-    email: context.email,
-    full_name: context.fullName,
-    role: context.platformRole,
-    phone: context.phone,
-    avatar_url: context.avatarUrl,
-    preferences: context.preferences,
-    is_active: context.isActive,
-    mfa_enabled: context.mfaEnabled,
-    last_login_at: context.lastLoginAt,
-    created_at: context.createdAt,
+  // Fallback verification: Check session cookie against PostgreSQL platform_admins
+  try {
+    const cookieStore = await cookies()
+    const sessionCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
+    if (sessionCookie) {
+      const sessionData = JSON.parse(sessionCookie)
+      if (sessionData && (sessionData.userId || sessionData.email || sessionData.adminId)) {
+        const lookup = sessionData.userId || sessionData.adminId || sessionData.email
+        const dbUser = await getPlatformUser(lookup)
+        if (dbUser && dbUser.is_active) {
+          return dbUser
+        }
+      }
+    }
+  } catch {
+    // Ignore parse errors
   }
+
+  return null
 }
 
 /**

@@ -11,6 +11,13 @@ export type PlatformCompanyStatus =
   | 'cancelled'
   | 'archived'
 
+export interface ApiResponse<T = any> {
+  success: boolean
+  data?: T
+  error?: string
+  message?: string
+}
+
 export type SupportAccessLevel = 'read_only' | 'config_only' | 'full_support'
 
 export interface PlatformSupportSessionRecord {

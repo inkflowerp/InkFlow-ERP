@@ -5,15 +5,47 @@ import {
   PlatformCompanyStatus,
   PlatformPlanCode,
   TenantHealthStatus,
+  PlatformDashboardMetrics,
+  NeedsAttentionItem,
+  PlatformTenantCompany,
+  Company360Data,
+  PlatformFeatureFlagItem,
+  SystemHealthSummary,
+  SystemHealthEvent,
+  PlatformIncidentItem,
+  PlatformBackgroundJobItem,
+  PlatformSecurityOverview,
+  PlatformAuditLogItem,
+  PlatformAdminUser,
+  UsageTrendsData,
+  BillingOverviewMetrics,
+  CustomerSuccessData,
+  PlatformSystemSettings,
+  PlatformBackupStatus,
+  EmergencyControlItem,
+  PlatformRBACTemplate,
+  IntegrationProviderStatus,
+  GlobalSearchResult,
+  ApiResponse,
 } from '@/types/platform.types'
-import { requirePlatformUser } from '@/lib/auth/platform-auth'
+import { SubscriptionPlanRecord } from '@/types/subscription.types'
+import { getCurrentPlatformUser } from '@/lib/auth/platform-auth'
 
 /**
  * Server Action: Get Platform Dashboard Overview Metrics
  */
-export async function getPlatformDashboardOverviewAction() {
-  await requirePlatformUser()
-  return await PlatformService.getDashboardOverview()
+export async function getPlatformDashboardOverviewAction(): Promise<
+  ApiResponse<PlatformDashboardMetrics & { needs_attention: NeedsAttentionItem[] }>
+> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getDashboardOverview()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch dashboard metrics' }
+  }
 }
 
 /**
@@ -26,65 +58,123 @@ export async function getPlatformCompaniesAction(filters?: {
   health?: TenantHealthStatus
   page?: number
   pageSize?: number
-}) {
-  await requirePlatformUser()
-  return await PlatformService.getCompanies(filters)
+}): Promise<ApiResponse<{ companies: PlatformTenantCompany[]; total: number }>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getCompanies(filters)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch companies' }
+  }
 }
 
 /**
  * Server Action: Get 360 Degree View of a Specific Tenant Company
  */
-export async function getPlatformCompany360Action(companyId: string) {
-  await requirePlatformUser()
-  return await PlatformService.getCompany360(companyId)
+export async function getPlatformCompany360Action(companyId: string): Promise<ApiResponse<Company360Data>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getCompany360(companyId)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch company details' }
+  }
 }
 
 /**
  * Server Action: Get Subscription Plans
  */
-export async function getPlatformPlansAction() {
-  await requirePlatformUser()
-  return await PlatformService.getPlans()
+export async function getPlatformPlansAction(): Promise<ApiResponse<SubscriptionPlanRecord[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getPlans()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch plans' }
+  }
 }
 
 /**
  * Server Action: Get Feature Flags and Tenant Overrides
  */
-export async function getPlatformFeatureFlagsAction() {
-  await requirePlatformUser()
-  return await PlatformService.getFeatureFlags()
+export async function getPlatformFeatureFlagsAction(): Promise<ApiResponse<PlatformFeatureFlagItem[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getFeatureFlags()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch feature flags' }
+  }
 }
 
 /**
  * Server Action: Get System Health & Service Telemetry
  */
-export async function getPlatformSystemHealthAction() {
-  await requirePlatformUser()
-  return await PlatformService.getSystemHealth()
+export async function getPlatformSystemHealthAction(): Promise<
+  ApiResponse<{ summary: SystemHealthSummary; events: SystemHealthEvent[] }>
+> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getSystemHealth()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch system health' }
+  }
 }
 
 /**
  * Server Action: Get Incidents List
  */
-export async function getPlatformIncidentsAction() {
-  await requirePlatformUser()
-  return await PlatformService.getIncidents()
+export async function getPlatformIncidentsAction(): Promise<ApiResponse<PlatformIncidentItem[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getIncidents()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch incidents' }
+  }
 }
 
 /**
  * Server Action: Get Background Jobs Status
  */
-export async function getPlatformBackgroundJobsAction() {
-  await requirePlatformUser()
-  return await PlatformService.getBackgroundJobs()
+export async function getPlatformBackgroundJobsAction(): Promise<ApiResponse<PlatformBackgroundJobItem[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getBackgroundJobs()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch background jobs' }
+  }
 }
 
 /**
  * Server Action: Get Security Center Telemetry & Active Sessions
  */
-export async function getPlatformSecurityOverviewAction() {
-  await requirePlatformUser()
-  return await PlatformService.getSecurityOverview()
+export async function getPlatformSecurityOverviewAction(): Promise<ApiResponse<PlatformSecurityOverview>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getSecurityOverview()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch security overview' }
+  }
 }
 
 /**
@@ -99,88 +189,167 @@ export async function getPlatformAuditLogsAction(filters?: {
   search?: string
   page?: number
   pageSize?: number
-}) {
-  await requirePlatformUser()
-  return await PlatformService.getAuditLogs(filters)
+}): Promise<ApiResponse<{ logs: PlatformAuditLogItem[]; total: number }>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getAuditLogs(filters)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch audit logs' }
+  }
 }
 
 /**
  * Server Action: Get Platform Administrator Users
  */
-export async function getPlatformUsersAction() {
-  await requirePlatformUser()
-  return await PlatformService.getPlatformUsers()
+export async function getPlatformUsersAction(): Promise<ApiResponse<PlatformAdminUser[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getPlatformUsers()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch platform users' }
+  }
 }
 
 /**
  * Server Action: Get Resource & Quota Usage Trends
  */
-export async function getPlatformUsageTrendsAction(companyId?: string, period: '7d' | '30d' | '90d' = '30d') {
-  await requirePlatformUser()
-  return await PlatformService.getUsageTrends(companyId, period)
+export async function getPlatformUsageTrendsAction(
+  companyId?: string,
+  period: '7d' | '30d' | '90d' = '30d'
+): Promise<ApiResponse<UsageTrendsData>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getUsageTrends(companyId, period)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch usage trends' }
+  }
 }
 
 /**
  * Server Action: Get Billing & Reconciliation Summary
  */
-export async function getPlatformBillingReconciliationAction() {
-  await requirePlatformUser()
-  return await PlatformService.getBillingReconciliation()
+export async function getPlatformBillingReconciliationAction(): Promise<ApiResponse<BillingOverviewMetrics>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getBillingReconciliation()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch billing reconciliation' }
+  }
 }
 
 /**
  * Server Action: Get Customer Success & Churn Health
  */
-export async function getPlatformCustomerSuccessMetricsAction() {
-  await requirePlatformUser()
-  return await PlatformService.getCustomerSuccessMetrics()
+export async function getPlatformCustomerSuccessMetricsAction(): Promise<ApiResponse<CustomerSuccessData>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getCustomerSuccessMetrics()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch customer success metrics' }
+  }
 }
 
 /**
  * Server Action: Get Platform System Settings
  */
-export async function getPlatformSettingsAction() {
-  await requirePlatformUser()
-  return await PlatformService.getPlatformSettings()
+export async function getPlatformSettingsAction(): Promise<ApiResponse<PlatformSystemSettings>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getPlatformSettings()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch platform settings' }
+  }
 }
 
 /**
  * Server Action: Get Platform Backup Status
  */
-export async function getPlatformBackupStatusAction() {
-  await requirePlatformUser()
-  return await PlatformService.getBackupStatus()
+export async function getPlatformBackupStatusAction(): Promise<ApiResponse<PlatformBackupStatus>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getBackupStatus()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch backup status' }
+  }
 }
 
 /**
  * Server Action: Get Emergency Controls Configuration
  */
-export async function getPlatformEmergencyControlsAction() {
-  await requirePlatformUser()
-  return await PlatformService.getEmergencyControls()
+export async function getPlatformEmergencyControlsAction(): Promise<ApiResponse<EmergencyControlItem[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getEmergencyControls()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch emergency controls' }
+  }
 }
 
 /**
  * Server Action: Get Global RBAC Permission Templates
  */
-export async function getPlatformRBACTemplatesAction() {
-  await requirePlatformUser()
-  return await PlatformService.getRBACTemplates()
+export async function getPlatformRBACTemplatesAction(): Promise<ApiResponse<PlatformRBACTemplate[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getRBACTemplates()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch RBAC templates' }
+  }
 }
 
 /**
  * Server Action: Get Integrations & Gateway Health
  */
-export async function getPlatformIntegrationsHealthAction() {
-  await requirePlatformUser()
-  return await PlatformService.getIntegrationsHealth()
+export async function getPlatformIntegrationsHealthAction(): Promise<ApiResponse<IntegrationProviderStatus[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getIntegrationsHealth()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch integrations health' }
+  }
 }
 
 /**
  * Server Action: Global Cross-Platform Search
  */
-export async function searchPlatformGlobalAction(query: string) {
-  await requirePlatformUser()
-  return await PlatformService.globalSearch(query)
+export async function searchPlatformGlobalAction(query: string): Promise<ApiResponse<GlobalSearchResult>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.globalSearch(query)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to perform search' }
+  }
 }
-
