@@ -3,6 +3,10 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database.types'
 import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '@/lib/auth/types'
 
+const DEFAULT_SUPABASE_URL = 'https://liqhihsqcblddqfjmmse.supabase.co'
+const DEFAULT_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcWhpaHNxY2JsZGRxZmptbXNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MTEyMjUsImV4cCI6MjEwNDM4NzIyNX0.JMDMwnk3vIDg8V7Hn7qKPhqzP7yLA4HYYf2JSYW3Sv0'
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -45,6 +49,20 @@ export async function updateSession(request: NextRequest) {
     pathname === '/sitemap.xml' ||
     pathname.startsWith('/icons/')
 
+  // Check platform session cookie for platform operations
+  const platformSessionCookie = request.cookies.get(PLATFORM_SESSION_COOKIE)?.value
+  let hasValidPlatformCookie = false
+  if (platformSessionCookie) {
+    try {
+      const platformData = JSON.parse(decodeURIComponent(platformSessionCookie))
+      if (platformData && (platformData.userId || platformData.adminId || platformData.email)) {
+        hasValidPlatformCookie = true
+      }
+    } catch {
+      // Invalid cookie
+    }
+  }
+
   // Check tenant session cookie for tenant workspace routing
   const tenantSessionCookie = request.cookies.get(TENANT_SESSION_COOKIE)?.value
   let hasValidTenantCookie = false
@@ -60,11 +78,16 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    DEFAULT_SUPABASE_URL
+
   const supabaseAnonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    'placeholder-anon-key'
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    DEFAULT_SUPABASE_ANON_KEY
 
   const supabase = createServerClient<Database>(
     supabaseUrl,
@@ -93,10 +116,21 @@ export async function updateSession(request: NextRequest) {
 
   // 1. Platform Protected Page Guard: Non-authenticated users cannot access /platform/*
   if (isPlatformProtectedPage) {
-    if (!user) {
+    if (!user && !hasValidPlatformCookie) {
       const url = request.nextUrl.clone()
       url.pathname = '/platform/login'
       url.searchParams.set('redirectTo', pathname)
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // 1b. Platform Auth Page: If already authenticated, redirect to /platform
+  if (isPlatformAuthPage && pathname === '/platform/login') {
+    if (user || hasValidPlatformCookie) {
+      const redirectTo = request.nextUrl.searchParams.get('redirectTo') || '/platform'
+      const url = request.nextUrl.clone()
+      url.pathname = redirectTo.startsWith('/platform') ? redirectTo : '/platform'
+      url.searchParams.delete('redirectTo')
       return NextResponse.redirect(url)
     }
   }
