@@ -2026,22 +2026,10 @@ export class PlatformService {
       const pageSize = Math.max(1, Math.min(100, filters?.pageSize || 25))
       const offset = (page - 1) * pageSize
 
+      // 1. Query company_users with valid database columns only
       let query = (admin as any)
         .from('company_users')
-        .select(`
-          id,
-          user_id,
-          company_id,
-          branch_id,
-          status,
-          department,
-          responsibilities,
-          invited_email,
-          created_at,
-          companies(id, name, slug),
-          branches(id, name),
-          user_roles(role_id, roles(id, slug, name, name_bn))
-        `, { count: 'exact' })
+        .select('id, user_id, company_id, branch_id, status, invited_email, created_at', { count: 'exact' })
         .order('created_at', { ascending: false })
 
       if (filters?.companyId && filters.companyId !== 'all') {
@@ -2051,67 +2039,86 @@ export class PlatformService {
         query = query.eq('status', filters.status)
       }
 
-      const { data, count, error } = await query
+      const { data: dbCompanyUsers, error: cuErr } = await query
 
-      let rawCompanyUsers = (data || []) as any[]
+      let rawCompanyUsers: any[] = dbCompanyUsers || []
 
-      // If database query failed or returned no results, check local data store fallback
-      if (error || rawCompanyUsers.length === 0) {
+      // Check local data store fallback if database returned nothing
+      if (cuErr || rawCompanyUsers.length === 0) {
         const localCU = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
-        const localCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
         if (localCU.length > 0) {
-          rawCompanyUsers = localCU.map((cu: any) => {
-            const comp = localCompanies.find((c: any) => c.id === cu.company_id)
-            return {
-              id: cu.id,
-              user_id: cu.user_id,
-              company_id: cu.company_id,
-              status: cu.status || 'active',
-              department: cu.department || 'General Staff',
-              responsibilities: cu.responsibilities || ['business_owner'],
-              invited_email: cu.invited_email,
-              created_at: cu.created_at || new Date().toISOString(),
-              companies: comp ? { id: comp.id, name: comp.name, slug: comp.slug } : null,
-              branches: null,
-              user_roles: [],
-            }
-          })
+          rawCompanyUsers = localCU.map((cu: any) => ({
+            id: cu.id,
+            user_id: cu.user_id,
+            company_id: cu.company_id,
+            branch_id: cu.branch_id || null,
+            status: cu.status || 'active',
+            invited_email: cu.invited_email || null,
+            created_at: cu.created_at || new Date().toISOString(),
+          }))
         }
       }
 
-      // Collect user IDs to batch fetch user profiles safely
-      const userIds = rawCompanyUsers.map((cu: any) => cu.user_id).filter(Boolean)
-      const profileMap = new Map<string, any>()
+      // 2. Collect IDs for batch resolution
+      const companyIds = [...new Set(rawCompanyUsers.map((cu: any) => cu.company_id).filter(Boolean))]
+      const branchIds = [...new Set(rawCompanyUsers.map((cu: any) => cu.branch_id).filter(Boolean))]
+      const userIds = [...new Set(rawCompanyUsers.map((cu: any) => cu.user_id).filter(Boolean))]
+      const cuIds = rawCompanyUsers.map((cu: any) => cu.id).filter(Boolean)
 
-      if (userIds.length > 0) {
-        try {
-          const { data: profiles } = await (admin as any)
-            .from('user_profiles')
-            .select('id, full_name, full_name_bn, email, phone, avatar_url')
-            .in('id', userIds)
-          ;(profiles || []).forEach((p: any) => profileMap.set(p.id, p))
-        } catch {}
-      }
+      // 3. Batch fetch in parallel
+      const [compRes, branchRes, roleRes, profileRes] = await Promise.all([
+        companyIds.length > 0
+          ? (admin as any).from('companies').select('id, name, name_bn, slug').in('id', companyIds)
+          : Promise.resolve({ data: [] }),
+        branchIds.length > 0
+          ? (admin as any).from('branches').select('id, name, name_bn').in('id', branchIds)
+          : Promise.resolve({ data: [] }),
+        cuIds.length > 0
+          ? (admin as any).from('user_roles').select('company_user_id, role_id, roles(id, slug, name, name_bn)').in('company_user_id', cuIds)
+          : Promise.resolve({ data: [] }),
+        userIds.length > 0
+          ? (admin as any).from('user_profiles').select('id, full_name, full_name_bn, email, phone, avatar_url').in('id', userIds)
+          : Promise.resolve({ data: [] }),
+      ])
 
-      // Check registered users in local data store as profile fallback
+      // Fallback maps from local store
+      const localCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
       const registeredUsers = (PrintERPDataStore as any).get('printerp_registered_users') || []
-      const regUserMap = new Map<string, any>()
-      registeredUsers.forEach((r: any) => {
-        if (r.id) regUserMap.set(r.id, r)
-        if (r.user_id) regUserMap.set(r.user_id, r)
-        if (r.email) regUserMap.set(r.email, r)
+
+      const compMap = new Map<string, any>()
+      ;(compRes.data || []).forEach((c: any) => compMap.set(c.id, c))
+      localCompanies.forEach((c: any) => {
+        if (!compMap.has(c.id)) compMap.set(c.id, c)
       })
 
-      let userList: PlatformTenantUserItem[] = rawCompanyUsers.map((cu: any) => {
-        const profile = profileMap.get(cu.user_id)
-        const regUser = regUserMap.get(cu.user_id) || (cu.invited_email ? regUserMap.get(cu.invited_email) : null)
-        const company = cu.companies
-        const branch = cu.branches
-        const role = cu.user_roles?.[0]?.roles?.slug || (Array.isArray(cu.responsibilities) ? cu.responsibilities[0] : 'member')
+      const branchMap = new Map<string, any>()
+      ;(branchRes.data || []).forEach((b: any) => branchMap.set(b.id, b))
 
-        const fullName = profile?.full_name || regUser?.full_name || cu.invited_name || (role === 'owner' || role === 'business_owner' ? 'Business Owner' : 'Tenant User')
-        const email = profile?.email || regUser?.email || cu.invited_email || (cu.user_id?.includes('@') ? cu.user_id : 'user@printerp.com')
-        const phone = profile?.phone || regUser?.phone || cu.phone || null
+      const roleMap = new Map<string, any>()
+      ;(roleRes.data || []).forEach((r: any) => {
+        if (r.company_user_id) roleMap.set(r.company_user_id, r.roles)
+      })
+
+      const profileMap = new Map<string, any>()
+      ;(profileRes.data || []).forEach((p: any) => profileMap.set(p.id, p))
+      registeredUsers.forEach((r: any) => {
+        if (r.id && !profileMap.has(r.id)) profileMap.set(r.id, r)
+        if (r.user_id && !profileMap.has(r.user_id)) profileMap.set(r.user_id, r)
+        if (r.email && !profileMap.has(r.email)) profileMap.set(r.email, r)
+      })
+
+      // 4. Assemble clean PlatformTenantUserItem records
+      let userList: PlatformTenantUserItem[] = rawCompanyUsers.map((cu: any) => {
+        const profile = profileMap.get(cu.user_id) || (cu.invited_email ? profileMap.get(cu.invited_email) : null)
+        const company = compMap.get(cu.company_id)
+        const branch = cu.branch_id ? branchMap.get(cu.branch_id) : null
+        const roleObj = roleMap.get(cu.id)
+        const roleSlug = roleObj?.slug || (cu.responsibilities?.[0]) || 'member'
+        const roleName = roleObj?.name || (roleSlug.includes('owner') ? 'Business Owner' : roleSlug)
+
+        const fullName = profile?.full_name || cu.invited_name || (roleSlug.includes('owner') ? 'Business Owner' : 'Tenant User')
+        const email = profile?.email || cu.invited_email || (cu.user_id?.includes('@') ? cu.user_id : 'user@printerp.com')
+        const phone = profile?.phone || cu.phone || null
 
         return {
           id: cu.id,
@@ -2120,12 +2127,12 @@ export class PlatformService {
           company_name: company?.name || 'Unknown Tenant',
           company_slug: company?.slug || '',
           full_name: fullName,
-          full_name_bn: profile?.full_name_bn || regUser?.full_name_bn || null,
+          full_name_bn: profile?.full_name_bn || null,
           email,
           phone,
           status: cu.status === 'disabled' ? 'disabled' : (cu.status || 'active'),
-          primary_role: role,
-          responsibilities: Array.isArray(cu.responsibilities) ? cu.responsibilities : [role],
+          primary_role: roleName,
+          responsibilities: [roleSlug],
           branch_name: branch?.name || null,
           created_at: cu.created_at || new Date().toISOString(),
         }
@@ -2143,15 +2150,17 @@ export class PlatformService {
         const s = filters.search.toLowerCase().trim()
         userList = userList.filter((u) =>
           u.full_name.toLowerCase().includes(s) ||
+          (u.full_name_bn && u.full_name_bn.toLowerCase().includes(s)) ||
           u.email.toLowerCase().includes(s) ||
           u.company_name.toLowerCase().includes(s) ||
           u.company_slug.toLowerCase().includes(s) ||
           u.primary_role.toLowerCase().includes(s) ||
+          (u.branch_name && u.branch_name.toLowerCase().includes(s)) ||
           (u.phone && u.phone.includes(s))
         )
       }
 
-      const total = count && count > userList.length ? count : userList.length
+      const total = userList.length
       const paginatedUsers = userList.slice(offset, offset + pageSize)
 
       return {
