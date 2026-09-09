@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { User, Mail, Phone, Lock, ArrowRight } from 'lucide-react'
@@ -14,10 +14,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { useI18n } from '@/i18n/context'
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const planParam = searchParams.get('plan') || ''
   const { t } = useI18n()
 
   const {
@@ -46,7 +48,8 @@ export default function RegisterPage() {
     })
 
     if (res.success) {
-      window.location.href = '/onboarding'
+      const targetUrl = planParam ? `/onboarding?plan=${encodeURIComponent(planParam)}` : '/onboarding'
+      window.location.href = targetUrl
     } else {
       setError(res.error || 'Registration failed. Please check your credentials.')
       setIsLoading(false)
@@ -137,5 +140,13 @@ export default function RegisterPage() {
         </CardFooter>
       </form>
     </Card>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400 text-sm">Loading registration...</div>}>
+      <RegisterForm />
+    </Suspense>
   )
 }

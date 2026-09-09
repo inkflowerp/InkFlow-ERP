@@ -12,7 +12,13 @@ import { checkPermission } from '@/lib/auth/rbac.client'
 
 export class TenantRepository {
   static async createCompany(
-    companyData: Partial<CompanyRow> & { name: string; slug: string; business_type: string },
+    companyData: Partial<CompanyRow> & {
+      name: string
+      slug: string
+      business_type: string
+      plan?: string
+      default_locale?: string
+    },
     ownerUserId?: string
   ): Promise<CompanyRow> {
     const admin = createAdminClient()
@@ -36,6 +42,7 @@ export class TenantRepository {
         address: companyData.address || null,
         address_bn: companyData.address_bn || null,
         currency: companyData.currency || 'BDT',
+        default_locale: companyData.default_locale || 'bn',
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -80,6 +87,35 @@ export class TenantRepository {
       .select()
       .single()
 
+    // Initialize Company Subscription (14-Day Evaluation Trial)
+    try {
+      const rawPlan = companyData.plan?.toLowerCase()
+      const targetPlanCode = rawPlan === 'growth' ? 'business' : rawPlan || 'starter'
+      
+      const { data: planRecord } = await (admin as any)
+        .from('subscription_plans')
+        .select('id, code')
+        .eq('code', targetPlanCode)
+        .maybeSingle()
+
+      const fallbackPlanId = planRecord?.id
+      if (fallbackPlanId) {
+        await (admin as any).from('company_subscriptions').insert({
+          company_id: newCompany.id,
+          plan_id: fallbackPlanId,
+          status: 'trial',
+          billing_interval: 'monthly',
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+      }
+    } catch {
+      // Non-blocking fallback for subscription initialization
+    }
+
     // If ownerUserId is provided and valid UUID, link as Business Owner
     const isUuid = ownerUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerUserId)
     if (ownerUserId && isUuid) {
@@ -110,6 +146,19 @@ export class TenantRepository {
           role_id: ownerRole.id,
           company_id: newCompany.id,
         })
+      }
+
+      try {
+        await (admin as any).from('tenant_memberships').upsert({
+          company_id: newCompany.id,
+          user_id: ownerUserId,
+          role: 'owner',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+      } catch {
+        // Non-blocking
       }
     }
 

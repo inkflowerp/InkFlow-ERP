@@ -11,12 +11,15 @@ export interface CreateCompanyInput {
   division_id?: number | null
   district_id?: number | null
   upazila_id?: number | null
+  area?: string | null
   address?: string | null
   address_bn?: string | null
   trade_license_no?: string | null
   bin_no?: string | null
   tin_no?: string | null
   currency?: string
+  default_language?: 'en' | 'bn'
+  default_locale?: string
   phone?: string | null
   whatsapp?: string | null
   email?: string | null
@@ -24,7 +27,7 @@ export interface CreateCompanyInput {
   owner_email?: string
   owner_phone?: string
   owner_password?: string
-  plan?: 'starter' | 'business' | 'enterprise'
+  plan?: 'starter' | 'business' | 'enterprise' | 'growth' | string
 }
 
 export class TenantService {
@@ -50,10 +53,10 @@ export class TenantService {
         ? ownerUserId
         : null
 
-      // If ownerUserId is not provided or not a valid UUID, but owner_email is supplied, resolve/create the auth user
-      if (!resolvedOwnerId && data.owner_email) {
-        const normalizedOwnerEmail = data.owner_email.trim().toLowerCase()
+      const normalizedOwnerEmail = data.owner_email ? data.owner_email.trim().toLowerCase() : ''
 
+      // If ownerUserId is not provided or not a valid UUID, but owner_email is supplied, resolve/create the auth user
+      if (!resolvedOwnerId && normalizedOwnerEmail) {
         // 1. Check if user already exists in user_profiles
         const { data: existingProfile } = await (admin as any)
           .from('user_profiles')
@@ -81,7 +84,7 @@ export class TenantService {
               user_metadata: {
                 full_name: data.owner_name || normalizedOwnerEmail.split('@')[0],
                 phone: data.owner_phone || null,
-                preferred_locale: 'bn',
+                preferred_locale: data.default_language || 'bn',
               },
             })
 
@@ -90,30 +93,33 @@ export class TenantService {
             }
           }
         }
+      }
 
-        // 4. Ensure user_profiles row exists for resolved owner
-        if (resolvedOwnerId) {
-          await (admin as any).from('user_profiles').upsert({
+      // Ensure user_profiles and profiles row exists for resolved owner
+      if (resolvedOwnerId) {
+        const ownerEmailToUse = normalizedOwnerEmail || (data.email ? data.email.trim().toLowerCase() : '')
+        const ownerNameToUse = data.owner_name || (ownerEmailToUse ? ownerEmailToUse.split('@')[0] : 'Business Owner')
+
+        await (admin as any).from('user_profiles').upsert({
+          id: resolvedOwnerId,
+          email: ownerEmailToUse || undefined,
+          full_name: ownerNameToUse,
+          phone: data.owner_phone || data.phone || null,
+          preferred_locale: data.default_language || data.default_locale || 'bn',
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        })
+
+        try {
+          await (admin as any).from('profiles').upsert({
             id: resolvedOwnerId,
-            email: normalizedOwnerEmail,
-            full_name: data.owner_name || normalizedOwnerEmail.split('@')[0],
-            phone: data.owner_phone || null,
-            preferred_locale: 'bn',
-            is_active: true,
+            full_name: ownerNameToUse,
+            phone: data.owner_phone || data.phone || null,
+            preferred_locale: data.default_language || data.default_locale || 'bn',
             updated_at: new Date().toISOString(),
           })
-
-          try {
-            await (admin as any).from('profiles').upsert({
-              id: resolvedOwnerId,
-              full_name: data.owner_name || normalizedOwnerEmail.split('@')[0],
-              phone: data.owner_phone || null,
-              preferred_locale: 'bn',
-              updated_at: new Date().toISOString(),
-            })
-          } catch {
-            // Non-blocking
-          }
+        } catch {
+          // Non-blocking
         }
       }
 
@@ -126,15 +132,17 @@ export class TenantService {
           trade_license_no: data.trade_license_no,
           bin_no: data.bin_no,
           tin_no: data.tin_no,
-          phone: data.phone,
-          email: data.email,
-          whatsapp: data.whatsapp,
+          phone: data.phone || data.owner_phone,
+          email: data.email || normalizedOwnerEmail || null,
+          whatsapp: data.whatsapp || data.phone || data.owner_phone,
           division_id: data.division_id,
           district_id: data.district_id,
           upazila_id: data.upazila_id,
           address: data.address,
           address_bn: data.address_bn,
           currency: data.currency || 'BDT',
+          default_locale: data.default_locale || data.default_language || 'bn',
+          plan: data.plan || 'starter',
         },
         resolvedOwnerId || undefined
       )

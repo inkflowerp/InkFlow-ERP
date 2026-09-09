@@ -123,7 +123,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // 2. Unauthenticated user trying to access protected tenant app -> Redirect to /login
-  const isAuthenticated = Boolean(user)
+  const isAuthenticated = Boolean(user) || hasValidTenantCookie
   if (!isAuthenticated && !isTenantAuthPage && !isPublicMarketingPage && !isPlatformAuthPage && !isPlatformProtectedPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'

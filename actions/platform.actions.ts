@@ -185,6 +185,8 @@ export async function createBusinessAction(formData: FormData) {
 
     revalidatePath('/platform', 'layout')
     revalidatePath('/platform/companies')
+    revalidatePath('/platform/tenants')
+    revalidatePath('/platform/dashboard')
 
     return { success: true, data: newCompany }
   } catch (err: any) {

@@ -659,9 +659,9 @@ export default function PlatformTenantsPage() {
                       defaultValue="starter"
                       className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
                     >
-                      <option value="starter">Starter Press (৳2,500/mo)</option>
-                      <option value="growth">Growth Signage (৳6,000/mo)</option>
-                      <option value="enterprise">Enterprise Factory (৳15,000/mo)</option>
+                      <option value="starter">Starter Plan (৳1,999/mo • 3 Users • 1 Branch)</option>
+                      <option value="business">Business Plan (৳4,999/mo • 10 Users • 3 Branches)</option>
+                      <option value="enterprise">Enterprise Plan (৳9,999/mo • 50+ Users • Unlimited Branches)</option>
                     </select>
                   </div>
                 </div>

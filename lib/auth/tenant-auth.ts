@@ -95,14 +95,29 @@ export async function getCurrentTenant(requestedSlugOrId?: string): Promise<Tena
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user) {
+    let resolvedUserId = user?.id
+    if (!resolvedUserId) {
+      const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
+      if (sessionCookie) {
+        try {
+          const sessionData = JSON.parse(decodeURIComponent(sessionCookie))
+          if (sessionData && sessionData.userId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionData.userId)) {
+            resolvedUserId = sessionData.userId
+          }
+        } catch {
+          // Ignore
+        }
+      }
+    }
+
+    if (!resolvedUserId) {
       // Unauthenticated user -> Strictly return null
       return null
     }
 
-    const membership = await TenantRepository.resolveUserMembership(user.id, requestedSlugOrId)
+    const membership = await TenantRepository.resolveUserMembership(resolvedUserId, requestedSlugOrId)
     if (!membership) {
-      // User is authenticated in Supabase Auth, but has no active membership in requested tenant
+      // User is authenticated, but has no active membership in requested tenant
       return null
     }
 
@@ -118,9 +133,9 @@ export async function getCurrentTenant(requestedSlugOrId?: string): Promise<Tena
     }
 
     return {
-      userId: user.id,
-      userEmail: user.email || companyUser.profile?.email || '',
-      fullName: companyUser.profile?.full_name || user.email?.split('@')[0],
+      userId: resolvedUserId,
+      userEmail: user?.email || companyUser.profile?.email || '',
+      fullName: companyUser.profile?.full_name || user?.email?.split('@')[0] || 'User',
       fullNameBn: companyUser.profile?.full_name_bn || null,
       phone: companyUser.profile?.phone || null,
       companyId: company.id,

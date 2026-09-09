@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -33,11 +33,13 @@ import { cn } from '@/lib/utils'
 
 const TOTAL_STEPS = 7
 
-export default function OnboardingPage() {
+function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState<number>(1)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const planParam = (searchParams.get('plan') as any) || 'starter'
   const { locale, tBilingual } = useI18n()
 
   const {
@@ -148,14 +150,16 @@ export default function OnboardingPage() {
         division_id: data.division_id,
         district_id: data.district_id,
         upazila_id: data.upazila_id,
+        area: data.area,
         address: data.address,
         address_bn: data.address_bn,
         currency: data.currency,
+        default_language: data.default_language,
         owner_name: data.owner_name,
         owner_email: data.owner_email,
         owner_phone: data.owner_phone,
         owner_password: data.owner_password || undefined,
-        plan: 'starter',
+        plan: planParam || 'starter',
       })
 
       if (!res?.success || !res?.data) {
@@ -606,5 +610,13 @@ export default function OnboardingPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-8 text-slate-400 text-sm">Loading setup wizard...</div>}>
+      <OnboardingWizard />
+    </Suspense>
   )
 }

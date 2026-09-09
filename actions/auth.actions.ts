@@ -9,6 +9,8 @@ import { checkRateLimit } from '@/lib/security/rate-limiter'
 import { TENANT_SESSION_COOKIE, TenantSessionData } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 
+import { createClient } from '@/lib/supabase/server'
+
 export async function loginAction(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
@@ -157,6 +159,16 @@ export async function signUpAction(data: {
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
   })
+
+  try {
+    const supabase = await createClient()
+    await supabase.auth.signInWithPassword({
+      email: data.email.trim().toLowerCase(),
+      password: data.password || 'TemporaryPass123!',
+    })
+  } catch {
+    // Non-blocking
+  }
 
   return {
     success: true,

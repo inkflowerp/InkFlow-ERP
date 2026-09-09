@@ -286,7 +286,16 @@ export class PlatformService {
             )
           ),
           branches (id),
-          company_users (id, user_id, status)
+          company_users (
+            id,
+            user_id,
+            status,
+            profile:user_profiles (
+              full_name,
+              email,
+              phone
+            )
+          )
         `, { count: 'exact' })
 
       if (filters?.search) {
@@ -316,14 +325,18 @@ export class PlatformService {
           ? 'suspended'
           : (sub?.status as PlatformCompanyStatus) || 'active'
 
+        const ownerUser = (c.company_users || []).find(
+          (u: any) => u.profile?.full_name || u.profile?.email
+        ) || c.company_users?.[0]
+
         return {
           id: c.id,
           name: c.name,
           name_bn: c.name_bn || c.name,
           slug: c.slug,
-          owner_name: c.name + ' Owner',
-          owner_email: c.email || 'owner@' + c.slug + '.com',
-          owner_phone: c.phone || '01700-000000',
+          owner_name: ownerUser?.profile?.full_name || (c.name + ' Owner'),
+          owner_email: ownerUser?.profile?.email || c.email || ('owner@' + c.slug + '.com'),
+          owner_phone: ownerUser?.profile?.phone || c.phone || '01700-000000',
           plan: (plan?.code as PlatformPlanCode) || 'starter',
           status: subStatus,
           health: c.is_active ? 'healthy' : 'suspended',
@@ -425,14 +438,18 @@ export class PlatformService {
         ),
       }))
 
+      const ownerUser = (company.company_users || []).find(
+        (u: any) => u.profile?.full_name || u.profile?.email
+      ) || company.company_users?.[0]
+
       const tenantCompany: PlatformTenantCompany = {
         id: company.id,
         name: company.name,
         name_bn: company.name_bn || company.name,
         slug: company.slug,
-        owner_name: company.name + ' Owner',
-        owner_email: company.email || 'owner@' + company.slug + '.com',
-        owner_phone: company.phone || '01700-000000',
+        owner_name: ownerUser?.profile?.full_name || (company.name + ' Owner'),
+        owner_email: ownerUser?.profile?.email || company.email || ('owner@' + company.slug + '.com'),
+        owner_phone: ownerUser?.profile?.phone || company.phone || '01700-000000',
         plan: (plan?.code as PlatformPlanCode) || 'starter',
         status,
         health: company.is_active ? 'healthy' : 'suspended',
