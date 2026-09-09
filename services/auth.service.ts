@@ -53,8 +53,17 @@ export class AuthService {
       }
 
       const user = authData.user
+      const admin = createAdminClient()
 
-      // Resolve tenant membership and calculate effective permissions across responsibilities
+      // 1. Check if user is a Platform Administrator trying to log into the tenant workspace
+      const { data: platformAdmin } = await (admin as any)
+        .from('platform_admins')
+        .select('id, is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      // 2. Resolve tenant membership and calculate effective permissions across responsibilities
       let membership = await TenantRepository.resolveUserMembership(user.id, targetCompanySlug)
 
       if (!membership) {
@@ -62,9 +71,17 @@ export class AuthService {
         membership = await TenantRepository.resolveUserMembership(user.id)
       }
 
+      // Hard Boundary: Platform Administrator accounts cannot enter tenant workspace without valid tenant membership
+      if (platformAdmin && !membership) {
+        await supabase.auth.signOut()
+        return {
+          success: false,
+          error: 'This account is a Platform Administrator account and cannot access the business workspace. Please sign in via the Platform Control Panel at /platform/login.',
+        }
+      }
+
       if (!membership) {
-        // User is authenticated in Supabase Auth but has no active tenant membership yet (e.g. freshly registered)
-        const admin = createAdminClient()
+        // User is authenticated in Supabase Auth but has no active tenant membership yet (e.g. freshly registered tenant owner)
         const { data: profile } = await (admin as any)
           .from('user_profiles')
           .select('*')
