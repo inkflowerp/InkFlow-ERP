@@ -848,3 +848,22 @@ export async function markAllNotificationsReadAction() {
   }
 }
 
+/**
+ * Server Action: Update / Toggle Tenant User Status (Platform Admin Privileged)
+ */
+export async function updateTenantUserStatusAction(
+  companyUserId: string,
+  newStatus: 'active' | 'disabled' | 'suspended' | 'invited',
+  reason?: string
+) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.updateTenantUserStatus(companyUserId, newStatus, reason)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to update tenant user status' }
+  }
+}
+

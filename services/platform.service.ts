@@ -2032,36 +2032,86 @@ export class PlatformService {
           id,
           user_id,
           company_id,
+          branch_id,
           status,
+          department,
           responsibilities,
+          invited_email,
           created_at,
           companies(id, name, slug),
-          user_profiles(id, full_name, full_name_bn, email, phone),
           branches(id, name),
-          user_roles(role_id, roles(id, slug, name))
+          user_roles(role_id, roles(id, slug, name, name_bn))
         `, { count: 'exact' })
         .order('created_at', { ascending: false })
 
-      if (filters?.companyId) {
+      if (filters?.companyId && filters.companyId !== 'all') {
         query = query.eq('company_id', filters.companyId)
       }
-      if (filters?.status) {
+      if (filters?.status && filters.status !== 'all') {
         query = query.eq('status', filters.status)
       }
 
-      query = query.range(offset, offset + pageSize - 1)
-
       const { data, count, error } = await query
 
-      if (error) {
-        return { success: false, error: error.message }
+      let rawCompanyUsers = (data || []) as any[]
+
+      // If database query failed or returned no results, check local data store fallback
+      if (error || rawCompanyUsers.length === 0) {
+        const localCU = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+        const localCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+        if (localCU.length > 0) {
+          rawCompanyUsers = localCU.map((cu: any) => {
+            const comp = localCompanies.find((c: any) => c.id === cu.company_id)
+            return {
+              id: cu.id,
+              user_id: cu.user_id,
+              company_id: cu.company_id,
+              status: cu.status || 'active',
+              department: cu.department || 'General Staff',
+              responsibilities: cu.responsibilities || ['business_owner'],
+              invited_email: cu.invited_email,
+              created_at: cu.created_at || new Date().toISOString(),
+              companies: comp ? { id: comp.id, name: comp.name, slug: comp.slug } : null,
+              branches: null,
+              user_roles: [],
+            }
+          })
+        }
       }
 
-      let userList: PlatformTenantUserItem[] = (data || []).map((cu: any) => {
-        const profile = cu.user_profiles
+      // Collect user IDs to batch fetch user profiles safely
+      const userIds = rawCompanyUsers.map((cu: any) => cu.user_id).filter(Boolean)
+      const profileMap = new Map<string, any>()
+
+      if (userIds.length > 0) {
+        try {
+          const { data: profiles } = await (admin as any)
+            .from('user_profiles')
+            .select('id, full_name, full_name_bn, email, phone, avatar_url')
+            .in('id', userIds)
+          ;(profiles || []).forEach((p: any) => profileMap.set(p.id, p))
+        } catch {}
+      }
+
+      // Check registered users in local data store as profile fallback
+      const registeredUsers = (PrintERPDataStore as any).get('printerp_registered_users') || []
+      const regUserMap = new Map<string, any>()
+      registeredUsers.forEach((r: any) => {
+        if (r.id) regUserMap.set(r.id, r)
+        if (r.user_id) regUserMap.set(r.user_id, r)
+        if (r.email) regUserMap.set(r.email, r)
+      })
+
+      let userList: PlatformTenantUserItem[] = rawCompanyUsers.map((cu: any) => {
+        const profile = profileMap.get(cu.user_id)
+        const regUser = regUserMap.get(cu.user_id) || (cu.invited_email ? regUserMap.get(cu.invited_email) : null)
         const company = cu.companies
         const branch = cu.branches
-        const role = cu.user_roles?.[0]?.roles?.slug || 'member'
+        const role = cu.user_roles?.[0]?.roles?.slug || (Array.isArray(cu.responsibilities) ? cu.responsibilities[0] : 'member')
+
+        const fullName = profile?.full_name || regUser?.full_name || cu.invited_name || (role === 'owner' || role === 'business_owner' ? 'Business Owner' : 'Tenant User')
+        const email = profile?.email || regUser?.email || cu.invited_email || (cu.user_id?.includes('@') ? cu.user_id : 'user@printerp.com')
+        const phone = profile?.phone || regUser?.phone || cu.phone || null
 
         return {
           id: cu.id,
@@ -2069,17 +2119,25 @@ export class PlatformService {
           company_id: cu.company_id,
           company_name: company?.name || 'Unknown Tenant',
           company_slug: company?.slug || '',
-          full_name: profile?.full_name || 'Tenant User',
-          full_name_bn: profile?.full_name_bn || null,
-          email: profile?.email || 'No email',
-          phone: profile?.phone || null,
-          status: cu.status || 'active',
+          full_name: fullName,
+          full_name_bn: profile?.full_name_bn || regUser?.full_name_bn || null,
+          email,
+          phone,
+          status: cu.status === 'disabled' ? 'disabled' : (cu.status || 'active'),
           primary_role: role,
           responsibilities: Array.isArray(cu.responsibilities) ? cu.responsibilities : [role],
           branch_name: branch?.name || null,
-          created_at: cu.created_at,
+          created_at: cu.created_at || new Date().toISOString(),
         }
       })
+
+      if (filters?.companyId && filters.companyId !== 'all') {
+        userList = userList.filter((u) => u.company_id === filters.companyId)
+      }
+
+      if (filters?.status && filters.status !== 'all') {
+        userList = userList.filter((u) => u.status === filters.status)
+      }
 
       if (filters?.search) {
         const s = filters.search.toLowerCase().trim()
@@ -2087,19 +2145,71 @@ export class PlatformService {
           u.full_name.toLowerCase().includes(s) ||
           u.email.toLowerCase().includes(s) ||
           u.company_name.toLowerCase().includes(s) ||
+          u.company_slug.toLowerCase().includes(s) ||
+          u.primary_role.toLowerCase().includes(s) ||
           (u.phone && u.phone.includes(s))
         )
       }
 
+      const total = count && count > userList.length ? count : userList.length
+      const paginatedUsers = userList.slice(offset, offset + pageSize)
+
       return {
         success: true,
         data: {
-          users: userList,
-          total: count || userList.length,
+          users: paginatedUsers,
+          total,
         },
       }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to fetch tenant users' }
+    }
+  }
+
+  /**
+   * 9c. Toggle / Update Tenant User Status (Platform Admin Privileged Action)
+   */
+  static async updateTenantUserStatus(
+    companyUserId: string,
+    newStatus: 'active' | 'disabled' | 'suspended' | 'invited',
+    reason?: string
+  ): Promise<ApiResponse<{ companyUserId: string; status: string }>> {
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
+        .from('company_users')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', companyUserId)
+        .select('id, user_id, company_id, status')
+        .maybeSingle()
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      // Also sync transient store
+      const localCU = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+      const updatedLocal = localCU.map((cu: any) => cu.id === companyUserId ? { ...cu, status: newStatus } : cu)
+      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, updatedLocal)
+
+      await this.recordAuditLog(
+        `tenant_user.${newStatus}`,
+        'company_user',
+        companyUserId,
+        data?.company_id,
+        undefined,
+        { previous_status: 'unknown', new_status: newStatus, reason },
+        null,
+        { status: newStatus },
+        reason || `Tenant user membership status updated to ${newStatus}`
+      )
+
+      return { success: true, data: { companyUserId, status: newStatus } }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to update tenant user status' }
     }
   }
 
