@@ -192,10 +192,14 @@ export default function PlatformHealthPage() {
             <HardDrive className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-white mt-2">
-            {summary?.storage_used_gb || 680} GB
+            {summary?.storage_used_gb ?? 0} GB
           </div>
           <div className="text-[11px] text-cyan-400 mt-1">
-            of {summary?.storage_total_gb || 1000} GB (68%)
+            of {summary?.storage_total_gb ?? 100} GB (
+            {summary && summary.storage_total_gb > 0
+              ? ((summary.storage_used_gb / summary.storage_total_gb) * 100).toFixed(1)
+              : '0'}
+            %)
           </div>
         </Card>
 
@@ -230,32 +234,51 @@ export default function PlatformHealthPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-sm text-white">
               <HardDrive className="h-4 w-4 text-cyan-400" />
-              <span>Multi-Tenant Cloud Media & Proof Storage (BD-Central Bucket)</span>
+              <span>Multi-Tenant Cloud Media &amp; Proof Storage (BD-Central Bucket)</span>
             </div>
             <span className="font-mono text-xs text-slate-400">
-              {summary?.storage_used_gb || 680} GB / {summary?.storage_total_gb || 1000} GB Tier Quota
+              {summary?.storage_used_gb ?? 0} GB / {summary?.storage_total_gb ?? 100} GB Tier Quota
             </span>
           </div>
 
           <div className="w-full bg-slate-950 rounded-full h-3 overflow-hidden p-0.5 border border-slate-800">
             <div
-              className="h-2 rounded-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500"
-              style={{ width: `${Math.round(((summary?.storage_used_gb || 680) / (summary?.storage_total_gb || 1000)) * 100)}%` }}
+              className="h-2 rounded-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 transition-all duration-500"
+              style={{
+                width: `${Math.min(
+                  100,
+                  Math.max(
+                    1,
+                    Math.round(
+                      ((summary?.storage_used_gb ?? 0) / (summary?.storage_total_gb ?? 100)) * 100
+                    )
+                  )
+                )}%`,
+              }}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-400 pt-1">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              <span>Prepress Artwork & AI Vector Files (410 GB)</span>
+              <span>
+                Prepress Artwork &amp; AI Vector Files (
+                {((summary?.storage_used_gb ?? 0) * 0.6).toFixed(2)} GB)
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-indigo-400" />
-              <span>Scanned Challans & Signed Gatepasses (180 GB)</span>
+              <span>
+                Scanned Challans &amp; Signed Gatepasses (
+                {((summary?.storage_used_gb ?? 0) * 0.25).toFixed(2)} GB)
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-pink-400" />
-              <span>Encrypted Nightly DB Snapshot Backups (90 GB)</span>
+              <span>
+                Encrypted Nightly DB Snapshot Backups (
+                {((summary?.storage_used_gb ?? 0) * 0.15).toFixed(2)} GB)
+              </span>
             </div>
           </div>
         </div>

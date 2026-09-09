@@ -272,7 +272,10 @@ export default function PlatformDashboardPage() {
               <HardDrive className="h-3.5 w-3.5 text-pink-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">{data.storage_used_gb} GB</div>
-            <div className="text-[10px] text-pink-400 mt-1 font-semibold">68% of 1 TB</div>
+            <div className="text-[10px] text-pink-400 mt-1 font-semibold">
+              {data.storage_total_gb > 0 ? ((data.storage_used_gb / data.storage_total_gb) * 100).toFixed(1) : '0'}% of{' '}
+              {data.storage_total_gb >= 1000 ? `${(data.storage_total_gb / 1000).toFixed(0)} TB` : `${data.storage_total_gb} GB`}
+            </div>
           </Card>
         </div>
       </div>
@@ -306,7 +309,9 @@ export default function PlatformDashboardPage() {
                 className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 hover:bg-emerald-900/30 transition-colors"
               >
                 <div className="text-xs font-bold text-emerald-400 uppercase">Healthy</div>
-                <div className="text-2xl font-black text-white mt-1">4</div>
+                <div className="text-2xl font-black text-white mt-1">
+                  {data.company_health_breakdown?.healthy ?? 0}
+                </div>
                 <div className="text-[10px] text-slate-400">Good standing</div>
               </Link>
 
@@ -315,7 +320,9 @@ export default function PlatformDashboardPage() {
                 className="p-3 rounded-xl bg-amber-950/30 border border-amber-800/40 hover:bg-amber-900/30 transition-colors"
               >
                 <div className="text-xs font-bold text-amber-400 uppercase">At Risk</div>
-                <div className="text-2xl font-black text-amber-300 mt-1">2</div>
+                <div className="text-2xl font-black text-amber-300 mt-1">
+                  {data.company_health_breakdown?.at_risk ?? 0}
+                </div>
                 <div className="text-[10px] text-slate-400">Near limits/slow</div>
               </Link>
 
@@ -324,7 +331,9 @@ export default function PlatformDashboardPage() {
                 className="p-3 rounded-xl bg-red-950/30 border border-red-800/40 hover:bg-red-900/30 transition-colors"
               >
                 <div className="text-xs font-bold text-red-400 uppercase">Critical</div>
-                <div className="text-2xl font-black text-red-300 mt-1">1</div>
+                <div className="text-2xl font-black text-red-300 mt-1">
+                  {data.company_health_breakdown?.critical ?? 0}
+                </div>
                 <div className="text-[10px] text-slate-400">Delinquent</div>
               </Link>
 
@@ -333,7 +342,9 @@ export default function PlatformDashboardPage() {
                 className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:bg-slate-800/60 transition-colors"
               >
                 <div className="text-xs font-bold text-slate-400 uppercase">Suspended</div>
-                <div className="text-2xl font-black text-white mt-1">1</div>
+                <div className="text-2xl font-black text-white mt-1">
+                  {data.company_health_breakdown?.suspended ?? 0}
+                </div>
                 <div className="text-[10px] text-slate-500">Access locked</div>
               </Link>
             </div>
@@ -414,27 +425,42 @@ export default function PlatformDashboardPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
-          {[
-            { name: 'Database', status: 'Operational', color: 'text-emerald-400' },
-            { name: 'Cloud Storage', status: 'Operational', color: 'text-emerald-400' },
-            { name: 'Background Jobs', status: 'Degraded', color: 'text-amber-400' },
-            { name: 'Notifications', status: 'Degraded', color: 'text-amber-400' },
-            { name: 'bKash Gateway', status: 'Operational', color: 'text-emerald-400' },
-            { name: 'WhatsApp API', status: 'Operational', color: 'text-emerald-400' },
-            { name: 'Greenweb SMS', status: 'Degraded', color: 'text-amber-400' },
-            { name: 'NBR VAT Sync', status: 'Operational', color: 'text-emerald-400' },
-          ].map((svc) => (
-            <div
-              key={svc.name}
-              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1"
-            >
-              <div className="text-[11px] font-bold text-slate-300 truncate">{svc.name}</div>
-              <div className={`text-[10px] font-semibold flex items-center justify-center gap-1 ${svc.color}`}>
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                <span>{svc.status}</span>
+          {(data.services_health && data.services_health.length > 0 ? data.services_health : [
+            { name: 'Database', key: 'db', status: 'operational' as const },
+            { name: 'Cloud Storage', key: 'storage', status: 'operational' as const },
+            { name: 'Background Jobs', key: 'jobs', status: 'operational' as const },
+            { name: 'Notifications', key: 'notifications', status: 'operational' as const },
+            { name: 'bKash Gateway', key: 'bkash', status: 'operational' as const },
+            { name: 'WhatsApp API', key: 'whatsapp', status: 'operational' as const },
+            { name: 'Greenweb SMS', key: 'sms', status: 'operational' as const },
+            { name: 'NBR VAT Sync', key: 'vat', status: 'operational' as const },
+          ]).map((svc) => {
+            const isOp = svc.status === 'operational'
+            const isDeg = svc.status === 'degraded'
+            const isFail = svc.status === 'failed'
+            const color = isOp
+              ? 'text-emerald-400'
+              : isDeg
+              ? 'text-amber-400'
+              : isFail
+              ? 'text-red-400'
+              : 'text-indigo-400'
+
+            const label = svc.status.charAt(0).toUpperCase() + svc.status.slice(1)
+
+            return (
+              <div
+                key={svc.name}
+                className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1 hover:border-slate-700 transition-colors"
+              >
+                <div className="text-[11px] font-bold text-slate-300 truncate" title={svc.name}>{svc.name}</div>
+                <div className={`text-[10px] font-semibold flex items-center justify-center gap-1 ${color}`}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                  <span>{label}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

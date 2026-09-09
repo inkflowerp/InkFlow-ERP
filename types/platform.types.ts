@@ -90,6 +90,19 @@ export interface PlatformDashboardMetrics {
     integration_errors: number
     storage_used_pct: number
   }
+  company_health_breakdown: {
+    healthy: number
+    at_risk: number
+    critical: number
+    suspended: number
+  }
+  services_health: {
+    name: string
+    key: string
+    status: 'operational' | 'degraded' | 'failed' | 'maintenance'
+    latency_ms?: number
+    notes?: string
+  }[]
   recent_audit_logs?: PlatformAuditLogItem[]
 }
 
