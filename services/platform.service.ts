@@ -717,7 +717,7 @@ export class PlatformService {
         'company.delete_all',
         'company',
         'all',
-        null,
+        undefined,
         undefined,
         {
           deleted_count: ids.length,
