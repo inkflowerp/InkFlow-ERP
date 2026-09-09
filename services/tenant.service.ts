@@ -53,44 +53,53 @@ export class TenantService {
         ? ownerUserId
         : null
 
-      const normalizedOwnerEmail = data.owner_email ? data.owner_email.trim().toLowerCase() : ''
+      const normalizedOwnerEmail = (data.owner_email || data.email || '').trim().toLowerCase()
 
       // If ownerUserId is not provided or not a valid UUID, but owner_email is supplied, resolve/create the auth user
       if (!resolvedOwnerId && normalizedOwnerEmail) {
         // 1. Check if user already exists in user_profiles
-        const { data: existingProfile } = await (admin as any)
-          .from('user_profiles')
-          .select('id')
-          .eq('email', normalizedOwnerEmail)
-          .maybeSingle()
+        try {
+          const { data: existingProfile } = await (admin as any)
+            .from('user_profiles')
+            .select('id')
+            .eq('email', normalizedOwnerEmail)
+            .maybeSingle()
 
-        if (existingProfile?.id) {
-          resolvedOwnerId = existingProfile.id
-        } else {
-          // 2. Check if user exists in auth.users
-          const { data: userList } = await admin.auth.admin.listUsers()
-          const matchedUser = userList?.users?.find(
-            (u) => u.email?.toLowerCase() === normalizedOwnerEmail
-          )
+          if (existingProfile?.id) {
+            resolvedOwnerId = existingProfile.id
+          }
+        } catch {}
 
-          if (matchedUser) {
-            resolvedOwnerId = matchedUser.id
-          } else {
-            // 3. Create new user in Supabase Auth
+        // 2. If not found in user_profiles, try to create in Supabase Auth
+        if (!resolvedOwnerId) {
+          try {
             const { data: newAuth, error: authErr } = await admin.auth.admin.createUser({
               email: normalizedOwnerEmail,
               password: data.owner_password || 'PrintERP2026!Owner',
               email_confirm: true,
               user_metadata: {
-                full_name: data.owner_name || normalizedOwnerEmail.split('@')[0],
-                phone: data.owner_phone || null,
+                full_name: data.owner_name || data.name || normalizedOwnerEmail.split('@')[0],
+                phone: data.owner_phone || data.phone || null,
                 preferred_locale: data.default_language || 'bn',
               },
             })
 
-            if (!authErr && newAuth?.user) {
+            if (newAuth?.user?.id) {
               resolvedOwnerId = newAuth.user.id
+            } else if (authErr && (authErr.message?.includes('already') || (authErr as any).code === 'email_exists')) {
+              // Re-check user_profiles
+              const { data: prof } = await (admin as any)
+                .from('user_profiles')
+                .select('id')
+                .eq('email', normalizedOwnerEmail)
+                .maybeSingle()
+
+              if (prof?.id) {
+                resolvedOwnerId = prof.id
+              }
             }
+          } catch {
+            // Non-blocking
           }
         }
       }

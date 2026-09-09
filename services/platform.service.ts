@@ -290,11 +290,7 @@ export class PlatformService {
             id,
             user_id,
             status,
-            profile:user_profiles (
-              full_name,
-              email,
-              phone
-            )
+            invited_email
           )
         `, { count: 'exact' })
 
@@ -318,7 +314,26 @@ export class PlatformService {
         return { success: false, error: error.message }
       }
 
-      const formatted: PlatformTenantCompany[] = (data || []).map((c: any) => {
+      const compList = data || []
+      const allUserIds: string[] = []
+      compList.forEach((c: any) => {
+        ;(c.company_users || []).forEach((u: any) => {
+          if (u.user_id) allUserIds.push(u.user_id)
+        })
+      })
+
+      const profileMap = new Map<string, any>()
+      if (allUserIds.length > 0) {
+        try {
+          const { data: profs } = await (admin as any)
+            .from('user_profiles')
+            .select('id, full_name, email, phone')
+            .in('id', allUserIds)
+          ;(profs || []).forEach((p: any) => profileMap.set(p.id, p))
+        } catch {}
+      }
+
+      const formatted: PlatformTenantCompany[] = compList.map((c: any) => {
         const sub = c.company_subscriptions?.[0]
         const plan = sub?.subscription_plans
         const subStatus: PlatformCompanyStatus = !c.is_active
@@ -326,17 +341,19 @@ export class PlatformService {
           : (sub?.status as PlatformCompanyStatus) || 'active'
 
         const ownerUser = (c.company_users || []).find(
-          (u: any) => u.profile?.full_name || u.profile?.email
+          (u: any) => profileMap.get(u.user_id)?.full_name || profileMap.get(u.user_id)?.email
         ) || c.company_users?.[0]
+
+        const ownerProf = ownerUser?.user_id ? profileMap.get(ownerUser.user_id) : null
 
         return {
           id: c.id,
           name: c.name,
           name_bn: c.name_bn || c.name,
           slug: c.slug,
-          owner_name: ownerUser?.profile?.full_name || (c.name + ' Owner'),
-          owner_email: ownerUser?.profile?.email || c.email || ('owner@' + c.slug + '.com'),
-          owner_phone: ownerUser?.profile?.phone || c.phone || '01700-000000',
+          owner_name: ownerProf?.full_name || (c.name + ' Owner'),
+          owner_email: ownerProf?.email || ownerUser?.invited_email || c.email || ('owner@' + c.slug + '.com'),
+          owner_phone: ownerProf?.phone || c.phone || '01700-000000',
           plan: (plan?.code as PlatformPlanCode) || 'starter',
           status: subStatus,
           health: c.is_active ? 'healthy' : 'suspended',
@@ -391,10 +408,7 @@ export class PlatformService {
             subscription_plans (*)
           ),
           branches (*),
-          company_users (
-            *,
-            profile:profiles (*)
-          )
+          company_users (*)
         `)
         .eq('id', companyId)
         .single()
@@ -438,18 +452,32 @@ export class PlatformService {
         ),
       }))
 
+      const cuUserIds = (company.company_users || []).map((u: any) => u.user_id).filter(Boolean)
+      const detailProfileMap = new Map<string, any>()
+      if (cuUserIds.length > 0) {
+        try {
+          const { data: profs } = await (admin as any)
+            .from('user_profiles')
+            .select('*')
+            .in('id', cuUserIds)
+          ;(profs || []).forEach((p: any) => detailProfileMap.set(p.id, p))
+        } catch {}
+      }
+
       const ownerUser = (company.company_users || []).find(
-        (u: any) => u.profile?.full_name || u.profile?.email
+        (u: any) => detailProfileMap.get(u.user_id)?.full_name || detailProfileMap.get(u.user_id)?.email
       ) || company.company_users?.[0]
+
+      const ownerProf = ownerUser?.user_id ? detailProfileMap.get(ownerUser.user_id) : null
 
       const tenantCompany: PlatformTenantCompany = {
         id: company.id,
         name: company.name,
         name_bn: company.name_bn || company.name,
         slug: company.slug,
-        owner_name: ownerUser?.profile?.full_name || (company.name + ' Owner'),
-        owner_email: ownerUser?.profile?.email || company.email || ('owner@' + company.slug + '.com'),
-        owner_phone: ownerUser?.profile?.phone || company.phone || '01700-000000',
+        owner_name: ownerProf?.full_name || (company.name + ' Owner'),
+        owner_email: ownerProf?.email || ownerUser?.invited_email || company.email || ('owner@' + company.slug + '.com'),
+        owner_phone: ownerProf?.phone || company.phone || '01700-000000',
         plan: (plan?.code as PlatformPlanCode) || 'starter',
         status,
         health: company.is_active ? 'healthy' : 'suspended',

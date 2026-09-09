@@ -121,15 +121,18 @@ export class TenantRepository {
     if (ownerUserId && isUuid) {
       const { data: compUser } = await (admin as any)
         .from('company_users')
-        .insert({
-          company_id: newCompany.id,
-          user_id: ownerUserId,
-          branch_id: mainBranch?.id || null,
-          status: 'active',
-          department: 'Management',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
+        .upsert(
+          {
+            company_id: newCompany.id,
+            user_id: ownerUserId,
+            branch_id: mainBranch?.id || null,
+            status: 'active',
+            invited_email: companyData.email || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'company_id,user_id' }
+        )
         .select()
         .single()
 
@@ -141,11 +144,14 @@ export class TenantRepository {
         .maybeSingle()
 
       if (ownerRole && compUser) {
-        await (admin as any).from('user_roles').insert({
-          company_user_id: compUser.id,
-          role_id: ownerRole.id,
-          company_id: newCompany.id,
-        })
+        await (admin as any).from('user_roles').upsert(
+          {
+            company_user_id: compUser.id,
+            role_id: ownerRole.id,
+            company_id: newCompany.id,
+          },
+          { onConflict: 'company_user_id,role_id' }
+        )
       }
 
       try {
@@ -170,7 +176,7 @@ export class TenantRepository {
     const { data, error } = await admin
       .from('companies')
       .select('*')
-      .eq('slug', slug.toLowerCase())
+      .ilike('slug', slug.toLowerCase().trim())
       .maybeSingle()
 
     if (error) {
@@ -239,10 +245,8 @@ export class TenantRepository {
       .from('company_users')
       .select(`
         *,
-        profile:user_profiles(*),
         branch:branches(*),
-        user_roles(role:roles(*)),
-        user_permission_overrides(permission:permissions(code), is_granted)
+        user_roles(role:roles(*))
       `)
       .eq('company_id', companyId)
 
@@ -250,16 +254,44 @@ export class TenantRepository {
       throw new Error(`Failed to fetch company users: ${error.message}`)
     }
 
-    return (data || []).map((cu: any) => {
-      const roles = (cu.user_roles || []).map((ur: any) => ur.role).filter(Boolean)
-      const overrides: Record<string, boolean> = {}
-      ;(cu.user_permission_overrides || []).forEach((ov: any) => {
-        if (ov.permission?.code) {
-          overrides[ov.permission.code] = ov.is_granted
-        }
-      })
+    const cuList = data || []
+    const userIds = cuList.map((c: any) => c.user_id).filter(Boolean)
+    const profileMap = new Map<string, any>()
 
+    if (userIds.length > 0) {
+      try {
+        const { data: profs } = await (admin as any)
+          .from('user_profiles')
+          .select('*')
+          .in('id', userIds)
+        ;(profs || []).forEach((p: any) => profileMap.set(p.id, p))
+      } catch {}
+    }
+
+    const cuIds = cuList.map((c: any) => c.id).filter(Boolean)
+    const overrideMap = new Map<string, Record<string, boolean>>()
+    if (cuIds.length > 0) {
+      try {
+        const { data: ovs } = await (admin as any)
+          .from('user_permission_overrides')
+          .select('company_user_id, permission:permissions(code), is_granted')
+          .in('company_user_id', cuIds)
+        ;(ovs || []).forEach((ov: any) => {
+          if (!overrideMap.has(ov.company_user_id)) {
+            overrideMap.set(ov.company_user_id, {})
+          }
+          if (ov.permission?.code) {
+            overrideMap.get(ov.company_user_id)![ov.permission.code] = ov.is_granted
+          }
+        })
+      } catch {}
+    }
+
+    return cuList.map((cu: any) => {
+      const roles = (cu.user_roles || []).map((ur: any) => ur.role).filter(Boolean)
+      const overrides = overrideMap.get(cu.id) || {}
       const responsibilities = roles.map((r: any) => r.slug || r.name)
+      const prof = profileMap.get(cu.user_id)
 
       return {
         id: cu.id,
@@ -281,7 +313,7 @@ export class TenantRepository {
         invited_email: cu.invited_email,
         created_at: cu.created_at,
         updated_at: cu.updated_at,
-        profile: cu.profile || {
+        profile: prof || {
           id: cu.user_id,
           email: cu.invited_email || '',
           full_name: 'Team Member',
@@ -455,10 +487,8 @@ export class TenantRepository {
       .select(`
         *,
         company:companies!inner(*),
-        profile:user_profiles(*),
         branch:branches(*),
-        user_roles(role:roles(*)),
-        user_permission_overrides(permission:permissions(code), is_granted)
+        user_roles(role:roles(*))
       `)
       .eq('user_id', userId)
       .eq('status', 'active')
@@ -467,7 +497,97 @@ export class TenantRepository {
       query = query.eq('company_id', targetCompanyId)
     }
 
-    const { data: records, error } = await query
+    let { data: records, error } = await query
+
+    if ((error || !records || records.length === 0) && targetCompanyId) {
+      try {
+        const targetComp = await TenantRepository.getCompanyById(targetCompanyId)
+        if (targetComp && targetComp.is_active) {
+          const { data: userProf } = await (admin as any)
+            .from('user_profiles')
+            .select('id, email')
+            .eq('id', userId)
+            .maybeSingle()
+
+          const userEmail = userProf?.email?.toLowerCase().trim()
+          const compEmail = targetComp.email?.toLowerCase().trim()
+
+          const { data: existingMembers } = await (admin as any)
+            .from('company_users')
+            .select('id')
+            .eq('company_id', targetCompanyId)
+            .limit(1)
+
+          const isOwnerByEmail = Boolean(userEmail && compEmail && userEmail === compEmail)
+          const isZeroMemberCompany = !existingMembers || existingMembers.length === 0
+
+          if (isOwnerByEmail || isZeroMemberCompany) {
+            let { data: mainBranch } = await (admin as any)
+              .from('branches')
+              .select('id')
+              .eq('company_id', targetCompanyId)
+              .eq('code', 'MAIN')
+              .maybeSingle()
+
+            if (!mainBranch) {
+              const { data: nb } = await (admin as any)
+                .from('branches')
+                .insert({
+                  company_id: targetCompanyId,
+                  name: 'Main Branch / হেড অফিস',
+                  code: 'MAIN',
+                  is_main: true,
+                })
+                .select()
+                .maybeSingle()
+              mainBranch = nb
+            }
+
+            const { data: healedCU } = await (admin as any)
+              .from('company_users')
+              .upsert(
+                {
+                  company_id: targetCompanyId,
+                  user_id: userId,
+                  branch_id: mainBranch?.id || null,
+                  status: 'active',
+                  invited_email: userEmail || compEmail || null,
+                  updated_at: new Date().toISOString(),
+                },
+                { onConflict: 'company_id,user_id' }
+              )
+              .select()
+              .single()
+
+            const { data: ownerRole } = await (admin as any)
+              .from('roles')
+              .select('id')
+              .or('slug.eq.owner,slug.eq.business_owner,id.eq.00000000-0000-0000-0000-000000000001')
+              .maybeSingle()
+
+            if (ownerRole && healedCU) {
+              await (admin as any).from('user_roles').upsert(
+                {
+                  company_user_id: healedCU.id,
+                  role_id: ownerRole.id,
+                  company_id: targetCompanyId,
+                },
+                { onConflict: 'company_user_id,role_id' }
+              )
+            }
+
+            const { data: healedRecords } = await query
+            if (healedRecords && healedRecords.length > 0) {
+              records = healedRecords
+              error = null
+            }
+          }
+        }
+      } catch {
+        // Non-blocking fallback
+      }
+    }
+
     if (error || !records || records.length === 0) {
       return null
     }
@@ -480,11 +600,18 @@ export class TenantRepository {
 
     const roles: RoleRow[] = (cu.user_roles || []).map((ur: any) => ur.role).filter(Boolean)
     const overrides: Record<string, boolean> = {}
-    ;(cu.user_permission_overrides || []).forEach((ov: any) => {
-      if (ov.permission?.code) {
-        overrides[ov.permission.code] = ov.is_granted
-      }
-    })
+
+    try {
+      const { data: ovs } = await (admin as any)
+        .from('user_permission_overrides')
+        .select('permission:permissions(code), is_granted')
+        .eq('company_user_id', cu.id)
+      ;(ovs || []).forEach((ov: any) => {
+        if (ov.permission?.code) {
+          overrides[ov.permission.code] = ov.is_granted
+        }
+      })
+    } catch {}
 
     const responsibilities = roles.map((r: any) => r.slug || r.name)
     const isOwner =
@@ -528,13 +655,11 @@ export class TenantRepository {
       }
     }
 
-    let userProfile = cu.profile
-    if (!userProfile) {
-      try {
-        const { data: p } = await (admin as any).from('user_profiles').select('*').eq('id', userId).maybeSingle()
-        userProfile = p
-      } catch {}
-    }
+    let userProfile: any = null
+    try {
+      const { data: p } = await (admin as any).from('user_profiles').select('*').eq('id', userId).maybeSingle()
+      userProfile = p
+    } catch {}
     if (!userProfile) {
       try {
         const { data: p } = await (admin as any).from('profiles').select('*').eq('id', userId).maybeSingle()
