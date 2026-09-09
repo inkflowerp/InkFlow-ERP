@@ -137,9 +137,9 @@ export function MobileSection() {
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-cyan-500 text-white flex items-center justify-center font-bold text-xs">
-                      P
+                      A
                     </div>
-                    <span className="font-bold text-white text-xs">Padma Digital</span>
+                    <span className="font-bold text-white text-xs">Apex Digital</span>
                   </div>
                   <Badge variant="outline" className="text-[9px] text-emerald-400 border-emerald-500/40 py-0 h-4">
                     Online

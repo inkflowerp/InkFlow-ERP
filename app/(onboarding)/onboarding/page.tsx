@@ -285,7 +285,7 @@ export default function OnboardingPage() {
                       </Label>
                       <Input
                         id="name"
-                        placeholder="e.g. Padma Digital & Signage Ltd."
+                        placeholder="e.g. Apex Digital & Signage Ltd."
                         {...register('name', { onChange: handleNameChange })}
                         error={errors.name?.message}
                       />
@@ -295,7 +295,7 @@ export default function OnboardingPage() {
                       <Label htmlFor="name_bn">প্রতিষ্ঠানের নাম (বাংলায়)</Label>
                       <Input
                         id="name_bn"
-                        placeholder="যেমন: পদ্মা ডিজিটাল অ্যান্ড সাইনেজ লি."
+                        placeholder="যেমন: অ্যাপেক্স ডিজিটাল অ্যান্ড সাইনেজ লি."
                         {...register('name_bn')}
                         error={errors.name_bn?.message}
                       />

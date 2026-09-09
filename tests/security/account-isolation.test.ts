@@ -19,10 +19,10 @@ interface UserProfile {
 }
 
 const TEST_COMPANIES = {
-  padma: {
+  alpha: {
     id: 'a0000000-0000-0000-0000-000000000001',
-    slug: 'padma-digital',
-    name: 'Padma Digital & Signage Ltd.',
+    slug: 'alpha-digital',
+    name: 'Alpha Digital & Signage Ltd.',
   },
   meghna: {
     id: 'a0000000-0000-0000-0000-000000000002',
@@ -34,11 +34,11 @@ const TEST_COMPANIES = {
 const TEST_USERS: Record<string, UserProfile> = {
   owner: {
     id: 'usr-001',
-    email: 'owner@padmadigital.com.bd',
+    email: 'owner@alphaprint.com.bd',
     fullName: 'Shamsul Alam (Owner)',
     department: 'Executive Management',
     branchId: 'br-001', // Motijheel HQ
-    companyId: TEST_COMPANIES.padma.id,
+    companyId: TEST_COMPANIES.alpha.id,
     status: 'active',
     responsibilities: ['business_owner'],
     overrides: {},
@@ -46,11 +46,11 @@ const TEST_USERS: Record<string, UserProfile> = {
   },
   manager: {
     id: 'usr-002',
-    email: 'manager@padmadigital.com.bd',
+    email: 'manager@alphaprint.com.bd',
     fullName: 'Kamrul Hasan (Manager)',
     department: 'Commercial & Sales',
     branchId: 'br-001', // Motijheel HQ
-    companyId: TEST_COMPANIES.padma.id,
+    companyId: TEST_COMPANIES.alpha.id,
     status: 'active',
     responsibilities: ['sales_manager'],
     overrides: {},
@@ -58,11 +58,11 @@ const TEST_USERS: Record<string, UserProfile> = {
   },
   operator: {
     id: 'usr-003',
-    email: 'operator@padmadigital.com.bd',
+    email: 'operator@alphaprint.com.bd',
     fullName: 'Rafiqul Islam (Press)',
     department: 'Press Floor',
     branchId: 'br-002', // Tejgaon Factory
-    companyId: TEST_COMPANIES.padma.id,
+    companyId: TEST_COMPANIES.alpha.id,
     status: 'active',
     responsibilities: ['operator'],
     overrides: {},
@@ -70,11 +70,11 @@ const TEST_USERS: Record<string, UserProfile> = {
   },
   designer: {
     id: 'usr-006',
-    email: 'designer@padmadigital.com.bd',
+    email: 'designer@alphaprint.com.bd',
     fullName: 'Tanvir Ahmed (Designer)',
     department: 'Pre-Press Studio',
     branchId: 'br-001', // Motijheel HQ
-    companyId: TEST_COMPANIES.padma.id,
+    companyId: TEST_COMPANIES.alpha.id,
     status: 'active',
     responsibilities: ['designer'],
     overrides: {},
@@ -82,11 +82,11 @@ const TEST_USERS: Record<string, UserProfile> = {
   },
   accountant: {
     id: 'usr-007',
-    email: 'accountant@padmadigital.com.bd',
+    email: 'accountant@alphaprint.com.bd',
     fullName: 'Nasir Uddin (Finance)',
     department: 'Finance & Accounts',
     branchId: 'br-001', // Motijheel HQ
-    companyId: TEST_COMPANIES.padma.id,
+    companyId: TEST_COMPANIES.alpha.id,
     status: 'active',
     responsibilities: ['accountant'],
     overrides: {},
@@ -94,11 +94,11 @@ const TEST_USERS: Record<string, UserProfile> = {
   },
   delivery: {
     id: 'usr-008',
-    email: 'delivery@padmadigital.com.bd',
+    email: 'delivery@alphaprint.com.bd',
     fullName: 'Jahangir Alam (Dispatch)',
     department: 'Logistics & Dispatch',
     branchId: 'br-002', // Tejgaon Factory
-    companyId: TEST_COMPANIES.padma.id,
+    companyId: TEST_COMPANIES.alpha.id,
     status: 'active',
     responsibilities: ['delivery_coordinator'],
     overrides: {},
@@ -106,11 +106,11 @@ const TEST_USERS: Record<string, UserProfile> = {
   },
   disabledUser: {
     id: 'usr-004',
-    email: 'ex-designer@padmadigital.com.bd',
+    email: 'ex-designer@alphaprint.com.bd',
     fullName: 'Arif Chowdhury (Left)',
     department: 'Pre-Press',
     branchId: 'br-001',
-    companyId: TEST_COMPANIES.padma.id,
+    companyId: TEST_COMPANIES.alpha.id,
     status: 'disabled',
     responsibilities: ['designer'],
     overrides: {},
@@ -184,7 +184,7 @@ describe('Master User Account & Session Isolation Tests', () => {
     // Session A: Business Owner
     let session = createSession('owner')
     assert.strictEqual(session.userId, 'usr-001')
-    assert.strictEqual(session.email, 'owner@padmadigital.com.bd')
+    assert.strictEqual(session.email, 'owner@alphaprint.com.bd')
     assert.strictEqual(session.isOwner, true)
     assert.strictEqual(session.canSeeFinancials, true)
     assert.strictEqual(session.branchId, 'br-001')
@@ -198,7 +198,7 @@ describe('Master User Account & Session Isolation Tests', () => {
     // Session B: Sales Manager
     session = createSession('manager')
     assert.strictEqual(session.userId, 'usr-002')
-    assert.strictEqual(session.email, 'manager@padmadigital.com.bd')
+    assert.strictEqual(session.email, 'manager@alphaprint.com.bd')
     assert.strictEqual(session.isOwner, false)
     assert.strictEqual(session.canSeeFinancials, true)
 
@@ -208,7 +208,7 @@ describe('Master User Account & Session Isolation Tests', () => {
     // Session C: Graphic Designer
     session = createSession('designer')
     assert.strictEqual(session.userId, 'usr-006')
-    assert.strictEqual(session.email, 'designer@padmadigital.com.bd')
+    assert.strictEqual(session.email, 'designer@alphaprint.com.bd')
     assert.strictEqual(session.isOwner, false)
     assert.strictEqual(session.canSeeFinancials, false)
 
@@ -218,7 +218,7 @@ describe('Master User Account & Session Isolation Tests', () => {
     // Session D: Machine Operator
     session = createSession('operator')
     assert.strictEqual(session.userId, 'usr-003')
-    assert.strictEqual(session.email, 'operator@padmadigital.com.bd')
+    assert.strictEqual(session.email, 'operator@alphaprint.com.bd')
     assert.strictEqual(session.branchId, 'br-002') // Tejgaon
     assert.strictEqual(session.isOwner, false)
     assert.strictEqual(session.canSeeFinancials, false)
@@ -229,7 +229,7 @@ describe('Master User Account & Session Isolation Tests', () => {
     // Session E: Accountant
     session = createSession('accountant')
     assert.strictEqual(session.userId, 'usr-007')
-    assert.strictEqual(session.email, 'accountant@padmadigital.com.bd')
+    assert.strictEqual(session.email, 'accountant@alphaprint.com.bd')
     assert.strictEqual(session.isOwner, false)
     assert.strictEqual(session.canSeeFinancials, true)
 
@@ -239,7 +239,7 @@ describe('Master User Account & Session Isolation Tests', () => {
     // Session F: Delivery Coordinator
     session = createSession('delivery')
     assert.strictEqual(session.userId, 'usr-008')
-    assert.strictEqual(session.email, 'delivery@padmadigital.com.bd')
+    assert.strictEqual(session.email, 'delivery@alphaprint.com.bd')
     assert.strictEqual(session.isOwner, false)
     assert.strictEqual(session.canSeeFinancials, false)
 
@@ -262,8 +262,8 @@ describe('Master User Account & Session Isolation Tests', () => {
     )
   })
 
-  test('4. Tenant Boundary Enforcement: Padma Digital users cannot access Meghna Offset data', () => {
-    const padmaUser = TEST_USERS.manager
+  test('4. Tenant Boundary Enforcement: Alpha Digital users cannot access Meghna Offset data', () => {
+    const alphaUser = TEST_USERS.manager
     const requestedMeghnaSlug = TEST_COMPANIES.meghna.slug
     const requestedMeghnaId = TEST_COMPANIES.meghna.id
 
@@ -271,13 +271,13 @@ describe('Master User Account & Session Isolation Tests', () => {
     const isTenantAuthorized = (user: UserProfile, targetSlugOrId: string) => {
       return (
         user.companyId === targetSlugOrId ||
-        (user.companyId === TEST_COMPANIES.padma.id && targetSlugOrId === TEST_COMPANIES.padma.slug)
+        (user.companyId === TEST_COMPANIES.alpha.id && targetSlugOrId === TEST_COMPANIES.alpha.slug)
       )
     }
 
-    assert.strictEqual(isTenantAuthorized(padmaUser, requestedMeghnaSlug), false)
-    assert.strictEqual(isTenantAuthorized(padmaUser, requestedMeghnaId), false)
-    assert.strictEqual(isTenantAuthorized(padmaUser, TEST_COMPANIES.padma.slug), true)
+    assert.strictEqual(isTenantAuthorized(alphaUser, requestedMeghnaSlug), false)
+    assert.strictEqual(isTenantAuthorized(alphaUser, requestedMeghnaId), false)
+    assert.strictEqual(isTenantAuthorized(alphaUser, TEST_COMPANIES.alpha.slug), true)
   })
 
   test('5. Branch Isolation: Machine Operator at Tejgaon cannot access Head Office private logs', () => {
@@ -376,8 +376,8 @@ describe('Master User Account & Session Isolation Tests', () => {
     assert.strictEqual(ownerScope, 'company')
 
     const sampleOrders = [
-      { id: 'ord-1', assigned_to: 'usr-006', company_id: TEST_COMPANIES.padma.id },
-      { id: 'ord-2', assigned_to: 'usr-003', company_id: TEST_COMPANIES.padma.id },
+      { id: 'ord-1', assigned_to: 'usr-006', company_id: TEST_COMPANIES.alpha.id },
+      { id: 'ord-2', assigned_to: 'usr-003', company_id: TEST_COMPANIES.alpha.id },
     ]
 
     const filterOrders = (user: UserProfile, orders: typeof sampleOrders) => {

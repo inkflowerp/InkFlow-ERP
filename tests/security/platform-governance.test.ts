@@ -131,7 +131,7 @@ const mockState = {
   companies: [
     {
       id: 'c-01',
-      name: 'Padma Digital & Signage Ltd.',
+      name: 'Alpha Digital & Signage Ltd.',
       plan: 'business',
       status: 'active',
       health: 'healthy',

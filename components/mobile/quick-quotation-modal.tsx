@@ -94,7 +94,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
 
   const handleShareWhatsApp = () => {
     const text = encodeURIComponent(
-      `*PrintERP Estimate - Padma Digital*\n` +
+      `*PrintERP Official Estimate*\n` +
       `Client: ${customerName}\n` +
       `Item: ${selectedMaterial.name}\n` +
       `Size: ${width}ft × ${height}ft (${totalSftPerPiece} SFT)\n` +

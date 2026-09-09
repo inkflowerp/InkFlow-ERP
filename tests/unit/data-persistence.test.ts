@@ -46,14 +46,14 @@ describe('Unified DataStore Persistence Engine', () => {
   it('1. Basic Store & Retrieve: items persist in cache accurately', () => {
     store.set('company_profile', {
       id: 'c-01',
-      name: 'Padma Digital Ltd.',
+      name: 'Alpha Digital Ltd.',
       phone: '+8801711223344',
       bin_no: '004819284-9999',
     })
 
     const retrieved = store.get<any>('company_profile')
     assert.ok(retrieved)
-    assert.strictEqual(retrieved.name, 'Padma Digital Ltd.')
+    assert.strictEqual(retrieved.name, 'Alpha Digital Ltd.')
     assert.strictEqual(retrieved.phone, '+8801711223344')
     assert.strictEqual(retrieved.bin_no, '004819284-9999')
   })
@@ -111,6 +111,6 @@ describe('Unified DataStore Persistence Engine', () => {
     initial.name = 'Hacked Name'
 
     const secondFetch = store.get<any>('company_profile')
-    assert.strictEqual(secondFetch.name, 'Padma Digital Ltd.')
+    assert.strictEqual(secondFetch.name, 'Alpha Digital Ltd.')
   })
 })

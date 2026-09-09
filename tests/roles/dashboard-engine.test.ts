@@ -361,7 +361,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['business_owner'],
       isOwner: true,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {},
       dataScopes: {},
     }
@@ -384,7 +384,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['sales_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'orders.view': true,
         'orders.create': true,
@@ -414,7 +414,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['designer'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'orders.view': true,
         'orders.create': true,
@@ -444,7 +444,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['sales_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'customers.create': true,
         'quotations.create': true,
@@ -473,7 +473,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['production_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'production.view': true,
         'production.edit': true,
@@ -497,7 +497,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['operator'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'production.view': true,
         'production.edit': true,
@@ -524,7 +524,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['finishing_operator'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'production.view': true,
         'production.edit': true,
@@ -545,7 +545,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['fabricator'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'production.view': true,
         'production.edit': true,
@@ -565,7 +565,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['store_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'inventory.create': true,
         'inventory.view': true,
@@ -586,7 +586,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['accountant'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'invoices.view': true,
         'invoices.create': true,
@@ -611,7 +611,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['delivery_coordinator'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'delivery.view': true,
         'delivery.create': true,
@@ -632,7 +632,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['delivery_worker'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'delivery.view': true,
       },
@@ -652,7 +652,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['designer', 'sales_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'orders.create': true,
         'orders.view': true,
@@ -683,7 +683,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['sales_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: { 'orders.view': true },
       dataScopes: { orders: 'own' },
     }
@@ -701,7 +701,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['operator'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: { 'production.view': true },
       dataScopes: { production: 'assigned' },
     }
@@ -723,7 +723,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['sales_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: { 'orders.view': true },
       dataScopes: { orders: 'department' },
     }
@@ -741,7 +741,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['sales_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: { 'orders.view': true },
       dataScopes: { orders: 'company' },
     }
@@ -758,7 +758,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['sales_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'orders.view': true,
         // Missing 'orders.create', 'invoices.create', etc.
@@ -779,7 +779,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['operator'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {
         'production.view': true,
       },
@@ -800,7 +800,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['sales_manager'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       branchId: 'br-01',
       permissions: { 'orders.view': true },
       dataScopes: { orders: 'company' },
@@ -819,7 +819,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['designer'],
       isOwner: false,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: { 'design.view': true },
       dataScopes: { design: 'own' },
     }
@@ -836,7 +836,7 @@ describe('Role-Wise Dashboard & Quick Actions Integration Matrix', () => {
       responsibilities: ['business_owner'],
       isOwner: true,
       companyId: 'comp-1',
-      tenantSlug: 'padma',
+      tenantSlug: 'apex-print',
       permissions: {},
       dataScopes: {},
     }

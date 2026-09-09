@@ -36,7 +36,7 @@ export function verifySignedStorageUrl(url: string): boolean {
 // Mock multi-tenant database records
 const MOCK_DB = {
   companies: [
-    { id: 'c-01', name: 'Padma Digital & Signage Ltd.' },
+    { id: 'c-01', name: 'Alpha Digital & Signage Ltd.' },
     { id: 'c-02', name: 'Bengal Printing Works' },
   ],
   orders: [

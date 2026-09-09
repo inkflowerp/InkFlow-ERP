@@ -281,12 +281,12 @@ describe('InkFlow Tenant & User Auth Hardening Suite', () => {
   // 1. TENANT REGISTRATION & OWNER ROLE
   describe('Pillar 1: Registration & Tenant Initialization', () => {
     test('Valid registration creates auth user, company, default branch, and owner membership', () => {
-      const { userId } = db.signUp('owner@padmaprint.com', 'SecurePass123!', 'Shamsul Alam', '01711000000')
+      const { userId } = db.signUp('owner@alphaprint.com', 'SecurePass123!', 'Shamsul Alam', '01711000000')
       assert.ok(userId)
 
-      const { company, branch, membership } = db.createTenant(userId, 'Padma Printing', 'padma-printing')
-      assert.strictEqual(company.name, 'Padma Printing')
-      assert.strictEqual(company.slug, 'padma-printing')
+      const { company, branch, membership } = db.createTenant(userId, 'Alpha Printing', 'alpha-printing')
+      assert.strictEqual(company.name, 'Alpha Printing')
+      assert.strictEqual(company.slug, 'alpha-printing')
       assert.strictEqual(branch.is_main, true)
       assert.strictEqual(membership.user_id, userId)
       assert.deepStrictEqual(membership.responsibilities, ['business_owner'])

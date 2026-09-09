@@ -15,7 +15,7 @@ import { ApiResponse } from '@/types/common.types'
 import { createClient } from '@/lib/supabase/client'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-// Pre-seeded rules for Padma Digital & Signage Ltd. (c-01)
+// Production workflow automation rule templates
 export const SEEDED_WORKFLOW_RULES: WorkflowRule[] = [
   {
     id: 'wf-rule-01',
@@ -168,7 +168,7 @@ export const SEEDED_WORKFLOW_RULES: WorkflowRule[] = [
       {
         id: 'act-11',
         type: 'send_sms',
-        config: { message: 'Gentle reminder: Your invoice with Padma Digital is overdue. Kindly settle via bKash or Bank.' },
+        config: { message: 'Gentle reminder: Your invoice is overdue. Kindly settle via bKash or Bank.' },
       },
       {
         id: 'act-12',

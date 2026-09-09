@@ -121,7 +121,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   <input
                     required
                     type="text"
-                    placeholder="e.g. Padma Digital Press, Dhaka"
+                    placeholder="e.g. Apex Digital Press, Dhaka"
                     value={formData.businessName}
                     onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                     className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs"

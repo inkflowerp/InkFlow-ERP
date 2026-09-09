@@ -149,7 +149,7 @@ export default function QuotationDetailPage({ params }: QuotationDetailPageProps
   // Send WhatsApp Action
   const handleSendWhatsApp = () => {
     const text = encodeURIComponent(
-      `Hello ${quote.customer_name},\nHere is your official quotation ${quote.quotation_number} from ${company?.name || 'Padma Digital'}.\nGrand Total: ৳ ${quote.grand_total} (Valid until ${quote.valid_until}).\nPlease review and confirm.`
+      `Hello ${quote.customer_name},\nHere is your official quotation ${quote.quotation_number} from ${company?.name || 'InkFlow'}.\nGrand Total: ৳ ${quote.grand_total} (Valid until ${quote.valid_until}).\nPlease review and confirm.`
     )
     window.open(`https://wa.me/${quote.customer_phone.replace(/\D/g, '')}?text=${text}`, '_blank')
     handleStatusChange('sent')
@@ -339,11 +339,11 @@ export default function QuotationDetailPage({ params }: QuotationDetailPageProps
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-lg bg-blue-700 text-white font-black text-xl flex items-center justify-center">
-                P
+                {(company?.name || 'P').charAt(0).toUpperCase()}
               </div>
               <div>
                 <h2 className="text-xl font-black tracking-tight text-slate-900">
-                  {company?.name || 'Padma Digital & Signage Ltd.'}
+                  {company?.name || 'Printing & Signage Solutions'}
                 </h2>
                 {company?.name_bn && (
                   <div className="text-xs text-slate-600 font-semibold">{company.name_bn}</div>
@@ -530,7 +530,7 @@ export default function QuotationDetailPage({ params }: QuotationDetailPageProps
           <div className="text-center space-y-1">
             <div className="font-bold text-slate-900">Authorized Signatory</div>
             <div className="text-[11px] text-slate-500">
-              {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : 'For Padma Digital & Signage Ltd.'}
+              {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'Authorized Signatory'}`}
             </div>
           </div>
         </div>

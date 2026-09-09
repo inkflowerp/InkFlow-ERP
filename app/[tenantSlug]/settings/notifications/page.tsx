@@ -30,7 +30,7 @@ export default function NotificationSettingsPage() {
     whatsapp_number: '+880 1819-876543',
     sms_enabled: true,
     sms_gateway: 'Greenweb SMS Gateway',
-    sms_sender_id: 'PADMAPRINT',
+    sms_sender_id: 'PRINTERP',
     sms_api_key: 'gw_live_8f9024a18e27c49b01',
     email_enabled: true,
     low_stock_alerts: true,

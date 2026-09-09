@@ -96,9 +96,9 @@ const INVOICE_DUE_PRESETS = [
     due: 20000,
     daysOverdue: 18,
     msgBn:
-      'প্রিয় রহিম অ্যাডভার্টাইজিং, পদ্মা ডিজিটাল প্রেস থেকে আপনার INV-00180 চালানের মোট বিল ৳ ৫০,০০০-এর মধ্যে বকেয়া ৳ ২০,০০০ টাকা বাকি রয়েছে। অনুগ্রহ করে বকেয়া পরিশোধ করুন। বিকাশ মার্চেন্ট: 01819-876543। ধন্যবাদ!',
+      'প্রিয় রহিম অ্যাডভার্টাইজিং, অ্যাপেক্স ডিজিটাল প্রেস থেকে আপনার INV-00180 চালানের মোট বিল ৳ ৫০,০০০-এর মধ্যে বকেয়া ৳ ২০,০০০ টাকা বাকি রয়েছে। অনুগ্রহ করে বকেয়া পরিশোধ করুন। বিকাশ মার্চেন্ট: 01819-876543। ধন্যবাদ!',
     msgEn:
-      'Dear Rahim Advertising, gentle reminder from Padma Digital Press regarding invoice INV-00180. Total: ৳50,000, Outstanding balance: ৳20,000. Please clear payment via bKash Merchant: 01819-876543. Thank you!',
+      'Dear Rahim Advertising, gentle reminder from Apex Digital Press regarding invoice INV-00180. Total: ৳50,000, Outstanding balance: ৳20,000. Please clear payment via bKash Merchant: 01819-876543. Thank you!',
   },
   {
     id: 'INV-00181',

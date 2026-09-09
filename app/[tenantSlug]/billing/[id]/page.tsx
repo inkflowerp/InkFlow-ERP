@@ -351,7 +351,7 @@ export default function InvoiceCockpitPage({ params }: BillingDetailPageProps) {
           <div className="space-y-6 text-xs text-slate-900 dark:text-white">
             {/* Header */}
             <div className="text-center space-y-1 pb-4 border-b-2 border-emerald-600">
-              <h1 className="text-xl font-black">{company?.name || 'Padma Digital Printing & Signage'}</h1>
+              <h1 className="text-xl font-black">{company?.name || 'Printing & Signage Solutions'}</h1>
               <div className="text-slate-500">42/1 Motijheel C/A, Dhaka-1000 • Phone: +8801712000000</div>
               <div className="inline-block mt-2 px-4 py-1 rounded-full bg-emerald-100 text-emerald-900 font-black text-sm tracking-wider uppercase">
                 Official Money Receipt (মানি রিসিট)

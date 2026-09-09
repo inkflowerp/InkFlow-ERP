@@ -207,11 +207,11 @@ export function DashboardMockup() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-800/80">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center font-black text-xs shadow-md shadow-cyan-500/20 shrink-0">
-              P
+              A
             </div>
             <div className="min-w-0">
               <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                <span className="truncate">Padma Digital Press & Signage</span>
+                <span className="truncate">Apex Digital Press & Signage</span>
                 <Badge variant="outline" className="text-[9px] sm:text-[10px] border-cyan-500/40 text-cyan-300 py-0 h-4 shrink-0">
                   Business Tier
                 </Badge>

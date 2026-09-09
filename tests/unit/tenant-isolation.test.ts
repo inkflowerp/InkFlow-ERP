@@ -21,19 +21,19 @@ describe('Tenant Data Isolation & Clean Workspace Partitioning', () => {
 
   function getEffectiveKey(key: string, tenantSlug?: string): string {
     if (isPlatformKey(key)) return key
-    const slug = tenantSlug || 'padma-digital'
-    if (!slug || slug === 'padma-digital') return key
+    const slug = tenantSlug || 'tenant-alpha'
+    if (!slug || slug === 'tenant-alpha') return key
     return `${key}__${slug}`
   }
 
   function storeGet<T>(key: string, tenantSlug?: string): T | null {
     const eff = getEffectiveKey(key, tenantSlug)
-    const slug = tenantSlug || 'padma-digital'
+    const slug = tenantSlug || 'tenant-alpha'
 
     if (mockStorage[eff] !== undefined) {
       return JSON.parse(JSON.stringify(mockStorage[eff]))
     }
-    if (slug !== 'padma-digital') {
+    if (slug !== 'tenant-alpha') {
       return [] as unknown as T
     }
     return null
@@ -51,53 +51,53 @@ describe('Tenant Data Isolation & Clean Workspace Partitioning', () => {
     return updated
   }
 
-  it('1. Demo Tenant (Padma Digital) receives rich pre-seeded records', () => {
-    // Seed padma demo data
+  it('1. Tenant Alpha receives seeded records', () => {
+    // Seed alpha data
     storeSet('printerp_tenant_customers', [
       { id: 'cust-01', name: 'Beximco Pharmaceuticals Ltd.', company_id: 'c-01' },
       { id: 'cust-02', name: 'Square Toiletries Ltd.', company_id: 'c-01' },
-    ], 'padma-digital')
+    ], 'tenant-alpha')
 
-    const padmaCustomers = storeGet<any[]>('printerp_tenant_customers', 'padma-digital')
-    assert.ok(Array.isArray(padmaCustomers))
-    assert.strictEqual(padmaCustomers?.length, 2)
-    assert.strictEqual(padmaCustomers?.[0].name, 'Beximco Pharmaceuticals Ltd.')
+    const alphaCustomers = storeGet<any[]>('printerp_tenant_customers', 'tenant-alpha')
+    assert.ok(Array.isArray(alphaCustomers))
+    assert.strictEqual(alphaCustomers?.length, 2)
+    assert.strictEqual(alphaCustomers?.[0].name, 'Beximco Pharmaceuticals Ltd.')
   })
 
-  it('2. New Trial Tenant (Vision Sign) starts with a completely clean workspace', () => {
-    const visionCustomers = storeGet<any[]>('printerp_tenant_customers', 'vision-sign')
-    assert.ok(Array.isArray(visionCustomers))
-    assert.strictEqual(visionCustomers?.length, 0, 'New trial tenant must not see Padma demo customers')
+  it('2. New Trial Tenant (Tenant Beta) starts with a completely clean workspace', () => {
+    const betaCustomers = storeGet<any[]>('printerp_tenant_customers', 'tenant-beta')
+    assert.ok(Array.isArray(betaCustomers))
+    assert.strictEqual(betaCustomers?.length, 0, 'New trial tenant must not see Tenant Alpha customers')
 
-    const visionOrders = storeGet<any[]>('printerp_tenant_orders', 'vision-sign')
-    assert.ok(Array.isArray(visionOrders))
-    assert.strictEqual(visionOrders?.length, 0, 'New trial tenant must not see Padma demo orders')
+    const betaOrders = storeGet<any[]>('printerp_tenant_orders', 'tenant-beta')
+    assert.ok(Array.isArray(betaOrders))
+    assert.strictEqual(betaOrders?.length, 0, 'New trial tenant must not see Tenant Alpha orders')
   })
 
-  it('3. Adding data in Vision Sign isolates it from Padma Digital and other tenants', () => {
+  it('3. Adding data in Tenant Beta isolates it from Tenant Alpha and other tenants', () => {
     const newCustomer = {
-      id: 'cust-vs-01',
+      id: 'cust-tb-01',
       company_id: 'c-08',
-      name: 'Vision Commercial Client 1',
+      name: 'Beta Commercial Client 1',
       mobile: '+8801711247247',
     }
 
-    // Add to vision-sign
-    storeAddItem('printerp_tenant_customers', newCustomer, 'vision-sign')
+    // Add to tenant-beta
+    storeAddItem('printerp_tenant_customers', newCustomer, 'tenant-beta')
 
-    // Verify vision-sign has this customer
-    const visionCustomers = storeGet<any[]>('printerp_tenant_customers', 'vision-sign')
-    assert.strictEqual(visionCustomers?.length, 1)
-    assert.strictEqual(visionCustomers?.[0].name, 'Vision Commercial Client 1')
+    // Verify tenant-beta has this customer
+    const betaCustomers = storeGet<any[]>('printerp_tenant_customers', 'tenant-beta')
+    assert.strictEqual(betaCustomers?.length, 1)
+    assert.strictEqual(betaCustomers?.[0].name, 'Beta Commercial Client 1')
 
-    // Verify padma-digital remains untouched with its original demo customers
-    const padmaCustomers = storeGet<any[]>('printerp_tenant_customers', 'padma-digital')
-    assert.strictEqual(padmaCustomers?.length, 2)
-    assert.strictEqual(padmaCustomers?.[0].name, 'Beximco Pharmaceuticals Ltd.')
+    // Verify tenant-alpha remains untouched with its original customers
+    const alphaCustomers = storeGet<any[]>('printerp_tenant_customers', 'tenant-alpha')
+    assert.strictEqual(alphaCustomers?.length, 2)
+    assert.strictEqual(alphaCustomers?.[0].name, 'Beximco Pharmaceuticals Ltd.')
 
     // Verify another new tenant starts clean
-    const sylhetCustomers = storeGet<any[]>('printerp_tenant_customers', 'sylhet-flex')
-    assert.strictEqual(sylhetCustomers?.length, 0, 'Sylhet Flex must start with 0 customers')
+    const gammaCustomers = storeGet<any[]>('printerp_tenant_customers', 'tenant-gamma')
+    assert.strictEqual(gammaCustomers?.length, 0, 'Tenant Gamma must start with 0 customers')
   })
 
   it('4. Platform keys (like registered users and platform companies) remain global', () => {

@@ -91,9 +91,9 @@ function transitionCompanyStatus(
 
 describe('Platform Tenant Lifecycle & State Machine Governance', () => {
   const initialTenant: MockCompany = {
-    id: 'comp-padma-01',
-    name: 'Padma Digital Ltd.',
-    slug: 'padma-digital',
+    id: 'comp-alpha-01',
+    name: 'Alpha Digital Ltd.',
+    slug: 'alpha-digital',
     status: 'active',
     is_active: true,
     plan_code: 'growth',

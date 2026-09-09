@@ -130,17 +130,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- **Demo Tenant**: `padma-digital` ([http://localhost:3000/padma-digital](http://localhost:3000/padma-digital))
+- **Tenant Onboarding & Registration**: [http://localhost:3000/onboarding](http://localhost:3000/onboarding)
 - **Platform Owner Admin**: [http://localhost:3000/platform](http://localhost:3000/platform)
 
 ---
 
 ## 6. Comprehensive Automated Testing
 
-PrintERP uses Node.js 24's native test runner with **zero external runner bloat**:
+PrintERP uses Node.js native test runner with zero external runner bloat:
 
 ```bash
-# Run all 53 automated test cases
+# Run all automated test suites
 npm test
 
 # Run TypeScript type verification

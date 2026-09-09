@@ -173,7 +173,7 @@ export default function PublicContactPage() {
                           <input
                             required
                             type="text"
-                            placeholder="Padma Digital Press"
+                            placeholder="e.g. Apex Digital Press"
                             value={form.pressName}
                             onChange={(e) => setForm({ ...form, pressName: e.target.value })}
                             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs"

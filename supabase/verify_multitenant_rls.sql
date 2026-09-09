@@ -3,7 +3,7 @@
 -- ==============================================================================
 
 -- TEST SCENARIO 1: Create Two Separate Companies (Company A & Company B)
--- Company A: Padma Digital Ltd.
+-- Company A: Alpha Digital Ltd.
 -- Company B: Meghna Color Press
 
 do $$
@@ -20,14 +20,14 @@ declare
 begin
     -- 1. Insert Companies
     insert into public.companies (id, slug, name, business_type)
-    values (company_a_id, 'padma-test-a', 'Padma Test A', 'printing_signage');
+    values (company_a_id, 'alpha-test-a', 'Alpha Test A', 'printing_signage');
 
     insert into public.companies (id, slug, name, business_type)
     values (company_b_id, 'meghna-test-b', 'Meghna Test B', 'offset_print');
 
     -- 2. Insert Branches
     insert into public.branches (company_id, name, code, is_main)
-    values (company_a_id, 'Padma Main Branch', 'BR-A-01', true)
+    values (company_a_id, 'Alpha Main Branch', 'BR-A-01', true)
     returning id into branch_a_id;
 
     insert into public.branches (company_id, name, code, is_main)

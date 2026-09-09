@@ -132,7 +132,7 @@ export default function JobCostingDetailPage({ params }: CostingDetailPageProps)
       <div className="bg-white dark:bg-slate-950 p-8 sm:p-12 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0 text-xs text-slate-900 dark:text-white space-y-6">
         {/* Letterhead */}
         <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100">
-          <h1 className="text-xl font-black tracking-tight">{company?.name || 'Padma Digital Printing & Signage'}</h1>
+          <h1 className="text-xl font-black tracking-tight">{company?.name || 'Printing & Signage Solutions'}</h1>
           <p className="text-slate-500 text-[11px]">42/1 Motijheel Commercial Area, Dhaka-1000 • Phone: +8801712000000</p>
           <div className="inline-block mt-2 px-5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 font-black text-sm tracking-wider uppercase border border-slate-300 dark:border-slate-700">
             JOB COST TRAVELER & MARGIN AUDIT (কস্টিং ও লাভ নিরীক্ষা)

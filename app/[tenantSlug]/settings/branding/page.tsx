@@ -37,7 +37,7 @@ export default function BrandingSettingsPage() {
   const [isSaved, setIsSaved] = useState(false)
 
   const [branding, setBranding] = useDataStore(STORAGE_KEYS.BRANDING_SETTINGS, {
-    company_name: company?.name || 'Padma Digital & Signage Ltd.',
+    company_name: company?.name || '',
     primary_color: '#2563eb',
     logo_url: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
     invoice_logo_url: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',

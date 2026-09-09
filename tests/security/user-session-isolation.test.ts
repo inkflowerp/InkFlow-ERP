@@ -6,49 +6,49 @@ export const TEST_USERS = [
     user_id: 'usr-001',
     branch_id: 'br-001',
     status: 'active',
-    profile: { email: 'owner@padmadigital.com.bd', full_name: 'Shamsul Alam', is_active: true },
+    profile: { email: 'owner@alphaprint.com.bd', full_name: 'Shamsul Alam', is_active: true },
     roles: [{ id: 'r1', slug: 'owner', name: 'Owner' }],
   },
   {
     user_id: 'usr-002',
     branch_id: 'br-001',
     status: 'active',
-    profile: { email: 'manager@padmadigital.com.bd', full_name: 'Kamrul Hasan', is_active: true },
+    profile: { email: 'manager@alphaprint.com.bd', full_name: 'Kamrul Hasan', is_active: true },
     roles: [{ id: 'r3', slug: 'manager', name: 'Shop Manager' }],
   },
   {
     user_id: 'usr-003',
     branch_id: 'br-002',
     status: 'active',
-    profile: { email: 'operator@padmadigital.com.bd', full_name: 'Rafiqul Islam (Press)', is_active: true },
+    profile: { email: 'operator@alphaprint.com.bd', full_name: 'Rafiqul Islam (Press)', is_active: true },
     roles: [{ id: 'r4', slug: 'operator', name: 'Machine Operator' }],
   },
   {
     user_id: 'usr-004',
     branch_id: 'br-001',
     status: 'disabled',
-    profile: { email: 'ex-designer@padmadigital.com.bd', full_name: 'Arif Chowdhury (Left)', is_active: false },
+    profile: { email: 'ex-designer@alphaprint.com.bd', full_name: 'Arif Chowdhury (Left)', is_active: false },
     roles: [{ id: 'r6', slug: 'designer', name: 'Graphic Designer' }],
   },
   {
     user_id: 'usr-006',
     branch_id: 'br-001',
     status: 'active',
-    profile: { email: 'designer@padmadigital.com.bd', full_name: 'Tanvir Ahmed', is_active: true },
+    profile: { email: 'designer@alphaprint.com.bd', full_name: 'Tanvir Ahmed', is_active: true },
     roles: [{ id: 'r6', slug: 'designer', name: 'Graphic Designer' }],
   },
   {
     user_id: 'usr-007',
     branch_id: 'br-001',
     status: 'active',
-    profile: { email: 'accountant@padmadigital.com.bd', full_name: 'Nasir Uddin', is_active: true },
+    profile: { email: 'accountant@alphaprint.com.bd', full_name: 'Nasir Uddin', is_active: true },
     roles: [{ id: 'r5', slug: 'accountant', name: 'Accountant' }],
   },
   {
     user_id: 'usr-008',
     branch_id: 'br-002',
     status: 'active',
-    profile: { email: 'delivery@padmadigital.com.bd', full_name: 'Jahangir Alam', is_active: true },
+    profile: { email: 'delivery@alphaprint.com.bd', full_name: 'Jahangir Alam', is_active: true },
     roles: [{ id: 'r7', slug: 'installer', name: 'Delivery Coordinator' }],
   },
 ]
@@ -89,13 +89,13 @@ function hasBranchAccess(
 
 describe('Master User Login & Session Isolation Tests', () => {
   // Test Accounts
-  const ownerUser = TEST_USERS.find((u) => u.profile.email === 'owner@padmadigital.com.bd')
-  const managerUser = TEST_USERS.find((u) => u.profile.email === 'manager@padmadigital.com.bd')
-  const designerUser = TEST_USERS.find((u) => u.profile.email === 'designer@padmadigital.com.bd')
-  const operatorUser = TEST_USERS.find((u) => u.profile.email === 'operator@padmadigital.com.bd')
-  const accountantUser = TEST_USERS.find((u) => u.profile.email === 'accountant@padmadigital.com.bd')
-  const deliveryUser = TEST_USERS.find((u) => u.profile.email === 'delivery@padmadigital.com.bd')
-  const disabledUser = TEST_USERS.find((u) => u.profile.email === 'ex-designer@padmadigital.com.bd')
+  const ownerUser = TEST_USERS.find((u) => u.profile.email === 'owner@alphaprint.com.bd')
+  const managerUser = TEST_USERS.find((u) => u.profile.email === 'manager@alphaprint.com.bd')
+  const designerUser = TEST_USERS.find((u) => u.profile.email === 'designer@alphaprint.com.bd')
+  const operatorUser = TEST_USERS.find((u) => u.profile.email === 'operator@alphaprint.com.bd')
+  const accountantUser = TEST_USERS.find((u) => u.profile.email === 'accountant@alphaprint.com.bd')
+  const deliveryUser = TEST_USERS.find((u) => u.profile.email === 'delivery@alphaprint.com.bd')
+  const disabledUser = TEST_USERS.find((u) => u.profile.email === 'ex-designer@alphaprint.com.bd')
 
 
   test('1. Core Requirement: Every user has an independent unique ID and profile', () => {
@@ -189,7 +189,7 @@ describe('Master User Login & Session Isolation Tests', () => {
     }
 
     // Step 1: User A (Owner) logs in
-    const sessionA = simulateLogin('owner@padmadigital.com.bd')
+    const sessionA = simulateLogin('owner@alphaprint.com.bd')
     assert.strictEqual(sessionA.userId, 'usr-001')
     assert.strictEqual(sessionA.role, 'owner')
 
@@ -198,37 +198,37 @@ describe('Master User Login & Session Isolation Tests', () => {
     assert.strictEqual(sessionStore.get('active_session'), undefined)
 
     // Step 3: User B (Manager) logs in
-    const sessionB = simulateLogin('manager@padmadigital.com.bd')
+    const sessionB = simulateLogin('manager@alphaprint.com.bd')
     assert.strictEqual(sessionB.userId, 'usr-002')
     assert.strictEqual(sessionB.role, 'manager')
     assert.notStrictEqual(sessionB.userId, sessionA.userId, 'User B must not inherit User A ID')
 
     // Step 4: User B logs out, User C (Designer) logs in
     simulateLogout()
-    const sessionC = simulateLogin('designer@padmadigital.com.bd')
+    const sessionC = simulateLogin('designer@alphaprint.com.bd')
     assert.strictEqual(sessionC.userId, 'usr-006')
     assert.strictEqual(sessionC.role, 'designer')
 
     // Step 5: User C logs out, User D (Operator) logs in
     simulateLogout()
-    const sessionD = simulateLogin('operator@padmadigital.com.bd')
+    const sessionD = simulateLogin('operator@alphaprint.com.bd')
     assert.strictEqual(sessionD.userId, 'usr-003')
     assert.strictEqual(sessionD.branchId, 'br-002')
 
     // Step 6: Disabled user attempt fails
     assert.throws(
-      () => simulateLogin('ex-designer@padmadigital.com.bd'),
+      () => simulateLogin('ex-designer@alphaprint.com.bd'),
       /Authentication rejected/
     )
 
     // Step 7: Return to User A (Owner)
-    const sessionA_again = simulateLogin('owner@padmadigital.com.bd')
+    const sessionA_again = simulateLogin('owner@alphaprint.com.bd')
     assert.strictEqual(sessionA_again.userId, 'usr-001')
     assert.strictEqual(sessionA_again.role, 'owner')
   })
 
   test('7. Cross-Tenant Boundary Enforcement', () => {
-    // Tenant Padma Digital (c-01) vs Tenant Meghna Offset (c-02)
+    // Tenant Alpha Digital (c-01) vs Tenant Meghna Offset (c-02)
     function verifyTenantAccess(userCompanyId: string, requestedCompanyId: string) {
       if (userCompanyId !== requestedCompanyId) {
         throw new Error('403 Forbidden: Cross-tenant access denied')
@@ -236,15 +236,15 @@ describe('Master User Login & Session Isolation Tests', () => {
       return true
     }
 
-    const padmaCompanyId = 'a0000000-0000-0000-0000-000000000001'
+    const alphaCompanyId = 'a0000000-0000-0000-0000-000000000001'
     const meghnaCompanyId = 'a0000000-0000-0000-0000-000000000002'
 
-    // Padma user accessing Padma tenant -> OK
-    assert.strictEqual(verifyTenantAccess(padmaCompanyId, padmaCompanyId), true)
+    // Alpha user accessing Alpha tenant -> OK
+    assert.strictEqual(verifyTenantAccess(alphaCompanyId, alphaCompanyId), true)
 
-    // Padma user attempting to access Meghna tenant -> Throws 403
+    // Alpha user attempting to access Meghna tenant -> Throws 403
     assert.throws(
-      () => verifyTenantAccess(padmaCompanyId, meghnaCompanyId),
+      () => verifyTenantAccess(alphaCompanyId, meghnaCompanyId),
       /403 Forbidden: Cross-tenant access denied/
     )
   })

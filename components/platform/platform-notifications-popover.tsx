@@ -56,7 +56,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     id: 'notif-4',
     category: 'security',
     title: 'Support Session Concluded',
-    description: 'Support officer exited support session on Padma Digital.',
+    description: 'Support officer exited remote support session.',
     timestamp: '1 day ago',
     actionUrl: '/platform/audit',
     isRead: true,
