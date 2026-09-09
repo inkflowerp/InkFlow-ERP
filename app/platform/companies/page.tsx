@@ -32,6 +32,7 @@ import {
   Activity,
   ArrowRight,
   Sparkles,
+  Trash2,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -51,6 +52,8 @@ import {
   startTenantSupportSessionAction,
   exportTenantDataAction,
   createBusinessAction,
+  deleteBusinessAction,
+  deleteAllBusinessesAction,
 } from '@/actions/platform.actions'
 
 export default function PlatformCompaniesPage() {
@@ -87,6 +90,16 @@ export default function PlatformCompaniesPage() {
   // Export Modal
   const [exportCompany, setExportCompany] = useState<PlatformTenantCompany | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+
+  // Delete Single Company Modal
+  const [deleteModalCompany, setDeleteModalCompany] = useState<PlatformTenantCompany | null>(null)
+  const [deleteReason, setDeleteReason] = useState('')
+  const [isDeletingCompany, setIsDeletingCompany] = useState(false)
+
+  // Purge All Companies Modal
+  const [showPurgeAllModal, setShowPurgeAllModal] = useState(false)
+  const [purgeReason, setPurgeReason] = useState('')
+  const [isPurgingAll, setIsPurgingAll] = useState(false)
 
   // Active Dropdown Row Menu ID
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
@@ -129,6 +142,35 @@ export default function PlatformCompaniesPage() {
       showNotification(res.error || 'Failed to update company status', 'error')
     }
     setIsUpdatingStatus(false)
+  }
+
+  const handleConfirmDeleteCompany = async () => {
+    if (!deleteModalCompany) return
+    setIsDeletingCompany(true)
+    const res = await deleteBusinessAction(deleteModalCompany.id, deleteReason)
+    if (res.success) {
+      showNotification(`Tenant "${deleteModalCompany.name}" and all associated workspace data have been deleted.`)
+      setDeleteModalCompany(null)
+      setDeleteReason('')
+      loadCompanies()
+    } else {
+      showNotification(res.error || 'Failed to delete company', 'error')
+    }
+    setIsDeletingCompany(false)
+  }
+
+  const handleConfirmPurgeAll = async () => {
+    setIsPurgingAll(true)
+    const res = await deleteAllBusinessesAction(purgeReason)
+    if (res.success) {
+      showNotification(`All registered businesses and their data have been completely removed from the platform.`)
+      setShowPurgeAllModal(false)
+      setPurgeReason('')
+      loadCompanies()
+    } else {
+      showNotification(res.error || 'Failed to purge all businesses', 'error')
+    }
+    setIsPurgingAll(false)
   }
 
   const handleConfirmPlanChange = async () => {
@@ -203,6 +245,21 @@ export default function PlatformCompaniesPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {companies.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setPurgeReason('')
+                setShowPurgeAllModal(true)
+              }}
+              className="border-red-800/80 bg-red-950/40 text-red-300 hover:bg-red-900/50 hover:text-white text-xs h-9 cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1.5 text-red-400" />
+              Purge All Businesses
+            </Button>
+          )}
+
           <Button
             size="sm"
             onClick={() => {
@@ -338,10 +395,30 @@ export default function PlatformCompaniesPage() {
               <p className="text-xs">Loading companies...</p>
             </div>
           ) : companies.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 space-y-2">
-              <Building2 className="h-8 w-8 text-slate-600 mx-auto" />
-              <p className="font-bold text-slate-300 text-sm">No companies match your search filters.</p>
-              <p className="text-xs text-slate-500">Try resetting the status, plan, or division filters.</p>
+            <div className="p-12 text-center text-slate-400 space-y-3">
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-500">
+                <Building2 className="h-6 w-6" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-slate-200 text-sm">No printing businesses registered yet.</p>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  {search || statusFilter !== 'all' || planFilter !== 'all'
+                    ? 'No companies match your search filters. Try resetting the filters.'
+                    : 'Platform is clean and production ready. New businesses will appear here upon tenant registration.'}
+                </p>
+              </div>
+              {!search && statusFilter === 'all' && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setCreateError(null)
+                    setShowCreateModal(true)
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs h-8 shadow-md cursor-pointer"
+                >
+                  + Register First Business
+                </Button>
+              )}
             </div>
           ) : (
             <>
@@ -523,6 +600,19 @@ export default function PlatformCompaniesPage() {
                                       >
                                         <Ban className="h-3.5 w-3.5" />
                                         <span>{isSuspended ? 'Reactivate Tenant' : 'Suspend Tenant'}</span>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveMenuId(null)
+                                          setDeleteReason('')
+                                          setDeleteModalCompany(comp)
+                                        }}
+                                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left font-semibold text-red-400 hover:bg-red-950/60 hover:text-red-300"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5 text-red-400" />
+                                        <span>Delete Business</span>
                                       </button>
                                     </div>
                                   </div>
@@ -973,6 +1063,134 @@ export default function PlatformCompaniesPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Single Company Modal */}
+      {deleteModalCompany && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-md bg-slate-900 border border-red-900/50 rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="font-bold text-white text-sm flex items-center gap-2">
+                <Trash2 className="h-4 w-4 text-red-400" />
+                <span>Delete Tenant: {deleteModalCompany.name}</span>
+              </div>
+              <button
+                onClick={() => setDeleteModalCompany(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-900/60 text-red-200 space-y-1.5">
+                <div className="font-bold flex items-center gap-1.5 text-red-300">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>Permanent Data Deletion Warning</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-red-300/90">
+                  Deleting <strong>{deleteModalCompany.name}</strong> will permanently erase this tenant workspace, branches, users, orders, invoices, and audit records via cascading PostgreSQL deletion. This action cannot be undone.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-semibold block mb-1">
+                  Reason for Deletion (Recorded in Platform Audit)
+                </label>
+                <textarea
+                  rows={2}
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  placeholder="e.g. Account closed upon business request..."
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white placeholder:text-slate-600 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteModalCompany(null)}
+                className="border-slate-700 text-slate-300 text-xs cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={isDeletingCompany}
+                onClick={handleConfirmDeleteCompany}
+                className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md cursor-pointer"
+              >
+                {isDeletingCompany ? 'Deleting Tenant...' : 'Confirm Permanent Deletion'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Purge All Companies Modal */}
+      {showPurgeAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-lg bg-slate-900 border border-red-800 rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="font-bold text-white text-base flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-red-500" />
+                <span>Purge All Platform Businesses</span>
+              </div>
+              <button
+                onClick={() => setShowPurgeAllModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="p-4 rounded-xl bg-red-950/60 border border-red-800 text-red-200 space-y-2">
+                <div className="font-bold flex items-center gap-2 text-red-300 text-sm">
+                  <ShieldAlert className="h-5 w-5 shrink-0 text-red-400" />
+                  <span>Platform-Wide Deletion Action</span>
+                </div>
+                <p className="text-xs leading-relaxed text-red-200/90">
+                  This will permanently delete all <strong>{companies.length}</strong> registered printing businesses, user memberships, subscriptions, orders, and transactional records from the database.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-semibold block mb-1.5">
+                  Platform Admin Purge Rationale
+                </label>
+                <textarea
+                  rows={2}
+                  value={purgeReason}
+                  onChange={(e) => setPurgeReason(e.target.value)}
+                  placeholder="e.g. Production baseline reset / clean launch..."
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white placeholder:text-slate-600 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPurgeAllModal(false)}
+                className="border-slate-700 text-slate-300 text-xs cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={isPurgingAll}
+                onClick={handleConfirmPurgeAll}
+                className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md cursor-pointer"
+              >
+                {isPurgingAll ? 'Purging All Businesses...' : 'Confirm Purge All Businesses'}
+              </Button>
+            </div>
           </div>
         </div>
       )}

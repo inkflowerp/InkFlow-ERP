@@ -47,6 +47,50 @@ export async function updateCompanyStatusAction(
   }
 }
 
+export async function deleteBusinessAction(companyId: string, reason?: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (!hasPlatformPermission(platformUser, 'tenant.delete') && !hasPlatformPermission(platformUser, 'company.delete') && !hasPlatformPermission(platformUser, 'tenant.edit')) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to delete a tenant.' }
+    }
+
+    const result = await PlatformService.deleteCompany(companyId, reason)
+    if (result.success) {
+      revalidatePath('/platform', 'layout')
+      revalidatePath('/platform/companies')
+      revalidatePath('/platform/dashboard')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to delete company.' }
+  }
+}
+
+export async function deleteAllBusinessesAction(reason?: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (!hasPlatformPermission(platformUser, 'tenant.delete') && !hasPlatformPermission(platformUser, 'company.delete')) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to purge all tenants.' }
+    }
+
+    const result = await PlatformService.deleteAllCompanies(reason)
+    if (result.success) {
+      revalidatePath('/platform', 'layout')
+      revalidatePath('/platform/companies')
+      revalidatePath('/platform/dashboard')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to purge all companies.' }
+  }
+}
+
 export async function changeCompanyPlanAction(
   companyId: string,
   newPlan: PlatformPlanCode,

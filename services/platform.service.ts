@@ -645,6 +645,93 @@ export class PlatformService {
   }
 
   /**
+   * 4b. Lifecycle: Delete Single Company
+   */
+  static async deleteCompany(companyId: string, reason?: string): Promise<ApiResponse<{ companyId: string }>> {
+    try {
+      const admin = createAdminClient()
+
+      const { data: company } = await (admin as any)
+        .from('companies')
+        .select('name, slug')
+        .eq('id', companyId)
+        .single()
+
+      const { error } = await (admin as any)
+        .from('companies')
+        .delete()
+        .eq('id', companyId)
+
+      if (error) {
+        return { success: false, error: error.message || 'Failed to delete company' }
+      }
+
+      await this.recordAuditLog(
+        'company.delete',
+        'company',
+        companyId,
+        companyId,
+        undefined,
+        {
+          deleted_company_name: company?.name,
+          deleted_company_slug: company?.slug,
+          reason: reason || 'Company deleted by platform administrator',
+        }
+      )
+
+      return { success: true, data: { companyId } }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to delete company' }
+    }
+  }
+
+  /**
+   * 4c. Lifecycle: Delete All Companies / Purge Platform
+   */
+  static async deleteAllCompanies(reason?: string): Promise<ApiResponse<{ count: number }>> {
+    try {
+      const admin = createAdminClient()
+      const { data: companies, error: fetchErr } = await (admin as any)
+        .from('companies')
+        .select('id, name, slug')
+
+      if (fetchErr) {
+        return { success: false, error: fetchErr.message }
+      }
+
+      const list = companies || []
+      const ids = list.map((c: any) => c.id)
+
+      if (ids.length > 0) {
+        const { error: delErr } = await (admin as any)
+          .from('companies')
+          .delete()
+          .in('id', ids)
+
+        if (delErr) {
+          return { success: false, error: delErr.message }
+        }
+      }
+
+      await this.recordAuditLog(
+        'company.delete_all',
+        'company',
+        'all',
+        null,
+        undefined,
+        {
+          deleted_count: ids.length,
+          reason: reason || 'All companies purged by platform administrator',
+        }
+      )
+
+      return { success: true, data: { count: ids.length } }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to delete all companies' }
+    }
+  }
+
+  /**
    * 5. Lifecycle: Change Tenant Plan
    */
   static async changeCompanyPlan(
