@@ -73,19 +73,28 @@ export class TenantRepository {
       updated_at: new Date().toISOString(),
     })
 
-    // Create default Main Branch
-    const { data: mainBranch } = await (admin as any)
+    // Check if default branch was already created by database trigger trg_on_company_created
+    let { data: mainBranch } = await (admin as any)
       .from('branches')
-      .insert({
-        company_id: newCompany.id,
-        name: 'Main Branch / হেড অফিস',
-        code: 'MAIN',
-        is_main: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single()
+      .select('*')
+      .eq('company_id', newCompany.id)
+      .maybeSingle()
+
+    if (!mainBranch) {
+      const { data: createdBranch } = await (admin as any)
+        .from('branches')
+        .insert({
+          company_id: newCompany.id,
+          name: 'Main Branch / হেড অফিস',
+          code: 'MAIN',
+          is_main: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+      mainBranch = createdBranch
+    }
 
     // Initialize Company Subscription (14-Day Evaluation Trial)
     try {
@@ -94,14 +103,23 @@ export class TenantRepository {
       
       let { data: planRecord } = await (admin as any)
         .from('subscription_plans')
-        .select('id, code')
+        .select('id, code, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly')
         .eq('code', targetPlanCode)
         .maybeSingle()
 
       if (!planRecord && targetPlanCode === 'trial') {
+        const { data: trialPlan } = await (admin as any)
+          .from('subscription_plans')
+          .select('id, code, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly')
+          .eq('code', 'trial')
+          .maybeSingle()
+        planRecord = trialPlan
+      }
+
+      if (!planRecord) {
         const { data: starterPlan } = await (admin as any)
           .from('subscription_plans')
-          .select('id, code')
+          .select('id, code, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly')
           .eq('code', 'starter')
           .maybeSingle()
         planRecord = starterPlan
@@ -109,7 +127,7 @@ export class TenantRepository {
 
       const assignedPlanId = planRecord?.id
       if (assignedPlanId) {
-        const isTrialPlan = targetPlanCode === 'trial'
+        const isTrialPlan = targetPlanCode === 'trial' || planRecord.code === 'trial'
         await (admin as any).from('company_subscriptions').insert({
           company_id: newCompany.id,
           plan_id: assignedPlanId,

@@ -335,7 +335,7 @@ export class PlatformService {
       }
 
       const formatted: PlatformTenantCompany[] = compList.map((c: any) => {
-        const sub = c.company_subscriptions?.[0]
+        const sub = Array.isArray(c.company_subscriptions) ? c.company_subscriptions[0] : c.company_subscriptions
         const plan = sub?.subscription_plans
         const subStatus: PlatformCompanyStatus = !c.is_active
           ? 'suspended'
@@ -348,10 +348,15 @@ export class PlatformService {
         const ownerProf = ownerUser?.user_id ? profileMap.get(ownerUser.user_id) : null
 
         const rawPlanCode = plan?.code
-        const resolvedPlanCode: PlatformPlanCode =
-          rawPlanCode === 'trial' || subStatus === 'trial'
-            ? 'trial'
-            : ((rawPlanCode as PlatformPlanCode) || 'starter')
+        const isTrial = rawPlanCode === 'trial' || subStatus === 'trial'
+        const resolvedPlanCode: PlatformPlanCode = isTrial
+          ? 'trial'
+          : ((rawPlanCode as PlatformPlanCode) || 'starter')
+
+        const effectiveUsersLimit = plan?.max_users || (isTrial ? 5 : 3)
+        const effectiveBranchesLimit = plan?.max_branches || 1
+        const effectiveStorageLimit = plan?.storage_gb || (isTrial ? 2 : 1)
+        const effectiveOrdersLimit = plan?.monthly_orders || (isTrial ? 100 : 50)
 
         return {
           id: c.id,
@@ -365,14 +370,14 @@ export class PlatformService {
           status: subStatus,
           health: c.is_active ? 'healthy' : 'suspended',
           users_count: c.company_users?.length || 0,
-          users_limit: plan?.max_users || 5,
+          users_limit: effectiveUsersLimit,
           branches_count: c.branches?.length || 1,
-          branches_limit: plan?.max_branches || 1,
-          storage_used_gb: 1.2,
-          storage_limit_gb: plan?.storage_gb || 5,
-          orders_this_month: 24,
-          orders_limit: plan?.monthly_orders || 100,
-          monthly_fee: Number(plan?.price_monthly) || 2500,
+          branches_limit: effectiveBranchesLimit,
+          storage_used_gb: 0.05,
+          storage_limit_gb: effectiveStorageLimit,
+          orders_this_month: 0,
+          orders_limit: effectiveOrdersLimit,
+          monthly_fee: isTrial ? 0 : (Number(plan?.price_monthly) || 0),
           billing_interval: (sub?.billing_interval as any) || 'monthly',
           hub: 'Dhaka Central',
           division: 'Dhaka',
@@ -380,8 +385,8 @@ export class PlatformService {
           created_at: c.created_at,
           last_activity: c.updated_at || c.created_at,
           last_meaningful_activity: {
-            action: 'Order Processed',
-            entity: 'Sales Order',
+            action: 'Account Created',
+            entity: 'Company',
             timestamp: c.updated_at || c.created_at,
           },
         }
@@ -424,7 +429,9 @@ export class PlatformService {
         return { success: false, error: compErr?.message || 'Company not found' }
       }
 
-      const sub = company.company_subscriptions?.[0]
+      const sub = Array.isArray(company.company_subscriptions)
+        ? company.company_subscriptions[0]
+        : company.company_subscriptions
       const plan = sub?.subscription_plans
       const status: PlatformCompanyStatus = !company.is_active
         ? 'suspended'
@@ -448,6 +455,23 @@ export class PlatformService {
         .eq('company_id', companyId)
         .order('created_at', { ascending: false })
         .limit(10)
+
+      // Fetch exact real counts from PostgreSQL for this specific company
+      const [
+        { count: realCustomersCount },
+        { count: realOrdersCount },
+        { count: realProductsCount },
+        { count: realInvoicesCount },
+        { count: realMaterialsCount },
+        { count: realJobOrdersCount },
+      ] = await Promise.all([
+        (admin as any).from('customers').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+        (admin as any).from('sales_orders').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+        (admin as any).from('products').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+        (admin as any).from('invoices').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+        (admin as any).from('materials').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+        (admin as any).from('job_orders').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+      ])
 
       const formattedSupportHistory = (supportSessions || []).map((s: any) => ({
         id: s.id,
@@ -478,10 +502,80 @@ export class PlatformService {
       const ownerProf = ownerUser?.user_id ? detailProfileMap.get(ownerUser.user_id) : null
 
       const rawPlanCode = plan?.code
-      const resolvedPlanCode: PlatformPlanCode =
-        rawPlanCode === 'trial' || status === 'trial'
-          ? 'trial'
-          : ((rawPlanCode as PlatformPlanCode) || 'starter')
+      const isTrial = rawPlanCode === 'trial' || status === 'trial'
+      const resolvedPlanCode: PlatformPlanCode = isTrial
+        ? 'trial'
+        : ((rawPlanCode as PlatformPlanCode) || 'starter')
+
+      // Quotas / Limits resolution
+      const effectiveUsersLimit = plan?.max_users || (isTrial ? 5 : 3)
+      const effectiveBranchesLimit = plan?.max_branches || 1
+      const effectiveStorageLimit = plan?.storage_gb || (isTrial ? 2 : 1)
+      const effectiveOrdersLimit = plan?.monthly_orders || (isTrial ? 100 : 50)
+      const effectiveCustomersLimit = plan?.max_customers || (isTrial ? 200 : 100)
+      const effectiveProductsLimit = plan?.max_products || (isTrial ? 200 : 100)
+
+      // Storage calculation (GB) based on actual records
+      const totalRecords = (realCustomersCount || 0) + (realOrdersCount || 0) + (realProductsCount || 0) + (realInvoicesCount || 0)
+      const estimatedStorageGb = Number((0.02 + totalRecords * 0.001).toFixed(2))
+
+      // Days to expiry calculation
+      const expiryDate = (isTrial && sub?.trial_ends_at)
+        ? new Date(sub.trial_ends_at)
+        : (sub?.current_period_end ? new Date(sub.current_period_end) : null)
+      const days_to_expiry = expiryDate
+        ? Math.max(0, Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+        : (isTrial ? 14 : 30)
+
+      // Dynamic Health status calculation
+      const healthStatus: 'healthy' | 'at_risk' | 'critical' | 'suspended' = !company.is_active || status === 'suspended'
+        ? 'suspended'
+        : (isTrial && days_to_expiry <= 2)
+        ? 'at_risk'
+        : 'healthy'
+
+      const healthScore = healthStatus === 'suspended' ? 0 : (healthStatus === 'at_risk' ? 65 : 98)
+
+      // Dynamic Onboarding evaluation from live database state
+      const onboardingSteps = [
+        {
+          id: 'ob-1',
+          title: 'Business Registration & Profile',
+          title_bn: 'ব্যবসায়িক বিবরণ ও প্রোফাইল',
+          description: 'Company information, trade license, and contact numbers.',
+          is_completed: Boolean(company.name && (company.phone || company.email)),
+        },
+        {
+          id: 'ob-2',
+          title: 'Primary Branch & Production Floor',
+          title_bn: 'হেড অফিস ও প্রোডাকশন ফ্লোর',
+          description: 'Main workshop floor and document numbering series.',
+          is_completed: (company.branches || []).length > 0,
+        },
+        {
+          id: 'ob-3',
+          title: 'Initial Product & Service Catalog',
+          title_bn: 'পণ্য ও সেবা তালিকা',
+          description: 'Product definitions, raw materials, or standard service rates.',
+          is_completed: (realProductsCount || 0) > 0 || (realMaterialsCount || 0) > 0,
+        },
+        {
+          id: 'ob-4',
+          title: 'First Customer / Client Contact',
+          title_bn: 'প্রথম গ্রাহক সংযোজন',
+          description: 'Adding business clients and debtor accounts.',
+          is_completed: (realCustomersCount || 0) > 0,
+        },
+        {
+          id: 'ob-5',
+          title: 'First Sales Order or Job Ticket',
+          title_bn: 'প্রথম সেলস অর্ডার অথবা জব কার্ড',
+          description: 'Processing initial printing job or estimate.',
+          is_completed: (realOrdersCount || 0) > 0 || (realJobOrdersCount || 0) > 0,
+        },
+      ]
+      const completedOnboardingSteps = onboardingSteps.filter((s) => s.is_completed).length
+      const overallOnboardingProgress = Math.round((completedOnboardingSteps / onboardingSteps.length) * 100)
 
       const tenantCompany: PlatformTenantCompany = {
         id: company.id,
@@ -493,16 +587,16 @@ export class PlatformService {
         owner_phone: ownerProf?.phone || company.phone || '01700-000000',
         plan: resolvedPlanCode,
         status,
-        health: company.is_active ? 'healthy' : 'suspended',
+        health: healthStatus,
         users_count: company.company_users?.length || 0,
-        users_limit: plan?.max_users || 5,
+        users_limit: effectiveUsersLimit,
         branches_count: company.branches?.length || 1,
-        branches_limit: plan?.max_branches || 1,
-        storage_used_gb: 1.2,
-        storage_limit_gb: plan?.storage_gb || 5,
-        orders_this_month: 24,
-        orders_limit: plan?.monthly_orders || 100,
-        monthly_fee: resolvedPlanCode === 'trial' ? 0 : (Number(plan?.price_monthly) || 2500),
+        branches_limit: effectiveBranchesLimit,
+        storage_used_gb: estimatedStorageGb,
+        storage_limit_gb: effectiveStorageLimit,
+        orders_this_month: realOrdersCount || 0,
+        orders_limit: effectiveOrdersLimit,
+        monthly_fee: isTrial ? 0 : (Number(plan?.price_monthly) || 0),
         billing_interval: (sub?.billing_interval as any) || 'monthly',
         hub: 'Dhaka Central',
         division: 'Dhaka',
@@ -510,8 +604,8 @@ export class PlatformService {
         created_at: company.created_at,
         last_activity: company.updated_at || company.created_at,
         last_meaningful_activity: {
-          action: 'Order Processed',
-          entity: 'Sales Order',
+          action: (realOrdersCount || 0) > 0 ? 'Order Processed' : 'Account Configured',
+          entity: (realOrdersCount || 0) > 0 ? 'Sales Order' : 'Company',
           timestamp: company.updated_at || company.created_at,
         },
       }
@@ -519,43 +613,47 @@ export class PlatformService {
       const data360: Company360Data = {
         company: tenantCompany,
         onboarding: {
-          overall_progress_pct: 100,
-          steps: [
-            {
-              id: 'ob-1',
-              title: 'Business Registration & Profile',
-              title_bn: 'ব্যবসায়িক বিবরণ ও প্রোফাইল',
-              description: 'Company information, trade license, and contact numbers.',
-              is_completed: true,
-            },
-            {
-              id: 'ob-2',
-              title: 'Primary Branch & Production Floor',
-              title_bn: 'হেড অফিস ও প্রোডাকশন ফ্লোর',
-              description: 'Main workshop floor and document numbering series.',
-              is_completed: true,
-            },
-          ],
+          overall_progress_pct: overallOnboardingProgress,
+          steps: onboardingSteps,
         },
         health: {
-          status: 'healthy',
-          score: 95,
+          status: healthStatus === 'suspended' ? 'critical' : (healthStatus as any),
+          score: healthScore,
           factors: [
-            { code: 'sub', label: 'Subscription Status', status: 'ok', description: 'Active plan' },
-            { code: 'usage', label: 'Storage Quota', status: 'ok', description: 'Within tier limit' },
+            {
+              code: 'sub',
+              label: 'Subscription Status',
+              status: status === 'past_due' || status === 'suspended' ? 'warning' : 'ok',
+              description: isTrial ? `Trial evaluation (${days_to_expiry} days remaining)` : `${resolvedPlanCode.toUpperCase()} Plan (${status})`,
+            },
+            {
+              code: 'usage',
+              label: 'Storage Quota',
+              status: 'ok',
+              description: `Using ${estimatedStorageGb} GB of ${effectiveStorageLimit} GB limit`,
+            },
+            {
+              code: 'users',
+              label: 'User Capacity',
+              status: (company.company_users?.length || 0) >= effectiveUsersLimit ? 'warning' : 'ok',
+              description: `${company.company_users?.length || 0} of ${effectiveUsersLimit} user seats allocated`,
+            },
           ],
           lastCalculatedAt: new Date().toISOString(),
         },
-        users: (company.company_users || []).map((u: any) => ({
-          id: u.id,
-          full_name: u.profile?.full_name || 'Staff Member',
-          email: u.profile?.email || 'staff@' + company.slug + '.com',
-          phone: u.profile?.phone,
-          role: u.department || 'General Staff',
-          status: u.status || 'active',
-          mfa_enabled: false,
-          created_at: u.created_at,
-        })),
+        users: (company.company_users || []).map((u: any) => {
+          const prof = detailProfileMap.get(u.user_id)
+          return {
+            id: u.id,
+            full_name: prof?.full_name || 'Staff Member',
+            email: prof?.email || u.invited_email || ('staff@' + company.slug + '.com'),
+            phone: prof?.phone || company.phone,
+            role: u.department || 'General Staff',
+            status: u.status || 'active',
+            mfa_enabled: false,
+            created_at: u.created_at,
+          }
+        }),
         branches: (company.branches || []).map((b: any) => ({
           id: b.id,
           name: b.name,
@@ -571,32 +669,32 @@ export class PlatformService {
           company_slug: company.slug,
           plan_code: resolvedPlanCode,
           users_count: company.company_users?.length || 0,
-          users_limit: plan?.max_users || 5,
+          users_limit: effectiveUsersLimit,
           branches_count: company.branches?.length || 1,
-          branches_limit: plan?.max_branches || 1,
-          storage_used_gb: 1.2,
-          storage_limit_gb: plan?.storage_gb || 5,
-          orders_this_month: 24,
-          orders_limit: plan?.monthly_orders || 100,
-          customers_count: 45,
-          customers_limit: plan?.max_customers || 100,
-          products_count: 18,
-          products_limit: plan?.max_products || 100,
-          mushak_invoices_count: 8,
+          branches_limit: effectiveBranchesLimit,
+          storage_used_gb: estimatedStorageGb,
+          storage_limit_gb: effectiveStorageLimit,
+          orders_this_month: realOrdersCount || 0,
+          orders_limit: effectiveOrdersLimit,
+          customers_count: realCustomersCount || 0,
+          customers_limit: effectiveCustomersLimit,
+          products_count: realProductsCount || 0,
+          products_limit: effectiveProductsLimit,
+          mushak_invoices_count: realInvoicesCount || 0,
         },
         subscription: {
           id: sub?.id || 'sub-placeholder',
           plan_code: resolvedPlanCode,
-          plan_name: resolvedPlanCode === 'trial' ? 'Free Trial (14 Days)' : (plan?.name || 'Starter Plan'),
+          plan_name: isTrial ? 'Free Trial (14 Days)' : (plan?.name || 'Starter Plan'),
           status,
           billing_interval: (sub?.billing_interval as any) || 'monthly',
-          rate_bdt: Number(plan?.price_monthly) || 2500,
+          rate_bdt: isTrial ? 0 : (Number(plan?.price_monthly) || 0),
           current_period_start: sub?.current_period_start || company.created_at,
-          current_period_end: sub?.current_period_end || new Date(Date.now() + 30 * 86400000).toISOString(),
+          current_period_end: sub?.current_period_end || (sub?.trial_ends_at || new Date(Date.now() + 14 * 86400000).toISOString()),
           trial_ends_at: sub?.trial_ends_at,
-          days_to_expiry: 25,
-          payment_method: sub?.payment_method_type || 'bKash Merchant',
-          last_payment_reference: sub?.last_payment_reference || 'TRX-982142',
+          days_to_expiry,
+          payment_method: isTrial ? 'None (Trial Period)' : (sub?.payment_method_type || 'Manual Transfer'),
+          last_payment_reference: isTrial ? null : (sub?.last_payment_reference || null),
         },
         features: [
           {
@@ -2613,21 +2711,23 @@ export class PlatformService {
       let pastDueCount = 0
 
       const items: BillingReconciliationItem[] = subList.map((s: any) => {
-        const planPrice = Number(s.subscription_plans?.price_monthly) || 0
+        const isTrial = s.subscription_plans?.code === 'trial' || s.status === 'trial'
+        const planPrice = isTrial ? 0 : (Number(s.subscription_plans?.price_monthly) || 0)
         const isPaid = s.status === 'active'
         const isPastDue = s.status === 'past_due'
 
-        expectedMrr += planPrice
-        if (isPaid) collectedMrr += planPrice
-        if (isPastDue) {
-          outstandingMrr += planPrice
-          pastDueCount += 1
+        if (!isTrial) {
+          expectedMrr += planPrice
+          if (isPaid) collectedMrr += planPrice
+          if (isPastDue) {
+            outstandingMrr += planPrice
+            pastDueCount += 1
+          }
         }
 
-        const subPlanCode: PlatformPlanCode =
-          s.subscription_plans?.code === 'trial' || s.status === 'trial'
-            ? 'trial'
-            : (s.subscription_plans?.code || 'starter')
+        const subPlanCode: PlatformPlanCode = isTrial
+          ? 'trial'
+          : (s.subscription_plans?.code || 'starter')
 
         return {
           id: s.id,
@@ -2639,7 +2739,7 @@ export class PlatformService {
           collected_amount_bdt: isPaid ? planPrice : 0,
           outstanding_amount_bdt: isPastDue ? planPrice : 0,
           payment_status: isPaid ? 'paid' : isPastDue ? 'pending' : 'paid',
-          payment_gateway: 'bkash',
+          payment_gateway: isTrial ? 'none' : 'bkash',
           invoice_period: 'Current Month',
           due_date: s.current_period_end || new Date().toISOString(),
         }
