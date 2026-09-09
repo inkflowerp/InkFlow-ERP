@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/client'
+import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ApiResponse } from '@/types/common.types'
 import { TenantSessionData, TENANT_SESSION_COOKIE, TenantRole } from '@/lib/auth/types'
@@ -9,6 +10,17 @@ export interface SignInResultData {
   userId: string
   session: TenantSessionData
   requiresOnboarding?: boolean
+}
+
+async function getSupabaseAuthClient() {
+  if (typeof window === 'undefined') {
+    try {
+      return await createServerSupabaseClient()
+    } catch {
+      return createBrowserSupabaseClient()
+    }
+  }
+  return createBrowserSupabaseClient()
 }
 
 export class AuthService {
@@ -27,7 +39,7 @@ export class AuthService {
         return { success: false, error: 'Email and password are required' }
       }
 
-      const supabase = createClient()
+      const supabase = await getSupabaseAuthClient()
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
         password,
@@ -197,7 +209,7 @@ export class AuthService {
 
       if (createAuthErr || !newAuthData?.user) {
         // Fallback to client signUp if admin createUser is restricted
-        const supabase = createClient()
+        const supabase = await getSupabaseAuthClient()
         const { data: clientAuthData, error: clientErr } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
@@ -263,7 +275,7 @@ export class AuthService {
    */
   static async forgotPassword(email: string): Promise<ApiResponse> {
     try {
-      const supabase = createClient()
+      const supabase = await getSupabaseAuthClient()
       const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/reset-password` : undefined
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
         redirectTo,
@@ -287,7 +299,7 @@ export class AuthService {
    */
   static async resetPassword(password: string): Promise<ApiResponse> {
     try {
-      const supabase = createClient()
+      const supabase = await getSupabaseAuthClient()
       const { error } = await supabase.auth.updateUser({
         password,
       })
@@ -315,7 +327,7 @@ export class AuthService {
         window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: null }))
       }
 
-      const supabase = createClient()
+      const supabase = await getSupabaseAuthClient()
       await supabase.auth.signOut()
       return { success: true }
     } catch (err: unknown) {
