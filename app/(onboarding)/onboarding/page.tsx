@@ -133,7 +133,23 @@ function OnboardingWizard() {
     setCurrentStep((prev) => Math.max(prev - 1, 1))
   }
 
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (currentStep < TOTAL_STEPS) {
+        nextStep()
+      }
+      // On step 7: strictly prevent Enter key from auto-submitting. User must explicitly press submit button.
+    }
+  }
+
   const onSubmit = async (data: OnboardingFormData) => {
+    // Safety guard: Never submit if user is on steps 1 to 6
+    if (currentStep < TOTAL_STEPS) {
+      await nextStep()
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -279,7 +295,7 @@ function OnboardingWizard() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleFormKeyDown} className="space-y-4">
                 {/* STEP 1: COMPANY NAME */}
                 {currentStep === 1 && (
                   <div className="space-y-4 animate-in fade-in-0 duration-200">
@@ -577,6 +593,42 @@ function OnboardingWizard() {
                         />
                       </div>
                       <span className="text-[11px] text-slate-500">Minimum 6 characters.</span>
+                    </div>
+
+                    {/* Setup Review Card */}
+                    <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/60 dark:border-slate-800 text-xs space-y-2">
+                      <div className="font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                        <span>Organization Summary</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                          14-Day Trial
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400">
+                        <div>
+                          <span className="text-slate-400 dark:text-slate-500 block">Company:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block">
+                            {watch('name') || 'Your Company'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 dark:text-slate-500 block">Workspace:</span>
+                          <span className="font-mono text-blue-600 dark:text-blue-400 truncate block">
+                            /{watch('slug') || 'workspace'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 dark:text-slate-500 block">Currency & Language:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {watch('currency')} · {watch('default_language') === 'bn' ? 'বাংলা' : 'English'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 dark:text-slate-500 block">Contact Phone:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {watch('phone') || '—'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
