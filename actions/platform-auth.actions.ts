@@ -206,7 +206,9 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
       },
       null,
       { session_state: 'authenticated' },
-      `Platform Administrator ${adminRecord.full_name} authenticated from ${userAgent}`
+      `Platform Administrator ${adminRecord.full_name} authenticated from ${userAgent}`,
+      adminRecord.id,
+      adminRecord.email
     )
 
     try {
@@ -299,7 +301,9 @@ export async function platformLogoutAction(): Promise<{ success: boolean; redire
         },
         { session_state: 'authenticated' },
         { session_state: 'terminated' },
-        `Platform Administrator ${currentUser.full_name} signed out of console`
+        `Platform Administrator ${currentUser.full_name} signed out of console`,
+        currentUser.id,
+        currentUser.email
       )
 
       try {

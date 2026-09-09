@@ -1618,7 +1618,8 @@ export class PlatformService {
 
       const formatted: PlatformAuditLogItem[] = (data || []).map((l: any) => {
         const adminObj = l.platform_admins
-        const actorName = adminObj?.full_name || l.details?.actor_name || l.details?.admin_name || null
+        const actorEmail = l.actor_email || adminObj?.email || 'system@printerp.com.bd'
+        const actorName = adminObj?.full_name || l.details?.actor_name || l.details?.admin_name || (actorEmail === 'bdinfosky@gmail.com' ? 'Shahidur Rahman' : (actorEmail === 'admin@printerp.com.bd' ? 'Md. Shahidur Rahman' : null))
         const actorRole = adminObj?.role || l.details?.role || 'platform_owner'
         const rawIp = l.ip_address || l.details?.ip_address || null
         const cleanIp = rawIp === '::1' ? '127.0.0.1' : rawIp
@@ -1626,7 +1627,7 @@ export class PlatformService {
         return {
           id: l.id,
           platform_admin_id: l.platform_admin_id,
-          actor_email: adminObj?.email || l.actor_email,
+          actor_email: actorEmail,
           actor_name: actorName,
           actor_role: actorRole,
           actor_avatar_url: adminObj?.avatar_url || null,
@@ -1706,19 +1707,23 @@ export class PlatformService {
 
       // Resolve current platform admin
       let adminId: string | null = actorAdminId || null
-      let actorEmail = actorEmailOverride || 'system@printerp.com.bd'
+      let actorEmail: string | null = actorEmailOverride || null
 
-      if (!adminId || !actorEmailOverride) {
-        const { data: admins } = await (admin as any)
-          .from('platform_admins')
-          .select('id, email')
-          .eq('is_active', true)
-          .limit(1)
-
-        if (admins && admins.length > 0) {
-          adminId = adminId || admins[0].id
-          actorEmail = actorEmailOverride || admins[0].email
+      if (!adminId || !actorEmail) {
+        try {
+          const { getCurrentPlatformUser } = await import('@/lib/auth/platform-auth')
+          const currentUser = await getCurrentPlatformUser()
+          if (currentUser) {
+            adminId = adminId || currentUser.id
+            actorEmail = actorEmail || currentUser.email
+          }
+        } catch {
+          // outside request context
         }
+      }
+
+      if (!actorEmail) {
+        actorEmail = 'system@printerp.com.bd'
       }
 
       // Rule #18 & #24: Recursive secret sanitizer for audit payloads
