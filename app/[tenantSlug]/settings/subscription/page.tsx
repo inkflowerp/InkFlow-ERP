@@ -118,12 +118,13 @@ export default function TenantSubscriptionPage() {
   const customerLimit = getLimitStatus('max_customers')
   const productLimit = getLimitStatus('max_products')
 
+  const trialDays = currentPlan?.trial_days || 14
   const accountTypesList: Array<{
     type: 'trial' | 'starter' | 'business' | 'enterprise'
     label: string
     badge: string
   }> = [
-    { type: 'trial', label: '14-Day Free Trial', badge: 'Trial' },
+    { type: 'trial', label: `${trialDays}-Day Free Trial`, badge: 'Trial' },
     { type: 'starter', label: 'Starter (৳1,999/mo)', badge: 'Starter' },
     { type: 'business', label: 'Business (৳4,999/mo)', badge: 'Business' },
     { type: 'enterprise', label: 'Enterprise (৳9,999/mo)', badge: 'Enterprise' },
@@ -207,7 +208,7 @@ export default function TenantSubscriptionPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 flex-wrap">
               <Badge className="bg-amber-400 text-slate-950 font-black tracking-wider uppercase text-[10px] px-2.5 py-0.5">
-                {accountType === 'trial' ? 'Free 14-Day Trial' : currentPlan.name}
+                {accountType === 'trial' ? (currentPlan.name || `Free Trial (${trialDays} Days)`) : currentPlan.name}
               </Badge>
 
               <Badge
@@ -240,7 +241,7 @@ export default function TenantSubscriptionPage() {
                 }
               />
               <span className="text-xs text-slate-400 font-normal">
-                {isTrial ? '/ 14 days evaluation' : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`}
+                {isTrial ? `/ ${trialDays} days evaluation` : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`}
               </span>
             </div>
 

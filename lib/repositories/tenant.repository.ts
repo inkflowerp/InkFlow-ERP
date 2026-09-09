@@ -96,21 +96,21 @@ export class TenantRepository {
       mainBranch = createdBranch
     }
 
-    // Initialize Company Subscription (14-Day Evaluation Trial)
+    // Initialize Company Subscription (Dynamic Plan & Trial Duration)
     try {
       const rawPlan = companyData.plan?.toLowerCase()
       const targetPlanCode = rawPlan === 'growth' ? 'business' : (rawPlan || 'trial')
       
       let { data: planRecord } = await (admin as any)
         .from('subscription_plans')
-        .select('id, code, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly')
+        .select('id, code, name, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly, trial_days')
         .eq('code', targetPlanCode)
         .maybeSingle()
 
       if (!planRecord && targetPlanCode === 'trial') {
         const { data: trialPlan } = await (admin as any)
           .from('subscription_plans')
-          .select('id, code, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly')
+          .select('id, code, name, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly, trial_days')
           .eq('code', 'trial')
           .maybeSingle()
         planRecord = trialPlan
@@ -119,7 +119,7 @@ export class TenantRepository {
       if (!planRecord) {
         const { data: starterPlan } = await (admin as any)
           .from('subscription_plans')
-          .select('id, code, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly')
+          .select('id, code, name, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly, trial_days')
           .eq('code', 'starter')
           .maybeSingle()
         planRecord = starterPlan
@@ -128,6 +128,7 @@ export class TenantRepository {
       const assignedPlanId = planRecord?.id
       if (assignedPlanId) {
         const isTrialPlan = targetPlanCode === 'trial' || planRecord.code === 'trial'
+        const trialDays = Number(planRecord.trial_days) || 14
         await (admin as any).from('company_subscriptions').insert({
           company_id: newCompany.id,
           plan_id: assignedPlanId,
@@ -135,7 +136,7 @@ export class TenantRepository {
           billing_interval: 'monthly',
           current_period_start: new Date().toISOString(),
           current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          trial_ends_at: isTrialPlan ? new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString() : null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })

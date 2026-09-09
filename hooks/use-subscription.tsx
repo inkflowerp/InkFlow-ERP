@@ -126,10 +126,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
 
   const daysRemainingInTrial = useMemo(() => {
-    if (!subscription.trial_ends_at) return isTrial ? 14 : 0
+    if (!subscription.trial_ends_at) return isTrial ? (currentPlan?.trial_days || 14) : 0
     const diff = new Date(subscription.trial_ends_at).getTime() - Date.now()
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
-  }, [subscription.trial_ends_at, isTrial])
+  }, [subscription.trial_ends_at, isTrial, currentPlan?.trial_days])
 
   const hasFeature = useCallback(
     (feature: FeatureCode) => {

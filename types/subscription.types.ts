@@ -77,7 +77,7 @@ export function resolveSubscriptionPlan(
   if (isTrial) {
     return {
       planCode: 'trial',
-      planName: 'Free Trial (14 Days)',
+      planName: subscription.plan_name || 'Free Trial (14 Days)',
       planNameBn: '১৪ দিনের ফ্রি ট্রায়াল',
       status: subscription.status || 'trial',
       badgeTextEn: 'Trial',

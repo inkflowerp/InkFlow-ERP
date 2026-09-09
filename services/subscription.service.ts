@@ -488,6 +488,7 @@ export async function getTenantSubscription(
   if (found) return found
 
   // Clean default for new trial tenant
+  const defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
   return {
     id: `sub-${companyId}`,
     company_id: companyId,
@@ -497,7 +498,7 @@ export async function getTenantSubscription(
     billing_interval: 'monthly',
     current_period_start: new Date().toISOString(),
     current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-    trial_ends_at: new Date(Date.now() + 14 * 86400000).toISOString(),
+    trial_ends_at: new Date(Date.now() + defaultTrialDays * 86400000).toISOString(),
     payment_method_type: null,
     last_payment_reference: null,
     custom_limits_override: null,

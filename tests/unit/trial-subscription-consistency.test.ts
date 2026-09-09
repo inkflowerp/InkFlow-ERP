@@ -193,7 +193,7 @@ export function resolveTenantAccountType(subscription?: {
 }
 
 export function resolveSubscriptionPlan(
-  subscription?: { status?: string | null; plan_code?: string | null },
+  subscription?: { status?: string | null; plan_code?: string | null; plan_name?: string | null },
   plans: SubscriptionPlanRecord[] = DEFAULT_PLANS
 ) {
   const accountType = resolveTenantAccountType(subscription)
@@ -203,7 +203,7 @@ export function resolveSubscriptionPlan(
 
   return {
     planCode,
-    planName: isTrial ? 'Free Trial (14 Days)' : matchedPlan.name,
+    planName: isTrial ? (subscription?.plan_name || matchedPlan.name || 'Free Trial (14 Days)') : matchedPlan.name,
     planNameBn: isTrial ? '১৪ দিনের ফ্রি ট্রায়াল' : matchedPlan.name_bn,
     accountType,
     isTrial,
@@ -398,6 +398,19 @@ describe('Trial Plan & Subscription State Consistency Tests', () => {
 
       assert.strictEqual(resolvedPlanCode, 'trial')
       assert.notStrictEqual(resolvedPlanCode, 'starter')
+    })
+
+    it('should dynamically reflect customized trial plan name when provided', () => {
+      const customTrialSub = {
+        status: 'trial',
+        plan_code: 'trial',
+        plan_name: 'Extended Free Trial (30 Days)',
+      } as any
+
+      const resolved = resolveSubscriptionPlan(customTrialSub)
+      assert.strictEqual(resolved.planCode, 'trial')
+      assert.strictEqual(resolved.planName, 'Extended Free Trial (30 Days)')
+      assert.strictEqual(resolved.isTrial, true)
     })
   })
 })

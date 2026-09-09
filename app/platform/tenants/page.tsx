@@ -46,13 +46,14 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { getPlatformCompaniesAction } from '@/actions/platform-data.actions'
+import { getPlatformCompaniesAction, getPlatformPlansAction } from '@/actions/platform-data.actions'
 import {
   PlatformTenantCompany,
   PlatformCompanyStatus,
   PlatformPlanCode,
   TenantHealthStatus,
 } from '@/types/platform.types'
+import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import {
   updateCompanyStatusAction,
   changeCompanyPlanAction,
@@ -65,6 +66,7 @@ import {
 
 export default function PlatformTenantsPage() {
   const [companies, setCompanies] = useState<PlatformTenantCompany[]>([])
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [planFilter, setPlanFilter] = useState<string>('all')
@@ -175,14 +177,20 @@ export default function PlatformTenantsPage() {
 
   const loadData = async () => {
     setLoading(true)
-    const res = await getPlatformCompaniesAction({
-      status: statusFilter !== 'all' ? (statusFilter as PlatformCompanyStatus) : undefined,
-      plan: planFilter !== 'all' ? (planFilter as PlatformPlanCode) : undefined,
-      search: search.trim() || undefined,
-    })
-    if (res.success && res.data) {
-      const list = Array.isArray(res.data) ? res.data : res.data.companies
+    const [compRes, plansRes] = await Promise.all([
+      getPlatformCompaniesAction({
+        status: statusFilter !== 'all' ? (statusFilter as PlatformCompanyStatus) : undefined,
+        plan: planFilter !== 'all' ? (planFilter as PlatformPlanCode) : undefined,
+        search: search.trim() || undefined,
+      }),
+      getPlatformPlansAction(),
+    ])
+    if (compRes.success && compRes.data) {
+      const list = Array.isArray(compRes.data) ? compRes.data : compRes.data.companies
       setCompanies(list || [])
+    }
+    if (plansRes.success && plansRes.data) {
+      setPlans(plansRes.data)
     }
     setLoading(false)
   }
@@ -936,22 +944,28 @@ export default function PlatformTenantsPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div
-                      onClick={() => setProvisionPlan('trial')}
-                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                        provisionPlan === 'trial'
-                          ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-white text-xs">Free Trial Evaluation</span>
-                        <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
-                          ৳0 • 14 Days
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-400">Full platform evaluation access for 14 days without charge.</p>
-                    </div>
+                    {(() => {
+                      const trialPlan = plans.find((p) => p.code === 'trial')
+                      const trialDays = trialPlan?.trial_days || 14
+                      return (
+                        <div
+                          onClick={() => setProvisionPlan('trial')}
+                          className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                            provisionPlan === 'trial'
+                              ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
+                              : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-bold text-white text-xs">Free Trial Evaluation</span>
+                            <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
+                              ৳0 • {trialDays} Days
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-400">Full platform evaluation access for {trialDays} days without charge.</p>
+                        </div>
+                      )
+                    })()}
 
                     <div
                       onClick={() => setProvisionPlan('starter')}

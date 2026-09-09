@@ -38,7 +38,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { getPlatformCompaniesAction } from '@/actions/platform-data.actions'
 import {
   PlatformTenantCompany,
   CompanyUsageMetrics,
@@ -46,6 +45,8 @@ import {
   PlatformPlanCode,
   TenantHealthStatus,
 } from '@/types/platform.types'
+import { SubscriptionPlanRecord } from '@/types/subscription.types'
+import { getPlatformCompaniesAction, getPlatformPlansAction } from '@/actions/platform-data.actions'
 import {
   updateCompanyStatusAction,
   changeCompanyPlanAction,
@@ -58,6 +59,7 @@ import {
 
 export default function PlatformCompaniesPage() {
   const [companies, setCompanies] = useState<PlatformTenantCompany[]>([])
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [planFilter, setPlanFilter] = useState<string>('all')
@@ -114,13 +116,19 @@ export default function PlatformCompaniesPage() {
 
   const loadCompanies = async () => {
     setLoading(true)
-    const res = await getPlatformCompaniesAction({
-      search: search || undefined,
-      status: statusFilter !== 'all' ? (statusFilter as PlatformCompanyStatus) : undefined,
-      plan: planFilter !== 'all' ? (planFilter as PlatformPlanCode) : undefined,
-    })
-    if (res.success && res.data) {
-      setCompanies(Array.isArray(res.data) ? res.data : (res.data?.companies || []))
+    const [compRes, plansRes] = await Promise.all([
+      getPlatformCompaniesAction({
+        search: search || undefined,
+        status: statusFilter !== 'all' ? (statusFilter as PlatformCompanyStatus) : undefined,
+        plan: planFilter !== 'all' ? (planFilter as PlatformPlanCode) : undefined,
+      }),
+      getPlatformPlansAction(),
+    ])
+    if (compRes.success && compRes.data) {
+      setCompanies(Array.isArray(compRes.data) ? compRes.data : (compRes.data?.companies || []))
+    }
+    if (plansRes.success && plansRes.data) {
+      setPlans(plansRes.data)
     }
     setLoading(false)
   }
@@ -1045,16 +1053,24 @@ export default function PlatformCompaniesPage() {
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Initial Subscription Plan
                 </label>
-                <select
-                  name="plan"
-                  defaultValue="trial"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
-                >
-                  <option value="trial">Free Trial Plan (৳0/mo • 14 Days Evaluation)</option>
-                  <option value="starter">Starter Plan (৳1,999/mo • 3 Users • 1 Branch)</option>
-                  <option value="business">Business Plan (৳4,999/mo • 10 Users • 3 Branches)</option>
-                  <option value="enterprise">Enterprise Plan (৳9,999/mo • 50+ Users • Unlimited Branches)</option>
-                </select>
+                {(() => {
+                  const trialPlan = plans.find((p) => p.code === 'trial')
+                  const trialDays = trialPlan?.trial_days || 14
+                  return (
+                    <select
+                      name="plan"
+                      defaultValue="trial"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                    >
+                      <option value="trial">
+                        {trialPlan?.name ? `${trialPlan.name} (৳0/mo • ${trialDays} Days Evaluation)` : `Free Trial Plan (৳0/mo • ${trialDays} Days Evaluation)`}
+                      </option>
+                      <option value="starter">Starter Plan (৳1,999/mo • 3 Users • 1 Branch)</option>
+                      <option value="business">Business Plan (৳4,999/mo • 10 Users • 3 Branches)</option>
+                      <option value="enterprise">Enterprise Plan (৳9,999/mo • 50+ Users • Unlimited Branches)</option>
+                    </select>
+                  )
+                })()}
               </div>
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">

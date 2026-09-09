@@ -46,7 +46,7 @@ import {
 } from '@/types/platform.types'
 import { PlatformRole } from '@/lib/auth/types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
-import { DEFAULT_PLANS } from '@/services/subscription.service'
+import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/services/subscription.service'
 import { ApiResponse } from '@/types/common.types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
@@ -834,12 +834,12 @@ export class PlatformService {
         subscription: {
           id: sub?.id || 'sub-placeholder',
           plan_code: resolvedPlanCode,
-          plan_name: isTrial ? 'Free Trial (14 Days)' : (plan?.name || 'Starter Plan'),
+          plan_name: isTrial ? (plan?.name || 'Free Trial Plan') : (plan?.name || 'Starter Plan'),
           status,
           billing_interval: (sub?.billing_interval as any) || 'monthly',
           rate_bdt: isTrial ? 0 : (Number(plan?.price_monthly) || 0),
           current_period_start: sub?.current_period_start || company.created_at,
-          current_period_end: sub?.current_period_end || (sub?.trial_ends_at || new Date(Date.now() + 14 * 86400000).toISOString()),
+          current_period_end: sub?.current_period_end || (sub?.trial_ends_at || new Date(Date.now() + (plan?.trial_days || 14) * 86400000).toISOString()),
           trial_ends_at: sub?.trial_ends_at,
           days_to_expiry,
           payment_method: isTrial ? 'None (Trial Period)' : (sub?.payment_method_type || 'Manual Transfer'),
@@ -1368,11 +1368,38 @@ export class PlatformService {
         return { success: false, error: error.message }
       }
 
-      if (!data || data.length === 0) {
+      let planList: SubscriptionPlanRecord[] = (data || []) as SubscriptionPlanRecord[]
+      
+      if (!planList || planList.length === 0) {
         return { success: true, data: DEFAULT_PLANS }
       }
 
-      return { success: true, data: data || [] }
+      // Ensure trial plan is present and dynamic
+      const hasTrial = planList.some((p) => p.code === 'trial')
+      if (!hasTrial) {
+        let trialDays = 14
+        try {
+          const { data: setRec } = await (admin as any)
+            .from('platform_system_settings')
+            .select('default_trial_days')
+            .eq('id', 'default')
+            .maybeSingle()
+          if (setRec?.default_trial_days) {
+            trialDays = Number(setRec.default_trial_days)
+          }
+        } catch {}
+
+        const dynamicTrialPlan: SubscriptionPlanRecord = {
+          ...DEFAULT_TRIAL_PLAN,
+          trial_days: trialDays,
+          name: `Free Trial (${trialDays} Days)`,
+          name_bn: `${trialDays} দিনের ফ্রি ট্রায়াল`,
+          description: `${trialDays}-day evaluation with full access to all ERP modules. No credit card required.`,
+        }
+        planList = [dynamicTrialPlan, ...planList]
+      }
+
+      return { success: true, data: planList }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to fetch subscription plans' }
     }
@@ -1383,102 +1410,114 @@ export class PlatformService {
   ): Promise<ApiResponse<SubscriptionPlanRecord>> {
     try {
       const admin = createAdminClient()
+      const targetCode = (plan.code || '').toLowerCase().trim()
+      const isTrial = targetCode === 'trial'
+      const trialDays = plan.trial_days !== undefined ? Number(plan.trial_days) : (isTrial ? 14 : 0)
 
-      if (plan.id) {
-        // Update existing plan
+      // Look up existing plan by ID or code
+      let existingRecord: any = null
+      if (plan.id && !plan.id.startsWith('sp-')) {
+        const { data } = await (admin as any)
+          .from('subscription_plans')
+          .select('id, code')
+          .eq('id', plan.id)
+          .maybeSingle()
+        existingRecord = data
+      }
+
+      if (!existingRecord && targetCode) {
+        const { data } = await (admin as any)
+          .from('subscription_plans')
+          .select('id, code')
+          .eq('code', targetCode)
+          .maybeSingle()
+        existingRecord = data
+      }
+
+      const planPayload = {
+        code: targetCode,
+        name: plan.name || (isTrial ? `Free Trial (${trialDays} Days)` : 'Custom Plan'),
+        name_bn: plan.name_bn || (isTrial ? `${trialDays} দিনের ফ্রি ট্রায়াল` : null),
+        description: plan.description,
+        price_monthly: isTrial ? 0 : (Number(plan.price_monthly) || 0),
+        price_yearly: isTrial ? 0 : (Number(plan.price_yearly) || 0),
+        max_users: Number(plan.max_users) || (isTrial ? 5 : 3),
+        max_branches: Number(plan.max_branches) || 1,
+        storage_gb: Number(plan.storage_gb) || (isTrial ? 2 : 1),
+        monthly_orders: Number(plan.monthly_orders) || (isTrial ? 100 : 50),
+        max_customers: Number(plan.max_customers) || (isTrial ? 200 : 100),
+        max_products: Number(plan.max_products) || (isTrial ? 200 : 100),
+        trial_days: trialDays,
+        features: plan.features || [],
+        is_active: plan.is_active !== undefined ? Boolean(plan.is_active) : true,
+        sort_order: plan.sort_order !== undefined ? Number(plan.sort_order) : 0,
+        updated_at: new Date().toISOString(),
+      }
+
+      let savedData: any = null
+
+      if (existingRecord?.id) {
         const { data, error } = await (admin as any)
           .from('subscription_plans')
-          .update({
-            name: plan.name,
-            name_bn: plan.name_bn,
-            description: plan.description,
-            price_monthly: plan.price_monthly,
-            price_yearly: plan.price_yearly,
-            max_users: plan.max_users,
-            max_branches: plan.max_branches,
-            storage_gb: plan.storage_gb,
-            monthly_orders: plan.monthly_orders,
-            max_customers: plan.max_customers,
-            max_products: plan.max_products,
-            trial_days: plan.trial_days !== undefined ? plan.trial_days : (plan.code === 'trial' ? 14 : 0),
-            features: plan.features || [],
-            is_active: plan.is_active !== undefined ? plan.is_active : true,
-            sort_order: plan.sort_order !== undefined ? plan.sort_order : 0,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', plan.id)
+          .update(planPayload)
+          .eq('id', existingRecord.id)
           .select()
           .single()
 
-        if (error) {
-          // If table doesn't have the record or error occurred, return successfully with the plan payload
-          return { success: true, data: plan as SubscriptionPlanRecord }
+        if (!error && data) {
+          savedData = data
         }
-
-        await this.recordAuditLog(
-          'plan.update',
-          'subscription_plan',
-          plan.id,
-          undefined,
-          undefined,
-          { plan_code: plan.code, name: plan.name },
-          null,
-          plan,
-          `Subscription plan ${plan.name} updated`
-        )
-
-        return { success: true, data }
       } else {
-        // Create new plan
         const { data, error } = await (admin as any)
           .from('subscription_plans')
           .insert({
-            code: plan.code,
-            name: plan.name,
-            name_bn: plan.name_bn,
-            description: plan.description,
-            price_monthly: plan.price_monthly,
-            price_yearly: plan.price_yearly,
-            max_users: plan.max_users || 5,
-            max_branches: plan.max_branches || 1,
-            storage_gb: plan.storage_gb || 5,
-            monthly_orders: plan.monthly_orders || 100,
-            max_customers: plan.max_customers || 100,
-            max_products: plan.max_products || 100,
-            trial_days: plan.trial_days !== undefined ? plan.trial_days : (plan.code === 'trial' ? 14 : 0),
-            features: plan.features || [],
-            is_active: true,
-            sort_order: plan.sort_order || 0,
+            ...planPayload,
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
           })
           .select()
           .single()
 
-        if (error) {
-          const fallbackNew = {
-            id: `sp-${Date.now()}`,
-            ...plan,
-          } as SubscriptionPlanRecord
-          return { success: true, data: fallbackNew }
+        if (!error && data) {
+          savedData = data
         }
-
-        await this.recordAuditLog(
-          'plan.create',
-          'subscription_plan',
-          data.id,
-          undefined,
-          undefined,
-          { plan_code: data.code, name: data.name },
-          null,
-          data,
-          `New subscription plan ${data.name} created`
-        )
-
-        return { success: true, data }
       }
+
+      // If trial plan was saved, sync default_trial_days with platform_system_settings
+      if (isTrial && trialDays > 0) {
+        try {
+          await (admin as any)
+            .from('platform_system_settings')
+            .upsert(
+              {
+                id: 'default',
+                default_trial_days: trialDays,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'id' }
+            )
+        } catch {}
+      }
+
+      const finalRecord = (savedData || {
+        id: existingRecord?.id || plan.id || `sp-${Date.now()}`,
+        ...planPayload,
+      }) as SubscriptionPlanRecord
+
+      await this.recordAuditLog(
+        existingRecord?.id ? 'plan.update' : 'plan.create',
+        'subscription_plan',
+        finalRecord.id,
+        undefined,
+        undefined,
+        { plan_code: finalRecord.code, name: finalRecord.name, trial_days: trialDays },
+        null,
+        finalRecord,
+        `Subscription plan ${finalRecord.name} ${existingRecord?.id ? 'updated' : 'created'}`
+      )
+
+      return { success: true, data: finalRecord }
     } catch (err: any) {
-      return { success: false, error: err.message || 'Failed to save plan' }
+      return { success: false, error: err.message || 'Failed to save subscription plan' }
     }
   }
 
@@ -3425,6 +3464,22 @@ export class PlatformService {
       await (admin as any)
         .from('platform_system_settings')
         .upsert(payload, { onConflict: 'id' })
+
+      // Synchronize trial_days on subscription_plans where code = 'trial'
+      if (payload.default_trial_days) {
+        try {
+          await (admin as any)
+            .from('subscription_plans')
+            .update({
+              trial_days: payload.default_trial_days,
+              name: `Free Trial (${payload.default_trial_days} Days)`,
+              name_bn: `${payload.default_trial_days} দিনের ফ্রি ট্রায়াল`,
+              description: `${payload.default_trial_days}-day evaluation with full access to all ERP modules. No credit card required.`,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('code', 'trial')
+        } catch {}
+      }
 
       // Sync with transient local store
       PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, payload)
