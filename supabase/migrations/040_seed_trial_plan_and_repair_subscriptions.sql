@@ -4,7 +4,10 @@
 -- any trial subscriptions that were linked to starter plan.
 -- ==============================================================================
 
--- 1. Insert 'trial' into subscription_plans if not present
+-- 1. Ensure trial_days column exists on subscription_plans
+alter table public.subscription_plans add column if not exists trial_days integer not null default 0;
+
+-- 2. Insert 'trial' into subscription_plans if not present
 insert into public.subscription_plans (
     code,
     name,
