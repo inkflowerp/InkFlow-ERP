@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['nodemailer', 'pg'],
   compress: true,
   poweredByHeader: false,
   experimental: {
