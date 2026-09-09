@@ -586,3 +586,32 @@ export interface PlatformSystemSettings {
   maintenance_message: string
   incident_alert_webhook?: string
 }
+
+export interface PlatformTenantUserItem {
+  id: string
+  user_id: string
+  company_id: string
+  company_name: string
+  company_slug: string
+  full_name: string
+  full_name_bn?: string | null
+  email: string
+  phone?: string | null
+  status: string
+  primary_role: string
+  responsibilities: string[]
+  branch_name?: string | null
+  created_at: string
+}
+
+export interface PlatformNotificationItem {
+  id: string
+  title: string
+  message: string
+  severity: 'info' | 'warning' | 'critical'
+  type: string
+  company_id?: string | null
+  is_read: boolean
+  created_at: string
+}
+

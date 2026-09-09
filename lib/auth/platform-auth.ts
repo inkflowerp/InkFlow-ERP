@@ -1,12 +1,11 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Platform Authorization Utilities (Server-Side)
+// InkFlow SaaS - Platform Authorization Utilities (Server-Side)
 // Authoritative Supabase Auth & PostgreSQL verification.
 // Strictly guards all /platform/* operations against unauthorized access.
 // Single Source of Truth: Supabase Auth -> Authenticated auth.uid() -> platform_admins -> Fail Closed.
 // ==============================================================================
 
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -165,7 +164,7 @@ export function resolveEffectivePlatformPermissions(
 /**
  * Canonical Server-Side Platform Context Resolver.
  * Single Source of Truth: Supabase Auth -> Authenticated auth.uid() -> platform_admins -> Active check.
- * Strictly FAILS CLOSED on any error or missing record.
+ * Strictly FAILS CLOSED on any error or missing record. No fallback to unverified cookies.
  */
 export async function getAuthenticatedPlatformContext(): Promise<AuthenticatedPlatformContext | null> {
   try {
@@ -180,73 +179,22 @@ export async function getAuthenticatedPlatformContext(): Promise<AuthenticatedPl
     }
 
     const adminClient = createAdminClient()
-    let { data: adminRecord, error: dbError } = await (adminClient as any)
+    const { data: adminRecord, error: dbError } = await (adminClient as any)
       .from('platform_admins')
       .select('*')
       .eq('user_id', user.id)
       .eq('is_active', true)
       .maybeSingle()
 
-    // 1. If not found by user_id, check by email
-    if (!adminRecord && user.email) {
-      const { data: emailRecord } = await (adminClient as any)
-        .from('platform_admins')
-        .select('*')
-        .eq('email', user.email.toLowerCase().trim())
-        .eq('is_active', true)
-        .maybeSingle()
-
-      if (emailRecord) {
-        adminRecord = emailRecord
-        if (emailRecord.user_id !== user.id) {
-          try {
-            await (adminClient as any)
-              .from('platform_admins')
-              .update({ user_id: user.id, updated_at: new Date().toISOString() })
-              .eq('id', emailRecord.id)
-            adminRecord.user_id = user.id
-          } catch {
-            // Ignore if constraint
-          }
-        }
-      }
-    }
-
-    // 2. First-run bootstrap: If platform_admins table is completely empty, provision the first authenticated user
-    if (!adminRecord && user.email) {
-      const { count } = await (adminClient as any)
-        .from('platform_admins')
-        .select('*', { count: 'exact', head: true })
-
-      if ((count || 0) === 0) {
-        const { data: createdOwner } = await (adminClient as any)
-          .from('platform_admins')
-          .insert({
-            user_id: user.id,
-            email: user.email.toLowerCase().trim(),
-            full_name: (user.user_metadata as any)?.full_name || 'Md. Shahidur Rahman',
-            role: 'platform_owner',
-            is_active: true,
-            mfa_enabled: false,
-          })
-          .select()
-          .single()
-
-        if (createdOwner) {
-          adminRecord = createdOwner
-        }
-      }
-    }
-
-    if (dbError || !adminRecord) {
-      return null
+    if (dbError || !adminRecord || !adminRecord.is_active) {
+      return null // FAIL CLOSED: Identity strictly requires active platform_admins record matched by user.id
     }
 
     const role = (adminRecord.role as PlatformRole) || 'platform_readonly'
-    const permissions = resolveEffectivePlatformPermissions(
-      role,
-      Array.isArray(adminRecord.responsibilities) ? adminRecord.responsibilities : [role]
-    )
+    const responsibilities = Array.isArray(adminRecord.responsibilities)
+      ? adminRecord.responsibilities
+      : [role]
+    const permissions = resolveEffectivePlatformPermissions(role, responsibilities)
 
     return {
       userId: String(user.id),
@@ -254,9 +202,7 @@ export async function getAuthenticatedPlatformContext(): Promise<AuthenticatedPl
       email: String(adminRecord.email || user.email),
       fullName: String(adminRecord.full_name || 'Platform Administrator'),
       platformRole: role,
-      responsibilities: Array.isArray(adminRecord.responsibilities)
-        ? adminRecord.responsibilities
-        : [role],
+      responsibilities,
       permissions,
       isActive: Boolean(adminRecord.is_active),
       mfaEnabled: Boolean(adminRecord.mfa_enabled),
@@ -267,23 +213,23 @@ export async function getAuthenticatedPlatformContext(): Promise<AuthenticatedPl
       lastLoginAt: adminRecord.last_login_at ? String(adminRecord.last_login_at) : undefined,
     }
   } catch {
-    return null
+    return null // FAIL CLOSED
   }
 }
 
 /**
- * Authoritative DB lookup for a specific user ID, email, or admin ID.
+ * Authoritative DB lookup for a specific user ID or admin ID.
  * Strictly FAILS CLOSED with NO heuristic fallbacks or mock data.
  */
-export async function getPlatformUser(userIdOrEmail?: string): Promise<PlatformUserRecord | null> {
-  if (!userIdOrEmail) return null
+export async function getPlatformUser(userIdOrAdminId?: string): Promise<PlatformUserRecord | null> {
+  if (!userIdOrAdminId) return null
 
   try {
     const adminClient = createAdminClient()
     const { data, error } = await (adminClient as any)
       .from('platform_admins')
       .select('*')
-      .or(`email.eq.${userIdOrEmail},user_id.eq.${userIdOrEmail},id.eq.${userIdOrEmail}`)
+      .or(`user_id.eq.${userIdOrAdminId},id.eq.${userIdOrAdminId}`)
       .eq('is_active', true)
       .maybeSingle()
 
@@ -311,6 +257,26 @@ export async function getPlatformUser(userIdOrEmail?: string): Promise<PlatformU
 }
 
 /**
+ * Checks if the specified admin is the sole active Platform Owner.
+ * Used for Last-Owner Protection server guards.
+ */
+export async function isLastPlatformOwner(adminId: string): Promise<boolean> {
+  try {
+    const adminClient = createAdminClient()
+    const { count, error } = await (adminClient as any)
+      .from('platform_admins')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'platform_owner')
+      .eq('is_active', true)
+
+    if (error || count === null) return true // Fail safe to protect
+    return count <= 1
+  } catch {
+    return true
+  }
+}
+
+/**
  * Retrieves the current authenticated platform user from Supabase auth and platform_admins.
  * Server-side validated: client cookies alone cannot grant platform access.
  */
@@ -332,25 +298,6 @@ export async function getCurrentPlatformUser(): Promise<PlatformUserRecord | nul
       created_at: context.createdAt,
     }
   }
-
-  // Fallback verification: Check session cookie against PostgreSQL platform_admins
-  try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
-    if (sessionCookie) {
-      const sessionData = JSON.parse(sessionCookie)
-      if (sessionData && (sessionData.userId || sessionData.email || sessionData.adminId)) {
-        const lookup = sessionData.userId || sessionData.adminId || sessionData.email
-        const dbUser = await getPlatformUser(lookup)
-        if (dbUser && dbUser.is_active) {
-          return dbUser
-        }
-      }
-    }
-  } catch {
-    // Ignore parse errors
-  }
-
   return null
 }
 

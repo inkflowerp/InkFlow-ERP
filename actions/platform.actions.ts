@@ -486,12 +486,71 @@ export async function updatePlatformUserAction(
 
     const result = await PlatformService.updatePlatformUser(userId, updates)
     if (result.success) {
+      revalidatePath('/platform/admins')
       revalidatePath('/platform/users')
       revalidatePath('/platform/security')
     }
     return result
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to update platform user' }
+  }
+}
+
+export async function createPlatformAdminAction(formData: FormData) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || platformUser.role !== 'platform_owner') {
+      return { success: false, error: 'Unauthorized: Only the Platform Owner can create platform administrators.' }
+    }
+
+    const email = (formData.get('email') as string)?.trim()?.toLowerCase()
+    const fullName = (formData.get('full_name') as string)?.trim()
+    const role = (formData.get('role') as any) || 'platform_admin'
+    const phone = (formData.get('phone') as string)?.trim() || undefined
+    const password = (formData.get('password') as string) || undefined
+    const mfaEnabled = formData.get('mfa_enabled') === 'true'
+
+    if (!email || !fullName) {
+      return { success: false, error: 'Email and Full Name are required.' }
+    }
+
+    const res = await PlatformService.createPlatformAdmin({
+      email,
+      full_name: fullName,
+      role,
+      phone,
+      password,
+      mfa_enabled: mfaEnabled,
+    })
+
+    if (res.success) {
+      revalidatePath('/platform/admins')
+      revalidatePath('/platform/users')
+      revalidatePath('/platform/security')
+    }
+
+    return res
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to create platform administrator' }
+  }
+}
+
+export async function deletePlatformAdminAction(adminId: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || platformUser.role !== 'platform_owner') {
+      return { success: false, error: 'Unauthorized: Only the Platform Owner can delete platform administrators.' }
+    }
+
+    const res = await PlatformService.deletePlatformAdmin(adminId)
+    if (res.success) {
+      revalidatePath('/platform/admins')
+      revalidatePath('/platform/users')
+      revalidatePath('/platform/security')
+    }
+    return res
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to delete platform administrator' }
   }
 }
 
@@ -645,3 +704,28 @@ export async function updatePlatformSettingsAction(settings: Record<string, any>
     return { success: false, error: err?.message || 'Failed to update platform settings' }
   }
 }
+
+export async function markNotificationReadAction(id: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.markNotificationRead(id)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to mark notification read' }
+  }
+}
+
+export async function markAllNotificationsReadAction() {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.markAllNotificationsRead()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to mark notifications read' }
+  }
+}
+

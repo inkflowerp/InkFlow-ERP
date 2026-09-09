@@ -47,7 +47,9 @@ export function useDataStore<T = any>(
   customTenantSlug?: string
 ): DataStoreResult<T> {
   const initialSeedRef = useRef(initialSeed)
-  initialSeedRef.current = initialSeed
+  useEffect(() => {
+    initialSeedRef.current = initialSeed
+  }, [initialSeed])
 
   const [data, setData] = useState<T>(() => {
     const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()

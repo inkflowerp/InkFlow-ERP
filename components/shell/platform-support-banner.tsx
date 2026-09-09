@@ -59,10 +59,10 @@ export function PlatformSupportBanner() {
     try {
       await exitTenantSupportSessionAction()
       document.cookie = 'printerp_support_tenant=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-      router.push('/platform/companies')
+      router.push('/platform/support')
       router.refresh()
     } catch {
-      router.push('/platform/companies')
+      router.push('/platform/support')
     }
   }
 
@@ -81,6 +81,11 @@ export function PlatformSupportBanner() {
           <span>
             Tenant: <strong className="underline text-white font-bold">{supportData.targetCompanyName}</strong>
           </span>
+          {supportData.accessLevel && (
+            <span className="bg-black/20 text-amber-100 px-2 py-0.5 rounded text-[10px] font-mono uppercase">
+              {supportData.accessLevel.replace('_', ' ')}
+            </span>
+          )}
           {supportData.reason && (
             <span className="text-amber-100 hidden sm:inline">
               • Reason: <em className="not-italic text-white">&quot;{supportData.reason}&quot;</em>

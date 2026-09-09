@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database.types'
-import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '@/lib/auth/types'
+import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 
 const DEFAULT_SUPABASE_URL = 'https://liqhihsqcblddqfjmmse.supabase.co'
 const DEFAULT_SUPABASE_ANON_KEY =
@@ -49,20 +49,6 @@ export async function updateSession(request: NextRequest) {
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml' ||
     pathname.startsWith('/icons/')
-
-  // Check platform session cookie for platform operations
-  const platformSessionCookie = request.cookies.get(PLATFORM_SESSION_COOKIE)?.value
-  let hasValidPlatformCookie = false
-  if (platformSessionCookie) {
-    try {
-      const platformData = JSON.parse(decodeURIComponent(platformSessionCookie))
-      if (platformData && (platformData.userId || platformData.adminId || platformData.email)) {
-        hasValidPlatformCookie = true
-      }
-    } catch {
-      // Invalid cookie
-    }
-  }
 
   // Check tenant session cookie for tenant workspace routing
   const tenantSessionCookie = request.cookies.get(TENANT_SESSION_COOKIE)?.value
@@ -117,7 +103,7 @@ export async function updateSession(request: NextRequest) {
 
   // 1. Platform Protected Page Guard: Non-authenticated users cannot access /platform/*
   if (isPlatformProtectedPage) {
-    if (!user && !hasValidPlatformCookie) {
+    if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/platform/login'
       url.searchParams.set('redirectTo', pathname)
@@ -127,7 +113,7 @@ export async function updateSession(request: NextRequest) {
 
   // 1b. Platform Auth Page: If already authenticated, redirect to /platform
   if (isPlatformAuthPage && pathname === '/platform/login') {
-    if (user || hasValidPlatformCookie) {
+    if (user) {
       const redirectTo = request.nextUrl.searchParams.get('redirectTo') || '/platform'
       const url = request.nextUrl.clone()
       url.pathname = redirectTo.startsWith('/platform') ? redirectTo : '/platform'

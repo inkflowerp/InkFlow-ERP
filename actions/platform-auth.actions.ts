@@ -97,63 +97,12 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
 
     // 3. Query PostgreSQL platform_admins table for active membership
     const adminClient = createAdminClient()
-    let { data: adminRecord, error: adminErr } = await (adminClient as any)
+    const { data: adminRecord, error: adminErr } = await (adminClient as any)
       .from('platform_admins')
       .select('*')
       .eq('user_id', authUserId)
       .eq('is_active', true)
       .maybeSingle()
-
-    // 3a. If not found by user_id, check by email
-    if (!adminRecord && email) {
-      const { data: emailRecord } = await (adminClient as any)
-        .from('platform_admins')
-        .select('*')
-        .eq('email', email)
-        .eq('is_active', true)
-        .maybeSingle()
-
-      if (emailRecord) {
-        adminRecord = emailRecord
-        if (emailRecord.user_id !== authUserId) {
-          try {
-            await (adminClient as any)
-              .from('platform_admins')
-              .update({ user_id: authUserId, updated_at: new Date().toISOString() })
-              .eq('id', emailRecord.id)
-            adminRecord.user_id = authUserId
-          } catch {
-            // Ignore
-          }
-        }
-      }
-    }
-
-    // 3b. First-run bootstrap: If platform_admins table has 0 records, provision this authenticated user as platform_owner
-    if (!adminRecord && email) {
-      const { count } = await (adminClient as any)
-        .from('platform_admins')
-        .select('*', { count: 'exact', head: true })
-
-      if ((count || 0) === 0) {
-        const { data: createdOwner } = await (adminClient as any)
-          .from('platform_admins')
-          .insert({
-            user_id: authUserId,
-            email,
-            full_name: (authData.user.user_metadata as any)?.full_name || 'Md. Shahidur Rahman',
-            role: 'platform_owner',
-            is_active: true,
-            mfa_enabled: false,
-          })
-          .select()
-          .single()
-
-        if (createdOwner) {
-          adminRecord = createdOwner
-        }
-      }
-    }
 
     if (adminErr || !adminRecord) {
       // User is authenticated in Supabase but is NOT an active platform administrator
@@ -196,7 +145,7 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
     }
 
     // 5. Generate secure active session in PostgreSQL
-    const sessionTokenHash = `psess_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+    const sessionTokenHash = `psess_${Date.now()}_${crypto.randomUUID().replace(/-/g, '')}`
     try {
       await (adminClient as any).from('platform_active_sessions').insert({
         platform_admin_id: adminRecord.id,

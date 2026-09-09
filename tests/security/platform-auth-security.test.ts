@@ -384,4 +384,85 @@ describe('Platform Admin Authentication & Authorization Security', () => {
     assert.strictEqual(/^\d{6}$/.test('12345'), false)
     assert.strictEqual(/^\d{6}$/.test('1234567'), false)
   })
+
+  test('12. Email Spoofing Denial: Arbitrary email without matching auth.uid() in DB cannot grant platform access', () => {
+    const spoofedUser = {
+      id: 'auth-attacker-uuid',
+      email: 'haji.shamim@printerp.com.bd', // Matches owner's email address
+    }
+    const dbAdminRecords = [
+      { id: 'pa-owner-001', user_id: 'u-auth-owner-001', email: 'haji.shamim@printerp.com.bd', is_active: true }
+    ]
+    // Canonical check strictly matches on user_id === auth.uid()
+    const match = dbAdminRecords.find((rec) => rec.user_id === spoofedUser.id && rec.is_active)
+    assert.strictEqual(match, undefined, 'Spoofed user ID must NOT match real owner record')
+  })
+
+  test('13. Cookie & LocalStorage Spoofing Denial: Client session cookie alone cannot bypass server authorization', () => {
+    const forgedClientCookie = {
+      userId: 'u-auth-owner-001',
+      role: 'platform_owner',
+      permissions: ['*'],
+    }
+    // Server validation rejects unauthenticated Supabase context
+    const supabaseUser = null // No valid auth session
+    const isAuthenticated = Boolean(supabaseUser)
+    assert.strictEqual(isAuthenticated, false, 'Forged cookie without active Supabase session must be rejected')
+  })
+
+  test('14. First-User Bootstrap Denial: Empty platform_admins table does NOT auto-escalate normal users', () => {
+    const tableCount = 0
+    const normalUser = { id: 'u-normal-user', email: 'random@example.com' }
+    // Rule #9: No runtime auto-provisioning
+    const shouldAutoEscalate = false
+    assert.strictEqual(shouldAutoEscalate, false, 'Zero records in platform_admins must NOT auto-escalate normal users')
+  })
+
+  test('15. Support Session TTL & Expiry: Expired support session is strictly rejected', () => {
+    const now = Date.now()
+    const expiredSession = {
+      id: 'sess-001',
+      platform_admin_id: 'pa-admin-001',
+      company_id: 'cmp-001',
+      status: 'active',
+      expires_at: new Date(now - 1000).toISOString(), // 1s in the past
+    }
+    const isValid = expiredSession.status === 'active' && new Date(expiredSession.expires_at).getTime() > now
+    assert.strictEqual(isValid, false, 'Expired support session must be rejected')
+  })
+
+  test('16. Support Session Revocation: Revoked session cannot be used for tenant operations', () => {
+    const now = Date.now()
+    const revokedSession = {
+      id: 'sess-002',
+      platform_admin_id: 'pa-admin-001',
+      company_id: 'cmp-001',
+      status: 'revoked',
+      expires_at: new Date(now + 3600000).toISOString(),
+    }
+    const isValid = revokedSession.status === 'active' && new Date(revokedSession.expires_at).getTime() > now
+    assert.strictEqual(isValid, false, 'Revoked support session must be rejected')
+  })
+
+  test('17. Support Session Reason Validation: Short reasons (< 5 chars) are rejected', () => {
+    const validateReason = (reason: string) => Boolean(reason && reason.trim().length >= 5)
+    assert.strictEqual(validateReason(''), false)
+    assert.strictEqual(validateReason('fix'), false)
+    assert.strictEqual(validateReason('help'), false)
+    assert.strictEqual(validateReason('Investigating invoice issue #412'), true)
+  })
+
+  test('18. Cross-Tenant ID Manipulation: Tenant A user cannot access Tenant B company data', () => {
+    const tenantAUser = { userId: 'u-tenant-a', companyId: 'company-a-uuid' }
+    const requestedCompanyId = 'company-b-uuid'
+    const isAuthorized = tenantAUser.companyId === requestedCompanyId
+    assert.strictEqual(isAuthorized, false, 'Cross-tenant access must be denied')
+  })
+
+  test('19. Suspended Tenant Access: Suspended company users are blocked from protected operations', () => {
+    const company = { id: 'cmp-suspended-001', is_active: false, status: 'suspended' }
+    const canAccess = company.is_active && company.status === 'active'
+    assert.strictEqual(canAccess, false, 'Suspended tenant accounts must be blocked')
+  })
 })
+

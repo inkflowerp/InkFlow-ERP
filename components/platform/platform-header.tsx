@@ -67,8 +67,8 @@ export function PlatformHeader() {
   const userEmail = currentUser?.email || ''
   const userRole = currentUser?.role || 'platform_readonly'
 
-  // Extract initials (e.g. "Haji Mohammad Shamim" -> "MS")
-  const nameParts = userFullName.replace(/^(Haji|Dr|Mr|Mrs|Ms)\s+/i, '').trim().split(/\s+/)
+  // Extract initials (e.g. "Md. Shahidur Rahman" -> "SR")
+  const nameParts = userFullName.replace(/^(Md\.|Haji|Dr|Mr|Mrs|Ms)\s+/i, '').trim().split(/\s+/)
   const initials =
     nameParts.length >= 2
       ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase()
@@ -87,7 +87,10 @@ export function PlatformHeader() {
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={() => window.dispatchEvent(new Event('printerp_open_platform_nav'))}
+            onClick={() => {
+              window.dispatchEvent(new Event('inkflow_open_platform_nav'))
+              window.dispatchEvent(new Event('printerp_open_platform_nav'))
+            }}
             className="lg:hidden flex items-center justify-center h-10 w-10 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/60 cursor-pointer min-h-[44px] min-w-[44px]"
             aria-label="Open Platform Navigation Menu"
           >
@@ -100,12 +103,12 @@ export function PlatformHeader() {
             </div>
             <div className="hidden xs:block sm:block">
               <div className="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
-                PrintERP SaaS
+                InkFlow SaaS
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-mono font-bold border border-indigo-500/30">
                   ROOT
                 </span>
               </div>
-              <div className="text-[10px] text-slate-400 font-medium">Platform Administration</div>
+              <div className="text-[10px] text-slate-400 font-medium">Platform Control Center</div>
             </div>
           </Link>
         </div>
@@ -119,7 +122,7 @@ export function PlatformHeader() {
           >
             <div className="flex items-center gap-2">
               <Search className="h-3.5 w-3.5 text-indigo-400" />
-              <span className="truncate">Search platform, companies, audit...</span>
+              <span className="truncate">Search platform, tenants, users, audit...</span>
             </div>
             <div className="flex items-center gap-1">
               <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded shadow-xs">
@@ -198,7 +201,7 @@ export function PlatformHeader() {
                     </Link>
 
                     <Link
-                      href="/platform/security#sessions"
+                      href="/platform/sessions"
                       onClick={() => setProfileMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                     >

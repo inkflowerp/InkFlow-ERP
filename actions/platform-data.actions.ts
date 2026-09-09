@@ -27,6 +27,9 @@ import {
   IntegrationProviderStatus,
   GlobalSearchResult,
   ApiResponse,
+  PlatformTenantUserItem,
+  PlatformSupportSessionRecord,
+  PlatformNotificationItem,
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { getCurrentPlatformUser } from '@/lib/auth/platform-auth'
@@ -353,3 +356,56 @@ export async function searchPlatformGlobalAction(query: string): Promise<ApiResp
     return { success: false, error: err?.message || 'Failed to perform search' }
   }
 }
+
+/**
+ * Server Action: Get Cross-Tenant User Registry for Platform Owner
+ */
+export async function getPlatformTenantUsersAction(filters?: {
+  search?: string
+  companyId?: string
+  status?: string
+  page?: number
+  pageSize?: number
+}): Promise<ApiResponse<{ users: PlatformTenantUserItem[]; total: number }>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getTenantUsersList(filters)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch tenant users' }
+  }
+}
+
+/**
+ * Server Action: Get Platform Support Sessions (Active & History)
+ */
+export async function getPlatformSupportSessionsAction(): Promise<ApiResponse<PlatformSupportSessionRecord[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getSupportSessions()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch support sessions' }
+  }
+}
+
+/**
+ * Server Action: Get Platform System & Security Notifications
+ */
+export async function getPlatformNotificationsAction(): Promise<ApiResponse<PlatformNotificationItem[]>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    const data = await PlatformService.getNotifications()
+    return { success: true, data }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch notifications' }
+  }
+}
+
