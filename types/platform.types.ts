@@ -659,3 +659,78 @@ export interface PlatformNotificationItem {
   created_at: string
 }
 
+export interface PlatformSubscriptionRecord {
+  id: string
+  company_id: string
+  company_name: string
+  company_slug: string
+  owner_name: string
+  owner_email: string
+  owner_phone: string
+  is_active: boolean
+
+  // Plan Details
+  plan_id: string
+  plan_code: PlatformPlanCode
+  plan_name: string
+  plan_name_bn?: string
+  monthly_rate: number
+  yearly_rate: number
+  billing_interval: 'monthly' | 'yearly'
+
+  // Status & Timeline
+  status: PlatformCompanyStatus
+  current_period_start: string
+  current_period_end: string
+  trial_ends_at?: string | null
+  cancelled_at?: string | null
+  days_remaining: number
+  is_trial: boolean
+  is_expiring_soon: boolean
+  is_past_due: boolean
+  is_expired: boolean
+
+  // Payment
+  payment_method_type?: string | null
+  last_payment_reference?: string | null
+
+  // Limits & Resource Usage
+  custom_limits_override?: Record<string, number> | null
+  users_count: number
+  users_limit: number
+  branches_count: number
+  branches_limit: number
+  storage_used_gb: number
+  storage_limit_gb: number
+  orders_this_month: number
+  orders_limit: number
+  customers_count: number
+  customers_limit: number
+  products_count: number
+  products_limit: number
+
+  // Features
+  features: string[]
+
+  created_at: string
+  updated_at: string
+}
+
+export interface PlatformSubscriptionsOverview {
+  subscriptions: PlatformSubscriptionRecord[]
+  metrics: {
+    total_subscriptions: number
+    total_mrr: number
+    total_arr: number
+    active_paid_count: number
+    trial_count: number
+    expiring_soon_count: number
+    past_due_count: number
+    suspended_count: number
+    cancelled_count: number
+    annual_subscribers_count: number
+    monthly_subscribers_count: number
+    arpa: number
+  }
+}
+

@@ -40,6 +40,8 @@ export async function updateCompanyStatusAction(
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
       revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath('/platform/subscriptions')
+      revalidatePath('/platform/dashboard')
     }
     return result
   } catch (err: any) {
@@ -62,6 +64,7 @@ export async function deleteBusinessAction(companyId: string, reason?: string) {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
       revalidatePath('/platform/dashboard')
+      revalidatePath('/platform/subscriptions')
     }
     return result
   } catch (err: any) {
@@ -84,6 +87,7 @@ export async function deleteAllBusinessesAction(reason?: string) {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
       revalidatePath('/platform/dashboard')
+      revalidatePath('/platform/subscriptions')
     }
     return result
   } catch (err: any) {
@@ -105,16 +109,191 @@ export async function changeCompanyPlanAction(
       return { success: false, error: 'Unauthorized: Insufficient platform permissions to change subscription plan.' }
     }
 
-    const result = await PlatformService.changeCompanyPlan(companyId, newPlan, reason)
+    const result = await PlatformService.changeCompanyPlan(companyId, newPlan, reason, platformUser.id)
     if (result.success) {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
       revalidatePath(`/platform/companies/${companyId}`)
       revalidatePath('/platform/subscriptions')
+      revalidatePath('/platform/dashboard')
     }
     return result
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to change company plan.' }
+  }
+}
+
+/**
+ * Update Tenant Subscription Lifecycle, Plan, Interval, Dates & Quotas
+ */
+export async function updateCompanySubscriptionAction(input: {
+  companyId: string
+  planCodeOrId?: string
+  status?: PlatformCompanyStatus
+  billingInterval?: 'monthly' | 'yearly'
+  customLimitsOverride?: Record<string, number> | null
+  currentPeriodStart?: string
+  currentPeriodEnd?: string
+  trialEndsAt?: string | null
+  paymentMethodType?: string | null
+  lastPaymentReference?: string | null
+  reason?: string
+}) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (
+      !hasPlatformPermission(platformUser, 'subscription.manage') &&
+      !hasPlatformPermission(platformUser, 'subscription.edit') &&
+      !hasPlatformPermission(platformUser, 'tenant.edit')
+    ) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to update subscription.' }
+    }
+
+    const result = await PlatformService.updateCompanySubscription({
+      ...input,
+      callerAdminId: platformUser.id,
+    })
+    if (result.success) {
+      revalidatePath('/platform', 'layout')
+      revalidatePath('/platform/subscriptions')
+      revalidatePath('/platform/companies')
+      revalidatePath(`/platform/companies/${input.companyId}`)
+      revalidatePath('/platform/billing')
+      revalidatePath('/platform/dashboard')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to update subscription.' }
+  }
+}
+
+/**
+ * Quick Extend Trial or Period Action
+ */
+export async function extendSubscriptionTrialAction(
+  companyId: string,
+  days: number,
+  target: 'trial' | 'period' = 'trial',
+  reason?: string
+) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (
+      !hasPlatformPermission(platformUser, 'subscription.manage') &&
+      !hasPlatformPermission(platformUser, 'subscription.edit') &&
+      !hasPlatformPermission(platformUser, 'tenant.edit')
+    ) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to extend subscription period.' }
+    }
+
+    const result = await PlatformService.extendSubscriptionPeriod(
+      companyId,
+      days,
+      target,
+      reason,
+      platformUser.id
+    )
+    if (result.success) {
+      revalidatePath('/platform', 'layout')
+      revalidatePath('/platform/subscriptions')
+      revalidatePath('/platform/companies')
+      revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath('/platform/dashboard')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to extend subscription.' }
+  }
+}
+
+/**
+ * Record Manual/Offline Payment Action
+ */
+export async function recordManualSubscriptionPaymentAction(
+  companyId: string,
+  payment: {
+    amount: number
+    billingInterval: 'monthly' | 'yearly'
+    paymentGateway: string
+    transactionRef: string
+    extendPeriodMonths?: number
+    reason?: string
+  }
+) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (
+      !hasPlatformPermission(platformUser, 'subscription.manage') &&
+      !hasPlatformPermission(platformUser, 'subscription.edit') &&
+      !hasPlatformPermission(platformUser, 'tenant.edit')
+    ) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to record payment.' }
+    }
+
+    const result = await PlatformService.recordManualSubscriptionPayment(
+      companyId,
+      payment,
+      platformUser.id
+    )
+    if (result.success) {
+      revalidatePath('/platform', 'layout')
+      revalidatePath('/platform/subscriptions')
+      revalidatePath('/platform/companies')
+      revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath('/platform/billing')
+      revalidatePath('/platform/dashboard')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to record manual payment.' }
+  }
+}
+
+/**
+ * Override Custom Resource Limits Action
+ */
+export async function overrideSubscriptionLimitsAction(
+  companyId: string,
+  customLimits: Record<string, number> | null,
+  reason?: string
+) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (
+      !hasPlatformPermission(platformUser, 'subscription.manage') &&
+      !hasPlatformPermission(platformUser, 'subscription.edit') &&
+      !hasPlatformPermission(platformUser, 'tenant.edit')
+    ) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to override limits.' }
+    }
+
+    const result = await PlatformService.updateCompanySubscription({
+      companyId,
+      customLimitsOverride: customLimits,
+      reason: reason || 'Custom quota override configured by platform administrator',
+      callerAdminId: platformUser.id,
+    })
+    if (result.success) {
+      revalidatePath('/platform', 'layout')
+      revalidatePath('/platform/subscriptions')
+      revalidatePath('/platform/companies')
+      revalidatePath(`/platform/companies/${companyId}`)
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to override subscription limits.' }
   }
 }
 

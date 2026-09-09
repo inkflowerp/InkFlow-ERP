@@ -32,9 +32,31 @@ import {
   PlatformTenantUserItem,
   PlatformSupportSessionRecord,
   PlatformNotificationItem,
+  PlatformSubscriptionRecord,
+  PlatformSubscriptionsOverview,
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { getCurrentPlatformUser } from '@/lib/auth/platform-auth'
+
+/**
+ * Server Action: Get Platform Subscriptions with Live Usage & Timeline Intelligence
+ */
+export async function getPlatformSubscriptionsAction(filters?: {
+  search?: string
+  status?: string
+  plan?: string
+  interval?: string
+}): Promise<ApiResponse<PlatformSubscriptionsOverview>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getSubscriptions(filters)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch platform subscriptions' }
+  }
+}
 
 /**
  * Server Action: Get Platform Dashboard Overview Metrics

@@ -45,6 +45,8 @@ import {
   SupportAccessLevel,
   PlatformTenantUserItem,
   PlatformNotificationItem,
+  PlatformSubscriptionRecord,
+  PlatformSubscriptionsOverview,
 } from '@/types/platform.types'
 import { PlatformRole } from '@/lib/auth/types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
@@ -1091,12 +1093,650 @@ export class PlatformService {
   }
 
   /**
+   * 5. Subscriptions Management: Get All SaaS Subscriptions with Live Usage & Timeline Intelligence
+   */
+  static async getSubscriptions(filters?: {
+    search?: string
+    status?: string
+    plan?: string
+    interval?: string
+  }): Promise<ApiResponse<PlatformSubscriptionsOverview>> {
+    try {
+      const admin = createAdminClient()
+
+      // 1. Fetch Companies
+      const { data: companies, error: compErr } = await (admin as any)
+        .from('companies')
+        .select(`
+          id,
+          name,
+          name_bn,
+          slug,
+          phone,
+          email,
+          is_active,
+          created_at,
+          updated_at,
+          branches (id),
+          company_users (
+            id,
+            user_id,
+            status,
+            invited_email
+          )
+        `)
+        .order('created_at', { ascending: false })
+
+      if (compErr) {
+        return { success: false, error: compErr.message }
+      }
+
+      const compList = companies || []
+
+      // 2. Fetch all Subscriptions
+      const { data: dbSubs, error: subErr } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*')
+
+      const subList = dbSubs || []
+      const subMap = new Map<string, any>()
+      subList.forEach((s: any) => subMap.set(s.company_id, s))
+
+      // 3. Fetch Plans
+      const { data: dbPlans } = await (admin as any)
+        .from('subscription_plans')
+        .select('*')
+        .order('sort_order', { ascending: true })
+
+      const planList: SubscriptionPlanRecord[] = dbPlans && dbPlans.length > 0 ? dbPlans : DEFAULT_PLANS
+      const planMap = new Map<string, SubscriptionPlanRecord>()
+      planList.forEach((p) => {
+        planMap.set(p.id, p)
+        planMap.set(p.code, p)
+      })
+
+      const fallbackTrialPlan = planMap.get('trial') || DEFAULT_TRIAL_PLAN
+      const fallbackStarterPlan = planMap.get('starter') || DEFAULT_PLANS[1]
+
+      // 4. Fetch Owner Profiles
+      const allUserIds: string[] = []
+      compList.forEach((c: any) => {
+        ;(c.company_users || []).forEach((u: any) => {
+          if (u.user_id) allUserIds.push(u.user_id)
+        })
+      })
+
+      const profileMap = new Map<string, any>()
+      if (allUserIds.length > 0) {
+        try {
+          const { data: profs } = await (admin as any)
+            .from('user_profiles')
+            .select('id, full_name, email, phone')
+            .in('id', allUserIds)
+          ;(profs || []).forEach((p: any) => profileMap.set(p.id, p))
+        } catch {}
+      }
+
+      // 5. Fetch Aggregate Counts for Orders, Customers, Products per company
+      const orderCountsMap = new Map<string, number>()
+      const customerCountsMap = new Map<string, number>()
+      const productCountsMap = new Map<string, number>()
+
+      try {
+        const startOfMonth = new Date()
+        startOfMonth.setDate(1)
+        startOfMonth.setHours(0, 0, 0, 0)
+
+        const [ordersRes, customersRes, productsRes] = await Promise.allSettled([
+          (admin as any).from('sales_orders').select('company_id').gte('created_at', startOfMonth.toISOString()),
+          (admin as any).from('customers').select('company_id'),
+          (admin as any).from('products').select('company_id'),
+        ])
+
+        if (ordersRes.status === 'fulfilled' && ordersRes.value.data) {
+          ordersRes.value.data.forEach((o: any) => {
+            if (o.company_id) orderCountsMap.set(o.company_id, (orderCountsMap.get(o.company_id) || 0) + 1)
+          })
+        }
+        if (customersRes.status === 'fulfilled' && customersRes.value.data) {
+          customersRes.value.data.forEach((c: any) => {
+            if (c.company_id) customerCountsMap.set(c.company_id, (customerCountsMap.get(c.company_id) || 0) + 1)
+          })
+        }
+        if (productsRes.status === 'fulfilled' && productsRes.value.data) {
+          productsRes.value.data.forEach((p: any) => {
+            if (p.company_id) productCountsMap.set(p.company_id, (productCountsMap.get(p.company_id) || 0) + 1)
+          })
+        }
+      } catch {}
+
+      const nowTime = Date.now()
+
+      // 6. Map to PlatformSubscriptionRecord
+      const allSubscriptions: PlatformSubscriptionRecord[] = compList.map((c: any) => {
+        const sub = subMap.get(c.id)
+        let plan: SubscriptionPlanRecord = fallbackStarterPlan
+
+        if (sub?.plan_id && planMap.has(sub.plan_id)) {
+          plan = planMap.get(sub.plan_id)!
+        } else if (sub?.status === 'trial') {
+          plan = fallbackTrialPlan
+        }
+
+        const isTrial = plan.code === 'trial' || sub?.status === 'trial'
+        const rawStatus = !c.is_active
+          ? 'suspended'
+          : (sub?.status as PlatformCompanyStatus) || (isTrial ? 'trial' : 'active')
+
+        const ownerUser = (c.company_users || []).find(
+          (u: any) => profileMap.get(u.user_id)?.full_name || profileMap.get(u.user_id)?.email
+        ) || c.company_users?.[0]
+        const ownerProf = ownerUser?.user_id ? profileMap.get(ownerUser.user_id) : null
+
+        const currentPeriodStart = sub?.current_period_start || c.created_at
+        const currentPeriodEnd = sub?.current_period_end || new Date(nowTime + 30 * 86400000).toISOString()
+        const trialEndsAt = isTrial ? (sub?.trial_ends_at || new Date(nowTime + 14 * 86400000).toISOString()) : sub?.trial_ends_at
+
+        // Expiry timeline calculation
+        const relevantEndDateStr = isTrial && trialEndsAt ? trialEndsAt : currentPeriodEnd
+        const endDateMs = new Date(relevantEndDateStr).getTime()
+        const daysRemaining = Math.ceil((endDateMs - nowTime) / (1000 * 60 * 60 * 24))
+
+        const isExpired = daysRemaining < 0
+        const isExpiringSoon = daysRemaining >= 0 && daysRemaining <= 7
+        const isPastDue = rawStatus === 'past_due' || (!isTrial && isExpired && rawStatus === 'active')
+
+        // Quota overrides & resource counts
+        const customOverrides = sub?.custom_limits_override || null
+        const effectiveUsersLimit = customOverrides?.max_users ?? plan.max_users ?? (isTrial ? 5 : 3)
+        const effectiveBranchesLimit = customOverrides?.max_branches ?? plan.max_branches ?? 1
+        const effectiveStorageLimit = customOverrides?.storage_gb ?? plan.storage_gb ?? (isTrial ? 2 : 1)
+        const effectiveOrdersLimit = customOverrides?.monthly_orders ?? plan.monthly_orders ?? (isTrial ? 100 : 50)
+        const effectiveCustomersLimit = customOverrides?.max_customers ?? plan.max_customers ?? (isTrial ? 200 : 100)
+        const effectiveProductsLimit = customOverrides?.max_products ?? plan.max_products ?? (isTrial ? 200 : 100)
+
+        const billingInterval = (sub?.billing_interval as 'monthly' | 'yearly') || 'monthly'
+        const monthlyRate = isTrial ? 0 : (Number(plan.price_monthly) || 0)
+        const yearlyRate = isTrial ? 0 : (Number(plan.price_yearly) || (monthlyRate * 12))
+
+        return {
+          id: sub?.id || `sub-${c.id}`,
+          company_id: c.id,
+          company_name: c.name,
+          company_slug: c.slug,
+          owner_name: ownerProf?.full_name || (c.name + ' Admin'),
+          owner_email: ownerProf?.email || ownerUser?.invited_email || c.email || (`admin@${c.slug}.com`),
+          owner_phone: ownerProf?.phone || c.phone || '01700-000000',
+          is_active: c.is_active,
+
+          plan_id: plan.id,
+          plan_code: plan.code as PlatformPlanCode,
+          plan_name: plan.name,
+          plan_name_bn: plan.name_bn || plan.name,
+          monthly_rate: monthlyRate,
+          yearly_rate: yearlyRate,
+          billing_interval: billingInterval,
+
+          status: isPastDue ? 'past_due' : rawStatus,
+          current_period_start: currentPeriodStart,
+          current_period_end: currentPeriodEnd,
+          trial_ends_at: trialEndsAt,
+          cancelled_at: sub?.cancelled_at || null,
+          days_remaining: daysRemaining,
+          is_trial: isTrial,
+          is_expiring_soon: isExpiringSoon,
+          is_past_due: isPastDue,
+          is_expired: isExpired,
+
+          payment_method_type: sub?.payment_method_type || null,
+          last_payment_reference: sub?.last_payment_reference || null,
+
+          custom_limits_override: customOverrides,
+          users_count: c.company_users?.length || 0,
+          users_limit: effectiveUsersLimit,
+          branches_count: c.branches?.length || 1,
+          branches_limit: effectiveBranchesLimit,
+          storage_used_gb: 0.05,
+          storage_limit_gb: effectiveStorageLimit,
+          orders_this_month: orderCountsMap.get(c.id) || 0,
+          orders_limit: effectiveOrdersLimit,
+          customers_count: customerCountsMap.get(c.id) || 0,
+          customers_limit: effectiveCustomersLimit,
+          products_count: productCountsMap.get(c.id) || 0,
+          products_limit: effectiveProductsLimit,
+
+          features: (plan.features || []) as string[],
+          created_at: sub?.created_at || c.created_at,
+          updated_at: sub?.updated_at || c.updated_at || c.created_at,
+        }
+      })
+
+      // 7. Calculate Aggregates on the unfiltered set
+      const activePaid = allSubscriptions.filter((s) => s.status === 'active' && !s.is_trial)
+      const trialSubs = allSubscriptions.filter((s) => s.is_trial || s.status === 'trial')
+      const pastDueSubs = allSubscriptions.filter((s) => s.status === 'past_due' || s.is_past_due)
+      const suspendedSubs = allSubscriptions.filter((s) => s.status === 'suspended')
+      const cancelledSubs = allSubscriptions.filter((s) => s.status === 'cancelled')
+      const expiringSoonSubs = allSubscriptions.filter((s) => s.is_expiring_soon && (s.status === 'active' || s.status === 'trial'))
+      const annualSubs = activePaid.filter((s) => s.billing_interval === 'yearly')
+      const monthlySubs = activePaid.filter((s) => s.billing_interval === 'monthly')
+
+      const totalMrr = activePaid.reduce((acc, s) => {
+        const rate = s.billing_interval === 'yearly' ? (s.yearly_rate / 12) : s.monthly_rate
+        return acc + rate
+      }, 0)
+      const totalArr = totalMrr * 12
+      const arpa = activePaid.length > 0 ? Math.round(totalMrr / activePaid.length) : 0
+
+      // 8. Apply User Filters
+      let filtered = allSubscriptions
+      if (filters?.search) {
+        const q = filters.search.toLowerCase().trim()
+        filtered = filtered.filter((s) =>
+          s.company_name.toLowerCase().includes(q) ||
+          s.company_slug.toLowerCase().includes(q) ||
+          s.owner_name.toLowerCase().includes(q) ||
+          s.owner_email.toLowerCase().includes(q) ||
+          s.owner_phone.toLowerCase().includes(q) ||
+          (s.last_payment_reference && s.last_payment_reference.toLowerCase().includes(q))
+        )
+      }
+
+      if (filters?.status && filters.status !== 'all') {
+        if (filters.status === 'expiring_soon') {
+          filtered = filtered.filter((s) => s.is_expiring_soon)
+        } else if (filters.status === 'trial') {
+          filtered = filtered.filter((s) => s.is_trial || s.status === 'trial')
+        } else if (filters.status === 'active') {
+          filtered = filtered.filter((s) => s.status === 'active' && !s.is_trial)
+        } else if (filters.status === 'past_due') {
+          filtered = filtered.filter((s) => s.status === 'past_due' || s.is_past_due)
+        } else {
+          filtered = filtered.filter((s) => s.status === filters.status)
+        }
+      }
+
+      if (filters?.plan && filters.plan !== 'all') {
+        filtered = filtered.filter((s) => s.plan_code === filters.plan || s.plan_id === filters.plan)
+      }
+
+      if (filters?.interval && filters.interval !== 'all') {
+        filtered = filtered.filter((s) => s.billing_interval === filters.interval)
+      }
+
+      return {
+        success: true,
+        data: {
+          subscriptions: filtered,
+          metrics: {
+            total_subscriptions: allSubscriptions.length,
+            total_mrr: totalMrr,
+            total_arr: totalArr,
+            active_paid_count: activePaid.length,
+            trial_count: trialSubs.length,
+            expiring_soon_count: expiringSoonSubs.length,
+            past_due_count: pastDueSubs.length,
+            suspended_count: suspendedSubs.length,
+            cancelled_count: cancelledSubs.length,
+            annual_subscribers_count: annualSubs.length,
+            monthly_subscribers_count: monthlySubs.length,
+            arpa,
+          },
+        },
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to fetch platform subscriptions' }
+    }
+  }
+
+  /**
+   * Update Tenant Subscription Lifecycle, Plan, Interval & Quota Overrides
+   */
+  static async updateCompanySubscription(input: {
+    companyId: string
+    planCodeOrId?: string
+    status?: PlatformCompanyStatus
+    billingInterval?: 'monthly' | 'yearly'
+    customLimitsOverride?: Record<string, number> | null
+    currentPeriodStart?: string
+    currentPeriodEnd?: string
+    trialEndsAt?: string | null
+    paymentMethodType?: string | null
+    lastPaymentReference?: string | null
+    reason?: string
+    callerAdminId?: string
+  }): Promise<ApiResponse<{ companyId: string; updated: boolean }>> {
+    try {
+      const admin = createAdminClient()
+      const {
+        companyId,
+        planCodeOrId,
+        status,
+        billingInterval,
+        customLimitsOverride,
+        currentPeriodStart,
+        currentPeriodEnd,
+        trialEndsAt,
+        paymentMethodType,
+        lastPaymentReference,
+        reason,
+        callerAdminId,
+      } = input
+
+      // Verify company
+      const { data: comp, error: compErr } = await (admin as any)
+        .from('companies')
+        .select('id, name, is_active')
+        .eq('id', companyId)
+        .single()
+
+      if (compErr || !comp) {
+        return { success: false, error: 'Target company not found.' }
+      }
+
+      // Resolve plan if provided
+      let resolvedPlan: SubscriptionPlanRecord | null = null
+      if (planCodeOrId) {
+        const { data: planData } = await (admin as any)
+          .from('subscription_plans')
+          .select('*')
+          .or(`id.eq.${planCodeOrId},code.eq.${planCodeOrId}`)
+          .single()
+        resolvedPlan = planData
+      }
+
+      // Check existing subscription
+      const { data: existingSub } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*')
+        .eq('company_id', companyId)
+        .maybeSingle()
+
+      const nowIso = new Date().toISOString()
+      const updatePayload: any = {
+        updated_at: nowIso,
+      }
+
+      if (resolvedPlan) {
+        updatePayload.plan_id = resolvedPlan.id
+      }
+      if (status) {
+        updatePayload.status = status
+      }
+      if (billingInterval) {
+        updatePayload.billing_interval = billingInterval
+      }
+      if (customLimitsOverride !== undefined) {
+        updatePayload.custom_limits_override = customLimitsOverride
+      }
+      if (currentPeriodStart) {
+        updatePayload.current_period_start = currentPeriodStart
+      }
+      if (currentPeriodEnd) {
+        updatePayload.current_period_end = currentPeriodEnd
+      }
+      if (trialEndsAt !== undefined) {
+        updatePayload.trial_ends_at = trialEndsAt
+      }
+      if (paymentMethodType !== undefined) {
+        updatePayload.payment_method_type = paymentMethodType
+      }
+      if (lastPaymentReference !== undefined) {
+        updatePayload.last_payment_reference = lastPaymentReference
+      }
+
+      if (existingSub) {
+        const { error: updateErr } = await (admin as any)
+          .from('company_subscriptions')
+          .update(updatePayload)
+          .eq('company_id', companyId)
+
+        if (updateErr) {
+          return { success: false, error: `Failed to update subscription: ${updateErr.message}` }
+        }
+      } else {
+        // Insert new subscription record
+        const insertPayload: any = {
+          company_id: companyId,
+          plan_id: resolvedPlan?.id || (await this.getPlans()).data?.[0]?.id,
+          status: status || 'trial',
+          billing_interval: billingInterval || 'monthly',
+          current_period_start: currentPeriodStart || nowIso,
+          current_period_end: currentPeriodEnd || new Date(Date.now() + 30 * 86400000).toISOString(),
+          trial_ends_at: trialEndsAt || new Date(Date.now() + 14 * 86400000).toISOString(),
+          custom_limits_override: customLimitsOverride || {},
+          payment_method_type: paymentMethodType || null,
+          last_payment_reference: lastPaymentReference || null,
+          created_at: nowIso,
+          updated_at: nowIso,
+        }
+
+        const { error: insertErr } = await (admin as any)
+          .from('company_subscriptions')
+          .insert(insertPayload)
+
+        if (insertErr) {
+          return { success: false, error: `Failed to create subscription record: ${insertErr.message}` }
+        }
+      }
+
+      // Sync company active state if status implies suspension/reactivation
+      if (status) {
+        if (status === 'suspended' || status === 'cancelled') {
+          await (admin as any).from('companies').update({
+            is_active: false,
+            suspension_reason: reason || `Subscription status set to ${status}`,
+            suspended_at: nowIso,
+            updated_at: nowIso,
+          }).eq('id', companyId)
+        } else if (status === 'active' || status === 'trial' || status === 'grace_period') {
+          await (admin as any).from('companies').update({
+            is_active: true,
+            suspension_reason: null,
+            updated_at: nowIso,
+          }).eq('id', companyId)
+        }
+      }
+
+      // Audit Logging
+      await this.recordAuditLog(
+        'subscription.update',
+        'subscription',
+        existingSub?.id || companyId,
+        companyId,
+        callerAdminId,
+        {
+          plan: resolvedPlan?.code || existingSub?.plan_id,
+          status: status || existingSub?.status,
+          billing_interval: billingInterval || existingSub?.billing_interval,
+          custom_limits_override: customLimitsOverride,
+          reason,
+        },
+        existingSub,
+        updatePayload,
+        reason || `Platform updated subscription for ${comp.name}`
+      )
+
+      return { success: true, data: { companyId, updated: true } }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to update subscription' }
+    }
+  }
+
+  /**
+   * Extend Trial or Subscription Period by N Days
+   */
+  static async extendSubscriptionPeriod(
+    companyId: string,
+    days: number,
+    target: 'trial' | 'period' = 'trial',
+    reason?: string,
+    callerAdminId?: string
+  ): Promise<ApiResponse<{ companyId: string; newEndDate: string }>> {
+    try {
+      const admin = createAdminClient()
+
+      const { data: sub, error: subErr } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*')
+        .eq('company_id', companyId)
+        .maybeSingle()
+
+      if (subErr || !sub) {
+        return { success: false, error: 'Subscription record not found for company.' }
+      }
+
+      const now = Date.now()
+      let newDateIso = ''
+
+      if (target === 'trial') {
+        const baseMs = sub.trial_ends_at ? Math.max(new Date(sub.trial_ends_at).getTime(), now) : now
+        const newMs = baseMs + days * 86400000
+        newDateIso = new Date(newMs).toISOString()
+
+        await (admin as any)
+          .from('company_subscriptions')
+          .update({
+            trial_ends_at: newDateIso,
+            status: 'trial',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('company_id', companyId)
+
+        // Ensure company is active
+        await (admin as any).from('companies').update({
+          is_active: true,
+          suspension_reason: null,
+          updated_at: new Date().toISOString(),
+        }).eq('id', companyId)
+      } else {
+        const baseMs = sub.current_period_end ? Math.max(new Date(sub.current_period_end).getTime(), now) : now
+        const newMs = baseMs + days * 86400000
+        newDateIso = new Date(newMs).toISOString()
+
+        await (admin as any)
+          .from('company_subscriptions')
+          .update({
+            current_period_end: newDateIso,
+            status: 'active',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('company_id', companyId)
+
+        await (admin as any).from('companies').update({
+          is_active: true,
+          suspension_reason: null,
+          updated_at: new Date().toISOString(),
+        }).eq('id', companyId)
+      }
+
+      await this.recordAuditLog(
+        target === 'trial' ? 'subscription.extend_trial' : 'subscription.extend_period',
+        'subscription',
+        sub.id,
+        companyId,
+        callerAdminId,
+        { days_extended: days, target, new_end_date: newDateIso, reason },
+        { trial_ends_at: sub.trial_ends_at, current_period_end: sub.current_period_end },
+        { new_end_date: newDateIso },
+        reason || `Extended ${target} by ${days} days`
+      )
+
+      return { success: true, data: { companyId, newEndDate: newDateIso } }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to extend subscription period' }
+    }
+  }
+
+  /**
+   * Record Offline/Manual Payment & Advance Subscription Period
+   */
+  static async recordManualSubscriptionPayment(
+    companyId: string,
+    payment: {
+      amount: number
+      billingInterval: 'monthly' | 'yearly'
+      paymentGateway: string
+      transactionRef: string
+      extendPeriodMonths?: number
+      reason?: string
+    },
+    callerAdminId?: string
+  ): Promise<ApiResponse<{ companyId: string; nextRenewalDate: string }>> {
+    try {
+      const admin = createAdminClient()
+
+      const { data: sub, error: subErr } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*, subscription_plans(*)')
+        .eq('company_id', companyId)
+        .maybeSingle()
+
+      if (subErr || !sub) {
+        return { success: false, error: 'Subscription record not found for company.' }
+      }
+
+      const months = payment.extendPeriodMonths || (payment.billingInterval === 'yearly' ? 12 : 1)
+      const nowMs = Date.now()
+      const baseMs = sub.current_period_end ? Math.max(new Date(sub.current_period_end).getTime(), nowMs) : nowMs
+      const nextEndDate = new Date(baseMs + months * 30 * 86400000).toISOString()
+      const nowIso = new Date().toISOString()
+
+      // Update Subscription
+      await (admin as any)
+        .from('company_subscriptions')
+        .update({
+          status: 'active',
+          billing_interval: payment.billingInterval,
+          payment_method_type: payment.paymentGateway,
+          last_payment_reference: payment.transactionRef,
+          current_period_start: nowIso,
+          current_period_end: nextEndDate,
+          updated_at: nowIso,
+        })
+        .eq('company_id', companyId)
+
+      // Ensure company is active
+      await (admin as any).from('companies').update({
+        is_active: true,
+        suspension_reason: null,
+        updated_at: nowIso,
+      }).eq('id', companyId)
+
+      // Record Audit Log
+      await this.recordAuditLog(
+        'subscription.payment_recorded',
+        'subscription',
+        sub.id,
+        companyId,
+        callerAdminId,
+        {
+          amount_bdt: payment.amount,
+          billing_interval: payment.billingInterval,
+          gateway: payment.paymentGateway,
+          transaction_ref: payment.transactionRef,
+          next_renewal_date: nextEndDate,
+          reason: payment.reason,
+        },
+        { status: sub.status, current_period_end: sub.current_period_end },
+        { status: 'active', current_period_end: nextEndDate, payment_ref: payment.transactionRef },
+        payment.reason || `Payment of ৳${payment.amount} recorded via ${payment.paymentGateway}`
+      )
+
+      return { success: true, data: { companyId, nextRenewalDate: nextEndDate } }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to record subscription payment' }
+    }
+  }
+
+  /**
    * 5. Lifecycle: Change Tenant Plan
    */
   static async changeCompanyPlan(
     companyId: string,
     newPlanCodeOrId: string,
-    reason?: string
+    reason?: string,
+    callerAdminId?: string
   ): Promise<ApiResponse<{ companyId: string; newPlan: string }>> {
     try {
       const admin = createAdminClient()
@@ -1113,34 +1753,64 @@ export class PlatformService {
         return { success: false, error: 'Target plan does not exist or is inactive.' }
       }
 
-      // Update subscription record
-      const { error: subErr } = await (admin as any)
+      // Check existing subscription
+      const { data: existingSub } = await (admin as any)
         .from('company_subscriptions')
-        .update({
-          plan_id: plan.id,
-          updated_at: new Date().toISOString(),
-        })
+        .select('id, status')
         .eq('company_id', companyId)
+        .maybeSingle()
 
-      if (subErr) {
-        return { success: false, error: `Failed to update tenant subscription: ${subErr.message}` }
+      const nowIso = new Date().toISOString()
+      const newStatus = plan.code === 'trial' ? 'trial' : (existingSub?.status === 'trial' ? 'active' : existingSub?.status || 'active')
+
+      if (!existingSub) {
+        const { error: insErr } = await (admin as any)
+          .from('company_subscriptions')
+          .insert({
+            company_id: companyId,
+            plan_id: plan.id,
+            status: newStatus,
+            billing_interval: 'monthly',
+            current_period_start: nowIso,
+            current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+            trial_ends_at: plan.code === 'trial' ? new Date(Date.now() + 14 * 86400000).toISOString() : null,
+            created_at: nowIso,
+            updated_at: nowIso,
+          })
+
+        if (insErr) {
+          return { success: false, error: `Failed to create subscription: ${insErr.message}` }
+        }
+      } else {
+        const { error: subErr } = await (admin as any)
+          .from('company_subscriptions')
+          .update({
+            plan_id: plan.id,
+            status: newStatus,
+            updated_at: nowIso,
+          })
+          .eq('company_id', companyId)
+
+        if (subErr) {
+          return { success: false, error: `Failed to update tenant subscription: ${subErr.message}` }
+        }
       }
 
       // Record platform audit
       await this.recordAuditLog(
         'company.change_plan',
         'subscription',
+        existingSub?.id || companyId,
         companyId,
-        companyId,
-        undefined,
+        callerAdminId,
         {
           new_plan_id: plan.id,
           new_plan_code: plan.code,
           new_plan_name: plan.name,
           reason,
         },
-        null,
-        { plan: plan.code },
+        existingSub,
+        { plan: plan.code, status: newStatus },
         reason || `Tenant upgraded/changed to plan ${plan.name}`
       )
 
