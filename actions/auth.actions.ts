@@ -31,6 +31,8 @@ export async function loginAction(formData: FormData) {
 
   const result = await AuthService.signIn(email, password)
   if (!result.success || !result.data) {
+    const cookieStore = await cookies()
+    cookieStore.delete(TENANT_SESSION_COOKIE)
     return result
   }
 
@@ -79,6 +81,8 @@ export async function signInAction(email: string, pass: string) {
 
   const result = await AuthService.signIn(email, pass)
   if (!result.success || !result.data) {
+    const cookieStore = await cookies()
+    cookieStore.delete(TENANT_SESSION_COOKIE)
     return result
   }
 

@@ -201,11 +201,11 @@ function simulateTenantLogin(email: string, pass: string, targetSlugOrId?: strin
   const platformAdmin = PLATFORM_ADMIN_DIRECTORY.find((p) => p.email.toLowerCase() === normalizedEmail && p.isActive)
   const tenantUser = TENANT_USER_DIRECTORY.find((t) => t.email.toLowerCase() === normalizedEmail)
 
-  if (platformAdmin && !tenantUser) {
-    // Hard boundary rejection: Platform user attempting tenant login
+  if (platformAdmin) {
+    // Hard boundary rejection: Platform user attempting tenant login unconditionally denied
     return {
       success: false,
-      error: 'This account is a Platform Administrator account and cannot access the business workspace. Please sign in via the Platform Control Panel at /platform/login.',
+      error: 'This account does not have access to the business workspace.',
     }
   }
 
@@ -246,6 +246,12 @@ function simulateRequirePlatformGuard(userId: string): { authorized: boolean; er
 }
 
 function simulateRequireTenantGuard(userId: string, requestedCompanySlugOrId: string): { authorized: boolean; error?: string } {
+  // Unconditional rejection: Platform users cannot satisfy tenant guard
+  const isPlatformAdmin = PLATFORM_ADMIN_DIRECTORY.some((p) => p.userId === userId && p.isActive)
+  if (isPlatformAdmin) {
+    return { authorized: false, error: 'REDIRECT_403_TENANT' }
+  }
+
   const company = TENANT_DIRECTORY.find((c) => c.slug === requestedCompanySlugOrId || c.id === requestedCompanySlugOrId)
   if (!company || !company.isActive) {
     return { authorized: false, error: 'REDIRECT_403_TENANT' }
@@ -293,14 +299,13 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
     test('2.1 Platform Owner cannot log in via Tenant Login (/login)', () => {
       const res = simulateTenantLogin('haji.shamim@printerp.com.bd', 'RootPass123!')
       assert.strictEqual(res.success, false)
-      assert.ok(res.error?.includes('Platform Administrator account'))
-      assert.ok(res.error?.includes('/platform/login'))
+      assert.strictEqual(res.error, 'This account does not have access to the business workspace.')
     })
 
     test('2.2 Platform Admin cannot log in via Tenant Login (/login)', () => {
       const res = simulateTenantLogin('ops.lead@printerp.com.bd', 'AdminPass123!')
       assert.strictEqual(res.success, false)
-      assert.ok(res.error?.includes('Platform Administrator account'))
+      assert.strictEqual(res.error, 'This account does not have access to the business workspace.')
     })
 
     test('2.3 Platform User direct URL navigation to /[tenantSlug]/dashboard is REJECTED with 403', () => {

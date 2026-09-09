@@ -115,6 +115,19 @@ export async function getCurrentTenant(requestedSlugOrId?: string): Promise<Tena
       return null
     }
 
+    // Hard Security Boundary: Platform Administrator accounts cannot resolve tenant context as a tenant user
+    const adminClient = createAdminClient()
+    const { data: platformAdmin } = await (adminClient as any)
+      .from('platform_admins')
+      .select('id')
+      .eq('user_id', resolvedUserId)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (platformAdmin) {
+      return null
+    }
+
     const membership = await TenantRepository.resolveUserMembership(resolvedUserId, requestedSlugOrId)
     if (!membership) {
       // User is authenticated, but has no active membership in requested tenant

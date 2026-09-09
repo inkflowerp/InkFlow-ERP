@@ -116,55 +116,64 @@ export class TenantRepository {
       // Non-blocking fallback for subscription initialization
     }
 
-    // If ownerUserId is provided and valid UUID, link as Business Owner
+    // If ownerUserId is provided and valid UUID, link as Business Owner (provided user is NOT a platform administrator)
     const isUuid = ownerUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerUserId)
     if (ownerUserId && isUuid) {
-      const { data: compUser } = await (admin as any)
-        .from('company_users')
-        .upsert(
-          {
-            company_id: newCompany.id,
-            user_id: ownerUserId,
-            branch_id: mainBranch?.id || null,
-            status: 'active',
-            invited_email: companyData.email || null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'company_id,user_id' }
-        )
-        .select()
-        .single()
-
-      // Look for business_owner role or owner role
-      const { data: ownerRole } = await (admin as any)
-        .from('roles')
+      const { data: isPlatformAdmin } = await (admin as any)
+        .from('platform_admins')
         .select('id')
-        .or('slug.eq.business_owner,slug.eq.owner,id.eq.00000000-0000-0000-0000-000000000001')
+        .eq('user_id', ownerUserId)
+        .eq('is_active', true)
         .maybeSingle()
 
-      if (ownerRole && compUser) {
-        await (admin as any).from('user_roles').upsert(
-          {
-            company_user_id: compUser.id,
-            role_id: ownerRole.id,
-            company_id: newCompany.id,
-          },
-          { onConflict: 'company_user_id,role_id' }
-        )
-      }
+      if (!isPlatformAdmin) {
+        const { data: compUser } = await (admin as any)
+          .from('company_users')
+          .upsert(
+            {
+              company_id: newCompany.id,
+              user_id: ownerUserId,
+              branch_id: mainBranch?.id || null,
+              status: 'active',
+              invited_email: companyData.email || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'company_id,user_id' }
+          )
+          .select()
+          .single()
 
-      try {
-        await (admin as any).from('tenant_memberships').upsert({
-          company_id: newCompany.id,
-          user_id: ownerUserId,
-          role: 'owner',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-      } catch {
-        // Non-blocking
+        // Look for business_owner role or owner role
+        const { data: ownerRole } = await (admin as any)
+          .from('roles')
+          .select('id')
+          .or('slug.eq.business_owner,slug.eq.owner,id.eq.00000000-0000-0000-0000-000000000001')
+          .maybeSingle()
+
+        if (ownerRole && compUser) {
+          await (admin as any).from('user_roles').upsert(
+            {
+              company_user_id: compUser.id,
+              role_id: ownerRole.id,
+              company_id: newCompany.id,
+            },
+            { onConflict: 'company_user_id,role_id' }
+          )
+        }
+
+        try {
+          await (admin as any).from('tenant_memberships').upsert({
+            company_id: newCompany.id,
+            user_id: ownerUserId,
+            role: 'owner',
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+        } catch {
+          // Non-blocking
+        }
       }
     }
 

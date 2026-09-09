@@ -55,13 +55,24 @@ export class AuthService {
       const user = authData.user
       const admin = createAdminClient()
 
-      // 1. Check if user is a Platform Administrator trying to log into the tenant workspace
+      // 1. HARD SECURITY BOUNDARY: Platform Administrator accounts are strictly forbidden from logging into tenant accounts
       const { data: platformAdmin } = await (admin as any)
         .from('platform_admins')
         .select('id, is_active')
-        .eq('user_id', user.id)
+        .or(`user_id.eq.${user.id},email.ilike.${normalizedEmail}`)
         .eq('is_active', true)
         .maybeSingle()
+
+      if (platformAdmin) {
+        await supabase.auth.signOut()
+        if (typeof document !== 'undefined') {
+          document.cookie = `${TENANT_SESSION_COOKIE}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;`
+        }
+        return {
+          success: false,
+          error: 'This account does not have access to the business workspace.',
+        }
+      }
 
       // 2. Resolve tenant membership and calculate effective permissions across responsibilities
       let membership = await TenantRepository.resolveUserMembership(user.id, targetCompanySlug)
@@ -69,15 +80,6 @@ export class AuthService {
       if (!membership) {
         // Check if there is any company membership for this user
         membership = await TenantRepository.resolveUserMembership(user.id)
-      }
-
-      // Hard Boundary: Platform Administrator accounts cannot enter tenant workspace without valid tenant membership
-      if (platformAdmin && !membership) {
-        await supabase.auth.signOut()
-        return {
-          success: false,
-          error: 'This account is a Platform Administrator account and cannot access the business workspace. Please sign in via the Platform Control Panel at /platform/login.',
-        }
       }
 
       if (!membership) {
