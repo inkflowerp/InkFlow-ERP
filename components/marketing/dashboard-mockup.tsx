@@ -185,8 +185,8 @@ export function DashboardMockup() {
           </div>
           <div className="hidden sm:flex items-center gap-2 ml-4 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-[11px] text-slate-400 font-mono">
             <span className="text-emerald-400">https://</span>
-            <span className="text-slate-200">app.printerp.com.bd</span>
-            <span className="text-slate-500">/padma-digital/{activeTab}</span>
+            <span className="text-slate-200">app.inkflow.com.bd</span>
+            <span className="text-slate-500">/inkflow/{activeTab}</span>
           </div>
         </div>
 
@@ -196,7 +196,7 @@ export function DashboardMockup() {
             LIVE FLOOR SYNC
           </span>
           <span className="text-slate-400 text-[11px] font-mono hidden md:inline">
-            Padma Digital Press & Signage
+            InkFlow ERP Cloud
           </span>
         </div>
       </div>

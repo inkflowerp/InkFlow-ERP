@@ -28,7 +28,7 @@ export function TopNav() {
   const { company, currentRole, currentUser } = useTenant()
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false)
 
-  const slug = company?.slug || 'padma-digital'
+  const slug = company?.slug || 'app'
 
   const quickActions = [
     {

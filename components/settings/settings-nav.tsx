@@ -22,7 +22,7 @@ export function SettingsNav() {
   const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'padma-digital'
+  const slug = company?.slug || 'app'
 
   const links = [
     {

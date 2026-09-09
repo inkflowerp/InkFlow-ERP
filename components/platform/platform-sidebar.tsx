@@ -287,7 +287,7 @@ export function PlatformSidebar() {
           </div>
 
           <Link
-            href="/padma-digital/dashboard"
+            href="/dashboard"
             onClick={() => {
               if (isMobile) setMobileOpen(false)
             }}
@@ -295,15 +295,15 @@ export function PlatformSidebar() {
           >
             <span className="flex items-center gap-2">
               <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform text-indigo-400" />
-              <span>Exit to Tenant App</span>
+              <span>Exit to App</span>
             </span>
             <ExternalLink className="h-3 w-3 text-slate-500 group-hover:text-slate-300" />
           </Link>
         </>
       ) : (
         <Link
-          href="/padma-digital/dashboard"
-          title="Exit to Tenant App"
+          href="/dashboard"
+          title="Exit to App"
           className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 transition-colors"
         >
           <ArrowLeft className="h-4 w-4 text-indigo-400" />

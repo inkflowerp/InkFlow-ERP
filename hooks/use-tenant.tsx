@@ -288,7 +288,7 @@ export function TenantProvider({
       initialSlug ||
       activeSession?.companySlug ||
       initialTenantContext?.companySlug ||
-      'padma-digital'
+      ''
     const resolved = resolveCompanyBySlug(targetSlug)
     if (activeSession?.companyName) {
       setCompany({

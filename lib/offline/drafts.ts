@@ -7,20 +7,20 @@ import { OfflineDraft, OfflineFormType } from '@/types/offline.types'
 
 const DRAFTS_STORAGE_KEY = 'printerp_offline_drafts'
 
-const INITIAL_DEMO_DRAFTS: OfflineDraft[] = []
+const INITIAL_EMPTY_DRAFTS: OfflineDraft[] = []
 
 export class OfflineDraftManager {
   static getDrafts(): OfflineDraft[] {
-    if (typeof window === 'undefined') return INITIAL_DEMO_DRAFTS
+    if (typeof window === 'undefined') return INITIAL_EMPTY_DRAFTS
     try {
       const stored = localStorage.getItem(DRAFTS_STORAGE_KEY)
       if (!stored) {
-        localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(INITIAL_DEMO_DRAFTS))
-        return INITIAL_DEMO_DRAFTS
+        localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(INITIAL_EMPTY_DRAFTS))
+        return INITIAL_EMPTY_DRAFTS
       }
       return JSON.parse(stored)
     } catch {
-      return INITIAL_DEMO_DRAFTS
+      return INITIAL_EMPTY_DRAFTS
     }
   }
 

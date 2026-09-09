@@ -45,70 +45,74 @@ export function createSmsProvider(type: SmsProviderType): SmsProvider {
   }
 }
 
-// Demo In-App Notifications
-export const DEMO_IN_APP_NOTIFICATIONS: InAppNotificationRecord[] = []
+// Default In-App Notifications
+export const DEFAULT_IN_APP_NOTIFICATIONS: InAppNotificationRecord[] = []
+export const DEMO_IN_APP_NOTIFICATIONS = DEFAULT_IN_APP_NOTIFICATIONS
 
 // Channel Integrations default list
-export const DEMO_CHANNEL_CONFIGS: ChannelConfigRecord[] = []
+export const DEFAULT_CHANNEL_CONFIGS: ChannelConfigRecord[] = []
+export const DEMO_CHANNEL_CONFIGS = DEFAULT_CHANNEL_CONFIGS
 
-// Demo Bilingual Message Templates
-export const DEMO_MESSAGE_TEMPLATES: MessageTemplateRecord[] = [
+// Production Bilingual Message Templates
+export const DEFAULT_MESSAGE_TEMPLATES: MessageTemplateRecord[] = [
   {
     id: 'tpl-01',
-    company_id: 'c-01',
+    company_id: 'default',
     template_key: 'quotation_sent',
     name: 'Quotation Submission (কোটেশন প্রেরণ)',
     channel: 'all',
-    body_en: 'Dear {{customer_name}}, your quotation #{{invoice_number}} for ৳ {{amount}} from Padma Digital Printing is ready. View online: https://padmaprint.com/q/{{invoice_number}}',
-    body_bn: 'প্রিয় {{customer_name}}, পদ্মা ডিজিটাল প্রিন্টিং থেকে আপনার কোটেশন #{{invoice_number}} (৳ {{amount}}) তৈরি হয়েছে। দেখতে ভিজিট করুন: https://padmaprint.com/q/{{invoice_number}}',
-    created_at: '2024-08-01T00:00:00Z',
-    updated_at: '2024-08-01T00:00:00Z',
+    body_en: 'Dear {{customer_name}}, your quotation #{{invoice_number}} for ৳ {{amount}} from {{company_name}} is ready.',
+    body_bn: 'প্রিয় {{customer_name}}, {{company_name}} থেকে আপনার কোটেশন #{{invoice_number}} (৳ {{amount}}) তৈরি হয়েছে।',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: 'tpl-02',
-    company_id: 'c-01',
+    company_id: 'default',
     template_key: 'order_confirmed',
     name: 'Sales Order Confirmation (অর্ডার নিশ্চিতকরণ)',
     channel: 'all',
     body_en: 'Dear {{customer_name}}, your order #{{order_number}} is confirmed in production. Estimated delivery: {{delivery_date}}. Thank you!',
     body_bn: 'প্রিয় {{customer_name}}, আপনার অর্ডার #{{order_number}} নিশ্চিত করে প্রোডাকশনে দেওয়া হয়েছে। আনুমানিক ডেলিভারি তারিখ: {{delivery_date}}। ধন্যবাদ!',
-    created_at: '2024-08-01T00:00:00Z',
-    updated_at: '2024-08-01T00:00:00Z',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: 'tpl-03',
-    company_id: 'c-01',
+    company_id: 'default',
     template_key: 'payment_received',
     name: 'Payment Receipt Acknowledgement (মানি রিসিট)',
     channel: 'all',
-    body_en: 'Payment Received: ৳ {{amount}} acknowledged for Invoice #{{invoice_number}} by Padma Digital. Remaining Due: ৳ {{due_amount}}.',
-    body_bn: 'পেমেন্ট রিসিভ: পদ্মা ডিজিটাল ইনভয়েস #{{invoice_number}} বাবদ ৳ {{amount}} গ্রহণ করেছে। অবশিষ্ট বাকি: ৳ {{due_amount}}।',
-    created_at: '2024-08-01T00:00:00Z',
-    updated_at: '2024-08-01T00:00:00Z',
+    body_en: 'Payment Received: ৳ {{amount}} acknowledged for Invoice #{{invoice_number}} by {{company_name}}. Remaining Due: ৳ {{due_amount}}.',
+    body_bn: 'পেমেন্ট রিসিভ: {{company_name}} ইনভয়েস #{{invoice_number}} বাবদ ৳ {{amount}} গ্রহণ করেছে। অবশিষ্ট বাকি: ৳ {{due_amount}}।',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: 'tpl-04',
-    company_id: 'c-01',
+    company_id: 'default',
     template_key: 'delivery_dispatched',
     name: 'Delivery Challan Dispatch (চালান প্রেরণ)',
     channel: 'all',
     body_en: 'Dear {{customer_name}}, your finished job under Order #{{order_number}} is out for delivery today ({{delivery_date}}). Driver will contact on arrival.',
     body_bn: 'প্রিয় {{customer_name}}, অর্ডার #{{order_number}} এর মালামাল আজ ({{delivery_date}}) ডেলিভারির জন্য গাড়িতে উঠানো হয়েছে। পৌঁছানোর পর চালক যোগাযোগ করবেন।',
-    created_at: '2024-08-01T00:00:00Z',
-    updated_at: '2024-08-01T00:00:00Z',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: 'tpl-05',
-    company_id: 'c-01',
+    company_id: 'default',
     template_key: 'overdue_reminder',
     name: 'Overdue Payment Reminder (বাকি তাগাদা)',
     channel: 'all',
     body_en: 'Urgent: Invoice #{{invoice_number}} has an overdue balance of ৳ {{due_amount}} for {{customer_name}}. Kindly settle at your earliest convenience.',
     body_bn: 'জরুরী তাগাদা: ইনভয়েস #{{invoice_number}} এর বকেয়া ৳ {{due_amount}} মেয়াদোত্তীর্ণ হয়েছে। অনুগ্রহপূর্বক দ্রুত পরিশোধের অনুরোধ করা হচ্ছে।',
-    created_at: '2024-08-01T00:00:00Z',
-    updated_at: '2024-08-01T00:00:00Z',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
 ]
+export const DEMO_MESSAGE_TEMPLATES = DEFAULT_MESSAGE_TEMPLATES
 
-// Demo Communication Audit Logs
-export const DEMO_COMMUNICATION_LOGS: CommunicationLogRecord[] = []
+// Communication Audit Logs
+export const DEFAULT_COMMUNICATION_LOGS: CommunicationLogRecord[] = []
+export const DEMO_COMMUNICATION_LOGS = DEFAULT_COMMUNICATION_LOGS

@@ -7,20 +7,20 @@ import { OfflineSyncItem, OfflineActionType, OfflineSyncStatus } from '@/types/o
 
 const QUEUE_STORAGE_KEY = 'printerp_offline_sync_queue'
 
-const INITIAL_DEMO_QUEUE: OfflineSyncItem[] = []
+const INITIAL_EMPTY_QUEUE: OfflineSyncItem[] = []
 
 export class OfflineSyncManager {
   static getQueue(): OfflineSyncItem[] {
-    if (typeof window === 'undefined') return INITIAL_DEMO_QUEUE
+    if (typeof window === 'undefined') return INITIAL_EMPTY_QUEUE
     try {
       const stored = localStorage.getItem(QUEUE_STORAGE_KEY)
       if (!stored) {
-        localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(INITIAL_DEMO_QUEUE))
-        return INITIAL_DEMO_QUEUE
+        localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(INITIAL_EMPTY_QUEUE))
+        return INITIAL_EMPTY_QUEUE
       }
       return JSON.parse(stored)
     } catch {
-      return INITIAL_DEMO_QUEUE
+      return INITIAL_EMPTY_QUEUE
     }
   }
 

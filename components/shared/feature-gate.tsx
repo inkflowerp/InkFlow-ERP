@@ -6,20 +6,20 @@ import { Lock, Sparkles, ArrowRight, ShieldAlert } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useSubscription } from '@/hooks/use-subscription'
 import { FeatureCode, PlanCode } from '@/types/subscription.types'
 import {
   checkFeatureAccess,
-  DEMO_TENANT_SUBSCRIPTION,
   DEFAULT_PLANS,
 } from '@/services/subscription.service'
 
 export function useFeatureGate(feature: FeatureCode) {
-  // In demo state, default to the tenant's current plan (Business)
-  const currentPlan: PlanCode = DEMO_TENANT_SUBSCRIPTION.plan_code
-  const hasAccess = checkFeatureAccess(currentPlan, feature)
+  const { currentPlanCode, allPlans } = useSubscription()
+  const currentPlan: PlanCode = currentPlanCode || 'starter'
+  const hasAccess = checkFeatureAccess(currentPlan, feature, allPlans)
 
   // Find lowest plan that supports this feature
-  const supportingPlan = DEFAULT_PLANS.find((p) => p.features.includes(feature))
+  const supportingPlan = (allPlans || DEFAULT_PLANS).find((p) => p.features.includes(feature))
   const requiredPlan: PlanCode = supportingPlan ? supportingPlan.code : 'enterprise'
 
   return {
@@ -37,7 +37,7 @@ interface FeatureGateProps {
 
 export function FeatureGate({ feature, children, fallback }: FeatureGateProps) {
   const { company } = useTenant()
-  const slug = company?.slug || 'padma-digital'
+  const slug = company?.slug || 'app'
   const { hasAccess, requiredPlan } = useFeatureGate(feature)
 
   if (hasAccess) {

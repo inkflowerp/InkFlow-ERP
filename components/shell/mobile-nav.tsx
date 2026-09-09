@@ -46,7 +46,7 @@ export function MobileNav() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
 
-  const tenantSlug = company?.slug || 'padma-digital'
+  const tenantSlug = company?.slug || 'app'
   const navSections = getNavigationConfig(tenantSlug)
 
   return (

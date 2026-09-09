@@ -71,7 +71,7 @@ interface CommandPaletteProps {
 export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: CommandPaletteProps) {
   const router = useRouter()
   const { company } = useTenant()
-  const tenantSlug = company?.slug || 'padma-digital'
+  const tenantSlug = company?.slug || 'app'
 
   const [query, setQuery] = useState('')
   const [selectedEntity, setSelectedEntity] = useState<string>('all')

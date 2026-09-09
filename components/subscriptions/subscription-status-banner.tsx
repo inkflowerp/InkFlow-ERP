@@ -21,7 +21,7 @@ export function SubscriptionStatusBanner() {
     useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'padma-digital'
+  const slug = company?.slug || 'app'
 
   if (subscription.status === 'active') {
     return null

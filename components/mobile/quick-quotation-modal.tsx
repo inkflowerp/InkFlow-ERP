@@ -29,7 +29,7 @@ const MATERIAL_PRESETS = [
   { id: 'mat-05', name: 'Foam Board 5mm Mounted', rate: 45.0, unit: 'sft', category: 'board' },
 ]
 
-export function QuickQuotationModal({ open, onClose, tenantSlug = 'padma-digital' }: QuickQuotationModalProps) {
+export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: QuickQuotationModalProps) {
   const [selectedMaterial, setSelectedMaterial] = useState(MATERIAL_PRESETS[0])
   const [width, setWidth] = useState<number>(10)
   const [height, setHeight] = useState<number>(5)

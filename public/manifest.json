@@ -26,19 +26,19 @@
       "name": "Quick Quote",
       "short_name": "Quote",
       "description": "Calculate instant print estimate in BDT",
-      "url": "/padma-digital/mobile?tab=owner&action=quote"
+      "url": "/mobile?tab=owner&action=quote"
     },
     {
       "name": "Production Floor",
       "short_name": "Production",
       "description": "View assigned print jobs and press queue",
-      "url": "/padma-digital/mobile?tab=production"
+      "url": "/mobile?tab=production"
     },
     {
       "name": "Today's Sales",
       "short_name": "Sales",
       "description": "Owner daily sales and collection KPI",
-      "url": "/padma-digital/mobile?tab=owner"
+      "url": "/mobile?tab=owner"
     }
   ],
   "categories": ["business", "productivity", "utilities"]

@@ -71,7 +71,7 @@ export function Sidebar() {
   const { can, isOwner } = usePermissions()
   const { tBilingual } = useI18n()
 
-  const tenantSlug = company?.slug || 'padma-digital'
+  const tenantSlug = company?.slug || 'app'
   const navSections = getNavigationConfig(tenantSlug)
 
   const isNavItemAllowed = (href: string): boolean => {

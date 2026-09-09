@@ -20,7 +20,7 @@ import { useTenant } from '@/hooks/use-tenant'
 export function MobileBottomNav() {
   const pathname = usePathname()
   const { company } = useTenant()
-  const tenantSlug = company?.slug || 'padma-digital'
+  const tenantSlug = company?.slug || 'app'
 
   const { isOnline } = useNetworkStatus()
   const { pendingCount } = useOfflineQueue()

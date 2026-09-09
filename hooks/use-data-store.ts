@@ -51,7 +51,7 @@ export function useDataStore<T = any>(
 
   const [data, setData] = useState<T>(() => {
     const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-    if (slug !== 'padma-digital' && isTransactionalKey(key)) {
+    if (isTransactionalKey(key)) {
       const stored = PrintERPDataStore.get<T>(key, slug)
       return (stored !== undefined && stored !== null ? stored : ([] as unknown as T))
     }
@@ -70,7 +70,7 @@ export function useDataStore<T = any>(
     const latest = PrintERPDataStore.get<T>(key, slug)
     if (latest !== undefined && latest !== null) {
       setData(latest)
-    } else if (slug !== 'padma-digital' && isTransactionalKey(key)) {
+    } else if (isTransactionalKey(key)) {
       setData([] as unknown as T)
     } else if (initialSeedRef.current !== undefined) {
       setData(initialSeedRef.current)

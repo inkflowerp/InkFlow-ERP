@@ -34,7 +34,7 @@ export function AttendancePunchModal({
   open,
   onClose,
   onAttendanceRecorded,
-  tenantSlug = 'padma-digital',
+  tenantSlug = 'app',
 }: AttendancePunchModalProps) {
   const { company } = useTenant()
   const { tBilingual } = useI18n()

@@ -40,7 +40,7 @@ export function UpgradePrompt({
   const { currentPlan } = useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'padma-digital'
+  const slug = company?.slug || 'app'
 
   const meta = FEATURE_METADATA[feature] || {
     code: feature,

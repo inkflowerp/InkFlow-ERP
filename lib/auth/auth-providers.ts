@@ -90,9 +90,8 @@ export class PhoneOtpProvider implements IAuthProvider {
       })
       if (error) {
         return {
-          success: true,
-          data: { trackingId: `mock-otp-${Date.now()}` },
-          message: 'Demo mode: In production this dispatches SMS via Bangladeshi SMS Gateway',
+          success: false,
+          error: error.message || 'Failed to dispatch SMS OTP. Please ensure SMS gateway credentials are configured.',
         }
       }
       return {
@@ -100,11 +99,10 @@ export class PhoneOtpProvider implements IAuthProvider {
         data: { trackingId: `sms-${Date.now()}` },
         message: `OTP sent to ${formattedPhone}`,
       }
-    } catch {
+    } catch (err: any) {
       return {
-        success: true,
-        data: { trackingId: `mock-otp-${Date.now()}` },
-        message: 'Demo mode: SMS OTP gateway will trigger here',
+        success: false,
+        error: err?.message || 'Failed to dispatch SMS OTP',
       }
     }
   }
