@@ -166,6 +166,7 @@ export class PlatformService {
             id: `na-event-${ev.id}`,
             severity: ev.severity === 'critical' ? 'critical' : 'warning',
             title: `System Alert: ${ev.service_name}`,
+            system_name: ev.service_name,
             reason: ev.message,
             recommended_action: 'Resolve in Health Monitor',
             action_href: '/platform/health',

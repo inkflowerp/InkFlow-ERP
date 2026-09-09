@@ -136,14 +136,7 @@ begin
     end if;
 end $$;
 
--- 6. SEED INITIAL SYSTEM HEALTH TELEMETRY EVENTS
-insert into public.platform_system_health_events (category, service_name, severity, message, error_details, resolved) values
-('job', 'bg_order_cleanup', 'warning', 'Nightly temporary proof cache cleaner encountered 14 locked files in /tmp/render', '{"locked_files": 14, "disk_impact_mb": 420}'::jsonb, false),
-('notification', 'greenweb_sms', 'error', 'Greenweb SMS Gateway balance threshold dropped below 500 SMS credits', '{"balance_credits": 210, "gateway": "greenweb_bd"}'::jsonb, false),
-('notification', 'whatsapp_cloud_api', 'warning', 'Meta WhatsApp webhook delivery retry latency spiked to 4.2s for media attachments', '{"avg_latency_ms": 4200, "threshold_ms": 2000}'::jsonb, false),
-('storage', 's3_storage_bucket', 'info', 'High-res artwork bucket (BD-Central) passed 68% total tier quota (680 GB / 1 TB)', '{"used_gb": 680, "total_gb": 1000}'::jsonb, false),
-('api', 'bkash_checkout', 'error', 'bKash merchant token refresh timeout during midnight settlement reconciliation', '{"endpoint": "token/refresh", "http_status": 504}'::jsonb, false),
-('integration', 'mushak_6_3_sync', 'warning', 'NBR e-VAT portal returned 429 Too Many Requests during end-of-month batch tax submission', '{"code": "NBR_RATE_LIMIT", "retry_after": 60}'::jsonb, false);
+-- 6. SYSTEM HEALTH TELEMETRY TABLE READY
 
 -- 7. DATABASE HELPER FUNCTIONS
 

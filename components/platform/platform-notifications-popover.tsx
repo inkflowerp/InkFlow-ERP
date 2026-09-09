@@ -10,6 +10,7 @@ import {
   HeartPulse,
   ShieldCheck,
   Check,
+  CheckCircle2,
   X,
   ArrowRight,
 } from 'lucide-react'
@@ -24,44 +25,7 @@ interface NotificationItem {
   isRead: boolean
 }
 
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 'notif-1',
-    category: 'critical',
-    title: 'Payment Past Due: Chittagong Sign Craft',
-    description: 'Automatic bKash deduction failed. 5-day grace period remaining.',
-    timestamp: '4 hours ago',
-    actionUrl: '/platform/companies/c-03',
-    isRead: false,
-  },
-  {
-    id: 'notif-2',
-    category: 'system',
-    title: 'Greenweb SMS Gateway Low Balance',
-    description: 'Credit balance below threshold (210 credits remaining).',
-    timestamp: '8 hours ago',
-    actionUrl: '/platform/health',
-    isRead: false,
-  },
-  {
-    id: 'notif-3',
-    category: 'subscription',
-    title: 'Trial Expiring: Sylhet Flex & Banner Point',
-    description: '14-day evaluation trial ending in 3 days.',
-    timestamp: '1 day ago',
-    actionUrl: '/platform/companies/c-06',
-    isRead: false,
-  },
-  {
-    id: 'notif-4',
-    category: 'security',
-    title: 'Support Session Concluded',
-    description: 'Support officer exited remote support session.',
-    timestamp: '1 day ago',
-    actionUrl: '/platform/audit',
-    isRead: true,
-  },
-]
+const INITIAL_NOTIFICATIONS: NotificationItem[] = []
 
 export function PlatformNotificationsPopover() {
   const [open, setOpen] = useState(false)
@@ -110,7 +74,7 @@ export function PlatformNotificationsPopover() {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+                  className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
                 >
                   Mark all read
                 </button>
@@ -119,50 +83,60 @@ export function PlatformNotificationsPopover() {
 
             {/* List */}
             <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/80">
-              {notifications.map((notif) => {
-                const isCritical = notif.category === 'critical'
-                const isSystem = notif.category === 'system'
-                const isSub = notif.category === 'subscription'
+              {notifications.length === 0 ? (
+                <div className="p-6 text-center text-slate-400 space-y-2">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto opacity-80" />
+                  <div className="font-semibold text-white text-xs">All Caught Up</div>
+                  <p className="text-[11px] text-slate-500">
+                    No active alerts or notifications. Platform operations are nominal.
+                  </p>
+                </div>
+              ) : (
+                notifications.map((notif) => {
+                  const isCritical = notif.category === 'critical'
+                  const isSystem = notif.category === 'system'
+                  const isSub = notif.category === 'subscription'
 
-                return (
-                  <div
-                    key={notif.id}
-                    className={`p-3.5 transition-colors flex items-start justify-between gap-3 ${
-                      notif.isRead ? 'bg-transparent opacity-75' : 'bg-slate-800/30'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <div className="mt-0.5 shrink-0">
-                        {isCritical && <AlertTriangle className="h-4 w-4 text-red-400" />}
-                        {isSystem && <HeartPulse className="h-4 w-4 text-amber-400" />}
-                        {isSub && <CreditCard className="h-4 w-4 text-indigo-400" />}
-                        {!isCritical && !isSystem && !isSub && <ShieldCheck className="h-4 w-4 text-emerald-400" />}
-                      </div>
-                      <div className="space-y-0.5">
-                        <Link
-                          href={notif.actionUrl}
-                          onClick={() => setOpen(false)}
-                          className="font-bold text-white hover:text-indigo-300 transition-colors line-clamp-1 flex items-center gap-1 group"
-                        >
-                          <span>{notif.title}</span>
-                          <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Link>
-                        <p className="text-[11px] text-slate-400 line-clamp-2">{notif.description}</p>
-                        <span className="text-[10px] text-slate-500 font-mono inline-block pt-1">{notif.timestamp}</span>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => toggleRead(notif.id)}
-                      className="text-slate-500 hover:text-slate-300 p-1 shrink-0"
-                      title={notif.isRead ? 'Mark as unread' : 'Mark as read'}
+                  return (
+                    <div
+                      key={notif.id}
+                      className={`p-3.5 transition-colors flex items-start justify-between gap-3 ${
+                        notif.isRead ? 'bg-transparent opacity-75' : 'bg-slate-800/30'
+                      }`}
                     >
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                )
-              })}
+                      <div className="flex items-start gap-2.5">
+                        <div className="mt-0.5 shrink-0">
+                          {isCritical && <AlertTriangle className="h-4 w-4 text-red-400" />}
+                          {isSystem && <HeartPulse className="h-4 w-4 text-amber-400" />}
+                          {isSub && <CreditCard className="h-4 w-4 text-indigo-400" />}
+                          {!isCritical && !isSystem && !isSub && <ShieldCheck className="h-4 w-4 text-emerald-400" />}
+                        </div>
+                        <div className="space-y-0.5">
+                          <Link
+                            href={notif.actionUrl}
+                            onClick={() => setOpen(false)}
+                            className="font-bold text-white hover:text-indigo-300 transition-colors line-clamp-1 flex items-center gap-1 group"
+                          >
+                            <span>{notif.title}</span>
+                            <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </Link>
+                          <p className="text-[11px] text-slate-400 line-clamp-2">{notif.description}</p>
+                          <span className="text-[10px] text-slate-500 font-mono inline-block pt-1">{notif.timestamp}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleRead(notif.id)}
+                        className="text-slate-500 hover:text-slate-300 p-1 shrink-0 cursor-pointer"
+                        title={notif.isRead ? 'Mark as unread' : 'Mark as read'}
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )
+                })
+              )}
             </div>
 
             {/* Footer */}

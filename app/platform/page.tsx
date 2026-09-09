@@ -181,9 +181,11 @@ export default function PlatformDashboardPage() {
                     </div>
 
                     <div className="font-bold text-sm text-white">{item.title}</div>
-                    <div className="text-xs font-semibold text-slate-300">
-                      {item.tenant_name ? `Tenant: ${item.tenant_name}` : `System: ${item.system_name}`}
-                    </div>
+                    {(item.tenant_name || item.system_name) && (
+                      <div className="text-xs font-semibold text-slate-300">
+                        {item.tenant_name ? `Tenant: ${item.tenant_name}` : `System: ${item.system_name}`}
+                      </div>
+                    )}
                     <p className="text-[11px] text-slate-400 leading-relaxed">{item.reason}</p>
                   </div>
 
