@@ -53,6 +53,7 @@ import {
   exportTenantDataAction,
   createBusinessAction,
   deleteBusinessAction,
+  deleteAllBusinessesAction,
 } from '@/actions/platform.actions'
 
 export default function PlatformTenantsPage() {
@@ -83,6 +84,17 @@ export default function PlatformTenantsPage() {
   const [supportModalCompany, setSupportModalCompany] = useState<PlatformTenantCompany | null>(null)
   const [supportReason, setSupportReason] = useState('')
   const [isStartingSupport, setIsStartingSupport] = useState(false)
+
+  // Delete Single Tenant Modal
+  const [deleteModalCompany, setDeleteModalCompany] = useState<PlatformTenantCompany | null>(null)
+  const [deleteReason, setDeleteReason] = useState('')
+  const [isDeletingCompany, setIsDeletingCompany] = useState(false)
+
+  // Purge All Tenants Modal
+  const [showPurgeAllModal, setShowPurgeAllModal] = useState(false)
+  const [purgeReason, setPurgeReason] = useState('')
+  const [purgeConfirmText, setPurgeConfirmText] = useState('')
+  const [isPurgingAll, setIsPurgingAll] = useState(false)
 
   // Notifications
   const [notification, setNotification] = useState<string | null>(null)
@@ -133,6 +145,39 @@ export default function PlatformTenantsPage() {
       setCreateError(res.error || 'Failed to create business.')
     }
     setIsCreatingBusiness(false)
+  }
+
+  // Handle Delete Single Tenant
+  const handleDeleteCompany = async () => {
+    if (!deleteModalCompany) return
+    setIsDeletingCompany(true)
+    const res = await deleteBusinessAction(deleteModalCompany.id, deleteReason)
+    if (res.success) {
+      showNotification(`Tenant "${deleteModalCompany.name}" and all associated workspace data have been deleted.`)
+      setDeleteModalCompany(null)
+      setDeleteReason('')
+      loadData()
+    } else {
+      showNotification(res.error || 'Failed to delete tenant.')
+    }
+    setIsDeletingCompany(false)
+  }
+
+  // Handle Purge All Tenants
+  const handlePurgeAllCompanies = async () => {
+    if (purgeConfirmText !== 'PURGE') return
+    setIsPurgingAll(true)
+    const res = await deleteAllBusinessesAction(purgeReason || 'All tenants purged by platform administrator')
+    if (res.success) {
+      showNotification('All tenants and associated workspace data have been completely purged.')
+      setShowPurgeAllModal(false)
+      setPurgeReason('')
+      setPurgeConfirmText('')
+      loadData()
+    } else {
+      showNotification(res.error || 'Failed to purge tenants.')
+    }
+    setIsPurgingAll(false)
   }
 
   // Handle Status Update
@@ -239,6 +284,22 @@ export default function PlatformTenantsPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          {companies.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setShowPurgeAllModal(true)
+                setPurgeReason('')
+                setPurgeConfirmText('')
+              }}
+              className="border-red-800/60 bg-red-950/30 text-red-400 hover:bg-red-900/50 hover:text-red-200 text-xs h-9 px-3 rounded-xl"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+              Purge All Tenants
+            </Button>
+          )}
+
           <Button
             size="sm"
             onClick={() => setShowCreateModal(true)}
@@ -483,6 +544,19 @@ export default function PlatformTenantsPage() {
                               <Ban className="h-3.5 w-3.5" />
                             </Button>
                           )}
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setDeleteModalCompany(c)
+                              setDeleteReason('')
+                            }}
+                            className="h-7 px-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 text-xs"
+                            title="Delete Tenant"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -728,6 +802,147 @@ export default function PlatformTenantsPage() {
                 className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs"
               >
                 {isStartingSupport ? 'Initiating...' : 'Start Support Session'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* 4. DELETE SINGLE TENANT MODAL */}
+      {deleteModalCompany && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in-0 duration-200">
+          <Card className="w-full max-w-md bg-slate-900 border-red-800/60 text-slate-100 shadow-2xl shadow-red-950/40">
+            <CardHeader className="border-b border-slate-800 pb-3">
+              <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-red-500" />
+                Delete Tenant Organization
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-400">
+                Are you sure you want to permanently delete{' '}
+                <strong className="text-white">{deleteModalCompany.name}</strong> (/{deleteModalCompany.slug})?
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-3 pt-4 text-xs">
+              <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 space-y-1">
+                <div className="font-semibold flex items-center gap-1.5 text-red-300">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+                  Irreversible Action
+                </div>
+                <p className="text-[11px] text-red-300/90 leading-relaxed">
+                  This will permanently delete the tenant and all associated data including users, customer profiles,
+                  orders, invoices, inventory rolls, and ledger balances across PostgreSQL partitions.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-300">Reason for Deletion (Audit Trail)</label>
+                <Input
+                  placeholder="e.g. Account closed at owner request / Testing cleanup..."
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                />
+              </div>
+            </CardContent>
+
+            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDeleteModalCompany(null)
+                  setDeleteReason('')
+                }}
+                className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={isDeletingCompany}
+                onClick={handleDeleteCompany}
+                size="sm"
+                className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs"
+              >
+                {isDeletingCompany ? 'Deleting...' : 'Confirm Permanent Deletion'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* 5. PURGE ALL TENANTS MODAL */}
+      {showPurgeAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200">
+          <Card className="w-full max-w-lg bg-slate-900 border-red-800 text-slate-100 shadow-2xl shadow-red-950/60">
+            <CardHeader className="border-b border-slate-800 pb-3">
+              <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-red-500" />
+                Purge All Tenants (Danger Zone)
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-400">
+                You are about to wipe all {companies.length} tenant organization(s) from the platform.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4 pt-4 text-xs">
+              <div className="p-3.5 rounded-xl bg-red-950/60 border border-red-700 text-red-200 space-y-2">
+                <div className="font-bold text-sm text-red-300 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+                  CRITICAL PLATFORM PURGE
+                </div>
+                <p className="text-xs text-red-200 leading-relaxed">
+                  This administrative operation will wipe <strong>all registered businesses</strong>, branches,
+                  customer databases, job orders, and ledger transactions. Platform administrator accounts and system
+                  roles will be preserved.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-300">Reason for Platform Purge *</label>
+                <Input
+                  required
+                  placeholder="e.g. System reset, Pre-production data cleanup..."
+                  value={purgeReason}
+                  onChange={(e) => setPurgeReason(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-300">
+                  Type <span className="font-mono text-red-400 font-bold">PURGE</span> to confirm:
+                </label>
+                <Input
+                  required
+                  placeholder="PURGE"
+                  value={purgeConfirmText}
+                  onChange={(e) => setPurgeConfirmText(e.target.value)}
+                  className="bg-slate-950 border-red-800 text-red-400 font-mono font-bold text-xs h-9 placeholder:text-slate-600"
+                />
+              </div>
+            </CardContent>
+
+            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowPurgeAllModal(false)
+                  setPurgeReason('')
+                  setPurgeConfirmText('')
+                }}
+                className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={isPurgingAll || purgeConfirmText !== 'PURGE'}
+                onClick={handlePurgeAllCompanies}
+                size="sm"
+                className="bg-red-600 hover:bg-red-500 disabled:bg-red-950 disabled:text-slate-500 text-white font-bold text-xs"
+              >
+                {isPurgingAll ? 'Purging All Tenants...' : 'Purge All Tenants Now'}
               </Button>
             </div>
           </Card>

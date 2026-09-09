@@ -650,7 +650,7 @@ export class PlatformService {
   }
 
   /**
-   * 4b. Lifecycle: Delete Single Company
+   * 4b. Lifecycle: Delete Single Company with Cascading Cleanup
    */
   static async deleteCompany(companyId: string, reason?: string): Promise<ApiResponse<{ companyId: string }>> {
     try {
@@ -660,7 +660,31 @@ export class PlatformService {
         .from('companies')
         .select('name, slug')
         .eq('id', companyId)
-        .single()
+        .maybeSingle()
+
+      // Cascading cleanup of child tables prior to deleting company
+      const childTables = [
+        'platform_support_sessions',
+        'company_subscriptions',
+        'user_roles',
+        'user_permission_overrides',
+        'company_users',
+        'company_settings',
+        'branches',
+        'customers',
+        'sales_orders',
+        'job_orders',
+        'invoices',
+        'payments',
+        'materials',
+        'products',
+      ]
+
+      for (const table of childTables) {
+        try {
+          await (admin as any).from(table).delete().eq('company_id', companyId)
+        } catch {}
+      }
 
       const { error } = await (admin as any)
         .from('companies')
@@ -708,6 +732,29 @@ export class PlatformService {
       const ids = list.map((c: any) => c.id)
 
       if (ids.length > 0) {
+        const childTables = [
+          'platform_support_sessions',
+          'company_subscriptions',
+          'user_roles',
+          'user_permission_overrides',
+          'company_users',
+          'company_settings',
+          'branches',
+          'customers',
+          'sales_orders',
+          'job_orders',
+          'invoices',
+          'payments',
+          'materials',
+          'products',
+        ]
+
+        for (const table of childTables) {
+          try {
+            await (admin as any).from(table).delete().in('company_id', ids)
+          } catch {}
+        }
+
         const { error: delErr } = await (admin as any)
           .from('companies')
           .delete()

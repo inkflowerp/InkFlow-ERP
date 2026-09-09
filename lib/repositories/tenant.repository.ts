@@ -144,6 +144,19 @@ export class TenantRepository {
     return (data as CompanyRow) || null
   }
 
+  static async getAllCompanies(): Promise<CompanyRow[]> {
+    const admin = createAdminClient()
+    const { data, error } = await admin
+      .from('companies')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to fetch companies: ${error.message}`)
+    }
+    return (data || []) as CompanyRow[]
+  }
+
   static async getBranches(companyId: string): Promise<BranchRow[]> {
     const supabase = await createClient()
     const { data, error } = await supabase
