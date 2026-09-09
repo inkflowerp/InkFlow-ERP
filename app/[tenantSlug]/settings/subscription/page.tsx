@@ -50,6 +50,8 @@ export default function TenantSubscriptionPage() {
     subscription,
     currentPlan,
     currentPlanCode,
+    accountType,
+    accountTypeMeta,
     allPlans,
     usage,
     isSuspended,
@@ -60,6 +62,7 @@ export default function TenantSubscriptionPage() {
     upgradeSubscription,
     simulatePlan,
     simulateStatus,
+    simulateAccountType,
   } = useSubscription()
 
   const { company } = useTenant()
@@ -115,14 +118,25 @@ export default function TenantSubscriptionPage() {
   const customerLimit = getLimitStatus('max_customers')
   const productLimit = getLimitStatus('max_products')
 
+  const accountTypesList: Array<{
+    type: 'trial' | 'starter' | 'business' | 'enterprise'
+    label: string
+    badge: string
+  }> = [
+    { type: 'trial', label: '14-Day Free Trial', badge: 'Trial' },
+    { type: 'starter', label: 'Starter (৳1,999/mo)', badge: 'Starter' },
+    { type: 'business', label: 'Business (৳4,999/mo)', badge: 'Business' },
+    { type: 'enterprise', label: 'Enterprise (৳9,999/mo)', badge: 'Enterprise' },
+  ]
+
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Header */}
       <PageHeader
-        titleEn="SaaS Subscription & Resource Quotas"
-        titleBn="সাবস্ক্রিপশন ও রিসোর্স কোটা"
-        descriptionEn="Manage organization subscription tier, monitor usage against 6 configurable limits, and pay via local Bangladesh MFS/Gateways."
-        descriptionBn="আপনার প্রতিষ্ঠানের সাবস্ক্রিপশন প্ল্যান, রিসোর্স মিটার এবং বাংলাদেশ পেমেন্ট মেথড পরিচালনা করুন।"
+        titleEn="SaaS Subscription & Account Tiers"
+        titleBn="সাবস্ক্রিপশন ও অ্যাকাউন্ট ধরন"
+        descriptionEn="Manage organization subscription tier (Trial, Starter, Business, Enterprise), monitor usage against 6 configurable limits, and pay via local Bangladesh MFS/Gateways."
+        descriptionBn="আপনার প্রতিষ্ঠানের সাবস্ক্রিপশন প্ল্যান (ট্রায়াল, স্টার্টার, বিজনেস, এন্টারপ্রাইজ) এবং বাংলাদেশ পেমেন্ট মেথড পরিচালনা করুন।"
         icon={Crown}
         iconColor="text-amber-500"
         actions={
@@ -144,7 +158,7 @@ export default function TenantSubscriptionPage() {
         </div>
       )}
 
-      {/* Interactive Plan Simulator Banner (Useful for immediate feature gating testing) */}
+      {/* Interactive Account Type Simulator Banner */}
       <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
@@ -152,27 +166,27 @@ export default function TenantSubscriptionPage() {
           </div>
           <div className="text-xs">
             <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-              Live Plan Simulator
+              Account Type &amp; Tier Simulator
               <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-200 dark:bg-indigo-800 text-indigo-900 dark:text-indigo-200 font-mono">
                 TESTING MODE
               </span>
             </div>
             <div className="text-slate-600 dark:text-slate-400 mt-0.5">
-              Switch plan in real-time to test feature gating across modules (Inventory, Production, HR, Reports).
+              Switch account type in real-time (Trial, Starter, Business, Enterprise) to verify feature gating and limit meter behavior.
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 self-end sm:self-center">
-          {(['starter', 'business', 'enterprise'] as PlanCode[]).map((code) => {
-            const isSelected = currentPlanCode === code
+        <div className="flex items-center gap-1.5 flex-wrap self-end sm:self-center">
+          {accountTypesList.map((item) => {
+            const isSelected = accountType === item.type
             return (
               <button
-                key={code}
+                key={item.type}
                 type="button"
                 onClick={() => {
-                  simulatePlan(code)
-                  showNotification(`Simulated plan switched to ${code.toUpperCase()}!`)
+                  simulateAccountType(item.type)
+                  showNotification(`Simulated account type switched to ${item.type.toUpperCase()}!`)
                 }}
                 className={`px-2.5 py-1 rounded text-xs font-bold capitalize transition-colors cursor-pointer ${
                   isSelected
@@ -180,7 +194,7 @@ export default function TenantSubscriptionPage() {
                     : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-100'
                 }`}
               >
-                {code}
+                {item.badge}
               </button>
             )
           })}
@@ -191,23 +205,23 @@ export default function TenantSubscriptionPage() {
       <Card className="p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-950 text-white rounded-2xl shadow-md border-0 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <Badge className="bg-amber-400 text-slate-950 font-black tracking-wider uppercase text-[10px] px-2.5 py-0.5">
-                {currentPlan.name}
+                {accountType === 'trial' ? 'Free 14-Day Trial' : currentPlan.name}
               </Badge>
 
               <Badge
                 className={`text-[10px] font-bold capitalize px-2 py-0.5 ${
-                  subscription.status === 'active'
+                  isTrial
+                    ? 'bg-amber-500 text-slate-950'
+                    : subscription.status === 'active'
                     ? 'bg-emerald-500 text-white'
-                    : subscription.status === 'trial'
-                    ? 'bg-cyan-500 text-slate-950'
                     : subscription.status === 'past_due'
                     ? 'bg-amber-500 text-slate-950'
                     : 'bg-red-500 text-white'
                 }`}
               >
-                {subscription.status.replace('_', ' ')}
+                {isTrial ? `Trial (${daysRemainingInTrial} Days Left)` : subscription.status.replace('_', ' ')}
               </Badge>
 
               <span className="text-xs text-slate-400 capitalize">
@@ -218,23 +232,25 @@ export default function TenantSubscriptionPage() {
             <div className="text-3xl font-black tracking-tight text-white flex items-baseline gap-2">
               <CurrencyDisplay
                 amount={
-                  subscription.billing_interval === 'yearly'
+                  isTrial
+                    ? 0
+                    : subscription.billing_interval === 'yearly'
                     ? currentPlan.price_yearly
                     : currentPlan.price_monthly
                 }
               />
               <span className="text-xs text-slate-400 font-normal">
-                / {subscription.billing_interval === 'yearly' ? 'year' : 'month'}
+                {isTrial ? '/ 14 days evaluation' : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`}
               </span>
             </div>
 
             <p className="text-xs text-slate-300 max-w-xl">
-              {isBn ? currentPlan.name_bn : currentPlan.name}: {currentPlan.description}
+              {isBn ? accountTypeMeta.nameBn : accountTypeMeta.nameEn}: {isBn ? accountTypeMeta.descriptionBn : accountTypeMeta.descriptionEn}
             </p>
 
-            <div className="text-[11px] text-slate-400 pt-1 flex items-center gap-3">
+            <div className="text-[11px] text-slate-400 pt-1 flex items-center gap-3 flex-wrap">
               <span>
-                Period Ends: <strong className="text-white font-mono">{subscription.current_period_end.slice(0, 10)}</strong>
+                Period Ends: <strong className="text-white font-mono">{subscription.trial_ends_at ? subscription.trial_ends_at.slice(0, 10) : subscription.current_period_end.slice(0, 10)}</strong>
               </span>
               {subscription.last_payment_reference && (
                 <span>
@@ -259,7 +275,6 @@ export default function TenantSubscriptionPage() {
             <Button
               variant="outline"
               onClick={() => {
-                // Toggle status simulation
                 const next = subscription.status === 'suspended' ? 'active' : 'suspended'
                 simulateStatus(next)
                 showNotification(`Subscription status simulated to: ${next.toUpperCase()}`)

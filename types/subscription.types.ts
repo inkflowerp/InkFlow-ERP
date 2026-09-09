@@ -1,3 +1,5 @@
+export type TenantAccountType = 'trial' | 'starter' | 'business' | 'enterprise'
+
 export type PlanCode = 'starter' | 'business' | 'enterprise'
 
 export type SubscriptionStatus =
@@ -7,6 +9,33 @@ export type SubscriptionStatus =
   | 'suspended'
   | 'cancelled'
   | 'expired'
+
+export interface TenantAccountTypeMeta {
+  type: TenantAccountType
+  nameEn: string
+  nameBn: string
+  badgeTextEn: string
+  badgeTextBn: string
+  color: string
+  badgeClass: string
+  priceMonthly: number
+  priceYearly: number
+  maxUsers: number
+  maxBranches: number
+  descriptionEn: string
+  descriptionBn: string
+}
+
+export function resolveTenantAccountType(
+  subscription?: { status?: SubscriptionStatus; plan_code?: PlanCode } | null
+): TenantAccountType {
+  if (!subscription) return 'trial'
+  if (subscription.status === 'trial') return 'trial'
+  if (subscription.plan_code === 'enterprise') return 'enterprise'
+  if (subscription.plan_code === 'business') return 'business'
+  if (subscription.plan_code === 'starter') return 'starter'
+  return 'starter'
+}
 
 export type BillingInterval = 'monthly' | 'yearly'
 

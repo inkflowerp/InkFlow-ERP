@@ -10,11 +10,15 @@ import {
   PaymentGatewayType,
   ConfigurableLimitType,
   CustomLimitsOverride,
+  TenantAccountType,
+  TenantAccountTypeMeta,
+  resolveTenantAccountType,
 } from '@/types/subscription.types'
 import {
   DEFAULT_PLANS,
   DEMO_TENANT_SUBSCRIPTION,
   DEMO_RESOURCE_USAGE,
+  TENANT_ACCOUNT_TYPE_METADATA,
   checkFeatureAccess,
   checkResourceLimit,
   getTenantResourceUsage,
@@ -25,6 +29,8 @@ interface SubscriptionContextType {
   subscription: CompanySubscriptionRecord
   currentPlan: SubscriptionPlanRecord
   currentPlanCode: PlanCode
+  accountType: TenantAccountType
+  accountTypeMeta: TenantAccountTypeMeta
   allPlans: SubscriptionPlanRecord[]
   usage: TenantResourceUsage
   isSuspended: boolean
@@ -47,6 +53,7 @@ interface SubscriptionContextType {
   }) => Promise<boolean>
   simulatePlan: (planCode: PlanCode) => void
   simulateStatus: (status: CompanySubscriptionRecord['status']) => void
+  simulateAccountType: (accountType: TenantAccountType) => void
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null)
@@ -94,6 +101,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const currentPlan = useMemo(() => {
     return plans.find((p) => p.code === subscription.plan_code) || plans[1]
   }, [plans, subscription.plan_code])
+
+  const accountType: TenantAccountType = useMemo(() => {
+    return resolveTenantAccountType(subscription)
+  }, [subscription])
+
+  const accountTypeMeta: TenantAccountTypeMeta = useMemo(() => {
+    return TENANT_ACCOUNT_TYPE_METADATA[accountType] || TENANT_ACCOUNT_TYPE_METADATA.starter
+  }, [accountType])
 
   const isSuspended = subscription.status === 'suspended'
   const isPastDue = subscription.status === 'past_due'
@@ -200,12 +215,34 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     []
   )
 
+  const simulateAccountType = useCallback(
+    (accType: TenantAccountType) => {
+      if (accType === 'trial') {
+        setSubscription((prev) => ({
+          ...prev,
+          status: 'trial',
+          trial_ends_at: new Date(Date.now() + 14 * 86400000).toISOString(),
+        }))
+      } else {
+        setSubscription((prev) => ({
+          ...prev,
+          plan_code: accType,
+          status: 'active',
+          trial_ends_at: null,
+        }))
+      }
+    },
+    []
+  )
+
   return (
     <SubscriptionContext.Provider
       value={{
         subscription,
         currentPlan,
         currentPlanCode: subscription.plan_code,
+        accountType,
+        accountTypeMeta,
         allPlans: plans,
         usage,
         isSuspended,
@@ -217,6 +254,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         upgradeSubscription,
         simulatePlan,
         simulateStatus,
+        simulateAccountType,
       }}
     >
       {children}
@@ -227,12 +265,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 export function useSubscription() {
   const ctx = useContext(SubscriptionContext)
   if (!ctx) {
-    // Fallback for isolated unit tests or SSR before provider mount
     const defaultPlan = DEFAULT_PLANS[1]
+    const accType: TenantAccountType = 'business'
     return {
       subscription: DEMO_TENANT_SUBSCRIPTION,
       currentPlan: defaultPlan,
       currentPlanCode: 'business' as PlanCode,
+      accountType: accType,
+      accountTypeMeta: TENANT_ACCOUNT_TYPE_METADATA.business,
       allPlans: DEFAULT_PLANS,
       usage: DEMO_RESOURCE_USAGE,
       isSuspended: false,
@@ -245,6 +285,7 @@ export function useSubscription() {
       upgradeSubscription: async () => true,
       simulatePlan: () => {},
       simulateStatus: () => {},
+      simulateAccountType: () => {},
     }
   }
   return ctx

@@ -9,24 +9,33 @@ import {
   Mail,
   MapPin,
   FileText,
+  Crown,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { cn } from '@/lib/utils'
 
 export default function CompanyProfileSettingsPage() {
   const { company } = useTenant()
+  const { accountType, accountTypeMeta, isTrial, daysRemainingInTrial, currentPlan } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const [isSaved, setIsSaved] = useState(false)
 
   const isDemo = company?.slug === 'padma-digital'
+  const slug = company?.slug || 'padma-digital'
   const [profile, setProfile] = useDataStore(STORAGE_KEYS.COMPANY_PROFILE, {
     name: company?.name || (isDemo ? 'Padma Digital & Signage Ltd.' : ''),
     name_bn: company?.name_bn || (isDemo ? 'পদ্মা ডিজিটাল অ্যান্ড সাইনেজ লি.' : ''),
@@ -72,6 +81,40 @@ export default function CompanyProfileSettingsPage() {
       />
 
       <SettingsNav />
+
+      {/* Account Type & Subscription Tier Card */}
+      <Card className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-0 shadow-md">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <Crown className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-300">Account Type:</span>
+                <span
+                  className={cn(
+                    'text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide border',
+                    accountTypeMeta.badgeClass
+                  )}
+                >
+                  {isTrial ? `Trial (${daysRemainingInTrial} Days Left)` : accountTypeMeta.badgeTextEn}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {accountTypeMeta.nameEn} • {accountTypeMeta.maxUsers} Users • {accountTypeMeta.maxBranches} Branch(es)
+              </p>
+            </div>
+          </div>
+
+          <Link href={`/${slug}/settings/subscription`}>
+            <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shrink-0">
+              <span>{isTrial ? 'Upgrade Account' : 'Manage Subscription'}</span>
+              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </div>
+      </Card>
 
       {isSaved && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">

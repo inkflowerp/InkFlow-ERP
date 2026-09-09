@@ -2,14 +2,16 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Building2, Check, ChevronsUpDown, PlusCircle } from 'lucide-react'
+import { Building2, Check, ChevronsUpDown, PlusCircle, Sparkles } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 
 export function CompanySelector() {
   const [isOpen, setIsOpen] = useState(false)
   const { company, availableCompanies, switchCompany } = useTenant()
+  const { accountType, accountTypeMeta, isTrial, daysRemainingInTrial } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const router = useRouter()
 
@@ -32,12 +34,24 @@ export function CompanySelector() {
           {company?.name ? company.name.charAt(0).toUpperCase() : 'P'}
         </div>
         <div className="flex flex-col text-left max-w-[130px] sm:max-w-[170px] lg:max-w-[200px] min-w-0" suppressHydrationWarning>
-          <span className="truncate font-semibold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap" suppressHydrationWarning>
-            {displayName}
-          </span>
-          <span className="truncate text-[10px] text-slate-400 capitalize whitespace-nowrap" suppressHydrationWarning>
-            {company?.business_type?.replace('_', ' ') || 'Printing & Signage'}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="truncate font-semibold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap" suppressHydrationWarning>
+              {displayName}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-[10px] text-slate-400 capitalize whitespace-nowrap" suppressHydrationWarning>
+              {company?.business_type?.replace('_', ' ') || 'Printing & Signage'}
+            </span>
+            <span
+              className={cn(
+                'text-[9px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider border shrink-0',
+                accountTypeMeta.badgeClass
+              )}
+            >
+              {isTrial ? `Trial (${daysRemainingInTrial}d)` : accountTypeMeta.badgeTextEn}
+            </span>
+          </div>
         </div>
         <ChevronsUpDown className="h-4 w-4 text-slate-400 shrink-0 ml-0.5 sm:ml-1" />
       </button>

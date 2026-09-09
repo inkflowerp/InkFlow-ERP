@@ -90,6 +90,17 @@ export function UserMenu() {
                 <Settings className="h-3.5 w-3.5 text-slate-400" />
                 <span>{tBilingual('Company Settings', 'প্রতিষ্ঠান সেটিংস')}</span>
               </button>
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
+                onClick={() => {
+                  setIsOpen(false)
+                  router.push(`/${slug}/settings/subscription`)
+                }}
+              >
+                <Shield className="h-3.5 w-3.5 text-amber-500" />
+                <span>{tBilingual('Subscription & Plan', 'সাবস্ক্রিপশন ও প্ল্যান')}</span>
+              </button>
               {isOwner && (
                 <button
                   type="button"
