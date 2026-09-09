@@ -140,7 +140,7 @@ export async function createBusinessAction(formData: FormData) {
     const ownerName = (formData.get('owner_name') as string)?.trim() || undefined
     const ownerEmail = (formData.get('owner_email') as string)?.trim() || undefined
     const ownerPhone = (formData.get('owner_phone') as string)?.trim() || undefined
-    const plan = (formData.get('plan') as any) || 'starter'
+    const plan = (formData.get('plan') as any) || 'trial'
 
     if (!name || !slug) {
       return { success: false, error: 'Company Name and unique Slug are required.' }
@@ -697,13 +697,102 @@ export async function updatePlatformSettingsAction(settings: Record<string, any>
     if (!platformUser || platformUser.role !== 'platform_owner') {
       return { success: false, error: 'Unauthorized: Only platform owner can modify system settings.' }
     }
-    const result = await PlatformService.updatePlatformSettings(settings, reason)
+
+    // Input Boundary Validation
+    if (settings.session_timeout_minutes !== undefined) {
+      const timeout = Number(settings.session_timeout_minutes)
+      if (isNaN(timeout) || timeout < 5 || timeout > 1440) {
+        return { success: false, error: 'Session timeout must be between 5 and 1440 minutes (24 hours).' }
+      }
+    }
+
+    if (settings.rate_limit_requests_per_minute !== undefined) {
+      const rateLimit = Number(settings.rate_limit_requests_per_minute)
+      if (isNaN(rateLimit) || rateLimit < 10 || rateLimit > 10000) {
+        return { success: false, error: 'Rate limit must be between 10 and 10,000 requests per minute.' }
+      }
+    }
+
+    if (settings.max_export_records !== undefined) {
+      const maxExport = Number(settings.max_export_records)
+      if (isNaN(maxExport) || maxExport < 100 || maxExport > 100000) {
+        return { success: false, error: 'Max export records must be between 100 and 100,000 rows.' }
+      }
+    }
+
+    if (settings.default_trial_days !== undefined) {
+      const trialDays = Number(settings.default_trial_days)
+      if (isNaN(trialDays) || trialDays < 1 || trialDays > 365) {
+        return { success: false, error: 'Default trial duration must be between 1 and 365 days.' }
+      }
+    }
+
+    if (settings.default_vat_rate_pct !== undefined) {
+      const vat = Number(settings.default_vat_rate_pct)
+      if (isNaN(vat) || vat < 0 || vat > 100) {
+        return { success: false, error: 'VAT percentage must be between 0% and 100%.' }
+      }
+    }
+
+    if (settings.backup_retention_days !== undefined) {
+      const retention = Number(settings.backup_retention_days)
+      if (isNaN(retention) || retention < 7 || retention > 3650) {
+        return { success: false, error: 'Backup retention must be between 7 and 3,650 days (10 years).' }
+      }
+    }
+
+    const result = await PlatformService.updatePlatformSettings(settings, reason, platformUser.id)
     if (result.success) {
       revalidatePath('/platform/settings')
     }
     return result
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to update platform settings' }
+  }
+}
+
+export async function triggerPlatformBackupAction() {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform admin session required.' }
+    }
+    const result = await PlatformService.triggerManualBackup(platformUser.id)
+    if (result.success) {
+      revalidatePath('/platform/settings')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to trigger platform backup' }
+  }
+}
+
+export async function exportPlatformConfigAction() {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || platformUser.role !== 'platform_owner') {
+      return { success: false, error: 'Unauthorized: Only platform owner can export system configurations.' }
+    }
+    const settingsRes = await PlatformService.getPlatformSettings()
+    const flagsRes = await PlatformService.getFeatureFlags()
+    const plansRes = await PlatformService.getPlans()
+
+    const configArchive = {
+      export_version: '1.0',
+      exported_at: new Date().toISOString(),
+      exported_by: platformUser.full_name || platformUser.email,
+      environment: 'production',
+      settings: settingsRes.data,
+      feature_flags: flagsRes.data,
+      subscription_plans: plansRes.data,
+    }
+
+    return {
+      success: true,
+      data: configArchive,
+    }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to export platform configuration' }
   }
 }
 

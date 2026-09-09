@@ -342,6 +342,7 @@ export default function PlatformCompaniesPage() {
               className="h-9 bg-slate-950 border border-slate-800 rounded-xl px-2.5 text-xs text-slate-300 font-semibold"
             >
               <option value="all">Plan: All</option>
+              <option value="trial">Trial</option>
               <option value="starter">Starter</option>
               <option value="business">Business</option>
               <option value="enterprise">Enterprise</option>
@@ -699,6 +700,7 @@ export default function PlatformCompaniesPage() {
                   onChange={(e) => setTargetPlan(e.target.value as PlatformPlanCode)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-semibold"
                 >
+                  <option value="trial">Trial Plan (৳0/mo • 5 users • 1 branch • 2 GB)</option>
                   <option value="starter">Starter Press (৳1,999/mo • 3 users • 1 branch • 1 GB)</option>
                   <option value="business">Business Signage (৳4,999/mo • 10 users • 3 branches • 10 GB)</option>
                   <option value="enterprise">Enterprise Factory (৳9,999/mo • Unlimited • 100 GB)</option>
@@ -1034,9 +1036,10 @@ export default function PlatformCompaniesPage() {
                 </label>
                 <select
                   name="plan"
-                  defaultValue="starter"
+                  defaultValue="trial"
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                 >
+                  <option value="trial">Free Trial Plan (৳0/mo • 5 Users • 1 Branch)</option>
                   <option value="starter">Starter Plan (৳1,999/mo • 3 Users • 1 Branch)</option>
                   <option value="business">Business Plan (৳4,999/mo • 10 Users • 3 Branches)</option>
                   <option value="enterprise">Enterprise Plan (৳9,999/mo • 50+ Users • Unlimited Branches)</option>

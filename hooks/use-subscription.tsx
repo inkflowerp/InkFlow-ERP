@@ -22,6 +22,7 @@ import {
   checkFeatureAccess,
   checkResourceLimit,
   getTenantResourceUsage,
+  getTrialPlan,
 } from '@/services/subscription.service'
 import { FeatureCode } from '@/types/subscription.types'
 
@@ -99,8 +100,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [subscription])
 
   const currentPlan = useMemo(() => {
-    return plans.find((p) => p.code === subscription.plan_code) || plans[1]
-  }, [plans, subscription.plan_code])
+    if (subscription.plan_code === 'trial' || subscription.status === 'trial') {
+      return plans.find((p) => p.code === 'trial') || getTrialPlan(plans)
+    }
+    return plans.find((p) => p.code === subscription.plan_code) || getTrialPlan(plans)
+  }, [plans, subscription.plan_code, subscription.status])
+
+  const currentPlanCode: PlanCode = useMemo(() => {
+    if (subscription.plan_code === 'trial' || subscription.status === 'trial') {
+      return 'trial'
+    }
+    return subscription.plan_code
+  }, [subscription.plan_code, subscription.status])
 
   const accountType: TenantAccountType = useMemo(() => {
     return resolveTenantAccountType(subscription)
@@ -220,6 +231,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       if (accType === 'trial') {
         setSubscription((prev) => ({
           ...prev,
+          plan_code: 'trial',
           status: 'trial',
           trial_ends_at: new Date(Date.now() + 14 * 86400000).toISOString(),
         }))
@@ -240,7 +252,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       value={{
         subscription,
         currentPlan,
-        currentPlanCode: subscription.plan_code,
+        currentPlanCode,
         accountType,
         accountTypeMeta,
         allPlans: plans,
@@ -265,21 +277,21 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 export function useSubscription() {
   const ctx = useContext(SubscriptionContext)
   if (!ctx) {
-    const defaultPlan = DEFAULT_PLANS[1]
-    const accType: TenantAccountType = 'business'
+    const defaultPlan = DEFAULT_PLANS[0]?.code === 'trial' ? DEFAULT_PLANS[0] : getTrialPlan(DEFAULT_PLANS)
+    const accType: TenantAccountType = 'trial'
     return {
       subscription: DEMO_TENANT_SUBSCRIPTION,
       currentPlan: defaultPlan,
-      currentPlanCode: 'business' as PlanCode,
+      currentPlanCode: 'trial' as PlanCode,
       accountType: accType,
-      accountTypeMeta: TENANT_ACCOUNT_TYPE_METADATA.business,
+      accountTypeMeta: TENANT_ACCOUNT_TYPE_METADATA.trial,
       allPlans: DEFAULT_PLANS,
       usage: DEMO_RESOURCE_USAGE,
       isSuspended: false,
       isPastDue: false,
-      isTrial: false,
-      daysRemainingInTrial: 0,
-      hasFeature: (feature: FeatureCode) => checkFeatureAccess('business', feature, DEFAULT_PLANS),
+      isTrial: true,
+      daysRemainingInTrial: 14,
+      hasFeature: (feature: FeatureCode) => checkFeatureAccess('trial', feature, DEFAULT_PLANS),
       getLimitStatus: (limitType: ConfigurableLimitType) =>
         checkResourceLimit(limitType, 1, defaultPlan),
       upgradeSubscription: async () => true,

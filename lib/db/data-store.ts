@@ -156,6 +156,7 @@ export const STORAGE_KEYS = {
   OPERATOR_JOBS: 'printerp_tenant_operator_jobs',
   AUDIT_LOGS: 'printerp_tenant_audit_logs',
   USER_OVERRIDES: 'printerp_tenant_user_overrides',
+  COMPANY_SUBSCRIPTIONS: 'printerp_company_subscriptions',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

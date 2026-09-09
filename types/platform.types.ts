@@ -583,8 +583,13 @@ export interface PlatformSystemSettings {
   default_trial_days: number
   default_currency: string
   default_vat_rate_pct: number
+  maintenance_mode_enabled?: boolean
   maintenance_message: string
   incident_alert_webhook?: string
+  backup_retention_days?: number
+  auto_backup_enabled?: boolean
+  updated_at?: string
+  updated_by_name?: string
 }
 
 export interface PlatformTenantUserItem {

@@ -37,6 +37,84 @@ export function resolveTenantAccountType(
   return 'starter'
 }
 
+export interface ResolvedSubscriptionState {
+  planCode: PlanCode
+  planName: string
+  planNameBn: string
+  status: SubscriptionStatus
+  badgeTextEn: string
+  badgeTextBn: string
+  isTrial: boolean
+  isSuspended: boolean
+  isPastDue: boolean
+}
+
+export function resolveSubscriptionPlan(
+  subscription?: {
+    status?: SubscriptionStatus
+    plan_code?: PlanCode
+    plan_name?: string
+  } | null
+): ResolvedSubscriptionState {
+  if (!subscription) {
+    return {
+      planCode: 'trial',
+      planName: 'Free Trial (14 Days)',
+      planNameBn: '১৪ দিনের ফ্রি ট্রায়াল',
+      status: 'trial',
+      badgeTextEn: 'Trial',
+      badgeTextBn: 'ফ্রি ট্রায়াল',
+      isTrial: true,
+      isSuspended: false,
+      isPastDue: false,
+    }
+  }
+
+  const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
+  const isSuspended = subscription.status === 'suspended'
+  const isPastDue = subscription.status === 'past_due'
+
+  if (isTrial) {
+    return {
+      planCode: 'trial',
+      planName: 'Free Trial (14 Days)',
+      planNameBn: '১৪ দিনের ফ্রি ট্রায়াল',
+      status: subscription.status || 'trial',
+      badgeTextEn: 'Trial',
+      badgeTextBn: 'ফ্রি ট্রায়াল',
+      isTrial: true,
+      isSuspended,
+      isPastDue,
+    }
+  }
+
+  const code: PlanCode =
+    subscription.plan_code === 'enterprise'
+      ? 'enterprise'
+      : subscription.plan_code === 'business'
+      ? 'business'
+      : 'starter'
+
+  const names: Record<PlanCode, { en: string; bn: string }> = {
+    trial: { en: 'Free Trial (14 Days)', bn: '১৪ দিনের ফ্রি ট্রায়াল' },
+    starter: { en: 'Starter Plan', bn: 'স্টার্টার প্ল্যান' },
+    business: { en: 'Business Plan', bn: 'বিজনেস প্ল্যান' },
+    enterprise: { en: 'Enterprise Plan', bn: 'এন্টারপ্রাইজ প্ল্যান' },
+  }
+
+  return {
+    planCode: code,
+    planName: names[code].en,
+    planNameBn: names[code].bn,
+    status: subscription.status || 'active',
+    badgeTextEn: code.charAt(0).toUpperCase() + code.slice(1),
+    badgeTextBn: names[code].bn,
+    isTrial: false,
+    isSuspended,
+    isPastDue,
+  }
+}
+
 export type BillingInterval = 'monthly' | 'yearly'
 
 export type PaymentGatewayType =

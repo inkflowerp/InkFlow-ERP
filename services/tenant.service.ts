@@ -27,7 +27,7 @@ export interface CreateCompanyInput {
   owner_email?: string
   owner_phone?: string
   owner_password?: string
-  plan?: 'starter' | 'business' | 'enterprise' | 'growth' | string
+  plan?: 'trial' | 'starter' | 'business' | 'enterprise' | 'growth' | string
 }
 
 export class TenantService {
@@ -180,7 +180,7 @@ export class TenantService {
           address_bn: data.address_bn,
           currency: data.currency || 'BDT',
           default_locale: data.default_locale || data.default_language || 'bn',
-          plan: data.plan || 'starter',
+          plan: data.plan || 'trial',
         },
         resolvedOwnerId || undefined
       )

@@ -39,7 +39,7 @@ function OnboardingWizard() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const planParam = (searchParams.get('plan') as any) || 'starter'
+  const planParam = (searchParams.get('plan') as any) || 'trial'
   const { locale, tBilingual } = useI18n()
 
   const {
@@ -159,7 +159,7 @@ function OnboardingWizard() {
         owner_email: data.owner_email,
         owner_phone: data.owner_phone,
         owner_password: data.owner_password || undefined,
-        plan: planParam || 'starter',
+        plan: planParam || 'trial',
       })
 
       if (!res?.success || !res?.data) {

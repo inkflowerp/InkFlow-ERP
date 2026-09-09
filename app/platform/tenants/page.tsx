@@ -355,6 +355,7 @@ export default function PlatformTenantsPage() {
             className="h-9 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 font-medium focus:outline-none focus:border-indigo-500"
           >
             <option value="all">All Plans</option>
+            <option value="trial">Trial</option>
             <option value="starter">Starter</option>
             <option value="business">Business</option>
             <option value="enterprise">Enterprise</option>
@@ -656,9 +657,10 @@ export default function PlatformTenantsPage() {
                     <label className="font-semibold text-slate-300">Initial Subscription Plan</label>
                     <select
                       name="plan"
-                      defaultValue="starter"
+                      defaultValue="trial"
                       className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
                     >
+                      <option value="trial">Free Trial Plan (৳0 • 14 Days Evaluation)</option>
                       <option value="starter">Starter Plan (৳1,999/mo • 3 Users • 1 Branch)</option>
                       <option value="business">Business Plan (৳4,999/mo • 10 Users • 3 Branches)</option>
                       <option value="enterprise">Enterprise Plan (৳9,999/mo • 50+ Users • Unlimited Branches)</option>

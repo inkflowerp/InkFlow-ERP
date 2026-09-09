@@ -90,20 +90,30 @@ export class TenantRepository {
     // Initialize Company Subscription (14-Day Evaluation Trial)
     try {
       const rawPlan = companyData.plan?.toLowerCase()
-      const targetPlanCode = rawPlan === 'growth' ? 'business' : rawPlan || 'starter'
+      const targetPlanCode = rawPlan === 'growth' ? 'business' : (rawPlan || 'trial')
       
-      const { data: planRecord } = await (admin as any)
+      let { data: planRecord } = await (admin as any)
         .from('subscription_plans')
         .select('id, code')
         .eq('code', targetPlanCode)
         .maybeSingle()
 
-      const fallbackPlanId = planRecord?.id
-      if (fallbackPlanId) {
+      if (!planRecord && targetPlanCode === 'trial') {
+        const { data: starterPlan } = await (admin as any)
+          .from('subscription_plans')
+          .select('id, code')
+          .eq('code', 'starter')
+          .maybeSingle()
+        planRecord = starterPlan
+      }
+
+      const assignedPlanId = planRecord?.id
+      if (assignedPlanId) {
+        const isTrialPlan = targetPlanCode === 'trial'
         await (admin as any).from('company_subscriptions').insert({
           company_id: newCompany.id,
-          plan_id: fallbackPlanId,
-          status: 'trial',
+          plan_id: assignedPlanId,
+          status: isTrialPlan ? 'trial' : 'active',
           billing_interval: 'monthly',
           current_period_start: new Date().toISOString(),
           current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),

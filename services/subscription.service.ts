@@ -445,11 +445,74 @@ export const DEMO_PLATFORM_SUBSCRIPTIONS: PlatformSubscriptionItem[] = []
 
 export const DEMO_SUBSCRIPTION_INVOICES: SubscriptionInvoiceRecord[] = []
 
+import { createAdminClient } from '@/lib/supabase/admin'
+
+export async function getTenantSubscription(
+  companyId: string
+): Promise<CompanySubscriptionRecord> {
+  if (!companyId || companyId === 'default') {
+    return DEMO_TENANT_SUBSCRIPTION
+  }
+
+  try {
+    const admin = createAdminClient()
+    const { data: sub, error } = await (admin as any)
+      .from('company_subscriptions')
+      .select('*, subscription_plans(*)')
+      .eq('company_id', companyId)
+      .maybeSingle()
+
+    if (!error && sub) {
+      const planCode = sub.subscription_plans?.code || (sub.status === 'trial' ? 'trial' : 'starter')
+      return {
+        id: sub.id,
+        company_id: sub.company_id,
+        plan_id: sub.plan_id,
+        plan_code: planCode,
+        status: sub.status,
+        billing_interval: sub.billing_interval || 'monthly',
+        current_period_start: sub.current_period_start,
+        current_period_end: sub.current_period_end,
+        trial_ends_at: sub.trial_ends_at,
+        cancelled_at: sub.cancelled_at,
+        payment_method_type: sub.payment_method_type,
+        last_payment_reference: sub.last_payment_reference,
+        custom_limits_override: sub.custom_limits_override,
+      }
+    }
+  } catch {}
+
+  // Fallback from local data store if present
+  const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
+  const found = localSubs.find((s) => s.company_id === companyId)
+  if (found) return found
+
+  // Clean default for new trial tenant
+  return {
+    id: `sub-${companyId}`,
+    company_id: companyId,
+    plan_id: DEFAULT_TRIAL_PLAN.id,
+    plan_code: 'trial',
+    status: 'trial',
+    billing_interval: 'monthly',
+    current_period_start: new Date().toISOString(),
+    current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+    trial_ends_at: new Date(Date.now() + 14 * 86400000).toISOString(),
+    payment_method_type: null,
+    last_payment_reference: null,
+    custom_limits_override: null,
+  }
+}
+
 export function checkFeatureAccess(
   planCode: PlanCode,
   feature: FeatureCode,
   plans: SubscriptionPlanRecord[] = DEFAULT_PLANS
 ): boolean {
+  if (planCode === 'trial') {
+    const trialPlan = plans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+    return trialPlan.features.includes(feature)
+  }
   const plan = plans.find((p) => p.code === planCode)
   if (!plan) return false
   return plan.features.includes(feature)

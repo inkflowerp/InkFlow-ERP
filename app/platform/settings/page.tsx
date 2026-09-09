@@ -18,19 +18,31 @@ import {
   FileCheck2,
   Sliders,
   Info,
+  Download,
+  Flame,
+  Radio,
+  Check,
+  Zap,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getPlatformBackupStatusAction, getPlatformSettingsAction } from '@/actions/platform-data.actions'
 import { PlatformBackupStatus, PlatformSystemSettings } from '@/types/platform.types'
-import { updatePlatformSettingsAction } from '@/actions/platform.actions'
+import {
+  updatePlatformSettingsAction,
+  triggerPlatformBackupAction,
+  exportPlatformConfigAction,
+} from '@/actions/platform.actions'
 
 export default function PlatformSettingsPage() {
   const [backup, setBackup] = useState<PlatformBackupStatus | null>(null)
   const [settings, setSettings] = useState<PlatformSystemSettings | null>(null)
+  const [originalSettings, setOriginalSettings] = useState<PlatformSystemSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [backingUp, setBackingUp] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [reason, setReason] = useState('')
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
@@ -46,13 +58,21 @@ export default function PlatformSettingsPage() {
       getPlatformSettingsAction(),
     ])
     if (backupRes.success && backupRes.data) setBackup(backupRes.data)
-    if (settingsRes.success && settingsRes.data) setSettings(settingsRes.data)
+    if (settingsRes.success && settingsRes.data) {
+      setSettings(settingsRes.data)
+      setOriginalSettings(settingsRes.data)
+    }
     setLoading(false)
   }
 
   useEffect(() => {
     loadData()
   }, [])
+
+  const hasUnsavedChanges = React.useMemo(() => {
+    if (!settings || !originalSettings) return false
+    return JSON.stringify(settings) !== JSON.stringify(originalSettings)
+  }, [settings, originalSettings])
 
   const handleSaveSettings = async () => {
     if (!settings) return
@@ -63,6 +83,7 @@ export default function PlatformSettingsPage() {
     )
     if (res.success) {
       showNotification('Platform parameters updated and recorded to audit trail.', 'success')
+      setOriginalSettings(settings)
       setReason('')
     } else {
       showNotification((res as any).error || 'Failed to update settings', 'error')
@@ -70,35 +91,88 @@ export default function PlatformSettingsPage() {
     setSaving(false)
   }
 
+  const handleTriggerBackup = async () => {
+    setBackingUp(true)
+    const res = await triggerPlatformBackupAction()
+    if (res.success && 'data' in res && res.data) {
+      setBackup(res.data)
+      showNotification('Manual disaster recovery snapshot triggered successfully.', 'success')
+    } else {
+      showNotification((res as any).error || 'Failed to trigger backup', 'error')
+    }
+    setBackingUp(false)
+  }
+
+  const handleExportConfig = async () => {
+    setExporting(true)
+    const res = await exportPlatformConfigAction()
+    if (res.success && 'data' in res && res.data) {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(res.data, null, 2))
+      const downloadAnchor = document.createElement('a')
+      downloadAnchor.setAttribute('href', dataStr)
+      downloadAnchor.setAttribute('download', `inkflow-platform-config-${new Date().toISOString().slice(0, 10)}.json`)
+      document.body.appendChild(downloadAnchor)
+      downloadAnchor.click()
+      downloadAnchor.remove()
+      showNotification('Platform cluster configuration exported to JSON archive.', 'success')
+    } else {
+      showNotification((res as any).error || 'Failed to export configuration', 'error')
+    }
+    setExporting(false)
+  }
+
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="h-2 w-2 rounded-full bg-indigo-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+              Root Governance &amp; Infrastructure
+            </span>
+            {hasUnsavedChanges && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold animate-pulse">
+                Unsaved Changes
+              </span>
+            )}
+          </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
             <Settings className="h-7 w-7 text-indigo-400" />
-            Platform Settings & Disaster Recovery
+            Platform Settings &amp; Disaster Recovery
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Cluster-wide configuration, continuous backup telemetry, security thresholds, and Bangladesh compliance defaults.
+            Cluster-wide configuration, continuous backup telemetry, security thresholds, and Bangladesh fiscal defaults.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             size="sm"
             variant="outline"
             onClick={loadData}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800"
+            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 cursor-pointer"
           >
-            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-            Refresh Status
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={exporting}
+            onClick={handleExportConfig}
+            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 cursor-pointer"
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
+            {exporting ? 'Exporting...' : 'Export Config'}
+          </Button>
+
           <Button
             size="sm"
             disabled={saving || !settings}
             onClick={handleSaveSettings}
-            className="h-9 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/20"
+            className="h-9 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-600/20 cursor-pointer"
           >
             <Save className="h-3.5 w-3.5 mr-1.5" />
             {saving ? 'Saving...' : 'Save Settings'}
@@ -109,34 +183,79 @@ export default function PlatformSettingsPage() {
       {/* Toast Notification */}
       {notification && (
         <div
-          className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all ${
+          className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all animate-in fade-in-0 ${
             notification.type === 'success'
               ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200'
               : 'bg-rose-950/80 border-rose-500/50 text-rose-200'
           }`}
         >
-          <Info className="h-4 w-4 shrink-0" />
+          {notification.type === 'success' ? (
+            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+          ) : (
+            <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+          )}
           <span>{notification.message}</span>
         </div>
       )}
 
-      {/* Section 28: Backup & Disaster Recovery Card */}
+      {/* Maintenance Mode Alert Banner Preview if Active */}
+      {settings?.maintenance_mode_enabled && (
+        <div className="p-4 rounded-xl bg-gradient-to-r from-amber-950/80 via-red-950/70 to-amber-950/80 border border-amber-600/60 text-amber-200 shadow-xl flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/40">
+              <Flame className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="font-bold text-sm text-white flex items-center gap-2">
+                PLATFORM MAINTENANCE MODE ACTIVE
+                <span className="text-[10px] bg-red-600 text-white font-black px-2 py-0.5 rounded-full uppercase">
+                  Live Banner
+                </span>
+              </div>
+              <p className="text-xs text-amber-300/90 mt-0.5">
+                {settings.maintenance_message}
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => setSettings({ ...settings, maintenance_mode_enabled: false })}
+            className="h-8 text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shrink-0 cursor-pointer"
+          >
+            Deactivate Mode
+          </Button>
+        </div>
+      )}
+
+      {/* Backup & Disaster Recovery Card */}
       <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <Database className="h-5 w-5 text-emerald-400" />
               <div>
-                <CardTitle className="text-base font-bold text-white">Database Backup & Recovery Status</CardTitle>
+                <CardTitle className="text-base font-bold text-white">Database Backup &amp; Disaster Recovery</CardTitle>
                 <CardDescription className="text-xs text-slate-400">
                   Continuous WAL archiving with multi-region replication and automated point-in-time recovery (PITR).
                 </CardDescription>
               </div>
             </div>
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              {backup?.status.toUpperCase() || 'HEALTHY'}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                {backup?.status.toUpperCase() || 'HEALTHY'}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={backingUp}
+                onClick={handleTriggerBackup}
+                className="h-7 text-xs bg-slate-950 border-slate-700 text-emerald-300 hover:bg-slate-800 font-medium cursor-pointer"
+              >
+                <Zap className="h-3 w-3 mr-1 text-emerald-400" />
+                {backingUp ? 'Snapshotting...' : 'Trigger Snapshot'}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-5">
@@ -147,10 +266,10 @@ export default function PlatformSettingsPage() {
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-emerald-400" />
-                {backup ? new Date(backup.last_backup_time).toLocaleTimeString() : '03:00 UTC'}
+                {backup ? new Date(backup.last_backup_time).toLocaleTimeString() : 'Recent'}
               </div>
               <span className="text-[10px] text-slate-500 mt-1 block">
-                Age: {backup?.backup_age_hours || 4.5} hours ago
+                Age: {backup?.backup_age_hours || 0.5} hours ago
               </span>
             </div>
 
@@ -160,7 +279,7 @@ export default function PlatformSettingsPage() {
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <HardDrive className="h-4 w-4 text-indigo-400" />
-                {backup?.retention_days || 90} Days Continuous
+                {settings?.backup_retention_days || backup?.retention_days || 90} Days Continuous
               </div>
               <span className="text-[10px] text-slate-500 mt-1 block">
                 WAL Archives + Daily Cold Vault
@@ -173,7 +292,7 @@ export default function PlatformSettingsPage() {
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <FileCheck2 className="h-4 w-4 text-cyan-400" />
-                {backup?.last_restore_test_date || '2026-08-28'}
+                {backup?.last_restore_test_date ? backup.last_restore_test_date.slice(0, 10) : '2026-09-08'}
               </div>
               <span className="text-[10px] text-emerald-400 font-semibold mt-1 block">
                 Status: {backup?.last_restore_status.toUpperCase() || 'PASSED'} (0 Data Loss)
@@ -185,7 +304,7 @@ export default function PlatformSettingsPage() {
                 Storage Target
               </span>
               <div className="text-xs font-semibold text-slate-300 truncate">
-                AWS S3 (ap-south-1)
+                GCS Coldline (asia-south1)
               </div>
               <span className="text-[10px] text-slate-500 mt-1 block">
                 Encrypted with AES-256 (GCM)
@@ -211,9 +330,9 @@ export default function PlatformSettingsPage() {
               <div className="flex items-center gap-2.5">
                 <Lock className="h-5 w-5 text-indigo-400" />
                 <div>
-                  <CardTitle className="text-sm font-bold text-white">Security & Access Safeguards</CardTitle>
+                  <CardTitle className="text-sm font-bold text-white">Security &amp; Access Safeguards</CardTitle>
                   <CardDescription className="text-xs text-slate-400">
-                    Platform administrator session TTL and rate limit configurations.
+                    Platform administrator session TTL, rate limiting, and export caps.
                   </CardDescription>
                 </div>
               </div>
@@ -225,12 +344,15 @@ export default function PlatformSettingsPage() {
                 </label>
                 <Input
                   type="number"
+                  min={5}
+                  max={1440}
                   value={settings.session_timeout_minutes}
                   onChange={(e) =>
                     setSettings({ ...settings, session_timeout_minutes: parseInt(e.target.value) || 60 })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                 />
+                <span className="text-[10px] text-slate-500 mt-1 block">Valid range: 5 to 1,440 minutes (24 hours).</span>
               </div>
 
               <div>
@@ -239,6 +361,8 @@ export default function PlatformSettingsPage() {
                 </label>
                 <Input
                   type="number"
+                  min={10}
+                  max={10000}
                   value={settings.rate_limit_requests_per_minute}
                   onChange={(e) =>
                     setSettings({
@@ -246,8 +370,9 @@ export default function PlatformSettingsPage() {
                       rate_limit_requests_per_minute: parseInt(e.target.value) || 120,
                     })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                 />
+                <span className="text-[10px] text-slate-500 mt-1 block">Valid range: 10 to 10,000 req/min.</span>
               </div>
 
               <div>
@@ -256,23 +381,44 @@ export default function PlatformSettingsPage() {
                 </label>
                 <Input
                   type="number"
+                  min={100}
+                  max={100000}
                   value={settings.max_export_records}
                   onChange={(e) =>
-                    setSettings({ ...settings, max_export_records: parseInt(e.target.value) || 50000 })
+                    setSettings({ ...settings, max_export_records: parseInt(e.target.value) || 10000 })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                 />
+                <span className="text-[10px] text-slate-500 mt-1 block">Cap per single tenant export JSON archive.</span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                <span className="text-xs font-semibold text-slate-300">Enforce MFA for All Platform Admins</span>
+                <div>
+                  <span className="text-xs font-semibold text-slate-300 block">Enforce 2FA for Platform Admins</span>
+                  <span className="text-[10px] text-slate-500">Require TOTP authentication on all admin logins</span>
+                </div>
                 <input
                   type="checkbox"
                   checked={settings.mfa_required_for_admins}
                   onChange={(e) =>
                     setSettings({ ...settings, mfa_required_for_admins: e.target.checked })
                   }
-                  className="h-4 w-4 rounded accent-indigo-600 bg-slate-900 border-slate-700"
+                  className="h-4 w-4 rounded accent-indigo-600 bg-slate-900 border-slate-700 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                <div>
+                  <span className="text-xs font-semibold text-slate-300 block">Automated Daily Backups</span>
+                  <span className="text-[10px] text-slate-500">Enable scheduled daily database exports &amp; WAL archives</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.auto_backup_enabled ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, auto_backup_enabled: e.target.checked })
+                  }
+                  className="h-4 w-4 rounded accent-indigo-600 bg-slate-900 border-slate-700 cursor-pointer"
                 />
               </div>
             </CardContent>
@@ -284,9 +430,9 @@ export default function PlatformSettingsPage() {
               <div className="flex items-center gap-2.5">
                 <Globe className="h-5 w-5 text-purple-400" />
                 <div>
-                  <CardTitle className="text-sm font-bold text-white">Localization & Notification Webhooks</CardTitle>
+                  <CardTitle className="text-sm font-bold text-white">Localization, Fiscal &amp; Alerts</CardTitle>
                   <CardDescription className="text-xs text-slate-400">
-                    Bangladesh fiscal parameters and incident webhook endpoints.
+                    Bangladesh fiscal parameters, default trial period, and webhook alert targets.
                   </CardDescription>
                 </div>
               </div>
@@ -298,34 +444,56 @@ export default function PlatformSettingsPage() {
                   <Input
                     value={settings.default_currency}
                     onChange={(e) => setSettings({ ...settings, default_currency: e.target.value })}
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl uppercase font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Mushak 6.3 Standard VAT (%)</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Mushak 6.3 VAT (%)</label>
                   <Input
                     type="number"
+                    min={0}
+                    max={100}
+                    step={0.5}
                     value={settings.default_vat_rate_pct}
                     onChange={(e) =>
                       setSettings({ ...settings, default_vat_rate_pct: parseFloat(e.target.value) || 15 })
                     }
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  Default Trial Duration (Days)
-                </label>
-                <Input
-                  type="number"
-                  value={settings.default_trial_days}
-                  onChange={(e) =>
-                    setSettings({ ...settings, default_trial_days: parseInt(e.target.value) || 14 })
-                  }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                    Default Trial (Days)
+                  </label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={settings.default_trial_days}
+                    onChange={(e) =>
+                      setSettings({ ...settings, default_trial_days: parseInt(e.target.value) || 14 })
+                    }
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                    Backup Retention (Days)
+                  </label>
+                  <Input
+                    type="number"
+                    min={7}
+                    max={3650}
+                    value={settings.backup_retention_days ?? 90}
+                    onChange={(e) =>
+                      setSettings({ ...settings, backup_retention_days: parseInt(e.target.value) || 90 })
+                    }
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  />
+                </div>
               </div>
 
               <div>
@@ -343,9 +511,22 @@ export default function PlatformSettingsPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  Maintenance Advisory Message
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-slate-300">
+                    Maintenance Advisory Message
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-slate-400">Maintenance Mode:</span>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(settings.maintenance_mode_enabled)}
+                      onChange={(e) =>
+                        setSettings({ ...settings, maintenance_mode_enabled: e.target.checked })
+                      }
+                      className="h-3.5 w-3.5 accent-amber-500 cursor-pointer"
+                    />
+                  </div>
+                </div>
                 <Input
                   value={settings.maintenance_message}
                   onChange={(e) =>
@@ -359,27 +540,35 @@ export default function PlatformSettingsPage() {
         </div>
       )}
 
-      {/* Audit Justification Footer */}
+      {/* Audit Justification & Save Card */}
       <Card className="bg-slate-900 border-slate-800 rounded-2xl p-5">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex-1">
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Audit Justification Reason (Recommended for Privileged Parameter Updates)
+              Audit Justification Reason (Required for Compliance Logging)
             </label>
             <Input
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="E.g., Updated standard VAT to 15% per FY2026 NBR circular..."
+              placeholder="e.g. Updated standard VAT rate to 15% per FY2026-27 NBR circular..."
               className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl placeholder:text-slate-600"
             />
           </div>
-          <Button
-            disabled={saving || !settings}
-            onClick={handleSaveSettings}
-            className="h-9 px-6 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shrink-0"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
+          <div className="flex items-center gap-2 self-end sm:self-center">
+            {settings?.updated_at && (
+              <span className="text-[10px] text-slate-500">
+                Last modified: {new Date(settings.updated_at).toLocaleDateString()}
+              </span>
+            )}
+            <Button
+              disabled={saving || !settings}
+              onClick={handleSaveSettings}
+              className="h-9 px-6 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shrink-0 cursor-pointer shadow-lg shadow-indigo-600/20"
+            >
+              <Save className="h-3.5 w-3.5 mr-1.5" />
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
       </Card>
     </div>

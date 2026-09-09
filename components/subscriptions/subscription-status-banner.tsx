@@ -85,8 +85,8 @@ export function SubscriptionStatusBanner() {
             <Clock className="h-4 w-4 shrink-0 text-indigo-200" />
             <span className="bangla-text">
               {tBilingual(
-                `Free Trial Active: ${daysRemainingInTrial} days remaining on ${currentPlan.name}. Upgrade now to retain all business data and access.`,
-                `ফ্রি ট্রায়াল: আর ${daysRemainingInTrial} দিন বাকি রয়েছে (${currentPlan.name_bn})। নিরবচ্ছিন্ন সেবার জন্য আপগ্রেড করুন।`
+                `Free Trial Active: ${daysRemainingInTrial} days remaining. Upgrade now to retain all business data and access.`,
+                `ফ্রি ট্রায়াল: আর ${daysRemainingInTrial} দিন বাকি রয়েছে। নিরবচ্ছিন্ন সেবার জন্য আপগ্রেড করুন।`
               )}
             </span>
           </div>
