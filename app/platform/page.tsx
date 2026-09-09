@@ -272,7 +272,9 @@ export default function PlatformDashboardPage() {
               <HardDrive className="h-3.5 w-3.5 text-pink-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">
-              {data.storage_used_gb > 0 ? `${data.storage_used_gb.toFixed(2)} GB` : '0 GB'}
+              {data.storage_used_gb >= 1
+                ? `${data.storage_used_gb.toFixed(2)} GB`
+                : `${data.storage_used_mb || (data.storage_used_gb * 1024).toFixed(1)} MB`}
             </div>
             <div className="text-[10px] text-pink-400 mt-1 font-semibold">
               {data.storage_total_gb > 0

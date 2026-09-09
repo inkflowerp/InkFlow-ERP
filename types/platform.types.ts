@@ -73,6 +73,7 @@ export interface PlatformDashboardMetrics {
   revenue_mrr: number
   revenue_arr: number
   storage_used_gb: number
+  storage_used_mb?: number
   storage_total_gb: number
   platform_health_status: 'operational' | 'degraded' | 'incident'
   data_classification: DataClassification
@@ -384,6 +385,7 @@ export interface SystemHealthSummary {
   failed_jobs_count: number
   failed_notifications_count: number
   storage_used_gb: number
+  storage_used_mb?: number
   storage_total_gb: number
   api_failures_count: number
   integration_errors_count: number

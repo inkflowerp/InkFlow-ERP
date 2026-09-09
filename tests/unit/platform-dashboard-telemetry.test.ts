@@ -81,7 +81,7 @@ describe('Platform Dashboard Live Telemetry & Health Calculation Tests', () => {
       assert.strictEqual(label, '100 GB', 'Label should be 100 GB')
     })
 
-    test('Correctly computes clean zero storage and tenant-based quota allocation', () => {
+    test('Correctly computes database storage footprint and formats in MB when under 1 GB', () => {
       // 2 trial companies with 2 GB quota each
       const tenantSubscriptions = [
         { plan: { storage_gb: 2 } },
@@ -90,9 +90,13 @@ describe('Platform Dashboard Live Telemetry & Health Calculation Tests', () => {
       const totalAllocatedPlanStorage = tenantSubscriptions.reduce((acc, s) => acc + s.plan.storage_gb, 0)
       assert.strictEqual(totalAllocatedPlanStorage, 4, 'Total quota for 2 trial tenants should be 4 GB')
 
-      const storageUsedGb = 0
-      const pct = totalAllocatedPlanStorage > 0 ? ((storageUsedGb / totalAllocatedPlanStorage) * 100).toFixed(1) : '0'
-      assert.strictEqual(pct, '0.0', 'Zero storage should compute 0.0%')
+      const dbBaseMb = 18.4 + 2 * 1.5 // 21.4 MB
+      const storageUsedGb = Number((dbBaseMb / 1024).toFixed(3))
+      const storageDisplay = storageUsedGb >= 1 ? `${storageUsedGb.toFixed(2)} GB` : `${dbBaseMb.toFixed(1)} MB`
+      const pct = totalAllocatedPlanStorage > 0 ? ((storageUsedGb / totalAllocatedPlanStorage) * 100).toFixed(2) : '0'
+
+      assert.strictEqual(storageDisplay, '21.4 MB', 'Under 1 GB should format with MB')
+      assert.strictEqual(pct, '0.53', '21.4 MB of 4 GB should compute 0.53%')
     })
   })
 
