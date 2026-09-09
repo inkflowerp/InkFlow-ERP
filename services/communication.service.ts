@@ -48,42 +48,8 @@ export function createSmsProvider(type: SmsProviderType): SmsProvider {
 // Demo In-App Notifications
 export const DEMO_IN_APP_NOTIFICATIONS: InAppNotificationRecord[] = []
 
-// Demo Channel Integrations
-export const DEMO_CHANNEL_CONFIGS: ChannelConfigRecord[] = [
-  {
-    id: 'cc-01',
-    company_id: 'c-01',
-    channel_type: 'whatsapp',
-    provider_name: 'meta_cloud_api',
-    is_enabled: true,
-    api_key_or_password: 'EAAG9xxxxxxxxxxxxxxxxxxxxxxxx',
-    sender_id_or_phone: '+8801712000000',
-    account_or_user_id: '109284719204812',
-    updated_at: '2024-09-01T10:00:00Z',
-  },
-  {
-    id: 'cc-02',
-    company_id: 'c-01',
-    channel_type: 'sms',
-    provider_name: 'bulksmsbd', // Bangladeshi SMS Provider
-    is_enabled: true,
-    api_key_or_password: 'bulk_api_key_••••••••••••',
-    sender_id_or_phone: 'PadmaPrint', // Approved Masking Sender ID
-    account_or_user_id: 'padma_digital',
-    updated_at: '2024-09-01T10:00:00Z',
-  },
-  {
-    id: 'cc-03',
-    company_id: 'c-01',
-    channel_type: 'email',
-    provider_name: 'custom_smtp',
-    is_enabled: true,
-    api_key_or_password: 'smtp_password_••••••••',
-    sender_id_or_phone: 'billing@padmadigital.com',
-    account_or_user_id: 'smtp.padmadigital.com:587',
-    updated_at: '2024-09-01T10:00:00Z',
-  },
-]
+// Channel Integrations default list
+export const DEMO_CHANNEL_CONFIGS: ChannelConfigRecord[] = []
 
 // Demo Bilingual Message Templates
 export const DEMO_MESSAGE_TEMPLATES: MessageTemplateRecord[] = [

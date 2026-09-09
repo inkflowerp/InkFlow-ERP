@@ -165,10 +165,10 @@ export default function InvoiceCockpitPage({ params }: BillingDetailPageProps) {
             <div className="grid grid-cols-2 gap-6 p-4 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
               <div className="space-y-1">
                 <div className="font-bold text-slate-700 dark:text-slate-300">নিবন্ধিত ব্যক্তির নাম (Seller):</div>
-                <div className="font-black text-sm">{company?.name || 'Padma Digital Printing & Signage'}</div>
-                <div>ঠিকানা: 42/1 Motijheel C/A, Dhaka-1000</div>
+                <div className="font-black text-sm">{company?.name || 'InkFlow Printing Enterprise'}</div>
+                <div>ঠিকানা: {company?.address || 'Bangladesh'}</div>
                 <div className="font-mono font-bold text-purple-800 dark:text-purple-300">
-                  বিক্রেতার মূসক নিবন্ধন / BIN: <strong>1234567890123</strong>
+                  বিক্রেতার মূসক নিবন্ধন / BIN: <strong>{company?.bin_no || 'N/A'}</strong>
                 </div>
               </div>
 
@@ -246,9 +246,9 @@ export default function InvoiceCockpitPage({ params }: BillingDetailPageProps) {
             {/* Header */}
             <div className="flex justify-between items-start pb-6 border-b border-slate-200 dark:border-slate-800">
               <div>
-                <h1 className="text-xl font-black tracking-tight">{company?.name || 'Padma Digital Printing & Signage'}</h1>
-                <p className="text-slate-500 mt-1">42/1 Motijheel C/A, Dhaka-1000 • Phone: +8801712000000</p>
-                <p className="text-slate-400">Email: billing@padmadigital.com.bd</p>
+                <h1 className="text-xl font-black tracking-tight">{company?.name || 'InkFlow Enterprise'}</h1>
+                <p className="text-slate-500 mt-1">{company?.address || 'Dhaka, Bangladesh'}{company?.phone ? ` • Phone: ${company.phone}` : ''}</p>
+                {company?.email && <p className="text-slate-400">Email: {company.email}</p>}
               </div>
               <div className="text-right space-y-1">
                 <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">INVOICE</div>

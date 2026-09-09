@@ -95,82 +95,45 @@ export async function getCurrentTenant(requestedSlugOrId?: string): Promise<Tena
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (user) {
-      const membership = await TenantRepository.resolveUserMembership(user.id, requestedSlugOrId)
-      if (membership) {
-        const { company, companyUser, effectivePermissions, primaryRole } = membership
-
-        // Validate tenant boundary if requested
-        if (
-          requestedSlugOrId &&
-          company.slug !== requestedSlugOrId &&
-          company.id !== requestedSlugOrId
-        ) {
-          return null
-        }
-
-        return {
-          userId: user.id,
-          userEmail: user.email || companyUser.profile?.email || '',
-          fullName: companyUser.profile?.full_name || user.email?.split('@')[0],
-          fullNameBn: companyUser.profile?.full_name_bn || null,
-          phone: companyUser.profile?.phone || null,
-          companyId: company.id,
-          companySlug: company.slug,
-          companyName: company.name,
-          companyNameBn: company.name_bn || company.name,
-          companyRole: (companyUser.roles?.[0]?.slug as TenantRole) || (primaryRole as TenantRole) || 'business_owner',
-          primaryRole: primaryRole as any,
-          branchId: companyUser.branch_id || undefined,
-          branchName: companyUser.branch?.name,
-          responsibilities: companyUser.responsibilities || [primaryRole],
-          permissions: effectivePermissions,
-        }
-      }
+    if (!user) {
+      // Unauthenticated user -> Strictly return null
+      return null
     }
 
-    // 3. Fallback: Check encrypted / verified Tenant Session Cookie during SSR transitions
-    const tenantSessionRaw = cookieStore.get(TENANT_SESSION_COOKIE)?.value
-    if (tenantSessionRaw) {
-      try {
-        const session: TenantSessionData = JSON.parse(decodeURIComponent(tenantSessionRaw))
-        if (session && session.userId && session.companyId) {
-          // Verify company existence in PostgreSQL
-          const company = await TenantRepository.getCompanyById(session.companyId)
-          if (company && company.is_active) {
-            if (
-              requestedSlugOrId &&
-              company.slug !== requestedSlugOrId &&
-              company.id !== requestedSlugOrId
-            ) {
-              return null
-            }
-
-            return {
-              userId: session.userId,
-              userEmail: session.userEmail,
-              fullName: session.fullName,
-              fullNameBn: session.fullNameBn,
-              phone: session.phone,
-              companyId: company.id,
-              companySlug: company.slug,
-              companyName: company.name,
-              companyNameBn: company.name_bn || company.name,
-              companyRole: session.role,
-              primaryRole: session.primaryRole,
-              branchId: session.branchId,
-              branchName: session.branchName,
-              responsibilities: session.responsibilities || [session.role],
-              permissions: session.permissions || [],
-            }
-          }
-        }
-      } catch {
-        // Invalid tenant cookie
-      }
+    const membership = await TenantRepository.resolveUserMembership(user.id, requestedSlugOrId)
+    if (!membership) {
+      // User is authenticated in Supabase Auth, but has no active membership in requested tenant
+      return null
     }
 
-    return null
+    const { company, companyUser, effectivePermissions, primaryRole } = membership
+
+    // Validate tenant boundary if requested
+    if (
+      requestedSlugOrId &&
+      company.slug !== requestedSlugOrId &&
+      company.id !== requestedSlugOrId
+    ) {
+      return null
+    }
+
+    return {
+      userId: user.id,
+      userEmail: user.email || companyUser.profile?.email || '',
+      fullName: companyUser.profile?.full_name || user.email?.split('@')[0],
+      fullNameBn: companyUser.profile?.full_name_bn || null,
+      phone: companyUser.profile?.phone || null,
+      companyId: company.id,
+      companySlug: company.slug,
+      companyName: company.name,
+      companyNameBn: company.name_bn || company.name,
+      companyRole: (companyUser.roles?.[0]?.slug as TenantRole) || (primaryRole as TenantRole) || 'business_owner',
+      primaryRole: primaryRole as any,
+      branchId: companyUser.branch_id || undefined,
+      branchName: companyUser.branch?.name,
+      responsibilities: companyUser.responsibilities || [primaryRole],
+      permissions: effectivePermissions,
+    }
   } catch {
     return null
   }
