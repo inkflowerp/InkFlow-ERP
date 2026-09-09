@@ -53,10 +53,25 @@ export class TenantService {
       const existingCompany = await TenantRepository.getCompanyBySlug(normalizedSlug)
 
       if (existingCompany) {
+        let isOwnerOfExisting = false
+        if (resolvedOwnerId) {
+          try {
+            const { data: userMembership } = await (admin as any)
+              .from('company_users')
+              .select('id')
+              .eq('company_id', existingCompany.id)
+              .eq('user_id', resolvedOwnerId)
+              .maybeSingle()
+            if (userMembership?.id) {
+              isOwnerOfExisting = true
+            }
+          } catch {}
+        }
+
         const isSameEmail = existingCompany.email && normalizedOwnerEmail && existingCompany.email.toLowerCase().trim() === normalizedOwnerEmail
         const isSamePhone = existingCompany.phone && data.phone && existingCompany.phone.trim() === data.phone.trim()
 
-        if (isSameEmail || isSamePhone || resolvedOwnerId) {
+        if ((isSameEmail || isSamePhone) && (isOwnerOfExisting || resolvedOwnerId)) {
           // Claim and update existing company workspace
           const updated = await TenantRepository.updateCompany(existingCompany.id, {
             name: data.name.trim(),
@@ -80,7 +95,7 @@ export class TenantService {
             message: 'Company workspace claimed and updated successfully',
           }
         } else {
-          return { success: false, error: `Slug '${data.slug}' is already taken.` }
+          return { success: false, error: `URL Slug '${data.slug}' is already taken by another organization. Please choose a unique slug.` }
         }
       }
 

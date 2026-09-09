@@ -137,14 +137,23 @@ export async function createBusinessAction(formData: FormData) {
     const businessType = (formData.get('business_type') as string) || 'commercial_printing'
     const email = (formData.get('email') as string)?.trim() || undefined
     const phone = (formData.get('phone') as string)?.trim() || undefined
+    const address = (formData.get('address') as string)?.trim() || undefined
+    const addressBn = (formData.get('address_bn') as string)?.trim() || undefined
+    const currency = (formData.get('currency') as string)?.trim() || 'BDT'
     const ownerName = (formData.get('owner_name') as string)?.trim() || undefined
     const ownerEmail = (formData.get('owner_email') as string)?.trim() || undefined
     const ownerPhone = (formData.get('owner_phone') as string)?.trim() || undefined
+    const ownerPassword = (formData.get('owner_password') as string)?.trim() || undefined
     const plan = (formData.get('plan') as any) || 'trial'
+    const tradeLicenseNo = (formData.get('trade_license_no') as string)?.trim() || undefined
+    const binNo = (formData.get('bin_no') as string)?.trim() || undefined
+    const tinNo = (formData.get('tin_no') as string)?.trim() || undefined
 
     if (!name || !slug) {
       return { success: false, error: 'Company Name and unique Slug are required.' }
     }
+
+    const defaultOwnerPassword = ownerPassword || 'PrintERP2026!Owner'
 
     const createRes = await TenantService.createCompany({
       name,
@@ -153,9 +162,16 @@ export async function createBusinessAction(formData: FormData) {
       business_type: businessType,
       email: email || ownerEmail,
       phone: phone || ownerPhone,
+      address,
+      address_bn: addressBn,
+      currency,
+      trade_license_no: tradeLicenseNo,
+      bin_no: binNo,
+      tin_no: tinNo,
       owner_name: ownerName,
       owner_email: ownerEmail,
       owner_phone: ownerPhone,
+      owner_password: defaultOwnerPassword,
       plan,
     })
 
@@ -188,7 +204,19 @@ export async function createBusinessAction(formData: FormData) {
     revalidatePath('/platform/tenants')
     revalidatePath('/platform/dashboard')
 
-    return { success: true, data: newCompany }
+    return {
+      success: true,
+      data: newCompany,
+      credentials: {
+        businessName: newCompany.name,
+        slug: newCompany.slug,
+        email: ownerEmail || newCompany.email || 'owner@' + newCompany.slug + '.com',
+        password: defaultOwnerPassword,
+        loginUrl: `/${newCompany.slug}/login`,
+        dashboardUrl: `/${newCompany.slug}/dashboard`,
+        plan: plan,
+      },
+    }
   } catch (err: any) {
     return { success: false, error: err.message || 'An error occurred during tenant creation.' }
   }

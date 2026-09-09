@@ -34,6 +34,13 @@ import {
   Sparkles,
   Trash2,
   Plus,
+  Copy,
+  Check,
+  Eye,
+  EyeOff,
+  Key,
+  Globe,
+  Lock,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -63,10 +70,71 @@ export default function PlatformTenantsPage() {
   const [planFilter, setPlanFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
 
-  // Create Business Modal
+  // Create Business Modal State
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isCreatingBusiness, setIsCreatingBusiness] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [provisionName, setProvisionName] = useState('')
+  const [provisionSlug, setProvisionSlug] = useState('')
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [provisionNameBn, setProvisionNameBn] = useState('')
+  const [provisionBusinessType, setProvisionBusinessType] = useState('commercial_printing')
+  const [provisionOwnerName, setProvisionOwnerName] = useState('')
+  const [provisionOwnerEmail, setProvisionOwnerEmail] = useState('')
+  const [provisionOwnerPhone, setProvisionOwnerPhone] = useState('')
+  const [provisionPassword, setProvisionPassword] = useState('PrintERP2026!Owner')
+  const [showPassword, setShowPassword] = useState(false)
+  const [provisionAddress, setProvisionAddress] = useState('')
+  const [provisionCurrency, setProvisionCurrency] = useState('BDT')
+  const [provisionPlan, setProvisionPlan] = useState('trial')
+
+  // Post-Provisioning Credentials Summary State
+  const [provisionedResult, setProvisionedResult] = useState<{
+    company: any
+    credentials: {
+      businessName: string
+      slug: string
+      email: string
+      password: string
+      loginUrl: string
+      dashboardUrl: string
+      plan: string
+    }
+  } | null>(null)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[\s_]+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+
+  const handleNameChange = (val: string) => {
+    setProvisionName(val)
+    if (!slugManuallyEdited) {
+      setProvisionSlug(generateSlug(val))
+    }
+  }
+
+  const handleGeneratePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*'
+    let pwd = ''
+    for (let i = 0; i < 14; i++) {
+      pwd += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    setProvisionPassword(pwd)
+    setShowPassword(true)
+  }
+
+  const handleCopyText = (text: string, fieldKey: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedField(fieldKey)
+    setTimeout(() => setCopiedField(null), 2500)
+  }
 
   // Status Change Modal (Suspend / Reactivate)
   const [statusModalCompany, setStatusModalCompany] = useState<PlatformTenantCompany | null>(null)
@@ -134,15 +202,66 @@ export default function PlatformTenantsPage() {
     setIsCreatingBusiness(true)
     setCreateError(null)
 
-    const formData = new FormData(e.currentTarget)
+    const finalSlug = (provisionSlug || generateSlug(provisionName)).trim().toLowerCase()
+    const finalName = provisionName.trim()
+
+    if (!finalName) {
+      setCreateError('Business Name is required.')
+      setIsCreatingBusiness(false)
+      return
+    }
+
+    if (!finalSlug) {
+      setCreateError('URL Slug is required.')
+      setIsCreatingBusiness(false)
+      return
+    }
+
+    const formData = new FormData()
+    formData.set('name', finalName)
+    formData.set('slug', finalSlug)
+    formData.set('name_bn', provisionNameBn.trim())
+    formData.set('business_type', provisionBusinessType)
+    formData.set('owner_name', provisionOwnerName.trim())
+    formData.set('owner_email', provisionOwnerEmail.trim())
+    formData.set('owner_phone', provisionOwnerPhone.trim())
+    formData.set('owner_password', provisionPassword.trim() || 'PrintERP2026!Owner')
+    formData.set('address', provisionAddress.trim())
+    formData.set('currency', provisionCurrency)
+    formData.set('plan', provisionPlan)
+
     const res = await createBusinessAction(formData)
 
-    if (res.success) {
-      showNotification(`Tenant business "${formData.get('name')}" provisioned successfully.`)
+    if (res.success && res.data) {
+      showNotification(`Tenant organization "${finalName}" provisioned successfully.`)
       setShowCreateModal(false)
+      // Open credentials summary
+      setProvisionedResult({
+        company: res.data,
+        credentials: (res as any).credentials || {
+          businessName: res.data.name,
+          slug: res.data.slug,
+          email: provisionOwnerEmail.trim() || res.data.email || `owner@${res.data.slug}.com`,
+          password: provisionPassword.trim() || 'PrintERP2026!Owner',
+          loginUrl: `/${res.data.slug}/login`,
+          dashboardUrl: `/${res.data.slug}/dashboard`,
+          plan: provisionPlan,
+        },
+      })
+      // Reset form fields
+      setProvisionName('')
+      setProvisionSlug('')
+      setSlugManuallyEdited(false)
+      setProvisionNameBn('')
+      setProvisionOwnerName('')
+      setProvisionOwnerEmail('')
+      setProvisionOwnerPhone('')
+      setProvisionPassword('PrintERP2026!Owner')
+      setProvisionAddress('')
+      setProvisionPlan('trial')
       loadData()
     } else {
-      setCreateError(res.error || 'Failed to create business.')
+      setCreateError(res.error || 'Failed to provision tenant organization.')
     }
     setIsCreatingBusiness(false)
   }
@@ -571,111 +690,330 @@ export default function PlatformTenantsPage() {
 
       {/* 1. CREATE BUSINESS MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-lg bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
-            <CardHeader className="border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200 overflow-y-auto">
+          <Card className="w-full max-w-2xl bg-slate-900 border-slate-800 text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
+            <CardHeader className="border-b border-slate-800 pb-4 shrink-0">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-indigo-400" />
-                  Provision New Tenant Organization
-                </CardTitle>
+                <div className="flex items-center gap-2.5">
+                  <div className="h-10 w-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                    <Building2 className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-bold text-white flex items-center gap-2">
+                      Provision New Tenant Organization
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-400">
+                      Creates a dedicated PostgreSQL partitioned tenant workspace with roles, branches, and subscriptions.
+                    </CardDescription>
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-slate-400 hover:text-white p-1 rounded-lg"
+                  className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <CardDescription className="text-xs text-slate-400">
-                Creates a partitioned multi-tenant business instance on PostgreSQL with standard RBAC presets.
-              </CardDescription>
             </CardHeader>
 
-            <form onSubmit={handleCreateBusiness}>
-              <CardContent className="space-y-4 pt-4 text-xs">
+            <form onSubmit={handleCreateBusiness} className="flex flex-col flex-1 overflow-hidden">
+              <CardContent className="space-y-5 p-5 text-xs overflow-y-auto flex-1">
                 {createError && (
-                  <div className="p-3 rounded-xl bg-red-950/60 border border-red-800 text-red-200 text-xs">
-                    {createError}
+                  <div className="p-3.5 rounded-xl bg-red-950/60 border border-red-800 text-red-200 text-xs flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-red-400 shrink-0" />
+                    <span>{createError}</span>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">Business Name *</label>
-                    <Input
-                      name="name"
-                      required
-                      placeholder="e.g. Classic Printers"
-                      className="bg-slate-950 border-slate-800 text-white text-xs h-9"
-                    />
+                {/* Workspace Live Endpoint Banner */}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-indigo-400 shrink-0" />
+                    <span className="text-slate-400 text-xs">Direct Workspace URL:</span>
+                    <span className="font-mono text-white font-bold text-xs">
+                      /{provisionSlug || generateSlug(provisionName) || 'tenant-slug'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-md">
+                    Multi-Tenant Path
+                  </span>
+                </div>
+
+                {/* Section: Organization Identity */}
+                <div className="space-y-3">
+                  <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-indigo-400" />
+                    1. Organization Identity &amp; Routing
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">URL Slug *</label>
-                    <Input
-                      name="slug"
-                      required
-                      placeholder="classic-printers"
-                      className="bg-slate-950 border-slate-800 text-white text-xs h-9 font-mono"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-slate-300">
+                        Business Name <span className="text-red-400">*</span>
+                      </label>
+                      <Input
+                        required
+                        placeholder="e.g. Meghna Offset Printers"
+                        value={provisionName}
+                        onChange={(e) => handleNameChange(e.target.value)}
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-slate-300">
+                          URL Slug (Kebab-case) <span className="text-red-400">*</span>
+                        </label>
+                        {slugManuallyEdited && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSlugManuallyEdited(false)
+                              setProvisionSlug(generateSlug(provisionName))
+                            }}
+                            className="text-[10px] text-indigo-400 hover:underline"
+                          >
+                            Reset to auto
+                          </button>
+                        )}
+                      </div>
+                      <Input
+                        required
+                        placeholder="meghna-offset"
+                        value={provisionSlug}
+                        onChange={(e) => {
+                          setSlugManuallyEdited(true)
+                          setProvisionSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+                        }}
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-slate-300">Bengali Name (ঐচ্ছিক বাংলা নাম)</label>
+                      <Input
+                        placeholder="যেমন: মেঘনা অফসেট প্রিন্টার্স"
+                        value={provisionNameBn}
+                        onChange={(e) => setProvisionNameBn(e.target.value)}
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-slate-300">Industry / Business Type</label>
+                      <select
+                        value={provisionBusinessType}
+                        onChange={(e) => setProvisionBusinessType(e.target.value)}
+                        className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
+                      >
+                        <option value="commercial_printing">Commercial Printing &amp; Offset</option>
+                        <option value="signage_flex">Outdoor Signage &amp; Flex Banner</option>
+                        <option value="digital_press">Digital Press &amp; Laser Print</option>
+                        <option value="packaging">Packaging &amp; Corrugated Box</option>
+                        <option value="garment_accessories">Garment Accessories &amp; Label</option>
+                        <option value="sublimation">Sublimation &amp; Promotional Gifts</option>
+                        <option value="publication">Newspaper &amp; Periodicals Publishing</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">Owner Name</label>
-                    <Input
-                      name="owner_name"
-                      placeholder="e.g. Haji Shamim"
-                      className="bg-slate-950 border-slate-800 text-white text-xs h-9"
-                    />
+                {/* Section: Owner & Primary Administrator */}
+                <div className="space-y-3 border-t border-slate-800/80 pt-4">
+                  <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <UserCheck className="h-3.5 w-3.5 text-indigo-400" />
+                    2. Primary Owner Credentials &amp; Contact
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">Owner Email</label>
-                    <Input
-                      name="owner_email"
-                      type="email"
-                      placeholder="owner@example.com"
-                      className="bg-slate-950 border-slate-800 text-white text-xs h-9"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-slate-300">Owner Full Name</label>
+                      <Input
+                        placeholder="e.g. Al-Haj Rafiqul Islam"
+                        value={provisionOwnerName}
+                        onChange={(e) => setProvisionOwnerName(e.target.value)}
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-slate-300">Owner Email (Login Account)</label>
+                      <Input
+                        type="email"
+                        placeholder="owner@meghna-offset.com"
+                        value={provisionOwnerEmail}
+                        onChange={(e) => setProvisionOwnerEmail(e.target.value)}
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-slate-300">Owner Phone (BD Format)</label>
+                      <Input
+                        placeholder="01711-000000"
+                        value={provisionOwnerPhone}
+                        onChange={(e) => setProvisionOwnerPhone(e.target.value)}
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9 font-mono"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-slate-300">Initial Owner Password</label>
+                        <button
+                          type="button"
+                          onClick={handleGeneratePassword}
+                          className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          Generate Strong
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          value={provisionPassword}
+                          onChange={(e) => setProvisionPassword(e.target.value)}
+                          placeholder="Password"
+                          className="bg-slate-950 border-slate-800 text-white text-xs h-9 pr-8 font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">Owner Phone (BD)</label>
-                    <Input
-                      name="owner_phone"
-                      placeholder="01711000000"
-                      className="bg-slate-950 border-slate-800 text-white text-xs h-9"
-                    />
+                {/* Section: Location & Currency */}
+                <div className="space-y-3 border-t border-slate-800/80 pt-4">
+                  <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-indigo-400" />
+                    3. Location &amp; Currency Profile
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">Initial Subscription Plan</label>
-                    <select
-                      name="plan"
-                      defaultValue="trial"
-                      className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="font-semibold text-slate-300">Business / Factory Address</label>
+                      <Input
+                        placeholder="e.g. 14 Arambagh, Motijheel, Dhaka-1000"
+                        value={provisionAddress}
+                        onChange={(e) => setProvisionAddress(e.target.value)}
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-slate-300">Base Currency</label>
+                      <select
+                        value={provisionCurrency}
+                        onChange={(e) => setProvisionCurrency(e.target.value)}
+                        className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
+                      >
+                        <option value="BDT">BDT (৳ Bangladesh Taka)</option>
+                        <option value="USD">USD ($ US Dollar)</option>
+                        <option value="EUR">EUR (€ Euro)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section: Subscription Plan Selection */}
+                <div className="space-y-3 border-t border-slate-800/80 pt-4">
+                  <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5 text-indigo-400" />
+                    4. Initial Subscription Plan
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div
+                      onClick={() => setProvisionPlan('trial')}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        provisionPlan === 'trial'
+                          ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
+                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                      }`}
                     >
-                      <option value="trial">Free Trial Plan (৳0 • 14 Days Evaluation)</option>
-                      <option value="starter">Starter Plan (৳1,999/mo • 3 Users • 1 Branch)</option>
-                      <option value="business">Business Plan (৳4,999/mo • 10 Users • 3 Branches)</option>
-                      <option value="enterprise">Enterprise Plan (৳9,999/mo • 50+ Users • Unlimited Branches)</option>
-                    </select>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-white text-xs">Free Trial Evaluation</span>
+                        <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
+                          ৳0 • 14 Days
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400">Full platform evaluation access for 14 days without charge.</p>
+                    </div>
+
+                    <div
+                      onClick={() => setProvisionPlan('starter')}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        provisionPlan === 'starter'
+                          ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
+                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-white text-xs">Starter Plan</span>
+                        <span className="text-[10px] font-semibold bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">
+                          ৳1,999/mo
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400">Up to 3 Users • 1 Branch • Basic Quotations &amp; Billing.</p>
+                    </div>
+
+                    <div
+                      onClick={() => setProvisionPlan('business')}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        provisionPlan === 'business'
+                          ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
+                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-white text-xs">Business Plan</span>
+                        <span className="text-[10px] font-semibold bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded">
+                          ৳4,999/mo
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400">Up to 10 Users • 3 Branches • Inventory &amp; Production Kanban.</p>
+                    </div>
+
+                    <div
+                      onClick={() => setProvisionPlan('enterprise')}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        provisionPlan === 'enterprise'
+                          ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
+                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-white text-xs">Enterprise Plan</span>
+                        <span className="text-[10px] font-semibold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">
+                          ৳9,999/mo
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400">50+ Users • Unlimited Branches • Dedicated SLA &amp; Support.</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
 
-              <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+              <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2.5 bg-slate-950/80 shrink-0">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+                  className="text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800"
                 >
                   Cancel
                 </Button>
@@ -683,12 +1021,187 @@ export default function PlatformTenantsPage() {
                   type="submit"
                   disabled={isCreatingBusiness}
                   size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4"
                 >
-                  {isCreatingBusiness ? 'Provisioning...' : 'Provision Tenant'}
+                  {isCreatingBusiness ? (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                      Provisioning Workspace...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-3.5 w-3.5 mr-1.5" />
+                      Provision Tenant Organization
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
+          </Card>
+        </div>
+      )}
+
+      {/* 1.1 POST-PROVISIONING CREDENTIALS SUMMARY MODAL */}
+      {provisionedResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200">
+          <Card className="w-full max-w-lg bg-slate-900 border-emerald-500/30 text-slate-100 shadow-2xl overflow-hidden">
+            <div className="bg-emerald-950/40 border-b border-emerald-500/20 p-5 flex items-start gap-3">
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-white text-base flex items-center gap-2">
+                  Tenant Workspace Provisioned!
+                </h3>
+                <p className="text-xs text-emerald-300/80 mt-0.5">
+                  The organization instance has been partitioned and initialized with administrative privileges.
+                </p>
+              </div>
+            </div>
+
+            <CardContent className="p-5 space-y-4 text-xs">
+              {/* Org Details Card */}
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Organization:</span>
+                  <span className="font-bold text-white text-sm">{provisionedResult.credentials.businessName}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Subscription Tier:</span>
+                  <span className="font-semibold text-indigo-400 uppercase tracking-wider text-[11px]">
+                    {provisionedResult.credentials.plan}
+                  </span>
+                </div>
+              </div>
+
+              {/* Login Credentials Box */}
+              <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 space-y-3">
+                <div className="font-bold text-slate-300 text-xs flex items-center gap-1.5 border-b border-slate-800/80 pb-2">
+                  <Key className="h-3.5 w-3.5 text-indigo-400" />
+                  Owner Access &amp; Login Credentials
+                </div>
+
+                <div className="space-y-2">
+                  <div>
+                    <div className="text-[11px] text-slate-400 mb-0.5">Direct Workspace URL</div>
+                    <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                      <span className="font-mono text-white text-xs truncate">
+                        {provisionedResult.credentials.loginUrl}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleCopyText(
+                            `${window.location.origin}${provisionedResult.credentials.loginUrl}`,
+                            'url'
+                          )
+                        }
+                        className="text-slate-400 hover:text-indigo-400 p-1 text-xs shrink-0"
+                        title="Copy Login URL"
+                      >
+                        {copiedField === 'url' ? (
+                          <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] text-slate-400 mb-0.5">Owner Email</div>
+                    <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                      <span className="font-mono text-white text-xs truncate">
+                        {provisionedResult.credentials.email}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyText(provisionedResult.credentials.email, 'email')}
+                        className="text-slate-400 hover:text-indigo-400 p-1 text-xs shrink-0"
+                        title="Copy Email"
+                      >
+                        {copiedField === 'email' ? (
+                          <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] text-slate-400 mb-0.5">Temporary Access Password</div>
+                    <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                      <span className="font-mono text-emerald-400 font-bold text-xs">
+                        {provisionedResult.credentials.password}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyText(provisionedResult.credentials.password, 'password')}
+                        className="text-slate-400 hover:text-indigo-400 p-1 text-xs shrink-0"
+                        title="Copy Password"
+                      >
+                        {copiedField === 'password' ? (
+                          <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* One-Click Copy All */}
+              <Button
+                type="button"
+                onClick={() => {
+                  const payload = `🚀 Welcome to InkFlow ERP!\n\nYour organization workspace is ready:\n🏢 Organization: ${provisionedResult.credentials.businessName}\n🌐 Login URL: ${window.location.origin}${provisionedResult.credentials.loginUrl}\n👤 Owner Email: ${provisionedResult.credentials.email}\n🔑 Password: ${provisionedResult.credentials.password}\n📦 Plan: ${provisionedResult.credentials.plan.toUpperCase()}\n\nPlease log in and update your password from your profile settings.`
+                  handleCopyText(payload, 'all')
+                }}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs h-9 border border-slate-700 rounded-xl"
+              >
+                {copiedField === 'all' ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-400 mr-1.5" />
+                    Onboarding Credentials Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5 text-indigo-400 mr-1.5" />
+                    Copy Formatted Onboarding Message (WhatsApp / Email)
+                  </>
+                )}
+              </Button>
+            </CardContent>
+
+            <div className="p-4 border-t border-slate-800 flex items-center justify-between gap-2 bg-slate-950/80">
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/platform/companies/${provisionedResult.company.id}`}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-colors"
+                >
+                  View 360° Profile
+                </Link>
+                <Link
+                  href={provisionedResult.credentials.loginUrl}
+                  target="_blank"
+                  className="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 font-medium text-xs border border-indigo-500/30 flex items-center gap-1 transition-colors"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Open Workspace
+                </Link>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setProvisionedResult(null)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4"
+              >
+                Done
+              </Button>
+            </div>
           </Card>
         </div>
       )}

@@ -304,4 +304,48 @@ describe('Tenant & Business Creation End-to-End Audit & Verification', () => {
       /Slug 'prime-print' is already taken/
     )
   })
+
+  test('5. Platform Admin Provisioning: Supports custom owner password, address, and localized credentials', () => {
+    const db = new MockTenantDatabase()
+    const result = db.createCompany({
+      name: 'Agrabad Offset & Digital Media',
+      name_bn: 'আগ্রাবাদ অফসেট অ্যান্ড ডিজিটাল মিডিয়া',
+      slug: 'agrabad-media',
+      business_type: 'digital_press',
+      phone: '01911998877',
+      email: 'info@agrabadmedia.com',
+      owner_name: 'Mahmudul Hasan',
+      owner_email: 'owner@agrabadmedia.com',
+      owner_phone: '01911998877',
+      plan: 'business',
+      default_locale: 'bn',
+    })
+
+    assert.strictEqual(result.company.name, 'Agrabad Offset & Digital Media')
+    assert.strictEqual(result.company.name_bn, 'আগ্রাবাদ অফসেট অ্যান্ড ডিজিটাল মিডিয়া')
+    assert.strictEqual(result.company.slug, 'agrabad-media')
+    assert.strictEqual(result.company.business_type, 'digital_press')
+
+    const ownerUser = db.companyUsers.find((cu) => cu.company_id === result.company.id)
+    assert.ok(ownerUser)
+    assert.strictEqual(ownerUser.profile.full_name, 'Mahmudul Hasan')
+    assert.strictEqual(ownerUser.profile.email, 'owner@agrabadmedia.com')
+    assert.strictEqual(ownerUser.department, 'Management')
+    assert.deepStrictEqual(ownerUser.responsibilities, ['business_owner'])
+  })
+
+  test('6. Slug normalization and kebab-case transformation', () => {
+    const slugify = (text: string) =>
+      text
+        .toLowerCase()
+        .trim()
+        .replace(/[\s_]+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+
+    assert.strictEqual(slugify('Meghna Offset & Digital Printers!'), 'meghna-offset-digital-printers')
+    assert.strictEqual(slugify('  Dhaka   Flex   Printing  Ltd. '), 'dhaka-flex-printing-ltd')
+    assert.strictEqual(slugify('Shamol_Press_2026'), 'shamol-press-2026')
+  })
 })

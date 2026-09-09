@@ -1019,14 +1019,25 @@ export default function PlatformCompaniesPage() {
                     />
                   </div>
                 </div>
-                <div className="mt-2.5">
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Owner Email</label>
-                  <Input
-                    name="owner_email"
-                    type="email"
-                    placeholder="owner@meghna-offset.com"
-                    className="bg-slate-950 border-slate-800 text-xs text-white"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Owner Email</label>
+                    <Input
+                      name="owner_email"
+                      type="email"
+                      placeholder="owner@meghna-offset.com"
+                      className="bg-slate-950 border-slate-800 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Initial Owner Password</label>
+                    <Input
+                      name="owner_password"
+                      defaultValue="PrintERP2026!Owner"
+                      placeholder="Password"
+                      className="bg-slate-950 border-slate-800 text-xs text-white font-mono"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1039,7 +1050,7 @@ export default function PlatformCompaniesPage() {
                   defaultValue="trial"
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                 >
-                  <option value="trial">Free Trial Plan (৳0/mo • 5 Users • 1 Branch)</option>
+                  <option value="trial">Free Trial Plan (৳0/mo • 14 Days Evaluation)</option>
                   <option value="starter">Starter Plan (৳1,999/mo • 3 Users • 1 Branch)</option>
                   <option value="business">Business Plan (৳4,999/mo • 10 Users • 3 Branches)</option>
                   <option value="enterprise">Enterprise Plan (৳9,999/mo • 50+ Users • Unlimited Branches)</option>
