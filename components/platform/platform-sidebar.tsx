@@ -90,8 +90,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     title: 'Settings',
     items: [
       { title: 'Platform Settings', href: '/platform/settings', icon: Settings },
-      { title: 'Document & Numbering', href: '/platform/settings?tab=documents', icon: FileCheck2 },
-      { title: 'Communication', href: '/platform/settings?tab=communication', icon: MessageSquare },
+      { title: 'Email Gateway', href: '/platform/settings/communication', icon: MessageSquare },
       { title: 'System Configuration', href: '/platform/settings?tab=system', icon: Cpu },
     ],
   },

@@ -610,6 +610,7 @@ export default function CommunicationsHubPage() {
               >
                 <option value="whatsapp">WhatsApp Business API</option>
                 <option value="sms">SMS (BulkSMSBD Masking)</option>
+                <option value="email">Email Gateway (Custom / Default)</option>
               </select>
             </div>
 

@@ -11,6 +11,7 @@ import {
   Hash,
   GitBranch,
   Bell,
+  Mail,
   Users,
   ShieldCheck,
 } from 'lucide-react'
@@ -66,6 +67,12 @@ export function SettingsNav() {
       titleBn: 'নোটিফিকেশন ও এসএমএস',
       href: `/${slug}/settings/notifications`,
       icon: Bell,
+    },
+    {
+      title: 'Email Gateway',
+      titleBn: 'ইমেইল গেটওয়ে',
+      href: `/${slug}/settings/email`,
+      icon: Mail,
     },
     {
       title: 'Team Users',

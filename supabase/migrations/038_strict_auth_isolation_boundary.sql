@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 037: Strict Platform vs Tenant Auth Isolation & RLS Boundary
+-- InkFlow SaaS - Migration 038: Strict Platform vs Tenant Auth Isolation & RLS Boundary
 -- Single Source of Truth & Fail-Closed Database Policies:
 --   1. Platform Users -> platform_admins (is_active = true) -> Auth Context: Platform
 --   2. Tenant Users -> company_users (status = 'active') + companies (is_active = true) -> Auth Context: Tenant

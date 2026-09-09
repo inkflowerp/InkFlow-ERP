@@ -1,5 +1,5 @@
 -- ==============================================================================
--- InkFlow SaaS - Migration 036: Security Definer Hardening & Search Path Lockdown
+-- InkFlow SaaS - Migration 037: Security Definer Hardening & Search Path Lockdown
 -- Ensures all platform security definer functions:
 --   1. Have explicit, safe search_path = public, pg_temp
 --   2. Enforce strict caller validation
