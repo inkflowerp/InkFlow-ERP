@@ -344,6 +344,7 @@ export default function PlatformSubscriptionsPage() {
                   onChange={(e) => setTargetPlan(e.target.value as PlatformPlanCode)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white capitalize font-semibold"
                 >
+                  <option value="trial">Free Trial Plan (৳0/mo - Evaluation)</option>
                   <option value="starter">Starter Plan (৳1,999/mo)</option>
                   <option value="business">Business Plan (৳4,999/mo)</option>
                   <option value="enterprise">Enterprise Plan (৳9,999/mo)</option>

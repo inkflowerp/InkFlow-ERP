@@ -21,7 +21,7 @@ export function PricingSection() {
   const [interval, setInterval] = useState<'monthly' | 'yearly'>('monthly')
   const { tBilingual } = useI18n()
 
-  const plans = DEFAULT_PLANS
+  const plans = DEFAULT_PLANS.filter((p) => p.code !== 'trial')
 
   return (
     <section id="pricing" className="py-16 sm:py-20 md:py-28 bg-slate-900/60 relative overflow-hidden border-t border-slate-800">

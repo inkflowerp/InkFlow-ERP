@@ -1,6 +1,6 @@
 export type TenantAccountType = 'trial' | 'starter' | 'business' | 'enterprise'
 
-export type PlanCode = 'starter' | 'business' | 'enterprise'
+export type PlanCode = 'trial' | 'starter' | 'business' | 'enterprise'
 
 export type SubscriptionStatus =
   | 'trial'
@@ -30,7 +30,7 @@ export function resolveTenantAccountType(
   subscription?: { status?: SubscriptionStatus; plan_code?: PlanCode } | null
 ): TenantAccountType {
   if (!subscription) return 'trial'
-  if (subscription.status === 'trial') return 'trial'
+  if (subscription.status === 'trial' || subscription.plan_code === 'trial') return 'trial'
   if (subscription.plan_code === 'enterprise') return 'enterprise'
   if (subscription.plan_code === 'business') return 'business'
   if (subscription.plan_code === 'starter') return 'starter'
@@ -95,6 +95,7 @@ export interface SubscriptionPlanRecord {
   max_customers: number
   max_products: number
   features: FeatureCode[]
+  trial_days?: number
   is_active: boolean
   sort_order: number
 }
@@ -160,6 +161,7 @@ export interface CreatePlanInput {
   max_customers: number
   max_products: number
   features: FeatureCode[]
+  trial_days?: number
   is_active?: boolean
   sort_order?: number
 }

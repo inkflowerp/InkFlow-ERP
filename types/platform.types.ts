@@ -39,7 +39,7 @@ export interface PlatformSupportSessionRecord {
   created_at: string
 }
 
-export type PlatformPlanCode = 'starter' | 'business' | 'enterprise' | 'growth' | 'custom'
+export type PlatformPlanCode = 'trial' | 'starter' | 'business' | 'enterprise' | 'growth' | 'custom'
 
 export type TenantHealthStatus = 'healthy' | 'at_risk' | 'critical' | 'suspended'
 

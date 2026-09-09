@@ -261,7 +261,28 @@ export const FEATURE_METADATA: Record<FeatureCode, FeatureMeta> = {
   },
 }
 
+export const DEFAULT_TRIAL_PLAN: SubscriptionPlanRecord = {
+  id: 'sp-00',
+  code: 'trial',
+  name: 'Free Trial (14 Days)',
+  name_bn: '১৪ দিনের ফ্রি ট্রায়াল',
+  description: '14-day evaluation with full access to all ERP modules. No credit card required.',
+  price_monthly: 0,
+  price_yearly: 0,
+  max_users: 5,
+  max_branches: 1,
+  storage_gb: 2,
+  monthly_orders: 100,
+  max_customers: 200,
+  max_products: 200,
+  trial_days: 14,
+  features: Object.keys(FEATURE_METADATA) as FeatureCode[],
+  is_active: true,
+  sort_order: 0,
+}
+
 export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
+  DEFAULT_TRIAL_PLAN,
   {
     id: 'sp-01',
     code: 'starter',
@@ -276,6 +297,7 @@ export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
     monthly_orders: 50,
     max_customers: 100,
     max_products: 100,
+    trial_days: 0,
     features: ['basic_sales', 'basic_customers', 'quotation_pdf', 'delivery_challan'],
     is_active: true,
     sort_order: 1,
@@ -294,6 +316,7 @@ export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
     monthly_orders: 500,
     max_customers: 1000,
     max_products: 1000,
+    trial_days: 0,
     features: [
       'basic_sales',
       'basic_customers',
@@ -328,6 +351,7 @@ export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
     monthly_orders: 99999,
     max_customers: 99999,
     max_products: 99999,
+    trial_days: 0,
     features: [
       'basic_sales',
       'basic_customers',
@@ -355,6 +379,10 @@ export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
     sort_order: 3,
   },
 ]
+
+export function getTrialPlan(plans: SubscriptionPlanRecord[] = DEFAULT_PLANS): SubscriptionPlanRecord {
+  return plans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+}
 
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
