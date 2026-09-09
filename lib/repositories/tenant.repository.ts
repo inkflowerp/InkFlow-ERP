@@ -435,6 +435,21 @@ export class TenantRepository {
   } | null> {
     const admin = createAdminClient()
 
+    let targetCompanyId: string | null = null
+
+    if (requestedSlugOrId) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedSlugOrId)
+      if (isUuid) {
+        targetCompanyId = requestedSlugOrId
+      } else {
+        const targetCompany = await TenantRepository.getCompanyBySlug(requestedSlugOrId)
+        if (!targetCompany) {
+          return null
+        }
+        targetCompanyId = targetCompany.id
+      }
+    }
+
     let query = admin
       .from('company_users')
       .select(`
@@ -448,8 +463,8 @@ export class TenantRepository {
       .eq('user_id', userId)
       .eq('status', 'active')
 
-    if (requestedSlugOrId) {
-      query = query.or(`company.slug.eq.${requestedSlugOrId},company.id.eq.${requestedSlugOrId}`)
+    if (targetCompanyId) {
+      query = query.eq('company_id', targetCompanyId)
     }
 
     const { data: records, error } = await query
@@ -472,7 +487,11 @@ export class TenantRepository {
     })
 
     const responsibilities = roles.map((r: any) => r.slug || r.name)
-    const isOwner = responsibilities.includes('owner') || responsibilities.includes('business_owner')
+    const isOwner =
+      responsibilities.includes('owner') ||
+      responsibilities.includes('business_owner') ||
+      cu.department === 'Management' ||
+      roles.length === 0
     const primaryRole = isOwner ? 'business_owner' : responsibilities[0] || 'general_staff'
 
     // Compute effective permissions across all responsibilities & overrides
@@ -509,6 +528,20 @@ export class TenantRepository {
       }
     }
 
+    let userProfile = cu.profile
+    if (!userProfile) {
+      try {
+        const { data: p } = await (admin as any).from('user_profiles').select('*').eq('id', userId).maybeSingle()
+        userProfile = p
+      } catch {}
+    }
+    if (!userProfile) {
+      try {
+        const { data: p } = await (admin as any).from('profiles').select('*').eq('id', userId).maybeSingle()
+        userProfile = p
+      } catch {}
+    }
+
     const companyUser: CompanyUserWithProfile = {
       id: cu.id,
       company_id: cu.company_id,
@@ -516,7 +549,7 @@ export class TenantRepository {
       branch_id: cu.branch_id,
       status: cu.status,
       department: cu.department || 'Operations',
-      responsibilities,
+      responsibilities: responsibilities.length > 0 ? responsibilities : ['business_owner'],
       overrides,
       data_scopes: {
         customers: 'company',
@@ -529,10 +562,10 @@ export class TenantRepository {
       invited_email: cu.invited_email,
       created_at: cu.created_at,
       updated_at: cu.updated_at,
-      profile: cu.profile || {
+      profile: userProfile || {
         id: cu.user_id,
         email: cu.invited_email || '',
-        full_name: 'Team Member',
+        full_name: 'Business Owner',
         full_name_bn: null,
         phone: null,
         avatar_url: null,
