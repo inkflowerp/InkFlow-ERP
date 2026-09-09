@@ -20,6 +20,7 @@ import {
   listRolesAction,
   listBranchesAction,
   inviteUserAction,
+  createCompanyUserAction,
   toggleUserStatusAction,
   changeUserRoleAction,
   assignUserBranchAction,
@@ -142,23 +143,30 @@ export default function UsersManagementPage() {
     e.preventDefault()
     if (!company || !addEmail || !addFullName) return
 
-    await inviteUserAction(
-      company.id,
-      company.slug,
-      addEmail,
-      addRoleId,
-      addBranchId || null
-    )
+    const res = await createCompanyUserAction({
+      companyId: company.id,
+      tenantSlug: company.slug,
+      fullName: addFullName,
+      email: addEmail,
+      phone: addPhone,
+      password: addPassword,
+      roleId: addRoleId,
+      branchId: addBranchId || null,
+    })
 
-    const uRes = await listCompanyUsersAction(company.id)
-    if (uRes.data) setUsers(uRes.data)
+    if (res.success) {
+      const uRes = await listCompanyUsersAction(company.id)
+      if (uRes.data) setUsers(uRes.data)
 
-    setIsAddUserOpen(false)
-    setAddFullName('')
-    setAddEmail('')
-    setAddPhone('')
-    setAddPassword('')
-    showNotification(`User ${addFullName} created successfully!`)
+      setIsAddUserOpen(false)
+      setAddFullName('')
+      setAddEmail('')
+      setAddPhone('')
+      setAddPassword('')
+      showNotification(`User ${addFullName} created successfully!`)
+    } else {
+      showNotification(res.message || 'Failed to create user')
+    }
   }
 
   const handleToggleStatus = async (user: CompanyUserWithProfile) => {

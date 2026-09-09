@@ -71,6 +71,27 @@ export default function OnboardingPage() {
     },
   })
 
+  // Prefill owner information if user just signed up or has session
+  React.useEffect(() => {
+    try {
+      const match = typeof document !== 'undefined'
+        ? document.cookie.split('; ').find((row) => row.startsWith('printerp_tenant_session='))
+        : null
+
+      if (match) {
+        const raw = match.split('=')[1]
+        const session = JSON.parse(decodeURIComponent(raw))
+        if (session) {
+          if (session.fullName) setValue('owner_name', session.fullName)
+          if (session.userEmail) setValue('owner_email', session.userEmail)
+          if (session.phone) setValue('owner_phone', session.phone)
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }, [setValue])
+
   const watchedBusinessType = watch('business_type')
   const watchedLanguage = watch('default_language')
   const watchedCurrency = watch('currency')
@@ -93,7 +114,7 @@ export default function OnboardingPage() {
     4: ['division_id', 'district_id', 'address'],
     5: ['currency'],
     6: ['default_language'],
-    7: ['owner_name', 'owner_email', 'owner_phone', 'owner_password'],
+    7: ['owner_name', 'owner_email', 'owner_phone'],
   }
 
   const nextStep = async () => {
@@ -133,7 +154,7 @@ export default function OnboardingPage() {
         owner_name: data.owner_name,
         owner_email: data.owner_email,
         owner_phone: data.owner_phone,
-        owner_password: data.owner_password,
+        owner_password: data.owner_password || undefined,
         plan: 'starter',
       })
 
@@ -143,13 +164,10 @@ export default function OnboardingPage() {
         return
       }
 
-      // 2. Establish authenticated session for new trial owner
-      await signInAction(data.owner_email, data.owner_password)
-
-      // 3. Hard redirect directly to the new company dashboard
+      // 2. Hard redirect directly to the new company dashboard
       window.location.href = `/${res.data.slug}/dashboard`
-    } catch {
-      setError('An unexpected error occurred during setup')
+    } catch (err: any) {
+      setError(err?.message || 'An unexpected error occurred during setup')
       setIsLoading(false)
     }
   }

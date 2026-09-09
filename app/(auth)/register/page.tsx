@@ -46,11 +46,11 @@ export default function RegisterPage() {
     })
 
     if (res.success) {
-      router.push('/onboarding')
+      window.location.href = '/onboarding'
     } else {
       setError(res.error || 'Registration failed. Please check your credentials.')
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   return (

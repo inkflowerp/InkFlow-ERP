@@ -97,14 +97,78 @@ create index if not exists idx_audit_logs_created on public.audit_logs(created_a
 -- Automatic profile creation trigger when user signs up in Supabase Auth
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+    user_name text;
+    user_phone text;
+    user_locale text;
 begin
-    insert into public.profiles (id, full_name, preferred_locale)
+    user_name := coalesce(
+        new.raw_user_meta_data->>'full_name',
+        new.raw_user_meta_data->>'name',
+        split_part(new.email, '@', 1)
+    );
+    user_phone := coalesce(
+        new.raw_user_meta_data->>'phone',
+        new.phone,
+        null
+    );
+    user_locale := coalesce(
+        new.raw_user_meta_data->>'preferred_locale',
+        new.raw_user_meta_data->>'locale',
+        'bn'
+    );
+
+    -- 1. Insert into public.user_profiles
+    insert into public.user_profiles (
+        id,
+        email,
+        full_name,
+        phone,
+        preferred_locale,
+        is_active,
+        created_at,
+        updated_at
+    )
     values (
         new.id,
-        coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
-        coalesce(new.raw_user_meta_data->>'preferred_locale', 'bn')
+        new.email,
+        user_name,
+        user_phone,
+        user_locale,
+        true,
+        now(),
+        now()
     )
-    on conflict (id) do nothing;
+    on conflict (id) do update set
+        email = excluded.email,
+        full_name = coalesce(excluded.full_name, public.user_profiles.full_name),
+        phone = coalesce(excluded.phone, public.user_profiles.phone),
+        preferred_locale = coalesce(excluded.preferred_locale, public.user_profiles.preferred_locale),
+        updated_at = now();
+
+    -- 2. Insert into public.profiles for backwards compatibility
+    insert into public.profiles (
+        id,
+        full_name,
+        phone,
+        preferred_locale,
+        created_at,
+        updated_at
+    )
+    values (
+        new.id,
+        user_name,
+        user_phone,
+        user_locale,
+        now(),
+        now()
+    )
+    on conflict (id) do update set
+        full_name = coalesce(excluded.full_name, public.profiles.full_name),
+        phone = coalesce(excluded.phone, public.profiles.phone),
+        preferred_locale = coalesce(excluded.preferred_locale, public.profiles.preferred_locale),
+        updated_at = now();
+
     return new;
 end;
 $$ language plpgsql security definer;

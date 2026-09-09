@@ -80,8 +80,9 @@ export class TenantRepository {
       .select()
       .single()
 
-    // If ownerUserId is provided, link as Business Owner
-    if (ownerUserId) {
+    // If ownerUserId is provided and valid UUID, link as Business Owner
+    const isUuid = ownerUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerUserId)
+    if (ownerUserId && isUuid) {
       const { data: compUser } = await (admin as any)
         .from('company_users')
         .insert({
@@ -96,17 +97,18 @@ export class TenantRepository {
         .select()
         .single()
 
-      // Look for business_owner role
+      // Look for business_owner role or owner role
       const { data: ownerRole } = await (admin as any)
         .from('roles')
         .select('id')
-        .eq('slug', 'business_owner')
+        .or('slug.eq.business_owner,slug.eq.owner,id.eq.00000000-0000-0000-0000-000000000001')
         .maybeSingle()
 
       if (ownerRole && compUser) {
         await (admin as any).from('user_roles').insert({
           company_user_id: compUser.id,
           role_id: ownerRole.id,
+          company_id: newCompany.id,
         })
       }
     }

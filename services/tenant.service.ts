@@ -1,6 +1,7 @@
 import { CompanyRow, CompanySettingsRow } from '@/types/tenant.types'
 import { ApiResponse } from '@/types/common.types'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export interface CreateCompanyInput {
   name: string
@@ -33,7 +34,7 @@ export class TenantService {
   static async createCompany(
     data: CreateCompanyInput,
     ownerUserId?: string
-  ): Promise<ApiResponse<CompanyRow>> {
+  ): Promise<ApiResponse<CompanyRow> & { ownerUserId?: string }> {
     try {
       if (!data.name || !data.slug) {
         return { success: false, error: 'Company name and slug are required' }
@@ -42,6 +43,78 @@ export class TenantService {
       const isAvail = await this.isSlugAvailable(data.slug)
       if (!isAvail) {
         return { success: false, error: `Slug '${data.slug}' is already taken.` }
+      }
+
+      const admin = createAdminClient()
+      let resolvedOwnerId = ownerUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerUserId)
+        ? ownerUserId
+        : null
+
+      // If ownerUserId is not provided or not a valid UUID, but owner_email is supplied, resolve/create the auth user
+      if (!resolvedOwnerId && data.owner_email) {
+        const normalizedOwnerEmail = data.owner_email.trim().toLowerCase()
+
+        // 1. Check if user already exists in user_profiles
+        const { data: existingProfile } = await (admin as any)
+          .from('user_profiles')
+          .select('id')
+          .eq('email', normalizedOwnerEmail)
+          .maybeSingle()
+
+        if (existingProfile?.id) {
+          resolvedOwnerId = existingProfile.id
+        } else {
+          // 2. Check if user exists in auth.users
+          const { data: userList } = await admin.auth.admin.listUsers()
+          const matchedUser = userList?.users?.find(
+            (u) => u.email?.toLowerCase() === normalizedOwnerEmail
+          )
+
+          if (matchedUser) {
+            resolvedOwnerId = matchedUser.id
+          } else {
+            // 3. Create new user in Supabase Auth
+            const { data: newAuth, error: authErr } = await admin.auth.admin.createUser({
+              email: normalizedOwnerEmail,
+              password: data.owner_password || 'PrintERP2026!Owner',
+              email_confirm: true,
+              user_metadata: {
+                full_name: data.owner_name || normalizedOwnerEmail.split('@')[0],
+                phone: data.owner_phone || null,
+                preferred_locale: 'bn',
+              },
+            })
+
+            if (!authErr && newAuth?.user) {
+              resolvedOwnerId = newAuth.user.id
+            }
+          }
+        }
+
+        // 4. Ensure user_profiles row exists for resolved owner
+        if (resolvedOwnerId) {
+          await (admin as any).from('user_profiles').upsert({
+            id: resolvedOwnerId,
+            email: normalizedOwnerEmail,
+            full_name: data.owner_name || normalizedOwnerEmail.split('@')[0],
+            phone: data.owner_phone || null,
+            preferred_locale: 'bn',
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          })
+
+          try {
+            await (admin as any).from('profiles').upsert({
+              id: resolvedOwnerId,
+              full_name: data.owner_name || normalizedOwnerEmail.split('@')[0],
+              phone: data.owner_phone || null,
+              preferred_locale: 'bn',
+              updated_at: new Date().toISOString(),
+            })
+          } catch {
+            // Non-blocking
+          }
+        }
       }
 
       const created = await TenantRepository.createCompany(
@@ -63,10 +136,15 @@ export class TenantService {
           address_bn: data.address_bn,
           currency: data.currency || 'BDT',
         },
-        ownerUserId
+        resolvedOwnerId || undefined
       )
 
-      return { success: true, data: created, message: 'Company created successfully' }
+      return {
+        success: true,
+        data: created,
+        ownerUserId: resolvedOwnerId || undefined,
+        message: 'Company created successfully',
+      }
     } catch (error: any) {
       return { success: false, error: error.message || 'Failed to create company' }
     }

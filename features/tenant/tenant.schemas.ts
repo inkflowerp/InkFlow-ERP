@@ -36,7 +36,7 @@ export const onboardingSchema = z.object({
   owner_name: z.string().min(2, 'Owner full name is required'),
   owner_email: z.string().email('Owner email is required'),
   owner_phone: z.string().min(11, 'Owner phone is required'),
-  owner_password: z.string().min(6, 'Password must be at least 6 characters'),
+  owner_password: z.string().min(6, 'Password must be at least 6 characters').optional().or(z.literal('')),
 })
 
 export type OnboardingFormData = z.infer<typeof onboardingSchema>

@@ -4,12 +4,44 @@ import { revalidatePath } from 'next/cache'
 import { CompanyUsersService } from '@/services/company-users.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 
+export async function createCompanyUserAction(params: {
+  companyId: string
+  tenantSlug: string
+  fullName: string
+  email: string
+  phone: string
+  password?: string
+  roleId: string
+  branchId?: string | null
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('*') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
+  }
+
+  const result = await CompanyUsersService.createCompanyUser({
+    ...params,
+    companyId: tenant.companyId,
+    actorName: tenant.fullName || 'Admin',
+  })
+
+  revalidatePath(`/${params.tenantSlug}/settings/users`)
+  return result
+}
+
 export async function inviteUserAction(
   companyId: string,
   tenantSlug: string,
   email: string,
   roleId: string,
-  branchId?: string | null
+  branchId?: string | null,
+  fullName?: string,
+  phone?: string
 ) {
   const tenant = await getCurrentTenant(companyId)
   if (
@@ -21,7 +53,14 @@ export async function inviteUserAction(
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
   }
 
-  const result = await CompanyUsersService.inviteUser(tenant.companyId, email, roleId, branchId)
+  const result = await CompanyUsersService.inviteUser(
+    tenant.companyId,
+    email,
+    roleId,
+    branchId,
+    fullName,
+    phone
+  )
   revalidatePath(`/${tenantSlug}/settings/users`)
   return result
 }

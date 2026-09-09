@@ -59,7 +59,12 @@ function LoginForm() {
 
     const res = await signInAction(email, pass)
     if (res.success && res.data) {
-      const targetSlug = res.data.session.companySlug || 'default'
+      if (res.data.requiresOnboarding || !res.data.session.companySlug) {
+        window.location.href = '/onboarding'
+        return
+      }
+
+      const targetSlug = res.data.session.companySlug
       const paramRedirect = searchParams.get('redirectTo')
 
       // Only preserve redirectTo if it belongs to the authenticated company or is a non-tenant route

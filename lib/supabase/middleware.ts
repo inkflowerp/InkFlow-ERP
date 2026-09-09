@@ -32,6 +32,7 @@ export async function updateSession(request: NextRequest) {
 
   const isPublicMarketingPage =
     pathname === '/' ||
+    pathname.startsWith('/onboarding') ||
     pathname.startsWith('/features') ||
     pathname.startsWith('/solutions') ||
     pathname.startsWith('/pricing') ||
@@ -146,10 +147,15 @@ export async function updateSession(request: NextRequest) {
 
   // 3. Authenticated user trying to access tenant auth pages (/login, /register)
   if (isAuthenticated && isTenantAuthPage) {
-    const slug = tenantSessionData?.companySlug || 'padma-digital'
-    const url = request.nextUrl.clone()
-    url.pathname = `/${slug}/dashboard`
-    return NextResponse.redirect(url)
+    if (tenantSessionData?.companySlug) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${tenantSessionData.companySlug}/dashboard`
+      return NextResponse.redirect(url)
+    } else {
+      const url = request.nextUrl.clone()
+      url.pathname = '/onboarding'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

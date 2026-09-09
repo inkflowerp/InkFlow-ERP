@@ -96,7 +96,143 @@ export class CompanyUsersService {
   }
 
   /**
-   * Invite or create a new user under a tenant company
+   * Create a new company team member with full credentials
+   */
+  static async createCompanyUser(params: {
+    companyId: string
+    fullName: string
+    email: string
+    phone: string
+    password?: string
+    roleId: string
+    branchId?: string | null
+    actorName?: string
+  }): Promise<ApiResponse> {
+    try {
+      const admin = createAdminClient()
+      const normalizedEmail = params.email.trim().toLowerCase()
+
+      // 1. Check if user already exists in auth.users or create them
+      let userId: string | null = null
+      const { data: userList } = await admin.auth.admin.listUsers()
+      const existingAuth = userList?.users?.find(
+        (u) => u.email?.toLowerCase() === normalizedEmail
+      )
+
+      if (existingAuth) {
+        userId = existingAuth.id
+      } else {
+        const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
+          email: normalizedEmail,
+          password: params.password || 'PrintERP2026!Staff',
+          email_confirm: true,
+          user_metadata: {
+            full_name: params.fullName,
+            phone: params.phone,
+            preferred_locale: 'bn',
+          },
+        })
+
+        if (createErr || !newUser?.user) {
+          throw new Error(`Failed to create auth account: ${createErr?.message || 'Unknown auth error'}`)
+        }
+        userId = newUser.user.id
+      }
+
+      // 2. Ensure user_profiles row exists
+      await (admin as any).from('user_profiles').upsert({
+        id: userId,
+        email: normalizedEmail,
+        full_name: params.fullName,
+        phone: params.phone || null,
+        preferred_locale: 'bn',
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      })
+
+      try {
+        await (admin as any).from('profiles').upsert({
+          id: userId,
+          full_name: params.fullName,
+          phone: params.phone || null,
+          preferred_locale: 'bn',
+          updated_at: new Date().toISOString(),
+        })
+      } catch {
+        // Non-blocking
+      }
+
+      // 3. Check if company_users record exists
+      const { data: existingCU } = await (admin as any)
+        .from('company_users')
+        .select('id')
+        .eq('company_id', params.companyId)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      let companyUserId = existingCU?.id
+
+      if (!companyUserId) {
+        const { data: newCU, error: cuErr } = await (admin as any)
+          .from('company_users')
+          .insert({
+            company_id: params.companyId,
+            user_id: userId,
+            branch_id: params.branchId || null,
+            invited_email: normalizedEmail,
+            status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select()
+          .single()
+
+        if (cuErr || !newCU) {
+          throw new Error(`Failed to assign user to company: ${cuErr?.message || 'Database error'}`)
+        }
+        companyUserId = newCU.id
+      } else {
+        await (admin as any)
+          .from('company_users')
+          .update({
+            branch_id: params.branchId || null,
+            status: 'active',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', companyUserId)
+      }
+
+      // 4. Assign role in user_roles
+      if (params.roleId && companyUserId) {
+        await (admin as any).from('user_roles').delete().eq('company_user_id', companyUserId)
+        await (admin as any).from('user_roles').insert({
+          company_user_id: companyUserId,
+          role_id: params.roleId,
+          company_id: params.companyId,
+        })
+      }
+
+      // 5. Audit Log
+      await AuditService.logEvent(
+        params.companyId,
+        null,
+        params.actorName || 'Admin',
+        'user.create',
+        'user',
+        companyUserId,
+        null,
+        { email: normalizedEmail, fullName: params.fullName, roleId: params.roleId },
+        `Created team user ${params.fullName} (${normalizedEmail})`
+      )
+
+      return { success: true, message: `User ${params.fullName} created successfully.` }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to create user' }
+    }
+  }
+
+  /**
+   * Invite a new user under a tenant company
    */
   static async inviteUser(
     companyId: string,
@@ -108,43 +244,87 @@ export class CompanyUsersService {
   ): Promise<ApiResponse> {
     try {
       const admin = createAdminClient()
+      const normalizedEmail = email.trim().toLowerCase()
 
-      // 1. Create or ensure user profile exists
+      // 1. Create or ensure user profile exists in Supabase Auth
       let userId: string | null = null
-      const { data: existingUser } = await (admin as any)
-        .from('user_profiles')
-        .select('id')
-        .eq('email', email.trim().toLowerCase())
-        .maybeSingle()
+      const { data: userList } = await admin.auth.admin.listUsers()
+      const existingAuth = userList?.users?.find(
+        (u) => u.email?.toLowerCase() === normalizedEmail
+      )
 
-      if (existingUser) {
-        userId = existingUser.id
+      if (existingAuth) {
+        userId = existingAuth.id
+      } else {
+        const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
+          email: normalizedEmail,
+          password: 'PrintERP2026!Invite',
+          email_confirm: false,
+          user_metadata: {
+            full_name: fullName || normalizedEmail.split('@')[0],
+            phone: phone || null,
+            preferred_locale: 'bn',
+          },
+        })
+
+        if (!createErr && newUser?.user) {
+          userId = newUser.user.id
+        }
       }
 
-      // 2. Insert company_users record
-      const { data: companyUser, error: cuErr } = await (admin as any)
-        .from('company_users')
-        .insert({
-          company_id: companyId,
-          user_id: userId,
-          branch_id: branchId || null,
-          invited_email: email.trim().toLowerCase(),
-          status: userId ? 'active' : 'invited',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single()
+      if (!userId) {
+        throw new Error('Failed to initialize invited auth user identity')
+      }
 
-      if (cuErr) {
-        throw new Error(`Failed to add user to company: ${cuErr.message}`)
+      // Upsert profile
+      await (admin as any).from('user_profiles').upsert({
+        id: userId,
+        email: normalizedEmail,
+        full_name: fullName || normalizedEmail.split('@')[0],
+        phone: phone || null,
+        preferred_locale: 'bn',
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      })
+
+      // 2. Insert or update company_users record
+      const { data: existingCU } = await (admin as any)
+        .from('company_users')
+        .select('id')
+        .eq('company_id', companyId)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      let companyUserId = existingCU?.id
+
+      if (!companyUserId) {
+        const { data: companyUser, error: cuErr } = await (admin as any)
+          .from('company_users')
+          .insert({
+            company_id: companyId,
+            user_id: userId,
+            branch_id: branchId || null,
+            invited_email: normalizedEmail,
+            status: 'invited',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select()
+          .single()
+
+        if (cuErr || !companyUser) {
+          throw new Error(`Failed to add user to company: ${cuErr?.message || 'Database error'}`)
+        }
+        companyUserId = companyUser.id
       }
 
       // 3. Assign role in user_roles
-      if (roleId && companyUser) {
+      if (roleId && companyUserId) {
+        await (admin as any).from('user_roles').delete().eq('company_user_id', companyUserId)
         await (admin as any).from('user_roles').insert({
-          company_user_id: companyUser.id,
+          company_user_id: companyUserId,
           role_id: roleId,
+          company_id: companyId,
         })
       }
 
@@ -154,13 +334,13 @@ export class CompanyUsersService {
         'Admin',
         'user.invite',
         'user',
-        companyUser.id,
+        companyUserId,
         null,
-        { email, roleId, branchId, fullName },
-        `Invited user ${email} (${fullName || 'Staff'})`
+        { email: normalizedEmail, roleId, branchId, fullName },
+        `Invited user ${normalizedEmail} (${fullName || 'Staff'})`
       )
 
-      return { success: true, message: `User ${email} invited successfully.` }
+      return { success: true, message: `User ${normalizedEmail} invited successfully.` }
     } catch (error: any) {
       return { success: false, error: error.message || 'Failed to invite user' }
     }
