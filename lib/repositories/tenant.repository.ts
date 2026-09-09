@@ -499,88 +499,146 @@ export class TenantRepository {
 
     let { data: records, error } = await query
 
-    if ((error || !records || records.length === 0) && targetCompanyId) {
+    if (error || !records || records.length === 0) {
       try {
-        const targetComp = await TenantRepository.getCompanyById(targetCompanyId)
-        if (targetComp && targetComp.is_active) {
+        let candidateCompany: CompanyRow | null = null
+
+        if (targetCompanyId) {
+          candidateCompany = await TenantRepository.getCompanyById(targetCompanyId)
+        } else {
           const { data: userProf } = await (admin as any)
             .from('user_profiles')
-            .select('id, email')
+            .select('id, email, phone, full_name')
             .eq('id', userId)
             .maybeSingle()
 
           const userEmail = userProf?.email?.toLowerCase().trim()
-          const compEmail = targetComp.email?.toLowerCase().trim()
+          const userPhone = userProf?.phone?.trim()
 
-          const { data: existingMembers } = await (admin as any)
-            .from('company_users')
+          if (userEmail) {
+            const { data: compByEmail } = await (admin as any)
+              .from('companies')
+              .select('*')
+              .ilike('email', userEmail)
+              .eq('is_active', true)
+              .maybeSingle()
+            if (compByEmail) candidateCompany = compByEmail
+          }
+
+          if (!candidateCompany && userPhone) {
+            const { data: compByPhone } = await (admin as any)
+              .from('companies')
+              .select('*')
+              .eq('phone', userPhone)
+              .eq('is_active', true)
+              .maybeSingle()
+            if (compByPhone) candidateCompany = compByPhone
+          }
+
+          if (!candidateCompany && userEmail) {
+            const emailPrefix = userEmail.split('@')[0].toLowerCase()
+            const { data: compBySlug } = await (admin as any)
+              .from('companies')
+              .select('*')
+              .ilike('slug', emailPrefix)
+              .eq('is_active', true)
+              .maybeSingle()
+            if (compBySlug) candidateCompany = compBySlug
+          }
+
+          if (!candidateCompany) {
+            const { data: allComps } = await (admin as any)
+              .from('companies')
+              .select('*')
+              .eq('is_active', true)
+              .order('created_at', { ascending: false })
+
+            if (allComps && allComps.length === 1) {
+              candidateCompany = allComps[0]
+            }
+          }
+        }
+
+        if (candidateCompany && candidateCompany.is_active) {
+          const { data: userProf } = await (admin as any)
+            .from('user_profiles')
+            .select('id, email, phone, full_name')
+            .eq('id', userId)
+            .maybeSingle()
+
+          const userEmail = userProf?.email?.toLowerCase().trim()
+          const compEmail = candidateCompany.email?.toLowerCase().trim()
+
+          let { data: mainBranch } = await (admin as any)
+            .from('branches')
             .select('id')
-            .eq('company_id', targetCompanyId)
-            .limit(1)
+            .eq('company_id', candidateCompany.id)
+            .eq('code', 'MAIN')
+            .maybeSingle()
 
-          const isOwnerByEmail = Boolean(userEmail && compEmail && userEmail === compEmail)
-          const isZeroMemberCompany = !existingMembers || existingMembers.length === 0
-
-          if (isOwnerByEmail || isZeroMemberCompany) {
-            let { data: mainBranch } = await (admin as any)
+          if (!mainBranch) {
+            const { data: nb } = await (admin as any)
               .from('branches')
-              .select('id')
-              .eq('company_id', targetCompanyId)
-              .eq('code', 'MAIN')
-              .maybeSingle()
-
-            if (!mainBranch) {
-              const { data: nb } = await (admin as any)
-                .from('branches')
-                .insert({
-                  company_id: targetCompanyId,
-                  name: 'Main Branch / হেড অফিস',
-                  code: 'MAIN',
-                  is_main: true,
-                })
-                .select()
-                .maybeSingle()
-              mainBranch = nb
-            }
-
-            const { data: healedCU } = await (admin as any)
-              .from('company_users')
-              .upsert(
-                {
-                  company_id: targetCompanyId,
-                  user_id: userId,
-                  branch_id: mainBranch?.id || null,
-                  status: 'active',
-                  invited_email: userEmail || compEmail || null,
-                  updated_at: new Date().toISOString(),
-                },
-                { onConflict: 'company_id,user_id' }
-              )
+              .insert({
+                company_id: candidateCompany.id,
+                name: 'Main Branch / হেড অফিস',
+                code: 'MAIN',
+                is_main: true,
+              })
               .select()
-              .single()
-
-            const { data: ownerRole } = await (admin as any)
-              .from('roles')
-              .select('id')
-              .or('slug.eq.owner,slug.eq.business_owner,id.eq.00000000-0000-0000-0000-000000000001')
               .maybeSingle()
+            mainBranch = nb
+          }
 
-            if (ownerRole && healedCU) {
-              await (admin as any).from('user_roles').upsert(
-                {
-                  company_user_id: healedCU.id,
-                  role_id: ownerRole.id,
-                  company_id: targetCompanyId,
-                },
-                { onConflict: 'company_user_id,role_id' }
-              )
-            }
+          const { data: healedCU } = await (admin as any)
+            .from('company_users')
+            .upsert(
+              {
+                company_id: candidateCompany.id,
+                user_id: userId,
+                branch_id: mainBranch?.id || null,
+                status: 'active',
+                invited_email: userEmail || compEmail || null,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'company_id,user_id' }
+            )
+            .select()
+            .single()
 
-            const { data: healedRecords } = await query
-            if (healedRecords && healedRecords.length > 0) {
-              records = healedRecords
-              error = null
-            }
+          const { data: ownerRole } = await (admin as any)
+            .from('roles')
+            .select('id')
+            .or('slug.eq.owner,slug.eq.business_owner,id.eq.00000000-0000-0000-0000-000000000001')
+            .maybeSingle()
+
+          if (ownerRole && healedCU) {
+            await (admin as any).from('user_roles').upsert(
+              {
+                company_user_id: healedCU.id,
+                role_id: ownerRole.id,
+                company_id: candidateCompany.id,
+              },
+              { onConflict: 'company_user_id,role_id' }
+            )
+          }
+
+          let healedQuery = admin
+            .from('company_users')
+            .select(`
+              *,
+              company:companies!inner(*),
+              branch:branches(*),
+              user_roles(role:roles(*))
+            `)
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .eq('company_id', candidateCompany.id)
+
+          const { data: healedRecords } = await healedQuery
+          if (healedRecords && healedRecords.length > 0) {
+            records = healedRecords
+            error = null
           }
         }
       } catch {

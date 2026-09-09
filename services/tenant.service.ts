@@ -43,17 +43,46 @@ export class TenantService {
         return { success: false, error: 'Company name and slug are required' }
       }
 
-      const isAvail = await this.isSlugAvailable(data.slug)
-      if (!isAvail) {
-        return { success: false, error: `Slug '${data.slug}' is already taken.` }
-      }
-
       const admin = createAdminClient()
       let resolvedOwnerId = ownerUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerUserId)
         ? ownerUserId
         : null
 
       const normalizedOwnerEmail = (data.owner_email || data.email || '').trim().toLowerCase()
+      const normalizedSlug = data.slug.toLowerCase().trim()
+      const existingCompany = await TenantRepository.getCompanyBySlug(normalizedSlug)
+
+      if (existingCompany) {
+        const isSameEmail = existingCompany.email && normalizedOwnerEmail && existingCompany.email.toLowerCase().trim() === normalizedOwnerEmail
+        const isSamePhone = existingCompany.phone && data.phone && existingCompany.phone.trim() === data.phone.trim()
+
+        if (isSameEmail || isSamePhone || resolvedOwnerId) {
+          // Claim and update existing company workspace
+          const updated = await TenantRepository.updateCompany(existingCompany.id, {
+            name: data.name.trim(),
+            name_bn: data.name_bn?.trim() || null,
+            business_type: data.business_type,
+            phone: data.phone || data.owner_phone || existingCompany.phone,
+            email: data.email || normalizedOwnerEmail || existingCompany.email,
+            address: data.address || existingCompany.address,
+            currency: data.currency || existingCompany.currency,
+            default_locale: data.default_locale || data.default_language || existingCompany.default_locale,
+          })
+
+          if (resolvedOwnerId) {
+            await TenantRepository.resolveUserMembership(resolvedOwnerId, existingCompany.id)
+          }
+
+          return {
+            success: true,
+            data: updated,
+            ownerUserId: resolvedOwnerId || undefined,
+            message: 'Company workspace claimed and updated successfully',
+          }
+        } else {
+          return { success: false, error: `Slug '${data.slug}' is already taken.` }
+        }
+      }
 
       // If ownerUserId is not provided or not a valid UUID, but owner_email is supplied, resolve/create the auth user
       if (!resolvedOwnerId && normalizedOwnerEmail) {

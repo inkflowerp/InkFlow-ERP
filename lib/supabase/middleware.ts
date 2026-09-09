@@ -131,17 +131,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // 3. Authenticated user trying to access tenant auth pages (/login, /register)
-  if (isAuthenticated && isTenantAuthPage) {
-    if (tenantSessionData?.companySlug) {
-      const url = request.nextUrl.clone()
-      url.pathname = `/${tenantSessionData.companySlug}/dashboard`
-      return NextResponse.redirect(url)
-    } else {
-      const url = request.nextUrl.clone()
-      url.pathname = '/onboarding'
-      return NextResponse.redirect(url)
-    }
+  // 3. Authenticated user with valid company session trying to access tenant auth pages (/login, /register)
+  if (isAuthenticated && isTenantAuthPage && tenantSessionData?.companySlug) {
+    const url = request.nextUrl.clone()
+    url.pathname = `/${tenantSessionData.companySlug}/dashboard`
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse
