@@ -16,6 +16,8 @@ import {
   PlatformBackgroundJobItem,
   PlatformSecurityOverview,
   PlatformAuditLogItem,
+  PlatformAuditMetrics,
+  PlatformAuditFilters,
   PlatformAdminUser,
   UsageTrendsData,
   BillingOverviewMetrics,
@@ -183,16 +185,9 @@ export async function getPlatformSecurityOverviewAction(): Promise<ApiResponse<P
 /**
  * Server Action: Get Platform Audit Logs
  */
-export async function getPlatformAuditLogsAction(filters?: {
-  action?: string
-  entityType?: string
-  actorId?: string
-  startDate?: string
-  endDate?: string
-  search?: string
-  page?: number
-  pageSize?: number
-}): Promise<ApiResponse<{ logs: PlatformAuditLogItem[]; total: number }>> {
+export async function getPlatformAuditLogsAction(
+  filters?: PlatformAuditFilters
+): Promise<ApiResponse<{ logs: PlatformAuditLogItem[]; total: number }>> {
   try {
     const user = await getCurrentPlatformUser()
     if (!user) {
@@ -201,6 +196,21 @@ export async function getPlatformAuditLogsAction(filters?: {
     return await PlatformService.getAuditLogs(filters)
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch audit logs' }
+  }
+}
+
+/**
+ * Server Action: Get Platform Audit Metrics
+ */
+export async function getPlatformAuditMetricsAction(): Promise<ApiResponse<PlatformAuditMetrics>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getAuditMetrics()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch audit metrics' }
   }
 }
 

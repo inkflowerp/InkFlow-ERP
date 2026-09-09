@@ -25,6 +25,8 @@ import {
   SystemHealthEvent,
   SystemHealthSummary,
   PlatformAuditLogItem,
+  PlatformAuditMetrics,
+  PlatformAuditFilters,
   PlatformCompanyStatus,
   PlatformPlanCode,
   PermissionActionKey,
@@ -1557,13 +1559,7 @@ export class PlatformService {
   /**
    * 8. Platform Audit Trail
    */
-  static async getAuditLogs(filters?: {
-    action?: string
-    targetCompanyId?: string
-    actorEmail?: string
-    page?: number
-    pageSize?: number
-  }): Promise<ApiResponse<{ logs: PlatformAuditLogItem[]; total: number }>> {
+  static async getAuditLogs(filters?: PlatformAuditFilters): Promise<ApiResponse<{ logs: PlatformAuditLogItem[]; total: number }>> {
     try {
       const admin = createAdminClient()
       let query = (admin as any)
@@ -1573,22 +1569,43 @@ export class PlatformService {
           companies:target_company_id (name)
         `, { count: 'exact' })
 
-      if (filters?.action) {
+      if (filters?.action && filters.action !== 'all') {
         query = query.ilike('action', `%${filters.action}%`)
       }
 
-      if (filters?.targetCompanyId) {
+      if (filters?.entityType && filters.entityType !== 'all') {
+        query = query.ilike('entity_type', `%${filters.entityType}%`)
+      }
+
+      if (filters?.targetCompanyId && filters.targetCompanyId !== 'all') {
         query = query.eq('target_company_id', filters.targetCompanyId)
       }
 
-      if (filters?.actorEmail) {
+      if (filters?.actorEmail && filters.actorEmail !== 'all') {
         query = query.ilike('actor_email', `%${filters.actorEmail}%`)
+      }
+
+      if (filters?.actorId && filters.actorId !== 'all') {
+        query = query.eq('platform_admin_id', filters.actorId)
+      }
+
+      if (filters?.startDate) {
+        query = query.gte('created_at', filters.startDate)
+      }
+
+      if (filters?.endDate) {
+        query = query.lte('created_at', filters.endDate)
+      }
+
+      if (filters?.search && filters.search.trim() !== '') {
+        const term = filters.search.trim()
+        query = query.or(`action.ilike.%${term}%,actor_email.ilike.%${term}%,entity_type.ilike.%${term}%,entity_id.ilike.%${term}%`)
       }
 
       query = query.order('created_at', { ascending: false })
 
-      const page = filters?.page || 1
-      const pageSize = filters?.pageSize || 50
+      const page = Math.max(1, filters?.page || 1)
+      const pageSize = Math.max(1, Math.min(200, filters?.pageSize || 50))
       const from = (page - 1) * pageSize
       const to = from + pageSize - 1
 
@@ -1620,11 +1637,42 @@ export class PlatformService {
         success: true,
         data: {
           logs: formatted,
-          total: count || formatted.length,
+          total: count !== null && count !== undefined ? count : formatted.length,
         },
       }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to fetch audit logs' }
+    }
+  }
+
+  static async getAuditMetrics(): Promise<ApiResponse<PlatformAuditMetrics>> {
+    try {
+      const admin = createAdminClient()
+      const todayStart = new Date()
+      todayStart.setUTCHours(0, 0, 0, 0)
+
+      const [totalRes, todayRes, secRes, tenantRes, allActors] = await Promise.all([
+        (admin as any).from('platform_audit_logs').select('*', { count: 'exact', head: true }),
+        (admin as any).from('platform_audit_logs').select('*', { count: 'exact', head: true }).gte('created_at', todayStart.toISOString()),
+        (admin as any).from('platform_audit_logs').select('*', { count: 'exact', head: true }).or('action.ilike.%login%,action.ilike.%logout%,action.ilike.%auth%,action.ilike.%mfa%,action.ilike.%password%,action.ilike.%session%'),
+        (admin as any).from('platform_audit_logs').select('*', { count: 'exact', head: true }).or('action.ilike.%company%,action.ilike.%plan%,action.ilike.%subscription%,action.ilike.%tenant%'),
+        (admin as any).from('platform_audit_logs').select('actor_email')
+      ])
+
+      const uniqueActors = new Set((allActors.data || []).map((a: any) => a.actor_email)).size
+
+      return {
+        success: true,
+        data: {
+          total_logs: totalRes.count || 0,
+          logs_today: todayRes.count || 0,
+          security_events_count: secRes.count || 0,
+          tenant_events_count: tenantRes.count || 0,
+          unique_actors_count: uniqueActors || 1,
+        }
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to fetch audit metrics' }
     }
   }
 
@@ -1711,6 +1759,25 @@ export class PlatformService {
         reason,
       })
 
+      // Extract IP and user-agent if available
+      let ipAddress: string | null = details.ip_address || null
+      let userAgent: string | null = details.user_agent || null
+
+      if (!ipAddress || !userAgent) {
+        try {
+          const { headers } = await import('next/headers')
+          const headerList = await headers()
+          if (!ipAddress) {
+            ipAddress = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() || headerList.get('x-real-ip') || null
+          }
+          if (!userAgent) {
+            userAgent = headerList.get('user-agent') || null
+          }
+        } catch {
+          // ignore when called outside request context
+        }
+      }
+
       const { data, error } = await (admin as any)
         .from('platform_audit_logs')
         .insert({
@@ -1721,6 +1788,8 @@ export class PlatformService {
           entity_id: entityId || null,
           target_company_id: targetCompanyId || null,
           details: mergedDetails,
+          ip_address: ipAddress || '127.0.0.1',
+          user_agent: userAgent || 'System Daemon',
           created_at: new Date().toISOString(),
         })
         .select('id')

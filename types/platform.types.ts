@@ -410,6 +410,27 @@ export interface PlatformAuditLogItem {
   created_at: string
 }
 
+export interface PlatformAuditMetrics {
+  total_logs: number
+  logs_today: number
+  security_events_count: number
+  tenant_events_count: number
+  unique_actors_count: number
+}
+
+export interface PlatformAuditFilters {
+  action?: string
+  entityType?: string
+  targetCompanyId?: string
+  actorEmail?: string
+  actorId?: string
+  startDate?: string
+  endDate?: string
+  search?: string
+  page?: number
+  pageSize?: number
+}
+
 export type PlatformUserRole =
   | 'platform_owner'
   | 'platform_admin'
