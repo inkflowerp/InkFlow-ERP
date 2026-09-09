@@ -99,7 +99,7 @@ export interface PlatformDashboardMetrics {
   services_health: {
     name: string
     key: string
-    status: 'operational' | 'degraded' | 'failed' | 'maintenance'
+    status: 'operational' | 'degraded' | 'failed' | 'maintenance' | 'standby' | 'not_configured'
     latency_ms?: number
     notes?: string
   }[]
@@ -502,7 +502,7 @@ export interface IntegrationProviderStatus {
   key: string
   name: string
   category: 'notification' | 'payment' | 'storage' | 'tax'
-  status: 'operational' | 'degraded' | 'failed' | 'rate_limited' | 'credential_issue'
+  status: 'operational' | 'degraded' | 'failed' | 'rate_limited' | 'credential_issue' | 'standby' | 'not_configured'
   latency_ms: number
   failure_rate_pct: number
   last_success_at: string

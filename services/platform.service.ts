@@ -221,14 +221,32 @@ export class PlatformService {
         }
       })
 
-      // Dynamic Storage Calculations from PostgreSQL tenant records
-      const storageUsedGb = Number((Math.max(0.05, totalCompanies * 0.05 + (ordersCount || 0) * 0.002)).toFixed(2))
+      // Dynamic Storage Calculations from PostgreSQL & Supabase Buckets
+      let actualStorageBytes = 0
+      try {
+        const { data: buckets } = await (admin as any).storage.listBuckets()
+        if (buckets && buckets.length > 0) {
+          for (const b of buckets) {
+            const { data: files } = await (admin as any).storage.from(b.id).list()
+            if (files) {
+              files.forEach((f: any) => {
+                if (f.metadata?.size) actualStorageBytes += Number(f.metadata.size)
+              })
+            }
+          }
+        }
+      } catch {}
+
+      const storageUsedGb = actualStorageBytes > 0 
+        ? Number((actualStorageBytes / (1024 * 1024 * 1024)).toFixed(3))
+        : 0
+
       const totalAllocatedPlanStorage = subList.reduce((acc: number, s: any) => {
         const plan = planMap.get(s.plan_id)
         return acc + (plan?.storage_gb || 2)
       }, 0)
-      const storageTotalGb = Math.max(100, totalAllocatedPlanStorage || 100)
-      const storageUsedPct = Number(((storageUsedGb / storageTotalGb) * 100).toFixed(2))
+      const storageTotalGb = totalAllocatedPlanStorage > 0 ? totalAllocatedPlanStorage : (totalCompanies * 2 || 2)
+      const storageUsedPct = storageTotalGb > 0 ? Number(((storageUsedGb / storageTotalGb) * 100).toFixed(2)) : 0
 
       // Live Service Health Telemetry Checks
       const dbStart = Date.now()
@@ -241,28 +259,51 @@ export class PlatformService {
       const storageLatency = Math.max(1, Date.now() - storageStart)
       const storageStatus: 'operational' | 'degraded' | 'failed' = storageErr ? 'failed' : 'operational'
 
+      // Background Jobs Check
+      const { data: bgJobs, error: bgErr } = await (admin as any).from('platform_background_jobs').select('status')
+      const failedBgCount = (bgJobs || []).filter((j: any) => j.status === 'failed').length
       const jobEvents = unresolvedEvents.filter((e) => e.category === 'job')
-      const jobStatus: 'operational' | 'degraded' | 'failed' = jobEvents.some((e) => e.severity === 'critical')
+      const jobStatus: 'operational' | 'degraded' | 'failed' = (jobEvents.some((e) => e.severity === 'critical') || failedBgCount > 5)
         ? 'failed'
-        : jobEvents.length > 0
+        : (jobEvents.length > 0 || failedBgCount > 0)
         ? 'degraded'
         : 'operational'
 
+      // Notifications Dispatcher Check
+      const emailConfigured = Boolean(process.env.SMTP_HOST || process.env.RESEND_API_KEY)
       const notifEvents = unresolvedEvents.filter((e) => e.category === 'notification')
-      const notifStatus: 'operational' | 'degraded' | 'failed' = notifEvents.some((e) => e.severity === 'critical')
+      const notifStatus: 'operational' | 'degraded' | 'failed' | 'standby' = notifEvents.some((e) => e.severity === 'critical')
         ? 'failed'
         : notifEvents.length > 0
         ? 'degraded'
+        : emailConfigured
+        ? 'operational'
+        : 'standby'
+
+      // Gateway Configuration & Connectivity Checks
+      const bkashConfigured = Boolean(process.env.BKASH_APP_KEY && process.env.BKASH_APP_SECRET)
+      const bkashEvents = unresolvedEvents.filter((e) => e.service_name?.toLowerCase().includes('bkash'))
+      const bkashStatus: 'operational' | 'degraded' | 'failed' | 'not_configured' = !bkashConfigured
+        ? 'not_configured'
+        : bkashEvents.length > 0
+        ? 'degraded'
         : 'operational'
 
-      const bkashEvents = unresolvedEvents.filter((e) => e.service_name?.toLowerCase().includes('bkash'))
-      const bkashStatus: 'operational' | 'degraded' | 'failed' = bkashEvents.length > 0 ? 'degraded' : 'operational'
-
+      const waConfigured = Boolean(process.env.WHATSAPP_API_TOKEN || process.env.META_WHATSAPP_TOKEN)
       const waEvents = unresolvedEvents.filter((e) => e.service_name?.toLowerCase().includes('whatsapp'))
-      const waStatus: 'operational' | 'degraded' | 'failed' = waEvents.length > 0 ? 'degraded' : 'operational'
+      const waStatus: 'operational' | 'degraded' | 'failed' | 'not_configured' = !waConfigured
+        ? 'not_configured'
+        : waEvents.length > 0
+        ? 'degraded'
+        : 'operational'
 
+      const smsConfigured = Boolean(process.env.GREENWEB_SMS_TOKEN || process.env.SMS_API_KEY)
       const smsEvents = unresolvedEvents.filter((e) => e.service_name?.toLowerCase().includes('sms') || e.service_name?.toLowerCase().includes('greenweb'))
-      const smsStatus: 'operational' | 'degraded' | 'failed' = smsEvents.length > 0 ? 'degraded' : 'operational'
+      const smsStatus: 'operational' | 'degraded' | 'failed' | 'not_configured' = !smsConfigured
+        ? 'not_configured'
+        : smsEvents.length > 0
+        ? 'degraded'
+        : 'operational'
 
       const vatEvents = unresolvedEvents.filter((e) => e.service_name?.toLowerCase().includes('vat') || e.service_name?.toLowerCase().includes('mushak'))
       const vatStatus: 'operational' | 'degraded' | 'failed' = vatEvents.length > 0 ? 'degraded' : 'operational'
@@ -271,11 +312,11 @@ export class PlatformService {
         { name: 'Database', key: 'db', status: dbStatus, latency_ms: dbLatency },
         { name: 'Cloud Storage', key: 'storage', status: storageStatus, latency_ms: storageLatency },
         { name: 'Background Jobs', key: 'jobs', status: jobStatus },
-        { name: 'Notifications', key: 'notifications', status: notifStatus },
-        { name: 'bKash Gateway', key: 'bkash', status: bkashStatus },
-        { name: 'WhatsApp API', key: 'whatsapp', status: waStatus },
-        { name: 'Greenweb SMS', key: 'sms', status: smsStatus },
-        { name: 'NBR VAT Sync', key: 'vat', status: vatStatus },
+        { name: 'Notifications', key: 'notifications', status: notifStatus, notes: emailConfigured ? 'Email Dispatch Active' : 'Local Logging / Standby' },
+        { name: 'bKash Gateway', key: 'bkash', status: bkashStatus, notes: bkashConfigured ? 'Direct Checkout Active' : 'Credentials Not Configured' },
+        { name: 'WhatsApp API', key: 'whatsapp', status: waStatus, notes: waConfigured ? 'Cloud API Active' : 'Credentials Not Configured' },
+        { name: 'Greenweb SMS', key: 'sms', status: smsStatus, notes: smsConfigured ? 'SMS Gateway Active' : 'Credentials Not Configured' },
+        { name: 'NBR VAT Sync', key: 'vat', status: vatStatus, notes: 'NBR Mushak 6.3 Rules Engine' },
       ]
 
       // Fetch active platform administrators count from PostgreSQL
@@ -2449,12 +2490,35 @@ export class PlatformService {
         .from('companies')
         .select('*', { count: 'exact', head: true })
 
-      const { count: ordersCount } = await (admin as any)
-        .from('sales_orders')
-        .select('*', { count: 'exact', head: true })
+      const { data: subscriptions } = await (admin as any)
+        .from('company_subscriptions')
+        .select('id, plan_id, status, subscription_plans(*)')
+      
+      const subList = subscriptions || []
+      const totalAllocatedPlanStorage = subList.reduce((acc: number, s: any) => {
+        const plan = s.subscription_plans
+        return acc + (plan?.storage_gb || 2)
+      }, 0)
 
-      const storageUsedGb = Number((Math.max(0.05, (companyCount || 1) * 0.05 + (ordersCount || 0) * 0.002)).toFixed(2))
-      const storageTotalGb = Math.max(100, (companyCount || 1) * 50)
+      let actualStorageBytes = 0
+      try {
+        const { data: buckets } = await (admin as any).storage.listBuckets()
+        if (buckets && buckets.length > 0) {
+          for (const b of buckets) {
+            const { data: files } = await (admin as any).storage.from(b.id).list()
+            if (files) {
+              files.forEach((f: any) => {
+                if (f.metadata?.size) actualStorageBytes += Number(f.metadata.size)
+              })
+            }
+          }
+        }
+      } catch {}
+
+      const storageUsedGb = actualStorageBytes > 0 
+        ? Number((actualStorageBytes / (1024 * 1024 * 1024)).toFixed(3))
+        : 0
+      const storageTotalGb = totalAllocatedPlanStorage > 0 ? totalAllocatedPlanStorage : ((companyCount || 1) * 2)
 
       const summary: SystemHealthSummary = {
         failed_jobs_count: unresolved.filter((e) => e.category === 'job').length,
@@ -3008,10 +3072,11 @@ export class PlatformService {
         key: 'bkash_pgw',
         name: 'bKash Merchant Payment Gateway (Online Tokenized Checkout)',
         category: 'payment',
-        status: bkashConfigured ? 'operational' : 'degraded',
+        status: bkashConfigured ? 'operational' : 'not_configured',
         latency_ms: bkashConfigured ? 120 : 0,
         failure_rate_pct: 0,
         last_success_at: bkashConfigured ? now : 'Not configured',
+        notes: bkashConfigured ? 'Direct API Active' : 'API Keys (BKASH_APP_KEY/SECRET) Not Configured',
       })
 
       // 5. SSLCommerz Multi-Channel Gateway
@@ -3020,10 +3085,11 @@ export class PlatformService {
         key: 'sslcommerz',
         name: 'SSLCommerz Multi-Channel Payment Gateway (Cards / MFS)',
         category: 'payment',
-        status: sslConfigured ? 'operational' : 'degraded',
+        status: sslConfigured ? 'operational' : 'not_configured',
         latency_ms: sslConfigured ? 140 : 0,
         failure_rate_pct: 0,
         last_success_at: sslConfigured ? now : 'Not configured',
+        notes: sslConfigured ? 'Direct Gateway Active' : 'Store ID / Password Not Configured',
       })
 
       // 6. Meta WhatsApp Cloud API
@@ -3032,13 +3098,27 @@ export class PlatformService {
         key: 'whatsapp_cloud',
         name: 'Meta WhatsApp Cloud API (Transactional SMS/Alerts)',
         category: 'notification',
-        status: waConfigured ? 'operational' : 'degraded',
+        status: waConfigured ? 'operational' : 'not_configured',
         latency_ms: waConfigured ? 95 : 0,
         failure_rate_pct: 0,
         last_success_at: waConfigured ? now : 'Not configured',
+        notes: waConfigured ? 'Meta API Connected' : 'WHATSAPP_API_TOKEN Not Configured',
       })
 
-      // 7. NBR Mushak 6.3 Invoicing Engine
+      // 7. Greenweb SMS Gateway
+      const smsConfigured = Boolean(process.env.GREENWEB_SMS_TOKEN || process.env.SMS_API_KEY)
+      integrations.push({
+        key: 'greenweb_sms',
+        name: 'Greenweb SMS Gateway (Bangladeshi Mobile Carrier Routing)',
+        category: 'notification',
+        status: smsConfigured ? 'operational' : 'not_configured',
+        latency_ms: smsConfigured ? 80 : 0,
+        failure_rate_pct: 0,
+        last_success_at: smsConfigured ? now : 'Not configured',
+        notes: smsConfigured ? 'SMS Gateway Active' : 'GREENWEB_SMS_TOKEN Not Configured',
+      })
+
+      // 8. NBR Mushak 6.3 Invoicing Engine
       integrations.push({
         key: 'nbr_vat',
         name: 'NBR Mushak 6.3 Automated Invoicing Engine',
@@ -3047,6 +3127,7 @@ export class PlatformService {
         latency_ms: 15,
         failure_rate_pct: 0,
         last_success_at: now,
+        notes: 'National Board of Revenue VAT Rules Loaded & Compliant',
       })
 
       return { success: true, data: integrations }

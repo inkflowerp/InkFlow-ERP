@@ -271,10 +271,17 @@ export default function PlatformDashboardPage() {
               <span>Cloud Storage</span>
               <HardDrive className="h-3.5 w-3.5 text-pink-400" />
             </div>
-            <div className="text-2xl font-black text-white mt-1.5">{data.storage_used_gb} GB</div>
+            <div className="text-2xl font-black text-white mt-1.5">
+              {data.storage_used_gb > 0 ? `${data.storage_used_gb.toFixed(2)} GB` : '0 GB'}
+            </div>
             <div className="text-[10px] text-pink-400 mt-1 font-semibold">
-              {data.storage_total_gb > 0 ? ((data.storage_used_gb / data.storage_total_gb) * 100).toFixed(1) : '0'}% of{' '}
-              {data.storage_total_gb >= 1000 ? `${(data.storage_total_gb / 1000).toFixed(0)} TB` : `${data.storage_total_gb} GB`}
+              {data.storage_total_gb > 0
+                ? `${((data.storage_used_gb / data.storage_total_gb) * 100).toFixed(1)}% of ${
+                    data.storage_total_gb >= 1000
+                      ? `${(data.storage_total_gb / 1000).toFixed(0)} TB`
+                      : `${data.storage_total_gb} GB`
+                  }`
+                : '0 GB allocated'}
             </div>
           </Card>
         </div>
@@ -429,34 +436,54 @@ export default function PlatformDashboardPage() {
             { name: 'Database', key: 'db', status: 'operational' as const },
             { name: 'Cloud Storage', key: 'storage', status: 'operational' as const },
             { name: 'Background Jobs', key: 'jobs', status: 'operational' as const },
-            { name: 'Notifications', key: 'notifications', status: 'operational' as const },
-            { name: 'bKash Gateway', key: 'bkash', status: 'operational' as const },
-            { name: 'WhatsApp API', key: 'whatsapp', status: 'operational' as const },
-            { name: 'Greenweb SMS', key: 'sms', status: 'operational' as const },
+            { name: 'Notifications', key: 'notifications', status: 'standby' as const },
+            { name: 'bKash Gateway', key: 'bkash', status: 'not_configured' as const },
+            { name: 'WhatsApp API', key: 'whatsapp', status: 'not_configured' as const },
+            { name: 'Greenweb SMS', key: 'sms', status: 'not_configured' as const },
             { name: 'NBR VAT Sync', key: 'vat', status: 'operational' as const },
           ]).map((svc) => {
             const isOp = svc.status === 'operational'
             const isDeg = svc.status === 'degraded'
             const isFail = svc.status === 'failed'
+            const isStandby = svc.status === 'standby'
+            const isNotConf = svc.status === 'not_configured'
+
             const color = isOp
               ? 'text-emerald-400'
               : isDeg
               ? 'text-amber-400'
               : isFail
               ? 'text-red-400'
-              : 'text-indigo-400'
+              : isStandby
+              ? 'text-cyan-400'
+              : 'text-slate-400'
 
-            const label = svc.status.charAt(0).toUpperCase() + svc.status.slice(1)
+            const dotBg = isOp
+              ? 'bg-emerald-400'
+              : isDeg
+              ? 'bg-amber-400'
+              : isFail
+              ? 'bg-red-400'
+              : isStandby
+              ? 'bg-cyan-400'
+              : 'bg-slate-500'
+
+            const label = isNotConf
+              ? 'Not Configured'
+              : isStandby
+              ? 'Standby'
+              : svc.status.charAt(0).toUpperCase() + svc.status.slice(1)
 
             return (
               <div
                 key={svc.name}
                 className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1 hover:border-slate-700 transition-colors"
+                title={svc.notes || `${svc.name}: ${label}`}
               >
                 <div className="text-[11px] font-bold text-slate-300 truncate" title={svc.name}>{svc.name}</div>
                 <div className={`text-[10px] font-semibold flex items-center justify-center gap-1 ${color}`}>
-                  <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                  <span>{label}</span>
+                  <span className={`h-1.5 w-1.5 rounded-full ${dotBg}`} />
+                  <span className="truncate">{label}</span>
                 </div>
               </div>
             )

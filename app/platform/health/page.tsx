@@ -192,10 +192,10 @@ export default function PlatformHealthPage() {
             <HardDrive className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-white mt-2">
-            {summary?.storage_used_gb ?? 0} GB
+            {(summary?.storage_used_gb ?? 0) > 0 ? `${summary!.storage_used_gb.toFixed(2)} GB` : '0 GB'}
           </div>
           <div className="text-[11px] text-cyan-400 mt-1">
-            of {summary?.storage_total_gb ?? 100} GB (
+            of {summary?.storage_total_gb ?? 4} GB (
             {summary && summary.storage_total_gb > 0
               ? ((summary.storage_used_gb / summary.storage_total_gb) * 100).toFixed(1)
               : '0'}
@@ -237,7 +237,7 @@ export default function PlatformHealthPage() {
               <span>Multi-Tenant Cloud Media &amp; Proof Storage (BD-Central Bucket)</span>
             </div>
             <span className="font-mono text-xs text-slate-400">
-              {summary?.storage_used_gb ?? 0} GB / {summary?.storage_total_gb ?? 100} GB Tier Quota
+              {(summary?.storage_used_gb ?? 0) > 0 ? `${summary!.storage_used_gb.toFixed(2)} GB` : '0 GB'} / {summary?.storage_total_gb ?? 4} GB Tier Quota
             </span>
           </div>
 
@@ -248,9 +248,9 @@ export default function PlatformHealthPage() {
                 width: `${Math.min(
                   100,
                   Math.max(
-                    1,
+                    0,
                     Math.round(
-                      ((summary?.storage_used_gb ?? 0) / (summary?.storage_total_gb ?? 100)) * 100
+                      ((summary?.storage_used_gb ?? 0) / (summary?.storage_total_gb ?? 4)) * 100
                     )
                   )
                 )}%`,

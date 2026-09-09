@@ -83,6 +83,8 @@ export default function PlatformIntegrationsPage() {
         {integrations.map((it) => {
           const isOperational = it.status === 'operational'
           const isDegraded = it.status === 'degraded'
+          const isStandby = it.status === 'standby'
+          const isNotConfigured = it.status === 'not_configured'
 
           return (
             <Card key={it.key} className="bg-slate-900 border-slate-800 p-5 space-y-4">
@@ -98,10 +100,14 @@ export default function PlatformIntegrationsPage() {
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                       : isDegraded
                       ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                      : isStandby
+                      ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+                      : isNotConfigured
+                      ? 'bg-slate-800 text-slate-400 border-slate-700'
                       : 'bg-red-500/10 text-red-400 border-red-500/30'
                   }`}
                 >
-                  {it.status}
+                  {isNotConfigured ? 'NOT CONFIGURED' : it.status.replace(/_/g, ' ')}
                 </span>
               </div>
 

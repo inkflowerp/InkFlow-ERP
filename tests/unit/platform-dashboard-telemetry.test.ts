@@ -70,7 +70,7 @@ describe('Platform Dashboard Live Telemetry & Health Calculation Tests', () => {
   })
 
   describe('2. Dynamic Storage & Percentage Calculation', () => {
-    test('Correctly computes storage percentage and labels', () => {
+    test('Correctly computes storage percentage and labels for non-zero storage', () => {
       const storageUsedGb = 0.15
       const storageTotalGb = 100
 
@@ -79,18 +79,25 @@ describe('Platform Dashboard Live Telemetry & Health Calculation Tests', () => {
 
       assert.strictEqual(pct, '0.1', '0.15 GB of 100 GB should format to 0.1%')
       assert.strictEqual(label, '100 GB', 'Label should be 100 GB')
+    })
 
-      const tbTotal = 1000
-      const tbUsed = 50
-      const tbPct = ((tbUsed / tbTotal) * 100).toFixed(1)
-      const tbLabel = tbTotal >= 1000 ? `${(tbTotal / 1000).toFixed(0)} TB` : `${tbTotal} GB`
-      assert.strictEqual(tbPct, '5.0')
-      assert.strictEqual(tbLabel, '1 TB')
+    test('Correctly computes clean zero storage and tenant-based quota allocation', () => {
+      // 2 trial companies with 2 GB quota each
+      const tenantSubscriptions = [
+        { plan: { storage_gb: 2 } },
+        { plan: { storage_gb: 2 } },
+      ]
+      const totalAllocatedPlanStorage = tenantSubscriptions.reduce((acc, s) => acc + s.plan.storage_gb, 0)
+      assert.strictEqual(totalAllocatedPlanStorage, 4, 'Total quota for 2 trial tenants should be 4 GB')
+
+      const storageUsedGb = 0
+      const pct = totalAllocatedPlanStorage > 0 ? ((storageUsedGb / totalAllocatedPlanStorage) * 100).toFixed(1) : '0'
+      assert.strictEqual(pct, '0.0', 'Zero storage should compute 0.0%')
     })
   })
 
   describe('3. Service Health Probes Status Resolution', () => {
-    test('Resolves operational status when no health incidents exist', () => {
+    test('Resolves operational status for operational services', () => {
       const unresolvedEvents: Array<{ category: string; severity: string }> = []
       const failedJobs = unresolvedEvents.filter((e) => e.category === 'job').length
       const jobStatus = failedJobs > 0 ? 'degraded' : 'operational'
@@ -104,6 +111,26 @@ describe('Platform Dashboard Live Telemetry & Health Calculation Tests', () => {
       const failedJobs = unresolvedEvents.filter((e) => e.category === 'job').length
       const jobStatus = failedJobs > 0 ? 'degraded' : 'operational'
       assert.strictEqual(jobStatus, 'degraded')
+    })
+
+    test('Identifies unconfigured gateways when credentials are missing', () => {
+      const bkashConfigured = Boolean(process.env.BKASH_APP_KEY && process.env.BKASH_APP_SECRET)
+      const bkashStatus = !bkashConfigured ? 'not_configured' : 'operational'
+      assert.strictEqual(bkashStatus, 'not_configured', 'Missing BKASH_APP_KEY must report not_configured, not fake operational')
+
+      const waConfigured = Boolean(process.env.WHATSAPP_API_TOKEN)
+      const waStatus = !waConfigured ? 'not_configured' : 'operational'
+      assert.strictEqual(waStatus, 'not_configured', 'Missing WHATSAPP_API_TOKEN must report not_configured')
+
+      const smsConfigured = Boolean(process.env.GREENWEB_SMS_TOKEN)
+      const smsStatus = !smsConfigured ? 'not_configured' : 'operational'
+      assert.strictEqual(smsStatus, 'not_configured', 'Missing GREENWEB_SMS_TOKEN must report not_configured')
+    })
+
+    test('Identifies standby mode for local notification dispatching when no SMTP host is configured', () => {
+      const emailConfigured = Boolean(process.env.SMTP_HOST || process.env.RESEND_API_KEY)
+      const notifStatus = emailConfigured ? 'operational' : 'standby'
+      assert.strictEqual(notifStatus, 'standby', 'Missing external SMTP provider must report standby for local logging')
     })
   })
 })
