@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Sheet, SheetHeader, SheetContent } from '@/components/ui/sheet'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 interface NavItem {
   title: string
@@ -101,6 +102,51 @@ export function PlatformSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [businessSlug, setBusinessSlug] = useState('vision-sign')
+
+  // Resolve target business ERP tenant slug dynamically
+  useEffect(() => {
+    try {
+      // 1. Check support session cookie
+      const supportMatch = document.cookie.match(/(?:^|; )printerp_support_tenant=([^;]*)/)
+      if (supportMatch && supportMatch[1]) {
+        const parsed = JSON.parse(decodeURIComponent(supportMatch[1]))
+        if (parsed?.targetCompanySlug) {
+          setBusinessSlug(parsed.targetCompanySlug)
+          return
+        }
+      }
+
+      // 2. Check tenant session cookie
+      const sessionMatch = document.cookie.match(/(?:^|; )printerp_tenant_session=([^;]*)/)
+      if (sessionMatch && sessionMatch[1]) {
+        const parsed = JSON.parse(decodeURIComponent(sessionMatch[1]))
+        if (parsed?.companySlug) {
+          setBusinessSlug(parsed.companySlug)
+          return
+        }
+      }
+
+      // 3. Check localStorage
+      const localSlug =
+        localStorage.getItem('printerp_current_company') ||
+        localStorage.getItem('printerp_tenant_slug') ||
+        localStorage.getItem('inkflow_active_tenant')
+      if (localSlug) {
+        setBusinessSlug(localSlug)
+        return
+      }
+
+      // 4. Check data store platform companies
+      const platformCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+      if (platformCompanies.length > 0 && platformCompanies[0].slug) {
+        setBusinessSlug(platformCompanies[0].slug)
+        return
+      }
+    } catch {
+      // fallback to vision-sign
+    }
+  }, [])
 
   // Load persisted collapsed state from localStorage
   useEffect(() => {
@@ -269,43 +315,47 @@ export function PlatformSidebar() {
     )
   }
 
-  const renderFooter = (isMobile = false, isCollapsed = false) => (
-    <div className="p-2.5 border-t border-slate-800 bg-slate-950/80 space-y-2 shrink-0 select-none">
-      {!isCollapsed ? (
-        <>
-          <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              BD-Central Cluster
-            </span>
-            <span className="font-mono text-slate-500 text-[9px] font-bold">InkFlow SaaS</span>
-          </div>
+  const renderFooter = (isMobile = false, isCollapsed = false) => {
+    const businessHref = `/${businessSlug}/dashboard`
 
+    return (
+      <div className="p-2.5 border-t border-slate-800 bg-slate-950/80 space-y-2 shrink-0 select-none">
+        {!isCollapsed ? (
+          <>
+            <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                BD-Central Cluster
+              </span>
+              <span className="font-mono text-slate-500 text-[9px] font-bold">InkFlow SaaS</span>
+            </div>
+
+            <Link
+              href={businessHref}
+              onClick={() => {
+                if (isMobile) setMobileOpen(false)
+              }}
+              className="flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white bg-slate-800/40 hover:bg-slate-800/90 hover:border-indigo-500/40 px-3 py-2 rounded-xl transition-all border border-slate-800 group min-h-[38px] shadow-sm cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform text-indigo-400" />
+                <span>Exit to Business ERP</span>
+              </span>
+              <ExternalLink className="h-3 w-3 text-slate-500 group-hover:text-indigo-400 transition-colors" />
+            </Link>
+          </>
+        ) : (
           <Link
-            href="/dashboard"
-            onClick={() => {
-              if (isMobile) setMobileOpen(false)
-            }}
-            className="flex items-center justify-between text-xs font-semibold text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-800 px-3 py-2 rounded-xl transition-all border border-slate-800 group min-h-[38px]"
+            href={businessHref}
+            title={`Exit to Business ERP (${businessSlug})`}
+            className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 hover:border-indigo-500/40 transition-colors cursor-pointer"
           >
-            <span className="flex items-center gap-2">
-              <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform text-indigo-400" />
-              <span>Exit to Business ERP</span>
-            </span>
-            <ExternalLink className="h-3 w-3 text-slate-500 group-hover:text-slate-300" />
+            <ArrowLeft className="h-4 w-4 text-indigo-400" />
           </Link>
-        </>
-      ) : (
-        <Link
-          href="/dashboard"
-          title="Exit to Business ERP"
-          className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4 text-indigo-400" />
-        </Link>
-      )}
-    </div>
-  )
+        )}
+      </div>
+    )
+  }
 
   return (
     <>

@@ -204,8 +204,31 @@ export function hasBranchAccess(
  */
 export async function getTenantRedirectSlug(): Promise<string> {
   const tenant = await getCurrentTenant()
-  if (!tenant?.companySlug) {
-    redirect('/login')
+  if (tenant?.companySlug) {
+    return tenant.companySlug
   }
-  return tenant.companySlug
+
+  try {
+    const cookieStore = await cookies()
+    const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
+    if (sessionCookie) {
+      const parsed = JSON.parse(sessionCookie)
+      if (parsed?.companySlug) return parsed.companySlug
+    }
+
+    const supportCookie = cookieStore.get(SUPPORT_COOKIE_NAME)?.value
+    if (supportCookie) {
+      const parsed = JSON.parse(supportCookie)
+      if (parsed?.targetCompanySlug) return parsed.targetCompanySlug
+    }
+
+    const companies = await TenantRepository.getAllCompanies()
+    if (companies && companies.length > 0 && companies[0].slug) {
+      return companies[0].slug
+    }
+  } catch {
+    // fallback gracefully
+  }
+
+  return 'vision-sign'
 }
