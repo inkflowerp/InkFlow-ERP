@@ -1556,6 +1556,103 @@ export class PlatformService {
     }
   }
 
+  static async reactivatePlan(planId: string): Promise<ApiResponse<{ planId: string }>> {
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
+        .from('subscription_plans')
+        .update({
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', planId)
+        .select('name, code')
+        .single()
+
+      if (error) return { success: false, error: error.message }
+
+      await this.recordAuditLog(
+        'plan.reactivate',
+        'subscription_plan',
+        planId,
+        undefined,
+        undefined,
+        { plan_code: data.code, name: data.name },
+        { is_active: false },
+        { is_active: true },
+        `Subscription plan ${data.name} reactivated`
+      )
+
+      return { success: true, data: { planId } }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to reactivate plan' }
+    }
+  }
+
+  static async deletePlan(planId: string): Promise<ApiResponse<{ planId: string }>> {
+    try {
+      const admin = createAdminClient()
+      // 1. Fetch plan
+      const { data: targetPlan, error: fetchErr } = await (admin as any)
+        .from('subscription_plans')
+        .select('id, code, name')
+        .eq('id', planId)
+        .maybeSingle()
+
+      if (fetchErr || !targetPlan) {
+        return { success: false, error: 'Subscription plan not found.' }
+      }
+
+      // Core system plans cannot be deleted
+      const CORE_CODES = ['trial', 'starter', 'business', 'enterprise']
+      if (CORE_CODES.includes(targetPlan.code.toLowerCase())) {
+        return {
+          success: false,
+          error: `System core plan '${targetPlan.name}' cannot be deleted. You may deactivate/archive it instead.`,
+        }
+      }
+
+      // Check if any company is assigned to this plan
+      const { count, error: countErr } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('plan_id', planId)
+
+      if (!countErr && count && count > 0) {
+        return {
+          success: false,
+          error: `Cannot delete '${targetPlan.name}': There are ${count} active or historical company subscriptions linked to this plan. Please archive it instead.`,
+        }
+      }
+
+      // Perform deletion
+      const { error: delErr } = await (admin as any)
+        .from('subscription_plans')
+        .delete()
+        .eq('id', planId)
+
+      if (delErr) {
+        return { success: false, error: delErr.message }
+      }
+
+      await this.recordAuditLog(
+        'plan.delete',
+        'subscription_plan',
+        planId,
+        undefined,
+        undefined,
+        { plan_code: targetPlan.code, name: targetPlan.name },
+        targetPlan,
+        null,
+        `Subscription plan ${targetPlan.name} permanently deleted`
+      )
+
+      return { success: true, data: { planId } }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to delete plan' }
+    }
+  }
+
   /**
    * 8. Platform Audit Trail
    */

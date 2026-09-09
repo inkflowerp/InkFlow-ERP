@@ -43,6 +43,7 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'plan.create',
   'plan.edit',
   'plan.archive',
+  'plan.delete',
   'feature.view',
   'feature.manage',
   'feature_flags.view',

@@ -353,6 +353,40 @@ export async function archivePlanAction(planId: string) {
   }
 }
 
+export async function reactivatePlanAction(planId: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || (!hasPlatformPermission(platformUser, 'plan.edit') && !hasPlatformPermission(platformUser, 'plan.archive'))) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to reactivate plans.' }
+    }
+
+    const result = await PlatformService.reactivatePlan(planId)
+    if (result.success) {
+      revalidatePath('/platform/plans')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to reactivate plan' }
+  }
+}
+
+export async function deletePlanAction(planId: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || (!hasPlatformPermission(platformUser, 'plan.delete') && !hasPlatformPermission(platformUser, 'plan.archive'))) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to delete plans.' }
+    }
+
+    const result = await PlatformService.deletePlan(planId)
+    if (result.success) {
+      revalidatePath('/platform/plans')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to delete plan' }
+  }
+}
+
 /**
  * 5. Feature Flags & Overrides
  */
