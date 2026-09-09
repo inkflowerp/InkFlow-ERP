@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import {
   PrintERPDataStore,
   StorageKey,
@@ -46,6 +46,9 @@ export function useDataStore<T = any>(
   initialSeed?: T,
   customTenantSlug?: string
 ): DataStoreResult<T> {
+  const initialSeedRef = useRef(initialSeed)
+  initialSeedRef.current = initialSeed
+
   const [data, setData] = useState<T>(() => {
     const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
     if (slug !== 'padma-digital' && isTransactionalKey(key)) {
@@ -69,14 +72,19 @@ export function useDataStore<T = any>(
       setData(latest)
     } else if (slug !== 'padma-digital' && isTransactionalKey(key)) {
       setData([] as unknown as T)
-    } else if (initialSeed !== undefined) {
-      setData(initialSeed)
+    } else if (initialSeedRef.current !== undefined) {
+      setData(initialSeedRef.current)
     }
-  }, [key, customTenantSlug, initialSeed])
+  }, [key, customTenantSlug])
+
+  const reloadRef = useRef(reload)
+  useEffect(() => {
+    reloadRef.current = reload
+  }, [reload])
 
   useEffect(() => {
     // Initial sync on mount
-    reload()
+    reloadRef.current()
 
     const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
     const effectiveKey = PrintERPDataStore.getEffectiveKey(key, slug)
@@ -88,17 +96,17 @@ export function useDataStore<T = any>(
         customEvent.detail?.effectiveKey === effectiveKey ||
         customEvent.detail?.all === true
       ) {
-        reload()
+        reloadRef.current()
       }
     }
 
     const handleKeyUpdate = () => {
-      reload()
+      reloadRef.current()
     }
 
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === key || e.key === effectiveKey) {
-        reload()
+        reloadRef.current()
       }
     }
 
@@ -113,7 +121,7 @@ export function useDataStore<T = any>(
       window.removeEventListener(`${effectiveKey}_updated`, handleKeyUpdate)
       window.removeEventListener('storage', handleStorageChange)
     }
-  }, [key, customTenantSlug, reload])
+  }, [key, customTenantSlug])
 
   const set = useCallback(
     (newData: T | ((prev: T) => T)) => {
@@ -168,28 +176,33 @@ export function useDataStore<T = any>(
     [key, customTenantSlug]
   )
 
-  const helpers: DataStoreHelpers = {
-    addItem,
-    updateItem,
-    removeItem,
-    findItem,
-    reload,
-  }
+  const helpers: DataStoreHelpers = useMemo(
+    () => ({
+      addItem,
+      updateItem,
+      removeItem,
+      findItem,
+      reload,
+    }),
+    [addItem, updateItem, removeItem, findItem, reload]
+  )
 
-  const resultObj = {
-    data,
-    set,
-    ...helpers,
-    0: data,
-    1: set,
-    2: helpers,
-    length: 3,
-    [Symbol.iterator]: function* () {
-      yield data
-      yield set
-      yield helpers
-    },
-  }
+  const resultObj = useMemo(() => {
+    return {
+      data,
+      set,
+      ...helpers,
+      0: data,
+      1: set,
+      2: helpers,
+      length: 3,
+      [Symbol.iterator]: function* () {
+        yield data
+        yield set
+        yield helpers
+      },
+    }
+  }, [data, set, helpers])
 
   return resultObj as unknown as DataStoreResult<T>
 }
