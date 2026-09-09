@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { LogOut, Settings, User as UserIcon, Shield } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -11,8 +12,11 @@ import { useI18n } from '@/i18n/context'
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const { signOut } = useAuth()
-  const { currentRole, currentBranch, currentUser } = useTenant()
+  const { company, currentRole, currentBranch, currentUser } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const router = useRouter()
+  const slug = company?.slug || 'my-company'
+  const isOwner = currentRole === 'owner' || currentRole === 'admin'
 
   const userName = currentUser?.profile?.full_name
     ? tBilingual(currentUser.profile.full_name, currentUser.profile.full_name_bn || currentUser.profile.full_name)
@@ -63,24 +67,42 @@ export function UserMenu() {
               </div>
             </div>
 
-
             <div className="space-y-0.5 py-1">
               <button
                 type="button"
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false)
+                  router.push(`/${slug}/settings/users`)
+                }}
               >
                 <UserIcon className="h-3.5 w-3.5 text-slate-400" />
-                <span>{tBilingual('My Profile', 'আমার প্রোফাইল')}</span>
+                <span>{tBilingual('My Profile & Team', 'আমার প্রোফাইল ও টিম')}</span>
               </button>
               <button
                 type="button"
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false)
+                  router.push(`/${slug}/settings/company`)
+                }}
               >
                 <Settings className="h-3.5 w-3.5 text-slate-400" />
-                <span>{tBilingual('Account Settings', 'একাউন্ট সেটিংস')}</span>
+                <span>{tBilingual('Company Settings', 'প্রতিষ্ঠান সেটিংস')}</span>
               </button>
+              {isOwner && (
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer"
+                  onClick={() => {
+                    setIsOpen(false)
+                    router.push('/platform-admin')
+                  }}
+                >
+                  <Shield className="h-3.5 w-3.5 text-indigo-500" />
+                  <span>Platform Owner Portal</span>
+                </button>
+              )}
             </div>
 
             <div className="border-t border-slate-100 pt-1 dark:border-slate-800">

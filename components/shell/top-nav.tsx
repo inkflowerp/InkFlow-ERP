@@ -140,70 +140,73 @@ export function TopNav() {
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-        {/* Role Persona Switcher (Live isolated account switcher) */}
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setIsPersonaOpen(!isPersonaOpen)}
-            className="flex items-center gap-1 rounded-lg border border-purple-200 bg-purple-50/70 px-2 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300 cursor-pointer transition-colors shrink-0 whitespace-nowrap min-h-[40px]"
-            title="Switch authenticated account role"
-          >
-            <Shield className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-            <span className="hidden lg:inline text-purple-600/80 font-medium whitespace-nowrap">Account:</span>
-            <span className="font-bold capitalize whitespace-nowrap text-[11px] sm:text-xs">
-              {activeRoleLabel}
-            </span>
-            <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
-          </button>
+        {/* Role Persona Switcher - Only active for padma-digital demo environment */}
+        {slug === 'padma-digital' && (
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsPersonaOpen(!isPersonaOpen)}
+              className="flex items-center gap-1 rounded-lg border border-purple-200 bg-purple-50/70 px-2 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300 cursor-pointer transition-colors shrink-0 whitespace-nowrap min-h-[40px]"
+              title="Switch demo persona for testing"
+            >
+              <Shield className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <span className="hidden lg:inline text-purple-600/80 font-medium whitespace-nowrap">Demo Role:</span>
+              <span className="font-bold capitalize whitespace-nowrap text-[11px] sm:text-xs">
+                {activeRoleLabel}
+              </span>
+              <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
+            </button>
 
-          {isPersonaOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setIsPersonaOpen(false)} />
-              <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 p-2 z-50 animate-in fade-in-0">
-                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Switch Isolated Account:
-                </div>
-                <div className="space-y-1 mt-1">
-                  {personas.map((p) => {
-                    const isCurrent = currentRole === p.role
-                    return (
-                      <button
-                        key={p.role}
-                        type="button"
-                        onClick={() => handleSelectPersona(p)}
-                        className={cn(
-                          'w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs text-left transition-colors min-h-[44px]',
-                          isCurrent
-                            ? 'bg-purple-600 text-white font-bold'
-                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        )}
-                      >
-                        <div>
-                          <div className="font-semibold">{tBilingual(p.titleEn, p.titleBn)}</div>
-                          <div className={cn('text-[10px]', isCurrent ? 'text-purple-100' : 'text-slate-400')}>
-                            {p.email}
+            {isPersonaOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsPersonaOpen(false)} />
+                <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 p-2 z-50 animate-in fade-in-0">
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center justify-between">
+                    <span>Demo Role Personas</span>
+                    <span className="text-[9px] bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded font-mono">Demo Workspace</span>
+                  </div>
+                  <div className="space-y-1 mt-1">
+                    {personas.map((p) => {
+                      const isCurrent = currentRole === p.role
+                      return (
+                        <button
+                          key={p.role}
+                          type="button"
+                          onClick={() => handleSelectPersona(p)}
+                          className={cn(
+                            'w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs text-left transition-colors min-h-[44px]',
+                            isCurrent
+                              ? 'bg-purple-600 text-white font-bold'
+                              : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          )}
+                        >
+                          <div>
+                            <div className="font-semibold">{tBilingual(p.titleEn, p.titleBn)}</div>
+                            <div className={cn('text-[10px]', isCurrent ? 'text-purple-100' : 'text-slate-400')}>
+                              {p.email}
+                            </div>
                           </div>
-                        </div>
-                        {isCurrent && <Check className="h-3.5 w-3.5 shrink-0" />}
-                      </button>
-                    )
-                  })}
+                          {isCurrent && <Check className="h-3.5 w-3.5 shrink-0" />}
+                        </button>
+                      )
+                    })}
 
-                  <div className="pt-2 mt-1 border-t border-slate-100 dark:border-slate-800">
-                    <Link
-                      href="/platform-admin"
-                      onClick={() => setIsPersonaOpen(false)}
-                      className="flex items-center gap-2 w-full px-2.5 py-2.5 rounded-lg text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 min-h-[44px]"
-                    >
-                      <Server className="h-3.5 w-3.5" />
-                      <span>Platform Owner Portal (Root)</span>
-                    </Link>
+                    <div className="pt-2 mt-1 border-t border-slate-100 dark:border-slate-800">
+                      <Link
+                        href="/platform-admin"
+                        onClick={() => setIsPersonaOpen(false)}
+                        className="flex items-center gap-2 w-full px-2.5 py-2.5 rounded-lg text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 min-h-[44px]"
+                      >
+                        <Server className="h-3.5 w-3.5" />
+                        <span>Platform Owner Portal (Root)</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
-        </div>
+              </>
+            )}
+          </div>
+        )}
 
 
         {/* Quick Action Hub */}

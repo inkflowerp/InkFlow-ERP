@@ -26,16 +26,17 @@ export default function CompanyProfileSettingsPage() {
   const { locale, tBilingual } = useI18n()
   const [isSaved, setIsSaved] = useState(false)
 
+  const isDemo = company?.slug === 'padma-digital'
   const [profile, setProfile] = useDataStore(STORAGE_KEYS.COMPANY_PROFILE, {
-    name: company?.name || 'Padma Digital & Signage Ltd.',
-    name_bn: company?.name_bn || 'পদ্মা ডিজিটাল অ্যান্ড সাইনেজ লি.',
-    legal_name: company?.legal_name || 'Padma Digital Communications Private Limited',
-    phone: company?.phone || '+880 1711-234567',
-    whatsapp: company?.whatsapp || '+880 1819-876543',
-    email: company?.email || 'sales@padmadigital.com.bd',
-    area: company?.area || 'Fakirapool / Motijheel Commercial Area',
-    address: company?.address || '14/B Motijheel C/A, Fakirapool Press Zone, Dhaka-1000',
-    address_bn: company?.address_bn || '১৪/বি মতিঝিল বাণিজ্যিক এলাকা, ফকিরাপুল প্রেস জোন, ঢাকা-১০০০',
+    name: company?.name || (isDemo ? 'Padma Digital & Signage Ltd.' : ''),
+    name_bn: company?.name_bn || (isDemo ? 'পদ্মা ডিজিটাল অ্যান্ড সাইনেজ লি.' : ''),
+    legal_name: company?.legal_name || (isDemo ? 'Padma Digital Communications Private Limited' : ''),
+    phone: company?.phone || (isDemo ? '+880 1711-234567' : ''),
+    whatsapp: company?.whatsapp || (isDemo ? '+880 1819-876543' : ''),
+    email: company?.email || (isDemo ? 'sales@padmadigital.com.bd' : ''),
+    area: company?.area || (isDemo ? 'Fakirapool / Motijheel Commercial Area' : ''),
+    address: company?.address || (isDemo ? '14/B Motijheel C/A, Fakirapool Press Zone, Dhaka-1000' : ''),
+    address_bn: company?.address_bn || (isDemo ? '১৪/বি মতিঝিল বাণিজ্যিক এলাকা, ফকিরাপুল প্রেস জোন, ঢাকা-১০০০' : ''),
   })
 
   // Form State initialized from persistent store
