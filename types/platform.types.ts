@@ -396,6 +396,9 @@ export interface PlatformAuditLogItem {
   id: string
   platform_admin_id?: string | null
   actor_email: string
+  actor_name?: string | null
+  actor_role?: string | null
+  actor_avatar_url?: string | null
   action: string
   entity_type: string
   entity_id?: string | null

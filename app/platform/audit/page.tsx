@@ -211,6 +211,48 @@ export default function PlatformAuditPage() {
   // Total Pages for Pagination
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
+  // Helpers for Initials & Dates
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name && name.trim()) {
+      const parts = name.trim().split(/\s+/).filter(Boolean)
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      }
+      return parts[0].slice(0, 2).toUpperCase()
+    }
+    if (email && email.trim()) {
+      return email.trim().slice(0, 2).toUpperCase()
+    }
+    return 'SA'
+  }
+
+  const formatDate = (isoString: string) => {
+    try {
+      const d = new Date(isoString)
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    } catch {
+      return isoString
+    }
+  }
+
+  const formatTime = (isoString: string) => {
+    try {
+      const d = new Date(isoString)
+      return d.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      })
+    } catch {
+      return ''
+    }
+  }
+
   // Relative Time Formatter
   const formatRelativeTime = (isoString: string) => {
     const diffMs = Date.now() - new Date(isoString).getTime()
@@ -219,7 +261,7 @@ export default function PlatformAuditPage() {
     const diffHour = Math.floor(diffMin / 60)
     const diffDay = Math.floor(diffHour / 24)
 
-    if (diffDay > 30) return new Date(isoString).toLocaleDateString()
+    if (diffDay > 30) return formatDate(isoString)
     if (diffDay > 0) return `${diffDay}d ago`
     if (diffHour > 0) return `${diffHour}h ago`
     if (diffMin > 0) return `${diffMin}m ago`
@@ -242,7 +284,9 @@ export default function PlatformAuditPage() {
     const headers = [
       'Event ID',
       'Timestamp (UTC)',
+      'Actor Name',
       'Actor Email',
+      'Actor Role',
       'Action',
       'Entity Type',
       'Entity ID',
@@ -262,7 +306,9 @@ export default function PlatformAuditPage() {
     const rows = logs.map((l) => [
       escapeCSV(l.id),
       escapeCSV(l.created_at),
+      escapeCSV(l.actor_name || ''),
       escapeCSV(l.actor_email),
+      escapeCSV(l.actor_role || ''),
       escapeCSV(l.action),
       escapeCSV(l.entity_type),
       escapeCSV(l.entity_id || ''),
@@ -533,7 +579,7 @@ export default function PlatformAuditPage() {
             <div className="md:col-span-4 relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
               <Input
-                placeholder="Search action, actor email, entity ID, or keyword..."
+                placeholder="Search action, actor name/email, entity ID, or keyword..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 pr-8 h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-500 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
@@ -802,12 +848,12 @@ export default function PlatformAuditPage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3.5 px-4">Timestamp & Origin</th>
-                <th className="py-3.5 px-4">Superadmin Actor</th>
-                <th className="py-3.5 px-4">Privileged Action</th>
-                <th className="py-3.5 px-4">Target Scope / Entity</th>
-                <th className="py-3.5 px-4">Audit Justification</th>
-                <th className="py-3.5 px-4 text-right">Details</th>
+                <th className="py-3.5 px-4 min-w-[210px]">Timestamp & Origin</th>
+                <th className="py-3.5 px-4 min-w-[230px]">Superadmin Actor</th>
+                <th className="py-3.5 px-4 min-w-[170px]">Privileged Action</th>
+                <th className="py-3.5 px-4 min-w-[190px]">Target Scope / Entity</th>
+                <th className="py-3.5 px-4 min-w-[200px]">Audit Justification</th>
+                <th className="py-3.5 px-4 text-right min-w-[100px]">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80 text-slate-200">
@@ -849,48 +895,67 @@ export default function PlatformAuditPage() {
                   const style = getActionBadgeStyle(log.action)
                   return (
                     <tr key={log.id} className="hover:bg-slate-850/60 transition-colors group">
-                      {/* Timestamp & IP */}
-                      <td className="py-3.5 px-4 align-top">
-                        <div className="font-semibold text-white flex items-center gap-1.5">
-                          <span>{new Date(log.created_at).toLocaleDateString()}</span>
+                      {/* 1. Timestamp & Origin */}
+                      <td className="py-3.5 px-4 align-top min-w-[210px]">
+                        <div className="font-semibold text-white flex items-center gap-1.5 whitespace-nowrap">
+                          <span>{formatDate(log.created_at)}</span>
                           <span className="text-slate-400 font-mono text-[11px]">
-                            {new Date(log.created_at).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              second: '2-digit',
-                            })}
+                            {formatTime(log.created_at)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-1.5 py-0.5 rounded-md border border-slate-800 flex items-center gap-1">
-                            <Clock className="h-2.5 w-2.5 text-slate-500" />
-                            {formatRelativeTime(log.created_at)}
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-nowrap">
+                          <span className="text-[10px] font-mono text-slate-300 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
+                            <Clock className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
+                            <span>{formatRelativeTime(log.created_at)}</span>
                           </span>
-                          <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
-                            <Globe className="h-2.5 w-2.5" />
-                            {log.ip_address || '127.0.0.1'}
+                          <span
+                            className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
+                            title={`Origin IP: ${log.ip_address || '127.0.0.1'}`}
+                          >
+                            <Globe className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
+                            <span>{log.ip_address || '127.0.0.1'}</span>
                           </span>
                         </div>
                       </td>
 
-                      {/* Superadmin Actor */}
-                      <td className="py-3.5 px-4 align-top">
-                        <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                          <div className="h-5 w-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px] font-bold">
-                            {log.actor_email.charAt(0).toUpperCase()}
+                      {/* 2. Superadmin Actor */}
+                      <td className="py-3.5 px-4 align-top min-w-[230px]">
+                        <div className="flex items-start gap-2.5">
+                          <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 text-white font-black text-[11px] flex items-center justify-center shrink-0 shadow-md border border-indigo-500/30">
+                            {getInitials(log.actor_name, log.actor_email)}
                           </div>
-                          <span className="truncate max-w-[170px]" title={log.actor_email}>
-                            {log.actor_email}
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5 flex items-center gap-1">
-                          <ShieldCheck className="h-2.5 w-2.5 text-indigo-400" />
-                          <span>Platform Superadmin</span>
+                          <div className="min-w-0 flex-1">
+                            <div
+                              className="font-bold text-white text-xs leading-snug truncate max-w-[170px]"
+                              title={log.actor_name || 'Platform Administrator'}
+                            >
+                              {log.actor_name || 'Platform Administrator'}
+                            </div>
+                            <div
+                              className="text-[11px] font-mono text-slate-400 truncate max-w-[170px] mt-0.5 leading-tight"
+                              title={log.actor_email}
+                            >
+                              {log.actor_email}
+                            </div>
+                            <div className="mt-1 flex items-center gap-1">
+                              {log.actor_role === 'platform_owner' ? (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px] font-bold tracking-wide uppercase font-mono">
+                                  <ShieldCheck className="h-2.5 w-2.5 text-amber-400 shrink-0" />
+                                  Platform Owner
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[9px] font-bold tracking-wide uppercase font-mono">
+                                  <ShieldCheck className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
+                                  Superadmin
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </td>
 
-                      {/* Action Badge */}
-                      <td className="py-3.5 px-4 align-top">
+                      {/* 3. Action Badge */}
+                      <td className="py-3.5 px-4 align-top min-w-[170px]">
                         <div className="inline-flex items-center gap-1.5">
                           <span
                             className={`font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 ${style.bg}`}
@@ -901,37 +966,45 @@ export default function PlatformAuditPage() {
                         </div>
                       </td>
 
-                      {/* Target Organization / Scope */}
-                      <td className="py-3.5 px-4 align-top">
+                      {/* 4. Target Organization / Scope */}
+                      <td className="py-3.5 px-4 align-top min-w-[190px]">
                         <div className="font-semibold text-white flex items-center gap-1.5">
                           {log.target_company_id ? (
                             <Link
                               href={`/platform/companies/${log.target_company_id}`}
                               className="text-slate-200 hover:text-indigo-400 transition-colors flex items-center gap-1"
                             >
-                              <Building2 className="h-3 w-3 text-indigo-400" />
-                              <span>{log.target_company_name || log.target_company_id.slice(0, 8)}</span>
+                              <Building2 className="h-3 w-3 text-indigo-400 shrink-0" />
+                              <span className="truncate max-w-[150px]">
+                                {log.target_company_name || log.target_company_id.slice(0, 8)}
+                              </span>
                             </Link>
                           ) : (
                             <span className="flex items-center gap-1 text-slate-400">
-                              <Terminal className="h-3 w-3 text-slate-500" />
+                              <Terminal className="h-3 w-3 text-slate-500 shrink-0" />
                               Platform Core System
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                        <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-[170px]">
                           {log.entity_type} {log.entity_id ? `• ${log.entity_id.slice(0, 8)}...` : ''}
                         </div>
                       </td>
 
-                      {/* Audit Justification */}
-                      <td className="py-3.5 px-4 align-top max-w-[200px]">
+                      {/* 5. Audit Justification */}
+                      <td className="py-3.5 px-4 align-top min-w-[200px] max-w-[240px]">
                         {log.reason ? (
-                          <div className="text-slate-300 text-xs italic line-clamp-2 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800">
+                          <div
+                            className="text-slate-300 text-xs italic line-clamp-2 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800"
+                            title={log.reason}
+                          >
                             "{log.reason}"
                           </div>
                         ) : log.details?.reason ? (
-                          <div className="text-slate-300 text-xs italic line-clamp-2 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800">
+                          <div
+                            className="text-slate-300 text-xs italic line-clamp-2 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800"
+                            title={log.details.reason}
+                          >
                             "{log.details.reason}"
                           </div>
                         ) : (
@@ -939,8 +1012,8 @@ export default function PlatformAuditPage() {
                         )}
                       </td>
 
-                      {/* Inspect Button */}
-                      <td className="py-3.5 px-4 text-right align-top">
+                      {/* 6. Inspect Button */}
+                      <td className="py-3.5 px-4 text-right align-top min-w-[100px]">
                         <Button
                           size="sm"
                           variant="ghost"
@@ -959,7 +1032,7 @@ export default function PlatformAuditPage() {
           </table>
         </CardContent>
 
-        {/* 6. Table Footer with Pagination Controls */}
+        {/* Table Footer with Pagination Controls */}
         {!loading && logs.length > 0 && (
           <div className="border-t border-slate-800 px-4 py-3 bg-slate-950/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
             <div>
@@ -1072,8 +1145,22 @@ export default function PlatformAuditPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs bg-slate-950 p-3.5 rounded-xl border border-slate-800">
                 <div>
                   <span className="text-slate-500 font-medium">Superadmin Actor:</span>
-                  <div className="font-bold text-white mt-0.5 truncate" title={selectedLog.actor_email}>
+                  <div className="font-bold text-white mt-0.5 truncate" title={selectedLog.actor_name || selectedLog.actor_email}>
+                    {selectedLog.actor_name || 'Platform Administrator'}
+                  </div>
+                  <div className="text-[11px] font-mono text-slate-400 truncate mt-0.5">
                     {selectedLog.actor_email}
+                  </div>
+                  <div className="mt-1">
+                    {selectedLog.actor_role === 'platform_owner' ? (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px] font-bold tracking-wide uppercase font-mono">
+                        Platform Owner
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[9px] font-bold tracking-wide uppercase font-mono">
+                        Superadmin
+                      </span>
+                    )}
                   </div>
                 </div>
 

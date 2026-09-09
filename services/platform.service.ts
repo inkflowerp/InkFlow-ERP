@@ -1566,7 +1566,8 @@ export class PlatformService {
         .from('platform_audit_logs')
         .select(`
           *,
-          companies:target_company_id (name)
+          companies:target_company_id (name),
+          platform_admins:platform_admin_id (id, full_name, email, role, avatar_url)
         `, { count: 'exact' })
 
       if (filters?.action && filters.action !== 'all') {
@@ -1615,23 +1616,34 @@ export class PlatformService {
 
       if (error) return { success: false, error: error.message }
 
-      const formatted: PlatformAuditLogItem[] = (data || []).map((l: any) => ({
-        id: l.id,
-        platform_admin_id: l.platform_admin_id,
-        actor_email: l.actor_email,
-        action: l.action,
-        entity_type: l.entity_type,
-        entity_id: l.entity_id,
-        target_company_id: l.target_company_id,
-        target_company_name: l.companies?.name || null,
-        previous_state: l.details?.previous_state || null,
-        new_state: l.details?.new_state || null,
-        reason: l.details?.reason || null,
-        details: l.details || {},
-        ip_address: l.ip_address,
-        user_agent: l.user_agent,
-        created_at: l.created_at,
-      }))
+      const formatted: PlatformAuditLogItem[] = (data || []).map((l: any) => {
+        const adminObj = l.platform_admins
+        const actorName = adminObj?.full_name || l.details?.actor_name || l.details?.admin_name || null
+        const actorRole = adminObj?.role || l.details?.role || 'platform_owner'
+        const rawIp = l.ip_address || l.details?.ip_address || null
+        const cleanIp = rawIp === '::1' ? '127.0.0.1' : rawIp
+
+        return {
+          id: l.id,
+          platform_admin_id: l.platform_admin_id,
+          actor_email: adminObj?.email || l.actor_email,
+          actor_name: actorName,
+          actor_role: actorRole,
+          actor_avatar_url: adminObj?.avatar_url || null,
+          action: l.action,
+          entity_type: l.entity_type,
+          entity_id: l.entity_id,
+          target_company_id: l.target_company_id,
+          target_company_name: l.companies?.name || null,
+          previous_state: l.details?.previous_state || null,
+          new_state: l.details?.new_state || null,
+          reason: l.reason || l.details?.reason || null,
+          details: l.details || {},
+          ip_address: cleanIp,
+          user_agent: l.user_agent || l.details?.user_agent || null,
+          created_at: l.created_at,
+        }
+      })
 
       return {
         success: true,
