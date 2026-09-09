@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Settings,
   Database,
@@ -23,10 +25,14 @@ import {
   Radio,
   Check,
   Zap,
+  Mail,
+  Layers,
+  ArrowRight,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
 import { getPlatformBackupStatusAction, getPlatformSettingsAction } from '@/actions/platform-data.actions'
 import { PlatformBackupStatus, PlatformSystemSettings } from '@/types/platform.types'
 import {
@@ -36,6 +42,8 @@ import {
 } from '@/actions/platform.actions'
 
 export default function PlatformSettingsPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [backup, setBackup] = useState<PlatformBackupStatus | null>(null)
   const [settings, setSettings] = useState<PlatformSystemSettings | null>(null)
   const [originalSettings, setOriginalSettings] = useState<PlatformSystemSettings | null>(null)
@@ -121,8 +129,18 @@ export default function PlatformSettingsPage() {
     setExporting(false)
   }
 
+  useEffect(() => {
+    const tab = searchParams?.get('tab')
+    if (tab === 'communication' || tab === 'email' || tab === 'gateway') {
+      router.replace('/platform/settings/communication')
+    }
+  }, [searchParams, router])
+
   return (
     <div className="space-y-6 max-w-6xl">
+      {/* Platform Settings Navigation Tabs */}
+      <PlatformSettingsNav />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div>
@@ -226,6 +244,55 @@ export default function PlatformSettingsPage() {
           </Button>
         </div>
       )}
+
+      {/* Quick Settings Hub */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Link
+          href="/platform/settings/communication"
+          className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/60 via-slate-900 to-indigo-950/40 border border-indigo-500/30 hover:border-indigo-500/60 transition-all flex items-center justify-between group shadow-lg"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30 group-hover:scale-105 transition-transform shrink-0">
+              <Mail className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-white flex items-center gap-2">
+                Email Gateway &amp; SMTP
+                <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-mono px-2 py-0.5 rounded-full border border-indigo-500/30 font-bold">
+                  Active
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Configure SMTP, Resend, SendGrid, Amazon SES, and Email Templates.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+        </Link>
+
+        <Link
+          href="/platform/integrations"
+          className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/60 via-slate-900 to-purple-950/40 border border-purple-500/30 hover:border-purple-500/60 transition-all flex items-center justify-between group shadow-lg"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30 group-hover:scale-105 transition-transform shrink-0">
+              <Layers className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-white flex items-center gap-2">
+                External Gateways &amp; Webhooks
+                <span className="text-[10px] bg-purple-500/20 text-purple-300 font-mono px-2 py-0.5 rounded-full border border-purple-500/30 font-bold">
+                  APIs
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                SMS gateways, WhatsApp Business API, bKash &amp; SSLCommerz sync.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-slate-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+        </Link>
+      </div>
 
       {/* Backup & Disaster Recovery Card */}
       <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">

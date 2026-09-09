@@ -16,6 +16,8 @@ import {
   Menu,
   Laptop,
   Key,
+  Mail,
+  Settings,
 } from 'lucide-react'
 import { GlobalSearchDialog } from './global-search-dialog'
 import { PlatformNotificationsPopover } from './platform-notifications-popover'
@@ -210,11 +212,20 @@ export function PlatformHeader() {
                     </Link>
 
                     <Link
+                      href="/platform/settings/communication"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                    >
+                      <Mail className="h-3.5 w-3.5 text-indigo-400" />
+                      <span>Email Gateway</span>
+                    </Link>
+
+                    <Link
                       href="/platform/settings"
                       onClick={() => setProfileMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                     >
-                      <Cpu className="h-3.5 w-3.5 text-amber-400" />
+                      <Settings className="h-3.5 w-3.5 text-amber-400" />
                       <span>Platform Settings</span>
                     </Link>
                   </div>

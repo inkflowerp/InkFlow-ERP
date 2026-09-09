@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
 import { getPlatformIntegrationsHealthAction } from '@/actions/platform-data.actions'
 import { IntegrationProviderStatus } from '@/types/platform.types'
 
@@ -38,6 +39,9 @@ export default function PlatformIntegrationsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Platform Settings Navigation Tabs */}
+      <PlatformSettingsNav />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div>

@@ -29,6 +29,7 @@ import {
   Bell,
   Laptop,
   MessageSquare,
+  Mail,
   FileCheck2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -90,8 +91,8 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     title: 'Settings',
     items: [
       { title: 'Platform Settings', href: '/platform/settings', icon: Settings },
-      { title: 'Email Gateway', href: '/platform/settings/communication', icon: MessageSquare },
-      { title: 'System Configuration', href: '/platform/settings?tab=system', icon: Cpu },
+      { title: 'Email Gateway', href: '/platform/settings/communication', icon: Mail, badge: 'SMTP/Cloud' },
+      { title: 'Integrations', href: '/platform/integrations', icon: Layers },
     ],
   },
 ]
@@ -253,11 +254,13 @@ export function PlatformSidebar() {
                   const isActive =
                     baseHref === '/platform'
                       ? pathname === '/platform' || pathname === '/platform/dashboard'
-                      : pathname === baseHref ||
-                        (pathname.startsWith(baseHref + '/') && baseHref !== '/platform') ||
-                        (baseHref === '/platform/tenants' && pathname.startsWith('/platform/companies')) ||
-                        (baseHref === '/platform/features' && pathname.startsWith('/platform/feature-flags')) ||
-                        (baseHref === '/platform/permissions' && pathname.startsWith('/platform/rbac'))
+                      : baseHref === '/platform/settings'
+                        ? pathname === '/platform/settings'
+                        : pathname === baseHref ||
+                          (pathname.startsWith(baseHref + '/') && baseHref !== '/platform') ||
+                          (baseHref === '/platform/tenants' && pathname.startsWith('/platform/companies')) ||
+                          (baseHref === '/platform/features' && pathname.startsWith('/platform/feature-flags')) ||
+                          (baseHref === '/platform/permissions' && pathname.startsWith('/platform/rbac'))
 
                   return (
                     <Link

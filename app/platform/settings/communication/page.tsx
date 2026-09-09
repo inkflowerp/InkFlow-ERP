@@ -36,6 +36,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
 import {
   getPlatformEmailGatewayAction,
   savePlatformEmailGatewayAction,
@@ -269,6 +270,9 @@ export default function PlatformEmailGatewayPage() {
 
   return (
     <div className="space-y-6 max-w-7xl">
+      {/* Platform Settings Navigation Tabs */}
+      <PlatformSettingsNav />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
