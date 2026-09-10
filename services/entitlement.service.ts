@@ -44,7 +44,29 @@ export class EntitlementService {
         .maybeSingle()
 
       if (!error && sub) {
-        const planRecord: SubscriptionPlanRecord = sub.subscription_plans || DEFAULT_TRIAL_PLAN
+        let planRecord: SubscriptionPlanRecord | null = sub.subscription_plans
+
+        // If join didn't populate subscription_plans, fetch from subscription_plans directly
+        if (!planRecord && sub.plan_id) {
+          const { data: directPlan } = await (admin as any)
+            .from('subscription_plans')
+            .select('*')
+            .eq('id', sub.plan_id)
+            .maybeSingle()
+          if (directPlan) planRecord = directPlan
+        }
+
+        // If still no planRecord, fetch trial plan directly from subscription_plans
+        if (!planRecord) {
+          const { data: trialPlan } = await (admin as any)
+            .from('subscription_plans')
+            .select('*')
+            .eq('code', sub.plan_code || 'trial')
+            .maybeSingle()
+          if (trialPlan) planRecord = trialPlan
+        }
+
+        const effectivePlan: SubscriptionPlanRecord = planRecord || DEFAULT_TRIAL_PLAN
 
         let nextPlanRecord: SubscriptionPlanRecord | null = null
         if (sub.next_plan_id) {
@@ -59,8 +81,8 @@ export class EntitlementService {
         const subRecord: CompanySubscriptionRecord = {
           id: sub.id,
           company_id: sub.company_id,
-          plan_id: sub.plan_id,
-          plan_code: planRecord.code,
+          plan_id: sub.plan_id || effectivePlan.id,
+          plan_code: effectivePlan.code,
           status: sub.status,
           billing_interval: sub.billing_interval || 'monthly',
           current_period_start: sub.current_period_start,
@@ -77,23 +99,36 @@ export class EntitlementService {
           custom_limits_override: sub.custom_limits_override,
         }
 
-        return { subscription: subRecord, plan: planRecord, nextPlan: nextPlanRecord }
+        return { subscription: subRecord, plan: effectivePlan, nextPlan: nextPlanRecord }
       }
     } catch (err) {
-      console.warn('[EntitlementService] DB subscription lookup fallback:', err)
+      console.warn('[EntitlementService] DB subscription lookup warning:', err)
     }
 
-    // Default Fallback: 14-Day Free Evaluation Trial
+    // Default: fetch active trial plan from subscription_plans table
+    let dbTrialPlan: SubscriptionPlanRecord = DEFAULT_TRIAL_PLAN
+    try {
+      const { data: trialFromDb } = await (admin as any)
+        .from('subscription_plans')
+        .select('*')
+        .eq('code', 'trial')
+        .maybeSingle()
+      if (trialFromDb) {
+        dbTrialPlan = trialFromDb
+      }
+    } catch {}
+
+    const trialDuration = dbTrialPlan.trial_days || 14
     const defaultTrialSub: CompanySubscriptionRecord = {
       id: `sub-${companyId}`,
       company_id: companyId,
-      plan_id: DEFAULT_TRIAL_PLAN.id,
+      plan_id: dbTrialPlan.id,
       plan_code: 'trial',
       status: 'trial',
       billing_interval: 'monthly',
       current_period_start: nowIso,
       current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-      trial_ends_at: new Date(Date.now() + 14 * 86400000).toISOString(),
+      trial_ends_at: new Date(Date.now() + trialDuration * 86400000).toISOString(),
       cancelled_at: null,
       cancel_at_period_end: false,
       next_plan_id: null,
@@ -107,7 +142,7 @@ export class EntitlementService {
 
     return {
       subscription: defaultTrialSub,
-      plan: DEFAULT_TRIAL_PLAN,
+      plan: dbTrialPlan,
       nextPlan: null,
     }
   }
@@ -261,29 +296,93 @@ export class EntitlementService {
       }
     }
 
-    const usage = getTenantResourceUsage(companyId, plan, subscription.custom_limits_override)
-
     let currentVal = currentCountOverride !== undefined ? currentCountOverride : 0
     if (currentCountOverride === undefined) {
-      switch (limitType) {
-        case 'max_users':
-          currentVal = usage.users_count
-          break
-        case 'max_branches':
-          currentVal = usage.branches_count
-          break
-        case 'storage_gb':
-          currentVal = usage.storage_used_gb
-          break
-        case 'monthly_orders':
-          currentVal = usage.orders_this_month
-          break
-        case 'max_customers':
-          currentVal = usage.customers_count
-          break
-        case 'max_products':
-          currentVal = usage.products_count
-          break
+      let dbCount: number | null = null
+      try {
+        if (companyId && companyId !== 'default') {
+          switch (limitType) {
+            case 'max_users': {
+              const { count, error } = await (admin as any)
+                .from('company_users')
+                .select('*', { count: 'exact', head: true })
+                .eq('company_id', companyId)
+              if (!error && count !== null && count !== undefined) {
+                dbCount = count
+              }
+              break
+            }
+            case 'max_branches': {
+              const { count, error } = await (admin as any)
+                .from('branches')
+                .select('*', { count: 'exact', head: true })
+                .eq('company_id', companyId)
+              if (!error && count !== null && count !== undefined) {
+                dbCount = count
+              }
+              break
+            }
+            case 'max_customers': {
+              const { count, error } = await (admin as any)
+                .from('customers')
+                .select('*', { count: 'exact', head: true })
+                .eq('company_id', companyId)
+              if (!error && count !== null && count !== undefined) {
+                dbCount = count
+              }
+              break
+            }
+            case 'max_products': {
+              const [prodRes, matRes] = await Promise.all([
+                (admin as any).from('products').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+                (admin as any).from('materials').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
+              ])
+              const prodCount = prodRes?.count || 0
+              const matCount = matRes?.count || 0
+              dbCount = prodCount + matCount
+              break
+            }
+            case 'monthly_orders': {
+              const now = new Date()
+              const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+              const { count, error } = await (admin as any)
+                .from('sales_orders')
+                .select('*', { count: 'exact', head: true })
+                .eq('company_id', companyId)
+                .gte('created_at', startOfMonth)
+              if (!error && count !== null && count !== undefined) {
+                dbCount = count
+              }
+              break
+            }
+          }
+        }
+      } catch {}
+
+      if (dbCount !== null) {
+        currentVal = dbCount
+      } else {
+        const usage = getTenantResourceUsage(companyId, plan, subscription.custom_limits_override)
+        switch (limitType) {
+          case 'max_users':
+            currentVal = usage.users_count
+            break
+          case 'max_branches':
+            currentVal = usage.branches_count
+            break
+          case 'storage_gb':
+            currentVal = usage.storage_used_gb
+            break
+          case 'monthly_orders':
+            currentVal = usage.orders_this_month
+            break
+          case 'max_customers':
+            currentVal = usage.customers_count
+            break
+          case 'max_products':
+            currentVal = usage.products_count
+            break
+        }
       }
     }
 

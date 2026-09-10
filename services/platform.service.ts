@@ -1525,7 +1525,7 @@ export class PlatformService {
 
         const currentPeriodStart = sub?.current_period_start || c.created_at
         const currentPeriodEnd = sub?.current_period_end || new Date(nowTime + 30 * 86400000).toISOString()
-        const trialEndsAt = isTrial ? (sub?.trial_ends_at || new Date(nowTime + 14 * 86400000).toISOString()) : sub?.trial_ends_at
+        const trialEndsAt = isTrial ? (sub?.trial_ends_at || new Date(nowTime + (plan.trial_days || 14) * 86400000).toISOString()) : sub?.trial_ends_at
 
         // Expiry timeline calculation
         const relevantEndDateStr = isTrial && trialEndsAt ? trialEndsAt : currentPeriodEnd

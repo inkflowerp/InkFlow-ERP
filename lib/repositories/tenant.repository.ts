@@ -103,14 +103,14 @@ export class TenantRepository {
       
       let { data: planRecord } = await (admin as any)
         .from('subscription_plans')
-        .select('id, code, name, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly, trial_days')
+        .select('*')
         .eq('code', targetPlanCode)
         .maybeSingle()
 
       if (!planRecord && targetPlanCode === 'trial') {
         const { data: trialPlan } = await (admin as any)
           .from('subscription_plans')
-          .select('id, code, name, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly, trial_days')
+          .select('*')
           .eq('code', 'trial')
           .maybeSingle()
         planRecord = trialPlan
@@ -119,7 +119,7 @@ export class TenantRepository {
       if (!planRecord) {
         const { data: starterPlan } = await (admin as any)
           .from('subscription_plans')
-          .select('id, code, name, max_users, max_branches, storage_gb, monthly_orders, max_customers, max_products, price_monthly, trial_days')
+          .select('*')
           .eq('code', 'starter')
           .maybeSingle()
         planRecord = starterPlan

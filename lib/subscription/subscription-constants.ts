@@ -525,6 +525,7 @@ export function checkResourceLimit(
   plan: SubscriptionPlanRecord,
   override?: CustomLimitsOverride | null
 ): {
+  allowed: boolean
   limit: number
   current: number
   exceeded: boolean
@@ -536,6 +537,7 @@ export function checkResourceLimit(
   // Negative, zero, or >= 99999 represents unlimited capacity
   if (effectiveLimit <= 0 || effectiveLimit >= 99999) {
     return {
+      allowed: true,
       limit: effectiveLimit,
       current: currentCount,
       exceeded: false,
@@ -545,11 +547,13 @@ export function checkResourceLimit(
   }
 
   const percentage = Math.round((currentCount / effectiveLimit) * 100)
+  const exceeded = currentCount >= effectiveLimit
 
   return {
+    allowed: !exceeded,
     limit: effectiveLimit,
     current: currentCount,
-    exceeded: currentCount >= effectiveLimit,
+    exceeded,
     warning: percentage >= 80 && currentCount < effectiveLimit,
     percentage: Math.min(100, percentage),
   }

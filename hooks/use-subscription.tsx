@@ -146,11 +146,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [])
 
   const currentPlan = useMemo(() => {
+    if (subscription.plan_id) {
+      const byId = plans.find((p) => p.id === subscription.plan_id)
+      if (byId) return byId
+    }
     if (subscription.plan_code === 'trial' || subscription.status === 'trial') {
       return plans.find((p) => p.code === 'trial') || getTrialPlan(plans)
     }
     return plans.find((p) => p.code === subscription.plan_code) || getTrialPlan(plans)
-  }, [plans, subscription.plan_code, subscription.status])
+  }, [plans, subscription.plan_id, subscription.plan_code, subscription.status])
 
   const currentPlanCode: PlanCode = useMemo(() => {
     if (subscription.plan_code === 'trial' || subscription.status === 'trial') {

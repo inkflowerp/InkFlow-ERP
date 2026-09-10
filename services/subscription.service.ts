@@ -434,7 +434,18 @@ export class SubscriptionService {
    */
   static async getPlanByCode(code: string): Promise<SubscriptionPlanRecord> {
     const plans = await this.getPlans()
-    return plans.find((p) => p.code === code) || DEFAULT_TRIAL_PLAN
+    const found = plans.find((p) => p.code === code)
+    if (found) return found
+    try {
+      const admin = createAdminClient()
+      const { data } = await (admin as any)
+        .from('subscription_plans')
+        .select('*')
+        .eq('code', code)
+        .maybeSingle()
+      if (data) return data as SubscriptionPlanRecord
+    } catch {}
+    return DEFAULT_TRIAL_PLAN
   }
 
   /**
@@ -442,7 +453,18 @@ export class SubscriptionService {
    */
   static async getPlanById(id: string): Promise<SubscriptionPlanRecord> {
     const plans = await this.getPlans()
-    return plans.find((p) => p.id === id) || DEFAULT_TRIAL_PLAN
+    const found = plans.find((p) => p.id === id)
+    if (found) return found
+    try {
+      const admin = createAdminClient()
+      const { data } = await (admin as any)
+        .from('subscription_plans')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
+      if (data) return data as SubscriptionPlanRecord
+    } catch {}
+    return DEFAULT_TRIAL_PLAN
   }
 
   /**
@@ -463,7 +485,7 @@ export class SubscriptionService {
         .maybeSingle()
 
       if (!error && sub) {
-        const planCode = sub.subscription_plans?.code || (sub.status === 'trial' ? 'trial' : 'starter')
+        let planCode = sub.subscription_plans?.code || (sub.status === 'trial' ? 'trial' : 'starter')
         return {
           id: sub.id,
           company_id: sub.company_id,
@@ -492,11 +514,25 @@ export class SubscriptionService {
     const found = localSubs.find((s) => s.company_id === normId || (companySlug && s.company_id === `co-${companySlug}`))
     if (found) return found
 
-    const defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
+    let defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
+    let trialPlanId = DEFAULT_TRIAL_PLAN.id
+    try {
+      const admin = createAdminClient()
+      const { data: trialPlan } = await (admin as any)
+        .from('subscription_plans')
+        .select('id, trial_days')
+        .eq('code', 'trial')
+        .maybeSingle()
+      if (trialPlan) {
+        if (trialPlan.trial_days) defaultTrialDays = Number(trialPlan.trial_days)
+        if (trialPlan.id) trialPlanId = trialPlan.id
+      }
+    } catch {}
+
     return {
       id: `sub-${normId}`,
       company_id: normId,
-      plan_id: DEFAULT_TRIAL_PLAN.id,
+      plan_id: trialPlanId,
       plan_code: 'trial',
       status: 'trial',
       billing_interval: 'monthly',
@@ -1670,6 +1706,7 @@ export function checkResourceLimit(
   plan: SubscriptionPlanRecord,
   override?: CustomLimitsOverride | null
 ): {
+  allowed: boolean
   limit: number
   current: number
   exceeded: boolean
@@ -1681,6 +1718,7 @@ export function checkResourceLimit(
   // Negative, zero, or >= 99999 represents unlimited capacity
   if (effectiveLimit <= 0 || effectiveLimit >= 99999) {
     return {
+      allowed: true,
       limit: effectiveLimit,
       current: currentCount,
       exceeded: false,
@@ -1690,11 +1728,13 @@ export function checkResourceLimit(
   }
 
   const percentage = Math.round((currentCount / effectiveLimit) * 100)
+  const exceeded = currentCount >= effectiveLimit
 
   return {
+    allowed: !exceeded,
     limit: effectiveLimit,
     current: currentCount,
-    exceeded: currentCount >= effectiveLimit,
+    exceeded,
     warning: percentage >= 80 && currentCount < effectiveLimit,
     percentage: Math.min(100, percentage),
   }
