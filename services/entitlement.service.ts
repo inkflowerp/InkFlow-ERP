@@ -217,8 +217,50 @@ export class EntitlementService {
     percentage: number
     warning: boolean
     exceeded: boolean
+    reason?: string
   }> {
     const { subscription, plan } = await this.getSubscription(companyId)
+
+    if (subscription.status === 'suspended') {
+      return {
+        allowed: false,
+        limit: 0,
+        current: 0,
+        percentage: 100,
+        warning: true,
+        exceeded: true,
+        reason: 'Account Suspended: Tenant account has been suspended by platform administration.',
+      }
+    }
+
+    const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
+    if (isTrial) {
+      const daysRemaining = getTrialDaysRemaining(subscription.trial_ends_at, plan.trial_days || 14)
+      if (daysRemaining <= 0 || subscription.status === 'expired') {
+        return {
+          allowed: false,
+          limit: 0,
+          current: 0,
+          percentage: 100,
+          warning: true,
+          exceeded: true,
+          reason: 'Trial Expired: Your free trial period has ended. Please upgrade your subscription plan to continue adding records.',
+        }
+      }
+    }
+
+    if (subscription.status === 'expired') {
+      return {
+        allowed: false,
+        limit: 0,
+        current: 0,
+        percentage: 100,
+        warning: true,
+        exceeded: true,
+        reason: 'Subscription Expired: Your subscription has expired. Please renew your plan to continue.',
+      }
+    }
+
     const usage = getTenantResourceUsage(companyId, plan, subscription.custom_limits_override)
 
     let currentVal = currentCountOverride !== undefined ? currentCountOverride : 0
@@ -267,6 +309,9 @@ export class EntitlementService {
   ): Promise<void> {
     const check = await this.checkResourceQuota(companyId, limitType, currentCountOverride)
     if (!check.allowed) {
+      if (check.reason) {
+        throw new Error(check.reason)
+      }
       const limitLabelMap: Record<ConfigurableLimitType, string> = {
         max_users: 'Users quota',
         max_branches: 'Branches quota',

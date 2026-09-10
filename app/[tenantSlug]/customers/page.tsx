@@ -40,7 +40,7 @@ import { Crown } from 'lucide-react'
 export default function CustomersPage() {
   const { company } = useTenant()
   const { can, isReadOnly } = usePermissions()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan } = useSubscription()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
@@ -74,6 +74,7 @@ export default function CustomersPage() {
 
   const handleCustomerCreated = (created: CustomerRecord) => {
     addCustomerItem(created)
+    refreshUsage()
     showNotification(`Customer '${created.name}' added successfully.`)
   }
 
@@ -108,6 +109,7 @@ export default function CustomersPage() {
   const handleImportCSV = (e: React.FormEvent) => {
     e.preventDefault()
     setIsImportOpen(false)
+    refreshUsage()
     showNotification('3 sample customers imported from CSV successfully.')
   }
 

@@ -8,6 +8,7 @@ import {
   DEFAULT_PLANS,
   DEFAULT_TRIAL_PLAN,
 } from '../../lib/subscription/subscription-constants.ts'
+import { EntitlementService } from '../../services/entitlement.service.ts'
 import type {
   SubscriptionPlanRecord,
   CustomLimitsOverride,
@@ -208,6 +209,38 @@ describe('Dynamic Free & Paid Subscription Plan Limitations Audit & Verification
       const check = checkResourceLimit('monthly_orders', 10000, standardStarterPlan, override)
       assert.strictEqual(check.exceeded, false)
       assert.strictEqual(check.percentage, 0)
+    })
+  })
+
+  describe('5. EntitlementService Enforcement of Restrictions & Suspensions', () => {
+    it('checkResourceQuota returns allowed: true when under quota', async () => {
+      const result = await EntitlementService.checkResourceQuota('test-company-1', 'max_users', 1)
+      assert.strictEqual(result.allowed, true)
+      assert.strictEqual(result.exceeded, false)
+    })
+
+    it('checkResourceQuota returns allowed: false when quota is reached', async () => {
+      const result = await EntitlementService.checkResourceQuota('test-company-1', 'max_users', 100)
+      assert.strictEqual(result.allowed, false)
+      assert.strictEqual(result.exceeded, true)
+    })
+
+    it('enforceLimit succeeds when within limit and throws when exceeding', async () => {
+      // Within limit
+      await assert.doesNotReject(async () => {
+        await EntitlementService.enforceLimit('test-company-1', 'max_users', 1)
+      })
+
+      // Exceeding limit
+      await assert.rejects(
+        async () => {
+          await EntitlementService.enforceLimit('test-company-1', 'max_users', 999)
+        },
+        (err: Error) => {
+          assert.ok(err.message.includes('Plan Limit Reached') || err.message.includes('quota'))
+          return true
+        }
+      )
     })
   })
 })

@@ -44,7 +44,7 @@ import { cn } from '@/lib/utils'
 export default function UsersManagementPage() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, isTrial } = useSubscription()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, isTrial, refreshUsage } = useSubscription()
   const [users, setUsers] = useState<CompanyUserWithProfile[]>([])
   const [roles, setRoles] = useState<RoleRow[]>([])
   const [branches, setBranches] = useState<BranchRow[]>([])
@@ -146,7 +146,7 @@ export default function UsersManagementPage() {
     e.preventDefault()
     if (!company || !inviteEmail) return
 
-    await inviteUserAction(
+    const res = await inviteUserAction(
       company.id,
       company.slug,
       inviteEmail,
@@ -154,12 +154,16 @@ export default function UsersManagementPage() {
       inviteBranchId || null
     )
 
-    const uRes = await listCompanyUsersAction(company.id)
-    if (uRes.data) setUsers(uRes.data)
-
-    setIsInviteOpen(false)
-    setInviteEmail('')
-    showNotification(`Invitation sent to ${inviteEmail}`)
+    if (res.success) {
+      const uRes = await listCompanyUsersAction(company.id)
+      if (uRes.data) setUsers(uRes.data)
+      refreshUsage()
+      setIsInviteOpen(false)
+      setInviteEmail('')
+      showNotification(`Invitation sent to ${inviteEmail}`)
+    } else {
+      showNotification(res.message || 'Failed to send invitation')
+    }
   }
 
   const handleAddUser = async (e: React.FormEvent) => {
@@ -180,7 +184,7 @@ export default function UsersManagementPage() {
     if (res.success) {
       const uRes = await listCompanyUsersAction(company.id)
       if (uRes.data) setUsers(uRes.data)
-
+      refreshUsage()
       setIsAddUserOpen(false)
       setAddFullName('')
       setAddEmail('')

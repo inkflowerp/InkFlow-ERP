@@ -47,7 +47,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function InventoryDashboardPage() {
   const { company } = useTenant()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage } = useSubscription()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage, refreshUsage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
@@ -226,6 +226,7 @@ export default function InventoryDashboardPage() {
     }
 
     PrintERPDataStore.addItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, newMat)
+    refreshUsage()
     setIsNewOpen(false)
     setNewSku('')
     setNewName('')

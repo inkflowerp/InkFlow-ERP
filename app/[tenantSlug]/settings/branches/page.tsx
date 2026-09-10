@@ -73,7 +73,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function BranchesSettingsPage() {
   const { locale, tBilingual } = useI18n()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan } = useSubscription()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
   const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, INITIAL_BRANCHES)
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
@@ -126,6 +126,7 @@ export default function BranchesSettingsPage() {
       isActive: true,
     }
     setBranches([...branches, created])
+    refreshUsage()
     setIsAddOpen(false)
     setNewBranch({ code: '', name: '', nameBn: '', phone: '', address: '' })
     showNotification(`Branch '${created.name}' created successfully.`)

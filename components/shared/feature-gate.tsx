@@ -13,21 +13,9 @@ import {
   DEFAULT_PLANS,
 } from '@/lib/subscription/subscription-constants'
 
-export function useFeatureGate(feature: FeatureCode) {
-  const { currentPlanCode, allPlans } = useSubscription()
-  const currentPlan: PlanCode = currentPlanCode || 'starter'
-  const hasAccess = checkFeatureAccess(currentPlan, feature, allPlans)
+import { useFeatureGate } from '@/hooks/use-feature-gate'
 
-  // Find lowest plan that supports this feature
-  const supportingPlan = (allPlans || DEFAULT_PLANS).find((p) => p.features.includes(feature))
-  const requiredPlan: PlanCode = supportingPlan ? supportingPlan.code : 'enterprise'
-
-  return {
-    hasAccess,
-    currentPlan,
-    requiredPlan,
-  }
-}
+export { useFeatureGate }
 
 interface FeatureGateProps {
   feature: FeatureCode
@@ -60,7 +48,7 @@ export function FeatureGate({ feature, children, fallback }: FeatureGateProps) {
             Feature Restricted
           </h3>
           <Badge className="bg-amber-200 text-amber-900 uppercase text-[10px] font-bold">
-            Requires {requiredPlan}
+            Requires {requiredPlan.name}
           </Badge>
         </div>
         <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto">
@@ -72,7 +60,7 @@ export function FeatureGate({ feature, children, fallback }: FeatureGateProps) {
         <Link href={`/${slug}/settings/subscription`}>
           <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs">
             <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-            Upgrade to {requiredPlan.toUpperCase()} <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+            Upgrade to {requiredPlan.code.toUpperCase()} <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
           </Button>
         </Link>
       </div>

@@ -23,10 +23,10 @@ export interface FeatureGateResult {
 }
 
 export function useFeatureGate(feature: FeatureCode): FeatureGateResult {
-  const { currentPlanCode, allPlans } = useSubscription()
+  const { currentPlanCode, allPlans, hasFeature, isTrialExpired, isSuspended } = useSubscription()
 
   return useMemo(() => {
-    const hasAccess = checkFeatureAccess(currentPlanCode, feature, allPlans)
+    const hasAccess = hasFeature(feature)
     const featureMeta = FEATURE_METADATA[feature] || {
       code: feature,
       name: feature,
@@ -48,5 +48,5 @@ export function useFeatureGate(feature: FeatureCode): FeatureGateResult {
       },
       featureMeta,
     }
-  }, [currentPlanCode, feature, allPlans])
+  }, [currentPlanCode, feature, allPlans, hasFeature, isTrialExpired, isSuspended])
 }

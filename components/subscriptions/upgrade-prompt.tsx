@@ -125,19 +125,39 @@ export function UpgradePrompt({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-200 bangla-text">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-              <span>{requiredPlan.max_users} {tBilingual('Team User Accounts', 'জন ব্যবহারকারী')}</span>
+              <span>
+                {requiredPlan.max_users <= 0 || requiredPlan.max_users >= 99999
+                  ? tBilingual('Unlimited', 'আনলিমিটেড')
+                  : requiredPlan.max_users}{' '}
+                {tBilingual('Team User Accounts', 'জন ব্যবহারকারী')}
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-              <span>{requiredPlan.max_branches} {tBilingual('Branches & Factory Hubs', 'টি শাখা ও কারখানা')}</span>
+              <span>
+                {requiredPlan.max_branches <= 0 || requiredPlan.max_branches >= 99999
+                  ? tBilingual('Unlimited', 'আনলিমিটেড')
+                  : requiredPlan.max_branches}{' '}
+                {tBilingual('Branches & Factory Hubs', 'টি শাখা ও কারখানা')}
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-              <span>{requiredPlan.storage_gb} {tBilingual('GB Secure Cloud Storage', 'জিবি ক্লাউড স্টোরেজ')}</span>
+              <span>
+                {requiredPlan.storage_gb <= 0 || requiredPlan.storage_gb >= 99999
+                  ? tBilingual('Unlimited', 'আনলিমিটেড')
+                  : `${requiredPlan.storage_gb} GB`}{' '}
+                {tBilingual('Secure Cloud Storage', 'ক্লাউড স্টোরেজ')}
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-              <span>{requiredPlan.monthly_orders.toLocaleString()} {tBilingual('Monthly Job Orders', 'টি মাসিক অর্ডার')}</span>
+              <span>
+                {requiredPlan.monthly_orders <= 0 || requiredPlan.monthly_orders >= 99999
+                  ? tBilingual('Unlimited', 'আনলিমিটেড')
+                  : requiredPlan.monthly_orders.toLocaleString()}{' '}
+                {tBilingual('Monthly Job Orders', 'টি মাসিক অর্ডার')}
+              </span>
             </div>
           </div>
         </div>

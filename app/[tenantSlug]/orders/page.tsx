@@ -41,7 +41,7 @@ import { Crown, ShoppingCart } from 'lucide-react'
 export default function OrdersPage() {
   const { company } = useTenant()
   const { can, isReadOnly } = usePermissions()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage } = useSubscription()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage, refreshUsage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
@@ -150,6 +150,7 @@ export default function OrdersPage() {
     }
 
     PrintERPDataStore.createSalesOrderWithIntegrations(newOrder)
+    refreshUsage()
     setIsNewOpen(false)
     showNotification(`Order ${orderNum} booked! Production job tickets & invoice generated.`)
   }

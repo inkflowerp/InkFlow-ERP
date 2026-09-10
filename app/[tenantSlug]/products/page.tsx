@@ -18,6 +18,7 @@ import {
   ShieldAlert,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -34,12 +35,23 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function ProductsCatalogPage() {
   const { company } = useTenant()
+  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
   const [products, setProducts] = useDataStore<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, [])
   const [search, setSearch] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
+
+  const productCheck = checkCanCreate('max_products')
+
+  const handleOpenAddProduct = () => {
+    if (!productCheck.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
+    setIsAddOpen(true)
+  }
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -71,6 +83,10 @@ export default function ProductsCatalogPage() {
 
   const handleCreateProduct = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!productCheck.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
     const created: ProductRecord = {
       id: `prd-${Date.now()}`,
       company_id: 'c-01',
@@ -99,6 +115,7 @@ export default function ProductsCatalogPage() {
     }
 
     PrintERPDataStore.addItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, created)
+    refreshUsage()
     setIsAddOpen(false)
     setNewProduct({
       name: '',
@@ -171,7 +188,7 @@ export default function ProductsCatalogPage() {
               </Button>
             </Link>
 
-            <Button size="sm" onClick={() => setIsAddOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text">
+            <Button size="sm" onClick={handleOpenAddProduct} className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}
             </Button>
