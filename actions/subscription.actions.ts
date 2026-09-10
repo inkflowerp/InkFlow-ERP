@@ -7,6 +7,7 @@ import { PlatformService } from '@/services/platform.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { GatewayService } from '@/services/gateway.service'
 import { PAYMENT_GATEWAY_METADATA_LIST, PaymentGatewayMeta } from '@/lib/payments/types'
+import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
 import type {
   PlanCode,
   BillingInterval,
@@ -293,7 +294,7 @@ export async function getActivePaymentGatewaysAction(): Promise<ServerActionResu
     const activeGateways = rawGateways.filter((g) => {
       if (g.is_enabled === false) return false
       if (g.status === 'disabled') return false
-      if (g.provider === 'bank_wire') return true
+      if ((g.provider as string) === 'bank_wire') return true
       return g.has_credentials || g.status === 'connected' || Boolean(g.public_config && Object.keys(g.public_config).length > 0)
     })
 

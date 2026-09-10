@@ -301,6 +301,7 @@ export class EntitlementService {
       let dbCount: number | null = null
       try {
         if (companyId && companyId !== 'default') {
+          const admin = createAdminClient()
           switch (limitType) {
             case 'max_users': {
               const { count, error } = await (admin as any)

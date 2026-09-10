@@ -165,7 +165,7 @@ export interface SubscriptionPlanRecord {
   code: PlanCode
   name: string
   name_bn: string
-  description: string
+  description?: string | null
   price_monthly: number
   price_yearly: number
   max_users: number

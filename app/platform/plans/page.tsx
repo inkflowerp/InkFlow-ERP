@@ -1243,7 +1243,7 @@ export default function PlatformPlansPage() {
               <div>
                 <Label className="text-slate-300 font-semibold">Description</Label>
                 <Input
-                  value={editingTrialPlan.description}
+                  value={editingTrialPlan.description || ''}
                   onChange={(e) => setEditingTrialPlan({ ...editingTrialPlan, description: e.target.value })}
                   className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
                 />
@@ -1505,7 +1505,7 @@ export default function PlatformPlansPage() {
               <div>
                 <Label className="text-slate-300 font-semibold">Description</Label>
                 <Input
-                  value={editingPlan.description}
+                  value={editingPlan.description || ''}
                   onChange={(e) => setEditingPlan({ ...editingPlan, description: e.target.value })}
                   className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
                 />
