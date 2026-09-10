@@ -83,7 +83,8 @@ export default function BranchesSettingsPage() {
   const branchCheck = checkCanCreate('max_branches')
 
   const handleOpenAddBranch = () => {
-    if (!branchCheck.allowed) {
+    const check = checkCanCreate('max_branches')
+    if (!check.allowed) {
       openLimitExceededModal('max_branches')
       return
     }

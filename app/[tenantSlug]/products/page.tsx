@@ -47,7 +47,8 @@ export default function ProductsCatalogPage() {
   const productCheck = checkCanCreate('max_products')
 
   const handleOpenAddProduct = () => {
-    if (!productCheck.allowed) {
+    const check = checkCanCreate('max_products')
+    if (!check.allowed) {
       openLimitExceededModal('max_products')
       return
     }

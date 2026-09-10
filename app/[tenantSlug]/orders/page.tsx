@@ -56,7 +56,8 @@ export default function OrdersPage() {
   const orderCheck = checkCanCreate('monthly_orders')
 
   const handleOpenNewOrder = () => {
-    if (!orderCheck.allowed) {
+    const check = checkCanCreate('monthly_orders')
+    if (!check.allowed) {
       openLimitExceededModal('monthly_orders')
       return
     }
@@ -64,7 +65,8 @@ export default function OrdersPage() {
   }
 
   const handleOpenWorkOrder = () => {
-    if (!orderCheck.allowed) {
+    const check = checkCanCreate('monthly_orders')
+    if (!check.allowed) {
       openLimitExceededModal('monthly_orders')
       return
     }

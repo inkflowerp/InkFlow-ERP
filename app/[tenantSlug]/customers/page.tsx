@@ -52,7 +52,8 @@ export default function CustomersPage() {
   const customerCheck = checkCanCreate('max_customers')
 
   const handleOpenAddCustomer = () => {
-    if (!customerCheck.allowed) {
+    const check = checkCanCreate('max_customers')
+    if (!check.allowed) {
       openLimitExceededModal('max_customers')
       return
     }

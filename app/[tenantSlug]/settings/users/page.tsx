@@ -58,7 +58,8 @@ export default function UsersManagementPage() {
   const userCheck = checkCanCreate('max_users')
 
   const handleOpenInvite = () => {
-    if (!userCheck.allowed) {
+    const check = checkCanCreate('max_users')
+    if (!check.allowed) {
       openLimitExceededModal('max_users')
       return
     }
@@ -66,7 +67,8 @@ export default function UsersManagementPage() {
   }
 
   const handleOpenAddUser = () => {
-    if (!userCheck.allowed) {
+    const check = checkCanCreate('max_users')
+    if (!check.allowed) {
       openLimitExceededModal('max_users')
       return
     }
