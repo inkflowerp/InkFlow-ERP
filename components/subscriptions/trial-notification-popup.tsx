@@ -26,6 +26,7 @@ export function TrialNotificationPopup() {
     isTrial,
     isTrialExpired,
     daysRemainingInTrial,
+    timeRemainingInTrial,
     trialProgressPercent,
     currentPlan,
     openUpgradeModal,
@@ -107,7 +108,10 @@ export function TrialNotificationPopup() {
           <span className="bangla-text">
             {isTrialExpired
               ? tBilingual('Trial Expired', 'ট্রায়াল শেষ')
-              : tBilingual(`${daysRemainingInTrial}d Trial Left`, `${daysRemBn} দিন বাকি`)}
+              : tBilingual(
+                  timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d Trial Left`,
+                  timeRemainingInTrial ? timeRemainingInTrial.statusBadgeBn : `${daysRemBn} দিন বাকি`
+                )}
           </span>
           <ChevronUp className="h-3.5 w-3.5 opacity-70" />
         </button>
@@ -166,10 +170,12 @@ export function TrialNotificationPopup() {
 
           {!isTrialExpired && (
             <span className="text-[11px] font-bold text-amber-300 bangla-text">
-              {tBilingual(
-                `${daysRemainingInTrial} ${daysRemainingInTrial === 1 ? 'day' : 'days'} remaining`,
-                `${daysRemBn} দিন বাকি`
-              )}
+              {timeRemainingInTrial && timeRemainingInTrial.days === 0
+                ? tBilingual(timeRemainingInTrial.formattedEn, timeRemainingInTrial.formattedBn)
+                : tBilingual(
+                    `${daysRemainingInTrial} ${daysRemainingInTrial === 1 ? 'day' : 'days'} remaining`,
+                    `${daysRemBn} দিন বাকি`
+                  )}
             </span>
           )}
         </div>

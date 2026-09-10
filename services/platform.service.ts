@@ -1801,7 +1801,7 @@ export class PlatformService {
           billing_interval: billingInterval || 'monthly',
           current_period_start: currentPeriodStart || nowIso,
           current_period_end: currentPeriodEnd || new Date(Date.now() + 30 * 86400000).toISOString(),
-          trial_ends_at: trialEndsAt || new Date(Date.now() + 14 * 86400000).toISOString(),
+          trial_ends_at: trialEndsAt || (status === 'trial' || resolvedPlan?.code === 'trial' ? new Date(Date.now() + (resolvedPlan?.trial_days || 14) * 86400000).toISOString() : null),
           custom_limits_override: customLimitsOverride || {},
           payment_method_type: paymentMethodType || null,
           last_payment_reference: lastPaymentReference || null,
@@ -2071,7 +2071,7 @@ export class PlatformService {
             billing_interval: 'monthly',
             current_period_start: nowIso,
             current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-            trial_ends_at: plan.code === 'trial' ? new Date(Date.now() + 14 * 86400000).toISOString() : null,
+            trial_ends_at: plan.code === 'trial' ? new Date(Date.now() + (plan.trial_days || 14) * 86400000).toISOString() : null,
             created_at: nowIso,
             updated_at: nowIso,
           })

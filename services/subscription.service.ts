@@ -521,6 +521,20 @@ export class SubscriptionService {
     let companyCreatedAt = new Date().toISOString()
 
     try {
+      const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+      const foundTrial = storedPlans?.find((p) => p.code === 'trial')
+      if (foundTrial) {
+        if (foundTrial.trial_days) defaultTrialDays = Number(foundTrial.trial_days)
+        if (foundTrial.id) trialPlanId = foundTrial.id
+      }
+      const storedCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
+      const matchedCompany = storedCompanies?.find((c) => c.id === normId || (companySlug && c.slug === companySlug))
+      if (matchedCompany?.created_at) {
+        companyCreatedAt = matchedCompany.created_at
+      }
+    } catch {}
+
+    try {
       const admin = createAdminClient()
       const [{ data: trialPlan }, { data: comp }] = await Promise.all([
         (admin as any)
@@ -1727,9 +1741,81 @@ export function getNextTierPlan(
   return plans.find((p) => p.code === 'enterprise') || DEFAULT_PLANS[3]
 }
 
+export function getSubscriptionTimeRemaining(expiryDateIso?: string | null) {
+  if (!expiryDateIso) {
+    return {
+      totalMs: 0,
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isExpired: true,
+      formattedEn: 'Expired',
+      formattedBn: 'মেয়াদ শেষ',
+      statusBadgeEn: 'Expired',
+      statusBadgeBn: 'মেয়াদ শেষ',
+    }
+  }
+
+  const targetTime = new Date(expiryDateIso).getTime()
+  if (isNaN(targetTime)) {
+    return {
+      totalMs: 0,
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isExpired: true,
+      formattedEn: 'Expired',
+      formattedBn: 'মেয়াদ শেষ',
+      statusBadgeEn: 'Expired',
+      statusBadgeBn: 'মেয়াদ শেষ',
+    }
+  }
+
+  const diff = targetTime - Date.now()
+
+  if (diff <= 0) {
+    return {
+      totalMs: 0,
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isExpired: true,
+      formattedEn: 'Expired',
+      formattedBn: 'মেয়াদ শেষ',
+      statusBadgeEn: 'Expired',
+      statusBadgeBn: 'মেয়াদ শেষ',
+    }
+  }
+
+  const totalSeconds = Math.floor(diff / 1000)
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  return {
+    totalMs: diff,
+    days,
+    hours,
+    minutes,
+    seconds,
+    isExpired: false,
+    formattedEn: days > 0 ? `${days}d ${hours}h left` : hours > 0 ? `${hours}h ${minutes}m left` : `${minutes}m ${seconds}s left`,
+    formattedBn: days > 0 ? `${days} দিন ${hours} ঘণ্টা বাকি` : hours > 0 ? `${hours} ঘণ্টা ${minutes} মিনিট বাকি` : `${minutes} মিনিট ${seconds} সেকেন্ড বাকি`,
+    statusBadgeEn: days > 0 ? `${days}d left` : `${hours}h ${minutes}m left`,
+    statusBadgeBn: days > 0 ? `${days} দিন বাকি` : `${hours} ঘণ্টা বাকি`,
+  }
+}
+
 export function getTrialDaysRemaining(trialEndsAt?: string | null): number {
   if (!trialEndsAt) return 0
-  const diff = new Date(trialEndsAt).getTime() - Date.now()
+  const time = new Date(trialEndsAt).getTime()
+  if (isNaN(time)) return 0
+  const diff = time - Date.now()
+  if (diff <= 0) return 0
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }
 

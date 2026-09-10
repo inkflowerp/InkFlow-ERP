@@ -30,6 +30,8 @@ import {
   getTrialPlan,
   getNextTierPlan,
   getTrialDaysRemaining,
+  getSubscriptionTimeRemaining,
+  SubscriptionExpiryCountdown,
 } from '@/lib/subscription/subscription-constants'
 import { FeatureCode } from '@/types/subscription.types'
 import { useTenant } from '@/hooks/use-tenant'
@@ -188,8 +190,14 @@ interface SubscriptionContextType {
   isPastDue: boolean
   isTrial: boolean
   isTrialExpired: boolean
+  isPlanExpired: boolean
   daysRemainingInTrial: number
+  daysRemainingInPlan: number
+  timeRemainingInTrial: SubscriptionExpiryCountdown
+  timeRemainingInPlan: SubscriptionExpiryCountdown
   trialProgressPercent: number
+  planExpiresAt: string | null
+  trialExpiresAt: string | null
   hasFeature: (feature: FeatureCode) => boolean
   getLimitStatus: (limitType: ConfigurableLimitType) => {
     limit: number
@@ -444,19 +452,63 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
 
   const totalTrialDays = currentPlan?.trial_days || 14
+
+  const [nowTick, setNowTick] = useState(() => Date.now())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowTick(Date.now())
+    }, 10000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const trialExpiresAt = useMemo(() => {
+    if (subscription.trial_ends_at) return subscription.trial_ends_at
+    if (isTrial && subscription.current_period_end) return subscription.current_period_end
+    if (isTrial) {
+      const start = subscription.current_period_start || new Date().toISOString()
+      return new Date(new Date(start).getTime() + totalTrialDays * 86400000).toISOString()
+    }
+    return null
+  }, [subscription.trial_ends_at, subscription.current_period_end, subscription.current_period_start, isTrial, totalTrialDays])
+
+  const planExpiresAt = useMemo(() => {
+    if (isTrial) return trialExpiresAt
+    return subscription.current_period_end || null
+  }, [isTrial, trialExpiresAt, subscription.current_period_end])
+
   const daysRemainingInTrial = useMemo(() => {
-    return isTrial ? getTrialDaysRemaining(subscription.trial_ends_at) : 0
-  }, [subscription.trial_ends_at, isTrial])
+    return isTrial ? getTrialDaysRemaining(trialExpiresAt) : 0
+  }, [trialExpiresAt, isTrial, nowTick])
+
+  const timeRemainingInTrial = useMemo(() => {
+    return isTrial ? getSubscriptionTimeRemaining(trialExpiresAt) : getSubscriptionTimeRemaining(null)
+  }, [trialExpiresAt, isTrial, nowTick])
+
+  const daysRemainingInPlan = useMemo(() => {
+    return getTrialDaysRemaining(planExpiresAt)
+  }, [planExpiresAt, nowTick])
+
+  const timeRemainingInPlan = useMemo(() => {
+    return getSubscriptionTimeRemaining(planExpiresAt)
+  }, [planExpiresAt, nowTick])
 
   const isTrialExpired = useMemo(() => {
-    return isTrial && (daysRemainingInTrial <= 0 || subscription.status === 'expired')
-  }, [isTrial, daysRemainingInTrial, subscription.status])
+    return isTrial && (timeRemainingInTrial.isExpired || subscription.status === 'expired')
+  }, [isTrial, timeRemainingInTrial.isExpired, subscription.status])
+
+  const isPlanExpired = useMemo(() => {
+    return !isTrial && (timeRemainingInPlan.isExpired || subscription.status === 'expired')
+  }, [isTrial, timeRemainingInPlan.isExpired, subscription.status])
 
   const trialProgressPercent = useMemo(() => {
-    if (!isTrial) return 0
-    const elapsed = Math.max(0, totalTrialDays - daysRemainingInTrial)
-    return Math.min(100, Math.round((elapsed / totalTrialDays) * 100))
-  }, [isTrial, totalTrialDays, daysRemainingInTrial])
+    if (!isTrial || !trialExpiresAt) return 0
+    const end = new Date(trialExpiresAt).getTime()
+    const start = new Date(subscription.current_period_start || (end - totalTrialDays * 86400000)).getTime()
+    const totalDuration = Math.max(1, end - start)
+    const elapsed = Math.max(0, Date.now() - start)
+    return Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)))
+  }, [isTrial, trialExpiresAt, subscription.current_period_start, totalTrialDays, nowTick])
 
   const hasFeature = useCallback(
     (feature: FeatureCode) => {
@@ -623,8 +675,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         isPastDue,
         isTrial,
         isTrialExpired,
+        isPlanExpired,
         daysRemainingInTrial,
+        daysRemainingInPlan,
+        timeRemainingInTrial,
+        timeRemainingInPlan,
         trialProgressPercent,
+        planExpiresAt,
+        trialExpiresAt,
         hasFeature,
         getLimitStatus,
         checkCanCreate,
@@ -658,6 +716,8 @@ export function useSubscription() {
     const liveTrialPlan = livePlans.find((p) => p.code === 'trial') || (livePlans.length > 0 ? livePlans[0] : DEFAULT_TRIAL_PLAN)
     const trialDays = liveTrialPlan.trial_days || 14
     const accType: TenantAccountType = 'trial'
+    const trialEndsAt = new Date(Date.now() + trialDays * 86400000).toISOString()
+    const timeRemaining = getSubscriptionTimeRemaining(trialEndsAt)
     return {
       subscription: {
         id: 'sub-standalone',
@@ -668,7 +728,7 @@ export function useSubscription() {
         billing_interval: 'monthly' as const,
         current_period_start: new Date().toISOString(),
         current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-        trial_ends_at: new Date(Date.now() + trialDays * 86400000).toISOString(),
+        trial_ends_at: trialEndsAt,
         payment_method_type: null,
         last_payment_reference: null,
         custom_limits_override: null,
@@ -713,8 +773,14 @@ export function useSubscription() {
       isPastDue: false,
       isTrial: true,
       isTrialExpired: false,
+      isPlanExpired: false,
       daysRemainingInTrial: trialDays,
+      daysRemainingInPlan: trialDays,
+      timeRemainingInTrial: timeRemaining,
+      timeRemainingInPlan: timeRemaining,
       trialProgressPercent: 0,
+      planExpiresAt: trialEndsAt,
+      trialExpiresAt: trialEndsAt,
       hasFeature: (feature: FeatureCode) => checkFeatureAccess('trial', feature, livePlans),
       getLimitStatus: (limitType: ConfigurableLimitType) =>
         checkResourceLimit(limitType, 1, liveTrialPlan),

@@ -10,6 +10,7 @@ import {
   Crown,
   Sparkles,
   Zap,
+  CreditCard,
 } from 'lucide-react'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
@@ -25,6 +26,7 @@ export function SubscriptionStatusBanner() {
     isTrial,
     isTrialExpired,
     daysRemainingInTrial,
+    timeRemainingInTrial,
     currentPlan,
     openUpgradeModal,
   } = useSubscription()
@@ -51,9 +53,12 @@ export function SubscriptionStatusBanner() {
           </div>
 
           <Link href={`/${slug}/settings/subscription`}>
-            <Button size="sm" variant="secondary" className="h-7 text-xs bg-white text-red-700 hover:bg-red-50 font-bold bangla-text">
-              {tBilingual('Clear Dues & Reactivate', 'বকেয়া পরিশোধ করুন')}
-              <ArrowRight className="ml-1 h-3 w-3" />
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs bg-white text-red-700 hover:bg-red-50 font-bold bangla-text border-0"
+            >
+              {tBilingual('Manage Subscription', 'সাবস্ক্রিপশন দেখুন')}
             </Button>
           </Link>
         </div>
@@ -63,20 +68,24 @@ export function SubscriptionStatusBanner() {
 
   if (isPastDue) {
     return (
-      <div className="bg-amber-500 text-slate-950 px-4 py-2 shadow-sm font-medium">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+      <div className="bg-amber-600 text-white px-4 py-2.5 shadow-md">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-slate-900" />
-            <span className="bangla-text">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-200 animate-bounce" />
+            <span className="bangla-text font-bold">
               {tBilingual(
-                `Payment Past Due: The renewal payment for ${currentPlan.name} is past due. Please pay to avoid automatic service suspension.`,
-                `পেমেন্ট ওভারডিউ: আপনার ${currentPlan.name_bn}-এর বিল পরিশোধ বাকি রয়েছে। অনুগ্রহ করে অবিলম্বে পরিশোধ করুন।`
+                'Subscription Payment Past Due: Your renewal invoice has not been settled. Please complete payment to avoid service suspension.',
+                'পেমেন্ট বকেয়া: আপনার সাবস্ক্রিপশন বিলের পেমেন্ট বকেয়া রয়েছে। নিরবচ্ছিন্ন সেবা পেতে অনুগ্রহ করে বিল পরিশোধ করুন।'
               )}
             </span>
           </div>
 
           <Link href={`/${slug}/settings/subscription`}>
-            <Button size="sm" className="h-7 text-xs bg-slate-950 text-white hover:bg-slate-900 font-bold bangla-text">
+            <Button
+              size="sm"
+              className="h-7 text-xs bg-white text-amber-900 hover:bg-amber-50 font-black bangla-text shadow-sm"
+            >
+              <CreditCard className="mr-1 h-3.5 w-3.5 text-amber-600" />
               {tBilingual('Pay Invoice Now', 'এখনই পরিশোধ করুন')}
               <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
@@ -134,12 +143,20 @@ export function SubscriptionStatusBanner() {
             <span className="bangla-text">
               {isEndingSoon
                 ? tBilingual(
-                    `Trial Ending Soon: Only ${daysRemainingInTrial} days remaining. Upgrade today to keep continuous access and unlock unlimited orders.`,
-                    `সতর্কতা: ফ্রি ট্রায়ালের আর মাত্র ${daysRemBn} দিন বাকি রয়েছে! নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
+                    timeRemainingInTrial && timeRemainingInTrial.days === 0
+                      ? `Trial Ending Soon: ${timeRemainingInTrial.formattedEn}. Upgrade today to keep continuous access and unlock unlimited orders.`
+                      : `Trial Ending Soon: Only ${daysRemainingInTrial} days remaining. Upgrade today to keep continuous access and unlock unlimited orders.`,
+                    timeRemainingInTrial && timeRemainingInTrial.days === 0
+                      ? `সতর্কতা: ফ্রি ট্রায়ালের আর মাত্র ${timeRemainingInTrial.formattedBn}! নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
+                      : `সতর্কতা: ফ্রি ট্রায়ালের আর মাত্র ${daysRemBn} দিন বাকি রয়েছে! নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
                   )
                 : tBilingual(
-                    `Free Trial Active: ${daysRemainingInTrial} days remaining. Upgrade now to secure your workspace data and unlimited features.`,
-                    `ফ্রি ট্রায়াল সক্রিয়: আর ${daysRemBn} দিন বাকি রয়েছে। প্রফেশনাল প্ল্যানে আপগ্রেড করুন।`
+                    timeRemainingInTrial && timeRemainingInTrial.days === 0
+                      ? `Free Trial Active: ${timeRemainingInTrial.formattedEn}. Upgrade now to secure your workspace data and unlimited features.`
+                      : `Free Trial Active: ${daysRemainingInTrial} days remaining. Upgrade now to secure your workspace data and unlimited features.`,
+                    timeRemainingInTrial && timeRemainingInTrial.days === 0
+                      ? `ফ্রি ট্রায়াল সক্রিয়: আর ${timeRemainingInTrial.formattedBn}। প্রফেশনাল প্ল্যানে আপগ্রেড করুন।`
+                      : `ফ্রি ট্রায়াল সক্রিয়: আর ${daysRemBn} দিন বাকি রয়েছে। প্রফেশনাল প্ল্যানে আপগ্রেড করুন।`
                   )}
             </span>
           </div>

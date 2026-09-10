@@ -70,7 +70,7 @@ export function Sidebar() {
   const pathname = usePathname()
   const { company } = useTenant()
   const { can, isOwner } = usePermissions()
-  const { isTrial, daysRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
+  const { isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { tBilingual } = useI18n()
 
 
@@ -229,7 +229,7 @@ export function Sidebar() {
                   </span>
                 </div>
                 <Badge className="text-[9px] bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1 py-0 h-4">
-                  {daysRemainingInTrial}d left
+                  {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d left`}
                 </Badge>
               </div>
 

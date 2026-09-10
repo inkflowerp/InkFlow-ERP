@@ -29,6 +29,7 @@ export function TrialDashboardCard() {
     isTrial,
     isTrialExpired,
     daysRemainingInTrial,
+    timeRemainingInTrial,
     trialProgressPercent,
     currentPlan,
     usage,
@@ -88,6 +89,8 @@ export function TrialDashboardCard() {
               <Clock className="h-3.5 w-3.5 text-amber-500" />
               {isTrialExpired
                 ? tBilingual('Trial Expired', 'ট্রায়াল মেয়াদ শেষ')
+                : timeRemainingInTrial && timeRemainingInTrial.days === 0
+                ? tBilingual(timeRemainingInTrial.formattedEn, timeRemainingInTrial.formattedBn)
                 : tBilingual(
                     `${daysRemainingInTrial} Days Remaining`,
                     `আর ${daysRemBn} দিন বাকি রয়েছে`

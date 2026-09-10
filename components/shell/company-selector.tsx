@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 export function CompanySelector() {
   const [isOpen, setIsOpen] = useState(false)
   const { company, availableCompanies, switchCompany } = useTenant()
-  const { accountType, accountTypeMeta, isTrial, daysRemainingInTrial, checkCanCreate, openLimitExceededModal, isTrialExpired } = useSubscription()
+  const { accountType, accountTypeMeta, isTrial, daysRemainingInTrial, timeRemainingInTrial, checkCanCreate, openLimitExceededModal, isTrialExpired } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const router = useRouter()
 
@@ -49,7 +49,11 @@ export function CompanySelector() {
                 accountTypeMeta.badgeClass
               )}
             >
-              {isTrial ? `Trial (${daysRemainingInTrial}d)` : accountTypeMeta.badgeTextEn}
+              {isTrial
+                ? isTrialExpired
+                  ? 'Expired'
+                  : `Trial (${timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d`})`
+                : accountTypeMeta.badgeTextEn}
             </span>
           </div>
         </div>

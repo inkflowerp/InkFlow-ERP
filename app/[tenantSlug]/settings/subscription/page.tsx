@@ -64,7 +64,13 @@ export default function TenantSubscriptionPage() {
     isPastDue,
     isTrial,
     isTrialExpired,
+    isPlanExpired,
     daysRemainingInTrial,
+    daysRemainingInPlan,
+    timeRemainingInTrial,
+    timeRemainingInPlan,
+    planExpiresAt,
+    trialExpiresAt,
     getLimitStatus,
     openUpgradeModal,
     scheduleDowngrade,
@@ -245,15 +251,27 @@ export default function TenantSubscriptionPage() {
               <Badge
                 className={`text-[10px] font-bold capitalize px-2 py-0.5 ${
                   isTrial
-                    ? 'bg-amber-500 text-slate-950'
+                    ? isTrialExpired
+                      ? 'bg-red-500 text-white'
+                      : 'bg-amber-500 text-slate-950'
                     : subscription.status === 'active'
-                    ? 'bg-emerald-500 text-white'
+                    ? isPlanExpired
+                      ? 'bg-red-500 text-white'
+                      : 'bg-emerald-500 text-white'
                     : subscription.status === 'past_due'
                     ? 'bg-amber-500 text-slate-950'
                     : 'bg-red-500 text-white'
                 }`}
               >
-                {isTrial ? `Trial (${daysRemainingInTrial} Days Remaining)` : subscription.status.replace('_', ' ')}
+                {isTrial
+                  ? isTrialExpired
+                    ? 'Trial Expired'
+                    : timeRemainingInTrial && timeRemainingInTrial.days === 0
+                    ? `Trial (${timeRemainingInTrial.formattedEn})`
+                    : `Trial (${daysRemainingInTrial} Days Remaining)`
+                  : isPlanExpired
+                  ? 'Plan Expired'
+                  : subscription.status.replace('_', ' ')}
               </Badge>
 
               <span className="text-xs text-slate-400 capitalize">
@@ -272,7 +290,7 @@ export default function TenantSubscriptionPage() {
                 }
               />
               <span className="text-xs text-slate-400 font-normal">
-                {isTrial ? '/ 14 days evaluation' : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`}
+                {isTrial ? `/ ${currentPlan.trial_days || 30} days evaluation` : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`}
               </span>
             </div>
 
@@ -282,12 +300,21 @@ export default function TenantSubscriptionPage() {
 
             <div className="text-[11px] text-slate-400 pt-1 flex items-center gap-3 flex-wrap">
               <span>
-                Period Ends:{' '}
+                {isTrial ? 'Trial Ends:' : 'Period Ends:'}{' '}
                 <strong className="text-white font-mono">
-                  {subscription.trial_ends_at
-                    ? new Date(subscription.trial_ends_at).toLocaleDateString()
+                  {trialExpiresAt || planExpiresAt
+                    ? new Date(trialExpiresAt || planExpiresAt!).toLocaleDateString()
                     : new Date(subscription.current_period_end).toLocaleDateString()}
-                </strong>
+                </strong>{' '}
+                <span className="text-amber-300 font-mono text-[10px]">
+                  ({isTrial
+                    ? isTrialExpired
+                      ? 'Expired'
+                      : timeRemainingInTrial.formattedEn
+                    : isPlanExpired
+                    ? 'Expired'
+                    : timeRemainingInPlan.formattedEn})
+                </span>
               </span>
               {subscription.last_payment_reference && (
                 <span>

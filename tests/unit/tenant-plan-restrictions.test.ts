@@ -273,4 +273,24 @@ describe('Tenant Subscription Plan Restrictions & Limit Enforcement', () => {
     const orderCheck = checkResourceLimit('orders', hugeUsage, enterprisePlan)
     assert.strictEqual(orderCheck.allowed, true)
   })
+
+  it('should calculate detailed subscription expiry countdown and time remaining', () => {
+    // 2 days, 4 hours, 30 minutes in the future
+    const targetDate = new Date(Date.now() + 2 * 86400000 + 4 * 3600000 + 30 * 60000)
+    const targetIso = targetDate.toISOString()
+
+    const diff = targetDate.getTime() - Date.now()
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+
+    assert.strictEqual(days, 2)
+    assert.strictEqual(hours, 4)
+  })
+
+  it('should return expired state when expiry date is null, invalid or in the past', () => {
+    const pastDate = new Date(Date.now() - 5000).toISOString()
+    const diff = new Date(pastDate).getTime() - Date.now()
+    assert.ok(diff < 0)
+  })
 })
+

@@ -536,9 +536,129 @@ export function getNextTierPlan(
   return plans.find((p) => p.code === 'enterprise') || DEFAULT_PLANS[3]
 }
 
+const BENGALI_DIGITS_MAP: Record<string, string> = {
+  '0': '০',
+  '1': '১',
+  '2': '২',
+  '3': '৩',
+  '4': '৪',
+  '5': '৫',
+  '6': '৬',
+  '7': '৭',
+  '8': '৮',
+  '9': '৯',
+}
+
+export function toBengaliDigits(num: number | string | undefined | null): string {
+  if (num === undefined || num === null) return ''
+  return String(num)
+    .split('')
+    .map((char) => BENGALI_DIGITS_MAP[char] || char)
+    .join('')
+}
+
+export interface SubscriptionExpiryCountdown {
+  totalMs: number
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+  isExpired: boolean
+  formattedEn: string
+  formattedBn: string
+  statusBadgeEn: string
+  statusBadgeBn: string
+}
+
+export function getSubscriptionTimeRemaining(expiryDateIso?: string | null): SubscriptionExpiryCountdown {
+  if (!expiryDateIso) {
+    return {
+      totalMs: 0,
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isExpired: true,
+      formattedEn: 'Expired',
+      formattedBn: 'মেয়াদ শেষ',
+      statusBadgeEn: 'Expired',
+      statusBadgeBn: 'মেয়াদ শেষ',
+    }
+  }
+
+  const targetTime = new Date(expiryDateIso).getTime()
+  if (isNaN(targetTime)) {
+    return {
+      totalMs: 0,
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isExpired: true,
+      formattedEn: 'Expired',
+      formattedBn: 'মেয়াদ শেষ',
+      statusBadgeEn: 'Expired',
+      statusBadgeBn: 'মেয়াদ শেষ',
+    }
+  }
+
+  const diff = targetTime - Date.now()
+
+  if (diff <= 0) {
+    return {
+      totalMs: 0,
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isExpired: true,
+      formattedEn: 'Expired',
+      formattedBn: 'মেয়াদ শেষ',
+      statusBadgeEn: 'Expired',
+      statusBadgeBn: 'মেয়াদ শেষ',
+    }
+  }
+
+  const totalSeconds = Math.floor(diff / 1000)
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  let formattedEn = ''
+  let formattedBn = ''
+
+  if (days > 0) {
+    formattedEn = `${days}d ${hours}h left`
+    formattedBn = `${toBengaliDigits(days)} দিন ${toBengaliDigits(hours)} ঘণ্টা বাকি`
+  } else if (hours > 0) {
+    formattedEn = `${hours}h ${minutes}m left`
+    formattedBn = `${toBengaliDigits(hours)} ঘণ্টা ${toBengaliDigits(minutes)} মিনিট বাকি`
+  } else {
+    formattedEn = `${minutes}m ${seconds}s left`
+    formattedBn = `${toBengaliDigits(minutes)} মিনিট ${toBengaliDigits(seconds)} সেকেন্ড বাকি`
+  }
+
+  return {
+    totalMs: diff,
+    days,
+    hours,
+    minutes,
+    seconds,
+    isExpired: false,
+    formattedEn,
+    formattedBn,
+    statusBadgeEn: days > 0 ? `${days}d left` : `${hours}h ${minutes}m left`,
+    statusBadgeBn: days > 0 ? `${toBengaliDigits(days)} দিন বাকি` : `${toBengaliDigits(hours)} ঘণ্টা বাকি`,
+  }
+}
+
 export function getTrialDaysRemaining(trialEndsAt?: string | null): number {
   if (!trialEndsAt) return 0
-  const diff = new Date(trialEndsAt).getTime() - Date.now()
+  const time = new Date(trialEndsAt).getTime()
+  if (isNaN(time)) return 0
+  const diff = time - Date.now()
+  if (diff <= 0) return 0
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }
 
