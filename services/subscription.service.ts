@@ -480,7 +480,7 @@ export class SubscriptionService {
       const admin = createAdminClient()
       const { data: sub, error } = await (admin as any)
         .from('company_subscriptions')
-        .select('*, subscription_plans(*)')
+        .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
         .eq('company_id', normId)
         .maybeSingle()
 
@@ -1520,7 +1520,7 @@ export class SubscriptionService {
 
       const { data: subscriptions } = await (admin as any)
         .from('company_subscriptions')
-        .select('*, subscription_plans(*), companies(name, slug)')
+        .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*), companies(name, slug)')
 
       const subMap = new Map<string, any>()
       if (subscriptions) {

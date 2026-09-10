@@ -39,7 +39,7 @@ export class EntitlementService {
     try {
       const { data: sub, error } = await (admin as any)
         .from('company_subscriptions')
-        .select('*, subscription_plans(*)')
+        .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
         .eq('company_id', companyId)
         .maybeSingle()
 

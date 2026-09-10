@@ -177,31 +177,33 @@ export default function PlatformTenantsPage() {
 
   const loadData = async () => {
     setLoading(true)
-    const [compRes, plansRes] = await Promise.all([
-      getPlatformCompaniesAction({
-        status: statusFilter !== 'all' ? (statusFilter as PlatformCompanyStatus) : undefined,
-        plan: planFilter !== 'all' ? (planFilter as PlatformPlanCode) : undefined,
-        search: search.trim() || undefined,
-      }),
-      getPlatformPlansAction(),
-    ])
-    if (compRes.success && compRes.data) {
-      const list = Array.isArray(compRes.data) ? compRes.data : compRes.data.companies
-      setCompanies(list || [])
+    try {
+      const [compRes, plansRes] = await Promise.all([
+        getPlatformCompaniesAction(),
+        getPlatformPlansAction(),
+      ])
+      if (compRes.success && compRes.data) {
+        const list = Array.isArray(compRes.data) ? compRes.data : compRes.data.companies
+        setCompanies(list || [])
+      } else if (!compRes.success && compRes.error) {
+        showNotification(compRes.error)
+      }
+      if (plansRes.success && plansRes.data) {
+        setPlans(plansRes.data)
+      }
+    } catch (err: any) {
+      showNotification(err?.message || 'Failed to load platform data')
+    } finally {
+      setLoading(false)
     }
-    if (plansRes.success && plansRes.data) {
-      setPlans(plansRes.data)
-    }
-    setLoading(false)
   }
 
   useEffect(() => {
     loadData()
-  }, [statusFilter, planFilter])
+  }, [])
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    loadData()
   }
 
   // Handle Create Business
@@ -374,6 +376,8 @@ export default function PlatformTenantsPage() {
   }
 
   const filteredCompanies = companies.filter((c) => {
+    if (statusFilter !== 'all' && c.status !== statusFilter) return false
+    if (planFilter !== 'all' && c.plan !== planFilter) return false
     if (!search.trim()) return true
     const q = search.toLowerCase().trim()
     return (

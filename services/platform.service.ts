@@ -719,7 +719,7 @@ export class PlatformService {
             plan_id,
             trial_ends_at,
             current_period_end,
-            subscription_plans (
+            subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey (
               code,
               name,
               price_monthly,
@@ -835,11 +835,19 @@ export class PlatformService {
         }
       })
 
+      let finalCompanies = formatted
+      if (filters?.status) {
+        finalCompanies = finalCompanies.filter((c) => c.status === filters.status)
+      }
+      if (filters?.plan) {
+        finalCompanies = finalCompanies.filter((c) => c.plan === filters.plan)
+      }
+
       return {
         success: true,
         data: {
-          companies: formatted,
-          total: count || formatted.length,
+          companies: finalCompanies,
+          total: count || finalCompanies.length,
         },
       }
     } catch (err: any) {
@@ -860,7 +868,7 @@ export class PlatformService {
           *,
           company_subscriptions (
             *,
-            subscription_plans (*)
+            subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey (*)
           ),
           branches (*),
           company_users (*)
@@ -1958,7 +1966,7 @@ export class PlatformService {
 
       const { data: sub, error: subErr } = await (admin as any)
         .from('company_subscriptions')
-        .select('*, subscription_plans(*)')
+        .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
         .eq('company_id', companyId)
         .maybeSingle()
 
@@ -4058,7 +4066,7 @@ export class PlatformService {
 
       const { data: subscriptions } = await (admin as any)
         .from('company_subscriptions')
-        .select('id, plan_id, status, subscription_plans(*)')
+        .select('id, plan_id, status, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
       
       const subList = subscriptions || []
       const totalAllocatedPlanStorage = subList.reduce((acc: number, s: any) => {
@@ -4494,7 +4502,7 @@ export class PlatformService {
         .select(`
           *,
           companies (id, name),
-          subscription_plans (code, price_monthly)
+          subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey (code, price_monthly)
         `)
 
       const subList = subscriptions || []
