@@ -5119,8 +5119,55 @@ export class PlatformService {
     return { success: true }
   }
 
-  static async retryFailedJob(eventId: string) {
-    return this.resolveHealthEvent(eventId)
+  static async retryFailedJob(eventId: string): Promise<ApiResponse<{ retried: boolean }>> {
+    try {
+      const admin = createAdminClient()
+
+      // Fetch the health event
+      const { data: event } = await (admin as any)
+        .from('platform_system_health_events')
+        .select('*')
+        .eq('id', eventId)
+        .maybeSingle()
+
+      if (event && event.error_details?.job_id) {
+        // Re-queue linked background job
+        await (admin as any)
+          .from('platform_background_jobs')
+          .update({
+            status: 'queued',
+            attempts: 0,
+            error_log: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', event.error_details.job_id)
+      }
+
+      // Mark the health event resolved
+      await (admin as any)
+        .from('platform_system_health_events')
+        .update({
+          resolved: true,
+          resolved_at: new Date().toISOString(),
+        })
+        .eq('id', eventId)
+
+      await this.recordAuditLog(
+        'system.job_retry',
+        'system_health_event',
+        eventId,
+        event?.company_id || undefined,
+        event?.company_name || undefined,
+        { event_id: eventId, service_name: event?.service_name },
+        { resolved: false },
+        { resolved: true },
+        `Triggered retry for failed system health job event (${event?.service_name || eventId})`
+      )
+
+      return { success: true, data: { retried: true } }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to retry job' }
+    }
   }
 
   static async exportTenantData(companyId: string, modules: string[]) {
