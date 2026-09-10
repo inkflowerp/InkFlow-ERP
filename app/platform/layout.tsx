@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { PlatformHeader } from '@/components/platform/platform-header'
 import { PlatformSidebar } from '@/components/platform/platform-sidebar'
 import { PlatformMobileBottomNav } from '@/components/platform/platform-mobile-bottom-nav'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
 
 export default function PlatformLayout({
@@ -13,89 +13,62 @@ export default function PlatformLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
+  const hasVerifiedRef = useRef(false)
 
   const isAuthPage =
     pathname === '/platform/login' ||
     pathname === '/platform/forgot-password' ||
     pathname === '/platform/reset-password'
 
-  const verifyClearance = React.useCallback(() => {
+  useEffect(() => {
     if (isAuthPage) {
+      setIsChecking(false)
+      setIsAuthorized(true)
+      return
+    }
+
+    // If already verified for this session, don't trigger loading state on route transitions
+    if (hasVerifiedRef.current && isAuthorized) {
       setIsChecking(false)
       return
     }
 
+    let isMounted = true
+
     getPlatformSessionUserAction()
       .then((user) => {
+        if (!isMounted) return
+        hasVerifiedRef.current = true
         if (!user || !user.is_active) {
           setIsAuthorized(false)
-          setIsChecking(true)
-          window.location.replace(
-            `/platform/login?error=unauthorized&redirectTo=${encodeURIComponent(pathname)}`
-          )
+          setIsChecking(false)
+          router.replace(`/platform/login?error=unauthorized&redirectTo=${encodeURIComponent(pathname)}`)
         } else {
           setIsAuthorized(true)
           setIsChecking(false)
         }
       })
       .catch(() => {
+        if (!isMounted) return
+        hasVerifiedRef.current = true
         setIsAuthorized(false)
-        setIsChecking(true)
-        window.location.replace('/platform/login?error=unauthorized')
+        setIsChecking(false)
+        router.replace('/platform/login?error=unauthorized')
       })
-  }, [pathname, isAuthPage])
-
-  useEffect(() => {
-    if (isAuthPage) {
-      setIsChecking(false)
-      return
-    }
-
-    verifyClearance()
-
-    // 1. Detect Back-Forward Cache (bfcache) restoration
-    const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) {
-        setIsAuthorized(false)
-        setIsChecking(true)
-        verifyClearance()
-      }
-    }
-
-    // 2. Detect browser back/forward history traversal
-    const handlePopState = () => {
-      setIsAuthorized(false)
-      setIsChecking(true)
-      verifyClearance()
-    }
-
-    // 3. Detect tab refocus / visibility change
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        verifyClearance()
-      }
-    }
-
-    window.addEventListener('pageshow', handlePageShow)
-    window.addEventListener('popstate', handlePopState)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('focus', handleVisibilityChange)
 
     return () => {
-      window.removeEventListener('pageshow', handlePageShow)
-      window.removeEventListener('popstate', handlePopState)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('focus', handleVisibilityChange)
+      isMounted = false
     }
-  }, [verifyClearance, isAuthPage])
+  }, [isAuthPage, isAuthorized, pathname, router])
 
   if (isAuthPage) {
     return <>{children}</>
   }
 
-  if (isChecking) {
+  if (isChecking && !isAuthorized) {
     return (
       <div className="dark h-screen max-h-screen bg-slate-950 text-slate-400 flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
