@@ -55,7 +55,7 @@ function OnboardingWizard() {
   const totalSteps = isPaidPlan ? 8 : 7
 
   const { locale, tBilingual } = useI18n()
-  const { trialDays, paidPlans } = usePublicSubscriptionPlans()
+  const { trialDays, paidPlans, activePaymentGateways } = usePublicSubscriptionPlans()
 
   // Paid Plan & Gateway State for Step 8
   const [selectedPlan, setSelectedPlan] = useState<PlanCode>(() => {
@@ -279,11 +279,20 @@ function OnboardingWizard() {
       : []),
   ]
 
-  // Available payment gateways for Bangladesh
-  const gateways = PAYMENT_GATEWAY_METADATA_LIST.filter(
-    (g) => ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(g.id)
-  )
-  const activeGatewayMeta = PAYMENT_GATEWAY_METADATA_LIST.find((g) => g.id === selectedGateway) || gateways[0]
+  // Only show integrated, valid, and active platform payment gateways
+  const gateways =
+    activePaymentGateways && activePaymentGateways.length > 0
+      ? activePaymentGateways
+      : PAYMENT_GATEWAY_METADATA_LIST.filter((g) =>
+          ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(g.id)
+        )
+  const activeGatewayMeta = gateways.find((g) => g.id === selectedGateway) || gateways[0]
+
+  React.useEffect(() => {
+    if (gateways.length > 0 && !gateways.some((g) => g.id === selectedGateway)) {
+      setSelectedGateway(gateways[0].id as PaymentGatewayType)
+    }
+  }, [gateways, selectedGateway])
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-between p-4 sm:p-8">
@@ -842,39 +851,52 @@ function OnboardingWizard() {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {gateways.map((g) => {
-                          const isGWSelected = selectedGateway === g.id
-                          return (
-                            <div
-                              key={g.id}
-                              onClick={() => setSelectedGateway(g.id)}
-                              className={cn(
-                                'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
-                                isGWSelected
-                                  ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-sm ring-2 ring-blue-500/20'
-                                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'
-                              )}
-                            >
-                              <div className="flex items-center gap-1">
-                                {g.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-pink-600" />}
-                                {g.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-blue-600" />}
-                                {g.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-amber-600" />}
-                                {g.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-emerald-600" />}
-                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 bangla-text">
-                                  {tBilingual(g.name, g.nameBn)}
+                      {gateways.length === 0 ? (
+                        <div className="p-3 text-center text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 bangla-text">
+                          {tBilingual(
+                            'No online payment gateway is currently active. You can continue and payment will be arranged manually.',
+                            'বর্তমানে কোন অনলাইন পেমেন্ট গেটওয়ে সক্রিয় নেই। আপনি এগিয়ে যেতে পারেন, ম্যানুয়ালি পেমেন্ট সমন্বয় করা হবে।'
+                          )}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {gateways.map((g) => {
+                            const isGWSelected = selectedGateway === g.id
+                            return (
+                              <div
+                                key={g.id}
+                                onClick={() => setSelectedGateway(g.id)}
+                                className={cn(
+                                  'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
+                                  isGWSelected
+                                    ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-sm ring-2 ring-blue-500/20'
+                                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                )}
+                              >
+                                <div className="flex items-center gap-1">
+                                  {g.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-pink-600" />}
+                                  {g.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-blue-600" />}
+                                  {g.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-amber-600" />}
+                                  {g.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-emerald-600" />}
+                                  {!['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(g.id) && (
+                                    <CreditCard className="h-3.5 w-3.5 text-indigo-600" />
+                                  )}
+                                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 bangla-text">
+                                    {tBilingual(g.name, g.nameBn)}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] text-slate-400 truncate max-w-full">
+                                  {g.id === 'bkash' && 'Instant MFS'}
+                                  {g.id === 'sslcommerz' && 'Cards / Net Banking'}
+                                  {g.id === 'nagad' && 'Nagad Direct'}
+                                  {g.id === 'bank_wire' && 'Bank Transfer / EFT'}
+                                  {!['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(g.id) && (g.category || 'Online Gateway')}
                                 </span>
                               </div>
-                              <span className="text-[10px] text-slate-400 truncate max-w-full">
-                                {g.id === 'bkash' && 'Instant MFS'}
-                                {g.id === 'sslcommerz' && 'Cards / Net Banking'}
-                                {g.id === 'nagad' && 'Nagad Direct'}
-                                {g.id === 'bank_wire' && 'Bank Transfer / EFT'}
-                              </span>
-                            </div>
-                          )
-                        })}
-                      </div>
+                            )
+                          })}
+                        </div>
+                      )}
 
                       {/* Selected Gateway Instruction Callout */}
                       {activeGatewayMeta?.instructions && activeGatewayMeta.instructions.length > 0 && (

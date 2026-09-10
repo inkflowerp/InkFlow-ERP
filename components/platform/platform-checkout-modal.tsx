@@ -68,8 +68,9 @@ export function PlatformCheckoutModal({
   const [verificationMessage, setVerificationMessage] = useState('')
 
   useEffect(() => {
-    if (gateways.length > 0 && !selectedGateway) {
-      const defaultGw = gateways.find((g) => g.is_default && g.is_enabled) || gateways.find((g) => g.is_enabled)
+    const activeList = gateways.filter((g) => g.is_enabled && g.status !== 'disabled')
+    if (activeList.length > 0 && (!selectedGateway || !activeList.some((g) => g.provider === selectedGateway))) {
+      const defaultGw = activeList.find((g) => g.is_default) || activeList[0]
       if (defaultGw) setSelectedGateway(defaultGw.provider)
     }
   }, [gateways, selectedGateway])
@@ -248,13 +249,13 @@ export function PlatformCheckoutModal({
                 Select Platform Payment Gateway
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {gateways.length === 0 ? (
+                {gateways.filter((g) => g.is_enabled && g.status !== 'disabled').length === 0 ? (
                   <div className="col-span-2 p-3 bg-amber-950/20 border border-amber-800/40 rounded-xl text-amber-300 text-xs">
                     No active payment gateways found. Using Bank Wire / Manual Verification mode.
                   </div>
                 ) : (
                   gateways
-                    .filter((g) => g.is_enabled)
+                    .filter((g) => g.is_enabled && g.status !== 'disabled')
                     .map((gw) => (
                       <button
                         key={gw.id}

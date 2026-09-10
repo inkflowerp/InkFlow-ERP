@@ -26,6 +26,7 @@ import {
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { usePublicSubscriptionPlans } from '@/hooks/use-public-plans'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -55,6 +56,7 @@ export function TrialUpgradeModal() {
   } = useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const { activePaymentGateways } = usePublicSubscriptionPlans()
 
   const [interval, setInterval] = useState<BillingInterval>('monthly')
   const [selectedPlan, setSelectedPlan] = useState<PlanCode>('business')
@@ -66,6 +68,20 @@ export function TrialUpgradeModal() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const providers =
+    activePaymentGateways && activePaymentGateways.length > 0
+      ? activePaymentGateways
+      : PAYMENT_GATEWAY_METADATA_LIST.filter((p) =>
+          ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(p.id)
+        )
+  const activeProvider = providers.find((p) => p.id === selectedGateway) || providers[0]
+
+  useEffect(() => {
+    if (providers.length > 0 && !providers.some((p) => p.id === selectedGateway)) {
+      setSelectedGateway(providers[0].id as PaymentGatewayType)
+    }
+  }, [providers, selectedGateway])
 
   useEffect(() => {
     if (upgradeModalInitialTarget && upgradeModalInitialTarget !== 'trial') {
@@ -81,8 +97,6 @@ export function TrialUpgradeModal() {
 
   if (!isUpgradeModalOpen) return null
 
-  const providers = PAYMENT_GATEWAY_METADATA_LIST
-  const activeProvider = PAYMENT_GATEWAY_METADATA_LIST.find((p) => p.id === selectedGateway)
   const paidPlans = allPlans.filter((p) => p.code !== 'trial')
   const targetPlanObj = allPlans.find((p) => p.code === selectedPlan) || paidPlans[1]
 
@@ -350,27 +364,53 @@ export function TrialUpgradeModal() {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {providers.map((p) => {
-                const isGWSelected = selectedGateway === p.id
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedGateway(p.id as PaymentGatewayType)}
-                    className={cn(
-                      'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
-                      isGWSelected
-                        ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-sm ring-2 ring-blue-500/20'
-                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'
-                    )}
-                  >
-                    <span className="text-xs font-black text-slate-800 dark:text-slate-200">{p.name}</span>
-                    <span className="text-[10px] text-slate-400 capitalize">{p.category}</span>
-                  </button>
-                )
-              })}
-            </div>
+            {providers.length === 0 ? (
+              <div className="p-3 text-center text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 bangla-text">
+                {tBilingual(
+                  'No online payment gateway is currently active. Please contact support.',
+                  'বর্তমানে কোন অনলাইন পেমেন্ট গেটওয়ে সক্রিয় নেই। সাপোর্টের সাথে যোগাযোগ করুন।'
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {providers.map((p) => {
+                  const isGWSelected = selectedGateway === p.id
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedGateway(p.id as PaymentGatewayType)}
+                      className={cn(
+                        'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
+                        isGWSelected
+                          ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-sm ring-2 ring-blue-500/20'
+                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      )}
+                    >
+                      <div className="flex items-center gap-1">
+                        {p.id === 'bkash' && <Smartphone className="h-3.5 w-3.5 text-pink-600" />}
+                        {p.id === 'sslcommerz' && <CreditCard className="h-3.5 w-3.5 text-blue-600" />}
+                        {p.id === 'nagad' && <Smartphone className="h-3.5 w-3.5 text-amber-600" />}
+                        {p.id === 'bank_wire' && <Landmark className="h-3.5 w-3.5 text-emerald-600" />}
+                        {!['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(p.id) && (
+                          <CreditCard className="h-3.5 w-3.5 text-indigo-600" />
+                        )}
+                        <span className="text-xs font-black text-slate-800 dark:text-slate-200 bangla-text">
+                          {tBilingual(p.name, p.nameBn)}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 capitalize truncate max-w-full">
+                        {p.id === 'bkash' && 'Instant MFS'}
+                        {p.id === 'sslcommerz' && 'Cards / Net Banking'}
+                        {p.id === 'nagad' && 'Nagad Direct'}
+                        {p.id === 'bank_wire' && 'Bank Transfer / EFT'}
+                        {!['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(p.id) && (p.category || 'Gateway')}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
 
             {/* Instruction / Reference Input */}
             {instructions && instructions.length > 0 && (

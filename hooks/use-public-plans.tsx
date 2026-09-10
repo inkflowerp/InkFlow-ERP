@@ -6,6 +6,8 @@ import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscripti
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { createClient } from '@/lib/supabase/client'
 
+import { PAYMENT_GATEWAY_METADATA_LIST, PaymentGatewayMeta } from '@/lib/payments/types'
+
 // Bengali numeral translation map
 const BENGALI_DIGITS: Record<string, string> = {
   '0': '০',
@@ -38,6 +40,7 @@ export interface PublicPlansContextType {
   businessPlan: SubscriptionPlanRecord
   enterprisePlan: SubscriptionPlanRecord
   lowestPrice: number
+  activePaymentGateways: PaymentGatewayMeta[]
   isLoading: boolean
   refreshPlans: () => Promise<void>
   toBengaliDigits: (num: number | string | undefined | null) => string
@@ -47,6 +50,10 @@ const PublicPlansContext = createContext<PublicPlansContextType | null>(null)
 
 // Global memory cache to prevent flashes during client-side SPA transitions
 let cachedPlansData: PublicPlansData | null = null
+
+const DEFAULT_ACTIVE_GATEWAYS: PaymentGatewayMeta[] = PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>
+  ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
+)
 
 export function PublicPlansProvider({
   initialData,
@@ -68,6 +75,9 @@ export function PublicPlansProvider({
     return DEFAULT_PLANS.filter((p) => p.code !== 'trial')
   })
   const [lowestPrice, setLowestPrice] = useState<number>(() => seed?.lowestPrice || 1999)
+  const [activePaymentGateways, setActivePaymentGateways] = useState<PaymentGatewayMeta[]>(
+    () => seed?.activePaymentGateways || DEFAULT_ACTIVE_GATEWAYS
+  )
   const [isLoading, setIsLoading] = useState<boolean>(!seed)
 
   const applyPlansData = useCallback((data: PublicPlansData) => {
@@ -77,6 +87,9 @@ export function PublicPlansProvider({
     setTrialDays(data.trialDays || data.trialPlan?.trial_days || 14)
     setPaidPlans(data.paidPlans)
     setLowestPrice(data.lowestPrice || 1999)
+    if (data.activePaymentGateways && data.activePaymentGateways.length > 0) {
+      setActivePaymentGateways(data.activePaymentGateways)
+    }
   }, [])
 
   const fetchPlans = useCallback(async () => {
@@ -178,6 +191,7 @@ export function PublicPlansProvider({
       businessPlan,
       enterprisePlan,
       lowestPrice,
+      activePaymentGateways,
       isLoading,
       refreshPlans: fetchPlans,
       toBengaliDigits,
@@ -192,6 +206,7 @@ export function PublicPlansProvider({
       businessPlan,
       enterprisePlan,
       lowestPrice,
+      activePaymentGateways,
       isLoading,
       fetchPlans,
     ]
@@ -216,6 +231,9 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
     return DEFAULT_PLANS.filter((p) => p.code !== 'trial')
   })
   const [lowestPrice, setLowestPrice] = useState<number>(() => seed?.lowestPrice || 1999)
+  const [activePaymentGateways, setActivePaymentGateways] = useState<PaymentGatewayMeta[]>(
+    () => seed?.activePaymentGateways || DEFAULT_ACTIVE_GATEWAYS
+  )
   const [isLoading, setIsLoading] = useState<boolean>(!seed)
 
   const applyPlansData = useCallback((data: PublicPlansData) => {
@@ -225,6 +243,9 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
     setTrialDays(data.trialDays || data.trialPlan?.trial_days || 14)
     setPaidPlans(data.paidPlans)
     setLowestPrice(data.lowestPrice || 1999)
+    if (data.activePaymentGateways && data.activePaymentGateways.length > 0) {
+      setActivePaymentGateways(data.activePaymentGateways)
+    }
   }, [])
 
   const fetchPlans = useCallback(async () => {
@@ -323,6 +344,7 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
     businessPlan,
     enterprisePlan,
     lowestPrice,
+    activePaymentGateways,
     isLoading,
     refreshPlans: fetchPlans,
     toBengaliDigits,

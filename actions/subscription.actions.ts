@@ -5,7 +5,8 @@ import { SubscriptionService } from '@/services/subscription.service'
 import { EntitlementService } from '@/services/entitlement.service'
 import { PlatformService } from '@/services/platform.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
+import { GatewayService } from '@/services/gateway.service'
+import { PAYMENT_GATEWAY_METADATA_LIST, PaymentGatewayMeta } from '@/lib/payments/types'
 import type {
   PlanCode,
   BillingInterval,
@@ -32,6 +33,7 @@ export interface PublicPlansData {
   trialDays: number
   paidPlans: SubscriptionPlanRecord[]
   lowestPrice: number
+  activePaymentGateways: PaymentGatewayMeta[]
 }
 
 /**
@@ -281,6 +283,55 @@ export async function getTenantSubscriptionInvoicesAction(
 }
 
 /**
+ * Server Action: Fetches active, valid & integrated platform payment gateways for checkout
+ */
+export async function getActivePaymentGatewaysAction(): Promise<ServerActionResult<PaymentGatewayMeta[]>> {
+  try {
+    const rawGateways = await GatewayService.listGateways({ tenantId: null, category: 'payment' })
+
+    // Filter strictly for enabled and valid integrations
+    const activeGateways = rawGateways.filter((g) => {
+      if (g.is_enabled === false) return false
+      if (g.status === 'disabled') return false
+      if (g.provider === 'bank_wire') return true
+      return g.has_credentials || g.status === 'connected' || Boolean(g.public_config && Object.keys(g.public_config).length > 0)
+    })
+
+    if (rawGateways && rawGateways.length > 0) {
+      const activeMetas: PaymentGatewayMeta[] = []
+      for (const g of activeGateways) {
+        const meta = PAYMENT_GATEWAY_METADATA_LIST.find((m) => m.id === g.provider)
+        if (meta && !activeMetas.some((m) => m.id === meta.id)) {
+          activeMetas.push(meta)
+        } else if (!meta) {
+          activeMetas.push({
+            id: g.provider as any,
+            name: g.name,
+            nameBn: g.name,
+            category: 'gateway',
+            iconName: 'CreditCard',
+            description: `Payment via ${g.name}`,
+            descriptionBn: `${g.name} গেটওয়ে`,
+          })
+        }
+      }
+      return { success: true, data: activeMetas }
+    }
+
+    // Default integrated fallback when no custom integrations are configured in DB at all
+    const fallbackActive = PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>
+      ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
+    )
+    return { success: true, data: fallbackActive }
+  } catch (err: any) {
+    const fallbackActive = PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>
+      ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
+    )
+    return { success: true, data: fallbackActive }
+  }
+}
+
+/**
  * Server Action: Fetches public active subscription plans & trial parameters for marketing surfaces
  */
 export async function getPublicSubscriptionPlansAction(): Promise<ServerActionResult<PublicPlansData>> {
@@ -296,6 +347,11 @@ export async function getPublicSubscriptionPlansAction(): Promise<ServerActionRe
 
     const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p) => p.price_monthly)) : 1999
 
+    const gwRes = await getActivePaymentGatewaysAction()
+    const activePaymentGateways = gwRes.data || PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>
+      ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
+    )
+
     return {
       success: true,
       data: {
@@ -304,11 +360,15 @@ export async function getPublicSubscriptionPlansAction(): Promise<ServerActionRe
         trialDays,
         paidPlans,
         lowestPrice,
+        activePaymentGateways,
       },
     }
   } catch (err: any) {
     const trialPlan = DEFAULT_TRIAL_PLAN
     const paidPlans = DEFAULT_PLANS.filter((p) => p.code !== 'trial')
+    const fallbackActive = PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>
+      ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
+    )
     return {
       success: true,
       data: {
@@ -317,8 +377,10 @@ export async function getPublicSubscriptionPlansAction(): Promise<ServerActionRe
         trialDays: 14,
         paidPlans,
         lowestPrice: 1999,
+        activePaymentGateways: fallbackActive,
       },
     }
   }
 }
+
 
