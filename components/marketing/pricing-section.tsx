@@ -48,8 +48,8 @@ export function PricingSection() {
 
           <p className="text-sm sm:text-lg text-slate-400 leading-relaxed bangla-text">
             {tBilingual(
-              `Get started with a ${trialDays}-day full-feature trial. No credit card required. Upgrade, downgrade, or cancel anytime.`,
-              `${trialDaysBn} দিনের পূর্ণাঙ্গ ফ্রি ট্রায়াল দিয়ে শুরু করুন। কোনো ক্রেডিট কার্ডের প্রয়োজন নেই। যেকোনো সময় আপগ্রেড করতে পারবেন।`
+              'Choose the right plan for your print shop, or start with our dedicated free trial. Upgrade, downgrade, or cancel anytime.',
+              'আপনার প্রেসের পরিধি অনুযায়ী সেরা প্ল্যানটি বেছে নিন, অথবা ডেডিকেটেড ফ্রি ট্রায়াল দিয়ে শুরু করুন। যেকোনো সময় পরিবর্তনযোগ্য।'
             )}
           </p>
 
@@ -221,7 +221,7 @@ export function PricingSection() {
                   </div>
                 </div>
 
-                {/* Card CTA Button */}
+                {/* Card CTA Button for Paid Plan */}
                 <div className="pt-6 sm:pt-8">
                   <Link href={`/register?plan=${p.code}`} className="block w-full">
                     <Button
@@ -231,20 +231,52 @@ export function PricingSection() {
                           : 'bg-slate-900 hover:bg-slate-800 text-white border border-slate-700'
                       }`}
                     >
-                      <span>{tBilingual(`Start ${trialDays}-Day Free Trial`, `${trialDaysBn} দিনের ফ্রি ট্রায়াল`)}</span>
+                      <span>{tBilingual(`Get Started with ${p.name}`, `${p.name_bn} শুরু করুন`)}</span>
                       <ArrowRight className="ml-1.5 h-4 w-4" />
                     </Button>
                   </Link>
-                  <p className="text-[10px] sm:text-[11px] text-center text-slate-500 mt-2">
-                    No credit card required • Instant setup
+                  <p className="text-[10px] sm:text-[11px] text-center text-slate-500 mt-2 bangla-text">
+                    {tBilingual('Instant account activation • BDT billing', 'ইনস্ট্যান্ট একাউন্ট অ্যাক্টিভেশন • টাকা বিলিং')}
                   </p>
                 </div>
               </div>
             )
           })}
         </div>
+
+        {/* Dedicated Free Trial Plan Feature Banner */}
+        <div className="mt-8 sm:mt-12 max-w-5xl mx-auto rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-slate-900 via-slate-900/95 to-cyan-950/40 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-cyan-950/30 backdrop-blur-sm">
+          <div className="space-y-2 text-center md:text-left">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-xs font-bold uppercase tracking-wider bangla-text">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+              <span>{tBilingual('Dedicated Free Trial Plan', 'ডেডিকেটেড ফ্রি ট্রায়াল প্ল্যান')}</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white bangla-text">
+              {tBilingual(
+                `Start with ${trialDays}-Day Free Evaluation Trial`,
+                `${trialDaysBn} দিনের ডেডিকেটেড ফ্রি ট্রায়াল দিয়ে শুরু করুন`
+              )}
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed bangla-text">
+              {tBilingual(
+                'Explore all ERP modules with 5 team users, SFT quotation calculator, production Kanban, roll tracker, and accounting. No credit card required.',
+                '৫ জন স্টাফ, স্কয়ারফিট কোটেশন, কারখানা কানবান, রোল স্টক এবং সম্পূর্ণ একাউন্টিং ব্যবহারের পূর্ণ সুযোগ। কোনো ক্রেডিট কার্ডের প্রয়োজন নেই।'
+              )}
+            </p>
+          </div>
+          <div className="w-full md:w-auto shrink-0 flex flex-col items-center sm:items-end gap-1.5">
+            <Link href="/register?plan=trial" className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto h-12 px-7 text-sm sm:text-base font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-xl shadow-cyan-500/25 border border-cyan-400/30 cursor-pointer bangla-text">
+                <span>{tBilingual(`Start ${trialDays}-Day Free Trial`, `${trialDaysBn} দিনের ফ্রি ট্রায়াল শুরু`)}</span>
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <span className="text-[11px] text-slate-400 bangla-text">
+              {tBilingual('No credit card • Free instant setup', 'কোনো কার্ড লাগবে না • ইনস্ট্যান্ট সেটআপ')}
+            </span>
+          </div>
+        </div>
       </div>
     </section>
   )
 }
-
