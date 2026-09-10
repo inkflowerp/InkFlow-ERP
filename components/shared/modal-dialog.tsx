@@ -44,31 +44,31 @@ interface ModalDialogProps {
 }
 
 const SIZE_MAP: Record<ModalDialogSize, string> = {
-  sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-xl',
-  '2xl': 'max-w-2xl',
-  '3xl': 'max-w-3xl',
-  '4xl': 'max-w-4xl',
-  '5xl': 'max-w-5xl',
-  '6xl': 'max-w-6xl',
-  '7xl': 'max-w-7xl',
-  full: 'max-w-[95vw]',
+  sm: 'w-[95vw] max-w-sm',
+  md: 'w-[95vw] max-w-md',
+  lg: 'w-[95vw] max-w-lg',
+  xl: 'w-[95vw] max-w-xl',
+  '2xl': 'w-[95vw] max-w-2xl',
+  '3xl': 'w-[95vw] max-w-3xl',
+  '4xl': 'w-[95vw] max-w-4xl',
+  '5xl': 'w-[95vw] max-w-5xl',
+  '6xl': 'w-[95vw] max-w-6xl',
+  '7xl': 'w-[95vw] max-w-7xl',
+  full: 'w-[95vw] max-w-[95vw]',
 }
 
 const SIZE_STYLE_MAP: Record<ModalDialogSize, React.CSSProperties> = {
-  sm: { maxWidth: '384px', width: '100%' },
-  md: { maxWidth: '448px', width: '100%' },
-  lg: { maxWidth: '512px', width: '100%' },
-  xl: { maxWidth: '576px', width: '100%' },
-  '2xl': { maxWidth: '672px', width: '100%' },
-  '3xl': { maxWidth: '768px', width: '100%' },
-  '4xl': { maxWidth: '896px', width: '100%' },
-  '5xl': { maxWidth: '1024px', width: '100%' },
-  '6xl': { maxWidth: '1152px', width: '100%' },
-  '7xl': { maxWidth: '1280px', width: '100%' },
-  full: { maxWidth: '95vw', width: '100%' },
+  sm: { width: '95vw', maxWidth: '384px' },
+  md: { width: '95vw', maxWidth: '448px' },
+  lg: { width: '95vw', maxWidth: '512px' },
+  xl: { width: '95vw', maxWidth: '576px' },
+  '2xl': { width: '95vw', maxWidth: '672px' },
+  '3xl': { width: '95vw', maxWidth: '768px' },
+  '4xl': { width: '95vw', maxWidth: '896px' },
+  '5xl': { width: '95vw', maxWidth: '1024px' },
+  '6xl': { width: '95vw', maxWidth: '1152px' },
+  '7xl': { width: '95vw', maxWidth: '1280px' },
+  full: { width: '95vw', maxWidth: '95vw' },
 }
 
 export function ModalDialog({

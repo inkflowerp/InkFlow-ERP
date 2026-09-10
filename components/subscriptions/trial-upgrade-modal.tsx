@@ -222,7 +222,7 @@ export function TrialUpgradeModal() {
           </div>
         </div>
       ) : (
-        <form onSubmit={handleInitiateCheckout} className="space-y-6">
+        <form onSubmit={handleInitiateCheckout} className="space-y-6 w-full">
           {errorMessage && (
             <div className="p-3 bg-red-50 text-red-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800">
               <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
@@ -264,7 +264,7 @@ export function TrialUpgradeModal() {
           </div>
 
           {/* Plan Comparison Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 lg:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 w-full">
             {paidPlans.map((plan) => {
               const isSelected = selectedPlan === plan.code
               const isRecommended = plan.code === 'business'
