@@ -277,7 +277,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                 {results.features.map((f) => (
                   <button
                     key={f.id}
-                    onClick={() => handleSelect('/platform/feature-flags')}
+                    onClick={() => handleSelect('/platform/features')}
                     className="w-full text-left p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-purple-500/50 transition-all flex items-center justify-between group cursor-pointer"
                   >
                     <div>
