@@ -179,7 +179,7 @@ export function TrialUpgradeModal() {
     <ModalDialog
       open={isUpgradeModalOpen}
       onOpenChange={(open) => !open && closeUpgradeModal()}
-      size="5xl"
+      size="6xl"
       hideFooter
       title={
         <div className="flex items-center gap-2.5 text-slate-900 dark:text-white">

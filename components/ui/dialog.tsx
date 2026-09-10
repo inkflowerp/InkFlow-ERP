@@ -43,8 +43,8 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth }: Di
       {/* Content Container */}
       <div
         className={cn(
-          'relative z-50 w-full max-w-lg my-auto max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
-          maxWidth,
+          'relative z-50 w-full my-auto max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
+          maxWidth || 'max-w-lg',
           className
         )}
       >
