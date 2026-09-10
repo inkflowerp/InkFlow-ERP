@@ -37,6 +37,8 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { usePermissions } from '@/hooks/use-permissions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { Crown, ShoppingCart } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 
 export default function OrdersPage() {
   const { company } = useTenant()
@@ -218,13 +220,21 @@ export default function OrdersPage() {
               size="sm"
               variant="outline"
               onClick={handleOpenWorkOrder}
-              className="text-xs bangla-text"
+              disabled={!orderCheck.allowed}
+              title={!orderCheck.allowed ? orderCheck.reason : undefined}
+              className={cn("text-xs bangla-text", !orderCheck.allowed && "opacity-60 cursor-not-allowed")}
             >
               <Plus className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
               {tBilingual('Add Work Order', 'ওয়ার্ক অর্ডার')}
             </Button>
             {can('create', 'orders') && (
-              <Button size="sm" onClick={handleOpenNewOrder} className="bg-indigo-600 hover:bg-indigo-700 text-xs text-white bangla-text">
+              <Button
+                size="sm"
+                onClick={handleOpenNewOrder}
+                disabled={!orderCheck.allowed}
+                title={!orderCheck.allowed ? orderCheck.reason : undefined}
+                className={cn("bg-indigo-600 hover:bg-indigo-700 text-xs text-white bangla-text", !orderCheck.allowed && "opacity-60 cursor-not-allowed")}
+              >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('New Sales Order', 'নতুন সেলস অর্ডার')}
               </Button>
@@ -236,15 +246,23 @@ export default function OrdersPage() {
       {/* Monthly Orders Quota Alert */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-indigo-600 text-white font-bold">
+          <div className={cn(
+            'p-1.5 rounded-lg text-white font-bold shrink-0',
+            orderCheck.exceeded ? 'bg-red-500' : orderCheck.warning ? 'bg-amber-500' : 'bg-indigo-600'
+          )}>
             <ShoppingCart className="h-4 w-4" />
           </div>
           <div>
             <div className="font-bold text-slate-900 dark:text-white bangla-text">
-              {tBilingual(
-                `Monthly Order Quota: ${usage.orders_this_month} of ${currentPlan.monthly_orders.toLocaleString()} orders booked this month`,
-                `মাসিক অর্ডার কোটা: এই মাসে ${currentPlan.monthly_orders.toLocaleString()} টির মধ্যে ${usage.orders_this_month} টি অর্ডার বুক করা হয়েছে`
-              )}
+              {orderCheck.exceeded
+                ? tBilingual(
+                    `Plan Limit Reached: Your current plan allows up to ${currentPlan.monthly_orders.toLocaleString()} Monthly Orders quota (currently at ${usage.orders_this_month}). Please upgrade your subscription to continue.`,
+                    `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.monthly_orders)} মাসিক অর্ডার কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(usage.orders_this_month)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
+                  )
+                : tBilingual(
+                    `Monthly Order Quota: ${usage.orders_this_month} of ${currentPlan.monthly_orders.toLocaleString()} orders booked this month`,
+                    `মাসিক অর্ডার কোটা: এই মাসে ${toBengaliDigits(currentPlan.monthly_orders)} টির মধ্যে ${toBengaliDigits(usage.orders_this_month)} টি অর্ডার বুক করা হয়েছে`
+                  )}
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
               {orderCheck.exceeded
@@ -617,7 +635,11 @@ export default function OrdersPage() {
             <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+            <Button
+              type="submit"
+              disabled={!orderCheck.allowed}
+              className={cn("bg-indigo-600 hover:bg-indigo-700 text-white", !orderCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
               Confirm & Dispatch to Shop Floor
             </Button>
           </div>

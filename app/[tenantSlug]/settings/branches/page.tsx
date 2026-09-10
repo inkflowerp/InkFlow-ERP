@@ -23,6 +23,8 @@ import { PageHeader } from '@/components/shared/page-header'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Crown } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 
 interface BranchItem {
   id: string
@@ -142,7 +144,12 @@ export default function BranchesSettingsPage() {
         icon={GitBranch}
         iconColor="text-blue-600"
         actions={
-          <Button onClick={handleOpenAddBranch} className="bg-blue-600 hover:bg-blue-700 bangla-text">
+          <Button
+            onClick={handleOpenAddBranch}
+            disabled={!branchCheck.allowed}
+            title={!branchCheck.allowed ? branchCheck.reason : undefined}
+            className={cn("bg-blue-600 hover:bg-blue-700 bangla-text", !branchCheck.allowed && "opacity-60 cursor-not-allowed")}
+          >
             <Plus className="mr-1.5 h-4 w-4" />
             {tBilingual('Add New Branch', 'নতুন শাখা যোগ করুন')}
           </Button>
@@ -154,15 +161,23 @@ export default function BranchesSettingsPage() {
       {/* Branch Quota Alert */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-blue-600 text-white font-bold">
+          <div className={cn(
+            'p-1.5 rounded-lg text-white font-bold shrink-0',
+            branchCheck.exceeded ? 'bg-red-500' : branchCheck.warning ? 'bg-amber-500' : 'bg-blue-600'
+          )}>
             <Building className="h-4 w-4" />
           </div>
           <div>
             <div className="font-bold text-slate-900 dark:text-white bangla-text">
-              {tBilingual(
-                `Branch Limit: ${branches.length} of ${currentPlan.max_branches} locations active`,
-                `শাখা সীমা: ${currentPlan.max_branches} টির মধ্যে ${branches.length} টি শাখা সক্রিয়`
-              )}
+              {branchCheck.exceeded
+                ? tBilingual(
+                    `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_branches} Branches quota (currently at ${branches.length}). Please upgrade your subscription to continue.`,
+                    `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.max_branches)} শাখা কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(branches.length)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
+                  )
+                : tBilingual(
+                    `Branch Limit: ${branches.length} of ${currentPlan.max_branches} locations active`,
+                    `শাখা সীমা: ${toBengaliDigits(currentPlan.max_branches)} টির মধ্যে ${toBengaliDigits(branches.length)} টি শাখা সক্রিয়`
+                  )}
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
               {branchCheck.exceeded
@@ -326,7 +341,11 @@ export default function BranchesSettingsPage() {
             <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              disabled={!branchCheck.allowed}
+              className={cn("bg-blue-600 hover:bg-blue-700", !branchCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
               Create Branch
             </Button>
           </div>

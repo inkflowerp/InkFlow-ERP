@@ -40,6 +40,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { UserPermissionsDrawer } from '@/components/users/user-permissions-drawer'
 import { cn } from '@/lib/utils'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 
 export default function UsersManagementPage() {
   const { company } = useTenant()
@@ -271,11 +272,22 @@ export default function UsersManagementPage() {
         iconColor="text-blue-600"
         actions={
           <div className="flex items-center gap-2.5">
-            <Button variant="outline" onClick={handleOpenInvite} className="bangla-text">
+            <Button
+              variant="outline"
+              onClick={handleOpenInvite}
+              disabled={!userCheck.allowed}
+              title={!userCheck.allowed ? userCheck.reason : undefined}
+              className={cn("bangla-text", !userCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
               <Mail className="mr-1.5 h-4 w-4" />
               {tBilingual('Invite Member', 'সদস্য আমন্ত্রণ')}
             </Button>
-            <Button onClick={handleOpenAddUser} className="bg-blue-600 hover:bg-blue-700 bangla-text">
+            <Button
+              onClick={handleOpenAddUser}
+              disabled={!userCheck.allowed}
+              title={!userCheck.allowed ? userCheck.reason : undefined}
+              className={cn("bg-blue-600 hover:bg-blue-700 bangla-text", !userCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
               <UserPlus className="mr-1.5 h-4 w-4" />
               {tBilingual('Add User', 'নতুন ব্যবহারকারী')}
             </Button>
@@ -287,17 +299,22 @@ export default function UsersManagementPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
         <div className="flex items-center gap-2.5">
           <div className={cn(
-            'p-1.5 rounded-lg text-white font-bold',
+            'p-1.5 rounded-lg text-white font-bold shrink-0',
             userCheck.exceeded ? 'bg-red-500' : userCheck.warning ? 'bg-amber-500' : 'bg-blue-600'
           )}>
             <Users className="h-4 w-4" />
           </div>
           <div>
             <div className="font-bold text-slate-900 dark:text-white bangla-text">
-              {tBilingual(
-                `Plan User Limit: ${users.length} of ${currentPlan.max_users} seats active`,
-                `ইউজার সীমা: ${currentPlan.max_users} জনের মধ্যে ${users.length} জন সক্রিয়`
-              )}
+              {userCheck.exceeded
+                ? tBilingual(
+                    `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_users} Users quota (currently at ${users.length}). Please upgrade your subscription to continue.`,
+                    `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.max_users)} ইউজার কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(users.length)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
+                  )
+                : tBilingual(
+                    `Plan User Limit: ${users.length} of ${currentPlan.max_users} seats active`,
+                    `ইউজার সীমা: ${toBengaliDigits(currentPlan.max_users)} জনের মধ্যে ${toBengaliDigits(users.length)} জন সক্রিয়`
+                  )}
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
               {userCheck.exceeded
@@ -598,7 +615,11 @@ export default function UsersManagementPage() {
             <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              disabled={!userCheck.allowed}
+              className={cn("bg-blue-600 hover:bg-blue-700", !userCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
               Send Invitation
             </Button>
           </div>
@@ -710,7 +731,11 @@ export default function UsersManagementPage() {
             <Button type="button" variant="outline" onClick={() => setIsAddUserOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              disabled={!userCheck.allowed}
+              className={cn("bg-blue-600 hover:bg-blue-700", !userCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
               Create User
             </Button>
           </div>

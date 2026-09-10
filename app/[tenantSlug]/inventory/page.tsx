@@ -44,6 +44,8 @@ import {
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { cn } from '@/lib/utils'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 
 export default function InventoryDashboardPage() {
   const { company } = useTenant()
@@ -268,7 +270,9 @@ export default function InventoryDashboardPage() {
             <Button
               size="sm"
               onClick={handleOpenNewMaterial}
-              className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white bangla-text"
+              disabled={!productCheck.allowed}
+              title={!productCheck.allowed ? productCheck.reason : undefined}
+              className={cn("bg-emerald-600 hover:bg-emerald-700 text-xs text-white bangla-text", !productCheck.allowed && "opacity-60 cursor-not-allowed")}
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Add Material', 'নতুন কাঁচামাল')}
@@ -280,15 +284,23 @@ export default function InventoryDashboardPage() {
       {/* Inventory & Materials Quota Alert */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-emerald-600 text-white font-bold">
+          <div className={cn(
+            'p-1.5 rounded-lg text-white font-bold shrink-0',
+            productCheck.exceeded ? 'bg-red-500' : productCheck.warning ? 'bg-amber-500' : 'bg-emerald-600'
+          )}>
             <Package className="h-4 w-4" />
           </div>
           <div>
             <div className="font-bold text-slate-900 dark:text-white bangla-text">
-              {tBilingual(
-                `Inventory SKU Quota: ${materials.length} of ${currentPlan.max_products.toLocaleString()} materials registered`,
-                `ইনভেন্টরি আইটেম কোটা: ${currentPlan.max_products.toLocaleString()} টির মধ্যে ${materials.length} টি কাঁচামাল নিবন্ধিত`
-              )}
+              {productCheck.exceeded
+                ? tBilingual(
+                    `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_products.toLocaleString()} Products quota (currently at ${materials.length}). Please upgrade your subscription to continue.`,
+                    `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.max_products)} প্রোডাক্ট কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(materials.length)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
+                  )
+                : tBilingual(
+                    `Inventory SKU Quota: ${materials.length} of ${currentPlan.max_products.toLocaleString()} materials registered`,
+                    `ইনভেন্টরি আইটেম কোটা: ${toBengaliDigits(currentPlan.max_products)} টির মধ্যে ${toBengaliDigits(materials.length)} টি কাঁচামাল নিবন্ধিত`
+                  )}
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
               {productCheck.exceeded
@@ -824,7 +836,11 @@ export default function InventoryDashboardPage() {
             <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button
+              type="submit"
+              disabled={!productCheck.allowed}
+              className={cn("bg-emerald-600 hover:bg-emerald-700 text-white", !productCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
               Save Material
             </Button>
           </div>

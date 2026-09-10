@@ -42,10 +42,13 @@ import {
   cancelSubscriptionAction,
   reactivateSubscriptionAction,
 } from '@/actions/subscription.actions'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
+import { triggerPopupNotification } from '@/components/shell/realtime-notification-popup'
 
 export interface LimitCheckResult {
   allowed: boolean
   reason?: string
+  reasonBn?: string
   current: number
   limit: number
   percentage: number
@@ -185,10 +188,65 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setUpgradeModalTriggerFeature(undefined)
   }, [])
 
-  const openLimitExceededModal = useCallback((limitType: ConfigurableLimitType) => {
-    setLimitModalType(limitType)
-    setIsLimitExceededModalOpen(true)
-  }, [])
+  const getLimitStatus = useCallback(
+    (limitType: ConfigurableLimitType) => {
+      let currentVal = 0
+      switch (limitType) {
+        case 'max_users':
+          currentVal = usage.users_count
+          break
+        case 'max_branches':
+          currentVal = usage.branches_count
+          break
+        case 'storage_gb':
+          currentVal = usage.storage_used_gb
+          break
+        case 'monthly_orders':
+          currentVal = usage.orders_this_month
+          break
+        case 'max_customers':
+          currentVal = usage.customers_count
+          break
+        case 'max_products':
+          currentVal = usage.products_count
+          break
+      }
+
+      return checkResourceLimit(
+        limitType,
+        currentVal,
+        currentPlan,
+        subscription.custom_limits_override
+      )
+    },
+    [usage, currentPlan, subscription.custom_limits_override]
+  )
+
+  const openLimitExceededModal = useCallback(
+    (limitType: ConfigurableLimitType) => {
+      setLimitModalType(limitType)
+      setIsLimitExceededModalOpen(true)
+      const status = getLimitStatus(limitType)
+      const resMap: Record<ConfigurableLimitType, { en: string; bn: string }> = {
+        max_users: { en: 'Users', bn: 'ইউজার' },
+        max_branches: { en: 'Branches', bn: 'শাখা' },
+        monthly_orders: { en: 'Monthly Orders', bn: 'মাসিক অর্ডার' },
+        max_customers: { en: 'Customers', bn: 'কাস্টমার' },
+        max_products: { en: 'Products', bn: 'প্রোডাক্ট' },
+        storage_gb: { en: 'Storage (GB)', bn: 'ক্লাউড স্টোরেজ' },
+      }
+      const meta = resMap[limitType] || { en: limitType, bn: limitType }
+      triggerPopupNotification({
+        title: `Plan Limit Reached: ${meta.en}`,
+        titleBn: `প্ল্যান লিমিট পূর্ণ: ${meta.bn}`,
+        message: `Plan Limit Reached: Your current plan allows up to ${status.limit} ${meta.en} quota (currently at ${status.current}). Please upgrade your subscription to continue.`,
+        messageBn: `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(status.limit)} ${meta.bn} কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(status.current)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`,
+        type: 'system',
+        actionUrl: `/${companySlug}/settings/subscription`,
+      })
+    },
+    [getLimitStatus, companySlug]
+  )
 
   const closeLimitExceededModal = useCallback(() => {
     setIsLimitExceededModalOpen(false)
@@ -233,46 +291,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     [currentPlan, subscription.plan_code, plans, isTrialExpired, isSuspended]
   )
 
-  const getLimitStatus = useCallback(
-    (limitType: ConfigurableLimitType) => {
-      let currentVal = 0
-      switch (limitType) {
-        case 'max_users':
-          currentVal = usage.users_count
-          break
-        case 'max_branches':
-          currentVal = usage.branches_count
-          break
-        case 'storage_gb':
-          currentVal = usage.storage_used_gb
-          break
-        case 'monthly_orders':
-          currentVal = usage.orders_this_month
-          break
-        case 'max_customers':
-          currentVal = usage.customers_count
-          break
-        case 'max_products':
-          currentVal = usage.products_count
-          break
-      }
-
-      return checkResourceLimit(
-        limitType,
-        currentVal,
-        currentPlan,
-        subscription.custom_limits_override
-      )
-    },
-    [usage, currentPlan, subscription.custom_limits_override]
-  )
-
   const checkCanCreate = useCallback(
     (limitType: ConfigurableLimitType): LimitCheckResult => {
       if (isSuspended) {
         return {
           allowed: false,
           reason: 'Tenant account is suspended by platform administration.',
+          reasonBn: 'প্ল্যাটফর্ম অ্যাডমিন দ্বারা অ্যাকাউন্ট স্থগিত করা হয়েছে।',
           current: 0,
           limit: 0,
           percentage: 100,
@@ -285,6 +310,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         return {
           allowed: false,
           reason: `Your ${totalTrialDays}-day free trial has expired. Upgrade your plan to continue adding records.`,
+          reasonBn: `আপনার ${toBengaliDigits(totalTrialDays)} দিনের ফ্রি ট্রায়ালের মেয়াদ শেষ হয়েছে। কাজ চালিয়ে যেতে প্ল্যান আপগ্রেড করুন।`,
           current: 0,
           limit: 0,
           percentage: 100,
@@ -298,9 +324,21 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       const nextPlan = getNextTierPlan(currentPlanCode, plans)
 
       if (status.exceeded) {
+        const resourceMap: Record<ConfigurableLimitType, { en: string; bn: string }> = {
+          max_users: { en: 'Users', bn: 'ইউজার' },
+          max_branches: { en: 'Branches', bn: 'শাখা' },
+          monthly_orders: { en: 'Monthly Orders', bn: 'মাসিক অর্ডার' },
+          max_customers: { en: 'Customers', bn: 'কাস্টমার' },
+          max_products: { en: 'Products', bn: 'প্রোডাক্ট' },
+          storage_gb: { en: 'Storage (GB)', bn: 'ক্লাউড স্টোরেজ' },
+        }
+        const res = resourceMap[limitType] || { en: limitType, bn: limitType }
+        const limitDisplayBn = toBengaliDigits(status.limit)
+        const currentDisplayBn = toBengaliDigits(status.current)
         return {
           allowed: false,
-          reason: `You have reached the ${limitType.replace('_', ' ')} limit (${status.current}/${status.limit}) for your ${currentPlan.name}.`,
+          reason: `Plan Limit Reached: Your current plan allows up to ${status.limit} ${res.en} quota (currently at ${status.current}). Please upgrade your subscription to continue.`,
+          reasonBn: `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${limitDisplayBn} ${res.bn} কোটা অনুমোদিত (বর্তমানে ${currentDisplayBn})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`,
           current: status.current,
           limit: status.limit,
           percentage: status.percentage,
@@ -320,7 +358,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         nextPlan,
       }
     },
-    [isSuspended, isTrialExpired, getLimitStatus, currentPlan, currentPlanCode, plans]
+    [isSuspended, isTrialExpired, getLimitStatus, currentPlan, currentPlanCode, plans, totalTrialDays]
   )
 
   // Real Gateway Checkout Initiation

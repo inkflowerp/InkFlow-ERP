@@ -32,6 +32,7 @@ import { ProductRecord, ProductType, UnitOfMeasure } from '@/types/product.types
 import { ProductService } from '@/services/product.service'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { cn } from '@/lib/utils'
 
 export default function ProductsCatalogPage() {
   const { company } = useTenant()
@@ -188,7 +189,13 @@ export default function ProductsCatalogPage() {
               </Button>
             </Link>
 
-            <Button size="sm" onClick={handleOpenAddProduct} className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text">
+            <Button
+              size="sm"
+              onClick={handleOpenAddProduct}
+              disabled={!productCheck.allowed}
+              title={!productCheck.allowed ? productCheck.reason : undefined}
+              className={cn("bg-blue-600 hover:bg-blue-700 text-xs bangla-text", !productCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}
             </Button>
@@ -487,8 +494,12 @@ export default function ProductsCatalogPage() {
             <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-              Save Product
+            <Button
+              type="submit"
+              disabled={!productCheck.allowed}
+              className={cn("bg-blue-600 hover:bg-blue-700", !productCheck.allowed && "opacity-60 cursor-not-allowed")}
+            >
+              Register Item
             </Button>
           </div>
         </form>

@@ -24,13 +24,13 @@ import { Badge } from '@/components/ui/badge'
 import { ConfigurableLimitType } from '@/types/subscription.types'
 import { getNextTierPlan } from '@/lib/subscription/subscription-constants'
 
-const LIMIT_LABELS: Record<ConfigurableLimitType, { en: string; bn: string; icon: React.ElementType }> = {
-  max_users: { en: 'Team Users Limit Reached', bn: 'সর্বোচ্চ ইউজার অ্যাকাউন্টের সীমা পূর্ণ', icon: Users },
-  max_branches: { en: 'Branches & Hubs Limit Reached', bn: 'সর্বোচ্চ শাখা/কারখানার সীমা পূর্ণ', icon: Building },
-  monthly_orders: { en: 'Monthly Order Quota Exhausted', bn: 'চলতি মাসের সর্বোচ্চ অর্ডার কোটা পূর্ণ', icon: ShoppingCart },
-  max_customers: { en: 'Customer Directory Limit Reached', bn: 'গ্রাহক তালিকার সর্বোচ্চ সীমা পূর্ণ', icon: Users },
-  max_products: { en: 'Inventory & Materials Limit Reached', bn: 'ইনভেন্টরি ও প্রোডাক্টের সর্বোচ্চ সীমা পূর্ণ', icon: Package },
-  storage_gb: { en: 'Cloud Storage Capacity Reached', bn: 'ক্লাউড স্টোরেজ ধারণক্ষমতা পূর্ণ', icon: HardDrive },
+const LIMIT_LABELS: Record<ConfigurableLimitType, { en: string; bn: string; resourceNameEn: string; resourceNameBn: string; icon: React.ElementType }> = {
+  max_users: { en: 'Team Users Limit Reached', bn: 'সর্বোচ্চ ইউজার অ্যাকাউন্টের সীমা পূর্ণ', resourceNameEn: 'Users', resourceNameBn: 'ইউজার', icon: Users },
+  max_branches: { en: 'Branches & Hubs Limit Reached', bn: 'সর্বোচ্চ শাখা/কারখানার সীমা পূর্ণ', resourceNameEn: 'Branches', resourceNameBn: 'শাখা', icon: Building },
+  monthly_orders: { en: 'Monthly Order Quota Exhausted', bn: 'চলতি মাসের সর্বোচ্চ অর্ডার কোটা পূর্ণ', resourceNameEn: 'Monthly Orders', resourceNameBn: 'মাসিক অর্ডার', icon: ShoppingCart },
+  max_customers: { en: 'Customer Directory Limit Reached', bn: 'গ্রাহক তালিকার সর্বোচ্চ সীমা পূর্ণ', resourceNameEn: 'Customers', resourceNameBn: 'কাস্টমার', icon: Users },
+  max_products: { en: 'Inventory & Materials Limit Reached', bn: 'ইনভেন্টরি ও প্রোডাক্টের সর্বোচ্চ সীমা পূর্ণ', resourceNameEn: 'Products & Materials', resourceNameBn: 'প্রোডাক্ট ও মেটেরিয়াল', icon: Package },
+  storage_gb: { en: 'Cloud Storage Capacity Reached', bn: 'ক্লাউড স্টোরেজ ধারণক্ষমতা পূর্ণ', resourceNameEn: 'Cloud Storage (GB)', resourceNameBn: 'ক্লাউড স্টোরেজ (জিবি)', icon: HardDrive },
 }
 
 export function LimitExceededModal() {
@@ -51,6 +51,8 @@ export function LimitExceededModal() {
   const meta = LIMIT_LABELS[limitModalType] || {
     en: 'Resource Limit Reached',
     bn: 'রিসোর্স লিমিট পূর্ণ',
+    resourceNameEn: 'Resources',
+    resourceNameBn: 'রিসোর্স',
     icon: Lock,
   }
   const Icon = meta.icon
@@ -90,8 +92,8 @@ export function LimitExceededModal() {
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {tBilingual(
-                `Restricted on ${currentPlan.name}`,
-                `${currentPlan.name_bn}-এ সীমা নিয়ন্ত্রিত`
+                `Plan Limit Reached on ${currentPlan.name}`,
+                `${currentPlan.name_bn}-এ প্ল্যান লিমিট পূর্ণ`
               )}
             </p>
           </div>
@@ -112,10 +114,10 @@ export function LimitExceededModal() {
             <div className="bg-amber-600 dark:bg-amber-500 h-2.5 rounded-full w-full" />
           </div>
 
-          <p className="text-xs text-slate-600 dark:text-slate-400 bangla-text">
+          <p className="text-xs font-medium text-slate-800 dark:text-slate-200 bangla-text leading-relaxed">
             {tBilingual(
-              `Your organization has reached the maximum allowed limit for this resource under your current subscription (${currentPlan.name}). To add more, please upgrade to a higher tier plan.`,
-              `আপনার বর্তমান সাবস্ক্রিপশন প্ল্যানে (${currentPlan.name_bn}) এই রিসোর্সের সর্বোচ্চ সীমা পূর্ণ হয়ে গিয়েছে। অতিরিক্ত যুক্ত করতে প্ল্যান আপগ্রেড করুন।`
+              `Plan Limit Reached: Your current plan allows up to ${limitDisplay} ${meta.resourceNameEn} quota (currently at ${currentDisplay}). Please upgrade your subscription to continue.`,
+              `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${limitDisplay} ${meta.resourceNameBn} কোটা অনুমোদিত (বর্তমানে ${currentDisplay})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
             )}
           </p>
         </div>

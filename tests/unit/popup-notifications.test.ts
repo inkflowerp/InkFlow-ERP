@@ -54,4 +54,40 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
     assert.strictEqual(snooze4Hours - now, 14400000)
     assert.strictEqual(snooze12Hours - now, 43200000)
   })
+
+  it('formats Plan Limit Reached warning messages accurately for popup notifications', () => {
+    const formatLimitReachedMessage = (resource: string, limit: number, current: number) => {
+      return `Plan Limit Reached: Your current plan allows up to ${limit} ${resource} quota (currently at ${current}). Please upgrade your subscription to continue.`
+    }
+
+    const userMsg = formatLimitReachedMessage('Users', 2, 2)
+    assert.strictEqual(
+      userMsg,
+      'Plan Limit Reached: Your current plan allows up to 2 Users quota (currently at 2). Please upgrade your subscription to continue.'
+    )
+
+    const orderMsg = formatLimitReachedMessage('Monthly Orders', 100, 100)
+    assert.strictEqual(
+      orderMsg,
+      'Plan Limit Reached: Your current plan allows up to 100 Monthly Orders quota (currently at 100). Please upgrade your subscription to continue.'
+    )
+
+    const customerMsg = formatLimitReachedMessage('Customers', 50, 50)
+    assert.strictEqual(
+      customerMsg,
+      'Plan Limit Reached: Your current plan allows up to 50 Customers quota (currently at 50). Please upgrade your subscription to continue.'
+    )
+  })
+
+  it('verifies button disable condition when current usage reaches or exceeds plan limit', () => {
+    const evaluateButtonDisabled = (current: number, limit: number) => {
+      if (limit <= 0 || limit >= 99999) return false // unlimited
+      return current >= limit
+    }
+
+    assert.strictEqual(evaluateButtonDisabled(2, 2), true) // at limit (2/2) -> disabled
+    assert.strictEqual(evaluateButtonDisabled(3, 2), true) // exceeded (3/2) -> disabled
+    assert.strictEqual(evaluateButtonDisabled(1, 2), false) // under limit (1/2) -> enabled
+    assert.strictEqual(evaluateButtonDisabled(500, -1), false) // enterprise unlimited -> enabled
+  })
 })

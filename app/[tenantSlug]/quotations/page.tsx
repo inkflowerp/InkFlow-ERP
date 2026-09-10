@@ -35,6 +35,7 @@ import { CustomerRecord } from '@/types/crm.types'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { cn } from '@/lib/utils'
 
 export default function QuotationsPage() {
   const { company } = useTenant()
@@ -197,7 +198,20 @@ export default function QuotationsPage() {
               </Button>
             </Link>
 
-            <Button size="sm" onClick={() => setIsNewOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text">
+            <Button
+              size="sm"
+              onClick={() => {
+                const check = checkCanCreate('monthly_orders')
+                if (!check.allowed) {
+                  openLimitExceededModal('monthly_orders')
+                  return
+                }
+                setIsNewOpen(true)
+              }}
+              disabled={!checkCanCreate('monthly_orders').allowed}
+              title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
+              className={cn("bg-blue-600 hover:bg-blue-700 text-xs bangla-text", !checkCanCreate('monthly_orders').allowed && "opacity-60 cursor-not-allowed")}
+            >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('New Quotation', 'নতুন কোটেশন')}
             </Button>
@@ -499,7 +513,11 @@ export default function QuotationsPage() {
             <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              disabled={!checkCanCreate('monthly_orders').allowed}
+              className={cn("bg-blue-600 hover:bg-blue-700", !checkCanCreate('monthly_orders').allowed && "opacity-60 cursor-not-allowed")}
+            >
               Create & Review
             </Button>
           </div>

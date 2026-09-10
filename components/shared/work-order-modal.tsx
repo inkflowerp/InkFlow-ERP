@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -638,8 +639,9 @@ export function WorkOrderModal({
               variant="outline"
               size="sm"
               onClick={() => handleSave(false)}
-              disabled={isSubmitting}
-              className="flex-1 sm:flex-initial h-9 text-xs bangla-text"
+              disabled={isSubmitting || !checkCanCreate('monthly_orders').allowed}
+              title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
+              className={cn("flex-1 sm:flex-initial h-9 text-xs bangla-text", !checkCanCreate('monthly_orders').allowed && "opacity-60 cursor-not-allowed")}
             >
               <Save className="h-3.5 w-3.5 mr-1.5 text-slate-600" />
               {tBilingual('Save Draft', 'ড্রাফট সংরক্ষণ')}
@@ -649,8 +651,9 @@ export function WorkOrderModal({
               type="button"
               size="sm"
               onClick={() => handleSave(true)}
-              disabled={isSubmitting}
-              className="flex-1 sm:flex-initial h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium bangla-text"
+              disabled={isSubmitting || !checkCanCreate('monthly_orders').allowed}
+              title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
+              className={cn("flex-1 sm:flex-initial h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium bangla-text", !checkCanCreate('monthly_orders').allowed && "opacity-60 cursor-not-allowed")}
             >
               <Send className="h-3.5 w-3.5 mr-1.5" />
               {tBilingual('Save & Send Invoice Request', 'সংরক্ষণ ও ইনভয়েস রিকোয়েস্ট পাঠান')}

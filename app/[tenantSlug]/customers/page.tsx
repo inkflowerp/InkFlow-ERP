@@ -36,6 +36,8 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { usePermissions } from '@/hooks/use-permissions'
 import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
 import { Crown } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 
 export default function CustomersPage() {
   const { company } = useTenant()
@@ -158,7 +160,13 @@ export default function CustomersPage() {
             )}
 
             {can('create', 'customers') && (
-              <Button size="sm" onClick={handleOpenAddCustomer} className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text">
+              <Button
+                size="sm"
+                onClick={handleOpenAddCustomer}
+                disabled={!customerCheck.allowed}
+                title={!customerCheck.allowed ? customerCheck.reason : undefined}
+                className={cn("bg-blue-600 hover:bg-blue-700 text-xs bangla-text", !customerCheck.allowed && "opacity-60 cursor-not-allowed")}
+              >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('New Customer', 'নতুন গ্রাহক')}
               </Button>
@@ -170,15 +178,23 @@ export default function CustomersPage() {
       {/* Customer Directory Quota Alert */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-cyan-600 text-white font-bold">
+          <div className={cn(
+            'p-1.5 rounded-lg text-white font-bold shrink-0',
+            customerCheck.exceeded ? 'bg-red-500' : customerCheck.warning ? 'bg-amber-500' : 'bg-cyan-600'
+          )}>
             <Users className="h-4 w-4" />
           </div>
           <div>
             <div className="font-bold text-slate-900 dark:text-white bangla-text">
-              {tBilingual(
-                `Customer Quota: ${customers.length} of ${currentPlan.max_customers.toLocaleString()} contacts registered`,
-                `কাস্টমার কোটা: ${currentPlan.max_customers.toLocaleString()} জনের মধ্যে ${customers.length} জন নিবন্ধিত`
-              )}
+              {customerCheck.exceeded
+                ? tBilingual(
+                    `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_customers.toLocaleString()} Customers quota (currently at ${customers.length}). Please upgrade your subscription to continue.`,
+                    `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.max_customers)} কাস্টমার কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(customers.length)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
+                  )
+                : tBilingual(
+                    `Customer Quota: ${customers.length} of ${currentPlan.max_customers.toLocaleString()} contacts registered`,
+                    `কাস্টমার কোটা: ${toBengaliDigits(currentPlan.max_customers)} জনের মধ্যে ${toBengaliDigits(customers.length)} জন নিবন্ধিত`
+                  )}
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
               {customerCheck.exceeded
