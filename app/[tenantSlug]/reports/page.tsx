@@ -41,6 +41,7 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { SalesOrderRecord } from '@/types/order.types'
 import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import { MaterialRecord } from '@/types/inventory.types'
+import { FeatureGate } from '@/components/subscriptions/feature-gate'
 
 function EmptyReportState() {
   const { tBilingual } = useI18n()
@@ -178,7 +179,8 @@ export default function ReportingAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl print:max-w-none print:m-0 print:p-0">
+    <FeatureGate feature="reports">
+      <div className="space-y-6 max-w-7xl print:max-w-none print:m-0 print:p-0">
       {/* Non-Print Header & Filter Bar */}
       <div className="print:hidden space-y-4">
         <PageHeader
@@ -649,6 +651,7 @@ export default function ReportingAnalyticsPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

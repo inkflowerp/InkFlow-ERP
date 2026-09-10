@@ -1,69 +1,40 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
-import { Lock, Sparkles, ArrowRight, ShieldAlert } from 'lucide-react'
-import { useTenant } from '@/hooks/use-tenant'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { useSubscription } from '@/hooks/use-subscription'
-import { FeatureCode, PlanCode } from '@/types/subscription.types'
-import {
-  checkFeatureAccess,
-  DEFAULT_PLANS,
-} from '@/lib/subscription/subscription-constants'
-
+import { FeatureCode } from '@/types/subscription.types'
 import { useFeatureGate } from '@/hooks/use-feature-gate'
+import { FeatureGate as SubscriptionFeatureGate } from '@/components/subscriptions/feature-gate'
+import { UpgradePrompt } from '@/components/subscriptions/upgrade-prompt'
 
-export { useFeatureGate }
+export { useFeatureGate, UpgradePrompt }
 
 interface FeatureGateProps {
   feature: FeatureCode
   children: React.ReactNode
   fallback?: React.ReactNode
+  hideIfForbidden?: boolean
+  compact?: boolean
+  className?: string
 }
 
-export function FeatureGate({ feature, children, fallback }: FeatureGateProps) {
-  const { company } = useTenant()
-  const slug = company?.slug || 'app'
-  const { hasAccess, requiredPlan } = useFeatureGate(feature)
-
-  if (hasAccess) {
-    return <>{children}</>
-  }
-
-  if (fallback) {
-    return <>{fallback}</>
-  }
-
+export function FeatureGate({
+  feature,
+  children,
+  fallback,
+  hideIfForbidden = false,
+  compact = false,
+  className = '',
+}: FeatureGateProps) {
   return (
-    <div className="p-8 my-4 rounded-2xl border-2 border-dashed border-amber-300 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/20 text-center space-y-4 max-w-xl mx-auto">
-      <div className="mx-auto w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600">
-        <Lock className="h-6 w-6" />
-      </div>
-
-      <div className="space-y-1">
-        <div className="flex items-center justify-center gap-2">
-          <h3 className="font-bold text-base text-slate-900 dark:text-white">
-            Feature Restricted
-          </h3>
-          <Badge className="bg-amber-200 text-amber-900 uppercase text-[10px] font-bold">
-            Requires {requiredPlan.name}
-          </Badge>
-        </div>
-        <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-          Your current plan does not include this capability. Upgrade your company subscription to unlock unlimited access.
-        </p>
-      </div>
-
-      <div className="pt-1">
-        <Link href={`/${slug}/settings/subscription`}>
-          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs">
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-            Upgrade to {requiredPlan.code.toUpperCase()} <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
-          </Button>
-        </Link>
-      </div>
-    </div>
+    <SubscriptionFeatureGate
+      feature={feature}
+      fallback={fallback}
+      hideIfForbidden={hideIfForbidden}
+      compact={compact}
+      className={className}
+    >
+      {children}
+    </SubscriptionFeatureGate>
   )
 }
+

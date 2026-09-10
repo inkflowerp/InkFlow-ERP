@@ -31,6 +31,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { FeatureGate } from '@/components/shared/feature-gate'
 import {
   DeliveryChallanRecord,
   InstallationRecord,
@@ -286,8 +287,9 @@ export default function DeliveryLogisticsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      {/* Header */}
+    <FeatureGate feature="delivery_challan">
+      <div className="space-y-6 max-w-7xl">
+        {/* Header */}
       <PageHeader
         titleEn="Delivery, Logistics & On-Site Installation"
         titleBn="ডেলিভারি চালান ও অন-সাইট ইনস্টলেশন"
@@ -973,6 +975,7 @@ export default function DeliveryLogisticsPage() {
           </div>
         </form>
       </ModalDialog>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

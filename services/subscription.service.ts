@@ -1675,10 +1675,13 @@ export function checkFeatureAccess(
   return plan.features.includes(feature)
 }
 
-export function getMinimumPlanForFeature(feature: FeatureCode): SubscriptionPlanRecord {
+export function getMinimumPlanForFeature(
+  feature: FeatureCode,
+  plans: SubscriptionPlanRecord[] = DEFAULT_PLANS
+): SubscriptionPlanRecord {
   const meta = FEATURE_METADATA[feature]
   const targetCode = meta ? meta.minPlan : 'enterprise'
-  return DEFAULT_PLANS.find((p) => p.code === targetCode) || DEFAULT_PLANS[1]
+  return plans.find((p) => p.code === targetCode) || plans.find((p) => p.code === 'business') || DEFAULT_PLANS[1]
 }
 
 export function getNextTierPlan(

@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { FeatureGate } from '@/components/shared/feature-gate'
 import { StockLedgerRecord, InventoryTransactionType } from '@/types/inventory.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
@@ -84,8 +85,9 @@ export default function StockLedgerPage({ params }: StockLedgerPageProps) {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      {/* Header & Back Link */}
+    <FeatureGate feature="inventory_rolls">
+      <div className="space-y-6 max-w-6xl">
+        {/* Header & Back Link */}
       <div>
         <Link
           href={`/${slug}/inventory`}
@@ -185,6 +187,7 @@ export default function StockLedgerPage({ params }: StockLedgerPageProps) {
           </table>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

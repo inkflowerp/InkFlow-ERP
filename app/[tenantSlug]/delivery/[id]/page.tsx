@@ -23,6 +23,7 @@ import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { FeatureGate } from '@/components/shared/feature-gate'
 import { DeliveryChallanRecord, DeliveryStatus } from '@/types/logistics.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
@@ -43,31 +44,34 @@ export default function DeliveryChallanDetailPage({ params }: DeliveryDetailPage
 
   if (!challan) {
     return (
-      <div className="space-y-6 max-w-4xl">
-        <Link
-          href={`/${slug}/delivery`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Delivery Terminal
-        </Link>
-        <Card className="p-12 text-center border-dashed">
-          <Truck className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Delivery Challan Not Found</h2>
-          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-            The delivery challan record you are looking for does not exist in your organization.
-          </p>
-          <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/delivery`}>View All Challans</Link>
-          </Button>
-        </Card>
-      </div>
+      <FeatureGate feature="delivery_challan">
+        <div className="space-y-6 max-w-4xl">
+          <Link
+            href={`/${slug}/delivery`}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Delivery Terminal
+          </Link>
+          <Card className="p-12 text-center border-dashed">
+            <Truck className="h-10 w-10 text-slate-400 mx-auto mb-3" />
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Delivery Challan Not Found</h2>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              The delivery challan record you are looking for does not exist in your organization.
+            </p>
+            <Button asChild className="mt-4" size="sm">
+              <Link href={`/${slug}/delivery`}>View All Challans</Link>
+            </Button>
+          </Card>
+        </div>
+      </FeatureGate>
     )
   }
 
   return (
-    <div className="space-y-6 max-w-4xl print:max-w-none print:m-0 print:p-0">
-      {/* Non-Print Action Bar */}
+    <FeatureGate feature="delivery_challan">
+      <div className="space-y-6 max-w-4xl print:max-w-none print:m-0 print:p-0">
+        {/* Non-Print Action Bar */}
       <div className="print:hidden flex items-center justify-between">
         <Link
           href={`/${slug}/delivery`}
@@ -189,6 +193,7 @@ export default function DeliveryChallanDetailPage({ params }: DeliveryDetailPage
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

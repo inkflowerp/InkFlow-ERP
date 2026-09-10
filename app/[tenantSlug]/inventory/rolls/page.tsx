@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { FeatureGate } from '@/components/shared/feature-gate'
 import { InventoryRollRecord, StockLedgerRecord, MaterialRecord } from '@/types/inventory.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
@@ -86,8 +87,9 @@ export default function MountedRollsPage({ params }: MountedRollsPageProps) {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      {/* Header & Back Link */}
+    <FeatureGate feature="inventory_rolls">
+      <div className="space-y-6 max-w-6xl">
+        {/* Header & Back Link */}
       <div>
         <Link
           href={`/${slug}/inventory`}
@@ -243,6 +245,7 @@ export default function MountedRollsPage({ params }: MountedRollsPageProps) {
           </form>
         )}
       </ModalDialog>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

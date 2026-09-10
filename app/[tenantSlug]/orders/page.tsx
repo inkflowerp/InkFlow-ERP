@@ -100,6 +100,10 @@ export default function OrdersPage() {
 
   const handleCreateOrder = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!orderCheck.allowed) {
+      openLimitExceededModal('monthly_orders')
+      return
+    }
     const customer = customerList.find((c) => c.id === selectedCustomerId)
     if (!customer) {
       showNotification('Please select or add a customer first.')

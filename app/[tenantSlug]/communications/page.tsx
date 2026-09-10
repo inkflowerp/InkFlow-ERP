@@ -51,6 +51,7 @@ import { CustomerRecord } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { formatBDT } from '@/lib/formatters'
+import { FeatureGate } from '@/components/subscriptions/feature-gate'
 
 export default function CommunicationsHubPage() {
   const { company } = useTenant()
@@ -161,7 +162,8 @@ export default function CommunicationsHubPage() {
   const unreadCount = (notifications || []).filter((n) => !n.is_read).length
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <FeatureGate feature="whatsapp_notifications">
+      <div className="space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
         titleEn="Communication, In-App Feeds & Gateways"
@@ -694,6 +696,7 @@ export default function CommunicationsHubPage() {
           </div>
         </form>
       </ModalDialog>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

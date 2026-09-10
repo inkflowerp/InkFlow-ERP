@@ -432,8 +432,15 @@ export function getTenantResourceUsage(
   const materials = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
   const branches = PrintERPDataStore.get<any[]>(STORAGE_KEYS.BRANCHES) || []
 
-  const isCoMatch = (item: any) =>
-    !item.company_id || item.company_id === companyId || item.company_id === 'default' || item.company_id === 'co-main'
+  const isCoMatch = (item: any) => {
+    if (!item) return false
+    if (!item.company_id) return true
+    if (item.company_id === companyId) return true
+    if (companyId === 'default' || companyId === 'co-main') {
+      return item.company_id === 'default' || item.company_id === 'co-main' || item.company_id === 'c-01'
+    }
+    return false
+  }
 
   const matchingUsers = users.filter(isCoMatch)
   const usersCount = Math.max(1, matchingUsers.length)
@@ -494,10 +501,13 @@ export function checkFeatureAccess(
   return plan.features.includes(feature)
 }
 
-export function getMinimumPlanForFeature(feature: FeatureCode): SubscriptionPlanRecord {
+export function getMinimumPlanForFeature(
+  feature: FeatureCode,
+  plans: SubscriptionPlanRecord[] = DEFAULT_PLANS
+): SubscriptionPlanRecord {
   const meta = FEATURE_METADATA[feature]
   const targetCode = meta ? meta.minPlan : 'enterprise'
-  return DEFAULT_PLANS.find((p) => p.code === targetCode) || DEFAULT_PLANS[1]
+  return plans.find((p) => p.code === targetCode) || plans.find((p) => p.code === 'business') || DEFAULT_PLANS[1]
 }
 
 export function getNextTierPlan(

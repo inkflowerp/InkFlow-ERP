@@ -18,6 +18,7 @@ import {
   FileCheck,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { FeatureGate } from '@/components/shared/feature-gate'
 import { QuotationRecord, QuotationStatus } from '@/types/quotation.types'
 import { DEFAULT_QUOTATION_TERMS } from '@/services/quotation.service'
 import { CustomerRecord } from '@/types/crm.types'
@@ -36,6 +38,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function QuotationsPage() {
   const { company } = useTenant()
+  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
@@ -74,6 +77,11 @@ export default function QuotationsPage() {
 
   const handleCreateQuote = (e: React.FormEvent) => {
     e.preventDefault()
+    const orderCheck = checkCanCreate('monthly_orders')
+    if (!orderCheck.allowed) {
+      openLimitExceededModal('monthly_orders')
+      return
+    }
     const customer = customerList.find((c) => c.id === selectedCustomerId)
     if (!customer) {
       showNotification('Please select or add a customer first.')
@@ -125,6 +133,7 @@ export default function QuotationsPage() {
     }
 
     PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, newQuote)
+    refreshUsage()
     setIsNewOpen(false)
     showNotification(`Quotation ${quoteNum} created successfully.`)
   }
@@ -170,8 +179,9 @@ export default function QuotationsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      {/* Header */}
+    <FeatureGate feature="quotation_pdf">
+      <div className="space-y-6 max-w-7xl">
+        {/* Header */}
       <PageHeader
         titleEn="Quotations & Estimates"
         titleBn="কোটেশন ও প্রাক্কলন"
@@ -503,6 +513,7 @@ export default function QuotationsPage() {
         onCustomerCreated={handleCustomerCreated}
         companyId={company?.id || 'c-01'}
       />
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

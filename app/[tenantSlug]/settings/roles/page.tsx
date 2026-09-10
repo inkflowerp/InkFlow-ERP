@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { PageHeader } from '@/components/shared/page-header'
+import { FeatureGate } from '@/components/shared/feature-gate'
 import { cn } from '@/lib/utils'
 import { updateUserAccessAndPermissionsAction } from '@/actions/company-users.actions'
 import { CompanyUserWithProfile } from '@/types/tenant.types'
@@ -149,8 +150,9 @@ export default function RolesMatrixPage() {
   ]
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      {/* Header */}
+    <FeatureGate feature="advanced_permissions">
+      <div className="space-y-6 max-w-7xl">
+        {/* Header */}
       <PageHeader
         titleEn="Roles & Permission Matrix"
         titleBn="অনুমতি ও ভূমিকা ম্যাট্রিক্স"
@@ -496,6 +498,7 @@ export default function RolesMatrixPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

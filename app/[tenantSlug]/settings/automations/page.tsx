@@ -43,6 +43,7 @@ import {
   deleteWorkflowRuleAction,
   testTriggerWorkflowRuleAction,
 } from '@/actions/workflow.actions'
+import { FeatureGate } from '@/components/shared/feature-gate'
 
 export default function WorkflowAutomationsPage() {
   const params = useParams()
@@ -143,7 +144,8 @@ export default function WorkflowAutomationsPage() {
   })
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
+    <FeatureGate feature="custom_workflows">
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
@@ -637,6 +639,7 @@ export default function WorkflowAutomationsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

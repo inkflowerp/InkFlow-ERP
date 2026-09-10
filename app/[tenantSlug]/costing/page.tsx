@@ -39,6 +39,7 @@ import { JobCostingRecord } from '@/types/costing.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { FeatureGate } from '@/components/subscriptions/feature-gate'
 
 export default function JobCostingPage() {
   const { company } = useTenant()
@@ -144,7 +145,8 @@ export default function JobCostingPage() {
     : null
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <FeatureGate feature="job_costing">
+      <div className="space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
         titleEn="Job Costing & Profitability Engine"
@@ -601,6 +603,7 @@ export default function JobCostingPage() {
           </form>
         )}
       </ModalDialog>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

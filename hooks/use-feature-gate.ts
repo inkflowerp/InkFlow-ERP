@@ -35,7 +35,7 @@ export function useFeatureGate(feature: FeatureCode): FeatureGateResult {
       minPlan: 'business',
       category: 'advanced',
     }
-    const minPlan = getMinimumPlanForFeature(feature)
+    const minPlan = getMinimumPlanForFeature(feature, allPlans)
 
     return {
       hasAccess,

@@ -27,6 +27,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { FeatureGate } from '@/components/shared/feature-gate'
 import { JobCostingRecord } from '@/types/costing.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -49,25 +50,27 @@ export default function JobCostingDetailPage({ params }: CostingDetailPageProps)
 
   if (!costing) {
     return (
-      <div className="space-y-6 max-w-5xl">
-        <Link
-          href={`/${slug}/costing`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Costing Ledger
-        </Link>
-        <Card className="p-12 text-center border-dashed">
-          <Calculator className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Job Costing Sheet Not Found</h2>
-          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-            The job costing calculation sheet you are looking for does not exist in your organization.
-          </p>
-          <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/costing`}>View All Costings</Link>
-          </Button>
-        </Card>
-      </div>
+      <FeatureGate feature="job_costing">
+        <div className="space-y-6 max-w-5xl">
+          <Link
+            href={`/${slug}/costing`}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Costing Ledger
+          </Link>
+          <Card className="p-12 text-center border-dashed">
+            <Calculator className="h-10 w-10 text-slate-400 mx-auto mb-3" />
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Job Costing Sheet Not Found</h2>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              The job costing calculation sheet you are looking for does not exist in your organization.
+            </p>
+            <Button asChild className="mt-4" size="sm">
+              <Link href={`/${slug}/costing`}>View All Costings</Link>
+            </Button>
+          </Card>
+        </div>
+      </FeatureGate>
     )
   }
 
@@ -84,8 +87,9 @@ export default function JobCostingDetailPage({ params }: CostingDetailPageProps)
   ]
 
   return (
-    <div className="space-y-6 max-w-5xl print:max-w-none print:m-0 print:p-0">
-      {/* Non-Print Action Bar */}
+    <FeatureGate feature="job_costing">
+      <div className="space-y-6 max-w-5xl print:max-w-none print:m-0 print:p-0">
+        {/* Non-Print Action Bar */}
       <div className="print:hidden flex items-center justify-between">
         <Link
           href={`/${slug}/costing`}
@@ -296,6 +300,7 @@ export default function JobCostingDetailPage({ params }: CostingDetailPageProps)
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

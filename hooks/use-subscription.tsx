@@ -235,9 +235,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const hasFeature = useCallback(
     (feature: FeatureCode) => {
       if (isTrialExpired || isSuspended) return false
+      if (currentPlan && Array.isArray(currentPlan.features)) {
+        return currentPlan.features.includes(feature)
+      }
       return checkFeatureAccess(subscription.plan_code, feature, plans)
     },
-    [subscription.plan_code, plans, isTrialExpired, isSuspended]
+    [currentPlan, subscription.plan_code, plans, isTrialExpired, isSuspended]
   )
 
   const getLimitStatus = useCallback(
@@ -464,7 +467,7 @@ export function useSubscription() {
       hasFeature: (feature: FeatureCode) => checkFeatureAccess('trial', feature, DEFAULT_PLANS),
       getLimitStatus: (limitType: ConfigurableLimitType) =>
         checkResourceLimit(limitType, 1, defaultPlan),
-      checkCanCreate: () => ({
+      checkCanCreate: (_limitType: ConfigurableLimitType): LimitCheckResult => ({
         allowed: true,
         current: 1,
         limit: 5,

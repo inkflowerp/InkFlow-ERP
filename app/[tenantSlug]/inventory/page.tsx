@@ -200,6 +200,10 @@ export default function InventoryDashboardPage() {
   // Handle Create Material
   const handleCreateMaterial = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!productCheck.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
     const rollArea = newIsRoll ? newWidth * newLength : undefined
 
     const newMat: MaterialRecord = {

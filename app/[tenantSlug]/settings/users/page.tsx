@@ -146,6 +146,12 @@ export default function UsersManagementPage() {
     e.preventDefault()
     if (!company || !inviteEmail) return
 
+    const check = checkCanCreate('max_users')
+    if (!check.allowed) {
+      openLimitExceededModal('max_users')
+      return
+    }
+
     const res = await inviteUserAction(
       company.id,
       company.slug,
@@ -169,6 +175,12 @@ export default function UsersManagementPage() {
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!company || !addEmail || !addFullName) return
+
+    const check = checkCanCreate('max_users')
+    if (!check.allowed) {
+      openLimitExceededModal('max_users')
+      return
+    }
 
     const res = await createCompanyUserAction({
       companyId: company.id,

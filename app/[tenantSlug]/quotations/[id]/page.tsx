@@ -35,6 +35,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { FeatureGate } from '@/components/shared/feature-gate'
 import {
   DEFAULT_QUOTATION_TERMS,
   DEFAULT_QUOTATION_TERMS_BN,
@@ -82,25 +83,27 @@ export default function QuotationDetailPage({ params }: QuotationDetailPageProps
 
   if (!quote) {
     return (
-      <div className="space-y-6 max-w-6xl">
-        <Link
-          href={`/${slug}/quotations`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Quotations
-        </Link>
-        <Card className="p-12 text-center border-dashed">
-          <FileText className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Quotation Not Found</h2>
-          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-            The quotation record you are looking for does not exist in your organization.
-          </p>
-          <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/quotations`}>View All Quotations</Link>
-          </Button>
-        </Card>
-      </div>
+      <FeatureGate feature="quotation_pdf">
+        <div className="space-y-6 max-w-6xl">
+          <Link
+            href={`/${slug}/quotations`}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Quotations Directory
+          </Link>
+          <Card className="p-12 text-center border-dashed">
+            <FileSpreadsheet className="h-10 w-10 text-slate-400 mx-auto mb-3" />
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Quotation Not Found</h2>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              The quotation you are trying to view does not exist or has been removed.
+            </p>
+            <Button asChild className="mt-4" size="sm">
+              <Link href={`/${slug}/quotations`}>Return to Directory</Link>
+            </Button>
+          </Card>
+        </div>
+      </FeatureGate>
     )
   }
 
@@ -190,8 +193,9 @@ export default function QuotationDetailPage({ params }: QuotationDetailPageProps
   const num = (v: number | string) => (languageMode === 'bn' ? toBengaliNumerals(v) : v)
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      {/* Non-print Top Controls Bar */}
+    <FeatureGate feature="quotation_pdf">
+      <div className="space-y-6 max-w-6xl">
+        {/* Non-print Top Controls Bar */}
       <div className="print:hidden space-y-4">
         <Link
           href={`/${slug}/quotations`}
@@ -639,6 +643,7 @@ export default function QuotationDetailPage({ params }: QuotationDetailPageProps
           </div>
         </form>
       </ModalDialog>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }

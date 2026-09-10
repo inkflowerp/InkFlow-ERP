@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { CustomerRecord } from '@/types/crm.types'
@@ -40,13 +41,13 @@ const COMMON_MATERIALS = [
   'Star Flex Banner (Gloss)',
   'Star Flex Banner (Matt)',
   'Backlit Banner (Signboard)',
-  'Gloss Vinyl Sticker',
-  'Matt Vinyl Sticker',
-  'One Way Vision (Glass Film)',
-  'Frosted Glass Sticker',
-  'Reflective Sheeting (Honey Comb)',
-  'Acrylic Sheet 3mm (Cast)',
-  'Acrylic Sheet 5mm (Cast)',
+  'Vinyl Sticker (Gloss China)',
+  'Vinyl Sticker (Matt China)',
+  'Reflective Honeycomb Vinyl',
+  'Frosted / Sandblast Film',
+  'Clear Transparent Sticker',
+  'One Way Vision (Perforated)',
+  'Foam Board 3mm (Sun Board)',
   'Foam Board 5mm (Sun Board)',
   'Aluminium Composite Panel (ACP)',
   'Cotton Fabric Direct-to-Film (DTF)',
@@ -71,6 +72,7 @@ export function WorkOrderModal({
 }: WorkOrderModalProps) {
   const { tBilingual } = useI18n()
   const { currentUser } = useTenant()
+  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
   const { data: customers = [] } = useDataStore<CustomerRecord[]>(
     STORAGE_KEYS.CUSTOMERS,
     []
@@ -184,6 +186,13 @@ export function WorkOrderModal({
       totalSft = ((numWidth * numHeight) / 92903) * numQty
     }
 
+    const orderCheck = checkCanCreate('monthly_orders')
+    if (!orderCheck.allowed) {
+      setErrorMessage(orderCheck.reason || 'Monthly order quota reached for your plan.')
+      openLimitExceededModal('monthly_orders')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -234,6 +243,7 @@ export function WorkOrderModal({
 
       // Persist to store
       PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, newOrder)
+      refreshUsage()
 
       // 3. Create Pre-Press Design Job Ticket
       const newDesignJob: DesignJobRecord = {

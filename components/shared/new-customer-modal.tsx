@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useSubscription } from '@/hooks/use-subscription'
 import { GeoService } from '@/services/geo.service'
 import { createCustomerAction, checkCustomerDuplicateAction } from '@/actions/customer.actions'
 import {
@@ -63,6 +64,7 @@ export function NewCustomerModal({
   const { t, tBilingual, locale } = useI18n()
   const { company } = useTenant()
   const { activeRole, hasPermission } = usePermissions()
+  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
   const nameInputRef = useRef<HTMLInputElement>(null)
 
   // 1. Customer Type (Business default vs Individual)
@@ -244,6 +246,13 @@ export function NewCustomerModal({
       return
     }
 
+    const customerCheck = checkCanCreate('max_customers')
+    if (!customerCheck.allowed) {
+      setErrorMessage(customerCheck.reason || 'Customer quota limit reached for your plan.')
+      openLimitExceededModal('max_customers')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -299,6 +308,7 @@ export function NewCustomerModal({
       const createdCustomer = res.data
       if (createdCustomer) {
         PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMERS, createdCustomer)
+        refreshUsage()
       }
 
       setSuccessMessage('Customer created successfully!')
