@@ -26,12 +26,10 @@ import {
   ShieldAlert,
   Calendar,
   AlertCircle,
-  ChevronRight,
   Layers,
   ArrowUpDown,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import {
@@ -171,7 +169,6 @@ export default function PlatformSubscriptionsPage() {
     setIsSubmitting(true)
 
     try {
-      // Filter clean overrides
       const cleanOverrides: Record<string, number> = {}
       if (showOverrideSection) {
         if (configCustomOverrides.max_users !== undefined && configCustomOverrides.max_users > 0) {
@@ -484,19 +481,18 @@ export default function PlatformSubscriptionsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
+          <button
+            type="button"
             onClick={handleExportCSV}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9"
+            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer"
           >
-            <Download className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
-            Export CSV
-          </Button>
+            <Download className="h-3.5 w-3.5 text-indigo-400" />
+            <span>Export CSV</span>
+          </button>
 
           <Link
             href="/platform/plans"
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9"
+            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors"
           >
             <Layers className="h-3.5 w-3.5 text-purple-400" />
             <span>Plans Catalog</span>
@@ -504,22 +500,21 @@ export default function PlatformSubscriptionsPage() {
 
           <Link
             href="/platform/billing"
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9"
+            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors"
           >
             <DollarSign className="h-3.5 w-3.5 text-emerald-400" />
             <span>Reconciliation</span>
           </Link>
 
-          <Button
-            size="sm"
-            variant="outline"
+          <button
+            type="button"
             onClick={loadData}
             disabled={loading}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9"
+            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+            <span>Refresh</span>
+          </button>
         </div>
       </div>
 
@@ -528,8 +523,8 @@ export default function PlatformSubscriptionsPage() {
         <div
           className={`p-3.5 rounded-xl text-xs font-bold flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-200 border ${
             notification.type === 'success'
-              ? 'bg-emerald-950/80 border-emerald-700 text-emerald-200'
-              : 'bg-red-950/80 border-red-700 text-red-200'
+              ? 'bg-emerald-950/90 border-emerald-700 text-emerald-200 shadow-lg'
+              : 'bg-red-950/90 border-red-700 text-red-200 shadow-lg'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -542,7 +537,7 @@ export default function PlatformSubscriptionsPage() {
           </div>
           <button
             onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-white"
+            className="text-slate-400 hover:text-white cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -669,7 +664,7 @@ export default function PlatformSubscriptionsPage() {
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs"
+                className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -725,15 +720,14 @@ export default function PlatformSubscriptionsPage() {
               <option value="name">Company Name (A-Z)</option>
               <option value="created">Registration Date (Newest)</option>
             </select>
-            <Button
-              size="icon"
-              variant="ghost"
+            <button
+              type="button"
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="h-7 w-7 text-slate-400 hover:text-white"
+              className="h-7 w-7 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
               title={`Toggle sort order (${sortOrder === 'asc' ? 'Ascending' : 'Descending'})`}
             >
               <ArrowUpDown className="h-3.5 w-3.5" />
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -860,8 +854,8 @@ export default function PlatformSubscriptionsPage() {
                             <span
                               className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
                                 s.days_remaining <= 3
-                                  ? 'bg-red-950 text-red-300 font-bold'
-                                  : 'bg-slate-800 text-slate-300'
+                                  ? 'bg-red-950 text-red-300 font-bold border border-red-800'
+                                  : 'bg-slate-800 text-slate-300 border border-slate-700'
                               }`}
                             >
                               {s.days_remaining >= 0
@@ -872,8 +866,8 @@ export default function PlatformSubscriptionsPage() {
                             <span
                               className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
                                 s.days_remaining <= 7
-                                  ? 'bg-amber-950 text-amber-300 font-bold'
-                                  : 'bg-slate-800 text-slate-400'
+                                  ? 'bg-amber-950 text-amber-300 font-bold border border-amber-800'
+                                  : 'bg-slate-800 text-slate-400 border border-slate-700'
                               }`}
                             >
                               Renews in {s.days_remaining}d
@@ -938,68 +932,63 @@ export default function PlatformSubscriptionsPage() {
                         )}
                       </td>
 
-                      {/* Actions */}
+                      {/* Governance Action Buttons */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {/* Configure Button */}
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          <button
+                            type="button"
                             onClick={() => handleOpenConfigure(s)}
-                            className="h-7 px-2 text-xs border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-700 shadow-sm transition-colors cursor-pointer"
                             title="Configure plan, interval, status & custom limits"
                           >
-                            <Sliders className="h-3 w-3 mr-1 text-indigo-400" />
-                            Configure
-                          </Button>
+                            <Sliders className="h-3.5 w-3.5 text-indigo-400" />
+                            <span>Configure</span>
+                          </button>
 
                           {/* Quick Extend Trial / Period */}
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          <button
+                            type="button"
                             onClick={() => handleOpenExtendTrial(s)}
-                            className="h-7 px-2 text-xs border-slate-700 text-cyan-300 hover:bg-slate-800 hover:text-cyan-200"
+                            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-cyan-950/80 hover:bg-cyan-900 text-cyan-200 hover:text-cyan-100 border border-cyan-700/80 shadow-sm transition-colors cursor-pointer"
                             title="Extend trial or period by N days"
                           >
-                            <Clock className="h-3 w-3 mr-1 text-cyan-400" />
-                            Extend
-                          </Button>
+                            <Clock className="h-3.5 w-3.5 text-cyan-400" />
+                            <span>Extend</span>
+                          </button>
 
                           {/* Record Payment Button */}
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          <button
+                            type="button"
                             onClick={() => handleOpenRecordPayment(s)}
-                            className="h-7 px-2 text-xs border-slate-700 text-emerald-300 hover:bg-slate-800 hover:text-emerald-200"
+                            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-200 hover:text-emerald-100 border border-emerald-700/80 shadow-sm transition-colors cursor-pointer"
                             title="Record manual offline payment settlement"
                           >
-                            <DollarSign className="h-3 w-3 mr-1 text-emerald-400" />
-                            Pay
-                          </Button>
+                            <DollarSign className="h-3.5 w-3.5 text-emerald-400" />
+                            <span>Pay</span>
+                          </button>
 
                           {/* Suspend / Reactivate Toggle */}
                           {s.status === 'suspended' ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
+                            <button
+                              type="button"
                               onClick={() => setStatusToggleSub({ sub: s, targetStatus: 'active' })}
-                              className="h-7 px-2 text-xs border-emerald-900/60 text-emerald-400 hover:bg-emerald-950/50"
+                              className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-200 hover:text-emerald-100 border border-emerald-700/80 shadow-sm transition-colors cursor-pointer"
                               title="Reactivate suspended tenant"
                             >
-                              <Check className="h-3 w-3 mr-1" />
-                              Reactivate
-                            </Button>
+                              <Check className="h-3.5 w-3.5 text-emerald-400" />
+                              <span>Reactivate</span>
+                            </button>
                           ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
+                            <button
+                              type="button"
                               onClick={() => setStatusToggleSub({ sub: s, targetStatus: 'suspended' })}
-                              className="h-7 px-2 text-xs border-red-900/60 text-red-400 hover:bg-red-950/50"
+                              className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-red-950/80 hover:bg-red-900 text-red-200 hover:text-red-100 border border-red-700/80 shadow-sm transition-colors cursor-pointer"
                               title="Suspend tenant access"
                             >
-                              <Ban className="h-3 w-3 mr-1" />
-                              Suspend
-                            </Button>
+                              <Ban className="h-3.5 w-3.5 text-red-400" />
+                              <span>Suspend</span>
+                            </button>
                           )}
                         </div>
                       </td>
@@ -1025,7 +1014,7 @@ export default function PlatformSubscriptionsPage() {
               </div>
               <button
                 onClick={() => setConfiguringSub(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1131,21 +1120,19 @@ export default function PlatformSubscriptionsPage() {
               </div>
 
               {/* Custom Resource Limits Overrides Toggle */}
-              <div className="border border-slate-800 rounded-xl p-3 bg-slate-950/50 space-y-3">
+              <div className="border border-slate-800 rounded-xl p-3.5 bg-slate-950/60 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-amber-400" />
                     <span className="font-bold text-white text-xs">Custom Quota Limits Overrides</span>
                   </div>
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
                     onClick={() => setShowOverrideSection(!showOverrideSection)}
-                    className="h-6 text-[11px] text-indigo-400 hover:text-white"
+                    className="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 hover:text-white border border-indigo-700/80 shadow-sm transition-colors cursor-pointer"
                   >
                     {showOverrideSection ? 'Disable / Reset Overrides' : 'Configure Custom Limits'}
-                  </Button>
+                  </button>
                 </div>
 
                 {showOverrideSection && (
@@ -1257,23 +1244,20 @@ export default function PlatformSubscriptionsPage() {
 
               {/* Modal Actions */}
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => setConfiguringSub(null)}
-                  className="border-slate-700 text-xs"
+                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
-                  size="sm"
                   disabled={isSubmitting}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving Settings...' : 'Apply Subscription Settings'}
-                </Button>
+                </button>
               </div>
             </form>
           </div>
@@ -1293,7 +1277,7 @@ export default function PlatformSubscriptionsPage() {
               </div>
               <button
                 onClick={() => setExtendingTrialSub(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1310,10 +1294,10 @@ export default function PlatformSubscriptionsPage() {
                     key={days}
                     type="button"
                     onClick={() => setExtendDays(days)}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                       extendDays === days
                         ? 'bg-cyan-600 border-cyan-500 text-white shadow-xs'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800'
                     }`}
                   >
                     +{days} Days
@@ -1344,23 +1328,20 @@ export default function PlatformSubscriptionsPage() {
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => setExtendingTrialSub(null)}
-                  className="border-slate-700 text-xs"
+                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
-                  size="sm"
                   disabled={isSubmitting}
-                  className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs"
+                  className="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? 'Extending...' : `Extend by ${extendDays} Days`}
-                </Button>
+                </button>
               </div>
             </form>
           </div>
@@ -1380,7 +1361,7 @@ export default function PlatformSubscriptionsPage() {
               </div>
               <button
                 onClick={() => setRecordingPaymentSub(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1467,23 +1448,20 @@ export default function PlatformSubscriptionsPage() {
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => setRecordingPaymentSub(null)}
-                  className="border-slate-700 text-xs"
+                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
-                  size="sm"
                   disabled={isSubmitting}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? 'Recording...' : `Record ৳${paymentAmount} & Activate`}
-                </Button>
+                </button>
               </div>
             </form>
           </div>
@@ -1509,7 +1487,7 @@ export default function PlatformSubscriptionsPage() {
               </div>
               <button
                 onClick={() => setStatusToggleSub(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1545,32 +1523,29 @@ export default function PlatformSubscriptionsPage() {
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => setStatusToggleSub(null)}
-                  className="border-slate-700 text-xs"
+                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  size="sm"
                   onClick={handleConfirmStatusToggle}
                   disabled={isSubmitting}
-                  className={
+                  className={`px-5 py-2 rounded-xl font-bold text-xs shadow-md transition-colors cursor-pointer disabled:opacity-50 text-white ${
                     statusToggleSub.targetStatus === 'suspended'
-                      ? 'bg-red-600 hover:bg-red-500 text-white font-bold text-xs'
-                      : 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs'
-                  }
+                      ? 'bg-red-600 hover:bg-red-500'
+                      : 'bg-emerald-600 hover:bg-emerald-500'
+                  }`}
                 >
                   {isSubmitting
                     ? 'Updating...'
                     : statusToggleSub.targetStatus === 'suspended'
                     ? 'Confirm Suspension'
                     : 'Confirm Reactivation'}
-                </Button>
+                </button>
               </div>
             </div>
           </div>
