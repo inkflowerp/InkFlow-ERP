@@ -64,6 +64,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     items: [
       { title: 'Plans', href: '/platform/plans', icon: Briefcase },
       { title: 'Subscriptions', href: '/platform/subscriptions', icon: CreditCard },
+      { title: 'Billing', href: '/platform/billing', icon: FileCheck2 },
       { title: 'Features', href: '/platform/features', icon: Flag },
       { title: 'Usage', href: '/platform/usage', icon: Gauge },
     ],
@@ -73,7 +74,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     items: [
       { title: 'Support', href: '/platform/support', icon: ShieldAlert },
       { title: 'System Health', href: '/platform/health', icon: HeartPulse },
-      { title: 'Integrations', href: '/platform/integrations', icon: Layers },
+      { title: 'Background Jobs', href: '/platform/jobs', icon: Cpu },
       { title: 'Notifications', href: '/platform/notifications', icon: Bell },
     ],
   },
@@ -93,6 +94,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
       { title: 'Platform Settings', href: '/platform/settings', icon: Settings },
       { title: 'Email Gateway', href: '/platform/settings/communication', icon: Mail, badge: 'SMTP/Cloud' },
       { title: 'Integrations', href: '/platform/integrations', icon: Layers },
+      { title: 'Emergency Controls', href: '/platform/emergency', icon: Server },
     ],
   },
 ]
