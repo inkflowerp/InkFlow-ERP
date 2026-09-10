@@ -39,6 +39,8 @@ interface ModalDialogProps {
   hideFooter?: boolean
   maxWidth?: string
   size?: ModalDialogSize
+  style?: React.CSSProperties
+  className?: string
 }
 
 const SIZE_MAP: Record<ModalDialogSize, string> = {
@@ -55,6 +57,20 @@ const SIZE_MAP: Record<ModalDialogSize, string> = {
   full: 'max-w-[95vw]',
 }
 
+const SIZE_STYLE_MAP: Record<ModalDialogSize, React.CSSProperties> = {
+  sm: { maxWidth: '384px', width: '100%' },
+  md: { maxWidth: '448px', width: '100%' },
+  lg: { maxWidth: '512px', width: '100%' },
+  xl: { maxWidth: '576px', width: '100%' },
+  '2xl': { maxWidth: '672px', width: '100%' },
+  '3xl': { maxWidth: '768px', width: '100%' },
+  '4xl': { maxWidth: '896px', width: '100%' },
+  '5xl': { maxWidth: '1024px', width: '100%' },
+  '6xl': { maxWidth: '1152px', width: '100%' },
+  '7xl': { maxWidth: '1280px', width: '100%' },
+  full: { maxWidth: '95vw', width: '100%' },
+}
+
 export function ModalDialog({
   open,
   onOpenChange,
@@ -69,14 +85,17 @@ export function ModalDialog({
   hideFooter = false,
   maxWidth,
   size,
+  style,
+  className,
 }: ModalDialogProps) {
   const { t } = useI18n()
 
   const resolvedMaxWidth = maxWidth || (size ? SIZE_MAP[size] : undefined)
+  const resolvedStyle = size ? { ...SIZE_STYLE_MAP[size], ...style } : style
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} maxWidth={resolvedMaxWidth}>
-      <DialogContent onClose={() => onOpenChange(false)} className={resolvedMaxWidth}>
+    <Dialog open={open} onOpenChange={onOpenChange} maxWidth={resolvedMaxWidth} style={resolvedStyle}>
+      <DialogContent onClose={() => onOpenChange(false)} className={resolvedMaxWidth ? `${resolvedMaxWidth} ${className || ''}` : className} style={resolvedStyle}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}

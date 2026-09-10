@@ -10,9 +10,10 @@ interface DialogProps {
   children: React.ReactNode
   className?: string
   maxWidth?: string
+  style?: React.CSSProperties
 }
 
-export function Dialog({ open, onOpenChange, children, className, maxWidth }: DialogProps) {
+export function Dialog({ open, onOpenChange, children, className, maxWidth, style }: DialogProps) {
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && open) {
@@ -42,6 +43,7 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth }: Di
       />
       {/* Content Container */}
       <div
+        style={style}
         className={cn(
           'relative z-50 w-full my-auto max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
           maxWidth || 'max-w-lg',
@@ -58,13 +60,16 @@ export function DialogContent({
   className,
   children,
   onClose,
+  style,
 }: {
   className?: string
   children: React.ReactNode
   onClose?: () => void
+  style?: React.CSSProperties
 }) {
   return (
     <div
+      style={style}
       className={cn(
         'relative w-full max-h-[calc(100dvh-2.5rem)] flex flex-col rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xl transition-all overflow-hidden dark:border-slate-800 dark:bg-slate-900',
         className
