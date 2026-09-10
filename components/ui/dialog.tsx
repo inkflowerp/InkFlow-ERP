@@ -8,9 +8,11 @@ interface DialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   children: React.ReactNode
+  className?: string
+  maxWidth?: string
 }
 
-export function Dialog({ open, onOpenChange, children }: DialogProps) {
+export function Dialog({ open, onOpenChange, children, className, maxWidth }: DialogProps) {
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && open) {
@@ -39,7 +41,13 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
         onClick={() => onOpenChange(false)}
       />
       {/* Content Container */}
-      <div className="relative z-50 w-full max-w-lg my-auto max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95">
+      <div
+        className={cn(
+          'relative z-50 w-full max-w-lg my-auto max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
+          maxWidth,
+          className
+        )}
+      >
         {children}
       </div>
     </div>

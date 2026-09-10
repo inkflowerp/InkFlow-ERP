@@ -39,7 +39,7 @@ export function CurrencyDisplay({
   }
 
   return (
-    <span className={cn('tabular-nums font-medium inline-block text-inherit', colorClasses[colorVariant], className)}>
+    <span className={cn('tabular-nums font-medium inline-block whitespace-nowrap text-inherit', colorClasses[colorVariant], className)}>
       {formatted}
     </span>
   )

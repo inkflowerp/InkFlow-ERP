@@ -12,6 +12,17 @@ import {
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
 
+export type ModalDialogSize =
+  | 'sm'
+  | 'md'
+  | 'lg'
+  | 'xl'
+  | '2xl'
+  | '3xl'
+  | '4xl'
+  | '5xl'
+  | 'full'
+
 interface ModalDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -25,7 +36,19 @@ interface ModalDialogProps {
   confirmVariant?: 'default' | 'destructive' | 'cmyk'
   hideFooter?: boolean
   maxWidth?: string
-  size?: 'sm' | 'md' | 'lg' | 'xl'
+  size?: ModalDialogSize
+}
+
+const SIZE_MAP: Record<ModalDialogSize, string> = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-xl',
+  '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
+  '4xl': 'max-w-4xl',
+  '5xl': 'max-w-5xl',
+  full: 'max-w-[95vw]',
 }
 
 export function ModalDialog({
@@ -43,12 +66,13 @@ export function ModalDialog({
   maxWidth,
   size,
 }: ModalDialogProps) {
-
   const { t } = useI18n()
 
+  const resolvedMaxWidth = maxWidth || (size ? SIZE_MAP[size] : undefined)
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onClose={() => onOpenChange(false)} className={maxWidth}>
+    <Dialog open={open} onOpenChange={onOpenChange} maxWidth={resolvedMaxWidth}>
+      <DialogContent onClose={() => onOpenChange(false)} className={resolvedMaxWidth}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}

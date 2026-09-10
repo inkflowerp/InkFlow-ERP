@@ -179,20 +179,20 @@ export function TrialUpgradeModal() {
     <ModalDialog
       open={isUpgradeModalOpen}
       onOpenChange={(open) => !open && closeUpgradeModal()}
-      size="xl"
+      size="5xl"
       title={
-        <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-          <div className="p-1.5 rounded-lg bg-gradient-to-br from-amber-500 to-indigo-600 text-white shadow-sm">
+        <div className="flex items-center gap-2.5 text-slate-900 dark:text-white">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 text-white shadow-sm shrink-0">
             <Crown className="h-5 w-5" />
           </div>
           <div>
-            <div className="font-black text-lg tracking-tight bangla-text">
+            <div className="font-black text-xl tracking-tight bangla-text">
               {isTrial
                 ? tBilingual('Upgrade Your Free Trial to a Pro Plan', 'আপনার ফ্রি ট্রায়ালটি প্রো প্ল্যানে আপগ্রেড করুন')
                 : tBilingual('Upgrade Your PrintERP Plan', 'আপনার প্রিন্টইআরপি প্ল্যান আপগ্রেড করুন')}
             </div>
             {isTrial && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 font-normal bangla-text">
+              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium bangla-text mt-0.5">
                 {tBilingual(
                   `Free trial active (${daysRemainingInTrial} days remaining). Upgrade now to keep full continuous access.`,
                   `ফ্রি ট্রায়াল সক্রিয় (আর ${locale === 'bn' ? toBengaliDigits(daysRemainingInTrial) : daysRemainingInTrial} দিন বাকি)। নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
@@ -255,7 +255,7 @@ export function TrialUpgradeModal() {
                 )}
               >
                 <span>{tBilingual('Yearly Billing', 'বাৎসরিক বিলিং')}</span>
-                <span className="bg-emerald-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full uppercase">
+                <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
                   {tBilingual('2 Mo Free', '২ মাস ফ্রি')}
                 </span>
               </button>
@@ -263,7 +263,7 @@ export function TrialUpgradeModal() {
           </div>
 
           {/* Plan Comparison Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
             {paidPlans.map((plan) => {
               const isSelected = selectedPlan === plan.code
               const isRecommended = plan.code === 'business'
@@ -302,19 +302,19 @@ export function TrialUpgradeModal() {
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan.code)}
                   className={cn(
-                    'relative rounded-2xl border-2 p-4 cursor-pointer transition-all flex flex-col justify-between',
+                    'relative rounded-2xl border-2 p-5 cursor-pointer transition-all flex flex-col justify-between',
                     isSelected
-                      ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-lg shadow-blue-500/10'
+                      ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-xl shadow-blue-500/10'
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
                   )}
                 >
                   {isRecommended && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-black px-3.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap z-10 bangla-text">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-bold px-3.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap z-10 bangla-text">
                       {tBilingual('Most Popular', 'জনপ্রিয় পছন্দ')}
                     </div>
                   )}
 
-                  <div className="space-y-3">
+                  <div className="space-y-3.5">
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-base text-slate-900 dark:text-white bangla-text">
                         {tBilingual(plan.name, plan.name_bn)}
@@ -327,47 +327,47 @@ export function TrialUpgradeModal() {
                     </div>
 
                     <div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-black text-slate-900 dark:text-white whitespace-nowrap">
-                          <CurrencyDisplay amount={price} />
+                      <div className="flex items-baseline gap-1.5 flex-wrap">
+                        <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">
+                          <CurrencyDisplay amount={price} showDecimals={false} />
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {interval === 'yearly' ? tBilingual('/yr', '/বছর') : tBilingual('/mo', '/মাস')}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 min-h-[32px] line-clamp-2 bangla-text leading-relaxed">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 min-h-[32px] line-clamp-2 bangla-text leading-relaxed">
                         {planDesc}
                       </p>
                     </div>
 
                     {/* Limit items */}
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-xs text-slate-700 dark:text-slate-300 bangla-text">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs text-slate-700 dark:text-slate-300 bangla-text">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-blue-500 shrink-0" />
                         <span className="truncate">{usersLabel}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Building className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                      <div className="flex items-center gap-2">
+                        <Building className="h-4 w-4 text-indigo-500 shrink-0" />
                         <span className="truncate">{branchesLabel}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <ShoppingCart className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                      <div className="flex items-center gap-2">
+                        <ShoppingCart className="h-4 w-4 text-emerald-500 shrink-0" />
                         <span className="truncate">{ordersLabel}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <HardDrive className="h-3.5 w-3.5 text-purple-500 shrink-0" />
+                      <div className="flex items-center gap-2">
+                        <HardDrive className="h-4 w-4 text-purple-500 shrink-0" />
                         <span className="truncate">{storageLabel}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800">
                     <Button
                       type="button"
                       variant={isSelected ? 'default' : 'outline'}
                       size="sm"
                       className={cn(
-                        'w-full text-xs font-bold bangla-text',
+                        'w-full text-xs font-bold bangla-text h-9 rounded-xl',
                         isSelected && 'bg-blue-600 hover:bg-blue-700 text-white'
                       )}
                     >
