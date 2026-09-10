@@ -1,20 +1,38 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Bell,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   ShoppingBag,
   Truck,
   FileText,
-  X,
+  DollarSign,
+  Package,
+  Layers,
+  Sparkles,
   ExternalLink,
+  X,
+  Volume2,
+  VolumeX,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { cn } from '@/lib/utils'
+
+export type PopupNotificationType =
+  | 'order'
+  | 'job'
+  | 'payment'
+  | 'delivery'
+  | 'inventory'
+  | 'customer'
+  | 'success'
+  | 'warning'
+  | 'system'
 
 export interface RealtimePopupNotification {
   id: string
@@ -22,33 +40,301 @@ export interface RealtimePopupNotification {
   titleBn?: string
   message?: string
   messageBn?: string
-  type?: 'order' | 'job' | 'payment' | 'delivery' | 'system'
+  type?: PopupNotificationType
   actionUrl?: string
+  actionLabel?: string
+  actionLabelBn?: string
   timestamp?: number
+  durationMs?: number
+  silent?: boolean
+  meta?: Record<string, any>
+}
+
+// Web Audio API Polyphonic Synthesizer for modern, soft notification chimes
+function playChime(type: PopupNotificationType = 'system') {
+  if (typeof window === 'undefined') return
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+    if (!AudioContextClass) return
+
+    const ctx = new AudioContextClass()
+    if (ctx.state === 'suspended') {
+      ctx.resume()
+    }
+
+    const now = ctx.currentTime
+
+    // Choose harmonious frequency pairs based on notification archetype
+    let freqs = [523.25, 659.25] // C5, E5 (standard pleasant major third)
+    if (type === 'payment' || type === 'success') {
+      freqs = [587.33, 880.0] // D5, A5 (bright, rewarding)
+    } else if (type === 'order') {
+      freqs = [523.25, 783.99] // C5, G5 (celebratory fifth)
+    } else if (type === 'warning') {
+      freqs = [440.0, 415.3] // A4, G#4 (gentle caution)
+    } else if (type === 'delivery') {
+      freqs = [659.25, 783.99] // E5, G5 (swift dispatch)
+    }
+
+    freqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, now + idx * 0.08)
+
+      // Soft envelope (gentle attack, smooth decay)
+      gain.gain.setValueAtTime(0, now + idx * 0.08)
+      gain.gain.linearRampToValueAtTime(0.08, now + idx * 0.08 + 0.03)
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.45)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(now + idx * 0.08)
+      osc.stop(now + idx * 0.08 + 0.46)
+    })
+  } catch (err) {
+    // Audio context may be restricted by browser autoplay policy before first gesture
+  }
+}
+
+interface PopupItemProps {
+  notification: RealtimePopupNotification
+  onDismiss: (id: string) => void
+  onAction: (url: string) => void
+}
+
+function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
+  const { tBilingual } = useI18n()
+  const duration = notification.durationMs || 6500
+  const [progress, setProgress] = useState(100)
+  const [isPaused, setIsPaused] = useState(false)
+  const startTimeRef = useRef(Date.now())
+  const remainingTimeRef = useRef(duration)
+
+  useEffect(() => {
+    if (isPaused) return
+
+    const interval = 50
+    const timer = setInterval(() => {
+      remainingTimeRef.current -= interval
+      const pct = Math.max(0, (remainingTimeRef.current / duration) * 100)
+      setProgress(pct)
+
+      if (remainingTimeRef.current <= 0) {
+        clearInterval(timer)
+        onDismiss(notification.id)
+      }
+    }, interval)
+
+    return () => clearInterval(timer)
+  }, [isPaused, duration, notification.id, onDismiss])
+
+  const handleMouseEnter = () => setIsPaused(true)
+  const handleMouseLeave = () => setIsPaused(false)
+
+  const getTheme = () => {
+    switch (notification.type) {
+      case 'order':
+        return {
+          icon: <ShoppingBag className="h-5 w-5 text-indigo-400" />,
+          badgeBg: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400',
+          borderAccent: 'border-l-indigo-500',
+          progressBg: 'bg-indigo-500',
+          tag: 'Sales Order',
+          tagBn: 'সেলস অর্ডার',
+        }
+      case 'job':
+        return {
+          icon: <Layers className="h-5 w-5 text-amber-400" />,
+          badgeBg: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+          borderAccent: 'border-l-amber-500',
+          progressBg: 'bg-amber-500',
+          tag: 'Shop Floor',
+          tagBn: 'শপ ফ্লোর',
+        }
+      case 'payment':
+        return {
+          icon: <DollarSign className="h-5 w-5 text-emerald-400" />,
+          badgeBg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+          borderAccent: 'border-l-emerald-500',
+          progressBg: 'bg-emerald-500',
+          tag: 'Payment',
+          tagBn: 'পেমেন্ট',
+        }
+      case 'delivery':
+        return {
+          icon: <Truck className="h-5 w-5 text-cyan-400" />,
+          badgeBg: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400',
+          borderAccent: 'border-l-cyan-500',
+          progressBg: 'bg-cyan-500',
+          tag: 'Dispatch',
+          tagBn: 'ডেলিভারি',
+        }
+      case 'inventory':
+        return {
+          icon: <Package className="h-5 w-5 text-purple-400" />,
+          badgeBg: 'bg-purple-500/10 border-purple-500/30 text-purple-400',
+          borderAccent: 'border-l-purple-500',
+          progressBg: 'bg-purple-500',
+          tag: 'Inventory',
+          tagBn: 'ইনভেন্টরি',
+        }
+      case 'warning':
+        return {
+          icon: <AlertTriangle className="h-5 w-5 text-rose-400" />,
+          badgeBg: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
+          borderAccent: 'border-l-rose-500',
+          progressBg: 'bg-rose-500',
+          tag: 'Alert',
+          tagBn: 'সতর্কতা',
+        }
+      case 'success':
+        return {
+          icon: <Sparkles className="h-5 w-5 text-emerald-400" />,
+          badgeBg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+          borderAccent: 'border-l-emerald-500',
+          progressBg: 'bg-emerald-500',
+          tag: 'Success',
+          tagBn: 'সফল',
+        }
+      default:
+        return {
+          icon: <Bell className="h-5 w-5 text-blue-400" />,
+          badgeBg: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
+          borderAccent: 'border-l-blue-500',
+          progressBg: 'bg-blue-500',
+          tag: 'Realtime Sync',
+          tagBn: 'লাইভ সিঙ্ক',
+        }
+    }
+  }
+
+  const theme = getTheme()
+
+  return (
+    <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      role="status"
+      aria-live="polite"
+      className={cn(
+        'group relative overflow-hidden rounded-2xl bg-slate-900/95 dark:bg-slate-950/95 text-white shadow-2xl border border-slate-700/60 dark:border-slate-800 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in-from-top-3 border-l-4',
+        theme.borderAccent
+      )}
+    >
+      <div className="p-4 flex items-start gap-3.5">
+        {/* Icon Avatar */}
+        <div className={cn('p-2.5 rounded-xl border shrink-0', theme.badgeBg)}>
+          {theme.icon}
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-bold border', theme.badgeBg)}>
+                {tBilingual(theme.tag, theme.tagBn)}
+              </span>
+              <h5 className="text-xs font-bold text-slate-100 truncate bangla-text">
+                {tBilingual(notification.title, notification.titleBn)}
+              </h5>
+            </div>
+
+            <span className="text-[10px] text-slate-400 shrink-0 font-mono">
+              {tBilingual('Just now', 'এইমাত্র')}
+            </span>
+          </div>
+
+          {notification.message && (
+            <p className="text-[11px] text-slate-300 bangla-text line-clamp-2 leading-relaxed">
+              {tBilingual(notification.message, notification.messageBn)}
+            </p>
+          )}
+
+          {/* Action Row */}
+          {notification.actionUrl && (
+            <div className="pt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onAction(notification.actionUrl!)}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer transition-all active:scale-95 bangla-text shadow-sm"
+              >
+                <span>
+                  {tBilingual(
+                    notification.actionLabel || 'View Details',
+                    notification.actionLabelBn || 'বিস্তারিত দেখুন'
+                  )}
+                </span>
+                <ExternalLink className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Dismiss Button */}
+        <button
+          type="button"
+          onClick={() => onDismiss(notification.id)}
+          className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors cursor-pointer shrink-0 opacity-70 group-hover:opacity-100"
+          aria-label="Dismiss notification"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Auto-Dismiss Countdown Bar */}
+      <div className="h-1 w-full bg-slate-800/80 overflow-hidden">
+        <div
+          className={cn('h-full transition-all linear duration-75', theme.progressBg)}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  )
 }
 
 export function RealtimeNotificationPopup() {
   const router = useRouter()
-  const { tBilingual } = useI18n()
   const { company } = useTenant()
-  const [activePopup, setActivePopup] = useState<RealtimePopupNotification | null>(null)
+  const { tBilingual } = useI18n()
+  const [queue, setQueue] = useState<RealtimePopupNotification[]>([])
+  const [isMuted, setIsMuted] = useState(false)
 
-  const dismissPopup = useCallback(() => {
-    setActivePopup(null)
+  const dismissNotification = useCallback((id: string) => {
+    setQueue((prev) => prev.filter((item) => item.id !== id))
   }, [])
+
+  const dismissAll = useCallback(() => {
+    setQueue([])
+  }, [])
+
+  const handleAction = useCallback(
+    (actionUrl: string) => {
+      const slug = company?.slug || 'app'
+      const url = actionUrl.startsWith('/') ? `/${slug}${actionUrl.replace(/^\/[^/]+/, '')}` : actionUrl
+      router.push(url)
+    },
+    [company?.slug, router]
+  )
 
   useEffect(() => {
     const handleNotificationEvent = (event: Event) => {
       const customEvent = event as CustomEvent<RealtimePopupNotification>
       if (customEvent.detail) {
-        setActivePopup(customEvent.detail)
+        const item = customEvent.detail
 
-        // Auto-dismiss after 6 seconds
-        const timer = setTimeout(() => {
-          setActivePopup((current) => (current?.id === customEvent.detail.id ? null : current))
-        }, 6000)
+        // Play audio chime if not explicitly muted or silent
+        if (!item.silent && !isMuted) {
+          playChime(item.type)
+        }
 
-        return () => clearTimeout(timer)
+        // Add to active queue (capped at max 4 stacked notifications)
+        setQueue((prev) => {
+          const filtered = prev.filter((existing) => existing.id !== item.id)
+          return [item, ...filtered].slice(0, 4)
+        })
       }
     }
 
@@ -56,92 +342,75 @@ export function RealtimeNotificationPopup() {
     return () => {
       window.removeEventListener('printerp_popup_notification', handleNotificationEvent)
     }
-  }, [])
+  }, [isMuted])
 
-  if (!activePopup) return null
-
-  const getIcon = () => {
-    switch (activePopup.type) {
-      case 'order':
-        return <ShoppingBag className="h-5 w-5 text-indigo-400 shrink-0" />
-      case 'job':
-        return <FileText className="h-5 w-5 text-amber-400 shrink-0" />
-      case 'payment':
-        return <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-      case 'delivery':
-        return <Truck className="h-5 w-5 text-cyan-400 shrink-0" />
-      default:
-        return <Bell className="h-5 w-5 text-indigo-400 shrink-0" />
-    }
-  }
-
-  const handleAction = () => {
-    if (activePopup.actionUrl) {
-      router.push(activePopup.actionUrl)
-    }
-    dismissPopup()
-  }
+  if (queue.length === 0) return null
 
   return (
     <div
-      role="status"
       aria-live="polite"
-      className="fixed top-16 sm:top-5 right-4 left-4 sm:left-auto sm:w-96 z-50 animate-in fade-in slide-in-from-top-4 duration-300"
+      className="fixed top-16 sm:top-5 right-4 left-4 sm:left-auto sm:w-[420px] z-50 flex flex-col gap-2 pointer-events-none"
     >
-      <div className="bg-slate-900/95 text-white border border-slate-700/60 rounded-2xl shadow-2xl backdrop-blur-xl p-4 flex items-start gap-3">
-        <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/50">
-          {getIcon()}
-        </div>
-
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex items-center justify-between gap-2">
-            <h5 className="text-xs font-bold text-white bangla-text truncate">
-              {tBilingual(activePopup.title, activePopup.titleBn)}
-            </h5>
-            <span className="text-[10px] text-slate-400 shrink-0">
-              {tBilingual('Just now', 'এইমাত্র')}
-            </span>
+      {/* Controls Bar when multiple notifications are stacked */}
+      {queue.length > 1 && (
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/60 backdrop-blur-md text-xs text-slate-300 pointer-events-auto shadow-lg animate-in fade-in">
+          <span className="font-semibold text-[11px] bangla-text">
+            {queue.length} {tBilingual('Active Alerts', 'টি নোটিফিকেশন')}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsMuted(!isMuted)}
+              className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title={isMuted ? 'Unmute alerts' : 'Mute alert sounds'}
+            >
+              {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            </button>
+            <button
+              type="button"
+              onClick={dismissAll}
+              className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors bangla-text"
+            >
+              {tBilingual('Clear All', 'সব মুছুন')}
+            </button>
           </div>
-
-          {activePopup.message && (
-            <p className="text-[11px] text-slate-300 bangla-text line-clamp-2 leading-relaxed">
-              {tBilingual(activePopup.message, activePopup.messageBn)}
-            </p>
-          )}
-
-          {activePopup.actionUrl && (
-            <div className="pt-1.5">
-              <button
-                onClick={handleAction}
-                className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer transition-colors bangla-text"
-              >
-                {tBilingual('View Details', 'বিস্তারিত দেখুন')}
-                <ExternalLink className="h-3 w-3" />
-              </button>
-            </div>
-          )}
         </div>
+      )}
 
-        <button
-          onClick={dismissPopup}
-          className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
-          aria-label="Dismiss notification"
-        >
-          <X className="h-4 w-4" />
-        </button>
+      {/* Stacked Notification Cards */}
+      <div className="flex flex-col gap-2.5 pointer-events-auto">
+        {queue.map((item) => (
+          <PopupCard
+            key={item.id}
+            notification={item}
+            onDismiss={dismissNotification}
+            onAction={handleAction}
+          />
+        ))}
       </div>
     </div>
   )
 }
 
 /**
- * Helper function to trigger a popup notification from anywhere in client code
+ * Universal helper function to trigger a popup notification from anywhere across the client code
  */
-export function triggerPopupNotification(notification: Omit<RealtimePopupNotification, 'id'>) {
+export function triggerPopupNotification(notification: Omit<RealtimePopupNotification, 'id'> & { id?: string }) {
   if (typeof window === 'undefined') return
-  const id = `popup-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`
+  const id = notification.id || `popup-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
   const event = new CustomEvent<RealtimePopupNotification>('printerp_popup_notification', {
     detail: { ...notification, id },
   })
   window.dispatchEvent(event)
+}
+
+/**
+ * Hook for easy popup notification dispatch from any React component
+ */
+export function usePopupNotification() {
+  const show = useCallback((notification: Omit<RealtimePopupNotification, 'id'> & { id?: string }) => {
+    triggerPopupNotification(notification)
+  }, [])
+
+  return { show, trigger: show }
 }
