@@ -1151,6 +1151,34 @@ export async function triggerPlatformBackupAction() {
   }
 }
 
+export async function triggerDisasterRecoveryDrillAction() {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform admin session required.' }
+    }
+    const result = await PlatformService.triggerDisasterRecoveryDrill(platformUser.id)
+    if (result.success) {
+      revalidatePath('/platform/settings')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to execute disaster recovery drill' }
+  }
+}
+
+export async function testIncidentWebhookAction(webhookUrl: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform admin session required.' }
+    }
+    return await PlatformService.testIncidentAlertWebhook(webhookUrl, platformUser.id)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to test incident alert webhook' }
+  }
+}
+
 export async function exportPlatformConfigAction() {
   try {
     const platformUser = await getCurrentPlatformUser()
