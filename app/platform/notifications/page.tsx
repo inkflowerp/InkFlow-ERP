@@ -259,32 +259,30 @@ export default function PlatformNotificationsPage() {
   }
 
   // Filtered & Searched Notifications
-  const filteredNotifications = useMemo(() => {
-    return notifications.filter((n) => {
-      if (showUnreadOnly && n.is_read) return false
-      if (filterSeverity !== 'all' && n.severity !== filterSeverity) return false
+  const trimmedSearch = searchQuery.trim().toLowerCase()
+  const filteredNotifications = notifications.filter((n) => {
+    if (showUnreadOnly && n.is_read) return false
+    if (filterSeverity !== 'all' && n.severity !== filterSeverity) return false
 
-      if (filterType !== 'all') {
-        if (filterType === 'security' && n.type !== 'security') return false
-        if (filterType === 'tenant_lifecycle' && !['tenant_suspension', 'tenant_lifecycle'].includes(n.type)) return false
-        if (filterType === 'usage_warning' && !['usage_warning', 'quota'].includes(n.type)) return false
-        if (filterType === 'system' && !['system', 'health', 'job'].includes(n.type)) return false
-        if (filterType === 'billing' && !['billing', 'subscription'].includes(n.type)) return false
-        if (filterType === 'broadcast' && n.type !== 'broadcast') return false
-      }
+    if (filterType !== 'all') {
+      if (filterType === 'security' && n.type !== 'security') return false
+      if (filterType === 'tenant_lifecycle' && !['tenant_suspension', 'tenant_lifecycle'].includes(n.type)) return false
+      if (filterType === 'usage_warning' && !['usage_warning', 'quota'].includes(n.type)) return false
+      if (filterType === 'system' && !['system', 'health', 'job'].includes(n.type)) return false
+      if (filterType === 'billing' && !['billing', 'subscription'].includes(n.type)) return false
+      if (filterType === 'broadcast' && n.type !== 'broadcast') return false
+    }
 
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase()
-        const titleMatch = (n.title || '').toLowerCase().includes(q)
-        const msgMatch = (n.message || '').toLowerCase().includes(q)
-        const typeMatch = (n.type || '').toLowerCase().includes(q)
-        const compMatch = (n.company_name || '').toLowerCase().includes(q)
-        if (!titleMatch && !msgMatch && !typeMatch && !compMatch) return false
-      }
+    if (trimmedSearch) {
+      const titleMatch = (n.title || '').toLowerCase().includes(trimmedSearch)
+      const msgMatch = (n.message || '').toLowerCase().includes(trimmedSearch)
+      const typeMatch = (n.type || '').toLowerCase().includes(trimmedSearch)
+      const compMatch = (n.company_name || '').toLowerCase().includes(trimmedSearch)
+      if (!titleMatch && !msgMatch && !typeMatch && !compMatch) return false
+    }
 
-      return true
-    })
-  }, [notifications, showUnreadOnly, filterSeverity, filterType, searchQuery])
+    return true
+  })
 
   // KPIs
   const totalCount = notifications.length

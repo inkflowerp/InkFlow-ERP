@@ -109,7 +109,7 @@ export function PlatformSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [businessSlug, setBusinessSlug] = useState('vision-sign')
+  const [businessSlug, setBusinessSlug] = useState('')
 
   // Resolve target business ERP tenant slug dynamically
   useEffect(() => {
@@ -151,7 +151,7 @@ export function PlatformSidebar() {
         return
       }
     } catch {
-      // fallback to vision-sign
+      // ignore
     }
   }, [])
 

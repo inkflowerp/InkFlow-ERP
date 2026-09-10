@@ -235,15 +235,17 @@ export default function PlatformSecurityPage() {
   }
 
   // Filtered Login History
+  const loginHistory = data?.login_history
   const filteredLoginHistory = useMemo(() => {
-    if (!data?.login_history) return []
-    if (loginFilter === 'all') return data.login_history
-    return data.login_history.filter((item) => item.status === loginFilter)
-  }, [data?.login_history, loginFilter])
+    if (!loginHistory) return []
+    if (loginFilter === 'all') return loginHistory
+    return loginHistory.filter((item) => item.status === loginFilter)
+  }, [loginHistory, loginFilter])
 
+  const activeSessions = data?.active_sessions
   const otherSessions = useMemo(() => {
-    return (data?.active_sessions || []).filter((s) => !s.is_current)
-  }, [data?.active_sessions])
+    return (activeSessions || []).filter((s) => !s.is_current)
+  }, [activeSessions])
 
   const isMfaActive = Boolean(data?.current_user_mfa_enabled)
 

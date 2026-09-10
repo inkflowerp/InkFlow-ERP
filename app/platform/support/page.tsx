@@ -567,7 +567,7 @@ export default function PlatformSupportPage() {
 
                     <p className="text-xs text-slate-200">
                       <span className="text-slate-400 font-semibold">Reason / Ticket:</span>{' '}
-                      <span className="italic text-slate-100 font-medium">"{sess.reason}"</span>
+                      <span className="italic text-slate-100 font-medium">&quot;{sess.reason}&quot;</span>
                     </p>
 
                     <div className="flex items-center gap-4 text-[11px] text-slate-400 flex-wrap">
@@ -869,7 +869,7 @@ export default function PlatformSupportPage() {
                       </td>
 
                       <td className="py-3 px-3.5 max-w-xs truncate" title={sess.reason}>
-                        <span className="text-slate-200 italic font-medium">"{sess.reason}"</span>
+                        <span className="text-slate-200 italic font-medium">&quot;{sess.reason}&quot;</span>
                       </td>
 
                       <td className="py-3 px-3.5">

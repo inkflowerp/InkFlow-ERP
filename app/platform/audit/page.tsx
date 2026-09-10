@@ -730,7 +730,7 @@ export default function PlatformAuditPage() {
                 <span className="font-semibold text-slate-300">Active Filters:</span>
                 {debouncedSearch && (
                   <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
-                    Search: "{debouncedSearch}"
+                    Search: &quot;{debouncedSearch}&quot;
                     <button onClick={() => setSearch('')} className="hover:text-red-400">
                       <X className="h-3 w-3" />
                     </button>
@@ -998,14 +998,14 @@ export default function PlatformAuditPage() {
                             className="text-slate-300 text-xs italic line-clamp-2 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800"
                             title={log.reason}
                           >
-                            "{log.reason}"
+                            &quot;{log.reason}&quot;
                           </div>
                         ) : log.details?.reason ? (
                           <div
                             className="text-slate-300 text-xs italic line-clamp-2 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800"
                             title={log.details.reason}
                           >
-                            "{log.details.reason}"
+                            &quot;{log.details.reason}&quot;
                           </div>
                         ) : (
                           <span className="text-slate-600 font-mono text-[11px]">System Stamped</span>
@@ -1209,7 +1209,7 @@ export default function PlatformAuditPage() {
                     <span>Audit Justification Reason</span>
                   </div>
                   <p className="text-xs text-amber-200 font-medium">
-                    "{selectedLog.reason || selectedLog.details?.reason}"
+                    &quot;{selectedLog.reason || selectedLog.details?.reason}&quot;
                   </p>
                 </div>
               )}

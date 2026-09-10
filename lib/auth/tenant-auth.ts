@@ -258,5 +258,5 @@ export async function getTenantRedirectSlug(): Promise<string> {
     // fallback gracefully
   }
 
-  return 'vision-sign'
+  redirect('/login')
 }
