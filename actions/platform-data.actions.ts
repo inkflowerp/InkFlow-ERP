@@ -377,6 +377,21 @@ export async function getPlatformIntegrationsHealthAction(): Promise<ApiResponse
 }
 
 /**
+ * Server Action: Test / Ping Specific Integration Gateway
+ */
+export async function testIntegrationPingAction(providerKey: string): Promise<ApiResponse<{ key: string; latency_ms: number; status: string; message: string }>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.testIntegrationPing(providerKey)
+  } catch (err: any) {
+    return { success: false, error: err?.message || `Failed to test integration ${providerKey}` }
+  }
+}
+
+/**
  * Server Action: Global Cross-Platform Search
  */
 export async function searchPlatformGlobalAction(query: string): Promise<ApiResponse<GlobalSearchResult>> {
