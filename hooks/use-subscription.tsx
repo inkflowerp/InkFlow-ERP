@@ -141,17 +141,27 @@ function getInitialSubscription(
     } catch {}
   }
 
-  const trialPlan = initialPlans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+  const trialPlan = initialPlans.find((p) => p.code === 'trial') || (initialPlans.length > 0 ? initialPlans[0] : DEFAULT_TRIAL_PLAN)
   const trialDays = trialPlan.trial_days || 14
-  return {
-    ...DEFAULT_TENANT_SUBSCRIPTION,
+  const createdAt = new Date().toISOString()
+  const trialEndsAt = new Date(Date.now() + trialDays * 86400000).toISOString()
+
+  const liveSub: CompanySubscriptionRecord = {
     id: `sub-${companyId}`,
     company_id: companyId,
     plan_id: trialPlan.id,
     plan_code: 'trial',
     status: 'trial',
-    trial_ends_at: new Date(Date.now() + trialDays * 86400000).toISOString(),
+    billing_interval: 'monthly',
+    current_period_start: createdAt,
+    current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+    trial_ends_at: trialEndsAt,
+    payment_method_type: null,
+    last_payment_reference: null,
+    custom_limits_override: null,
   }
+  memoryCachedSubscriptions[companyId] = liveSub
+  return liveSub
 }
 
 export interface LimitCheckResult {
@@ -644,33 +654,81 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 export function useSubscription() {
   const ctx = useContext(SubscriptionContext)
   if (!ctx) {
-    const defaultPlan = DEFAULT_TRIAL_PLAN
+    const livePlans = getInitialPlans()
+    const liveTrialPlan = livePlans.find((p) => p.code === 'trial') || (livePlans.length > 0 ? livePlans[0] : DEFAULT_TRIAL_PLAN)
+    const trialDays = liveTrialPlan.trial_days || 14
     const accType: TenantAccountType = 'trial'
     return {
-      subscription: DEMO_TENANT_SUBSCRIPTION,
-      currentPlan: defaultPlan,
+      subscription: {
+        id: 'sub-standalone',
+        company_id: 'default',
+        plan_id: liveTrialPlan.id,
+        plan_code: 'trial' as PlanCode,
+        status: 'trial' as const,
+        billing_interval: 'monthly' as const,
+        current_period_start: new Date().toISOString(),
+        current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+        trial_ends_at: new Date(Date.now() + trialDays * 86400000).toISOString(),
+        payment_method_type: null,
+        last_payment_reference: null,
+        custom_limits_override: null,
+        cancel_at_period_end: false,
+        next_plan_id: null,
+        change_effective_at: null,
+      } as CompanySubscriptionRecord,
+      currentPlan: liveTrialPlan,
       currentPlanCode: 'trial' as PlanCode,
       accountType: accType,
-      accountTypeMeta: TENANT_ACCOUNT_TYPE_METADATA.trial,
-      allPlans: DEFAULT_PLANS,
-      usage: DEMO_RESOURCE_USAGE,
+      accountTypeMeta: {
+        type: 'trial' as const,
+        nameEn: liveTrialPlan.name || `Free Trial (${trialDays} Days)`,
+        nameBn: liveTrialPlan.name_bn || `${toBengaliDigits(trialDays)} দিনের ফ্রি ট্রায়াল`,
+        badgeTextEn: 'Trial',
+        badgeTextBn: 'ফ্রি ট্রায়াল',
+        color: 'amber' as const,
+        badgeClass: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800',
+        priceMonthly: 0,
+        priceYearly: 0,
+        maxUsers: liveTrialPlan.max_users,
+        maxBranches: liveTrialPlan.max_branches,
+        descriptionEn: liveTrialPlan.description || '',
+        descriptionBn: liveTrialPlan.name_bn || '',
+      } as TenantAccountTypeMeta,
+      allPlans: livePlans,
+      usage: {
+        users_count: 1,
+        users_limit: liveTrialPlan.max_users,
+        branches_count: 1,
+        branches_limit: liveTrialPlan.max_branches,
+        storage_used_gb: 0.1,
+        storage_limit_gb: liveTrialPlan.storage_gb,
+        orders_this_month: 0,
+        orders_limit: liveTrialPlan.monthly_orders,
+        customers_count: 0,
+        customers_limit: liveTrialPlan.max_customers,
+        products_count: 0,
+        products_limit: liveTrialPlan.max_products,
+      },
       isSuspended: false,
       isPastDue: false,
       isTrial: true,
       isTrialExpired: false,
-      daysRemainingInTrial: 14,
+      daysRemainingInTrial: trialDays,
       trialProgressPercent: 0,
-      hasFeature: (feature: FeatureCode) => checkFeatureAccess('trial', feature, DEFAULT_PLANS),
+      hasFeature: (feature: FeatureCode) => checkFeatureAccess('trial', feature, livePlans),
       getLimitStatus: (limitType: ConfigurableLimitType) =>
-        checkResourceLimit(limitType, 1, defaultPlan),
-      checkCanCreate: (_limitType: ConfigurableLimitType): LimitCheckResult => ({
-        allowed: true,
-        current: 1,
-        limit: 5,
-        percentage: 20,
-        warning: false,
-        exceeded: false,
-      }),
+        checkResourceLimit(limitType, 1, liveTrialPlan),
+      checkCanCreate: (limitType: ConfigurableLimitType): LimitCheckResult => {
+        const res = checkResourceLimit(limitType, 1, liveTrialPlan)
+        return {
+          allowed: res.allowed,
+          current: res.current,
+          limit: res.limit,
+          percentage: res.percentage,
+          warning: res.warning,
+          exceeded: res.exceeded,
+        }
+      },
       initiateCheckout: async () => ({ success: false, error: 'Provider not initialized' }),
       verifyPayment: async () => ({ success: false, status: 'failed' as const, error: 'Provider not initialized' }),
       scheduleDowngrade: async () => ({ success: false, error: 'Provider not initialized' }),

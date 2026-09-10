@@ -50,10 +50,21 @@ import {
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { DEFAULT_PLANS } from '@/lib/subscription/subscription-constants'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function PlatformSubscriptionsPage() {
   const [data, setData] = useState<PlatformSubscriptionsOverview | null>(null)
-  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(DEFAULT_PLANS)
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          return stored
+        }
+      } catch {}
+    }
+    return DEFAULT_PLANS
+  })
   const [loading, setLoading] = useState(true)
 
   // Filters & Search

@@ -2511,6 +2511,12 @@ export class PlatformService {
       let planList: SubscriptionPlanRecord[] = (data || []) as SubscriptionPlanRecord[]
       
       if (!planList || planList.length === 0) {
+        try {
+          const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+          if (stored && Array.isArray(stored) && stored.length > 0) {
+            return { success: true, data: stored }
+          }
+        } catch {}
         return { success: true, data: DEFAULT_PLANS }
       }
 

@@ -56,32 +56,37 @@ const DEFAULT_ACTIVE_GATEWAYS: PaymentGatewayMeta[] = PAYMENT_GATEWAY_METADATA_L
   ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
 )
 
-function getInitialPublicSeed(initialData?: PublicPlansData | null): PublicPlansData | null {
+function getInitialPublicSeed(initialData?: PublicPlansData | null): PublicPlansData {
   if (initialData) return initialData
   if (cachedPlansData) return cachedPlansData
+  let activePlans: SubscriptionPlanRecord[] = []
   if (typeof window !== 'undefined') {
     try {
       const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
       if (stored && Array.isArray(stored) && stored.length > 0) {
-        const activePlans = stored.filter((p) => p.is_active !== false)
-        const trialPlan = activePlans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
-        const trialDays = trialPlan.trial_days || 14
-        const paidPlans = activePlans
-          .filter((p) => p.code !== 'trial')
-          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)
-        const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p) => p.price_monthly)) : 1999
-        return {
-          plans: activePlans,
-          trialPlan,
-          trialDays,
-          paidPlans,
-          lowestPrice,
-          activePaymentGateways: DEFAULT_ACTIVE_GATEWAYS,
-        }
+        activePlans = stored.filter((p) => p.is_active !== false)
       }
     } catch {}
   }
-  return null
+  if (!activePlans || activePlans.length === 0) {
+    activePlans = DEFAULT_PLANS
+  }
+
+  const trialPlan = activePlans.find((p) => p.code === 'trial') || (activePlans.length > 0 ? activePlans[0] : DEFAULT_TRIAL_PLAN)
+  const trialDays = trialPlan.trial_days || 14
+  const paidPlans = activePlans
+    .filter((p) => p.code !== 'trial')
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)
+  const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p) => p.price_monthly)) : 1999
+
+  return {
+    plans: activePlans,
+    trialPlan,
+    trialDays,
+    paidPlans,
+    lowestPrice,
+    activePaymentGateways: DEFAULT_ACTIVE_GATEWAYS,
+  }
 }
 
 export function PublicPlansProvider({
@@ -96,18 +101,15 @@ export function PublicPlansProvider({
     cachedPlansData = initialData
   }
 
-  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => seed?.plans || DEFAULT_PLANS)
-  const [trialPlan, setTrialPlan] = useState<SubscriptionPlanRecord>(() => seed?.trialPlan || DEFAULT_TRIAL_PLAN)
-  const [trialDays, setTrialDays] = useState<number>(() => seed?.trialDays || seed?.trialPlan?.trial_days || 14)
-  const [paidPlans, setPaidPlans] = useState<SubscriptionPlanRecord[]>(() => {
-    if (seed?.paidPlans && seed.paidPlans.length > 0) return seed.paidPlans
-    return DEFAULT_PLANS.filter((p) => p.code !== 'trial')
-  })
-  const [lowestPrice, setLowestPrice] = useState<number>(() => seed?.lowestPrice || 1999)
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => seed.plans)
+  const [trialPlan, setTrialPlan] = useState<SubscriptionPlanRecord>(() => seed.trialPlan)
+  const [trialDays, setTrialDays] = useState<number>(() => seed.trialDays)
+  const [paidPlans, setPaidPlans] = useState<SubscriptionPlanRecord[]>(() => seed.paidPlans)
+  const [lowestPrice, setLowestPrice] = useState<number>(() => seed.lowestPrice)
   const [activePaymentGateways, setActivePaymentGateways] = useState<PaymentGatewayMeta[]>(
-    () => seed?.activePaymentGateways || DEFAULT_ACTIVE_GATEWAYS
+    () => seed.activePaymentGateways
   )
-  const [isLoading, setIsLoading] = useState<boolean>(!seed)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const applyPlansData = useCallback((data: PublicPlansData) => {
     cachedPlansData = data
@@ -256,19 +258,16 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
   }
 
   // Fallback standalone hook if used outside PublicPlansProvider
-  const seed = initialData || cachedPlansData
-  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => seed?.plans || DEFAULT_PLANS)
-  const [trialPlan, setTrialPlan] = useState<SubscriptionPlanRecord>(() => seed?.trialPlan || DEFAULT_TRIAL_PLAN)
-  const [trialDays, setTrialDays] = useState<number>(() => seed?.trialDays || seed?.trialPlan?.trial_days || 14)
-  const [paidPlans, setPaidPlans] = useState<SubscriptionPlanRecord[]>(() => {
-    if (seed?.paidPlans && seed.paidPlans.length > 0) return seed.paidPlans
-    return DEFAULT_PLANS.filter((p) => p.code !== 'trial')
-  })
-  const [lowestPrice, setLowestPrice] = useState<number>(() => seed?.lowestPrice || 1999)
+  const seed = getInitialPublicSeed(initialData)
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => seed.plans)
+  const [trialPlan, setTrialPlan] = useState<SubscriptionPlanRecord>(() => seed.trialPlan)
+  const [trialDays, setTrialDays] = useState<number>(() => seed.trialDays)
+  const [paidPlans, setPaidPlans] = useState<SubscriptionPlanRecord[]>(() => seed.paidPlans)
+  const [lowestPrice, setLowestPrice] = useState<number>(() => seed.lowestPrice)
   const [activePaymentGateways, setActivePaymentGateways] = useState<PaymentGatewayMeta[]>(
-    () => seed?.activePaymentGateways || DEFAULT_ACTIVE_GATEWAYS
+    () => seed.activePaymentGateways
   )
-  const [isLoading, setIsLoading] = useState<boolean>(!seed)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const applyPlansData = useCallback((data: PublicPlansData) => {
     cachedPlansData = data

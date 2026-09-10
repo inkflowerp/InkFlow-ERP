@@ -125,7 +125,17 @@ const FEATURE_CATEGORIES = [
 ]
 
 export default function PlatformPlansPage() {
-  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(DEFAULT_PLANS)
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          return stored
+        }
+      } catch {}
+    }
+    return DEFAULT_PLANS
+  })
   const [companies, setCompanies] = useState<PlatformTenantCompany[]>([])
   const [loading, setLoading] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -137,7 +147,16 @@ export default function PlatformPlansPage() {
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlanRecord | null>(null)
   const [editingLimitsPlan, setEditingLimitsPlan] = useState<SubscriptionPlanRecord | null>(null)
   const [editingTrialModalOpen, setEditingTrialModalOpen] = useState(false)
-  const [editingTrialPlan, setEditingTrialPlan] = useState<SubscriptionPlanRecord>(DEFAULT_TRIAL_PLAN)
+  const [editingTrialPlan, setEditingTrialPlan] = useState<SubscriptionPlanRecord>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+        const found = stored?.find((p) => p.code === 'trial')
+        if (found) return found
+      } catch {}
+    }
+    return DEFAULT_TRIAL_PLAN
+  })
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{
     type: 'archive' | 'reactivate' | 'delete'

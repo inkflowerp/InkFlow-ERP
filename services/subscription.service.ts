@@ -426,6 +426,13 @@ export class SubscriptionService {
       }
     } catch {}
 
+    try {
+      const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+      if (stored && Array.isArray(stored) && stored.length > 0) {
+        return stored
+      }
+    } catch {}
+
     return DEFAULT_PLANS
   }
 
@@ -1621,7 +1628,20 @@ export function getTenantResourceUsage(
   })
   const ordersCount = monthlyOrders.length
 
-  const activePlan = plan || DEFAULT_TRIAL_PLAN
+  let activePlan = plan
+  if (!activePlan) {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          activePlan = stored.find((p) => p.code === 'trial') || stored[0]
+        }
+      } catch {}
+    }
+  }
+  if (!activePlan) {
+    activePlan = DEFAULT_TRIAL_PLAN
+  }
   const usersLimit = override?.max_users ?? activePlan.max_users
   const branchesLimit = override?.max_branches ?? activePlan.max_branches
   const storageLimit = override?.storage_gb ?? activePlan.storage_gb
