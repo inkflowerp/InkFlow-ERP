@@ -18,9 +18,11 @@ import { FAQSection } from '@/components/marketing/faq-section'
 import { FinalCTASection } from '@/components/marketing/final-cta-section'
 import { MarketingFooter } from '@/components/marketing/marketing-footer'
 import { DemoModal } from '@/components/marketing/demo-modal'
+import { usePublicSubscriptionPlans } from '@/hooks/use-public-plans'
 
 export default function MarketingHomePage() {
   const [demoOpen, setDemoOpen] = useState(false)
+  const { lowestPrice } = usePublicSubscriptionPlans()
 
   // JSON-LD Structured Data Schema for SoftwareApplication & Local Printing SaaS
   const structuredData = {
@@ -31,7 +33,7 @@ export default function MarketingHomePage() {
     applicationCategory: 'BusinessApplication',
     offers: {
       '@type': 'Offer',
-      price: '1999',
+      price: String(lowestPrice || 1999),
       priceCurrency: 'BDT',
       priceValidUntil: '2027-12-31',
     },

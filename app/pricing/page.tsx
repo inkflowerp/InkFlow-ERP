@@ -8,11 +8,16 @@ import { FinalCTASection } from '@/components/marketing/final-cta-section'
 import { MarketingFooter } from '@/components/marketing/marketing-footer'
 import { DemoModal } from '@/components/marketing/demo-modal'
 import { useI18n } from '@/i18n/context'
-import { CheckCircle2, ShieldCheck, Zap } from 'lucide-react'
+import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
+import { CheckCircle2, ShieldCheck, Zap, ArrowRight, Check } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export default function PublicPricingPage() {
   const [demoOpen, setDemoOpen] = useState(false)
   const { tBilingual } = useI18n()
+  const { paidPlans, trialDays } = usePublicSubscriptionPlans()
+  const trialDaysBn = toBengaliDigits(trialDays)
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
@@ -55,71 +60,176 @@ export default function PublicPricingPage() {
                 <thead className="bg-slate-950 text-slate-400 uppercase font-mono border-b border-slate-800">
                   <tr>
                     <th className="p-4">Feature / Capability</th>
-                    <th className="p-4 text-center">Starter</th>
-                    <th className="p-4 text-center text-cyan-400 font-bold">Business</th>
-                    <th className="p-4 text-center text-amber-400 font-bold">Enterprise</th>
+                    {paidPlans.map((p) => {
+                      const isBusiness = p.code === 'business'
+                      const isEnterprise = p.code === 'enterprise'
+                      const colorClass = isBusiness
+                        ? 'text-cyan-400 font-bold'
+                        : isEnterprise
+                        ? 'text-amber-400 font-bold'
+                        : 'text-white'
+
+                      return (
+                        <th key={p.id || p.code} className={`p-4 text-center ${colorClass}`}>
+                          {tBilingual(p.name, p.name_bn)}
+                        </th>
+                      )
+                    })}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
                   <tr>
                     <td className="p-4 font-semibold text-white">Monthly Cost (BDT)</td>
-                    <td className="p-4 text-center font-mono font-bold text-white">৳ 1,999</td>
-                    <td className="p-4 text-center font-mono font-bold text-cyan-300">৳ 4,999</td>
-                    <td className="p-4 text-center font-mono font-bold text-amber-300">৳ 9,999</td>
+                    {paidPlans.map((p) => {
+                      const isBusiness = p.code === 'business'
+                      const isEnterprise = p.code === 'enterprise'
+                      const colorClass = isBusiness
+                        ? 'text-cyan-300'
+                        : isEnterprise
+                        ? 'text-amber-300'
+                        : 'text-white'
+                      return (
+                        <td key={p.id || p.code} className={`p-4 text-center font-mono font-bold ${colorClass}`}>
+                          ৳ {p.price_monthly.toLocaleString()}
+                        </td>
+                      )
+                    })}
                   </tr>
                   <tr>
                     <td className="p-4">User Accounts Included</td>
-                    <td className="p-4 text-center font-mono">3 Users</td>
-                    <td className="p-4 text-center font-mono text-cyan-300">10 Users</td>
-                    <td className="p-4 text-center font-mono text-amber-300">Unlimited</td>
+                    {paidPlans.map((p) => {
+                      const isBusiness = p.code === 'business'
+                      const isEnterprise = p.code === 'enterprise'
+                      const colorClass = isBusiness ? 'text-cyan-300' : isEnterprise ? 'text-amber-300' : ''
+                      return (
+                        <td key={p.id || p.code} className={`p-4 text-center font-mono ${colorClass}`}>
+                          {p.max_users >= 999 ? 'Unlimited' : `${p.max_users} Users`}
+                        </td>
+                      )
+                    })}
                   </tr>
                   <tr>
                     <td className="p-4">Shop Branches & Factories</td>
-                    <td className="p-4 text-center font-mono">1 Branch</td>
-                    <td className="p-4 text-center font-mono text-cyan-300">3 Branches</td>
-                    <td className="p-4 text-center font-mono text-amber-300">Unlimited</td>
+                    {paidPlans.map((p) => {
+                      const isBusiness = p.code === 'business'
+                      const isEnterprise = p.code === 'enterprise'
+                      const colorClass = isBusiness ? 'text-cyan-300' : isEnterprise ? 'text-amber-300' : ''
+                      return (
+                        <td key={p.id || p.code} className={`p-4 text-center font-mono ${colorClass}`}>
+                          {p.max_branches >= 999 ? 'Unlimited' : `${p.max_branches} ${p.max_branches === 1 ? 'Branch' : 'Branches'}`}
+                        </td>
+                      )
+                    })}
                   </tr>
                   <tr>
                     <td className="p-4">Monthly Job Orders</td>
-                    <td className="p-4 text-center font-mono">50 Orders</td>
-                    <td className="p-4 text-center font-mono text-cyan-300">500 Orders</td>
-                    <td className="p-4 text-center font-mono text-amber-300">Unlimited</td>
+                    {paidPlans.map((p) => {
+                      const isBusiness = p.code === 'business'
+                      const isEnterprise = p.code === 'enterprise'
+                      const colorClass = isBusiness ? 'text-cyan-300' : isEnterprise ? 'text-amber-300' : ''
+                      return (
+                        <td key={p.id || p.code} className={`p-4 text-center font-mono ${colorClass}`}>
+                          {p.monthly_orders >= 9999 ? 'Unlimited' : `${p.monthly_orders.toLocaleString()} Orders`}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                  <tr>
+                    <td className="p-4">Cloud Storage (Artworks & Proofs)</td>
+                    {paidPlans.map((p) => {
+                      const isBusiness = p.code === 'business'
+                      const isEnterprise = p.code === 'enterprise'
+                      const colorClass = isBusiness ? 'text-cyan-300' : isEnterprise ? 'text-amber-300' : ''
+                      return (
+                        <td key={p.id || p.code} className={`p-4 text-center font-mono ${colorClass}`}>
+                          {p.storage_gb >= 999 ? 'Unlimited' : `${p.storage_gb} GB`}
+                        </td>
+                      )
+                    })}
                   </tr>
                   <tr>
                     <td className="p-4">Instant SFT Pricing & Quotes</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
+                    {paidPlans.map((p) => (
+                      <td key={p.id || p.code} className="p-4 text-center text-emerald-400">
+                        ✓ Included
+                      </td>
+                    ))}
                   </tr>
                   <tr>
                     <td className="p-4">Customer Dues & WhatsApp Messages</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
+                    {paidPlans.map((p) => (
+                      <td key={p.id || p.code} className="p-4 text-center text-emerald-400">
+                        ✓ Included
+                      </td>
+                    ))}
                   </tr>
                   <tr>
                     <td className="p-4">Floor Kanban & Machine Queues</td>
-                    <td className="p-4 text-center text-slate-500">—</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
+                    {paidPlans.map((p) => (
+                      <td key={p.id || p.code} className={`p-4 text-center ${p.code === 'starter' ? 'text-slate-500' : 'text-emerald-400'}`}>
+                        {p.code === 'starter' ? '—' : '✓ Included'}
+                      </td>
+                    ))}
                   </tr>
                   <tr>
                     <td className="p-4">Flex Roll & Media Inventory</td>
-                    <td className="p-4 text-center text-slate-500">—</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
+                    {paidPlans.map((p) => (
+                      <td key={p.id || p.code} className={`p-4 text-center ${p.code === 'starter' ? 'text-slate-500' : 'text-emerald-400'}`}>
+                        {p.code === 'starter' ? '—' : '✓ Included'}
+                      </td>
+                    ))}
                   </tr>
                   <tr>
                     <td className="p-4">True Job Costing & Net Profit</td>
-                    <td className="p-4 text-center text-slate-500">—</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
-                    <td className="p-4 text-center text-emerald-400">✓ Included</td>
+                    {paidPlans.map((p) => (
+                      <td key={p.id || p.code} className={`p-4 text-center ${p.code === 'starter' ? 'text-slate-500' : 'text-emerald-400'}`}>
+                        {p.code === 'starter' ? '—' : '✓ Included'}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-4">Employee Shifts & Attendance</td>
+                    {paidPlans.map((p) => (
+                      <td key={p.id || p.code} className={`p-4 text-center ${p.code === 'starter' ? 'text-slate-500' : 'text-emerald-400'}`}>
+                        {p.code === 'starter' ? '—' : '✓ Included'}
+                      </td>
+                    ))}
                   </tr>
                   <tr>
                     <td className="p-4">Dedicated Onboarding Specialist</td>
-                    <td className="p-4 text-center text-slate-500">Standard Email</td>
-                    <td className="p-4 text-center text-cyan-300">Priority Phone</td>
-                    <td className="p-4 text-center text-amber-300">On-Site & 24/7 Dedicated</td>
+                    {paidPlans.map((p) => {
+                      if (p.code === 'starter') {
+                        return (
+                          <td key={p.id || p.code} className="p-4 text-center text-slate-500">
+                            Standard Email
+                          </td>
+                        )
+                      }
+                      if (p.code === 'business') {
+                        return (
+                          <td key={p.id || p.code} className="p-4 text-center text-cyan-300">
+                            Priority Phone
+                          </td>
+                        )
+                      }
+                      return (
+                        <td key={p.id || p.code} className="p-4 text-center text-amber-300">
+                          On-Site & 24/7 Dedicated
+                        </td>
+                      )
+                    })}
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-semibold text-white">Action</td>
+                    {paidPlans.map((p) => (
+                      <td key={p.id || p.code} className="p-4 text-center">
+                        <Link href={`/register?plan=${p.code}`}>
+                          <Button size="sm" className="bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-white text-xs font-bold px-3 py-1 h-8 rounded-lg transition-colors cursor-pointer bangla-text">
+                            {tBilingual(`Start ${trialDays}-Day Trial`, `${trialDaysBn} দিনের ট্রায়াল`)}
+                          </Button>
+                        </Link>
+                      </td>
+                    ))}
                   </tr>
                 </tbody>
               </table>

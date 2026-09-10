@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
 import { MARKETING_NAV_ITEMS } from '@/lib/marketing/marketing-data'
+import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
 
 interface MarketingNavbarProps {
   onOpenDemo?: () => void
@@ -23,7 +24,10 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { locale, setLocale, tBilingual } = useI18n()
+  const { trialDays } = usePublicSubscriptionPlans()
   const router = useRouter()
+
+  const trialDaysBn = toBengaliDigits(trialDays)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -222,7 +226,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
             </Link>
             <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
               <Button className="w-full justify-center bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold h-11 bangla-text">
-                <span>{tBilingual('Start 14-Day Free Trial', '১৪ দিনের ফ্রি ট্রায়াল শুরু')}</span>
+                <span>{tBilingual(`Start ${trialDays}-Day Free Trial`, `${trialDaysBn} দিনের ফ্রি ট্রায়াল শুরু`)}</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>

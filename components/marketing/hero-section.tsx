@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
+import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
 import { TRUST_INDICATORS } from '@/lib/marketing/marketing-data'
 import { DashboardMockup } from './dashboard-mockup'
 
@@ -25,6 +26,8 @@ interface HeroSectionProps {
 
 export function HeroSection({ onOpenDemo }: HeroSectionProps) {
   const { tBilingual } = useI18n()
+  const { trialDays } = usePublicSubscriptionPlans()
+  const trialDaysBn = toBengaliDigits(trialDays)
 
   return (
     <section className="relative pt-24 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-28 overflow-hidden">
@@ -86,7 +89,7 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-3.5 pt-2 sm:pt-4 w-full max-w-md sm:max-w-none mx-auto">
             <Link href="/register" className="w-full sm:w-auto">
               <Button className="w-full sm:w-auto h-12 sm:h-13 px-6 sm:px-8 text-sm sm:text-base font-bold bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-xl shadow-cyan-500/25 border border-cyan-400/30 group cursor-pointer bangla-text">
-                <span>{tBilingual('Start Free Trial', '১৪ দিনের ফ্রি ট্রায়াল শুরু')}</span>
+                <span>{tBilingual(`Start ${trialDays}-Day Free Trial`, `${trialDaysBn} দিনের ফ্রি ট্রায়াল শুরু`)}</span>
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>

@@ -13,13 +13,18 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
-import { DEFAULT_PLANS } from '@/lib/subscription/subscription-constants'
+import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
+import { FEATURE_METADATA } from '@/lib/subscription/subscription-constants'
+import { FeatureCode } from '@/types/subscription.types'
 
 export function PricingSection() {
   const [interval, setInterval] = useState<'monthly' | 'yearly'>('monthly')
-  const { tBilingual } = useI18n()
+  const { tBilingual, locale } = useI18n()
+  const { paidPlans, trialDays } = usePublicSubscriptionPlans()
 
-  const plans = DEFAULT_PLANS.filter((p) => p.code !== 'trial')
+  const plans = paidPlans
+
+  const trialDaysBn = toBengaliDigits(trialDays)
 
   return (
     <section id="pricing" className="py-16 sm:py-20 md:py-28 bg-slate-900/60 relative overflow-hidden border-t border-slate-800">
@@ -43,8 +48,8 @@ export function PricingSection() {
 
           <p className="text-sm sm:text-lg text-slate-400 leading-relaxed bangla-text">
             {tBilingual(
-              'Get started with a 14-day full-feature trial. No credit card required. Upgrade, downgrade, or cancel anytime.',
-              '১৪ দিনের পূর্ণাঙ্গ ফ্রি ট্রায়াল দিয়ে শুরু করুন। কোনো ক্রেডিট কার্ডের প্রয়োজন নেই। যেকোনো সময় আপগ্রেড করতে পারবেন।'
+              `Get started with a ${trialDays}-day full-feature trial. No credit card required. Upgrade, downgrade, or cancel anytime.`,
+              `${trialDaysBn} দিনের পূর্ণাঙ্গ ফ্রি ট্রায়াল দিয়ে শুরু করুন। কোনো ক্রেডিট কার্ডের প্রয়োজন নেই। যেকোনো সময় আপগ্রেড করতে পারবেন।`
             )}
           </p>
 
@@ -81,21 +86,24 @@ export function PricingSection() {
             >
               <span>{tBilingual('Yearly Billing', 'বার্ষিক বিলিং')}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                {tBilingual('Save 20%', '২০% ছাড়')}
+                {tBilingual('Save ~20%', '২০% পর্যন্ত ছাড়')}
               </span>
             </span>
           </div>
         </div>
 
-        {/* 3 Pricing Cards (Starter, Business, Enterprise) */}
-        <div className="mt-10 sm:mt-14 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch max-w-6xl mx-auto">
-          {plans.map((p) => {
-            const isPopular = p.code === 'business'
-            const price = interval === 'yearly' ? Math.round(p.price_yearly / 12) : p.price_monthly
+        {/* Pricing Cards */}
+        <div className={`mt-10 sm:mt-14 grid grid-cols-1 ${plans.length === 2 ? 'md:grid-cols-2 max-w-4xl' : 'lg:grid-cols-3 max-w-6xl'} gap-6 sm:gap-8 items-stretch mx-auto`}>
+          {plans.map((p, idx) => {
+            const isPopular = p.code === 'business' || (idx === 1 && plans.length === 3)
+            const price = interval === 'yearly' && p.price_yearly > 0 ? Math.round(p.price_yearly / 12) : p.price_monthly
+            const annualSavings = p.price_monthly > 0 && p.price_yearly > 0
+              ? Math.max(0, Math.round(((p.price_monthly * 12 - p.price_yearly) / (p.price_monthly * 12)) * 100))
+              : 0
 
             return (
               <div
-                key={p.code}
+                key={p.id || p.code}
                 className={`relative rounded-3xl p-5 sm:p-7 md:p-8 flex flex-col justify-between transition-all duration-300 ${
                   isPopular
                     ? 'border-2 border-cyan-400 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 shadow-2xl shadow-cyan-950/40 scale-100 lg:-translate-y-2'
@@ -120,7 +128,7 @@ export function PricingSection() {
                         <Crown className="h-5 w-5 text-amber-400 shrink-0" />
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 mt-1 min-h-0 sm:min-h-[36px] leading-relaxed">
+                    <p className="text-xs text-slate-400 mt-1 min-h-0 sm:min-h-[36px] leading-relaxed bangla-text">
                       {p.description}
                     </p>
                   </div>
@@ -137,7 +145,7 @@ export function PricingSection() {
                     </div>
                     <div className="text-[11px] text-cyan-400 font-semibold mt-1">
                       {interval === 'yearly'
-                        ? `৳ ${p.price_yearly.toLocaleString()} BDT per year (~2 months free)`
+                        ? `৳ ${p.price_yearly.toLocaleString()} BDT per year ${annualSavings > 0 ? `(~${annualSavings}% savings)` : ''}`
                         : 'Standard monthly billing in BDT'}
                     </div>
                   </div>
@@ -146,19 +154,19 @@ export function PricingSection() {
                   <div className="space-y-2 sm:space-y-2.5 text-xs text-slate-300">
                     <div className="flex justify-between py-1 border-b border-slate-800/60">
                       <span className="text-slate-400">Team Users:</span>
-                      <span className="font-bold text-white font-mono">{p.max_users} Staff</span>
+                      <span className="font-bold text-white font-mono">{p.max_users >= 999 ? 'Unlimited' : `${p.max_users} Staff`}</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-800/60">
                       <span className="text-slate-400">Branches / Units:</span>
-                      <span className="font-bold text-white font-mono">{p.max_branches} Locations</span>
+                      <span className="font-bold text-white font-mono">{p.max_branches >= 999 ? 'Unlimited' : `${p.max_branches} Locations`}</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-800/60">
                       <span className="text-slate-400">Monthly Job Orders:</span>
-                      <span className="font-bold text-white font-mono">{p.monthly_orders.toLocaleString()} Orders</span>
+                      <span className="font-bold text-white font-mono">{p.monthly_orders >= 9999 ? 'Unlimited' : `${p.monthly_orders.toLocaleString()} Orders`}</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-800/60">
                       <span className="text-slate-400">Cloud Storage:</span>
-                      <span className="font-bold text-white font-mono">{p.storage_gb} GB Artwork</span>
+                      <span className="font-bold text-white font-mono">{p.storage_gb >= 999 ? 'Unlimited' : `${p.storage_gb} GB Artwork`}</span>
                     </div>
                   </div>
 
@@ -223,7 +231,7 @@ export function PricingSection() {
                           : 'bg-slate-900 hover:bg-slate-800 text-white border border-slate-700'
                       }`}
                     >
-                      <span>{tBilingual('Start 14-Day Free Trial', '১৪ দিনের ফ্রি ট্রায়াল')}</span>
+                      <span>{tBilingual(`Start ${trialDays}-Day Free Trial`, `${trialDaysBn} দিনের ফ্রি ট্রায়াল`)}</span>
                       <ArrowRight className="ml-1.5 h-4 w-4" />
                     </Button>
                   </Link>
@@ -239,3 +247,4 @@ export function PricingSection() {
     </section>
   )
 }
+

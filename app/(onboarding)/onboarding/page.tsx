@@ -30,6 +30,7 @@ import { BangladeshAddressPicker } from '@/components/shared/bangladesh-address-
 import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
+import { usePublicSubscriptionPlans } from '@/hooks/use-public-plans'
 
 const TOTAL_STEPS = 7
 
@@ -41,6 +42,7 @@ function OnboardingWizard() {
   const searchParams = useSearchParams()
   const planParam = (searchParams.get('plan') as any) || 'trial'
   const { locale, tBilingual } = useI18n()
+  const { trialDays } = usePublicSubscriptionPlans()
 
   const {
     register,
@@ -600,7 +602,7 @@ function OnboardingWizard() {
                       <div className="font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                         <span>Organization Summary</span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                          14-Day Trial
+                          {planParam && planParam !== 'trial' ? `${planParam.toUpperCase()} Plan (${trialDays}-Day Trial)` : `${trialDays}-Day Trial`}
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400">

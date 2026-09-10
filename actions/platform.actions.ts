@@ -578,7 +578,11 @@ export async function savePlanAction(
 
     const result = await PlatformService.savePlan(planData)
     if (result.success) {
+      revalidatePath('/', 'layout')
+      revalidatePath('/pricing')
+      revalidatePath('/register')
       revalidatePath('/platform/plans')
+      revalidatePath('/platform/subscriptions')
     }
     return result
   } catch (err: any) {
@@ -595,7 +599,11 @@ export async function archivePlanAction(planId: string) {
 
     const result = await PlatformService.archivePlan(planId)
     if (result.success) {
+      revalidatePath('/', 'layout')
+      revalidatePath('/pricing')
+      revalidatePath('/register')
       revalidatePath('/platform/plans')
+      revalidatePath('/platform/subscriptions')
     }
     return result
   } catch (err: any) {
@@ -612,7 +620,11 @@ export async function reactivatePlanAction(planId: string) {
 
     const result = await PlatformService.reactivatePlan(planId)
     if (result.success) {
+      revalidatePath('/', 'layout')
+      revalidatePath('/pricing')
+      revalidatePath('/register')
       revalidatePath('/platform/plans')
+      revalidatePath('/platform/subscriptions')
     }
     return result
   } catch (err: any) {
@@ -629,7 +641,11 @@ export async function deletePlanAction(planId: string) {
 
     const result = await PlatformService.deletePlan(planId)
     if (result.success) {
+      revalidatePath('/', 'layout')
+      revalidatePath('/pricing')
+      revalidatePath('/register')
       revalidatePath('/platform/plans')
+      revalidatePath('/platform/subscriptions')
     }
     return result
   } catch (err: any) {

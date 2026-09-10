@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { SubscriptionService } from '@/services/subscription.service'
 import { EntitlementService } from '@/services/entitlement.service'
+import { PlatformService } from '@/services/platform.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
+import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
 import type {
   PlanCode,
   BillingInterval,
@@ -15,12 +17,21 @@ import type {
   SubscriptionVerificationResult,
   SubscriptionEventRecord,
   SubscriptionInvoiceRecord,
+  SubscriptionPlanRecord,
 } from '@/types/subscription.types'
 
 export interface ServerActionResult<T> {
   success: boolean
   data?: T
   error?: string
+}
+
+export interface PublicPlansData {
+  plans: SubscriptionPlanRecord[]
+  trialPlan: SubscriptionPlanRecord
+  trialDays: number
+  paidPlans: SubscriptionPlanRecord[]
+  lowestPrice: number
 }
 
 /**
@@ -268,3 +279,46 @@ export async function getTenantSubscriptionInvoicesAction(
     return { success: false, error: err?.message || 'Failed to fetch tenant invoices' }
   }
 }
+
+/**
+ * Server Action: Fetches public active subscription plans & trial parameters for marketing surfaces
+ */
+export async function getPublicSubscriptionPlansAction(): Promise<ServerActionResult<PublicPlansData>> {
+  try {
+    const res = await PlatformService.getPlans()
+    const allPlans = (res.success && res.data && res.data.length > 0) ? res.data : DEFAULT_PLANS
+    const activePlans = allPlans.filter((p) => p.is_active !== false)
+    const trialPlan = activePlans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+    const trialDays = trialPlan.trial_days || 14
+    const paidPlans = activePlans
+      .filter((p) => p.code !== 'trial')
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)
+
+    const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p) => p.price_monthly)) : 1999
+
+    return {
+      success: true,
+      data: {
+        plans: activePlans,
+        trialPlan,
+        trialDays,
+        paidPlans,
+        lowestPrice,
+      },
+    }
+  } catch (err: any) {
+    const trialPlan = DEFAULT_TRIAL_PLAN
+    const paidPlans = DEFAULT_PLANS.filter((p) => p.code !== 'trial')
+    return {
+      success: true,
+      data: {
+        plans: DEFAULT_PLANS,
+        trialPlan,
+        trialDays: 14,
+        paidPlans,
+        lowestPrice: 1999,
+      },
+    }
+  }
+}
+
