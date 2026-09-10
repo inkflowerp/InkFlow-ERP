@@ -175,6 +175,14 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
   const tenantContext = await getCurrentTenant(requestedSlugOrId)
 
   if (!tenantContext) {
+    // Purge stale tenant session cookie to eliminate infinite redirect loops
+    try {
+      const cookieStore = await cookies()
+      cookieStore.delete(TENANT_SESSION_COOKIE)
+    } catch {
+      // Non-blocking in environments without cookie mutations
+    }
+
     const supabase = await createClient()
     const {
       data: { user },

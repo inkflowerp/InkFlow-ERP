@@ -177,11 +177,20 @@ export async function updateSession(request: NextRequest) {
     return applyNoCacheHeaders(NextResponse.redirect(url))
   }
 
-  // 3. Authenticated Tenant User trying to access tenant auth pages (/login, /register) -> Redirect to dashboard
-  if (isTenantAuthenticated && isTenantAuthPage && hasValidTenantCookie && tenantSessionData?.companySlug) {
-    const url = request.nextUrl.clone()
-    url.pathname = `/${tenantSessionData.companySlug}/dashboard`
-    return applyNoCacheHeaders(NextResponse.redirect(url))
+  // 3. Authenticated Tenant User trying to access /login -> Redirect to dashboard
+  // Only redirect if actively authenticated in Supabase with a valid company slug and no error/logout params.
+  // Never redirect /register so users can always access Start Free Trial / sign up cleanly.
+  if (pathname === '/login') {
+    const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
+    
+    if (user && hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${tenantSessionData.companySlug}/dashboard`
+      return applyNoCacheHeaders(NextResponse.redirect(url))
+    } else if (!user && hasValidTenantCookie) {
+      // Stale tenant session cookie with no active Supabase user session: purge cookie to prevent redirect loops
+      supabaseResponse.cookies.delete(TENANT_SESSION_COOKIE)
+    }
   }
 
   return supabaseResponse
