@@ -31,6 +31,10 @@ import {
   MessageSquare,
   Mail,
   FileCheck2,
+  AlertTriangle,
+  Sparkles,
+  UserCheck,
+  FileText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Sheet, SheetHeader, SheetContent } from '@/components/ui/sheet'
@@ -51,50 +55,52 @@ interface NavSection {
 
 const SIDEBAR_SECTIONS: NavSection[] = [
   {
-    title: 'Platform',
+    title: 'Platform Core',
     items: [
       { title: 'Overview', href: '/platform', icon: Activity },
       { title: 'Tenants', href: '/platform/tenants', icon: Building2 },
-      { title: 'Users', href: '/platform/users', icon: Users },
-      { title: 'Activity', href: '/platform/activity', icon: FileClock },
+      { title: 'Global Users', href: '/platform/users', icon: Users },
+      { title: 'Live Activity', href: '/platform/activity', icon: FileClock },
     ],
   },
   {
-    title: 'Business',
+    title: 'Commercial & Growth',
     items: [
-      { title: 'Plans', href: '/platform/plans', icon: Briefcase },
+      { title: 'Plans & Tiers', href: '/platform/plans', icon: Briefcase },
       { title: 'Subscriptions', href: '/platform/subscriptions', icon: CreditCard },
-      { title: 'Billing', href: '/platform/billing', icon: FileCheck2 },
-      { title: 'Features', href: '/platform/features', icon: Flag },
-      { title: 'Usage', href: '/platform/usage', icon: Gauge },
+      { title: 'Billing & Invoicing', href: '/platform/billing', icon: FileCheck2 },
+      { title: 'Feature Flags', href: '/platform/features', icon: Flag },
+      { title: 'Resource Usage', href: '/platform/usage', icon: Gauge },
+      { title: 'Customer Success', href: '/platform/customer-success', icon: Sparkles },
     ],
   },
   {
-    title: 'Operations',
+    title: 'Operations & Triage',
     items: [
-      { title: 'Support', href: '/platform/support', icon: ShieldAlert },
+      { title: 'Support Desk', href: '/platform/support', icon: ShieldAlert },
+      { title: 'Incidents & Outages', href: '/platform/incidents', icon: AlertTriangle },
       { title: 'System Health', href: '/platform/health', icon: HeartPulse },
       { title: 'Background Jobs', href: '/platform/jobs', icon: Cpu },
-      { title: 'Notifications', href: '/platform/notifications', icon: Bell },
+      { title: 'Admin Alerts', href: '/platform/notifications', icon: Bell },
     ],
   },
   {
-    title: 'Security',
+    title: 'Security & Governance',
     items: [
       { title: 'Security Center', href: '/platform/security', icon: Shield },
-      { title: 'Platform Admins', href: '/platform/admins', icon: Users },
-      { title: 'Permissions', href: '/platform/permissions', icon: Sliders },
-      { title: 'Sessions', href: '/platform/sessions', icon: Laptop },
-      { title: 'Audit Logs', href: '/platform/audit', icon: FileClock },
+      { title: 'Platform Admins', href: '/platform/admins', icon: UserCheck },
+      { title: 'RBAC Templates', href: '/platform/permissions', icon: Sliders },
+      { title: 'Active Sessions', href: '/platform/sessions', icon: Laptop },
+      { title: 'Audit Ledger', href: '/platform/audit', icon: FileText },
     ],
   },
   {
-    title: 'Settings',
+    title: 'Cluster Settings',
     items: [
       { title: 'Platform Settings', href: '/platform/settings', icon: Settings },
       { title: 'Email Gateway', href: '/platform/settings/communication', icon: Mail, badge: 'SMTP/Cloud' },
-      { title: 'Integrations', href: '/platform/integrations', icon: Layers },
-      { title: 'Emergency Controls', href: '/platform/emergency', icon: Server },
+      { title: 'Integrations & APIs', href: '/platform/integrations', icon: Layers },
+      { title: 'Emergency Lockdown', href: '/platform/emergency', icon: Server },
     ],
   },
 ]
@@ -258,11 +264,13 @@ export function PlatformSidebar() {
                       ? pathname === '/platform' || pathname === '/platform/dashboard'
                       : baseHref === '/platform/settings'
                         ? pathname === '/platform/settings'
-                        : pathname === baseHref ||
-                          (pathname.startsWith(baseHref + '/') && baseHref !== '/platform') ||
-                          (baseHref === '/platform/tenants' && pathname.startsWith('/platform/companies')) ||
-                          (baseHref === '/platform/features' && pathname.startsWith('/platform/feature-flags')) ||
-                          (baseHref === '/platform/permissions' && pathname.startsWith('/platform/rbac'))
+                        : baseHref === '/platform/settings/communication'
+                          ? pathname.startsWith('/platform/settings/communication') || pathname.startsWith('/platform/email')
+                          : pathname === baseHref ||
+                            (pathname.startsWith(baseHref + '/') && baseHref !== '/platform') ||
+                            (baseHref === '/platform/tenants' && pathname.startsWith('/platform/companies')) ||
+                            (baseHref === '/platform/features' && pathname.startsWith('/platform/feature-flags')) ||
+                            (baseHref === '/platform/permissions' && pathname.startsWith('/platform/rbac'))
 
                   return (
                     <Link

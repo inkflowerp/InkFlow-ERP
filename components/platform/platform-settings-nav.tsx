@@ -10,6 +10,7 @@ import {
   Shield,
   Users,
   Sliders,
+  Server,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,7 @@ export function PlatformSettingsNav() {
       href: '/platform/settings/communication',
       icon: Mail,
       badge: 'SMTP / Cloud',
+      matches: ['/platform/settings/communication', '/platform/email'],
     },
     {
       title: 'Integrations & Webhooks',
@@ -50,6 +52,11 @@ export function PlatformSettingsNav() {
       icon: Sliders,
       badge: 'Templates',
       matches: ['/platform/permissions', '/platform/rbac'],
+    },
+    {
+      title: 'Emergency Controls',
+      href: '/platform/emergency',
+      icon: Server,
     },
   ]
 
