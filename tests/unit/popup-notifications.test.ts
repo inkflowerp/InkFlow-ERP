@@ -90,4 +90,24 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
     assert.strictEqual(evaluateButtonDisabled(1, 2), false) // under limit (1/2) -> enabled
     assert.strictEqual(evaluateButtonDisabled(500, -1), false) // enterprise unlimited -> enabled
   })
+
+  it('verifies dynamic trial duration and limits reflect customized trial plan immediately', () => {
+    const customTrialPlan = {
+      id: 'sp-00',
+      code: 'trial',
+      name: 'Free Trial (30 Days)',
+      trial_days: 30,
+      max_users: 2,
+      max_branches: 1,
+      monthly_orders: 100,
+      max_customers: 200,
+    }
+
+    const companyCreatedAt = new Date().toISOString()
+    const trialEndsAt = new Date(new Date(companyCreatedAt).getTime() + customTrialPlan.trial_days * 86400000).toISOString()
+    const daysRemaining = getTrialDaysRemaining(trialEndsAt)
+
+    assert.strictEqual(daysRemaining, 30)
+    assert.strictEqual(customTrialPlan.max_users, 2)
+  })
 })

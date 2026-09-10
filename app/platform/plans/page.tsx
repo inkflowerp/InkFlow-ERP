@@ -70,6 +70,17 @@ import {
   deletePlanAction,
 } from '@/actions/platform.actions'
 import { PlatformTenantCompany } from '@/types/platform.types'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+
+function syncPlansLocally(updatedPlans: SubscriptionPlanRecord[]) {
+  if (typeof window !== 'undefined') {
+    try {
+      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updatedPlans)
+      window.dispatchEvent(new CustomEvent('printerp_plans_sync', { detail: { plans: updatedPlans } }))
+      window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: 'plans' } }))
+    } catch {}
+  }
+}
 
 const ALL_FEATURES = Object.keys(FEATURE_METADATA) as FeatureCode[]
 
@@ -307,6 +318,7 @@ export default function PlatformPlansPage() {
         const savedData: SubscriptionPlanRecord = res.data
         const updated = plans.map((p) => (p.code === 'trial' ? savedData : p))
         setPlans(updated)
+        syncPlansLocally(updated)
         setEditingTrialModalOpen(false)
         showToast(`Free Trial Plan (${savedData.trial_days || 14} days) configuration saved!`, 'success')
       } else {
@@ -336,6 +348,7 @@ export default function PlatformPlansPage() {
         const savedData: SubscriptionPlanRecord = res.data
         const updated = plans.map((p) => (p.id === savedData.id || p.code === savedData.code ? savedData : p))
         setPlans(updated)
+        syncPlansLocally(updated)
         setEditingPlan(null)
         showToast(`Plan "${savedData.name}" updated successfully!`, 'success')
       } else {
@@ -360,6 +373,7 @@ export default function PlatformPlansPage() {
         const savedData: SubscriptionPlanRecord = res.data
         const updated = plans.map((p) => (p.id === savedData.id ? savedData : p))
         setPlans(updated)
+        syncPlansLocally(updated)
         setEditingLimitsPlan(null)
         showToast(`Resource limits updated for "${savedData.name}".`, 'success')
       } else {
@@ -396,7 +410,9 @@ export default function PlatformPlansPage() {
       })
 
       if (res.success && res.data) {
-        setPlans([...plans, res.data])
+        const updated = [...plans, res.data]
+        setPlans(updated)
+        syncPlansLocally(updated)
         setIsCreateOpen(false)
         setNewPlan(initialNewPlanState)
         showToast(`New plan "${res.data.name}" created successfully!`, 'success')
@@ -420,7 +436,9 @@ export default function PlatformPlansPage() {
       if (type === 'archive') {
         const res = await archivePlanAction(plan.id)
         if (res.success) {
-          setPlans(plans.map((p) => (p.id === plan.id ? { ...p, is_active: false } : p)))
+          const updated = plans.map((p) => (p.id === plan.id ? { ...p, is_active: false } : p))
+          setPlans(updated)
+          syncPlansLocally(updated)
           showToast(`Plan "${plan.name}" has been archived.`, 'success')
         } else {
           showToast(res.error || 'Failed to archive plan', 'error')
@@ -428,7 +446,9 @@ export default function PlatformPlansPage() {
       } else if (type === 'reactivate') {
         const res = await reactivatePlanAction(plan.id)
         if (res.success) {
-          setPlans(plans.map((p) => (p.id === plan.id ? { ...p, is_active: true } : p)))
+          const updated = plans.map((p) => (p.id === plan.id ? { ...p, is_active: true } : p))
+          setPlans(updated)
+          syncPlansLocally(updated)
           showToast(`Plan "${plan.name}" has been reactivated!`, 'success')
         } else {
           showToast(res.error || 'Failed to reactivate plan', 'error')
@@ -436,7 +456,9 @@ export default function PlatformPlansPage() {
       } else if (type === 'delete') {
         const res = await deletePlanAction(plan.id)
         if (res.success) {
-          setPlans(plans.filter((p) => p.id !== plan.id))
+          const updated = plans.filter((p) => p.id !== plan.id)
+          setPlans(updated)
+          syncPlansLocally(updated)
           showToast(`Plan "${plan.name}" has been deleted.`, 'success')
         } else {
           showToast(res.error || 'Failed to delete plan', 'error')

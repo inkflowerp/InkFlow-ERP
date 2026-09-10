@@ -7,6 +7,7 @@ import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { createClient } from '@/lib/supabase/client'
 
 import { PAYMENT_GATEWAY_METADATA_LIST, PaymentGatewayMeta } from '@/lib/payments/types'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 // Bengali numeral translation map
 const BENGALI_DIGITS: Record<string, string> = {
@@ -55,6 +56,34 @@ const DEFAULT_ACTIVE_GATEWAYS: PaymentGatewayMeta[] = PAYMENT_GATEWAY_METADATA_L
   ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
 )
 
+function getInitialPublicSeed(initialData?: PublicPlansData | null): PublicPlansData | null {
+  if (initialData) return initialData
+  if (cachedPlansData) return cachedPlansData
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+      if (stored && Array.isArray(stored) && stored.length > 0) {
+        const activePlans = stored.filter((p) => p.is_active !== false)
+        const trialPlan = activePlans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+        const trialDays = trialPlan.trial_days || 14
+        const paidPlans = activePlans
+          .filter((p) => p.code !== 'trial')
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)
+        const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p) => p.price_monthly)) : 1999
+        return {
+          plans: activePlans,
+          trialPlan,
+          trialDays,
+          paidPlans,
+          lowestPrice,
+          activePaymentGateways: DEFAULT_ACTIVE_GATEWAYS,
+        }
+      }
+    } catch {}
+  }
+  return null
+}
+
 export function PublicPlansProvider({
   initialData,
   children,
@@ -62,7 +91,7 @@ export function PublicPlansProvider({
   initialData?: PublicPlansData | null
   children: React.ReactNode
 }) {
-  const seed = initialData || cachedPlansData
+  const seed = getInitialPublicSeed(initialData)
   if (initialData) {
     cachedPlansData = initialData
   }
@@ -82,6 +111,11 @@ export function PublicPlansProvider({
 
   const applyPlansData = useCallback((data: PublicPlansData) => {
     cachedPlansData = data
+    if (typeof window !== 'undefined') {
+      try {
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, data.plans)
+      } catch {}
+    }
     setPlans(data.plans)
     setTrialPlan(data.trialPlan)
     setTrialDays(data.trialDays || data.trialPlan?.trial_days || 14)

@@ -44,6 +44,115 @@ import {
 } from '@/actions/subscription.actions'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { triggerPopupNotification } from '@/components/shell/realtime-notification-popup'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { PlatformTenantCompany } from '@/types/platform.types'
+
+let memoryCachedPlans: SubscriptionPlanRecord[] | null = null
+const memoryCachedSubscriptions: Record<string, CompanySubscriptionRecord> = {}
+
+function getInitialPlans(): SubscriptionPlanRecord[] {
+  if (memoryCachedPlans && memoryCachedPlans.length > 0) {
+    return memoryCachedPlans
+  }
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+      if (stored && Array.isArray(stored) && stored.length > 0) {
+        memoryCachedPlans = stored
+        return stored
+      }
+    } catch {}
+  }
+  return DEFAULT_PLANS
+}
+
+function getInitialSubscription(
+  companyId: string,
+  companySlug: string,
+  initialPlans: SubscriptionPlanRecord[]
+): CompanySubscriptionRecord {
+  if (memoryCachedSubscriptions[companyId]) {
+    return memoryCachedSubscriptions[companyId]
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord> | CompanySubscriptionRecord[]>(
+        STORAGE_KEYS.COMPANY_SUBSCRIPTIONS
+      )
+      if (storedSubs) {
+        if (Array.isArray(storedSubs)) {
+          const found = storedSubs.find(
+            (s) => s.company_id === companyId || (companySlug && s.company_id === companySlug)
+          )
+          if (found) {
+            memoryCachedSubscriptions[companyId] = found
+            return found
+          }
+        } else if (typeof storedSubs === 'object') {
+          const found = storedSubs[companyId] || (companySlug ? storedSubs[companySlug] : undefined)
+          if (found) {
+            memoryCachedSubscriptions[companyId] = found
+            return found
+          }
+        }
+      }
+
+      const platCompanies = PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+      const matchedCo = platCompanies.find(
+        (c) => c.id === companyId || (companySlug && c.slug === companySlug)
+      )
+
+      const trialPlan = initialPlans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+      const trialDays = trialPlan.trial_days || 14
+
+      if (matchedCo) {
+        const isTrial = matchedCo.status === 'trial' || matchedCo.plan === 'trial'
+        const normalizedPlanCode: PlanCode = isTrial
+          ? 'trial'
+          : matchedCo.plan === 'business' || matchedCo.plan === 'growth'
+          ? 'business'
+          : matchedCo.plan === 'enterprise' || matchedCo.plan === 'custom'
+          ? 'enterprise'
+          : matchedCo.plan === 'starter'
+          ? 'starter'
+          : 'trial'
+        const matchedPlan = initialPlans.find((p) => p.code === normalizedPlanCode) || trialPlan
+        const createdAt = matchedCo.created_at || new Date().toISOString()
+        const trialEndsAt = new Date(new Date(createdAt).getTime() + (trialPlan.trial_days || trialDays) * 86400000).toISOString()
+
+        const syntheticSub: CompanySubscriptionRecord = {
+          id: `sub-${companyId}`,
+          company_id: companyId,
+          plan_id: matchedPlan.id,
+          plan_code: normalizedPlanCode,
+          status: isTrial ? 'trial' : 'active',
+          billing_interval: matchedCo.billing_interval || 'monthly',
+          current_period_start: createdAt,
+          current_period_end: new Date(new Date(createdAt).getTime() + 30 * 86400000).toISOString(),
+          trial_ends_at: isTrial ? trialEndsAt : null,
+          payment_method_type: null,
+          last_payment_reference: null,
+          custom_limits_override: null,
+        }
+        memoryCachedSubscriptions[companyId] = syntheticSub
+        return syntheticSub
+      }
+    } catch {}
+  }
+
+  const trialPlan = initialPlans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+  const trialDays = trialPlan.trial_days || 14
+  return {
+    ...DEFAULT_TENANT_SUBSCRIPTION,
+    id: `sub-${companyId}`,
+    company_id: companyId,
+    plan_id: trialPlan.id,
+    plan_code: 'trial',
+    status: 'trial',
+    trial_ends_at: new Date(Date.now() + trialDays * 86400000).toISOString(),
+  }
+}
 
 export interface LimitCheckResult {
   allowed: boolean
@@ -106,12 +215,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const companyId = company?.id || 'default'
   const companySlug = company?.slug || 'app'
 
-  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(DEFAULT_PLANS)
-  const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() => ({
-    ...DEFAULT_TENANT_SUBSCRIPTION,
-    id: `sub-${companyId}`,
-    company_id: companyId,
-  }))
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(getInitialPlans)
+  const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() =>
+    getInitialSubscription(companyId, companySlug, getInitialPlans())
+  )
 
   const refreshSubscription = useCallback(async () => {
     try {
@@ -121,15 +228,52 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       ])
       if (subRes.success && subRes.data) {
         setSubscription(subRes.data)
+        memoryCachedSubscriptions[companyId] = subRes.data
+        if (typeof window !== 'undefined') {
+          try {
+            const currentSubs =
+              PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+            currentSubs[companyId] = subRes.data
+            PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs)
+          } catch {}
+        }
       }
       if (plansRes.success && plansRes.data?.plans && plansRes.data.plans.length > 0) {
         setPlans(plansRes.data.plans)
+        memoryCachedPlans = plansRes.data.plans
+        if (typeof window !== 'undefined') {
+          try {
+            PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, plansRes.data.plans)
+          } catch {}
+        }
       }
     } catch {}
   }, [companyId, companySlug])
 
   useEffect(() => {
     refreshSubscription()
+
+    const handlePlansSync = () => {
+      refreshSubscription()
+    }
+    const handleDataSync = (e: Event) => {
+      const customEvent = e as CustomEvent
+      if (
+        !customEvent.detail?.key ||
+        customEvent.detail?.key.includes('plan') ||
+        customEvent.detail?.key.includes('subscription') ||
+        customEvent.detail?.key.includes('company')
+      ) {
+        refreshSubscription()
+      }
+    }
+
+    window.addEventListener('printerp_plans_sync', handlePlansSync)
+    window.addEventListener('printerp_data_sync', handleDataSync)
+    return () => {
+      window.removeEventListener('printerp_plans_sync', handlePlansSync)
+      window.removeEventListener('printerp_data_sync', handleDataSync)
+    }
   }, [refreshSubscription])
 
   // Compute resource usage dynamically
@@ -258,8 +402,32 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [subscription])
 
   const accountTypeMeta: TenantAccountTypeMeta = useMemo(() => {
-    return TENANT_ACCOUNT_TYPE_METADATA[accountType] || TENANT_ACCOUNT_TYPE_METADATA.trial
-  }, [accountType])
+    const base = TENANT_ACCOUNT_TYPE_METADATA[accountType] || TENANT_ACCOUNT_TYPE_METADATA.trial
+    if (accountType === 'trial' && currentPlan) {
+      const trialDays = currentPlan.trial_days || 14
+      return {
+        ...base,
+        nameEn: currentPlan.name || `Free Trial (${trialDays} Days)`,
+        nameBn: currentPlan.name_bn || `${toBengaliDigits(trialDays)} দিনের ফ্রি ট্রায়াল`,
+        maxUsers: currentPlan.max_users,
+        maxBranches: currentPlan.max_branches,
+        descriptionEn: currentPlan.description || base.descriptionEn,
+      }
+    }
+    if (currentPlan) {
+      return {
+        ...base,
+        nameEn: currentPlan.name || base.nameEn,
+        nameBn: currentPlan.name_bn || base.nameBn,
+        maxUsers: currentPlan.max_users,
+        maxBranches: currentPlan.max_branches,
+        priceMonthly: currentPlan.price_monthly,
+        priceYearly: currentPlan.price_yearly,
+        descriptionEn: currentPlan.description || base.descriptionEn,
+      }
+    }
+    return base
+  }, [accountType, currentPlan])
 
   const isSuspended = subscription.status === 'suspended'
   const isPastDue = subscription.status === 'past_due'
