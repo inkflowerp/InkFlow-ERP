@@ -56,10 +56,10 @@ export function formatBDT(
   const formattedNumber = formatLakhCrore(amount, showDecimals)
 
   if (useBengaliNumerals) {
-    return `${symbol} ${toBengaliNumerals(formattedNumber)}`
+    return `${symbol}\u00A0${toBengaliNumerals(formattedNumber)}`
   }
 
-  return `${symbol} ${formattedNumber}`
+  return `${symbol}\u00A0${formattedNumber}`
 }
 
 /**

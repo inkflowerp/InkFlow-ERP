@@ -180,6 +180,7 @@ export function TrialUpgradeModal() {
       open={isUpgradeModalOpen}
       onOpenChange={(open) => !open && closeUpgradeModal()}
       size="5xl"
+      hideFooter
       title={
         <div className="flex items-center gap-2.5 text-slate-900 dark:text-white">
           <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 text-white shadow-sm shrink-0">
@@ -263,7 +264,7 @@ export function TrialUpgradeModal() {
           </div>
 
           {/* Plan Comparison Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 lg:gap-5">
             {paidPlans.map((plan) => {
               const isSelected = selectedPlan === plan.code
               const isRecommended = plan.code === 'business'
@@ -302,7 +303,7 @@ export function TrialUpgradeModal() {
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan.code)}
                   className={cn(
-                    'relative rounded-2xl border-2 p-5 cursor-pointer transition-all flex flex-col justify-between',
+                    'relative rounded-2xl border-2 p-4 sm:p-5 cursor-pointer transition-all flex flex-col justify-between',
                     isSelected
                       ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-xl shadow-blue-500/10'
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
@@ -314,24 +315,24 @@ export function TrialUpgradeModal() {
                     </div>
                   )}
 
-                  <div className="space-y-3.5">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-base text-slate-900 dark:text-white bangla-text">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="font-bold text-base text-slate-900 dark:text-white bangla-text truncate">
                         {tBilingual(plan.name, plan.name_bn)}
                       </h4>
                       {isSelected && (
-                        <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
                           <Check className="h-3 w-3" />
                         </div>
                       )}
                     </div>
 
                     <div>
-                      <div className="flex items-baseline gap-1.5 flex-wrap">
-                        <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">
+                      <div className="flex items-baseline gap-1.5 flex-nowrap whitespace-nowrap overflow-hidden">
+                        <span className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap tracking-tight">
                           <CurrencyDisplay amount={price} showDecimals={false} />
                         </span>
-                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0">
                           {interval === 'yearly' ? tBilingual('/yr', '/বছর') : tBilingual('/mo', '/মাস')}
                         </span>
                       </div>
@@ -342,26 +343,26 @@ export function TrialUpgradeModal() {
 
                     {/* Limit items */}
                     <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs text-slate-700 dark:text-slate-300 bangla-text">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <Users className="h-4 w-4 text-blue-500 shrink-0" />
                         <span className="truncate">{usersLabel}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <Building className="h-4 w-4 text-indigo-500 shrink-0" />
                         <span className="truncate">{branchesLabel}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <ShoppingCart className="h-4 w-4 text-emerald-500 shrink-0" />
                         <span className="truncate">{ordersLabel}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <HardDrive className="h-4 w-4 text-purple-500 shrink-0" />
                         <span className="truncate">{storageLabel}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                     <Button
                       type="button"
                       variant={isSelected ? 'default' : 'outline'}
