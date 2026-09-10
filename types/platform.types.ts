@@ -39,6 +39,16 @@ export interface PlatformSupportSessionRecord {
   created_at: string
 }
 
+export interface PlatformSupportOverviewStats {
+  total_sessions: number
+  active_sessions_count: number
+  expired_sessions_count: number
+  revoked_sessions_count: number
+  read_only_count: number
+  config_only_count: number
+  full_support_count: number
+}
+
 export type PlatformPlanCode = 'trial' | 'starter' | 'business' | 'enterprise' | 'growth' | 'custom'
 
 export type TenantHealthStatus = 'healthy' | 'at_risk' | 'critical' | 'suspended'

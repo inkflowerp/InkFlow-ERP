@@ -411,7 +411,8 @@ export async function startTenantSupportSessionAction(
   companySlug: string,
   companyName: string,
   reason: string,
-  accessLevel: SupportAccessLevel = 'read_only'
+  accessLevel: SupportAccessLevel = 'read_only',
+  durationMinutes: number = 120
 ): Promise<{ success: true; redirectUrl: string } | { success: false; error: string }> {
   try {
     const platformUser = await getCurrentPlatformUser()
@@ -422,7 +423,7 @@ export async function startTenantSupportSessionAction(
       return { success: false, error: 'Unauthorized: You do not possess Support Access capability.' }
     }
 
-    const sessionRes = await PlatformService.createSupportSession(companyId, reason, accessLevel, platformUser.id)
+    const sessionRes = await PlatformService.createSupportSession(companyId, reason, accessLevel, platformUser.id, durationMinutes)
     if (!sessionRes.success || !sessionRes.data) {
       return { success: false, error: sessionRes.error || 'Failed to initiate support session.' }
     }
@@ -437,20 +438,60 @@ export async function startTenantSupportSessionAction(
       targetCompanySlug: companySlug,
       targetCompanyName: companyName,
       reason,
-      accessLevel,
+      accessLevel: supportRecord.access_level,
       startedAt: supportRecord.started_at,
       expiresAt: supportRecord.expires_at,
     }
 
+    const cookieMaxAge = Math.max(15, Math.min(durationMinutes || 120, 480)) * 60
+
     cookieStore.set('printerp_support_tenant', JSON.stringify(supportPayload), {
       path: '/',
-      maxAge: 60 * 60 * 2, // 2 hours
+      maxAge: cookieMaxAge,
       sameSite: 'lax',
     })
 
+    revalidatePath('/platform/support')
     return { success: true, redirectUrl: `/${companySlug}/dashboard` }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to initiate support session' }
+  }
+}
+
+export async function extendSupportSessionAction(sessionId: string, additionalMinutes: number = 60) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (!hasPlatformPermission(platformUser, 'support.access') && !hasPlatformPermission(platformUser, 'company.support_access')) {
+      return { success: false, error: 'Unauthorized: You do not possess Support Access capability.' }
+    }
+
+    const result = await PlatformService.extendSupportSession(sessionId, additionalMinutes, platformUser.id)
+    if (result.success && result.data) {
+      const cookieStore = await cookies()
+      const existing = cookieStore.get('printerp_support_tenant')?.value
+      if (existing) {
+        try {
+          const parsed = JSON.parse(existing)
+          if (parsed.sessionId === sessionId) {
+            parsed.expiresAt = result.data.expires_at
+            cookieStore.set('printerp_support_tenant', JSON.stringify(parsed), {
+              path: '/',
+              maxAge: 60 * 60 * 8, // up to 8 hours
+              sameSite: 'lax',
+            })
+          }
+        } catch {
+          // Ignore
+        }
+      }
+      revalidatePath('/platform/support')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to extend support session' }
   }
 }
 
@@ -472,6 +513,7 @@ export async function exitTenantSupportSessionAction() {
 
     cookieStore.delete('printerp_support_tenant')
     revalidatePath('/platform', 'layout')
+    revalidatePath('/platform/support')
     return { success: true }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to exit support session' }
@@ -481,12 +523,24 @@ export async function exitTenantSupportSessionAction() {
 export async function revokeSupportSessionAction(sessionId: string, reason?: string) {
   try {
     const platformUser = await getCurrentPlatformUser()
-    if (!platformUser || !hasPlatformPermission(platformUser, 'support.access')) {
+    if (!platformUser || (!hasPlatformPermission(platformUser, 'support.access') && !hasPlatformPermission(platformUser, 'company.support_access'))) {
       return { success: false, error: 'Unauthorized' }
     }
 
     const result = await PlatformService.revokeSupportSession(sessionId, reason)
     if (result.success) {
+      const cookieStore = await cookies()
+      const existing = cookieStore.get('printerp_support_tenant')?.value
+      if (existing) {
+        try {
+          const parsed = JSON.parse(existing)
+          if (parsed.sessionId === sessionId) {
+            cookieStore.delete('printerp_support_tenant')
+          }
+        } catch {
+          // Ignore
+        }
+      }
       revalidatePath('/platform/support')
     }
     return result

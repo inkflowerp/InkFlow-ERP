@@ -32,6 +32,7 @@ import {
   ApiResponse,
   PlatformTenantUserItem,
   PlatformSupportSessionRecord,
+  PlatformSupportOverviewStats,
   PlatformNotificationItem,
   PlatformSubscriptionRecord,
   PlatformSubscriptionsOverview,
@@ -423,6 +424,21 @@ export async function getPlatformSupportSessionsAction(): Promise<ApiResponse<Pl
     return await PlatformService.getSupportSessions()
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch support sessions' }
+  }
+}
+
+/**
+ * Server Action: Get Platform Support Telemetry & Overview Stats
+ */
+export async function getPlatformSupportOverviewStatsAction(): Promise<ApiResponse<PlatformSupportOverviewStats>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getSupportOverviewStats()
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch support statistics' }
   }
 }
 
