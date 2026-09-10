@@ -41,7 +41,9 @@ export async function updateCompanyStatusAction(
     if (result.success) {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
+      revalidatePath('/platform/tenants')
       revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath(`/platform/tenants/${companyId}`)
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/dashboard')
     }
@@ -130,7 +132,9 @@ export async function changeCompanyPlanAction(
     if (result.success) {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
+      revalidatePath('/platform/tenants')
       revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath(`/platform/tenants/${companyId}`)
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/dashboard')
     }
@@ -177,7 +181,9 @@ export async function updateCompanySubscriptionAction(input: {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/companies')
+      revalidatePath('/platform/tenants')
       revalidatePath(`/platform/companies/${input.companyId}`)
+      revalidatePath(`/platform/tenants/${input.companyId}`)
       revalidatePath('/platform/billing')
       revalidatePath('/platform/dashboard')
     }
@@ -220,7 +226,9 @@ export async function extendSubscriptionTrialAction(
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/companies')
+      revalidatePath('/platform/tenants')
       revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath(`/platform/tenants/${companyId}`)
       revalidatePath('/platform/dashboard')
     }
     return result
@@ -265,7 +273,9 @@ export async function recordManualSubscriptionPaymentAction(
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/companies')
+      revalidatePath('/platform/tenants')
       revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath(`/platform/tenants/${companyId}`)
       revalidatePath('/platform/billing')
       revalidatePath('/platform/dashboard')
     }
@@ -306,7 +316,9 @@ export async function overrideSubscriptionLimitsAction(
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/companies')
+      revalidatePath('/platform/tenants')
       revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath(`/platform/tenants/${companyId}`)
     }
     return result
   } catch (err: any) {

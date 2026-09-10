@@ -144,11 +144,11 @@ export default function Company360Page() {
       {/* Breadcrumb & Header */}
       <div className="space-y-4">
         <Link
-          href="/platform/companies"
+          href="/platform/tenants"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Back to Companies Directory</span>
+          <span>Back to Tenants Directory</span>
         </Link>
 
         {/* Notification */}

@@ -448,45 +448,153 @@ export default function PlatformTenantsPage() {
         </div>
       </div>
 
+      {/* KPI Metrics Summary Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400">Total Tenants</span>
+            <div className="h-8 w-8 rounded-xl bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+              <Building2 className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-white mt-2 flex items-baseline gap-2">
+            {companies.length}
+            <span className="text-[11px] font-normal text-slate-500 font-mono">orgs</span>
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+            <span className="text-indigo-400 font-bold">
+              {companies.reduce((acc, c) => acc + (c.users_count || 0), 0)}
+            </span>{' '}
+            active members
+          </div>
+        </Card>
+
+        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400">Active Tenants</span>
+            <div className="h-8 w-8 rounded-xl bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-emerald-400 mt-2 flex items-baseline gap-2">
+            {companies.filter((c) => c.status === 'active').length}
+            <span className="text-[11px] font-semibold text-emerald-400/80 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
+              {companies.length > 0
+                ? `${Math.round((companies.filter((c) => c.status === 'active').length / companies.length) * 100)}%`
+                : '0%'}
+            </span>
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1">Operational workspaces</div>
+        </Card>
+
+        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400">Free Trials</span>
+            <div className="h-8 w-8 rounded-xl bg-blue-600/15 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+              <Sparkles className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-blue-400 mt-2 flex items-baseline gap-2">
+            {companies.filter((c) => c.status === 'trial').length}
+            <span className="text-[11px] font-normal text-slate-500 font-mono">evaluating</span>
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1">14-day evaluation accounts</div>
+        </Card>
+
+        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400">Suspended / Risk</span>
+            <div className="h-8 w-8 rounded-xl bg-red-600/15 border border-red-500/20 text-red-400 flex items-center justify-center">
+              <AlertTriangle className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-red-400 mt-2 flex items-baseline gap-2">
+            {companies.filter((c) => c.status === 'suspended').length}
+            <span className="text-[11px] font-normal text-slate-500 font-mono">restricted</span>
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1">Access restricted by policy</div>
+        </Card>
+
+        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg col-span-2 sm:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400">Portfolio MRR</span>
+            <div className="h-8 w-8 rounded-xl bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <CreditCard className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-emerald-400 mt-2">
+            <CurrencyDisplay amount={companies.reduce((acc, c) => acc + (c.monthly_fee || 0), 0)} />
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1">Monthly SaaS revenue</div>
+        </Card>
+      </div>
+
       {/* Filter & Search Bar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
-        <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-          <Input
-            placeholder="Search by business name, slug, owner, phone..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-slate-950/80 border-slate-800 text-xs text-white placeholder:text-slate-500 h-9 rounded-xl focus-visible:ring-indigo-500"
-          />
-        </form>
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          {[
+            { key: 'all', label: 'All Tenants', count: companies.length },
+            { key: 'active', label: 'Active', count: companies.filter((c) => c.status === 'active').length },
+            { key: 'trial', label: 'Trial', count: companies.filter((c) => c.status === 'trial').length },
+            { key: 'suspended', label: 'Suspended', count: companies.filter((c) => c.status === 'suspended').length },
+          ].map((tab) => {
+            const isSelected = statusFilter === tab.key
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setStatusFilter(tab.key)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  isSelected
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'bg-slate-950/70 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800/80'
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 font-medium focus:outline-none focus:border-indigo-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="trial">Trial</option>
-            <option value="suspended">Suspended</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="archived">Archived</option>
-          </select>
+        <div className="flex items-center gap-2.5 flex-1 md:max-w-md justify-end">
+          <form onSubmit={handleSearchSubmit} className="relative flex-1">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <Input
+              placeholder="Search by name, slug, owner, phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 bg-slate-950/80 border-slate-800 text-xs text-white placeholder:text-slate-500 h-9 rounded-xl focus-visible:ring-indigo-500"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-2.5 text-slate-500 hover:text-slate-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </form>
 
           {/* Plan Filter */}
           <select
             value={planFilter}
             onChange={(e) => setPlanFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 font-medium focus:outline-none focus:border-indigo-500"
+            className="h-9 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 font-medium focus:outline-none focus:border-indigo-500 shrink-0"
           >
             <option value="all">All Plans</option>
-            <option value="trial">Trial</option>
-            <option value="starter">Starter</option>
-            <option value="business">Business</option>
-            <option value="enterprise">Enterprise</option>
-            <option value="growth">Growth</option>
+            <option value="trial">Trial Tier</option>
+            <option value="starter">Starter Tier</option>
+            <option value="business">Business Tier</option>
+            <option value="enterprise">Enterprise Tier</option>
+            <option value="growth">Growth Tier</option>
           </select>
         </div>
       </div>
@@ -548,7 +656,7 @@ export default function PlatformTenantsPage() {
                           </div>
                           <div className="min-w-0">
                             <Link
-                              href={`/platform/companies/${c.id}`}
+                              href={`/platform/tenants/${c.id}`}
                               className="font-bold text-white hover:text-indigo-400 transition-colors truncate block"
                             >
                               {c.name}
@@ -624,11 +732,25 @@ export default function PlatformTenantsPage() {
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
-                            href={`/platform/companies/${c.id}`}
+                            href={`/platform/tenants/${c.id}`}
                             className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-colors"
                           >
                             360° View
                           </Link>
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setPlanModalCompany(c)
+                              setTargetPlan(c.plan as PlatformPlanCode)
+                              setPlanReason('')
+                            }}
+                            className="h-7 px-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-950/40 text-xs"
+                            title="Change Subscription Plan"
+                          >
+                            <CreditCard className="h-3.5 w-3.5" />
+                          </Button>
 
                           <Button
                             size="sm"
@@ -655,7 +777,7 @@ export default function PlatformTenantsPage() {
                               className="h-7 px-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40 text-xs"
                               title="Reactivate Tenant"
                             >
-                              Reactivate
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                             </Button>
                           ) : (
                             <Button
@@ -1192,7 +1314,7 @@ export default function PlatformTenantsPage() {
             <div className="p-4 border-t border-slate-800 flex items-center justify-between gap-2 bg-slate-950/80">
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/platform/companies/${provisionedResult.company.id}`}
+                  href={`/platform/tenants/${provisionedResult.company.id}`}
                   className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-colors"
                 >
                   View 360° Profile
@@ -1220,7 +1342,150 @@ export default function PlatformTenantsPage() {
         </div>
       )}
 
-      {/* 2. SUSPEND / REACTIVATE MODAL */}
+      {/* 2. CHANGE PLAN MODAL */}
+      {planModalCompany && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200">
+          <Card className="w-full max-w-xl bg-slate-900 border-slate-800 text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
+            <CardHeader className="border-b border-slate-800 pb-4 shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-10 w-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                    <CreditCard className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-bold text-white flex items-center gap-2">
+                      Modify Subscription Plan
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-400">
+                      Organization: <strong className="text-white">{planModalCompany.name}</strong> (/{planModalCompany.slug}) • Current Plan:{' '}
+                      <span className="font-bold text-indigo-400 capitalize">{planModalCompany.plan}</span>
+                    </CardDescription>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPlanModalCompany(null)}
+                  className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4 p-5 text-xs overflow-y-auto flex-1">
+              <div className="space-y-2">
+                <label className="font-semibold text-slate-300 block">Select Target Tier</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[
+                    {
+                      code: 'trial' as PlatformPlanCode,
+                      title: 'Free Trial',
+                      price: '৳0 / 14 Days',
+                      desc: 'Full evaluation access for testing and initial pilot setup.',
+                    },
+                    {
+                      code: 'starter' as PlatformPlanCode,
+                      title: 'Starter Tier',
+                      price: '৳1,999 / mo',
+                      desc: 'Up to 3 Users • 1 Branch • Basic Quotations & POS Invoices.',
+                    },
+                    {
+                      code: 'business' as PlatformPlanCode,
+                      title: 'Business Tier',
+                      price: '৳4,999 / mo',
+                      desc: 'Up to 10 Users • 3 Branches • Inventory & Production Kanban.',
+                    },
+                    {
+                      code: 'enterprise' as PlatformPlanCode,
+                      title: 'Enterprise Tier',
+                      price: '৳9,999 / mo',
+                      desc: '50+ Users • Unlimited Branches • Dedicated Support & Custom SLA.',
+                    },
+                    {
+                      code: 'growth' as PlatformPlanCode,
+                      title: 'Growth / Scale',
+                      price: '৳14,999 / mo',
+                      desc: 'High volume transactional quota • Advanced API integrations.',
+                    },
+                  ].map((p) => {
+                    const isSelected = targetPlan === p.code
+                    const isCurrent = planModalCompany.plan === p.code
+                    return (
+                      <div
+                        key={p.code}
+                        onClick={() => setTargetPlan(p.code)}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
+                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-white text-xs flex items-center gap-1.5">
+                            {p.title}
+                            {isCurrent && (
+                              <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-normal">
+                                Current
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-[10px] font-semibold text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded">
+                            {p.price}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400">{p.desc}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-300">
+                  Reason for Plan Modification <span className="text-red-400">*</span>
+                </label>
+                <Input
+                  required
+                  placeholder="e.g. Upgraded to Business tier following verified payment confirmation..."
+                  value={planReason}
+                  onChange={(e) => setPlanReason(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                />
+              </div>
+            </CardContent>
+
+            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2.5 bg-slate-950/80 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setPlanModalCompany(null)}
+                className="text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={isUpdatingPlan || !planReason.trim()}
+                onClick={handleChangePlan}
+                size="sm"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4"
+              >
+                {isUpdatingPlan ? (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                    Updating Plan...
+                  </>
+                ) : (
+                  'Apply Plan Change'
+                )}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* 3. SUSPEND / REACTIVATE MODAL */}
       {statusModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
           <Card className="w-full max-w-md bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
