@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -43,7 +44,7 @@ export function LimitExceededModal() {
     getLimitStatus,
     openUpgradeModal,
   } = useSubscription()
-  const { tBilingual } = useI18n()
+  const { locale, tBilingual } = useI18n()
 
   if (!isLimitExceededModalOpen || !limitModalType) return null
 
@@ -56,6 +57,17 @@ export function LimitExceededModal() {
   const status = getLimitStatus(limitModalType)
   const nextPlan = getNextTierPlan(currentPlanCode, allPlans)
   const nextPlanLimit = nextPlan[limitModalType]
+
+  const isNextUnlimited = nextPlanLimit <= 0 || nextPlanLimit >= 99999
+  const nextLimitLabelEn = isNextUnlimited ? 'Unlimited' : String(nextPlanLimit)
+  const nextLimitLabelBn = isNextUnlimited ? 'আনলিমিটেড' : toBengaliDigits(nextPlanLimit)
+
+  const currentDisplay = locale === 'bn' ? toBengaliDigits(status.current) : status.current
+  const limitDisplay = status.limit <= 0 || status.limit >= 99999
+    ? tBilingual('Unlimited', 'আনলিমিটেড')
+    : locale === 'bn'
+    ? toBengaliDigits(status.limit)
+    : status.limit
 
   const handleUpgradeClick = () => {
     closeLimitExceededModal()
@@ -92,7 +104,7 @@ export function LimitExceededModal() {
           <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 bangla-text">
             <span>{tBilingual('Current Quota Usage:', 'বর্তমান ব্যবহারের পরিমাণ:')}</span>
             <Badge className="bg-amber-500 text-slate-950 font-bold">
-              {status.current} / {status.limit} (100%)
+              {currentDisplay} / {limitDisplay} ({status.percentage}%)
             </Badge>
           </div>
 
@@ -125,8 +137,8 @@ export function LimitExceededModal() {
           <div className="text-xs text-slate-200 space-y-1.5 bangla-text">
             <p>
               {tBilingual(
-                `Upgrading to the ${nextPlan.name} increases your limit from ${status.limit} to ${nextPlanLimit > 9999 ? 'Unlimited' : nextPlanLimit} and unlocks full team productivity.`,
-                `${nextPlan.name_bn}-এ আপগ্রেড করলে এই সীমা ${status.limit} থেকে বৃদ্ধি পেয়ে ${nextPlanLimit > 9999 ? 'আনলিমিটেড' : nextPlanLimit} হবে।`
+                `Upgrading to the ${nextPlan.name} increases your limit from ${limitDisplay} to ${nextLimitLabelEn} and unlocks full team productivity.`,
+                `${nextPlan.name_bn}-এ আপগ্রেড করলে এই সীমা ${limitDisplay} থেকে বৃদ্ধি পেয়ে ${nextLimitLabelBn} হবে।`
               )}
             </p>
           </div>

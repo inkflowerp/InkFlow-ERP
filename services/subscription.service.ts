@@ -1677,7 +1677,19 @@ export function checkResourceLimit(
   percentage: number
 } {
   const effectiveLimit = override?.[limitType] ?? plan[limitType]
-  const percentage = effectiveLimit > 0 ? Math.round((currentCount / effectiveLimit) * 100) : 0
+
+  // Negative, zero, or >= 99999 represents unlimited capacity
+  if (effectiveLimit <= 0 || effectiveLimit >= 99999) {
+    return {
+      limit: effectiveLimit,
+      current: currentCount,
+      exceeded: false,
+      warning: false,
+      percentage: 0,
+    }
+  }
+
+  const percentage = Math.round((currentCount / effectiveLimit) * 100)
 
   return {
     limit: effectiveLimit,

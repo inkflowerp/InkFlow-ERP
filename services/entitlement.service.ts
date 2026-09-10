@@ -200,7 +200,7 @@ export class EntitlementService {
       if (daysRemaining <= 0) return false
     }
 
-    return checkFeatureAccess(plan.code, feature, DEFAULT_PLANS)
+    return checkFeatureAccess(plan.code, feature, [plan])
   }
 
   /**

@@ -35,6 +35,7 @@ import { FeatureCode } from '@/types/subscription.types'
 import { useTenant } from '@/hooks/use-tenant'
 import {
   getTenantSubscriptionAction,
+  getPublicSubscriptionPlansAction,
   initiateSubscriptionCheckoutAction,
   verifySubscriptionPaymentAction,
   schedulePlanDowngradeAction,
@@ -103,7 +104,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const companyId = company?.id || 'default'
   const companySlug = company?.slug || 'app'
 
-  const [plans] = useState<SubscriptionPlanRecord[]>(DEFAULT_PLANS)
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(DEFAULT_PLANS)
   const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -121,9 +122,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const refreshSubscription = useCallback(async () => {
     try {
-      const res = await getTenantSubscriptionAction(companyId, companySlug)
-      if (res.success && res.data) {
-        setSubscription(res.data)
+      const [subRes, plansRes] = await Promise.all([
+        getTenantSubscriptionAction(companyId, companySlug),
+        getPublicSubscriptionPlansAction(),
+      ])
+      if (subRes.success && subRes.data) {
+        setSubscription(subRes.data)
+      }
+      if (plansRes.success && plansRes.data?.plans && plansRes.data.plans.length > 0) {
+        setPlans(plansRes.data.plans)
       }
     } catch {}
   }, [companyId, companySlug])
@@ -280,7 +287,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       if (isTrialExpired) {
         return {
           allowed: false,
-          reason: 'Your 14-day free trial has expired. Upgrade your plan to continue adding records.',
+          reason: `Your ${totalTrialDays}-day free trial has expired. Upgrade your plan to continue adding records.`,
           current: 0,
           limit: 0,
           percentage: 100,

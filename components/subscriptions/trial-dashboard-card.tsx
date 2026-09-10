@@ -19,6 +19,7 @@ import {
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -34,12 +35,26 @@ export function TrialDashboardCard() {
     openUpgradeModal,
   } = useSubscription()
   const { company } = useTenant()
-  const { tBilingual } = useI18n()
+  const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'app'
 
   if (!isTrial) return null
 
+  const trialDaysTotal = currentPlan?.trial_days || 14
+  const trialDaysBn = toBengaliDigits(trialDaysTotal)
+  const daysRemBn = toBengaliDigits(daysRemainingInTrial)
   const isUrgent = daysRemainingInTrial <= 3 || isTrialExpired
+
+  const formatLimit = (count: number, limit: number) => {
+    const isUnlimited = limit <= 0 || limit >= 99999
+    const countStr = locale === 'bn' ? toBengaliDigits(count) : count
+    const limitStr = isUnlimited
+      ? tBilingual('Unlimited', 'আনলিমিটেড')
+      : locale === 'bn'
+      ? toBengaliDigits(limit)
+      : limit
+    return `${countStr}/${limitStr}`
+  }
 
   return (
     <div
@@ -75,7 +90,7 @@ export function TrialDashboardCard() {
                 ? tBilingual('Trial Expired', 'ট্রায়াল মেয়াদ শেষ')
                 : tBilingual(
                     `${daysRemainingInTrial} Days Remaining`,
-                    `আর ${daysRemainingInTrial} দিন বাকি রয়েছে`
+                    `আর ${daysRemBn} দিন বাকি রয়েছে`
                   )}
             </span>
           </div>
@@ -83,12 +98,12 @@ export function TrialDashboardCard() {
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bangla-text">
             {isTrialExpired
               ? tBilingual(
-                  'Your 14-day free trial has expired. Upgrade your plan now to restore full write operations, keep all your data, and scale your printing business.',
-                  'আপনার ১৪ দিনের ফ্রি ট্রায়ালের মেয়াদ শেষ হয়েছে। নিরবচ্ছিন্ন সেবা অব্যাহত রাখতে এবং নতুন ডাটা এন্ট্রি করতে এখনই সাবস্ক্রিপশন প্ল্যান নির্বাচন করুন।'
+                  `Your ${trialDaysTotal}-day free trial has expired. Upgrade your plan now to restore full write operations, keep all your data, and scale your printing business.`,
+                  `আপনার ${trialDaysBn} দিনের ফ্রি ট্রায়ালের মেয়াদ শেষ হয়েছে। নিরবচ্ছিন্ন সেবা অব্যাহত রাখতে এবং নতুন ডাটা এন্ট্রি করতে এখনই সাবস্ক্রিপশন প্ল্যান নির্বাচন করুন।`
                 )
               : tBilingual(
-                  'You have full access to PrintERP modules during this 14-day evaluation. Upgrade before the trial ends to ensure seamless operations with no data loss.',
-                  'আপনি ট্রায়াল মেয়াদে সকল প্রিমিয়াম ফিচার ব্যবহার করতে পারছেন। মেয়াদ শেষের পূর্বেই আপনার সুবিধাজনক প্ল্যানে আপগ্রেড করুন।'
+                  `You have full access to PrintERP modules during this ${trialDaysTotal}-day evaluation. Upgrade before the trial ends to ensure seamless operations with no data loss.`,
+                  `আপনি ট্রায়াল মেয়াদে সকল প্রিমিয়াম ফিচার ব্যবহার করতে পারছেন। মেয়াদ শেষের পূর্বেই আপনার সুবিধাজনক প্ল্যানে আপগ্রেড করুন।`
                 )}
           </p>
 
@@ -96,7 +111,7 @@ export function TrialDashboardCard() {
           <div className="space-y-1 pt-1 max-w-sm">
             <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
               <span>{tBilingual('Trial Duration', 'ট্রায়াল অগ্রগতি')}</span>
-              <span>{trialProgressPercent}%</span>
+              <span>{locale === 'bn' ? toBengaliDigits(trialProgressPercent) : trialProgressPercent}%</span>
             </div>
             <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
               <div
@@ -116,19 +131,19 @@ export function TrialDashboardCard() {
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-1.5 w-full text-left">
             <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-[11px]">
               <span className="text-slate-400 block text-[9px] uppercase font-bold">{tBilingual('Users', 'ইউজার')}</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{usage.users_count}/{usage.users_limit}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{formatLimit(usage.users_count, usage.users_limit)}</span>
             </div>
             <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-[11px]">
               <span className="text-slate-400 block text-[9px] uppercase font-bold">{tBilingual('Orders / Mo', 'অর্ডার / মাস')}</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{usage.orders_this_month}/{usage.orders_limit}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{formatLimit(usage.orders_this_month, usage.orders_limit)}</span>
             </div>
             <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-[11px]">
               <span className="text-slate-400 block text-[9px] uppercase font-bold">{tBilingual('Customers', 'কাস্টমার')}</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{usage.customers_count}/{usage.customers_limit}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{formatLimit(usage.customers_count, usage.customers_limit)}</span>
             </div>
             <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-[11px]">
               <span className="text-slate-400 block text-[9px] uppercase font-bold">{tBilingual('Branches', 'শাখা')}</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{usage.branches_count}/{usage.branches_limit}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{formatLimit(usage.branches_count, usage.branches_limit)}</span>
             </div>
           </div>
 

@@ -37,7 +37,7 @@ export function UpgradePrompt({
   compact = false,
   className = '',
 }: UpgradePromptProps) {
-  const { currentPlan } = useSubscription()
+  const { currentPlan, allPlans } = useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'app'
@@ -51,7 +51,9 @@ export function UpgradePrompt({
     category: 'advanced',
   }
 
-  const requiredPlan = getMinimumPlanForFeature(feature)
+  const requiredPlan =
+    (allPlans && allPlans.find((p) => p.code === meta.minPlan)) ||
+    getMinimumPlanForFeature(feature)
 
   if (compact) {
     return (

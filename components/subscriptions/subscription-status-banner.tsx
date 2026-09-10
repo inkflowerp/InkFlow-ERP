@@ -14,6 +14,7 @@ import {
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { Button } from '@/components/ui/button'
 
 export function SubscriptionStatusBanner() {
@@ -85,6 +86,10 @@ export function SubscriptionStatusBanner() {
     )
   }
 
+  const trialDaysTotal = currentPlan?.trial_days || 14
+  const trialDaysBn = toBengaliDigits(trialDaysTotal)
+  const daysRemBn = toBengaliDigits(daysRemainingInTrial)
+
   if (isTrialExpired) {
     return (
       <div className="bg-red-600 text-white px-4 py-2.5 shadow-md">
@@ -93,8 +98,8 @@ export function SubscriptionStatusBanner() {
             <AlertTriangle className="h-4 w-4 shrink-0 text-white animate-bounce" />
             <span className="bangla-text font-bold">
               {tBilingual(
-                'Free Trial Expired: Your 14-day trial period has ended. Please choose a subscription plan to resume adding orders, users, and customers.',
-                'ফ্রি ট্রায়াল শেষ: আপনার ১৪ দিনের ফ্রি ট্রায়ালের মেয়াদ শেষ হয়েছে। নতুন কাজ বুকিং ও কার্যক্রম চালিয়ে যেতে অনুগ্রহ করে প্ল্যান আপগ্রেড করুন।'
+                `Free Trial Expired: Your ${trialDaysTotal}-day trial period has ended. Please choose a subscription plan to resume adding orders, users, and customers.`,
+                `ফ্রি ট্রায়াল শেষ: আপনার ${trialDaysBn} দিনের ফ্রি ট্রায়ালের মেয়াদ শেষ হয়েছে। নতুন কাজ বুকিং ও কার্যক্রম চালিয়ে যেতে অনুগ্রহ করে প্ল্যান আপগ্রেড করুন।`
               )}
             </span>
           </div>
@@ -130,11 +135,11 @@ export function SubscriptionStatusBanner() {
               {isEndingSoon
                 ? tBilingual(
                     `Trial Ending Soon: Only ${daysRemainingInTrial} days remaining. Upgrade today to keep continuous access and unlock unlimited orders.`,
-                    `সতর্কতা: ফ্রি ট্রায়ালের আর মাত্র ${daysRemainingInTrial} দিন বাকি রয়েছে! নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
+                    `সতর্কতা: ফ্রি ট্রায়ালের আর মাত্র ${daysRemBn} দিন বাকি রয়েছে! নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
                   )
                 : tBilingual(
                     `Free Trial Active: ${daysRemainingInTrial} days remaining. Upgrade now to secure your workspace data and unlimited features.`,
-                    `ফ্রি ট্রায়াল সক্রিয়: আর ${daysRemainingInTrial} দিন বাকি রয়েছে। প্রফেশনাল প্ল্যানে আপগ্রেড করুন।`
+                    `ফ্রি ট্রায়াল সক্রিয়: আর ${daysRemBn} দিন বাকি রয়েছে। প্রফেশনাল প্ল্যানে আপগ্রেড করুন।`
                   )}
             </span>
           </div>
