@@ -61,6 +61,18 @@ export default function TenantAuditLogsPage() {
 
   useEffect(() => {
     loadLogs()
+
+    const handleAuditRealtime = () => {
+      loadLogs()
+    }
+
+    window.addEventListener('printerp_table_synced:audit_logs', handleAuditRealtime)
+    window.addEventListener('printerp_table_synced', handleAuditRealtime)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:audit_logs', handleAuditRealtime)
+      window.removeEventListener('printerp_table_synced', handleAuditRealtime)
+    }
   }, [search, category])
 
   const handleExportJSON = () => {

@@ -107,11 +107,10 @@ export default function UsersManagementPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  // Load users, roles, branches
+  // Load users, roles, branches with realtime update support
   useEffect(() => {
     async function loadData() {
       if (!company) return
-      setIsLoading(true)
       const [uRes, rRes, bRes] = await Promise.all([
         listCompanyUsersAction(company.id),
         listRolesAction(company.id),
@@ -122,17 +121,33 @@ export default function UsersManagementPage() {
       setRoles(rRes)
       setBranches(bRes)
       if (rRes.length > 0) {
-        setInviteRoleId(rRes[0].id)
-        setAddRoleId(rRes[0].id)
+        setInviteRoleId((prev) => prev || rRes[0].id)
+        setAddRoleId((prev) => prev || rRes[0].id)
       }
       if (bRes.length > 0) {
-        setInviteBranchId(bRes[0].id)
-        setAddBranchId(bRes[0].id)
+        setInviteBranchId((prev) => prev || bRes[0].id)
+        setAddBranchId((prev) => prev || bRes[0].id)
       }
       setIsLoading(false)
     }
 
     loadData()
+
+    const handleRealtimeUsersSync = (e: Event) => {
+      loadData()
+    }
+
+    window.addEventListener('printerp_table_synced:company_users', handleRealtimeUsersSync)
+    window.addEventListener('printerp_table_synced:roles', handleRealtimeUsersSync)
+    window.addEventListener('printerp_table_synced:branches', handleRealtimeUsersSync)
+    window.addEventListener('printerp_data_sync', handleRealtimeUsersSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:company_users', handleRealtimeUsersSync)
+      window.removeEventListener('printerp_table_synced:roles', handleRealtimeUsersSync)
+      window.removeEventListener('printerp_table_synced:branches', handleRealtimeUsersSync)
+      window.removeEventListener('printerp_data_sync', handleRealtimeUsersSync)
+    }
   }, [company])
 
   // Filtered users

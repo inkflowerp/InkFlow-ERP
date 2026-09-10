@@ -112,12 +112,35 @@ export function useDataStore<T = any>(
       }
     }
 
+    let localBc: BroadcastChannel | null = null
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        localBc = new BroadcastChannel('printerp_realtime_bus')
+        localBc.onmessage = (e) => {
+          const msg = e.data
+          if (
+            msg?.key === key ||
+            msg?.effectiveKey === effectiveKey ||
+            msg?.storageKey === key ||
+            msg?.all === true
+          ) {
+            reloadRef.current()
+          }
+        }
+      } catch {}
+    }
+
     window.addEventListener('printerp_data_sync', handleCustomSync)
     window.addEventListener(`${key}_updated`, handleKeyUpdate)
     window.addEventListener(`${effectiveKey}_updated`, handleKeyUpdate)
     window.addEventListener('storage', handleStorageChange)
 
     return () => {
+      if (localBc) {
+        try {
+          localBc.close()
+        } catch {}
+      }
       window.removeEventListener('printerp_data_sync', handleCustomSync)
       window.removeEventListener(`${key}_updated`, handleKeyUpdate)
       window.removeEventListener(`${effectiveKey}_updated`, handleKeyUpdate)

@@ -493,7 +493,7 @@ export class PrintERPDataStore {
   }
 
   /**
-   * Sets data for a collection key and emits reactive events across window & storage
+   * Sets data for a collection key and emits reactive events across window & storage & BroadcastChannel
    */
   static set<T = any>(key: StorageKey, data: T, emitEvent = true, tenantSlug?: string): T {
     const effectiveKey = this.getEffectiveKey(key, tenantSlug)
@@ -509,6 +509,23 @@ export class PrintERPDataStore {
           )
           window.dispatchEvent(new Event(`${key}_updated`))
           window.dispatchEvent(new Event(`${effectiveKey}_updated`))
+
+          // Instant cross-tab broadcast
+          if ('BroadcastChannel' in window) {
+            try {
+              const channel = new BroadcastChannel('printerp_realtime_bus')
+              channel.postMessage({
+                type: 'LOCAL_STORE_MUTATION',
+                mutationType: 'SET',
+                storageKey: key,
+                effectiveKey,
+                data,
+                tenantSlug,
+                timestamp: Date.now(),
+              })
+              channel.close()
+            } catch {}
+          }
         }
       } catch (err) {
         console.error(`[PrintERPDataStore] Error saving key ${effectiveKey}:`, err)

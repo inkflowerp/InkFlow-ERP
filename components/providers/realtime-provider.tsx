@@ -3,10 +3,16 @@
 import React, { createContext, useContext, useMemo } from 'react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useRealtimeSync, RealtimeSyncState } from '@/hooks/use-realtime-sync'
-import { RealtimeConnectionStatus } from '@/lib/realtime/subscription-manager'
+import { realtimeManager, RealtimeConnectionStatus } from '@/lib/realtime/subscription-manager'
 
 interface RealtimeContextValue extends RealtimeSyncState {
   reconnect: () => void
+  broadcastSyncEvent: (event: {
+    table: string
+    eventType: 'INSERT' | 'UPDATE' | 'DELETE'
+    record: any
+    oldRecord?: any
+  }) => void
 }
 
 const RealtimeContext = createContext<RealtimeContextValue>({
@@ -14,6 +20,7 @@ const RealtimeContext = createContext<RealtimeContextValue>({
   status: 'disconnected',
   lastEventTime: null,
   reconnect: () => {},
+  broadcastSyncEvent: () => {},
 })
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
@@ -23,8 +30,18 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       ...syncState,
+      broadcastSyncEvent: (event: {
+        table: string
+        eventType: 'INSERT' | 'UPDATE' | 'DELETE'
+        record: any
+        oldRecord?: any
+      }) => {
+        if (company?.id) {
+          realtimeManager.broadcastSyncEvent(company.id, event)
+        }
+      },
     }),
-    [syncState]
+    [syncState, company?.id]
   )
 
   return (
