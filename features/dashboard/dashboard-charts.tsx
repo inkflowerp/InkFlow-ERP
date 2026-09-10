@@ -300,7 +300,7 @@ export function DashboardCharts() {
                     <BarChart data={paymentCollectionData} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.2} />
                       <XAxis type="number" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
-                      <YAxis type="category" dataKey="method" tickLine={false} axisLine={false} fontSize={11} width={130} />
+                      <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={11} width={140} />
                       <Tooltip formatter={(value: any) => [`৳ ${formatBDT(Number(value))}`, 'Collected']} />
                       <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
                         {paymentCollectionData.map((entry, index) => (

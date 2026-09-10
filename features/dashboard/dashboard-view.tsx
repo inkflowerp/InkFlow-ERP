@@ -281,9 +281,10 @@ export function DashboardView() {
     e.preventDefault()
     const amt = parseFloat(paymentAmount) || 0
     if (amt <= 0) return
-    const cust = (customers || []).find((c) => c.id === selectedCustomerId)
+    const custId = selectedCustomerId || customers?.[0]?.id
+    const cust = (customers || []).find((c) => c.id === custId)
     if (!cust) {
-      showNotification('Please select a customer first.')
+      showNotification('Please select or register a customer first.')
       return
     }
     PrintERPDataStore.recordPaymentCollection({
@@ -295,6 +296,7 @@ export function DashboardView() {
     })
     setActiveModal(null)
     setPaymentAmount('')
+    setSelectedCustomerId('')
     showNotification(`Payment of ৳ ${formatBDT(amt)} received from ${cust.name}!`)
   }
 
@@ -869,6 +871,7 @@ export function DashboardView() {
               columns={columns}
               data={recentOrdersData}
               keyExtractor={(row) => row.id}
+              onRowClick={(row) => router.push(`/${slug}/orders/${row.id}`)}
             />
           ) : (
             <div className="p-8 text-center space-y-2">
@@ -968,15 +971,19 @@ export function DashboardView() {
             <Label htmlFor="payCust" required>Select Customer</Label>
             <select
               id="payCust"
-              value={selectedCustomerId}
+              value={selectedCustomerId || customers?.[0]?.id || ''}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
               className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
             >
-              {(customers || []).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} (Due: ৳ {formatBDT(c.total_due_balance || 0)})
-                </option>
-              ))}
+              {(customers || []).length === 0 ? (
+                <option value="">No customers found - please add a customer first</option>
+              ) : (
+                (customers || []).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} (Due: ৳ {formatBDT(c.total_due_balance || 0)})
+                  </option>
+                ))
+              )}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
