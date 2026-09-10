@@ -116,17 +116,18 @@ export function PlatformHeader() {
         </div>
 
         {/* Center: Global Search Bar */}
-        <div className="flex-1 max-w-md mx-2">
+        <div className="flex-1 max-w-md mx-1 sm:mx-2">
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="w-full h-9 px-3 rounded-xl bg-slate-950/70 hover:bg-slate-950 border border-slate-800 hover:border-indigo-500/40 text-slate-400 hover:text-slate-200 text-xs flex items-center justify-between transition-all cursor-pointer shadow-inner"
+            className="w-full h-9 px-2.5 sm:px-3 rounded-xl bg-slate-950/70 hover:bg-slate-950 border border-slate-800 hover:border-indigo-500/40 text-slate-400 hover:text-slate-200 text-xs flex items-center justify-between transition-all cursor-pointer shadow-inner min-h-[36px]"
           >
-            <div className="flex items-center gap-2">
-              <Search className="h-3.5 w-3.5 text-indigo-400" />
-              <span className="truncate">Search platform, tenants, users, audit...</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <Search className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+              <span className="truncate hidden sm:inline">Search platform, tenants, users, audit...</span>
+              <span className="truncate sm:hidden text-[11px]">Search platform...</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded shadow-xs">
                 /
               </kbd>
@@ -135,7 +136,7 @@ export function PlatformHeader() {
         </div>
 
         {/* Right: Actions & User Menu */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Notifications */}
           <PlatformNotificationsPopover />
 
@@ -154,7 +155,7 @@ export function PlatformHeader() {
             <button
               type="button"
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
+              className="flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer min-h-[40px]"
             >
               <div className="h-7 w-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center font-bold text-xs">
                 {initials}
@@ -165,7 +166,7 @@ export function PlatformHeader() {
             {profileMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setProfileMenuOpen(false)} />
-                <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 p-2 text-xs divide-y divide-slate-800 animate-in fade-in-0 zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 p-2 text-xs divide-y divide-slate-800 animate-in fade-in-0 zoom-in-95 duration-150">
                   <div className="px-3 py-2">
                     <div className="font-bold text-white truncate">{userFullName}</div>
                     <div className="text-[11px] text-indigo-400 font-mono truncate">{userEmail}</div>

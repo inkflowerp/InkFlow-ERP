@@ -67,30 +67,30 @@ export default function PlatformDashboardPage() {
   return (
     <div className="space-y-8">
       {/* 5.1 HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 border-b border-slate-800/80 pb-4 sm:pb-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             Platform Control Center • Bangladesh SaaS
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-            <Activity className="h-7 w-7 text-indigo-400" />
-            Platform Overview
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white flex items-center gap-2.5 sm:gap-3">
+            <Activity className="h-6 w-6 sm:h-7 sm:w-7 text-indigo-400 shrink-0" />
+            <span>Platform Overview</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5 sm:mt-1">
             Monitor tenants, subscriptions, platform health, and critical activity.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full md:w-auto">
           {/* Date Range Selector */}
-          <div className="flex items-center rounded-xl bg-slate-900 border border-slate-800 p-0.5 text-xs">
+          <div className="flex items-center rounded-xl bg-slate-900 border border-slate-800 p-0.5 text-xs shrink-0">
             {(['today', '7d', '30d', '90d'] as const).map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setDateRange(r)}
-                className={`px-2.5 py-1 rounded-lg font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg font-semibold uppercase tracking-wider transition-colors cursor-pointer text-[11px] sm:text-xs ${
                   dateRange === r ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -103,7 +103,7 @@ export default function PlatformDashboardPage() {
             size="sm"
             variant="outline"
             onClick={loadData}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-8"
+            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-8 shrink-0 min-h-[36px]"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -111,7 +111,7 @@ export default function PlatformDashboardPage() {
 
           <Link
             href="/platform/companies"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all shrink-0 min-h-[36px]"
           >
             <Building2 className="h-3.5 w-3.5" />
             <span>Companies</span>
@@ -312,7 +312,7 @@ export default function PlatformDashboardPage() {
           </CardHeader>
 
           <CardContent className="p-4 space-y-3">
-            <div className="grid grid-cols-4 gap-2 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
               <Link
                 href="/platform/companies?health=healthy"
                 className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 hover:bg-emerald-900/30 transition-colors"

@@ -439,7 +439,7 @@ export default function PlatformSupportPage() {
       </div>
 
       {/* Executive Overview Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Active Support Sessions */}
         <Card className="border-slate-800 bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">

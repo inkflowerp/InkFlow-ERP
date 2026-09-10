@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { PlatformHeader } from '@/components/platform/platform-header'
 import { PlatformSidebar } from '@/components/platform/platform-sidebar'
+import { PlatformMobileBottomNav } from '@/components/platform/platform-mobile-bottom-nav'
 import { usePathname } from 'next/navigation'
 import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
 
@@ -118,10 +119,13 @@ export default function PlatformLayout({
         <PlatformSidebar />
 
         {/* Page Content Container */}
-        <main className="flex-1 min-h-0 min-w-0 p-3.5 sm:p-6 lg:p-8 overflow-y-auto max-w-[1700px] pb-16 sm:pb-8">
+        <main className="flex-1 min-h-0 min-w-0 p-3 sm:p-5 lg:p-8 overflow-y-auto max-w-[1700px] pb-24 lg:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <PlatformMobileBottomNav />
     </div>
   )
 }
