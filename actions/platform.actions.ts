@@ -11,6 +11,8 @@ import {
   PlatformAdminUser,
   SupportAccessLevel,
   ApiResponse,
+  CreateFeatureFlagInput,
+  UpdateFeatureFlagInput,
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import {
@@ -567,22 +569,80 @@ export async function deletePlanAction(planId: string) {
 }
 
 /**
- * 5. Feature Flags & Overrides
+ * 5. Feature Flags & Overrides Engine
  */
+export async function createFeatureFlagAction(input: CreateFeatureFlagInput) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || !hasPlatformPermission(platformUser, 'feature.manage')) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to create feature flags.' }
+    }
+
+    const result = await PlatformService.createFeatureFlag(input)
+    if (result.success) {
+      revalidatePath('/platform/features')
+      revalidatePath('/platform/feature-flags')
+      revalidatePath('/platform/tenants')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to create feature flag' }
+  }
+}
+
+export async function updateFeatureFlagAction(flagIdOrKey: string, input: UpdateFeatureFlagInput) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || !hasPlatformPermission(platformUser, 'feature.manage')) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to update feature flags.' }
+    }
+
+    const result = await PlatformService.updateFeatureFlag(flagIdOrKey, input)
+    if (result.success) {
+      revalidatePath('/platform/features')
+      revalidatePath('/platform/feature-flags')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to update feature flag' }
+  }
+}
+
+export async function deleteFeatureFlagAction(flagIdOrKey: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || !hasPlatformPermission(platformUser, 'feature.manage')) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to delete feature flags.' }
+    }
+
+    const result = await PlatformService.deleteFeatureFlag(flagIdOrKey)
+    if (result.success) {
+      revalidatePath('/platform/features')
+      revalidatePath('/platform/feature-flags')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to delete feature flag' }
+  }
+}
+
 export async function toggleGlobalFeatureFlagAction(
-  flagId: string,
+  flagIdOrKey: string,
   isEnabled: boolean,
   reason?: string
 ) {
   try {
     const platformUser = await getCurrentPlatformUser()
     if (!platformUser || !hasPlatformPermission(platformUser, 'feature.manage')) {
-      return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to toggle feature flags.' }
     }
 
-    const result = await PlatformService.toggleGlobalFeatureFlag(flagId, isEnabled, reason)
+    const result = await PlatformService.toggleGlobalFeatureFlag(flagIdOrKey, isEnabled, reason)
     if (result.success) {
+      revalidatePath('/platform/features')
       revalidatePath('/platform/feature-flags')
+      revalidatePath('/platform/companies')
+      revalidatePath('/platform/dashboard')
     }
     return result
   } catch (err: any) {
@@ -591,7 +651,7 @@ export async function toggleGlobalFeatureFlagAction(
 }
 
 export async function setTenantFeatureFlagAction(
-  flagId: string,
+  flagIdOrKey: string,
   companyId: string,
   isEnabled: boolean,
   notes?: string
@@ -599,13 +659,15 @@ export async function setTenantFeatureFlagAction(
   try {
     const platformUser = await getCurrentPlatformUser()
     if (!platformUser || !hasPlatformPermission(platformUser, 'feature.manage')) {
-      return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to set tenant overrides.' }
     }
 
-    const result = await PlatformService.setTenantFeatureFlag(flagId, companyId, isEnabled, notes)
+    const result = await PlatformService.setTenantFeatureFlag(flagIdOrKey, companyId, isEnabled, notes)
     if (result.success) {
+      revalidatePath('/platform/features')
       revalidatePath('/platform/feature-flags')
       revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath('/platform/tenants')
     }
     return result
   } catch (err: any) {
@@ -614,23 +676,48 @@ export async function setTenantFeatureFlagAction(
 }
 
 export async function removeTenantFeatureFlagAction(
-  flagId: string,
+  flagIdOrKey: string,
   companyId: string
 ) {
   try {
     const platformUser = await getCurrentPlatformUser()
     if (!platformUser || !hasPlatformPermission(platformUser, 'feature.manage')) {
-      return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to remove tenant overrides.' }
     }
 
-    const result = await PlatformService.removeTenantFeatureFlag(flagId, companyId)
+    const result = await PlatformService.removeTenantFeatureFlag(flagIdOrKey, companyId)
     if (result.success) {
+      revalidatePath('/platform/features')
+      revalidatePath('/platform/feature-flags')
+      revalidatePath(`/platform/companies/${companyId}`)
+      revalidatePath('/platform/tenants')
+    }
+    return result
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to remove tenant feature flag' }
+  }
+}
+
+export async function bulkSetTenantFeatureFlagsAction(
+  companyId: string,
+  overrides: Array<{ flagIdOrKey: string; isEnabled: boolean; notes?: string }>,
+  reason?: string
+) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser || !hasPlatformPermission(platformUser, 'feature.manage')) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to bulk update tenant overrides.' }
+    }
+
+    const result = await PlatformService.bulkSetTenantFeatureFlags(companyId, overrides, reason)
+    if (result.success) {
+      revalidatePath('/platform/features')
       revalidatePath('/platform/feature-flags')
       revalidatePath(`/platform/companies/${companyId}`)
     }
     return result
   } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to remove tenant feature flag' }
+    return { success: false, error: err?.message || 'Failed to bulk set tenant feature flags' }
   }
 }
 

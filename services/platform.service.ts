@@ -21,6 +21,9 @@ import {
   HistoricalUsagePoint,
   PlatformRBACTemplate,
   PlatformFeatureFlagItem,
+  PlatformFeatureFlagsOverview,
+  CreateFeatureFlagInput,
+  UpdateFeatureFlagInput,
   TenantFeatureFlagOverride,
   SystemHealthEvent,
   SystemHealthSummary,
@@ -53,7 +56,137 @@ import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/services/subscription.service'
 import { ApiResponse } from '@/types/common.types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { TenantRepository } from '@/lib/repositories/tenant.repository'
+export const DEFAULT_PLATFORM_FEATURE_FLAGS: Array<{
+  key: string
+  name: string
+  description: string
+  category: string
+  is_enabled: boolean
+  is_beta: boolean
+  is_critical: boolean
+  min_plan: string
+}> = [
+  {
+    key: 'whatsapp_notifications',
+    name: 'WhatsApp Cloud API Order Status',
+    description: 'Send automated PDF invoices, challans, proof approval previews, and delivery readiness alerts to customer WhatsApp numbers.',
+    category: 'localization',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: false,
+    min_plan: 'growth',
+  },
+  {
+    key: 'mushak_6_3',
+    name: 'NBR Mushak 6.3 Automated Tax Invoicing',
+    description: 'Compliant Bangladesh National Board of Revenue VAT invoice generation with 15%/7.5%/5% tax schedules and withholding deduction slips.',
+    category: 'finance',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: true,
+    min_plan: 'enterprise',
+  },
+  {
+    key: 'ai_job_estimator',
+    name: 'AI Dynamic Print Estimator & Imposition',
+    description: 'Smart cost estimation, substrate sheet waste minimization, and automatic die-line calculation for offset, digital, flex, and signage jobs.',
+    category: 'ai',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: false,
+    min_plan: 'starter',
+  },
+  {
+    key: 'bd_sms_gateway',
+    name: 'Bangladeshi SMS Gateway (Greenweb / BulkSMSBD)',
+    description: 'OTP customer verification, payment receipt notifications, and delivery dispatch SMS via Bangladeshi telecom masking & non-masking routes.',
+    category: 'localization',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: false,
+    min_plan: 'starter',
+  },
+  {
+    key: 'thermal_receipt_esc_pos',
+    name: 'ESC/POS Thermal Receipt Printing',
+    description: 'Direct 80mm/58mm thermal receipt printing, auto cash drawer kick, and barcode slip generation for retail print counter POS.',
+    category: 'hardware',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: false,
+    min_plan: 'starter',
+  },
+  {
+    key: 'multi_branch_dispatch',
+    name: 'Multi-Branch Inventory & Hub Dispatch',
+    description: 'Inter-branch raw material transfer orders, centralized warehouse stock requisitions, and multi-location job routing.',
+    category: 'logistics',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: false,
+    min_plan: 'growth',
+  },
+  {
+    key: 'customer_portal_access',
+    name: 'Customer Client Portal & Proof Approvals',
+    description: 'Dedicated client portal for self-service quote approvals, artwork PDF proof review, revision comments, and invoice downloads.',
+    category: 'core',
+    is_enabled: true,
+    is_beta: true,
+    is_critical: false,
+    min_plan: 'growth',
+  },
+  {
+    key: 'batch_production_tracking',
+    name: 'Barcode / QR Production Floor Board',
+    description: 'Live machine routing board with stage-by-stage QR/barcode scanning (Prepress -> Plate -> Press -> Lamination -> Die-Cut -> Delivery).',
+    category: 'core',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: true,
+    min_plan: 'growth',
+  },
+  {
+    key: 'automated_cheque_reconciliation',
+    name: 'Bank Cheque Clearing & EFTN Reconciler',
+    description: 'Track deposited customer cheques, clearing due dates, bounce/dishonor alerts, and multi-bank ledger sync.',
+    category: 'finance',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: false,
+    min_plan: 'business',
+  },
+  {
+    key: 'vendor_rate_matrix',
+    name: 'Dynamic Paper & Substrate Vendor Rate Matrix',
+    description: 'Compare live sheet, ream, and square-foot purchase rates across suppliers (Naya Bazar, Arambagh, Banglabazar vendors).',
+    category: 'finance',
+    is_enabled: true,
+    is_beta: true,
+    is_critical: false,
+    min_plan: 'business',
+  },
+  {
+    key: 'advance_salary_loans',
+    name: 'Staff Advance Salary & Overtime Deductions',
+    description: 'Manage press worker advance pay loans with automatic monthly payroll deductions and hourly overtime tracking.',
+    category: 'core',
+    is_enabled: true,
+    is_beta: false,
+    is_critical: false,
+    min_plan: 'starter',
+  },
+  {
+    key: 'realtime_machine_telemetry',
+    name: 'IoT Machine Runtime & Telemetry Monitor',
+    description: 'Experimental IoT telemetry for Heidelberg, Komori, Roland, and HP Indigo presses tracking impression counts and maintenance schedules.',
+    category: 'hardware',
+    is_enabled: false,
+    is_beta: true,
+    is_critical: false,
+    min_plan: 'enterprise',
+  },
+]
 
 export class PlatformService {
   /**
@@ -3837,16 +3970,43 @@ export class PlatformService {
     return this.getCompanyDetails(companyId)
   }
 
-  static async getFeatureFlags(): Promise<ApiResponse<PlatformFeatureFlagItem[]>> {
+  static async getFeatureFlags(): Promise<ApiResponse<PlatformFeatureFlagsOverview>> {
     try {
       const admin = createAdminClient()
-      const { data: flags, error: flagErr } = await (admin as any)
+      
+      // 1. Fetch existing flags from database
+      let { data: flags, error: flagErr } = await (admin as any)
         .from('platform_feature_flags')
         .select('*')
         .order('name', { ascending: true })
 
       if (flagErr) return { success: false, error: flagErr.message }
 
+      // 2. Self-heal: If empty or missing standard Bangladesh Printing ERP core flags, seed missing defaults
+      const existingKeys = new Set((flags || []).map((f: any) => f.key))
+      const missingDefaults = DEFAULT_PLATFORM_FEATURE_FLAGS.filter((df) => !existingKeys.has(df.key))
+
+      if (missingDefaults.length > 0) {
+        try {
+          const toInsert = missingDefaults.map((df) => ({
+            key: df.key,
+            name: df.name,
+            description: df.description,
+            is_enabled: df.is_enabled,
+          }))
+          await (admin as any).from('platform_feature_flags').upsert(toInsert, { onConflict: 'key' })
+          
+          const refetch = await (admin as any)
+            .from('platform_feature_flags')
+            .select('*')
+            .order('name', { ascending: true })
+          if (refetch.data) flags = refetch.data
+        } catch {
+          // Graceful fallback if schema permissions restrict upsert
+        }
+      }
+
+      // 3. Fetch tenant overrides with company details
       const { data: overrides } = await (admin as any)
         .from('platform_tenant_feature_flags')
         .select('*, companies (name, slug)')
@@ -3858,28 +4018,50 @@ export class PlatformService {
           company_id: ov.company_id,
           company_name: ov.companies?.name || 'Unknown',
           company_slug: ov.companies?.slug || 'unknown',
-          is_enabled: ov.is_enabled,
-          notes: ov.notes,
-          updated_at: ov.updated_at,
+          is_enabled: Boolean(ov.is_enabled),
+          notes: ov.notes || '',
+          updated_at: ov.updated_at || new Date().toISOString(),
         })
         overridesMap.set(ov.flag_id, list)
       })
 
+      // 4. Map enriched items with category, beta tag, min plan
       const items: PlatformFeatureFlagItem[] = (flags || []).map((f: any) => {
+        const defaultDef = DEFAULT_PLATFORM_FEATURE_FLAGS.find((df) => df.key === f.key)
         const ovList = overridesMap.get(f.id) || []
         return {
           id: f.id,
           key: f.key,
           name: f.name,
-          description: f.description || '',
+          description: f.description || defaultDef?.description || '',
+          category: (defaultDef?.category || 'general') as any,
           is_enabled: Boolean(f.is_enabled),
+          is_beta: Boolean(defaultDef?.is_beta),
+          is_critical: Boolean(defaultDef?.is_critical),
+          min_plan: defaultDef?.min_plan || 'all',
           overrides_count: ovList.length,
-          is_critical: Boolean(f.is_critical),
           overrides: ovList,
+          created_at: f.created_at || new Date().toISOString(),
+          updated_at: f.updated_at || new Date().toISOString(),
         }
       })
 
-      return { success: true, data: items }
+      const categories = Array.from(new Set(items.map((i) => i.category || 'general')))
+      const enabledGlobally = items.filter((i) => i.is_enabled).length
+      const betaCount = items.filter((i) => i.is_beta).length
+      const totalOverrides = items.reduce((acc, i) => acc + i.overrides_count, 0)
+
+      const overview: PlatformFeatureFlagsOverview = {
+        flags: items,
+        total_flags: items.length,
+        enabled_globally: enabledGlobally,
+        disabled_globally: items.length - enabledGlobally,
+        beta_flags_count: betaCount,
+        total_overrides_count: totalOverrides,
+        categories,
+      }
+
+      return { success: true, data: overview }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to fetch feature flags' }
     }
@@ -4330,44 +4512,221 @@ export class PlatformService {
     }
   }
 
-  // Stubs for remaining routes to ensure complete compatibility
-  static async toggleGlobalFeatureFlag(flagId: string, isEnabled: boolean, reason?: string) {
+  // Feature Flags & Entitlements Management Engine
+  private static async resolveFeatureFlagId(idOrKey: string): Promise<{ id: string; key: string } | null> {
     const admin = createAdminClient()
-    await (admin as any)
-      .from('platform_feature_flags')
-      .update({ is_enabled: isEnabled })
-      .eq('id', flagId)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrKey)
+    
+    let query = (admin as any).from('platform_feature_flags').select('id, key')
+    if (isUuid) {
+      query = query.eq('id', idOrKey)
+    } else {
+      query = query.eq('key', idOrKey)
+    }
 
-    await this.recordAuditLog('feature_flag.toggle', 'platform_feature_flag', flagId, undefined, undefined, { isEnabled, reason })
-    return { success: true }
+    const { data, error } = await query.maybeSingle()
+    if (error || !data) {
+      // Fallback check by key
+      const { data: fallbackData } = await (admin as any)
+        .from('platform_feature_flags')
+        .select('id, key')
+        .eq('key', idOrKey)
+        .maybeSingle()
+      if (fallbackData) return fallbackData
+      return null
+    }
+    return data
   }
 
-  static async setTenantFeatureFlag(flagId: string, companyId: string, isEnabled: boolean, notes?: string) {
-    const admin = createAdminClient()
-    await (admin as any)
-      .from('platform_tenant_feature_flags')
-      .upsert({
-        flag_id: flagId,
-        company_id: companyId,
-        is_enabled: isEnabled,
-        notes,
-        updated_at: new Date().toISOString(),
+  static async createFeatureFlag(input: CreateFeatureFlagInput): Promise<ApiResponse<PlatformFeatureFlagItem>> {
+    try {
+      const admin = createAdminClient()
+      const cleanKey = input.key.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_')
+      if (!cleanKey) return { success: false, error: 'Feature flag key is required' }
+      if (!input.name?.trim()) return { success: false, error: 'Feature flag name is required' }
+
+      const { data, error } = await (admin as any)
+        .from('platform_feature_flags')
+        .insert({
+          key: cleanKey,
+          name: input.name.trim(),
+          description: input.description?.trim() || null,
+          is_enabled: Boolean(input.is_enabled ?? true),
+        })
+        .select()
+        .single()
+
+      if (error) return { success: false, error: error.message }
+
+      await this.recordAuditLog('feature_flag.create', 'platform_feature_flag', data.id, undefined, undefined, {
+        key: cleanKey,
+        name: input.name,
       })
 
-    await this.recordAuditLog('feature_flag.tenant_override', 'platform_tenant_feature_flag', flagId, companyId, undefined, { isEnabled, notes })
-    return { success: true }
+      return {
+        success: true,
+        data: {
+          id: data.id,
+          key: data.key,
+          name: data.name,
+          description: data.description || '',
+          category: input.category || 'general',
+          is_enabled: data.is_enabled,
+          is_beta: Boolean(input.is_beta),
+          is_critical: Boolean(input.is_critical),
+          min_plan: input.min_plan || 'all',
+          overrides_count: 0,
+          overrides: [],
+          created_at: data.created_at,
+        },
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to create feature flag' }
+    }
   }
 
-  static async removeTenantFeatureFlag(flagId: string, companyId: string) {
-    const admin = createAdminClient()
-    await (admin as any)
-      .from('platform_tenant_feature_flags')
-      .delete()
-      .eq('flag_id', flagId)
-      .eq('company_id', companyId)
+  static async updateFeatureFlag(flagIdOrKey: string, input: UpdateFeatureFlagInput): Promise<ApiResponse<void>> {
+    try {
+      const resolved = await this.resolveFeatureFlagId(flagIdOrKey)
+      if (!resolved) return { success: false, error: 'Feature flag not found' }
 
-    await this.recordAuditLog('feature_flag.remove_override', 'platform_tenant_feature_flag', flagId, companyId, undefined, {})
-    return { success: true }
+      const admin = createAdminClient()
+      const payload: Record<string, any> = {}
+      if (input.name !== undefined) payload.name = input.name.trim()
+      if (input.description !== undefined) payload.description = input.description.trim()
+      if (input.is_enabled !== undefined) payload.is_enabled = Boolean(input.is_enabled)
+
+      const { error } = await (admin as any)
+        .from('platform_feature_flags')
+        .update(payload)
+        .eq('id', resolved.id)
+
+      if (error) return { success: false, error: error.message }
+
+      await this.recordAuditLog('feature_flag.update', 'platform_feature_flag', resolved.id, undefined, undefined, input)
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to update feature flag' }
+    }
+  }
+
+  static async deleteFeatureFlag(flagIdOrKey: string): Promise<ApiResponse<void>> {
+    try {
+      const resolved = await this.resolveFeatureFlagId(flagIdOrKey)
+      if (!resolved) return { success: false, error: 'Feature flag not found' }
+
+      const admin = createAdminClient()
+      await (admin as any).from('platform_tenant_feature_flags').delete().eq('flag_id', resolved.id)
+      const { error } = await (admin as any).from('platform_feature_flags').delete().eq('id', resolved.id)
+
+      if (error) return { success: false, error: error.message }
+
+      await this.recordAuditLog('feature_flag.delete', 'platform_feature_flag', resolved.id, undefined, undefined, { key: resolved.key })
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to delete feature flag' }
+    }
+  }
+
+  static async toggleGlobalFeatureFlag(flagIdOrKey: string, isEnabled: boolean, reason?: string): Promise<ApiResponse<void>> {
+    try {
+      const resolved = await this.resolveFeatureFlagId(flagIdOrKey)
+      if (!resolved) return { success: false, error: `Feature flag "${flagIdOrKey}" not found` }
+
+      const admin = createAdminClient()
+      const { error } = await (admin as any)
+        .from('platform_feature_flags')
+        .update({ is_enabled: isEnabled })
+        .eq('id', resolved.id)
+
+      if (error) return { success: false, error: error.message }
+
+      await this.recordAuditLog('feature_flag.toggle', 'platform_feature_flag', resolved.id, undefined, undefined, {
+        key: resolved.key,
+        isEnabled,
+        reason,
+      })
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to toggle global feature flag' }
+    }
+  }
+
+  static async setTenantFeatureFlag(
+    flagIdOrKey: string,
+    companyId: string,
+    isEnabled: boolean,
+    notes?: string
+  ): Promise<ApiResponse<void>> {
+    try {
+      const resolved = await this.resolveFeatureFlagId(flagIdOrKey)
+      if (!resolved) return { success: false, error: `Feature flag "${flagIdOrKey}" not found` }
+
+      const admin = createAdminClient()
+      const { error } = await (admin as any)
+        .from('platform_tenant_feature_flags')
+        .upsert(
+          {
+            flag_id: resolved.id,
+            company_id: companyId,
+            is_enabled: isEnabled,
+            notes: notes?.trim() || null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'flag_id,company_id' }
+        )
+
+      if (error) return { success: false, error: error.message }
+
+      await this.recordAuditLog('feature_flag.tenant_override', 'platform_tenant_feature_flag', resolved.id, companyId, undefined, {
+        key: resolved.key,
+        isEnabled,
+        notes,
+      })
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to set tenant feature flag' }
+    }
+  }
+
+  static async removeTenantFeatureFlag(flagIdOrKey: string, companyId: string): Promise<ApiResponse<void>> {
+    try {
+      const resolved = await this.resolveFeatureFlagId(flagIdOrKey)
+      if (!resolved) return { success: false, error: `Feature flag "${flagIdOrKey}" not found` }
+
+      const admin = createAdminClient()
+      const { error } = await (admin as any)
+        .from('platform_tenant_feature_flags')
+        .delete()
+        .eq('flag_id', resolved.id)
+        .eq('company_id', companyId)
+
+      if (error) return { success: false, error: error.message }
+
+      await this.recordAuditLog('feature_flag.remove_override', 'platform_tenant_feature_flag', resolved.id, companyId, undefined, {
+        key: resolved.key,
+      })
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to remove tenant feature flag override' }
+    }
+  }
+
+  static async bulkSetTenantFeatureFlags(
+    companyId: string,
+    overrides: Array<{ flagIdOrKey: string; isEnabled: boolean; notes?: string }>,
+    reason?: string
+  ): Promise<ApiResponse<{ updated: number }>> {
+    try {
+      let count = 0
+      for (const item of overrides) {
+        const res = await this.setTenantFeatureFlag(item.flagIdOrKey, companyId, item.isEnabled, item.notes || reason)
+        if (res.success) count++
+      }
+      return { success: true, data: { updated: count } }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to bulk set tenant feature flags' }
+    }
   }
 
   static async updateRBACTemplatePermission(templateId: string, resource: string, action: PermissionActionKey, isAllowed: boolean) {

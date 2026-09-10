@@ -344,6 +344,15 @@ export interface PlatformRBACTemplate {
   permissions: Record<string, Record<PermissionActionKey, boolean>>
 }
 
+export type FeatureFlagCategory =
+  | 'core'
+  | 'localization'
+  | 'ai'
+  | 'hardware'
+  | 'logistics'
+  | 'finance'
+  | 'general'
+
 export interface TenantFeatureFlagOverride {
   company_id: string
   company_name: string
@@ -358,10 +367,46 @@ export interface PlatformFeatureFlagItem {
   key: string
   name: string
   description: string
+  category: FeatureFlagCategory | string
   is_enabled: boolean
-  overrides_count: number
+  is_beta?: boolean
   is_critical?: boolean
+  min_plan?: string
+  overrides_count: number
   overrides: TenantFeatureFlagOverride[]
+  created_at?: string
+  updated_at?: string
+}
+
+export interface PlatformFeatureFlagsOverview {
+  flags: PlatformFeatureFlagItem[]
+  total_flags: number
+  enabled_globally: number
+  disabled_globally: number
+  beta_flags_count: number
+  total_overrides_count: number
+  categories: string[]
+}
+
+export interface CreateFeatureFlagInput {
+  key: string
+  name: string
+  description?: string
+  category?: FeatureFlagCategory | string
+  is_enabled?: boolean
+  is_beta?: boolean
+  is_critical?: boolean
+  min_plan?: string
+}
+
+export interface UpdateFeatureFlagInput {
+  name?: string
+  description?: string
+  category?: FeatureFlagCategory | string
+  is_enabled?: boolean
+  is_beta?: boolean
+  is_critical?: boolean
+  min_plan?: string
 }
 
 export type SystemHealthCategory = 'job' | 'notification' | 'storage' | 'api' | 'integration'

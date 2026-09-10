@@ -10,6 +10,7 @@ import {
   PlatformTenantCompany,
   Company360Data,
   PlatformFeatureFlagItem,
+  PlatformFeatureFlagsOverview,
   SystemHealthSummary,
   SystemHealthEvent,
   PlatformIncidentItem,
@@ -130,7 +131,7 @@ export async function getPlatformPlansAction(): Promise<ApiResponse<Subscription
 /**
  * Server Action: Get Feature Flags and Tenant Overrides
  */
-export async function getPlatformFeatureFlagsAction(): Promise<ApiResponse<PlatformFeatureFlagItem[]>> {
+export async function getPlatformFeatureFlagsAction(): Promise<ApiResponse<PlatformFeatureFlagsOverview>> {
   try {
     const user = await getCurrentPlatformUser()
     if (!user) {
