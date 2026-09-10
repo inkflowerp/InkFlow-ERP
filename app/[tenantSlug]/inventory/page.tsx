@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { Crown } from 'lucide-react'
 import {
   MaterialRecord,
   MaterialCategory,
@@ -45,12 +47,24 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function InventoryDashboardPage() {
   const { company } = useTenant()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
   const [materials, setMaterials] = useDataStore<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, [])
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [search, setSearch] = useState('')
+
+  const productCheck = checkCanCreate('max_products')
+
+  const handleOpenNewMaterial = () => {
+    if (!productCheck.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
+    setIsNewOpen(true)
+  }
+
 
   // Modals
   const [isNewOpen, setIsNewOpen] = useState(false)
@@ -248,7 +262,7 @@ export default function InventoryDashboardPage() {
 
             <Button
               size="sm"
-              onClick={() => setIsNewOpen(true)}
+              onClick={handleOpenNewMaterial}
               className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white bangla-text"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -257,6 +271,40 @@ export default function InventoryDashboardPage() {
           </div>
         }
       />
+
+      {/* Inventory & Materials Quota Alert */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-emerald-600 text-white font-bold">
+            <Package className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900 dark:text-white bangla-text">
+              {tBilingual(
+                `Inventory SKU Quota: ${materials.length} of ${currentPlan.max_products.toLocaleString()} materials registered`,
+                `ইনভেন্টরি আইটেম কোটা: ${currentPlan.max_products.toLocaleString()} টির মধ্যে ${materials.length} টি কাঁচামাল নিবন্ধিত`
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+              {productCheck.exceeded
+                ? tBilingual('Inventory SKU capacity reached. Upgrade plan to register more materials.', 'আইটেমের ধারণক্ষমতা পূর্ণ হয়েছে। অতিরিক্ত প্রোডাক্ট যোগ করতে প্ল্যান আপগ্রেড করুন।')
+                : tBilingual(`Active on ${currentPlan.name}.`, `${currentPlan.name_bn}-এ অন্তর্ভুক্ত।`)}
+            </p>
+          </div>
+        </div>
+
+        {currentPlan.code !== 'enterprise' && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openUpgradeModal('business')}
+            className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 bangla-text shrink-0"
+          >
+            <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+            {tBilingual('Expand Catalog Limit', 'ক্যাটালগ বৃদ্ধি')}
+          </Button>
+        )}
+      </div>
 
       {/* Notification */}
       {notification && (

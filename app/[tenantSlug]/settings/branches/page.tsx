@@ -12,6 +12,7 @@ import {
   Star,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { SettingsNav } from '@/components/settings/settings-nav'
 import { Card } from '@/components/ui/card'
@@ -21,6 +22,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Crown } from 'lucide-react'
 
 interface BranchItem {
   id: string
@@ -71,9 +73,20 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function BranchesSettingsPage() {
   const { locale, tBilingual } = useI18n()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan } = useSubscription()
   const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, INITIAL_BRANCHES)
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
+
+  const branchCheck = checkCanCreate('max_branches')
+
+  const handleOpenAddBranch = () => {
+    if (!branchCheck.allowed) {
+      openLimitExceededModal('max_branches')
+      return
+    }
+    setIsAddOpen(true)
+  }
 
   // Form State
   const [newBranch, setNewBranch] = useState({
@@ -98,6 +111,10 @@ export default function BranchesSettingsPage() {
 
   const handleCreateBranch = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!branchCheck.allowed) {
+      openLimitExceededModal('max_branches')
+      return
+    }
     const created: BranchItem = {
       id: `b-${Date.now()}`,
       code: newBranch.code.toUpperCase(),
@@ -124,7 +141,7 @@ export default function BranchesSettingsPage() {
         icon={GitBranch}
         iconColor="text-blue-600"
         actions={
-          <Button onClick={() => setIsAddOpen(true)} className="bg-blue-600 hover:bg-blue-700 bangla-text">
+          <Button onClick={handleOpenAddBranch} className="bg-blue-600 hover:bg-blue-700 bangla-text">
             <Plus className="mr-1.5 h-4 w-4" />
             {tBilingual('Add New Branch', 'নতুন শাখা যোগ করুন')}
           </Button>
@@ -132,6 +149,40 @@ export default function BranchesSettingsPage() {
       />
 
       <SettingsNav />
+
+      {/* Branch Quota Alert */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-blue-600 text-white font-bold">
+            <Building className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900 dark:text-white bangla-text">
+              {tBilingual(
+                `Branch Limit: ${branches.length} of ${currentPlan.max_branches} locations active`,
+                `শাখা সীমা: ${currentPlan.max_branches} টির মধ্যে ${branches.length} টি শাখা সক্রিয়`
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+              {branchCheck.exceeded
+                ? tBilingual('Branch limit reached. Upgrade to Enterprise to add multi-branch factory locations.', 'শাখার সর্বোচ্চ সীমা পূর্ণ হয়েছে। নতুন হাব/শাখা যোগ করতে প্ল্যান আপগ্রেড করুন।')
+                : tBilingual(`Configured for ${currentPlan.name}.`, `${currentPlan.name_bn}-এ পরিচালিত।`)}
+            </p>
+          </div>
+        </div>
+
+        {currentPlan.code !== 'enterprise' && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openUpgradeModal('enterprise')}
+            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 bangla-text shrink-0"
+          >
+            <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+            {tBilingual('Expand Branch Limit', 'শাখা সীমা বৃদ্ধি')}
+          </Button>
+        )}
+      </div>
 
       {notification && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">

@@ -53,9 +53,11 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { DateDisplay } from '@/components/shared/date-display'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
+import { TrialDashboardCard } from '@/components/subscriptions/trial-dashboard-card'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useI18n } from '@/i18n/context'
+
 import { ColumnDef } from '@/types/common.types'
 import { toBengaliNumerals, formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -546,6 +548,9 @@ export function DashboardView() {
           </Button>
         </div>
       )}
+
+      {/* Free Trial Upgrade Notice Card */}
+      <TrialDashboardCard />
 
       {/* 2. PRIORITIZED QUICK ACTIONS HUB (Mobile-First, Large Touch Targets min 44px) */}
       <Card className="p-4 border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">

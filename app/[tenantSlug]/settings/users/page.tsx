@@ -12,9 +12,12 @@ import {
   RotateCcw,
   KeyRound,
   Search,
+  Crown,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
+
 import {
   listCompanyUsersAction,
   listRolesAction,
@@ -41,6 +44,7 @@ import { cn } from '@/lib/utils'
 export default function UsersManagementPage() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, isTrial } = useSubscription()
   const [users, setUsers] = useState<CompanyUserWithProfile[]>([])
   const [roles, setRoles] = useState<RoleRow[]>([])
   const [branches, setBranches] = useState<BranchRow[]>([])
@@ -49,6 +53,25 @@ export default function UsersManagementPage() {
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [branchFilter, setBranchFilter] = useState<string>('all')
+
+  const userCheck = checkCanCreate('max_users')
+
+  const handleOpenInvite = () => {
+    if (!userCheck.allowed) {
+      openLimitExceededModal('max_users')
+      return
+    }
+    setIsInviteOpen(true)
+  }
+
+  const handleOpenAddUser = () => {
+    if (!userCheck.allowed) {
+      openLimitExceededModal('max_users')
+      return
+    }
+    setIsAddUserOpen(true)
+  }
+
 
   // Dialog states
   const [isInviteOpen, setIsInviteOpen] = useState(false)
@@ -232,17 +255,54 @@ export default function UsersManagementPage() {
         iconColor="text-blue-600"
         actions={
           <div className="flex items-center gap-2.5">
-            <Button variant="outline" onClick={() => setIsInviteOpen(true)} className="bangla-text">
+            <Button variant="outline" onClick={handleOpenInvite} className="bangla-text">
               <Mail className="mr-1.5 h-4 w-4" />
               {tBilingual('Invite Member', 'সদস্য আমন্ত্রণ')}
             </Button>
-            <Button onClick={() => setIsAddUserOpen(true)} className="bg-blue-600 hover:bg-blue-700 bangla-text">
+            <Button onClick={handleOpenAddUser} className="bg-blue-600 hover:bg-blue-700 bangla-text">
               <UserPlus className="mr-1.5 h-4 w-4" />
               {tBilingual('Add User', 'নতুন ব্যবহারকারী')}
             </Button>
           </div>
         }
       />
+
+      {/* User Quota Status Alert */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className={cn(
+            'p-1.5 rounded-lg text-white font-bold',
+            userCheck.exceeded ? 'bg-red-500' : userCheck.warning ? 'bg-amber-500' : 'bg-blue-600'
+          )}>
+            <Users className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900 dark:text-white bangla-text">
+              {tBilingual(
+                `Plan User Limit: ${users.length} of ${currentPlan.max_users} seats active`,
+                `ইউজার সীমা: ${currentPlan.max_users} জনের মধ্যে ${users.length} জন সক্রিয়`
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+              {userCheck.exceeded
+                ? tBilingual('User limit reached. Upgrade plan to add more team members.', 'ইউজার সীমা পূর্ণ হয়েছে। নতুন মেম্বার যোগ করতে প্ল্যান আপগ্রেড করুন।')
+                : tBilingual(`Active on ${currentPlan.name}.`, `${currentPlan.name_bn}-এ পরিচালিত।`)}
+            </p>
+          </div>
+        </div>
+
+        {currentPlan.code !== 'enterprise' && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openUpgradeModal('business')}
+            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 bangla-text shrink-0"
+          >
+            <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+            {tBilingual('Expand User Limit', 'ইউজার সীমা বৃদ্ধি')}
+          </Button>
+        )}
+      </div>
 
       {/* Notification Banner */}
       {notification && (

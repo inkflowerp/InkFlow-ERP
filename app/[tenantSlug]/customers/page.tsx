@@ -18,6 +18,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -34,15 +35,28 @@ import { normalizeBdPhone } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { usePermissions } from '@/hooks/use-permissions'
 import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
+import { Crown } from 'lucide-react'
 
 export default function CustomersPage() {
   const { company } = useTenant()
   const { can, isReadOnly } = usePermissions()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
   const { data: customerData, addItem: addCustomerItem } = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS)
   const customers = Array.isArray(customerData) ? customerData : []
+
+  const customerCheck = checkCanCreate('max_customers')
+
+  const handleOpenAddCustomer = () => {
+    if (!customerCheck.allowed) {
+      openLimitExceededModal('max_customers')
+      return
+    }
+    setIsAddOpen(true)
+  }
+
 
   const [search, setSearch] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
@@ -142,7 +156,7 @@ export default function CustomersPage() {
             )}
 
             {can('create', 'customers') && (
-              <Button size="sm" onClick={() => setIsAddOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text">
+              <Button size="sm" onClick={handleOpenAddCustomer} className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text">
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('New Customer', 'নতুন গ্রাহক')}
               </Button>
@@ -150,6 +164,40 @@ export default function CustomersPage() {
           </div>
         }
       />
+
+      {/* Customer Directory Quota Alert */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-cyan-600 text-white font-bold">
+            <Users className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900 dark:text-white bangla-text">
+              {tBilingual(
+                `Customer Quota: ${customers.length} of ${currentPlan.max_customers.toLocaleString()} contacts registered`,
+                `কাস্টমার কোটা: ${currentPlan.max_customers.toLocaleString()} জনের মধ্যে ${customers.length} জন নিবন্ধিত`
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+              {customerCheck.exceeded
+                ? tBilingual('Customer directory limit reached. Upgrade plan to register more clients.', 'কাস্টমার সীমা পূর্ণ হয়েছে। নতুন গ্রাহক যোগ করতে প্ল্যান আপগ্রেড করুন।')
+                : tBilingual(`Included on your ${currentPlan.name}.`, `আপনার ${currentPlan.name_bn}-এ অন্তর্ভুক্ত।`)}
+            </p>
+          </div>
+        </div>
+
+        {currentPlan.code !== 'enterprise' && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openUpgradeModal('business')}
+            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 bangla-text shrink-0"
+          >
+            <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+            {tBilingual('Expand Quota', 'কোটা বৃদ্ধি')}
+          </Button>
+        )}
+      </div>
 
       {/* Read-Only Notice */}
       {isReadOnly('customers') && (

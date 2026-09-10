@@ -19,6 +19,7 @@ import {
   Calendar,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -35,10 +36,12 @@ import { WorkOrderModal } from '@/components/shared/work-order-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { usePermissions } from '@/hooks/use-permissions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { Crown, ShoppingCart } from 'lucide-react'
 
 export default function OrdersPage() {
   const { company } = useTenant()
   const { can, isReadOnly } = usePermissions()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
@@ -47,6 +50,25 @@ export default function OrdersPage() {
   const [search, setSearch] = useState('')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [selectedPriority, setSelectedPriority] = useState<string>('all')
+
+  const orderCheck = checkCanCreate('monthly_orders')
+
+  const handleOpenNewOrder = () => {
+    if (!orderCheck.allowed) {
+      openLimitExceededModal('monthly_orders')
+      return
+    }
+    setIsNewOpen(true)
+  }
+
+  const handleOpenWorkOrder = () => {
+    if (!orderCheck.allowed) {
+      openLimitExceededModal('monthly_orders')
+      return
+    }
+    setIsWorkOrderOpen(true)
+  }
+
 
   // New Order Modal
   const [isNewOpen, setIsNewOpen] = useState(false)
@@ -190,14 +212,14 @@ export default function OrdersPage() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setIsWorkOrderOpen(true)}
+              onClick={handleOpenWorkOrder}
               className="text-xs bangla-text"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
               {tBilingual('Add Work Order', 'ওয়ার্ক অর্ডার')}
             </Button>
             {can('create', 'orders') && (
-              <Button size="sm" onClick={() => setIsNewOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-xs text-white bangla-text">
+              <Button size="sm" onClick={handleOpenNewOrder} className="bg-indigo-600 hover:bg-indigo-700 text-xs text-white bangla-text">
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('New Sales Order', 'নতুন সেলস অর্ডার')}
               </Button>
@@ -205,6 +227,40 @@ export default function OrdersPage() {
           </div>
         }
       />
+
+      {/* Monthly Orders Quota Alert */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-indigo-600 text-white font-bold">
+            <ShoppingCart className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900 dark:text-white bangla-text">
+              {tBilingual(
+                `Monthly Order Quota: ${usage.orders_this_month} of ${currentPlan.monthly_orders.toLocaleString()} orders booked this month`,
+                `মাসিক অর্ডার কোটা: এই মাসে ${currentPlan.monthly_orders.toLocaleString()} টির মধ্যে ${usage.orders_this_month} টি অর্ডার বুক করা হয়েছে`
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+              {orderCheck.exceeded
+                ? tBilingual('Monthly order quota reached. Upgrade to unlock more monthly job bookings.', 'চলতি মাসের অর্ডার কোটা পূর্ণ হয়েছে। নতুন অর্ডার বুক করতে প্ল্যান আপগ্রেড করুন।')
+                : tBilingual(`Resets at the start of next calendar month (${currentPlan.name}).`, `পরবর্তী মাসের শুরুতে কোটা পুনরায় রিসেট হবে (${currentPlan.name_bn})।`)}
+            </p>
+          </div>
+        </div>
+
+        {currentPlan.code !== 'enterprise' && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openUpgradeModal('business')}
+            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 bangla-text shrink-0"
+          >
+            <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+            {tBilingual('Unlimited Orders', 'আনলিমিটেড অর্ডার')}
+          </Button>
+        )}
+      </div>
 
       {/* Read-Only Notice */}
       {isReadOnly('orders') && (

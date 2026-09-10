@@ -34,6 +34,7 @@ import {
 import { getNavigationConfig } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -69,7 +70,9 @@ export function Sidebar() {
   const pathname = usePathname()
   const { company } = useTenant()
   const { can, isOwner } = usePermissions()
+  const { isTrial, daysRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { tBilingual } = useI18n()
+
 
   const tenantSlug = company?.slug || 'app'
   const navSections = getNavigationConfig(tenantSlug)
@@ -212,14 +215,62 @@ export function Sidebar() {
           })}
       </div>
 
-      {/* Footer / Bengali Hotline Support */}
+      {/* Footer / Bengali Hotline Support & Trial Upgrade Widget */}
       {!collapsed && (
-        <div className="border-t border-slate-100 p-4 dark:border-slate-800">
-          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800">
-            <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
+        <div className="border-t border-slate-100 p-3 dark:border-slate-800 space-y-2.5">
+          {/* Trial / Plan Upgrade Box */}
+          {isTrial ? (
+            <div className="rounded-xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-blue-500/10 p-3 border border-indigo-200/80 dark:border-indigo-800/60 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Crown className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="text-[11px] font-bold text-slate-900 dark:text-white">
+                    {tBilingual('Free Trial', 'ফ্রি ট্রায়াল')}
+                  </span>
+                </div>
+                <Badge className="text-[9px] bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1 py-0 h-4">
+                  {daysRemainingInTrial}d left
+                </Badge>
+              </div>
+
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight bangla-text">
+                {tBilingual('Upgrade now to unlock unlimited orders & users.', 'আনলিমিটেড অর্ডার ও ফিচারের জন্য আপগ্রেড করুন।')}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => openUpgradeModal('business')}
+                className="w-full flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-bold shadow-xs hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer bangla-text"
+              >
+                <Crown className="h-3 w-3 text-amber-300" />
+                <span>{tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}</span>
+              </button>
+            </div>
+          ) : (
+            currentPlan.code !== 'enterprise' && (
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 p-2.5 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">
+                    {tBilingual(currentPlan.name, currentPlan.name_bn)}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openUpgradeModal('enterprise')}
+                  className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline bangla-text"
+                >
+                  {tBilingual('Upgrade', 'আপগ্রেড')}
+                </button>
+              </div>
+            )
+          )}
+
+          <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800">
+            <p className="text-[10px] font-bold text-slate-800 dark:text-slate-200">
               {tBilingual('Local Support', 'বাংলা হেল্পলাইন')}
             </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
               +880 1700-000000
             </p>
           </div>

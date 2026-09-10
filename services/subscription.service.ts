@@ -389,56 +389,98 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 export const DEFAULT_TENANT_SUBSCRIPTION: CompanySubscriptionRecord = {
   id: 'sub-default',
   company_id: 'default',
-  plan_id: 'sp-02',
-  plan_code: 'business',
-  status: 'active',
+  plan_id: 'sp-00',
+  plan_code: 'trial',
+  status: 'trial',
   billing_interval: 'monthly',
   current_period_start: new Date().toISOString(),
   current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-  trial_ends_at: null,
-  payment_method_type: 'bkash',
-  last_payment_reference: '',
+  trial_ends_at: new Date(Date.now() + 14 * 86400000).toISOString(),
+  payment_method_type: null,
+  last_payment_reference: null,
   custom_limits_override: null,
 }
 
 export const DEMO_TENANT_SUBSCRIPTION = DEFAULT_TENANT_SUBSCRIPTION
 
-export function getTenantResourceUsage(companyId: string = 'default'): TenantResourceUsage {
+export function getTenantResourceUsage(
+  companyId: string = 'default',
+  plan?: SubscriptionPlanRecord | null,
+  override?: CustomLimitsOverride | null
+): TenantResourceUsage {
   const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
   const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
   const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
   const products = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+  const materials = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
   const branches = PrintERPDataStore.get<any[]>(STORAGE_KEYS.BRANCHES) || []
 
+  const isCoMatch = (item: any) =>
+    !item.company_id || item.company_id === companyId || item.company_id === 'default' || item.company_id === 'co-main'
+
+  // Users count
+  const matchingUsers = users.filter(isCoMatch)
+  const usersCount = Math.max(1, matchingUsers.length) // At least 1 (the owner/logged-in admin)
+
+  // Branches count
+  const matchingBranches = branches.filter(isCoMatch)
+  const branchesCount = Math.max(1, matchingBranches.length)
+
+  // Customers count
+  const matchingCustomers = customers.filter(isCoMatch)
+  const customersCount = matchingCustomers.length
+
+  // Products & Materials count
+  const totalProducts = (products.filter(isCoMatch).length || 0) + (materials.filter(isCoMatch).length || 0)
+  const productsCount = totalProducts
+
+  // Monthly orders count
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  const monthlyOrders = orders.filter((o) => {
+    if (!isCoMatch(o)) return false
+    const orderDate = o.order_date || o.created_at || ''
+    return orderDate >= startOfMonth || !orderDate
+  })
+  const ordersCount = monthlyOrders.length
+
+  const activePlan = plan || DEFAULT_TRIAL_PLAN
+  const usersLimit = override?.max_users ?? activePlan.max_users
+  const branchesLimit = override?.max_branches ?? activePlan.max_branches
+  const storageLimit = override?.storage_gb ?? activePlan.storage_gb
+  const ordersLimit = override?.monthly_orders ?? activePlan.monthly_orders
+  const customersLimit = override?.max_customers ?? activePlan.max_customers
+  const productsLimit = override?.max_products ?? activePlan.max_products
+
   return {
-    users_count: users.filter((u) => !u.company_id || u.company_id === companyId).length,
-    users_limit: 10,
-    branches_count: Math.max(1, branches.filter((b) => !b.company_id || b.company_id === companyId).length),
-    branches_limit: 3,
-    storage_used_gb: 0,
-    storage_limit_gb: 10,
-    orders_this_month: orders.filter((o) => !o.company_id || o.company_id === companyId).length,
-    orders_limit: 500,
-    customers_count: customers.filter((c) => !c.company_id || c.company_id === companyId).length,
-    customers_limit: 1000,
-    products_count: products.filter((p) => !p.company_id || p.company_id === companyId).length,
-    products_limit: 1000,
+    users_count: usersCount,
+    users_limit: usersLimit,
+    branches_count: branchesCount,
+    branches_limit: branchesLimit,
+    storage_used_gb: Math.min(storageLimit, Number(((usersCount * 0.1) + (ordersCount * 0.002)).toFixed(2))),
+    storage_limit_gb: storageLimit,
+    orders_this_month: ordersCount,
+    orders_limit: ordersLimit,
+    customers_count: customersCount,
+    customers_limit: customersLimit,
+    products_count: productsCount,
+    products_limit: productsLimit,
   }
 }
 
 export const DEMO_RESOURCE_USAGE: TenantResourceUsage = {
-  users_count: 0,
-  users_limit: 10,
+  users_count: 1,
+  users_limit: 5,
   branches_count: 1,
-  branches_limit: 3,
-  storage_used_gb: 0,
-  storage_limit_gb: 10,
+  branches_limit: 1,
+  storage_used_gb: 0.1,
+  storage_limit_gb: 2,
   orders_this_month: 0,
-  orders_limit: 500,
+  orders_limit: 100,
   customers_count: 0,
-  customers_limit: 1000,
+  customers_limit: 200,
   products_count: 0,
-  products_limit: 1000,
+  products_limit: 200,
 }
 
 export const DEMO_PLATFORM_SUBSCRIPTIONS: PlatformSubscriptionItem[] = []
@@ -448,18 +490,17 @@ export const DEMO_SUBSCRIPTION_INVOICES: SubscriptionInvoiceRecord[] = []
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function getTenantSubscription(
-  companyId: string
+  companyId: string,
+  companySlug?: string
 ): Promise<CompanySubscriptionRecord> {
-  if (!companyId || companyId === 'default') {
-    return DEMO_TENANT_SUBSCRIPTION
-  }
+  const normId = companyId || 'default'
 
   try {
     const admin = createAdminClient()
     const { data: sub, error } = await (admin as any)
       .from('company_subscriptions')
       .select('*, subscription_plans(*)')
-      .eq('company_id', companyId)
+      .eq('company_id', normId)
       .maybeSingle()
 
     if (!error && sub) {
@@ -482,27 +523,46 @@ export async function getTenantSubscription(
     }
   } catch {}
 
-  // Fallback from local data store if present
+  // Check local data store for company-specific subscription
   const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
-  const found = localSubs.find((s) => s.company_id === companyId)
+  const found = localSubs.find((s) => s.company_id === normId || (companySlug && s.company_id === `co-${companySlug}`))
   if (found) return found
 
-  // Clean default for new trial tenant
+  // Check platform tenants list to see if plan was specified
+  const platformCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+  const platComp = platformCompanies.find(
+    (c) => c.id === normId || (companySlug && c.slug === companySlug)
+  )
+
   const defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
-  return {
-    id: `sub-${companyId}`,
-    company_id: companyId,
-    plan_id: DEFAULT_TRIAL_PLAN.id,
-    plan_code: 'trial',
-    status: 'trial',
+  const targetPlanCode: PlanCode = (platComp?.plan as PlanCode) || 'trial'
+  const targetPlanObj = DEFAULT_PLANS.find((p) => p.code === targetPlanCode) || DEFAULT_TRIAL_PLAN
+  const isTrial = targetPlanCode === 'trial' || platComp?.status === 'trial'
+
+  const newSub: CompanySubscriptionRecord = {
+    id: `sub-${normId}`,
+    company_id: normId,
+    plan_id: targetPlanObj.id,
+    plan_code: targetPlanCode,
+    status: isTrial ? 'trial' : 'active',
     billing_interval: 'monthly',
     current_period_start: new Date().toISOString(),
     current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-    trial_ends_at: new Date(Date.now() + defaultTrialDays * 86400000).toISOString(),
-    payment_method_type: null,
+    trial_ends_at: isTrial ? new Date(Date.now() + defaultTrialDays * 86400000).toISOString() : null,
+    payment_method_type: isTrial ? null : 'bkash',
     last_payment_reference: null,
     custom_limits_override: null,
   }
+
+  // Persist into localSubs if in browser
+  if (typeof window !== 'undefined') {
+    try {
+      const updatedList = [...localSubs.filter((s) => s.company_id !== normId), newSub]
+      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, updatedList)
+    } catch {}
+  }
+
+  return newSub
 }
 
 export function checkFeatureAccess(
@@ -525,6 +585,25 @@ export function getMinimumPlanForFeature(feature: FeatureCode): SubscriptionPlan
   return DEFAULT_PLANS.find((p) => p.code === targetCode) || DEFAULT_PLANS[1]
 }
 
+export function getNextTierPlan(
+  currentPlanCode: PlanCode,
+  plans: SubscriptionPlanRecord[] = DEFAULT_PLANS
+): SubscriptionPlanRecord {
+  if (currentPlanCode === 'trial' || currentPlanCode === 'starter') {
+    return plans.find((p) => p.code === 'business') || DEFAULT_PLANS[2]
+  }
+  if (currentPlanCode === 'business') {
+    return plans.find((p) => p.code === 'enterprise') || DEFAULT_PLANS[3]
+  }
+  return plans.find((p) => p.code === 'enterprise') || DEFAULT_PLANS[3]
+}
+
+export function getTrialDaysRemaining(trialEndsAt?: string | null, fallbackDays: number = 14): number {
+  if (!trialEndsAt) return fallbackDays
+  const diff = new Date(trialEndsAt).getTime() - Date.now()
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+}
+
 export function checkResourceLimit(
   limitType: ConfigurableLimitType,
   currentCount: number,
@@ -545,6 +624,7 @@ export function checkResourceLimit(
     current: currentCount,
     exceeded: currentCount >= effectiveLimit,
     warning: percentage >= 80 && currentCount < effectiveLimit,
-    percentage,
+    percentage: Math.min(100, percentage),
   }
 }
+

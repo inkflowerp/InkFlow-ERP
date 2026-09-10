@@ -6,11 +6,14 @@ import { Sidebar } from './sidebar'
 import { TopNav } from './top-nav'
 import { SubscriptionProvider } from '@/hooks/use-subscription'
 import { SubscriptionStatusBanner } from '@/components/subscriptions/subscription-status-banner'
+import { TrialUpgradeModal } from '@/components/subscriptions/trial-upgrade-modal'
+import { LimitExceededModal } from '@/components/subscriptions/limit-exceeded-modal'
 import { NetworkBanner } from '@/components/pwa/network-banner'
 import { MobileBottomNav } from '@/components/mobile/bottom-nav'
 import { useShortcuts } from '@/hooks/use-shortcuts'
 import { ToastProvider } from '@/components/shared/toast-feedback'
 import { PlatformSupportBanner } from './platform-support-banner'
+
 
 const CommandPalette = dynamic(
   () => import('@/components/search/command-palette').then((mod) => mod.CommandPalette),
@@ -90,6 +93,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClose={() => setSearchOpen(false)}
             initialMode={searchMode}
           />
+          <TrialUpgradeModal />
+          <LimitExceededModal />
         </div>
       </ToastProvider>
     </SubscriptionProvider>

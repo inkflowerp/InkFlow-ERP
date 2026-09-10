@@ -16,15 +16,34 @@ import {
 } from '@/types/subscription.types'
 import {
   DEFAULT_PLANS,
+  DEFAULT_TRIAL_PLAN,
+  DEFAULT_TENANT_SUBSCRIPTION,
   DEMO_TENANT_SUBSCRIPTION,
   DEMO_RESOURCE_USAGE,
+
   TENANT_ACCOUNT_TYPE_METADATA,
   checkFeatureAccess,
   checkResourceLimit,
   getTenantResourceUsage,
+  getTenantSubscription,
   getTrialPlan,
+  getNextTierPlan,
+  getTrialDaysRemaining,
 } from '@/services/subscription.service'
 import { FeatureCode } from '@/types/subscription.types'
+import { useTenant } from '@/hooks/use-tenant'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+
+export interface LimitCheckResult {
+  allowed: boolean
+  reason?: string
+  current: number
+  limit: number
+  percentage: number
+  warning: boolean
+  exceeded: boolean
+  nextPlan?: SubscriptionPlanRecord
+}
 
 interface SubscriptionContextType {
   subscription: CompanySubscriptionRecord
@@ -37,7 +56,9 @@ interface SubscriptionContextType {
   isSuspended: boolean
   isPastDue: boolean
   isTrial: boolean
+  isTrialExpired: boolean
   daysRemainingInTrial: number
+  trialProgressPercent: number
   hasFeature: (feature: FeatureCode) => boolean
   getLimitStatus: (limitType: ConfigurableLimitType) => {
     limit: number
@@ -46,6 +67,7 @@ interface SubscriptionContextType {
     warning: boolean
     percentage: number
   }
+  checkCanCreate: (limitType: ConfigurableLimitType) => LimitCheckResult
   upgradeSubscription: (params: {
     planCode: PlanCode
     interval: BillingInterval
@@ -55,49 +77,60 @@ interface SubscriptionContextType {
   simulatePlan: (planCode: PlanCode) => void
   simulateStatus: (status: CompanySubscriptionRecord['status']) => void
   simulateAccountType: (accountType: TenantAccountType) => void
+  // Modal controls
+  isUpgradeModalOpen: boolean
+  upgradeModalInitialTarget?: PlanCode
+  upgradeModalTriggerFeature?: string
+  openUpgradeModal: (targetPlanOrFeature?: PlanCode | string) => void
+  closeUpgradeModal: () => void
+  isLimitExceededModalOpen: boolean
+  limitModalType: ConfigurableLimitType | null
+  openLimitExceededModal: (limitType: ConfigurableLimitType) => void
+  closeLimitExceededModal: () => void
+  refreshUsage: () => void
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null)
 
-const STORAGE_KEY_SUB = 'printerp_tenant_sub'
-const STORAGE_KEY_PLANS = 'printerp_plans'
-
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+  const { company } = useTenant()
+  const companyId = company?.id || 'default'
+  const companySlug = company?.slug || 'app'
+
   const [plans] = useState<SubscriptionPlanRecord[]>(DEFAULT_PLANS)
   const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY_SUB)
-        if (saved) return JSON.parse(saved)
-      } catch {
-        // fallback
-      }
+        const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
+        const found = localSubs.find((s) => s.company_id === companyId || s.company_id === `co-${companySlug}`)
+        if (found) return found
+      } catch {}
     }
-    return DEMO_TENANT_SUBSCRIPTION
-  })
-  const [usage] = useState<TenantResourceUsage>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        return getTenantResourceUsage(subscription.company_id || 'default')
-      } catch {
-        // ignore
-      }
+    return {
+      ...DEFAULT_TENANT_SUBSCRIPTION,
+      id: `sub-${companyId}`,
+      company_id: companyId,
     }
-    return DEMO_RESOURCE_USAGE
   })
 
-  // Persist subscription updates to localStorage
+  // Sync subscription whenever tenant company changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    async function syncCompanySub() {
       try {
-        localStorage.setItem(STORAGE_KEY_SUB, JSON.stringify(subscription))
+        const sub = await getTenantSubscription(companyId, companySlug)
+        setSubscription(sub)
       } catch {
-        // ignore
+        // fallback to default trial
       }
     }
-  }, [subscription])
+    syncCompanySub()
+  }, [companyId, companySlug])
+
+  // Compute resource usage dynamically
+  const [usageTick, setUsageTick] = useState(0)
+  const refreshUsage = useCallback(() => {
+    setUsageTick((prev) => prev + 1)
+  }, [])
 
   const currentPlan = useMemo(() => {
     if (subscription.plan_code === 'trial' || subscription.status === 'trial') {
@@ -113,29 +146,92 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return subscription.plan_code
   }, [subscription.plan_code, subscription.status])
 
+  const usage: TenantResourceUsage = useMemo(() => {
+    if (typeof window === 'undefined') return DEMO_RESOURCE_USAGE
+    return getTenantResourceUsage(companyId, currentPlan, subscription.custom_limits_override)
+  }, [companyId, currentPlan, subscription.custom_limits_override, usageTick])
+
+  // Modal dialog states
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+  const [upgradeModalInitialTarget, setUpgradeModalInitialTarget] = useState<PlanCode | undefined>()
+  const [upgradeModalTriggerFeature, setUpgradeModalTriggerFeature] = useState<string | undefined>()
+
+  const [isLimitExceededModalOpen, setIsLimitExceededModalOpen] = useState(false)
+  const [limitModalType, setLimitModalType] = useState<ConfigurableLimitType | null>(null)
+
+  const openUpgradeModal = useCallback((targetPlanOrFeature?: PlanCode | string) => {
+    if (targetPlanOrFeature === 'starter' || targetPlanOrFeature === 'business' || targetPlanOrFeature === 'enterprise') {
+      setUpgradeModalInitialTarget(targetPlanOrFeature)
+      setUpgradeModalTriggerFeature(undefined)
+    } else if (targetPlanOrFeature) {
+      setUpgradeModalTriggerFeature(targetPlanOrFeature)
+      setUpgradeModalInitialTarget('business')
+    } else {
+      setUpgradeModalInitialTarget(currentPlanCode === 'trial' || currentPlanCode === 'starter' ? 'business' : 'enterprise')
+      setUpgradeModalTriggerFeature(undefined)
+    }
+    setIsUpgradeModalOpen(true)
+  }, [currentPlanCode])
+
+  const closeUpgradeModal = useCallback(() => {
+    setIsUpgradeModalOpen(false)
+    setUpgradeModalTriggerFeature(undefined)
+  }, [])
+
+  const openLimitExceededModal = useCallback((limitType: ConfigurableLimitType) => {
+    setLimitModalType(limitType)
+    setIsLimitExceededModalOpen(true)
+  }, [])
+
+  const closeLimitExceededModal = useCallback(() => {
+    setIsLimitExceededModalOpen(false)
+    setLimitModalType(null)
+  }, [])
+
+  // Persist subscription updates to localStorage per-company
+  useEffect(() => {
+    if (typeof window !== 'undefined' && subscription.company_id) {
+      try {
+        const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
+        const filtered = localSubs.filter((s) => s.company_id !== subscription.company_id)
+        PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, [...filtered, subscription])
+      } catch {}
+    }
+  }, [subscription])
+
   const accountType: TenantAccountType = useMemo(() => {
     return resolveTenantAccountType(subscription)
   }, [subscription])
 
   const accountTypeMeta: TenantAccountTypeMeta = useMemo(() => {
-    return TENANT_ACCOUNT_TYPE_METADATA[accountType] || TENANT_ACCOUNT_TYPE_METADATA.starter
+    return TENANT_ACCOUNT_TYPE_METADATA[accountType] || TENANT_ACCOUNT_TYPE_METADATA.trial
   }, [accountType])
 
   const isSuspended = subscription.status === 'suspended'
   const isPastDue = subscription.status === 'past_due'
   const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
 
+  const totalTrialDays = currentPlan?.trial_days || 14
   const daysRemainingInTrial = useMemo(() => {
-    if (!subscription.trial_ends_at) return isTrial ? (currentPlan?.trial_days || 14) : 0
-    const diff = new Date(subscription.trial_ends_at).getTime() - Date.now()
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
-  }, [subscription.trial_ends_at, isTrial, currentPlan?.trial_days])
+    return getTrialDaysRemaining(subscription.trial_ends_at, isTrial ? totalTrialDays : 0)
+  }, [subscription.trial_ends_at, isTrial, totalTrialDays])
+
+  const isTrialExpired = useMemo(() => {
+    return isTrial && (daysRemainingInTrial <= 0 || subscription.status === 'expired')
+  }, [isTrial, daysRemainingInTrial, subscription.status])
+
+  const trialProgressPercent = useMemo(() => {
+    if (!isTrial) return 0
+    const elapsed = Math.max(0, totalTrialDays - daysRemainingInTrial)
+    return Math.min(100, Math.round((elapsed / totalTrialDays) * 100))
+  }, [isTrial, totalTrialDays, daysRemainingInTrial])
 
   const hasFeature = useCallback(
     (feature: FeatureCode) => {
+      if (isTrialExpired || isSuspended) return false
       return checkFeatureAccess(subscription.plan_code, feature, plans)
     },
-    [subscription.plan_code, plans]
+    [subscription.plan_code, plans, isTrialExpired, isSuspended]
   )
 
   const getLimitStatus = useCallback(
@@ -172,6 +268,62 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     [usage, currentPlan, subscription.custom_limits_override]
   )
 
+  const checkCanCreate = useCallback(
+    (limitType: ConfigurableLimitType): LimitCheckResult => {
+      if (isSuspended) {
+        return {
+          allowed: false,
+          reason: 'Tenant account is suspended by platform administration.',
+          current: 0,
+          limit: 0,
+          percentage: 100,
+          warning: true,
+          exceeded: true,
+        }
+      }
+
+      if (isTrialExpired) {
+        return {
+          allowed: false,
+          reason: 'Your 14-day free trial has expired. Upgrade your plan to continue adding records.',
+          current: 0,
+          limit: 0,
+          percentage: 100,
+          warning: true,
+          exceeded: true,
+          nextPlan: getNextTierPlan(currentPlanCode, plans),
+        }
+      }
+
+      const status = getLimitStatus(limitType)
+      const nextPlan = getNextTierPlan(currentPlanCode, plans)
+
+      if (status.exceeded) {
+        return {
+          allowed: false,
+          reason: `You have reached the ${limitType.replace('_', ' ')} limit (${status.current}/${status.limit}) for your ${currentPlan.name}.`,
+          current: status.current,
+          limit: status.limit,
+          percentage: status.percentage,
+          warning: true,
+          exceeded: true,
+          nextPlan,
+        }
+      }
+
+      return {
+        allowed: true,
+        current: status.current,
+        limit: status.limit,
+        percentage: status.percentage,
+        warning: status.warning,
+        exceeded: false,
+        nextPlan,
+      }
+    },
+    [isSuspended, isTrialExpired, getLimitStatus, currentPlan, currentPlanCode, plans]
+  )
+
   const upgradeSubscription = async ({
     planCode,
     interval,
@@ -190,8 +342,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       nextMonth.setMonth(nextMonth.getMonth() + 1)
     }
 
+    const updatedPlanObj = plans.find((p) => p.code === planCode) || plans[1]
+
     const updated: CompanySubscriptionRecord = {
       ...subscription,
+      plan_id: updatedPlanObj.id,
       plan_code: planCode,
       status: 'active',
       billing_interval: interval,
@@ -203,17 +358,36 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     }
 
     setSubscription(updated)
+
+    // Also sync in Platform Companies list if present
+    try {
+      const platformCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+      const updatedPlat = platformCompanies.map((c) => {
+        if (c.id === companyId || c.slug === companySlug) {
+          return { ...c, plan: planCode, status: 'active' }
+        }
+        return c
+      })
+      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_COMPANIES, updatedPlat)
+    } catch {}
+
+    refreshUsage()
     return true
   }
 
   const simulatePlan = useCallback(
     (planCode: PlanCode) => {
+      const planObj = plans.find((p) => p.code === planCode) || plans[0]
       setSubscription((prev) => ({
         ...prev,
+        plan_id: planObj.id,
         plan_code: planCode,
+        status: planCode === 'trial' ? 'trial' : 'active',
+        trial_ends_at: planCode === 'trial' ? new Date(Date.now() + 14 * 86400000).toISOString() : null,
       }))
+      refreshUsage()
     },
-    []
+    [plans, refreshUsage]
   )
 
   const simulateStatus = useCallback(
@@ -222,8 +396,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         ...prev,
         status,
       }))
+      refreshUsage()
     },
-    []
+    [refreshUsage]
   )
 
   const simulateAccountType = useCallback(
@@ -243,8 +418,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           trial_ends_at: null,
         }))
       }
+      refreshUsage()
     },
-    []
+    [refreshUsage]
   )
 
   return (
@@ -260,13 +436,26 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         isSuspended,
         isPastDue,
         isTrial,
+        isTrialExpired,
         daysRemainingInTrial,
+        trialProgressPercent,
         hasFeature,
         getLimitStatus,
+        checkCanCreate,
         upgradeSubscription,
         simulatePlan,
         simulateStatus,
         simulateAccountType,
+        isUpgradeModalOpen,
+        upgradeModalInitialTarget,
+        upgradeModalTriggerFeature,
+        openUpgradeModal,
+        closeUpgradeModal,
+        isLimitExceededModalOpen,
+        limitModalType,
+        openLimitExceededModal,
+        closeLimitExceededModal,
+        refreshUsage,
       }}
     >
       {children}
@@ -277,7 +466,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 export function useSubscription() {
   const ctx = useContext(SubscriptionContext)
   if (!ctx) {
-    const defaultPlan = DEFAULT_PLANS[0]?.code === 'trial' ? DEFAULT_PLANS[0] : getTrialPlan(DEFAULT_PLANS)
+    const defaultPlan = DEFAULT_TRIAL_PLAN
     const accType: TenantAccountType = 'trial'
     return {
       subscription: DEMO_TENANT_SUBSCRIPTION,
@@ -290,14 +479,34 @@ export function useSubscription() {
       isSuspended: false,
       isPastDue: false,
       isTrial: true,
+      isTrialExpired: false,
       daysRemainingInTrial: 14,
+      trialProgressPercent: 0,
       hasFeature: (feature: FeatureCode) => checkFeatureAccess('trial', feature, DEFAULT_PLANS),
       getLimitStatus: (limitType: ConfigurableLimitType) =>
         checkResourceLimit(limitType, 1, defaultPlan),
+      checkCanCreate: () => ({
+        allowed: true,
+        current: 1,
+        limit: 5,
+        percentage: 20,
+        warning: false,
+        exceeded: false,
+      }),
       upgradeSubscription: async () => true,
       simulatePlan: () => {},
       simulateStatus: () => {},
       simulateAccountType: () => {},
+      isUpgradeModalOpen: false,
+      upgradeModalInitialTarget: undefined,
+      upgradeModalTriggerFeature: undefined,
+      openUpgradeModal: () => {},
+      closeUpgradeModal: () => {},
+      isLimitExceededModalOpen: false,
+      limitModalType: null,
+      openLimitExceededModal: () => {},
+      closeLimitExceededModal: () => {},
+      refreshUsage: () => {},
     }
   }
   return ctx

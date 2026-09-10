@@ -15,8 +15,8 @@ import { useI18n } from '@/i18n/context'
 interface ModalDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  title: string
-  description?: string
+  title: React.ReactNode
+  description?: React.ReactNode
   children: React.ReactNode
   confirmText?: string
   cancelText?: string
@@ -25,6 +25,7 @@ interface ModalDialogProps {
   confirmVariant?: 'default' | 'destructive' | 'cmyk'
   hideFooter?: boolean
   maxWidth?: string
+  size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
 export function ModalDialog({
@@ -40,7 +41,9 @@ export function ModalDialog({
   confirmVariant = 'default',
   hideFooter = false,
   maxWidth,
+  size,
 }: ModalDialogProps) {
+
   const { t } = useI18n()
 
   return (

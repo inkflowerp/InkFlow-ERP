@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -82,46 +83,38 @@ export default function ProductionDashboardPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  // Active department Kanban columns
-  const activeColumns = getDepartmentColumns(selectedDept)
-
-  // Filtered jobs
-  const filtered = jobs.filter((j) => {
-    const matchDept = selectedDept === 'all' || j.department === selectedDept
+  // Filter Jobs by Dept & Search
+  const filteredJobs = jobs.filter((job) => {
+    const matchDept = selectedDept === 'all' || job.department === selectedDept
     const matchSearch =
-      j.production_job_number.toLowerCase().includes(search.toLowerCase()) ||
-      j.product_name.toLowerCase().includes(search.toLowerCase()) ||
-      j.customer_name.toLowerCase().includes(search.toLowerCase()) ||
-      j.assigned_workers.some((w) => w.toLowerCase().includes(search.toLowerCase()))
+      job.production_job_number.toLowerCase().includes(search.toLowerCase()) ||
+      job.product_name.toLowerCase().includes(search.toLowerCase()) ||
+      job.customer_name.toLowerCase().includes(search.toLowerCase())
 
     return matchDept && matchSearch
   })
 
-  // Executive Metrics
+  // Executive Count Badges
   const totalJobs = jobs.length
   const countInProgress = jobs.filter((j) => j.status === 'in_progress').length
-  const countRework = jobs.filter((j) => j.has_rework || j.status === 'rework').length
-  const countCompleted = jobs.filter((j) => j.status === 'completed').length
   const countUrgent = jobs.filter((j) => j.priority === 'urgent' || j.priority === 'very_urgent').length
+  const countRework = jobs.filter((j) => j.status === 'rework' || j.has_rework).length
+  const countCompleted = jobs.filter((j) => j.status === 'completed').length
 
-  // Quick Action: Start Job
-  const handleStartJob = (jobId: string) => {
+  const handleUpdateStatus = (jobId: string, newStatus: ProductionJobStatus) => {
     PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, jobId, {
-      status: 'in_progress',
-      stage: 'in_progress',
+      status: newStatus,
       updated_at: new Date().toISOString(),
     })
-    showNotification('Machine run initiated! Job is now actively IN PROGRESS.')
+    showNotification(`Job #${jobId.slice(-6).toUpperCase()} status changed to ${newStatus}.`)
   }
 
-  // Quick Action: Complete Job
+  const handleStartJob = (jobId: string) => {
+    handleUpdateStatus(jobId, 'in_progress')
+  }
+
   const handleCompleteJob = (jobId: string) => {
-    PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, jobId, {
-      status: 'completed',
-      stage: 'completed',
-      updated_at: new Date().toISOString(),
-    })
-    showNotification('Job marked as COMPLETED! Passed forward for dispatch.')
+    handleUpdateStatus(jobId, 'completed')
   }
 
   // Quick Action: Pause Job
@@ -136,7 +129,7 @@ export default function ProductionDashboardPage() {
     })
     setSelectedJobForPause(null)
     setPauseReason('')
-    showNotification('Job paused. Floor supervisor notified.')
+    showNotification('Job production paused with reason logged.')
   }
 
   // Quick Action: Log Rework & Scrap
@@ -144,9 +137,9 @@ export default function ProductionDashboardPage() {
     e.preventDefault()
     if (!selectedJobForRework) return
 
-    const reworkNum = `RWK-2024-00${(selectedJobForRework.reworks?.length || 0) + 1}`
+    const reworkNum = `RW-${Date.now().toString().slice(-4)}`
     const newRework: ProductionReworkRecord = {
-      id: `rwk-${Date.now()}`,
+      id: `rw-${Date.now()}`,
       production_job_id: selectedJobForRework.id,
       rework_number: reworkNum,
       reason: reworkReason,
@@ -174,24 +167,27 @@ export default function ProductionDashboardPage() {
     showNotification(`Rework ticket ${reworkNum} created. Additional scrap & labor logged.`)
   }
 
+  const activeColumns = getDepartmentColumns(selectedDept)
+
   return (
-    <div className="space-y-6 max-w-7xl">
-      {/* Header */}
-      <PageHeader
-        titleEn="Shop Floor Production Terminal"
-        titleBn="শপ ফ্লোর প্রোডাকশন টার্মিনাল"
-        descriptionEn="Dispatch, track, pause, and log reworks across printing, finishing, fabrication, and installation."
-        descriptionBn="প্রিন্টিং, ফিনিশিং, ফেব্রিকেশন এবং ইনস্টলেশন পর্যায়ের জব ট্র্যাকিং ও রি-ওয়ার্ক পর্যবেক্ষণ করুন।"
-        icon={Printer}
-        iconColor="text-blue-600"
-        actions={
-          <Link href={`/${slug}/orders`}>
-            <Button variant="outline" size="sm" className="text-xs bangla-text">
-              {tBilingual('View Sales Orders', 'সকল সেলস অর্ডার')}
-            </Button>
-          </Link>
-        }
-      />
+    <FeatureGate feature="production">
+      <div className="space-y-6 max-w-7xl">
+        {/* Header */}
+        <PageHeader
+          titleEn="Shop Floor Production Terminal"
+          titleBn="শপ ফ্লোর প্রোডাকশন টার্মিনাল"
+          descriptionEn="Dispatch, track, pause, and log reworks across printing, finishing, fabrication, and installation."
+          descriptionBn="প্রিন্টিং, ফিনিশিং, ফেব্রিকেশন এবং ইনস্টলেশন পর্যায়ের জব ট্র্যাকিং ও রি-ওয়ার্ক পর্যবেক্ষণ করুন।"
+          icon={Printer}
+          iconColor="text-blue-600"
+          actions={
+            <Link href={`/${slug}/orders`}>
+              <Button variant="outline" size="sm" className="text-xs bangla-text">
+                {tBilingual('View Sales Orders', 'সকল সেলস অর্ডার')}
+              </Button>
+            </Link>
+          }
+        />
 
       {/* Notification */}
       {notification && (
@@ -275,7 +271,7 @@ export default function ProductionDashboardPage() {
          ========================================================================= */}
       <div className={`grid grid-cols-1 md:grid-cols-${activeColumns.length} gap-4 overflow-x-auto pb-4`}>
         {activeColumns.map((col) => {
-          const colJobs = filtered.filter((j) => col.statusMatch.includes(j.status))
+          const colJobs = filteredJobs.filter((j) => col.statusMatch.includes(j.status))
 
           return (
             <div
@@ -604,6 +600,7 @@ export default function ProductionDashboardPage() {
           </form>
         )}
       </ModalDialog>
-    </div>
+      </div>
+    </FeatureGate>
   )
 }
