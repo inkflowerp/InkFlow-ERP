@@ -363,6 +363,7 @@ export default function ProductsCatalogPage() {
         onOpenChange={setIsAddOpen}
         title="Add Catalog Item / Service Tariff"
         description="Configure printing media, fabrication item, or installation crew rates."
+        hideFooter
       >
         <form onSubmit={handleCreateProduct} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -509,6 +510,7 @@ export default function ProductsCatalogPage() {
         onOpenChange={(open) => !open && setEditingProduct(null)}
         title="Adjust Catalog Selling Price"
         description={`Update official rate for ${editingProduct?.name} (${editingProduct?.sku}).`}
+        hideFooter
       >
         <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1">
           <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs">

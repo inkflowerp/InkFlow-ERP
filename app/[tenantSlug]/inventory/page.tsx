@@ -541,6 +541,7 @@ export default function InventoryDashboardPage() {
         onOpenChange={(open) => !open && setSelectedMaterialForTx(null)}
         title="Record Inventory Stock Transaction"
         description="Append an immutable transaction entry directly to the master stock ledger."
+        hideFooter
       >
         {selectedMaterialForTx && (
           <form onSubmit={handleRecordTransaction} className="space-y-4 pt-1">
@@ -633,6 +634,7 @@ export default function InventoryDashboardPage() {
         onOpenChange={(open) => !open && setSelectedMaterialForWastage(null)}
         title="Log Material Wastage & Scrap Audit"
         description="Record difference between job expected substrate usage vs actual consumption."
+        hideFooter
       >
         {selectedMaterialForWastage && (
           <form onSubmit={handleLogWastage} className="space-y-4 pt-1">
@@ -703,6 +705,7 @@ export default function InventoryDashboardPage() {
         onOpenChange={setIsNewOpen}
         title="Add New Raw Material to Inventory"
         description="Configure unit of measure, roll specifications, and ink coverage rates."
+        hideFooter
       >
         <form onSubmit={handleCreateMaterial} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="grid grid-cols-2 gap-3">

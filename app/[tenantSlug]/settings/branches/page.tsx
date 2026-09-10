@@ -269,6 +269,7 @@ export default function BranchesSettingsPage() {
         onOpenChange={setIsAddOpen}
         title="Add Printing Branch or Factory Hub"
         description="Register a new showroom counter or production workshop location."
+        hideFooter
       >
         <form onSubmit={handleCreateBranch} className="space-y-4 pt-2">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

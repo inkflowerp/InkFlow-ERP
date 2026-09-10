@@ -481,6 +481,7 @@ export default function OrdersPage() {
         onOpenChange={setIsNewOpen}
         title="Book New Sales Order"
         description="Record customer agreement, advance payment, and generate production job tickets."
+        hideFooter
       >
         <form onSubmit={handleCreateOrder} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="space-y-1.5">

@@ -381,6 +381,7 @@ export default function QuotationsPage() {
         onOpenChange={setIsNewOpen}
         title="Create New Formal Quotation"
         description="Calculate job area, add finishing options, and generate a quotation voucher."
+        hideFooter
       >
         <form onSubmit={handleCreateQuote} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="space-y-1.5">

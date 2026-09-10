@@ -81,16 +81,17 @@ export function LimitExceededModal() {
       open={isLimitExceededModalOpen}
       onOpenChange={(open) => !open && closeLimitExceededModal()}
       size="md"
+      hideFooter
       title={
-        <div className="flex items-center gap-2.5 text-amber-600 dark:text-amber-400">
-          <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800">
+        <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
+          <div className="p-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/60 border border-amber-500/20 text-amber-600 dark:text-amber-400 shadow-sm shrink-0">
             <Lock className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-bold text-base text-slate-900 dark:text-white bangla-text">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white bangla-text leading-snug">
               {tBilingual(meta.en, meta.bn)}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               {tBilingual(
                 `Plan Limit Reached on ${currentPlan.name}`,
                 `${currentPlan.name_bn}-এ প্ল্যান লিমিট পূর্ণ`
@@ -100,21 +101,24 @@ export function LimitExceededModal() {
         </div>
       }
     >
-      <div className="space-y-5 py-2">
+      <div className="space-y-4 pt-1">
         {/* Quota Gauge */}
-        <div className="rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 p-4 space-y-3">
+        <div className="rounded-2xl bg-gradient-to-b from-amber-50/80 to-amber-100/40 dark:from-amber-950/30 dark:to-amber-900/10 border border-amber-200/80 dark:border-amber-800/60 p-4 space-y-3 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 bangla-text">
-            <span>{tBilingual('Current Quota Usage:', 'বর্তমান ব্যবহারের পরিমাণ:')}</span>
-            <Badge className="bg-amber-500 text-slate-950 font-bold">
+            <span className="flex items-center gap-1.5">
+              <Icon className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+              {tBilingual('Current Quota Usage:', 'বর্তমান ব্যবহারের পরিমাণ:')}
+            </span>
+            <Badge className="bg-amber-500 hover:bg-amber-500 text-slate-950 font-bold px-2.5 py-0.5 shadow-sm text-xs">
               {currentDisplay} / {limitDisplay} ({status.percentage}%)
             </Badge>
           </div>
 
-          <div className="w-full bg-amber-200 dark:bg-amber-900/50 rounded-full h-2.5 overflow-hidden">
-            <div className="bg-amber-600 dark:bg-amber-500 h-2.5 rounded-full w-full" />
+          <div className="w-full bg-amber-200/80 dark:bg-amber-950/80 rounded-full h-2.5 overflow-hidden p-0.5 border border-amber-300/40 dark:border-amber-800/40">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full w-full transition-all duration-500 shadow-sm" />
           </div>
 
-          <p className="text-xs font-medium text-slate-800 dark:text-slate-200 bangla-text leading-relaxed">
+          <p className="text-xs font-medium text-slate-700 dark:text-slate-200 bangla-text leading-relaxed">
             {tBilingual(
               `Plan Limit Reached: Your current plan allows up to ${limitDisplay} ${meta.resourceNameEn} quota (currently at ${currentDisplay}). Please upgrade your subscription to continue.`,
               `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${limitDisplay} ${meta.resourceNameBn} কোটা অনুমোদিত (বর্তমানে ${currentDisplay})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
@@ -123,20 +127,22 @@ export function LimitExceededModal() {
         </div>
 
         {/* Upgrade Suggestion Box */}
-        <div className="rounded-2xl bg-slate-900 text-white p-4 space-y-3 shadow-md">
+        <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-4 space-y-2.5 shadow-md border border-indigo-500/20 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-300 bangla-text">
+              <div className="p-1 rounded-lg bg-amber-400/20 text-amber-400">
+                <Sparkles className="h-3.5 w-3.5" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-200 bangla-text">
                 {tBilingual('Recommended Upgrade', 'প্রস্তাবিত আপগ্রেড')}
               </span>
             </div>
-            <Badge className="bg-blue-500 text-white text-[10px] font-bold">
+            <Badge className="bg-blue-600 hover:bg-blue-600 text-white text-[11px] font-bold px-2.5 py-0.5 border border-blue-400/30 shadow-sm">
               {tBilingual(nextPlan.name, nextPlan.name_bn)}
             </Badge>
           </div>
 
-          <div className="text-xs text-slate-200 space-y-1.5 bangla-text">
+          <div className="text-xs text-slate-300 bangla-text leading-relaxed">
             <p>
               {tBilingual(
                 `Upgrading to the ${nextPlan.name} increases your limit from ${limitDisplay} to ${nextLimitLabelEn} and unlocks full team productivity.`,
@@ -153,6 +159,7 @@ export function LimitExceededModal() {
             variant="outline"
             size="sm"
             onClick={closeLimitExceededModal}
+            className="h-9 px-4 text-xs font-semibold bangla-text rounded-xl"
           >
             {tBilingual('Close', 'বন্ধ করুন')}
           </Button>
@@ -161,9 +168,9 @@ export function LimitExceededModal() {
             type="button"
             size="sm"
             onClick={handleUpgradeClick}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold bangla-text shadow-sm"
+            className="h-9 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs bangla-text shadow-md shadow-blue-600/20 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
-            <Zap className="mr-1.5 h-3.5 w-3.5 text-amber-300" />
+            <Zap className="mr-1.5 h-3.5 w-3.5 text-amber-300 fill-amber-300" />
             {tBilingual(`Upgrade to ${nextPlan.name}`, `${nextPlan.name_bn} এ আপগ্রেড করুন`)}
             <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
           </Button>

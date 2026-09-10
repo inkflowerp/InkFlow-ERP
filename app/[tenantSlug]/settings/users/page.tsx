@@ -557,6 +557,7 @@ export default function UsersManagementPage() {
         onOpenChange={setIsInviteOpen}
         title="Invite Team Member"
         description="Send an email invitation to join your company workspace."
+        hideFooter
       >
         <form onSubmit={handleInvite} className="space-y-4 pt-2">
           <div className="space-y-1.5">
@@ -629,6 +630,7 @@ export default function UsersManagementPage() {
         onOpenChange={setIsAddUserOpen}
         title="Add User Directly"
         description="Directly create an employee account with pre-set credentials."
+        hideFooter
       >
         <form onSubmit={handleAddUser} className="space-y-3.5 pt-2">
           <div className="space-y-1.5">
@@ -744,6 +746,7 @@ export default function UsersManagementPage() {
         onOpenChange={setIsChangeRoleOpen}
         title="Change Member Role"
         description={`Modify access role for ${selectedUser?.profile?.full_name || 'member'}.`}
+        hideFooter
       >
         <div className="space-y-4 pt-2">
           <div className="space-y-2">
@@ -789,6 +792,7 @@ export default function UsersManagementPage() {
         onOpenChange={setIsAssignBranchOpen}
         title="Assign Branch / Factory"
         description={`Assign ${selectedUser?.profile?.full_name || 'member'} to an operational branch.`}
+        hideFooter
       >
         <div className="space-y-4 pt-2">
           <div className="space-y-2">
