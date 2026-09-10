@@ -981,12 +981,9 @@ export function NewCustomerModal({
 
             <Button
               type="submit"
-              disabled={isSubmitting || !checkCanCreate('max_customers').allowed}
+              disabled={isSubmitting}
               title={!checkCanCreate('max_customers').allowed ? checkCanCreate('max_customers').reason : undefined}
-              className={cn(
-                "h-11 sm:h-10 px-5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center justify-center gap-2 cursor-pointer",
-                !checkCanCreate('max_customers').allowed && "opacity-60 cursor-not-allowed"
-              )}
+              className="h-11 sm:h-10 px-5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSubmitting ? (
                 <>

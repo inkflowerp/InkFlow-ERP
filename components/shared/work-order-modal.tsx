@@ -639,9 +639,9 @@ export function WorkOrderModal({
               variant="outline"
               size="sm"
               onClick={() => handleSave(false)}
-              disabled={isSubmitting || !checkCanCreate('monthly_orders').allowed}
+              disabled={isSubmitting}
               title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
-              className={cn("flex-1 sm:flex-initial h-9 text-xs bangla-text", !checkCanCreate('monthly_orders').allowed && "opacity-60 cursor-not-allowed")}
+              className="flex-1 sm:flex-initial h-9 text-xs bangla-text"
             >
               <Save className="h-3.5 w-3.5 mr-1.5 text-slate-600" />
               {tBilingual('Save Draft', 'ড্রাফট সংরক্ষণ')}
@@ -651,9 +651,9 @@ export function WorkOrderModal({
               type="button"
               size="sm"
               onClick={() => handleSave(true)}
-              disabled={isSubmitting || !checkCanCreate('monthly_orders').allowed}
+              disabled={isSubmitting}
               title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
-              className={cn("flex-1 sm:flex-initial h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium bangla-text", !checkCanCreate('monthly_orders').allowed && "opacity-60 cursor-not-allowed")}
+              className="flex-1 sm:flex-initial h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium bangla-text"
             >
               <Send className="h-3.5 w-3.5 mr-1.5" />
               {tBilingual('Save & Send Invoice Request', 'সংরক্ষণ ও ইনভয়েস রিকোয়েস্ট পাঠান')}

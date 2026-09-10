@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 export function CompanySelector() {
   const [isOpen, setIsOpen] = useState(false)
   const { company, availableCompanies, switchCompany } = useTenant()
-  const { accountType, accountTypeMeta, isTrial, daysRemainingInTrial } = useSubscription()
+  const { accountType, accountTypeMeta, isTrial, daysRemainingInTrial, checkCanCreate, openLimitExceededModal, isTrialExpired } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const router = useRouter()
 
@@ -102,6 +102,11 @@ export function CompanySelector() {
                 type="button"
                 onClick={() => {
                   setIsOpen(false)
+                  const branchCheck = checkCanCreate('max_branches')
+                  if (!branchCheck.allowed || isTrialExpired) {
+                    openLimitExceededModal('max_branches')
+                    return
+                  }
                   router.push('/onboarding')
                 }}
                 className="flex w-full items-center gap-2 rounded-lg p-2 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40 cursor-pointer bangla-text"

@@ -270,9 +270,8 @@ export default function InventoryDashboardPage() {
             <Button
               size="sm"
               onClick={handleOpenNewMaterial}
-              disabled={!productCheck.allowed}
               title={!productCheck.allowed ? productCheck.reason : undefined}
-              className={cn("bg-emerald-600 hover:bg-emerald-700 text-xs text-white bangla-text", !productCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white bangla-text"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Add Material', 'নতুন কাঁচামাল')}
@@ -838,8 +837,7 @@ export default function InventoryDashboardPage() {
             </Button>
             <Button
               type="submit"
-              disabled={!productCheck.allowed}
-              className={cn("bg-emerald-600 hover:bg-emerald-700 text-white", !productCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               Save Material
             </Button>

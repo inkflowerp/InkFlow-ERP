@@ -146,9 +146,8 @@ export default function BranchesSettingsPage() {
         actions={
           <Button
             onClick={handleOpenAddBranch}
-            disabled={!branchCheck.allowed}
             title={!branchCheck.allowed ? branchCheck.reason : undefined}
-            className={cn("bg-blue-600 hover:bg-blue-700 bangla-text", !branchCheck.allowed && "opacity-60 cursor-not-allowed")}
+            className="bg-blue-600 hover:bg-blue-700 bangla-text"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             {tBilingual('Add New Branch', 'নতুন শাখা যোগ করুন')}
@@ -343,8 +342,7 @@ export default function BranchesSettingsPage() {
             </Button>
             <Button
               type="submit"
-              disabled={!branchCheck.allowed}
-              className={cn("bg-blue-600 hover:bg-blue-700", !branchCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-blue-600 hover:bg-blue-700"
             >
               Create Branch
             </Button>

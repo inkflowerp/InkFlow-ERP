@@ -110,4 +110,40 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
     assert.strictEqual(daysRemaining, 30)
     assert.strictEqual(customTrialPlan.max_users, 2)
   })
+
+  it('triggers upgrade plan or limit exceeded popup on button press when limit reached or trial expired', () => {
+    let triggeredPopup: string | null = null
+
+    const handleButtonClick = (options: {
+      limitType: 'max_users' | 'max_branches' | 'max_customers' | 'monthly_orders' | 'max_products'
+      currentUsage: number
+      maxLimit: number
+      isTrialExpired: boolean
+    }) => {
+      const isLimitReached = options.maxLimit > 0 && options.currentUsage >= options.maxLimit
+      if (isLimitReached || options.isTrialExpired) {
+        triggeredPopup = `limit_exceeded_${options.limitType}`
+        return false // blocked action, opened popup
+      }
+      triggeredPopup = 'action_modal_opened'
+      return true
+    }
+
+    // 1. User clicks Add User when 2/2 users used
+    handleButtonClick({ limitType: 'max_users', currentUsage: 2, maxLimit: 2, isTrialExpired: false })
+    assert.strictEqual(triggeredPopup, 'limit_exceeded_max_users')
+
+    // 2. User clicks Add Branch when 1/1 branch used
+    handleButtonClick({ limitType: 'max_branches', currentUsage: 1, maxLimit: 1, isTrialExpired: false })
+    assert.strictEqual(triggeredPopup, 'limit_exceeded_max_branches')
+
+    // 3. User clicks New Quotation / Order when trial expired
+    handleButtonClick({ limitType: 'monthly_orders', currentUsage: 10, maxLimit: 100, isTrialExpired: true })
+    assert.strictEqual(triggeredPopup, 'limit_exceeded_monthly_orders')
+
+    // 4. User clicks New Customer when under quota and trial active
+    handleButtonClick({ limitType: 'max_customers', currentUsage: 10, maxLimit: 200, isTrialExpired: false })
+    assert.strictEqual(triggeredPopup, 'action_modal_opened')
+  })
 })
+

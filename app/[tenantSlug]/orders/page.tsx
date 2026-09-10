@@ -220,9 +220,8 @@ export default function OrdersPage() {
               size="sm"
               variant="outline"
               onClick={handleOpenWorkOrder}
-              disabled={!orderCheck.allowed}
               title={!orderCheck.allowed ? orderCheck.reason : undefined}
-              className={cn("text-xs bangla-text", !orderCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="text-xs bangla-text"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
               {tBilingual('Add Work Order', 'ওয়ার্ক অর্ডার')}
@@ -231,9 +230,8 @@ export default function OrdersPage() {
               <Button
                 size="sm"
                 onClick={handleOpenNewOrder}
-                disabled={!orderCheck.allowed}
                 title={!orderCheck.allowed ? orderCheck.reason : undefined}
-                className={cn("bg-indigo-600 hover:bg-indigo-700 text-xs text-white bangla-text", !orderCheck.allowed && "opacity-60 cursor-not-allowed")}
+                className="bg-indigo-600 hover:bg-indigo-700 text-xs text-white bangla-text"
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('New Sales Order', 'নতুন সেলস অর্ডার')}
@@ -637,8 +635,7 @@ export default function OrdersPage() {
             </Button>
             <Button
               type="submit"
-              disabled={!orderCheck.allowed}
-              className={cn("bg-indigo-600 hover:bg-indigo-700 text-white", !orderCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               Confirm & Dispatch to Shop Floor
             </Button>

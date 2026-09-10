@@ -275,18 +275,16 @@ export default function UsersManagementPage() {
             <Button
               variant="outline"
               onClick={handleOpenInvite}
-              disabled={!userCheck.allowed}
               title={!userCheck.allowed ? userCheck.reason : undefined}
-              className={cn("bangla-text", !userCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bangla-text"
             >
               <Mail className="mr-1.5 h-4 w-4" />
               {tBilingual('Invite Member', 'সদস্য আমন্ত্রণ')}
             </Button>
             <Button
               onClick={handleOpenAddUser}
-              disabled={!userCheck.allowed}
               title={!userCheck.allowed ? userCheck.reason : undefined}
-              className={cn("bg-blue-600 hover:bg-blue-700 bangla-text", !userCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-blue-600 hover:bg-blue-700 bangla-text"
             >
               <UserPlus className="mr-1.5 h-4 w-4" />
               {tBilingual('Add User', 'নতুন ব্যবহারকারী')}
@@ -617,8 +615,7 @@ export default function UsersManagementPage() {
             </Button>
             <Button
               type="submit"
-              disabled={!userCheck.allowed}
-              className={cn("bg-blue-600 hover:bg-blue-700", !userCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-blue-600 hover:bg-blue-700"
             >
               Send Invitation
             </Button>
@@ -733,8 +730,7 @@ export default function UsersManagementPage() {
             </Button>
             <Button
               type="submit"
-              disabled={!userCheck.allowed}
-              className={cn("bg-blue-600 hover:bg-blue-700", !userCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-blue-600 hover:bg-blue-700"
             >
               Create User
             </Button>

@@ -21,7 +21,9 @@ import {
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
+import { useSubscription } from '@/hooks/use-subscription'
 import { useRealtime } from '@/components/providers/realtime-provider'
+import { ConfigurableLimitType } from '@/types/subscription.types'
 import { cn } from '@/lib/utils'
 
 export function TopNav() {
@@ -29,17 +31,26 @@ export function TopNav() {
   const { t, tBilingual } = useI18n()
   const { company, currentRole, currentUser } = useTenant()
   const { isLive, status } = useRealtime()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, isTrialExpired } = useSubscription()
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false)
 
   const slug = company?.slug || 'app'
 
-  const quickActions = [
+  const quickActions: Array<{
+    titleEn: string
+    titleBn: string
+    icon: any
+    href: string
+    color: string
+    limitType?: ConfigurableLimitType
+  }> = [
     {
       titleEn: 'New Quotation',
       titleBn: 'নতুন কোটেশন তৈরি',
       icon: FileSpreadsheet,
       href: `/${slug}/quotations`,
       color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/50',
+      limitType: 'monthly_orders',
     },
     {
       titleEn: 'New Job Order',
@@ -47,6 +58,7 @@ export function TopNav() {
       icon: ShoppingBag,
       href: `/${slug}/orders`,
       color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/50',
+      limitType: 'monthly_orders',
     },
     {
       titleEn: 'Record Payment (MR)',
@@ -61,6 +73,7 @@ export function TopNav() {
       icon: Users,
       href: `/${slug}/customers`,
       color: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-950/50',
+      limitType: 'max_customers',
     },
   ]
 
@@ -120,18 +133,32 @@ export function TopNav() {
                 <div className="space-y-1 mt-1">
                   {quickActions.map((qa) => {
                     const Icon = qa.icon
+                    const limitCheck = qa.limitType ? checkCanCreate(qa.limitType) : { allowed: !isTrialExpired }
+                    const isBlocked = !limitCheck.allowed || isTrialExpired
+
                     return (
-                      <Link
+                      <button
                         key={qa.titleEn}
-                        href={qa.href}
-                        onClick={() => setIsQuickActionOpen(false)}
-                        className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-xs text-left transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 min-h-[44px]"
+                        type="button"
+                        onClick={() => {
+                          setIsQuickActionOpen(false)
+                          if (isBlocked) {
+                            if (qa.limitType) {
+                              openLimitExceededModal(qa.limitType)
+                            } else {
+                              openUpgradeModal('business')
+                            }
+                            return
+                          }
+                          router.push(qa.href)
+                        }}
+                        className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-xs text-left transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 min-h-[44px] cursor-pointer"
                       >
                         <div className={cn('p-1.5 rounded-md', qa.color)}>
                           <Icon className="h-3.5 w-3.5" />
                         </div>
                         <span className="font-semibold">{tBilingual(qa.titleEn, qa.titleBn)}</span>
-                      </Link>
+                      </button>
                     )
                   })}
                 </div>

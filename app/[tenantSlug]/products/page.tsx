@@ -192,9 +192,8 @@ export default function ProductsCatalogPage() {
             <Button
               size="sm"
               onClick={handleOpenAddProduct}
-              disabled={!productCheck.allowed}
               title={!productCheck.allowed ? productCheck.reason : undefined}
-              className={cn("bg-blue-600 hover:bg-blue-700 text-xs bangla-text", !productCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}
@@ -496,8 +495,7 @@ export default function ProductsCatalogPage() {
             </Button>
             <Button
               type="submit"
-              disabled={!productCheck.allowed}
-              className={cn("bg-blue-600 hover:bg-blue-700", !productCheck.allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-blue-600 hover:bg-blue-700"
             >
               Register Item
             </Button>

@@ -153,7 +153,18 @@ export default function CustomersPage() {
             )}
 
             {can('create', 'customers') && (
-              <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="text-xs bangla-text">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (!customerCheck.allowed) {
+                    openLimitExceededModal('max_customers')
+                    return
+                  }
+                  setIsImportOpen(true)
+                }}
+                className="text-xs bangla-text"
+              >
                 <Upload className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('Import CSV', 'ইমপোর্ট সিএসভি')}
               </Button>
@@ -163,9 +174,8 @@ export default function CustomersPage() {
               <Button
                 size="sm"
                 onClick={handleOpenAddCustomer}
-                disabled={!customerCheck.allowed}
                 title={!customerCheck.allowed ? customerCheck.reason : undefined}
-                className={cn("bg-blue-600 hover:bg-blue-700 text-xs bangla-text", !customerCheck.allowed && "opacity-60 cursor-not-allowed")}
+                className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text"
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('New Customer', 'নতুন গ্রাহক')}

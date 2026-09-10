@@ -208,9 +208,8 @@ export default function QuotationsPage() {
                 }
                 setIsNewOpen(true)
               }}
-              disabled={!checkCanCreate('monthly_orders').allowed}
               title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
-              className={cn("bg-blue-600 hover:bg-blue-700 text-xs bangla-text", !checkCanCreate('monthly_orders').allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('New Quotation', 'নতুন কোটেশন')}
@@ -515,8 +514,7 @@ export default function QuotationsPage() {
             </Button>
             <Button
               type="submit"
-              disabled={!checkCanCreate('monthly_orders').allowed}
-              className={cn("bg-blue-600 hover:bg-blue-700", !checkCanCreate('monthly_orders').allowed && "opacity-60 cursor-not-allowed")}
+              className="bg-blue-600 hover:bg-blue-700"
             >
               Create & Review
             </Button>
