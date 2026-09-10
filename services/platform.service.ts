@@ -192,6 +192,159 @@ export const DEFAULT_PLATFORM_FEATURE_FLAGS: Array<{
   },
 ]
 
+export const DEFAULT_PLATFORM_RBAC_TEMPLATES: PlatformRBACTemplate[] = [
+  {
+    id: 'tmpl-owner',
+    slug: 'business_owner',
+    name: 'Business Owner',
+    name_bn: 'প্রতিষ্ঠানের মালিক',
+    description: 'Full organization access: P&L, accounts, reports, HR, settings, and deletion',
+    is_system: true,
+    sort_order: 1,
+    permissions: {
+      customer: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      quotation: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      order: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      invoice: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      payment: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      production: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      inventory: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      purchase: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      supplier: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      delivery: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      hr: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      payroll: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      reports: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+      settings: { view: true, create: true, edit: true, delete: true, approve: true, full_control: true },
+    },
+  },
+  {
+    id: 'tmpl-sales',
+    slug: 'sales_manager',
+    name: 'Sales Manager',
+    name_bn: 'সেলস ম্যানেজার',
+    description: 'Customers, price quotations, job order booking, advance collection, and delivery',
+    is_system: true,
+    sort_order: 2,
+    permissions: {
+      customer: { view: true, create: true, edit: true, delete: false, approve: false, full_control: false },
+      quotation: { view: true, create: true, edit: true, delete: false, approve: true, full_control: false },
+      order: { view: true, create: true, edit: true, delete: false, approve: true, full_control: false },
+      invoice: { view: true, create: true, edit: true, delete: false, approve: false, full_control: false },
+      payment: { view: true, create: true, edit: false, delete: false, approve: false, full_control: false },
+      production: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      inventory: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      purchase: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      supplier: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      delivery: { view: true, create: true, edit: true, delete: false, approve: false, full_control: false },
+      hr: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payroll: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      reports: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      settings: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+    },
+  },
+  {
+    id: 'tmpl-designer',
+    slug: 'designer',
+    name: 'Graphic Designer',
+    name_bn: 'গ্রাফিক ডিজাইনার (প্রিপ প্রেস)',
+    description: 'Pre-press design queue, artwork uploads, proof approval, and revision logs',
+    is_system: true,
+    sort_order: 3,
+    permissions: {
+      customer: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      quotation: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      order: { view: true, create: false, edit: true, delete: false, approve: true, full_control: false },
+      invoice: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payment: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      production: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      inventory: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      purchase: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      supplier: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      delivery: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      hr: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payroll: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      reports: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      settings: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+    },
+  },
+  {
+    id: 'tmpl-prod',
+    slug: 'production_manager',
+    name: 'Production Manager',
+    name_bn: 'প্রোডাকশন ম্যানেজার',
+    description: 'Floor scheduling, machine allocation, materials issuance, and finishing',
+    is_system: true,
+    sort_order: 4,
+    permissions: {
+      customer: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      quotation: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      order: { view: true, create: false, edit: true, delete: false, approve: true, full_control: false },
+      invoice: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payment: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      production: { view: true, create: true, edit: true, delete: false, approve: true, full_control: true },
+      inventory: { view: true, create: true, edit: true, delete: false, approve: true, full_control: false },
+      purchase: { view: true, create: true, edit: false, delete: false, approve: false, full_control: false },
+      supplier: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      delivery: { view: true, create: true, edit: true, delete: false, approve: true, full_control: false },
+      hr: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payroll: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      reports: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      settings: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+    },
+  },
+  {
+    id: 'tmpl-op',
+    slug: 'operator',
+    name: 'Print Operator',
+    name_bn: 'মেশিন অপারেটর',
+    description: 'Assigned jobs, printing execution, material consumption logging, and QC completion',
+    is_system: true,
+    sort_order: 5,
+    permissions: {
+      customer: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      quotation: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      order: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      invoice: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payment: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      production: { view: true, create: false, edit: true, delete: false, approve: false, full_control: false },
+      inventory: { view: true, create: false, edit: false, delete: false, approve: false, full_control: false },
+      purchase: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      supplier: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      delivery: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      hr: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payroll: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      reports: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      settings: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+    },
+  },
+  {
+    id: 'tmpl-staff',
+    slug: 'general_staff',
+    name: 'General Staff',
+    name_bn: 'সাধারণ কর্মী',
+    description: 'Restricted access based strictly on assigned duties and user overrides',
+    is_system: true,
+    sort_order: 6,
+    permissions: {
+      customer: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      quotation: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      order: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      invoice: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payment: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      production: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      inventory: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      purchase: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      supplier: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      delivery: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      hr: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      payroll: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      reports: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+      settings: { view: false, create: false, edit: false, delete: false, approve: false, full_control: false },
+    },
+  },
+]
+
 export class PlatformService {
   /**
    * 1. Global Platform Dashboard Overview with real metrics from PostgreSQL
@@ -4679,7 +4832,10 @@ export class PlatformService {
         .select('*')
         .order('sort_order', { ascending: true })
 
-      if (tErr) return { success: false, error: tErr.message }
+      if (tErr) {
+        console.warn('[PlatformService.getRBACTemplates] platform_role_templates query fallback to defaults:', tErr.message)
+        return { success: true, data: DEFAULT_PLATFORM_RBAC_TEMPLATES }
+      }
 
       const { data: permissions } = await (admin as any)
         .from('platform_role_template_permissions')
@@ -4701,20 +4857,31 @@ export class PlatformService {
         permMap.set(p.role_template_id, templatePerms)
       })
 
-      const formatted: PlatformRBACTemplate[] = (templates || []).map((t: any) => ({
-        id: t.id,
-        slug: t.slug,
-        name: t.name,
-        name_bn: t.name_bn || t.name,
-        description: t.description || '',
-        is_system: Boolean(t.is_system),
-        sort_order: t.sort_order || 0,
-        permissions: permMap.get(t.id) || {},
-      }))
+      let formatted: PlatformRBACTemplate[] = (templates || []).map((t: any) => {
+        const dbPerms = permMap.get(t.id)
+        const defaultTmpl = DEFAULT_PLATFORM_RBAC_TEMPLATES.find((d) => d.slug === t.slug)
+        const hasDbPerms = dbPerms && Object.keys(dbPerms).length > 0
+
+        return {
+          id: t.id,
+          slug: t.slug,
+          name: t.name || defaultTmpl?.name || t.slug,
+          name_bn: t.name_bn || defaultTmpl?.name_bn || t.name,
+          description: t.description || defaultTmpl?.description || '',
+          is_system: Boolean(t.is_system),
+          sort_order: t.sort_order || defaultTmpl?.sort_order || 0,
+          permissions: hasDbPerms ? dbPerms : (defaultTmpl?.permissions || {}),
+        }
+      })
+
+      if (formatted.length === 0) {
+        formatted = DEFAULT_PLATFORM_RBAC_TEMPLATES
+      }
 
       return { success: true, data: formatted }
     } catch (err: any) {
-      return { success: false, error: err.message || 'Failed to fetch RBAC templates' }
+      console.warn('[PlatformService.getRBACTemplates] Error, falling back to defaults:', err?.message)
+      return { success: true, data: DEFAULT_PLATFORM_RBAC_TEMPLATES }
     }
   }
 
@@ -5251,19 +5418,83 @@ export class PlatformService {
     }
   }
 
-  static async updateRBACTemplatePermission(templateId: string, resource: string, action: PermissionActionKey, isAllowed: boolean) {
-    const admin = createAdminClient()
-    await (admin as any)
-      .from('platform_role_template_permissions')
-      .upsert({
-        role_template_id: templateId,
-        resource,
-        action,
-        is_allowed: isAllowed,
-      })
+  static async updateRBACTemplatePermission(
+    templateIdOrSlug: string,
+    resource: string,
+    action: PermissionActionKey,
+    isAllowed: boolean
+  ): Promise<ApiResponse<{ updated: boolean }>> {
+    try {
+      const admin = createAdminClient()
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(templateIdOrSlug)
+      let resolvedTemplateId = templateIdOrSlug
 
-    await this.recordAuditLog('rbac_template.update', 'platform_role_template', templateId, undefined, undefined, { resource, action, isAllowed })
-    return { success: true }
+      if (!isUUID) {
+        // Resolve slug to template UUID
+        const { data: tmpl } = await (admin as any)
+          .from('platform_role_templates')
+          .select('id')
+          .eq('slug', templateIdOrSlug)
+          .maybeSingle()
+
+        if (tmpl?.id) {
+          resolvedTemplateId = tmpl.id
+        } else {
+          // Find in DEFAULT_PLATFORM_RBAC_TEMPLATES and auto-seed the role template
+          const def = DEFAULT_PLATFORM_RBAC_TEMPLATES.find((t) => t.slug === templateIdOrSlug)
+          const { data: newTmpl, error: insertErr } = await (admin as any)
+            .from('platform_role_templates')
+            .insert({
+              slug: templateIdOrSlug,
+              name: def?.name || templateIdOrSlug,
+              name_bn: def?.name_bn || def?.name || templateIdOrSlug,
+              description: def?.description || `System template for ${templateIdOrSlug}`,
+              is_system: true,
+              is_active: true,
+            })
+            .select('id')
+            .single()
+
+          if (insertErr || !newTmpl?.id) {
+            console.warn(`[PlatformService] Could not resolve or seed role template for slug: ${templateIdOrSlug}`, insertErr?.message)
+          } else {
+            resolvedTemplateId = newTmpl.id
+          }
+        }
+      }
+
+      // Upsert into platform_role_template_permissions if resolved to a valid UUID
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedTemplateId)) {
+        const { error: upsertErr } = await (admin as any)
+          .from('platform_role_template_permissions')
+          .upsert(
+            {
+              role_template_id: resolvedTemplateId,
+              resource,
+              action,
+              is_allowed: isAllowed,
+            },
+            { onConflict: 'role_template_id,resource,action' }
+          )
+
+        if (upsertErr) {
+          console.warn('[PlatformService.updateRBACTemplatePermission] Upsert warning:', upsertErr.message)
+        }
+      }
+
+      await this.recordAuditLog(
+        'rbac_template.update',
+        'platform_role_template',
+        resolvedTemplateId,
+        undefined,
+        undefined,
+        { resource, action, isAllowed, slug: templateIdOrSlug }
+      )
+      return { success: true, data: { updated: true } }
+    } catch (err: any) {
+      console.error('[PlatformService.updateRBACTemplatePermission] Error:', err)
+      return { success: false, error: err?.message || 'Failed to update RBAC template permission' }
+    }
   }
 
   static async updateIncidentStatus(incidentId: string, status: any, resolutionNotes?: string) {

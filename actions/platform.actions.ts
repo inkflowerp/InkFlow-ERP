@@ -1066,6 +1066,7 @@ export async function updateRBACTemplatePermissionAction(
     }
     const result = await PlatformService.updateRBACTemplatePermission(templateId, resource, action, isAllowed)
     if (result.success) {
+      revalidatePath('/platform/permissions')
       revalidatePath('/platform/rbac')
     }
     return result

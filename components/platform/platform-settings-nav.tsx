@@ -9,6 +9,7 @@ import {
   Layers,
   Shield,
   Users,
+  Sliders,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -43,13 +44,22 @@ export function PlatformSettingsNav() {
       href: '/platform/admins',
       icon: Users,
     },
+    {
+      title: 'RBAC & Permissions',
+      href: '/platform/permissions',
+      icon: Sliders,
+      badge: 'Templates',
+      matches: ['/platform/permissions', '/platform/rbac'],
+    },
   ]
 
   return (
     <div className="flex border-b border-slate-800/80 overflow-x-auto gap-2 pb-px scrollbar-none mb-6">
       {tabs.map((tab) => {
         const Icon = tab.icon
-        const isActive = tab.exact
+        const isActive = tab.matches
+          ? tab.matches.some((m) => pathname === m || pathname.startsWith(m + '/'))
+          : tab.exact
           ? pathname === tab.href
           : pathname === tab.href || pathname.startsWith(tab.href + '/')
 
