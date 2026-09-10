@@ -473,3 +473,66 @@ export async function getPlatformNotificationsAction(): Promise<ApiResponse<Plat
   }
 }
 
+/**
+ * Server Action: Broadcast Platform Administrative Alert / Notice
+ */
+export async function broadcastPlatformNotificationAction(payload: {
+  title: string
+  message: string
+  severity?: 'info' | 'warning' | 'critical'
+  type?: string
+  company_id?: string | null
+  action_url?: string | null
+  target_audience?: 'all_tenants' | 'all_admins' | 'specific_tenant'
+}): Promise<ApiResponse<PlatformNotificationItem>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (!payload.title || !payload.message) {
+      return { success: false, error: 'Title and message are required.' }
+    }
+    const res = await PlatformService.broadcastNotification(payload, user.id)
+    if (!res.success || !res.data) {
+      return { success: false, error: res.error || 'Failed to broadcast notification' }
+    }
+    return { success: true, data: res.data }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to broadcast notification' }
+  }
+}
+
+/**
+ * Server Action: Delete Platform Notification
+ */
+export async function deletePlatformNotificationAction(id: string): Promise<ApiResponse<{ success: boolean }>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    await PlatformService.deleteNotification(id, user.id)
+    return { success: true, data: { success: true } }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to delete notification' }
+  }
+}
+
+/**
+ * Server Action: Clear All Read Notifications
+ */
+export async function clearAllReadPlatformNotificationsAction(): Promise<ApiResponse<{ success: boolean }>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    await PlatformService.clearAllReadNotifications(user.id)
+    return { success: true, data: { success: true } }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to clear read notifications' }
+  }
+}
+
+

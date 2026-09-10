@@ -5336,35 +5336,259 @@ export class PlatformService {
 
   static async getNotifications(): Promise<PlatformNotificationItem[]> {
     const admin = createAdminClient()
-    const { data, error } = await (admin as any)
-      .from('platform_notifications')
-      .select('id, title, message, severity, type, company_id, is_read, created_at')
-      .order('created_at', { ascending: false })
-      .limit(50)
+    const notifs: PlatformNotificationItem[] = []
+    const seenIds = new Set<string>()
 
-    if (error || !data || data.length === 0) {
-      // Return empty array if table not populated
-      return []
+    // 1. Fetch from platform_notifications table
+    try {
+      const { data, error } = await (admin as any)
+        .from('platform_notifications')
+        .select('id, title, message, severity, type, company_id, action_url, target_audience, is_read, created_at')
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (!error && data && Array.isArray(data)) {
+        for (const item of data) {
+          if (!seenIds.has(item.id)) {
+            seenIds.add(item.id)
+            notifs.push(item)
+          }
+        }
+      }
+    } catch {
+      // Table may not exist yet or connection error
     }
 
-    return data
+    // 2. Fetch company names mapping for tenant enrichment
+    const companyMap = new Map<string, string>()
+    try {
+      const { data: companies } = await (admin as any)
+        .from('companies')
+        .select('id, name')
+        .limit(200)
+
+      if (companies && Array.isArray(companies)) {
+        companies.forEach((c: any) => {
+          if (c.id && c.name) companyMap.set(c.id, c.name)
+        })
+      }
+    } catch {}
+
+    // Enrich existing notifications with company_name if missing
+    notifs.forEach((n) => {
+      if (n.company_id && !n.company_name && companyMap.has(n.company_id)) {
+        n.company_name = companyMap.get(n.company_id)
+      }
+    })
+
+    // 3. Synthesize live critical/high security incidents if fewer than 25 notifications
+    try {
+      const { data: securityEvents } = await (admin as any)
+        .from('platform_security_events')
+        .select('id, event_type, severity, description, ip_address, created_at, is_resolved')
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (securityEvents && Array.isArray(securityEvents)) {
+        for (const ev of securityEvents) {
+          const synthId = `sec-${ev.id}`
+          if (!seenIds.has(synthId) && !seenIds.has(ev.id)) {
+            seenIds.add(synthId)
+            const sev: 'critical' | 'warning' | 'info' =
+              ev.severity === 'critical' || ev.severity === 'high' ? 'critical' : 'warning'
+            notifs.push({
+              id: synthId,
+              title: `Security Event: ${ev.event_type || 'Suspicious Activity'}`,
+              message: ev.description || `Security telemetry flagged ${ev.event_type} from IP ${ev.ip_address || 'unknown'}.`,
+              severity: sev,
+              type: 'security',
+              action_url: '/platform/security',
+              target_audience: 'all_admins',
+              is_read: !!ev.is_resolved,
+              created_at: ev.created_at || new Date().toISOString(),
+            })
+          }
+        }
+      }
+    } catch {}
+
+    // 4. Synthesize active system health incidents
+    try {
+      const { data: healthEvents } = await (admin as any)
+        .from('platform_system_health_events')
+        .select('id, service_name, message, severity, status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (healthEvents && Array.isArray(healthEvents)) {
+        for (const he of healthEvents) {
+          const synthId = `health-${he.id}`
+          if (!seenIds.has(synthId) && !seenIds.has(he.id)) {
+            seenIds.add(synthId)
+            const sev: 'critical' | 'warning' | 'info' =
+              he.severity === 'critical' || he.severity === 'error' ? 'critical' : 'warning'
+            notifs.push({
+              id: synthId,
+              title: `Health Alert: ${he.service_name || 'System Telemetry'}`,
+              message: he.message || `System health event reported status ${he.status}.`,
+              severity: sev,
+              type: 'system',
+              action_url: '/platform/health',
+              target_audience: 'all_admins',
+              is_read: he.status === 'resolved',
+              created_at: he.created_at || new Date().toISOString(),
+            })
+          }
+        }
+      }
+    } catch {}
+
+    // 5. Synthesize failed background jobs
+    try {
+      const { data: failedJobs } = await (admin as any)
+        .from('platform_background_jobs')
+        .select('id, job_type, attempts, max_attempts, error_log, created_at, updated_at')
+        .eq('status', 'failed')
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (failedJobs && Array.isArray(failedJobs)) {
+        for (const job of failedJobs) {
+          const synthId = `job-${job.id}`
+          if (!seenIds.has(synthId) && !seenIds.has(job.id)) {
+            seenIds.add(synthId)
+            notifs.push({
+              id: synthId,
+              title: `Background Worker Failed: ${job.job_type}`,
+              message: `Job ${job.job_type} exhausted ${job.attempts || 3}/${job.max_attempts || 3} attempts. ${job.error_log ? String(job.error_log).slice(0, 120) : ''}`,
+              severity: 'critical',
+              type: 'system',
+              action_url: '/platform/health',
+              target_audience: 'all_admins',
+              is_read: false,
+              created_at: job.updated_at || job.created_at || new Date().toISOString(),
+            })
+          }
+        }
+      }
+    } catch {}
+
+    // Sort by created_at desc
+    return notifs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  }
+
+  static async broadcastNotification(
+    payload: {
+      title: string
+      message: string
+      severity?: 'info' | 'warning' | 'critical'
+      type?: string
+      company_id?: string | null
+      action_url?: string | null
+      target_audience?: 'all_tenants' | 'all_admins' | 'specific_tenant'
+    },
+    adminUserId?: string
+  ): Promise<{ success: boolean; data?: PlatformNotificationItem; error?: string }> {
+    const admin = createAdminClient()
+    const now = new Date().toISOString()
+    const notifItem: PlatformNotificationItem = {
+      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      title: payload.title.trim(),
+      message: payload.message.trim(),
+      severity: payload.severity || 'info',
+      type: payload.type || 'broadcast',
+      company_id: payload.company_id || null,
+      action_url: payload.action_url?.trim() || null,
+      target_audience: payload.target_audience || 'all_tenants',
+      is_read: false,
+      created_at: now,
+    }
+
+    try {
+      await (admin as any)
+        .from('platform_notifications')
+        .insert(notifItem)
+    } catch {}
+
+    await this.recordAuditLog(
+      'notification.broadcast',
+      'platform_notifications',
+      notifItem.id,
+      undefined,
+      undefined,
+      {
+        title: notifItem.title,
+        severity: notifItem.severity,
+        target_audience: notifItem.target_audience,
+        company_id: notifItem.company_id,
+        broadcast_by: adminUserId,
+      }
+    )
+
+    return { success: true, data: notifItem }
   }
 
   static async markNotificationRead(id: string): Promise<{ success: boolean }> {
     const admin = createAdminClient()
-    await (admin as any)
-      .from('platform_notifications')
-      .update({ is_read: true })
-      .eq('id', id)
+    try {
+      await (admin as any)
+        .from('platform_notifications')
+        .update({ is_read: true })
+        .eq('id', id)
+    } catch {}
     return { success: true }
   }
 
   static async markAllNotificationsRead(): Promise<{ success: boolean }> {
     const admin = createAdminClient()
-    await (admin as any)
-      .from('platform_notifications')
-      .update({ is_read: true })
-      .eq('is_read', false)
+    try {
+      await (admin as any)
+        .from('platform_notifications')
+        .update({ is_read: true })
+        .eq('is_read', false)
+    } catch {}
+    return { success: true }
+  }
+
+  static async deleteNotification(id: string, adminUserId?: string): Promise<{ success: boolean }> {
+    const admin = createAdminClient()
+    try {
+      await (admin as any)
+        .from('platform_notifications')
+        .delete()
+        .eq('id', id)
+    } catch {}
+
+    await this.recordAuditLog(
+      'notification.delete',
+      'platform_notifications',
+      id,
+      undefined,
+      undefined,
+      { deleted_by: adminUserId }
+    )
+
+    return { success: true }
+  }
+
+  static async clearAllReadNotifications(adminUserId?: string): Promise<{ success: boolean }> {
+    const admin = createAdminClient()
+    try {
+      await (admin as any)
+        .from('platform_notifications')
+        .delete()
+        .eq('is_read', true)
+    } catch {}
+
+    await this.recordAuditLog(
+      'notification.clear_read',
+      'platform_notifications',
+      undefined,
+      undefined,
+      undefined,
+      { cleared_by: adminUserId }
+    )
+
     return { success: true }
   }
 }

@@ -743,6 +743,9 @@ export interface PlatformNotificationItem {
   severity: 'info' | 'warning' | 'critical'
   type: string
   company_id?: string | null
+  company_name?: string | null
+  action_url?: string | null
+  target_audience?: 'all_tenants' | 'all_admins' | 'specific_tenant' | string
   is_read: boolean
   created_at: string
 }
