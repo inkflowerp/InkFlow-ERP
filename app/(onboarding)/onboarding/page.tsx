@@ -141,7 +141,7 @@ function OnboardingWizard() {
     4: ['division_id', 'district_id', 'address'],
     5: ['currency'],
     6: ['default_language'],
-    7: ['owner_name', 'owner_email', 'owner_phone'],
+    7: ['owner_name', 'owner_email', 'owner_phone', 'owner_password'],
     8: [],
   }
 
@@ -159,13 +159,14 @@ function OnboardingWizard() {
     setCurrentStep((prev) => Math.max(prev - 1, 1))
   }
 
+  // Prevent accidental auto-submit on Enter key on the final step
   const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
       if (currentStep < totalSteps) {
         nextStep()
       }
-      // On final step: strictly prevent Enter key from auto-submitting. User must explicitly press submit button.
+      // On final step (step 7 for trial, step 8 for paid): strictly DO NOT auto-submit. User must explicitly click the submit button.
     }
   }
 
@@ -183,6 +184,8 @@ function OnboardingWizard() {
       await nextStep()
       return
     }
+
+    if (isLoading) return
 
     setIsLoading(true)
     setError(null)
@@ -376,7 +379,13 @@ function OnboardingWizard() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleFormKeyDown} className="space-y-4">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                }}
+                onKeyDown={handleFormKeyDown}
+                className="space-y-4"
+              >
                 {/* STEP 1: COMPANY NAME */}
                 {currentStep === 1 && (
                   <div className="space-y-4 animate-in fade-in-0 duration-200">
@@ -920,7 +929,7 @@ function OnboardingWizard() {
                   )}
 
                   {currentStep < totalSteps ? (
-                    <Button type="button" onClick={nextStep}>
+                    <Button type="button" onClick={nextStep} disabled={isLoading}>
                       {currentStep === 7 && isPaidPlan ? (
                         <>
                           Proceed to Payment
@@ -935,8 +944,10 @@ function OnboardingWizard() {
                     </Button>
                   ) : (
                     <Button
-                      type="submit"
+                      type="button"
+                      onClick={handleSubmit(onSubmit)}
                       isLoading={isLoading}
+                      disabled={isLoading}
                       className={cn(
                         'font-bold px-6 shadow-md',
                         isPaidPlan
