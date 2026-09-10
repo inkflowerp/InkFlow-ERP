@@ -9,6 +9,8 @@ import { RealtimeProvider } from '@/components/providers/realtime-provider'
 import { SubscriptionStatusBanner } from '@/components/subscriptions/subscription-status-banner'
 import { TrialUpgradeModal } from '@/components/subscriptions/trial-upgrade-modal'
 import { LimitExceededModal } from '@/components/subscriptions/limit-exceeded-modal'
+import { TrialNotificationPopup } from '@/components/subscriptions/trial-notification-popup'
+import { RealtimeNotificationPopup } from './realtime-notification-popup'
 import { NetworkBanner } from '@/components/pwa/network-banner'
 import { MobileBottomNav } from '@/components/mobile/bottom-nav'
 import { useShortcuts } from '@/hooks/use-shortcuts'
@@ -96,6 +98,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             />
             <TrialUpgradeModal />
             <LimitExceededModal />
+            <TrialNotificationPopup />
+            <RealtimeNotificationPopup />
           </div>
         </ToastProvider>
       </SubscriptionProvider>
