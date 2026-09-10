@@ -60,7 +60,6 @@ const SIDEBAR_SECTIONS: NavSection[] = [
       { title: 'Overview', href: '/platform', icon: Activity },
       { title: 'Tenants', href: '/platform/tenants', icon: Building2 },
       { title: 'Global Users', href: '/platform/users', icon: Users },
-      { title: 'Live Activity', href: '/platform/activity', icon: FileClock },
     ],
   },
   {
@@ -270,7 +269,8 @@ export function PlatformSidebar() {
                             (pathname.startsWith(baseHref + '/') && baseHref !== '/platform') ||
                             (baseHref === '/platform/tenants' && pathname.startsWith('/platform/companies')) ||
                             (baseHref === '/platform/features' && pathname.startsWith('/platform/feature-flags')) ||
-                            (baseHref === '/platform/permissions' && pathname.startsWith('/platform/rbac'))
+                            (baseHref === '/platform/permissions' && pathname.startsWith('/platform/rbac')) ||
+                            (baseHref === '/platform/audit' && pathname.startsWith('/platform/activity'))
 
                   return (
                     <Link
