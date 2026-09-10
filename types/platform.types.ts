@@ -296,12 +296,45 @@ export interface HistoricalUsagePoint {
   branches_count: number
 }
 
+export interface CompanyQuotaRankingItem extends CompanyUsageMetrics {
+  user_utilization_pct: number
+  storage_utilization_pct: number
+  order_utilization_pct: number
+  branch_utilization_pct: number
+  max_utilization_pct: number
+  quota_status: 'normal' | 'warning' | 'critical' | 'exceeded'
+  plan_name: string
+  owner_name?: string
+  owner_phone?: string
+  owner_email?: string
+  has_custom_limits: boolean
+}
+
+export interface UsageTrendsOverviewSummary {
+  total_users: number
+  users_capacity: number
+  users_utilization_pct: number
+  total_storage_gb: number
+  storage_capacity_gb: number
+  storage_utilization_pct: number
+  total_orders_this_month: number
+  orders_capacity: number
+  orders_utilization_pct: number
+  total_customers: number
+  total_branches: number
+  high_utilization_tenants_count: number
+  critical_tenants_count: number
+  healthy_tenants_count: number
+}
+
 export interface UsageTrendsData {
   company_id?: string
   company_name?: string
   period: '7d' | '30d' | '90d' | '12m'
   has_enough_data: boolean
   points: HistoricalUsagePoint[]
+  summary: UsageTrendsOverviewSummary
+  rankings: CompanyQuotaRankingItem[]
 }
 
 export interface BillingReconciliationItem {

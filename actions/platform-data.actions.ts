@@ -257,7 +257,7 @@ export async function getPlatformUsersAction(): Promise<ApiResponse<PlatformAdmi
  */
 export async function getPlatformUsageTrendsAction(
   companyId?: string,
-  period: '7d' | '30d' | '90d' = '30d'
+  period: '7d' | '30d' | '90d' | '12m' = '30d'
 ): Promise<ApiResponse<UsageTrendsData>> {
   try {
     const user = await getCurrentPlatformUser()
