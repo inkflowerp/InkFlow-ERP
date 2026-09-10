@@ -26,7 +26,7 @@ import {
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
-import { usePublicSubscriptionPlans } from '@/hooks/use-public-plans'
+import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,7 +38,9 @@ import {
   PaymentGatewayType,
   SubscriptionPlanRecord,
   SubscriptionCheckoutResult,
+  TenantAccountType,
 } from '@/types/subscription.types'
+import { TENANT_ACCOUNT_TYPE_METADATA } from '@/lib/subscription/subscription-constants'
 import { cn } from '@/lib/utils'
 
 export function TrialUpgradeModal() {
@@ -184,16 +186,16 @@ export function TrialUpgradeModal() {
             <Crown className="h-5 w-5" />
           </div>
           <div>
-            <div className="font-black text-lg tracking-tight">
+            <div className="font-black text-lg tracking-tight bangla-text">
               {isTrial
                 ? tBilingual('Upgrade Your Free Trial to a Pro Plan', 'আপনার ফ্রি ট্রায়ালটি প্রো প্ল্যানে আপগ্রেড করুন')
                 : tBilingual('Upgrade Your PrintERP Plan', 'আপনার প্রিন্টইআরপি প্ল্যান আপগ্রেড করুন')}
             </div>
             {isTrial && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 font-normal">
+              <p className="text-xs text-amber-600 dark:text-amber-400 font-normal bangla-text">
                 {tBilingual(
                   `Free trial active (${daysRemainingInTrial} days remaining). Upgrade now to keep full continuous access.`,
-                  `ফ্রি ট্রায়াল সক্রিয় (আর ${daysRemainingInTrial} দিন বাকি)। নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
+                  `ফ্রি ট্রায়াল সক্রিয় (আর ${locale === 'bn' ? toBengaliDigits(daysRemainingInTrial) : daysRemainingInTrial} দিন বাকি)। নিরবচ্ছিন্ন সেবার জন্য এখনই আপগ্রেড করুন।`
                 )}
               </p>
             )}
@@ -267,6 +269,34 @@ export function TrialUpgradeModal() {
               const isRecommended = plan.code === 'business'
               const price = interval === 'yearly' ? plan.price_yearly : plan.price_monthly
 
+              const planDesc =
+                locale === 'bn'
+                  ? (plan as any).description_bn ||
+                    TENANT_ACCOUNT_TYPE_METADATA[plan.code as TenantAccountType]?.descriptionBn ||
+                    plan.description
+                  : plan.description
+
+              const isUnlimitedUsers = plan.max_users <= 0 || plan.max_users >= 999
+              const isUnlimitedBranches = plan.max_branches <= 0 || plan.max_branches >= 999
+              const isUnlimitedOrders = plan.monthly_orders <= 0 || plan.monthly_orders >= 99999
+              const isUnlimitedStorage = plan.storage_gb <= 0 || plan.storage_gb >= 999
+
+              const usersLabel = isUnlimitedUsers
+                ? tBilingual('Unlimited Users', 'আনলিমিটেড ইউজার')
+                : `${locale === 'bn' ? toBengaliDigits(plan.max_users) : plan.max_users} ${tBilingual('Team Users', 'জন ইউজার')}`
+
+              const branchesLabel = isUnlimitedBranches
+                ? tBilingual('Unlimited Branches', 'আনলিমিটেড ব্রাঞ্চ')
+                : `${locale === 'bn' ? toBengaliDigits(plan.max_branches) : plan.max_branches} ${tBilingual('Branches / Hubs', 'টি ব্রাঞ্চ')}`
+
+              const ordersLabel = isUnlimitedOrders
+                ? tBilingual('Unlimited Orders', 'আনলিমিটেড অর্ডার/মাস')
+                : `${locale === 'bn' ? toBengaliDigits(plan.monthly_orders) : plan.monthly_orders.toLocaleString()} ${tBilingual('Orders / mo', 'টি অর্ডার/মাস')}`
+
+              const storageLabel = isUnlimitedStorage
+                ? tBilingual('Unlimited Storage', 'আনলিমিটেড ক্লাউড স্টোরেজ')
+                : `${locale === 'bn' ? toBengaliDigits(plan.storage_gb) : plan.storage_gb} ${tBilingual('GB Cloud Storage', 'জিবি স্টোরেজ')}`
+
               return (
                 <div
                   key={plan.id}
@@ -279,7 +309,7 @@ export function TrialUpgradeModal() {
                   )}
                 >
                   {isRecommended && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-black px-3.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap z-10 bangla-text">
                       {tBilingual('Most Popular', 'জনপ্রিয় পছন্দ')}
                     </div>
                   )}
@@ -298,15 +328,15 @@ export function TrialUpgradeModal() {
 
                     <div>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-black text-slate-900 dark:text-white">
+                        <span className="text-2xl font-black text-slate-900 dark:text-white whitespace-nowrap">
                           <CurrencyDisplay amount={price} />
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {interval === 'yearly' ? tBilingual('/yr', '/বছর') : tBilingual('/mo', '/মাস')}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 bangla-text">
-                        {plan.description}
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 min-h-[32px] line-clamp-2 bangla-text leading-relaxed">
+                        {planDesc}
                       </p>
                     </div>
 
@@ -314,19 +344,19 @@ export function TrialUpgradeModal() {
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-xs text-slate-700 dark:text-slate-300 bangla-text">
                       <div className="flex items-center gap-1.5">
                         <Users className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                        <span>{plan.max_users} {tBilingual('Team Users', 'জন ইউজার')}</span>
+                        <span className="truncate">{usersLabel}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Building className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                        <span>{plan.max_branches} {tBilingual('Branches / Hubs', 'টি ব্রাঞ্চ')}</span>
+                        <span className="truncate">{branchesLabel}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <ShoppingCart className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                        <span>{plan.monthly_orders.toLocaleString()} {tBilingual('Monthly Orders', 'টি অর্ডার/মাস')}</span>
+                        <span className="truncate">{ordersLabel}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <HardDrive className="h-3.5 w-3.5 text-purple-500 shrink-0" />
-                        <span>{plan.storage_gb} {tBilingual('GB Cloud Storage', 'জিবি স্টোরেজ')}</span>
+                        <span className="truncate">{storageLabel}</span>
                       </div>
                     </div>
                   </div>
@@ -477,7 +507,7 @@ export function TrialUpgradeModal() {
                   <span>
                     {tBilingual(
                       `Upgrade to ${targetPlanObj.name} (৳${payableAmount.toLocaleString()})`,
-                      `${targetPlanObj.name_bn} এ আপগ্রেড করুন (৳${payableAmount.toLocaleString()})`
+                      `${targetPlanObj.name_bn} এ আপগ্রেড করুন (৳${locale === 'bn' ? toBengaliDigits(payableAmount) : payableAmount.toLocaleString()})`
                     )}
                   </span>
                 </>
