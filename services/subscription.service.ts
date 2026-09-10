@@ -509,25 +509,35 @@ export class SubscriptionService {
       }
     } catch {}
 
-    // Check local data store for fallback
-    const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
-    const found = localSubs.find((s) => s.company_id === normId || (companySlug && s.company_id === `co-${companySlug}`))
-    if (found) return found
-
     let defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
     let trialPlanId = DEFAULT_TRIAL_PLAN.id
+    let companyCreatedAt = new Date().toISOString()
+
     try {
       const admin = createAdminClient()
-      const { data: trialPlan } = await (admin as any)
-        .from('subscription_plans')
-        .select('id, trial_days')
-        .eq('code', 'trial')
-        .maybeSingle()
+      const [{ data: trialPlan }, { data: comp }] = await Promise.all([
+        (admin as any)
+          .from('subscription_plans')
+          .select('id, trial_days')
+          .eq('code', 'trial')
+          .maybeSingle(),
+        (admin as any)
+          .from('companies')
+          .select('created_at')
+          .eq('id', normId)
+          .maybeSingle(),
+      ])
+
       if (trialPlan) {
         if (trialPlan.trial_days) defaultTrialDays = Number(trialPlan.trial_days)
         if (trialPlan.id) trialPlanId = trialPlan.id
       }
+      if (comp?.created_at) {
+        companyCreatedAt = comp.created_at
+      }
     } catch {}
+
+    const trialEndsAt = new Date(new Date(companyCreatedAt).getTime() + defaultTrialDays * 86400000).toISOString()
 
     return {
       id: `sub-${normId}`,
@@ -536,9 +546,9 @@ export class SubscriptionService {
       plan_code: 'trial',
       status: 'trial',
       billing_interval: 'monthly',
-      current_period_start: new Date().toISOString(),
-      current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-      trial_ends_at: new Date(Date.now() + defaultTrialDays * 86400000).toISOString(),
+      current_period_start: companyCreatedAt,
+      current_period_end: new Date(new Date(companyCreatedAt).getTime() + 30 * 86400000).toISOString(),
+      trial_ends_at: trialEndsAt,
       payment_method_type: null,
       last_payment_reference: null,
       custom_limits_override: null,
@@ -1697,8 +1707,8 @@ export function getNextTierPlan(
   return plans.find((p) => p.code === 'enterprise') || DEFAULT_PLANS[3]
 }
 
-export function getTrialDaysRemaining(trialEndsAt?: string | null, fallbackDays: number = 14): number {
-  if (!trialEndsAt) return fallbackDays
+export function getTrialDaysRemaining(trialEndsAt?: string | null): number {
+  if (!trialEndsAt) return 0
   const diff = new Date(trialEndsAt).getTime() - Date.now()
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }

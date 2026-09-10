@@ -105,20 +105,35 @@ export class EntitlementService {
       console.warn('[EntitlementService] DB subscription lookup warning:', err)
     }
 
-    // Default: fetch active trial plan from subscription_plans table
+    // Default: fetch active trial plan from subscription_plans table and anchor to company created_at
     let dbTrialPlan: SubscriptionPlanRecord = DEFAULT_TRIAL_PLAN
+    let companyCreatedAt = nowIso
+
     try {
-      const { data: trialFromDb } = await (admin as any)
-        .from('subscription_plans')
-        .select('*')
-        .eq('code', 'trial')
-        .maybeSingle()
+      const [{ data: trialFromDb }, { data: comp }] = await Promise.all([
+        (admin as any)
+          .from('subscription_plans')
+          .select('*')
+          .eq('code', 'trial')
+          .maybeSingle(),
+        (admin as any)
+          .from('companies')
+          .select('created_at')
+          .eq('id', companyId)
+          .maybeSingle(),
+      ])
+
       if (trialFromDb) {
         dbTrialPlan = trialFromDb
+      }
+      if (comp?.created_at) {
+        companyCreatedAt = comp.created_at
       }
     } catch {}
 
     const trialDuration = dbTrialPlan.trial_days || 14
+    const trialEndsAt = new Date(new Date(companyCreatedAt).getTime() + trialDuration * 86400000).toISOString()
+
     const defaultTrialSub: CompanySubscriptionRecord = {
       id: `sub-${companyId}`,
       company_id: companyId,
@@ -126,15 +141,15 @@ export class EntitlementService {
       plan_code: 'trial',
       status: 'trial',
       billing_interval: 'monthly',
-      current_period_start: nowIso,
-      current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-      trial_ends_at: new Date(Date.now() + trialDuration * 86400000).toISOString(),
+      current_period_start: companyCreatedAt,
+      current_period_end: new Date(new Date(companyCreatedAt).getTime() + 30 * 86400000).toISOString(),
+      trial_ends_at: trialEndsAt,
       cancelled_at: null,
       cancel_at_period_end: false,
       next_plan_id: null,
       change_effective_at: null,
       grace_period_ends_at: null,
-      started_at: nowIso,
+      started_at: companyCreatedAt,
       payment_method_type: null,
       last_payment_reference: null,
       custom_limits_override: null,
@@ -174,7 +189,7 @@ export class EntitlementService {
     const isSuspended = subscription.status === 'suspended'
     const isPastDue = subscription.status === 'past_due'
     const totalTrialDays = plan.trial_days || 14
-    const daysRemaining = isTrial ? getTrialDaysRemaining(subscription.trial_ends_at, totalTrialDays) : 0
+    const daysRemaining = isTrial ? getTrialDaysRemaining(subscription.trial_ends_at) : 0
     const isTrialExpired = isTrial && daysRemaining <= 0
 
     const trialProgressPercent = isTrial
@@ -231,7 +246,7 @@ export class EntitlementService {
     // Expired trials lose premium feature access
     const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
     if (isTrial) {
-      const daysRemaining = getTrialDaysRemaining(subscription.trial_ends_at, plan.trial_days || 14)
+      const daysRemaining = getTrialDaysRemaining(subscription.trial_ends_at)
       if (daysRemaining <= 0) return false
     }
 
@@ -270,7 +285,7 @@ export class EntitlementService {
 
     const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
     if (isTrial) {
-      const daysRemaining = getTrialDaysRemaining(subscription.trial_ends_at, plan.trial_days || 14)
+      const daysRemaining = getTrialDaysRemaining(subscription.trial_ends_at)
       if (daysRemaining <= 0 || subscription.status === 'expired') {
         return {
           allowed: false,

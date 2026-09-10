@@ -70,11 +70,11 @@ describe('Authoritative Subscription, Billing & Verification System Tests', () =
 
     it('Computes days remaining in trial accurately', () => {
       const futureDate = new Date(Date.now() + 5 * 86400000).toISOString()
-      const days = getTrialDaysRemaining(futureDate, 14)
+      const days = getTrialDaysRemaining(futureDate)
       assert.strictEqual(days, 5)
 
       const pastDate = new Date(Date.now() - 2 * 86400000).toISOString()
-      const zeroDays = getTrialDaysRemaining(pastDate, 14)
+      const zeroDays = getTrialDaysRemaining(pastDate)
       assert.strictEqual(zeroDays, 0)
     })
   })

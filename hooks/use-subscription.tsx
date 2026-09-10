@@ -42,7 +42,6 @@ import {
   cancelSubscriptionAction,
   reactivateSubscriptionAction,
 } from '@/actions/subscription.actions'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface LimitCheckResult {
   allowed: boolean
@@ -105,20 +104,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const companySlug = company?.slug || 'app'
 
   const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(DEFAULT_PLANS)
-  const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
-        const found = localSubs.find((s) => s.company_id === companyId || s.company_id === `co-${companySlug}`)
-        if (found) return found
-      } catch {}
-    }
-    return {
-      ...DEFAULT_TENANT_SUBSCRIPTION,
-      id: `sub-${companyId}`,
-      company_id: companyId,
-    }
-  })
+  const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() => ({
+    ...DEFAULT_TENANT_SUBSCRIPTION,
+    id: `sub-${companyId}`,
+    company_id: companyId,
+  }))
 
   const refreshSubscription = useCallback(async () => {
     try {
@@ -219,8 +209,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const totalTrialDays = currentPlan?.trial_days || 14
   const daysRemainingInTrial = useMemo(() => {
-    return getTrialDaysRemaining(subscription.trial_ends_at, isTrial ? totalTrialDays : 0)
-  }, [subscription.trial_ends_at, isTrial, totalTrialDays])
+    return isTrial ? getTrialDaysRemaining(subscription.trial_ends_at) : 0
+  }, [subscription.trial_ends_at, isTrial])
 
   const isTrialExpired = useMemo(() => {
     return isTrial && (daysRemainingInTrial <= 0 || subscription.status === 'expired')

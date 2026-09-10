@@ -523,8 +523,8 @@ export function getNextTierPlan(
   return plans.find((p) => p.code === 'enterprise') || DEFAULT_PLANS[3]
 }
 
-export function getTrialDaysRemaining(trialEndsAt?: string | null, fallbackDays: number = 14): number {
-  if (!trialEndsAt) return fallbackDays
+export function getTrialDaysRemaining(trialEndsAt?: string | null): number {
+  if (!trialEndsAt) return 0
   const diff = new Date(trialEndsAt).getTime() - Date.now()
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }

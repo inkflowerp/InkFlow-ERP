@@ -83,13 +83,13 @@ describe('Authoritative Trial Plan Limitation & Restriction Hardening Suite', ()
   describe('2. Trial Expiration & Suspended State Action Blockers', () => {
     it('accurately identifies expired trial date and returns 0 days remaining', () => {
       const expiredDate = new Date(Date.now() - 3600000).toISOString() // 1 hour ago
-      const daysRemaining = getTrialDaysRemaining(expiredDate, 14)
+      const daysRemaining = getTrialDaysRemaining(expiredDate)
       assert.strictEqual(daysRemaining, 0)
     })
 
     it('calculates active trial days remaining correctly', () => {
       const futureDate = new Date(Date.now() + 5 * 86400000).toISOString()
-      const daysRemaining = getTrialDaysRemaining(futureDate, 14)
+      const daysRemaining = getTrialDaysRemaining(futureDate)
       assert.strictEqual(daysRemaining, 5)
     })
 

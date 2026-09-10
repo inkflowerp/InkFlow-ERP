@@ -57,19 +57,19 @@ describe('Database-Driven Trial Plan Limitations and Restrictions Test Suite', (
     it('calculates days remaining based on database trial duration (7 days)', () => {
       const now = new Date()
       const endsAt = new Date(now.getTime() + 7 * 86400000).toISOString()
-      const remaining = getTrialDaysRemaining(endsAt, dynamicDatabaseTrialPlan.trial_days || 14)
+      const remaining = getTrialDaysRemaining(endsAt)
       assert.strictEqual(remaining, 7)
     })
 
     it('returns 0 when trial period has elapsed', () => {
       const pastDate = new Date(Date.now() - 2 * 86400000).toISOString()
-      const remaining = getTrialDaysRemaining(pastDate, dynamicDatabaseTrialPlan.trial_days || 14)
+      const remaining = getTrialDaysRemaining(pastDate)
       assert.strictEqual(remaining, 0)
     })
 
-    it('uses database trial_days if endsAt is missing', () => {
-      const remaining = getTrialDaysRemaining(null, dynamicDatabaseTrialPlan.trial_days || 14)
-      assert.strictEqual(remaining, 7)
+    it('returns 0 if endsAt is missing (no arbitrary fallback grants)', () => {
+      const remaining = getTrialDaysRemaining(null)
+      assert.strictEqual(remaining, 0)
     })
   })
 

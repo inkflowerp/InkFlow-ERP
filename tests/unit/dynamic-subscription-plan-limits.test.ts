@@ -39,7 +39,7 @@ describe('Dynamic Free & Paid Subscription Plan Limitations Audit & Verification
 
     it('should correctly evaluate dynamic trial days remaining with customized duration', () => {
       const futureEnd = new Date(Date.now() + 25 * 86400000).toISOString()
-      const daysLeft = getTrialDaysRemaining(futureEnd, customTrialPlan.trial_days)
+      const daysLeft = getTrialDaysRemaining(futureEnd)
       assert.strictEqual(daysLeft, 25)
     })
 
