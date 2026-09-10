@@ -200,7 +200,7 @@ export async function getPlatformSecurityOverviewAction(): Promise<ApiResponse<P
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
     }
-    return await PlatformService.getSecurityOverview()
+    return await PlatformService.getSecurityOverview(user.id || user.user_id)
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch security overview' }
   }

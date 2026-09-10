@@ -1009,12 +1009,13 @@ export async function revokePlatformSessionAction(sessionId: string) {
   }
 }
 
-export async function revokeAllOtherPlatformSessionsAction() {
+export async function revokeAllOtherPlatformSessionsAction(exceptSessionId?: string) {
   try {
     const platformUser = await getCurrentPlatformUser()
-    const result = await PlatformService.revokeAllOtherPlatformSessions(platformUser?.id)
+    const result = await PlatformService.revokeAllOtherPlatformSessions(platformUser?.id, exceptSessionId)
     if (result.success) {
       revalidatePath('/platform/security')
+      revalidatePath('/platform/sessions')
       revalidatePath('/platform/profile')
     }
     return result

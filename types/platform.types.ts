@@ -576,6 +576,8 @@ export interface PlatformSecurityOverview {
   mfa_adoption_pct: number
   active_sessions_count: number
   tenant_isolation_status: 'healthy' | 'alert'
+  current_user_mfa_enabled?: boolean
+  current_user_email?: string
   recent_privileged_actions: PlatformAuditLogItem[]
   active_sessions: PlatformActiveSession[]
   login_history?: PlatformLoginHistoryItem[]
