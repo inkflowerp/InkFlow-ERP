@@ -57,7 +57,13 @@ export async function deleteBusinessAction(companyId: string, reason?: string) {
     if (!platformUser) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
     }
-    if (!hasPlatformPermission(platformUser, 'tenant.delete') && !hasPlatformPermission(platformUser, 'company.delete') && !hasPlatformPermission(platformUser, 'tenant.edit')) {
+    const isOwnerOrAdmin = platformUser.role === 'platform_owner' || platformUser.role === 'platform_admin'
+    const hasDeletePerm =
+      hasPlatformPermission(platformUser, 'tenant.delete') ||
+      hasPlatformPermission(platformUser, 'company.delete') ||
+      hasPlatformPermission(platformUser, 'tenant.edit')
+
+    if (!isOwnerOrAdmin && !hasDeletePerm) {
       return { success: false, error: 'Unauthorized: Insufficient platform permissions to delete a tenant.' }
     }
 
@@ -65,6 +71,7 @@ export async function deleteBusinessAction(companyId: string, reason?: string) {
     if (result.success) {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
+      revalidatePath('/platform/tenants')
       revalidatePath('/platform/dashboard')
       revalidatePath('/platform/subscriptions')
     }
@@ -80,7 +87,14 @@ export async function deleteAllBusinessesAction(reason?: string) {
     if (!platformUser) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
     }
-    if (!hasPlatformPermission(platformUser, 'tenant.delete') && !hasPlatformPermission(platformUser, 'company.delete')) {
+    const isOwnerOrAdmin = platformUser.role === 'platform_owner' || platformUser.role === 'platform_admin'
+    const hasPurgePerm =
+      hasPlatformPermission(platformUser, 'tenant.delete') ||
+      hasPlatformPermission(platformUser, 'company.delete') ||
+      hasPlatformPermission(platformUser, 'tenant.purge') ||
+      hasPlatformPermission(platformUser, 'company.purge')
+
+    if (!isOwnerOrAdmin && !hasPurgePerm) {
       return { success: false, error: 'Unauthorized: Insufficient platform permissions to purge all tenants.' }
     }
 
@@ -88,6 +102,7 @@ export async function deleteAllBusinessesAction(reason?: string) {
     if (result.success) {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
+      revalidatePath('/platform/tenants')
       revalidatePath('/platform/dashboard')
       revalidatePath('/platform/subscriptions')
     }

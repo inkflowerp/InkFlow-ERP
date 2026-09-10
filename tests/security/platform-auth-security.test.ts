@@ -25,6 +25,7 @@ export interface PlatformUserRecord {
 export const ALL_PLATFORM_PERMISSIONS = [
   'platform.view',
   'platform.manage',
+  'platform.dashboard',
   'tenant.view',
   'tenant.create',
   'tenant.edit',
@@ -33,6 +34,8 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'tenant.reactivate',
   'tenant.cancel',
   'tenant.archive',
+  'tenant.delete',
+  'tenant.purge',
   'company.view',
   'company.create',
   'company.edit',
@@ -40,6 +43,11 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'company.reactivate',
   'company.cancel',
   'company.archive',
+  'company.delete',
+  'company.purge',
+  'company.export',
+  'company.support_mode',
+  'company.activity',
   'subscription.view',
   'subscription.manage',
   'subscription.edit',
@@ -47,6 +55,8 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'plan.create',
   'plan.edit',
   'plan.archive',
+  'plan.delete',
+  'plan.change',
   'feature.view',
   'feature.manage',
   'feature_flags.view',
@@ -66,10 +76,16 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'audit.view',
   'security.view',
   'security.manage',
+  'security.revoke_session',
   'system.view',
+  'system.health',
   'system.manage',
   'system.job_retry',
   'system.resolve',
+  'system.incidents',
+  'system.integrations',
+  'system.emergency_controls',
+  'emergency_controls.manage',
   'incident.view',
   'incident.manage',
   'job.view',
@@ -80,7 +96,11 @@ export const ALL_PLATFORM_PERMISSIONS = [
 export const PLATFORM_ROLE_PERMISSIONS_MAP: Record<PlatformRole, readonly string[]> = {
   platform_owner: ALL_PLATFORM_PERMISSIONS,
   platform_admin: ALL_PLATFORM_PERMISSIONS.filter(
-    (p) => p !== 'security.manage' && p !== 'platform.manage'
+    (p) =>
+      p !== 'security.manage' &&
+      p !== 'platform.manage' &&
+      p !== 'system.emergency_controls' &&
+      p !== 'emergency_controls.manage'
   ),
   platform_support: [
     'platform.view',
@@ -266,11 +286,15 @@ describe('Platform Admin Authentication & Authorization Security', () => {
     assert.strictEqual(ownerPerms.includes('security.manage'), true)
     assert.strictEqual(ownerPerms.includes('platform.manage'), true)
     assert.strictEqual(ownerPerms.includes('tenant.suspend'), true)
+    assert.strictEqual(ownerPerms.includes('tenant.delete'), true)
+    assert.strictEqual(ownerPerms.includes('tenant.purge'), true)
     assert.strictEqual(ownerPerms.length, ALL_PLATFORM_PERMISSIONS.length)
   })
 
   test('2. Role Boundary: Platform Admin cannot manage security or root platform settings', () => {
     assert.strictEqual(hasPlatformPermission(adminUser, 'tenant.suspend'), true)
+    assert.strictEqual(hasPlatformPermission(adminUser, 'tenant.delete'), true)
+    assert.strictEqual(hasPlatformPermission(adminUser, 'tenant.purge'), true)
     assert.strictEqual(hasPlatformPermission(adminUser, 'plan.create'), true)
     assert.strictEqual(hasPlatformPermission(adminUser, 'security.manage'), false)
     assert.strictEqual(hasPlatformPermission(adminUser, 'platform.manage'), false)

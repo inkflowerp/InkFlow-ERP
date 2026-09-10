@@ -21,6 +21,7 @@ export { PLATFORM_SESSION_COOKIE }
 export const ALL_PLATFORM_PERMISSIONS = [
   'platform.view',
   'platform.manage',
+  'platform.dashboard',
   'tenant.view',
   'tenant.create',
   'tenant.edit',
@@ -29,6 +30,8 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'tenant.reactivate',
   'tenant.cancel',
   'tenant.archive',
+  'tenant.delete',
+  'tenant.purge',
   'company.view',
   'company.create',
   'company.edit',
@@ -36,6 +39,11 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'company.reactivate',
   'company.cancel',
   'company.archive',
+  'company.delete',
+  'company.purge',
+  'company.export',
+  'company.support_mode',
+  'company.activity',
   'subscription.view',
   'subscription.manage',
   'subscription.edit',
@@ -44,6 +52,7 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'plan.edit',
   'plan.archive',
   'plan.delete',
+  'plan.change',
   'feature.view',
   'feature.manage',
   'feature_flags.view',
@@ -63,10 +72,16 @@ export const ALL_PLATFORM_PERMISSIONS = [
   'audit.view',
   'security.view',
   'security.manage',
+  'security.revoke_session',
   'system.view',
+  'system.health',
   'system.manage',
   'system.job_retry',
   'system.resolve',
+  'system.incidents',
+  'system.integrations',
+  'system.emergency_controls',
+  'emergency_controls.manage',
   'incident.view',
   'incident.manage',
   'job.view',
@@ -77,7 +92,11 @@ export const ALL_PLATFORM_PERMISSIONS = [
 export const PLATFORM_ROLE_PERMISSIONS_MAP: Record<PlatformRole, readonly string[]> = {
   platform_owner: ALL_PLATFORM_PERMISSIONS,
   platform_admin: ALL_PLATFORM_PERMISSIONS.filter(
-    (p) => p !== 'security.manage' && p !== 'platform.manage'
+    (p) =>
+      p !== 'security.manage' &&
+      p !== 'platform.manage' &&
+      p !== 'system.emergency_controls' &&
+      p !== 'emergency_controls.manage'
   ),
   platform_support: [
     'platform.view',
@@ -388,13 +407,19 @@ export function hasPlatformPermission(
   const isActive = 'is_active' in user ? user.is_active : user.isActive
   if (!isActive) return false
 
+  const role = 'role' in user ? user.role : user.platformRole
+
+  // Platform owner always possesses full authorization for all platform operations
+  if (role === 'platform_owner') {
+    return true
+  }
+
   // If user context already has calculated permissions array
   if ('permissions' in user && Array.isArray((user as AuthenticatedPlatformContext).permissions)) {
     return (user as AuthenticatedPlatformContext).permissions.includes(action)
   }
 
   // Otherwise calculate from role permissions map
-  const role = 'role' in user ? user.role : user.platformRole
   const rolePerms = PLATFORM_ROLE_PERMISSIONS_MAP[role as PlatformRole] || []
   return rolePerms.includes(action)
 }
