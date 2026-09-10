@@ -20,33 +20,75 @@ export default function PlatformLayout({
     pathname === '/platform/forgot-password' ||
     pathname === '/platform/reset-password'
 
-  useEffect(() => {
+  const verifyClearance = React.useCallback(() => {
     if (isAuthPage) {
       setIsChecking(false)
       return
     }
 
-    let isMounted = true
     getPlatformSessionUserAction()
       .then((user) => {
-        if (!isMounted) return
         if (!user || !user.is_active) {
-          window.location.href = `/platform/login?error=unauthorized&redirectTo=${encodeURIComponent(pathname)}`
+          setIsAuthorized(false)
+          setIsChecking(true)
+          window.location.replace(
+            `/platform/login?error=unauthorized&redirectTo=${encodeURIComponent(pathname)}`
+          )
         } else {
           setIsAuthorized(true)
           setIsChecking(false)
         }
       })
       .catch(() => {
-        if (isMounted) {
-          window.location.href = '/platform/login?error=unauthorized'
-        }
+        setIsAuthorized(false)
+        setIsChecking(true)
+        window.location.replace('/platform/login?error=unauthorized')
       })
+  }, [pathname, isAuthPage])
+
+  useEffect(() => {
+    if (isAuthPage) {
+      setIsChecking(false)
+      return
+    }
+
+    verifyClearance()
+
+    // 1. Detect Back-Forward Cache (bfcache) restoration
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setIsAuthorized(false)
+        setIsChecking(true)
+        verifyClearance()
+      }
+    }
+
+    // 2. Detect browser back/forward history traversal
+    const handlePopState = () => {
+      setIsAuthorized(false)
+      setIsChecking(true)
+      verifyClearance()
+    }
+
+    // 3. Detect tab refocus / visibility change
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        verifyClearance()
+      }
+    }
+
+    window.addEventListener('pageshow', handlePageShow)
+    window.addEventListener('popstate', handlePopState)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleVisibilityChange)
 
     return () => {
-      isMounted = false
+      window.removeEventListener('pageshow', handlePageShow)
+      window.removeEventListener('popstate', handlePopState)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleVisibilityChange)
     }
-  }, [pathname, isAuthPage])
+  }, [verifyClearance, isAuthPage])
 
   if (isAuthPage) {
     return <>{children}</>

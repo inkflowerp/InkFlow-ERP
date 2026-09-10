@@ -53,6 +53,7 @@
   "auth": {
     "login_title": "Sign In to PrintERP",
     "login_subtitle": "Manage your printing, signage, and fabrication business",
+    "portal_badge": "BUSINESS & SHOP FLOOR PORTAL",
     "register_title": "Create an Account",
     "register_subtitle": "Start your modern printing SaaS experience",
     "email": "Email Address",
@@ -67,7 +68,14 @@
     "already_account": "Already have an account?",
     "reset_password": "Reset Password",
     "send_reset_link": "Send Reset Link",
-    "back_to_login": "Back to Login"
+    "back_to_login": "Back to Login",
+    "caps_lock_on": "Caps Lock is ON",
+    "google_login": "Continue with Google Workspace",
+    "platform_admin_hint": "Are you a Platform Superadministrator?",
+    "platform_admin_link": "Go to Platform Control Center",
+    "sec_ssl": "256-Bit SSL Encrypted",
+    "sec_rls": "Tenant RLS Isolated",
+    "sec_uptime": "99.9% Uptime SLA"
   },
   "onboarding": {
     "title": "Setup Your Printing Business",

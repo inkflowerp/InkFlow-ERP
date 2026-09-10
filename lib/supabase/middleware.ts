@@ -118,13 +118,27 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Helper to apply strict anti-cache headers to prevent bfcache retention of sensitive pages
+  const applyNoCacheHeaders = (response: NextResponse) => {
+    response.headers.set(
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0'
+    )
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    response.headers.set('Surrogate-Control', 'no-store')
+    return response
+  }
+
   // 1. Platform Protected Guard: Unauthenticated or non-platform users cannot access /platform/*
   if (isPlatformProtectedPage) {
+    applyNoCacheHeaders(supabaseResponse)
+
     if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/platform/login'
       url.searchParams.set('redirectTo', pathname)
-      return NextResponse.redirect(url)
+      return applyNoCacheHeaders(NextResponse.redirect(url))
     }
 
     // Fail closed if user is authenticated in Supabase but possesses no platform session cookie
@@ -132,18 +146,19 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = '/platform/login'
       url.searchParams.set('error', 'unauthorized')
-      return NextResponse.redirect(url)
+      return applyNoCacheHeaders(NextResponse.redirect(url))
     }
   }
 
   // 1b. Platform Auth Page: If already authenticated with platform session, redirect to /platform
   if (isPlatformAuthPage && pathname === '/platform/login') {
+    applyNoCacheHeaders(supabaseResponse)
     if (user && hasValidPlatformCookie) {
       const redirectTo = request.nextUrl.searchParams.get('redirectTo') || '/platform'
       const url = request.nextUrl.clone()
       url.pathname = redirectTo.startsWith('/platform') ? redirectTo : '/platform'
       url.searchParams.delete('redirectTo')
-      return NextResponse.redirect(url)
+      return applyNoCacheHeaders(NextResponse.redirect(url))
     }
   }
 
@@ -159,14 +174,14 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirectTo', pathname)
-    return NextResponse.redirect(url)
+    return applyNoCacheHeaders(NextResponse.redirect(url))
   }
 
   // 3. Authenticated Tenant User trying to access tenant auth pages (/login, /register) -> Redirect to dashboard
   if (isTenantAuthenticated && isTenantAuthPage && hasValidTenantCookie && tenantSessionData?.companySlug) {
     const url = request.nextUrl.clone()
     url.pathname = `/${tenantSessionData.companySlug}/dashboard`
-    return NextResponse.redirect(url)
+    return applyNoCacheHeaders(NextResponse.redirect(url))
   }
 
   return supabaseResponse

@@ -89,7 +89,7 @@ export function useAuth() {
     setIsLoading(true)
     await signOutAction()
     setUser(null)
-    router.push('/login')
+    window.location.replace('/login')
     setIsLoading(false)
   }
 

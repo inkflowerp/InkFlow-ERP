@@ -59,9 +59,9 @@ export function PlatformHeader() {
     setIsLoggingOut(true)
     try {
       const res = await platformLogoutAction()
-      window.location.href = res.redirectUrl || '/platform/login'
+      window.location.replace(res.redirectUrl || '/platform/login')
     } catch {
-      window.location.href = '/platform/login'
+      window.location.replace('/platform/login')
     }
   }
 
