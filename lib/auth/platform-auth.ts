@@ -188,97 +188,99 @@ export function resolveEffectivePlatformPermissions(
  */
 export async function getAuthenticatedPlatformContext(): Promise<AuthenticatedPlatformContext | null> {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const adminClient = createAdminClient()
 
-    let authUserId = user?.id
+    // 1. First, check if active Supabase Auth user is a verified Platform Admin
+    try {
+      const supabase = await createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    // If Supabase user is not resolved, verify against active platform session cookie
-    if (!authUserId) {
-      const { cookies } = await import('next/headers')
-      const cookieStore = await cookies()
-      const sessCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
-      if (sessCookie) {
-        try {
-          const parsed = JSON.parse(decodeURIComponent(sessCookie))
-          if (parsed && (parsed.userId || parsed.adminId)) {
-            const adminClient = createAdminClient()
-            const { data: adminRecord, error: dbError } = await (adminClient as any)
-              .from('platform_admins')
-              .select('*')
-              .or(`id.eq.${parsed.adminId},user_id.eq.${parsed.userId}`)
-              .eq('is_active', true)
-              .maybeSingle()
+      if (user?.id) {
+        const { data: adminRecord, error: dbError } = await (adminClient as any)
+          .from('platform_admins')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle()
 
-            if (!dbError && adminRecord && adminRecord.is_active) {
-              const role = (adminRecord.role as PlatformRole) || 'platform_readonly'
-              const responsibilities = Array.isArray(adminRecord.responsibilities)
-                ? adminRecord.responsibilities
-                : [role]
-              const permissions = resolveEffectivePlatformPermissions(role, responsibilities)
+        if (!dbError && adminRecord && adminRecord.is_active) {
+          const role = (adminRecord.role as PlatformRole) || 'platform_readonly'
+          const responsibilities = Array.isArray(adminRecord.responsibilities)
+            ? adminRecord.responsibilities
+            : [role]
+          const permissions = resolveEffectivePlatformPermissions(role, responsibilities)
 
-              return {
-                userId: String(adminRecord.user_id || parsed.userId),
-                adminId: String(adminRecord.id),
-                email: String(adminRecord.email || parsed.email),
-                fullName: String(adminRecord.full_name || parsed.fullName || 'Platform Administrator'),
-                platformRole: role,
-                responsibilities,
-                permissions,
-                isActive: true,
-                mfaEnabled: Boolean(adminRecord.mfa_enabled),
-                phone: adminRecord.phone || undefined,
-                avatarUrl: adminRecord.avatar_url || undefined,
-                preferences: adminRecord.preferences || undefined,
-                createdAt: String(adminRecord.created_at),
-                lastLoginAt: adminRecord.last_login_at ? String(adminRecord.last_login_at) : undefined,
-              }
-            }
+          return {
+            userId: String(user.id),
+            adminId: String(adminRecord.id),
+            email: String(adminRecord.email || user.email),
+            fullName: String(adminRecord.full_name || 'Platform Administrator'),
+            platformRole: role,
+            responsibilities,
+            permissions,
+            isActive: Boolean(adminRecord.is_active),
+            mfaEnabled: Boolean(adminRecord.mfa_enabled),
+            phone: adminRecord.phone || undefined,
+            avatarUrl: adminRecord.avatar_url || undefined,
+            preferences: adminRecord.preferences || undefined,
+            createdAt: String(adminRecord.created_at),
+            lastLoginAt: adminRecord.last_login_at ? String(adminRecord.last_login_at) : undefined,
           }
-        } catch {
-          // ignore
         }
       }
-      return null
+    } catch {
+      // Non-blocking, fallback to platform session cookie
     }
 
-    const adminClient = createAdminClient()
-    const { data: adminRecord, error: dbError } = await (adminClient as any)
-      .from('platform_admins')
-      .select('*')
-      .eq('user_id', authUserId)
-      .eq('is_active', true)
-      .maybeSingle()
+    // 2. If Supabase user is not a platform admin (e.g. tenant user or unauthenticated in GoTrue),
+    // verify against active signed platform session cookie matched against platform_admins table
+    const { cookies } = await import('next/headers')
+    const cookieStore = await cookies()
+    const sessCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
+    if (sessCookie) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(sessCookie))
+        if (parsed && (parsed.userId || parsed.adminId)) {
+          const { data: adminRecord, error: dbError } = await (adminClient as any)
+            .from('platform_admins')
+            .select('*')
+            .or(`id.eq.${parsed.adminId},user_id.eq.${parsed.userId}`)
+            .eq('is_active', true)
+            .maybeSingle()
 
-    if (dbError || !adminRecord || !adminRecord.is_active) {
-      return null // FAIL CLOSED: Identity strictly requires active platform_admins record matched by user.id
+          if (!dbError && adminRecord && adminRecord.is_active) {
+            const role = (adminRecord.role as PlatformRole) || 'platform_readonly'
+            const responsibilities = Array.isArray(adminRecord.responsibilities)
+              ? adminRecord.responsibilities
+              : [role]
+            const permissions = resolveEffectivePlatformPermissions(role, responsibilities)
+
+            return {
+              userId: String(adminRecord.user_id || parsed.userId),
+              adminId: String(adminRecord.id),
+              email: String(adminRecord.email || parsed.email),
+              fullName: String(adminRecord.full_name || parsed.fullName || 'Platform Administrator'),
+              platformRole: role,
+              responsibilities,
+              permissions,
+              isActive: true,
+              mfaEnabled: Boolean(adminRecord.mfa_enabled),
+              phone: adminRecord.phone || undefined,
+              avatarUrl: adminRecord.avatar_url || undefined,
+              preferences: adminRecord.preferences || undefined,
+              createdAt: String(adminRecord.created_at),
+              lastLoginAt: adminRecord.last_login_at ? String(adminRecord.last_login_at) : undefined,
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
     }
 
-    const role = (adminRecord.role as PlatformRole) || 'platform_readonly'
-    const responsibilities = Array.isArray(adminRecord.responsibilities)
-      ? adminRecord.responsibilities
-      : [role]
-    const permissions = resolveEffectivePlatformPermissions(role, responsibilities)
-
-    return {
-      userId: String(user?.id || adminRecord.user_id),
-      adminId: String(adminRecord.id),
-      email: String(adminRecord.email || user?.email),
-      fullName: String(adminRecord.full_name || 'Platform Administrator'),
-      platformRole: role,
-      responsibilities,
-      permissions,
-      isActive: Boolean(adminRecord.is_active),
-      mfaEnabled: Boolean(adminRecord.mfa_enabled),
-      phone: adminRecord.phone || undefined,
-      avatarUrl: adminRecord.avatar_url || undefined,
-      preferences: adminRecord.preferences || undefined,
-      createdAt: String(adminRecord.created_at),
-      lastLoginAt: adminRecord.last_login_at ? String(adminRecord.last_login_at) : undefined,
-    }
+    return null // FAIL CLOSED
   } catch {
     return null // FAIL CLOSED
   }
