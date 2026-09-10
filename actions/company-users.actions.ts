@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { CompanyUsersService } from '@/services/company-users.service'
+import { EntitlementService } from '@/services/entitlement.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 
 export async function createCompanyUserAction(params: {
@@ -22,6 +23,12 @@ export async function createCompanyUserAction(params: {
       !tenant.permissions.includes('settings.edit'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
+  }
+
+  try {
+    await EntitlementService.enforceLimit(tenant.companyId, 'max_users')
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Plan user limit exceeded' }
   }
 
   const result = await CompanyUsersService.createCompanyUser({
@@ -51,6 +58,12 @@ export async function inviteUserAction(
       !tenant.permissions.includes('settings.edit'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
+  }
+
+  try {
+    await EntitlementService.enforceLimit(tenant.companyId, 'max_users')
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Plan user limit exceeded' }
   }
 
   const result = await CompanyUsersService.inviteUser(

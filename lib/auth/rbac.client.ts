@@ -1,12 +1,12 @@
 import {
-  PrimaryRole,
-  ResponsibilitySlug,
-  PermissionAction,
-  PermissionModule,
-  DataScope,
-  RolePermissionMatrix,
+  type PrimaryRole,
+  type ResponsibilitySlug,
+  type PermissionAction,
+  type PermissionModule,
+  type DataScope,
+  type RolePermissionMatrix,
   MODULE_ACTION_SPECS,
-} from '../../types/rbac.types'
+} from '../../types/rbac.types.ts'
 
 /**
  * Maps legacy/singular resource keys to standard module keys

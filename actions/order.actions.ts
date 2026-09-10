@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { OrderService } from '@/services/order.service'
 import { AuditService } from '@/services/audit.service'
+import { EntitlementService } from '@/services/entitlement.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { SalesOrderRecord } from '@/types/order.types'
 
@@ -53,6 +54,9 @@ export async function createSalesOrderAction(
     if (!companyId || !tenant) {
       return { success: false, error: 'Unauthorized: No active tenant context found.' }
     }
+
+    // Enforce Monthly Orders Plan Quota Limit
+    await EntitlementService.enforceLimit(companyId, 'monthly_orders')
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||

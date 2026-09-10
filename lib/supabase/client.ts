@@ -1,5 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
-import { Database } from '@/types/database.types'
+import type { Database } from '../../types/database.types.ts'
 
 const DEFAULT_SUPABASE_URL = 'https://liqhihsqcblddqfjmmse.supabase.co'
 const DEFAULT_SUPABASE_ANON_KEY =
@@ -35,7 +35,7 @@ export function createClient() {
           let cookieStr = `${name}=${encodeURIComponent(value)}`
           if (options?.maxAge) cookieStr += `; max-age=${options.maxAge}`
           if (options?.path) cookieStr += `; path=${options.path || '/'}`
-          if (options?.sameSite) cookieStr += `; samesite=${options.sameSite}`
+          if (options?.sameSite) cookieStr += `; sameSite=${options.sameSite}`
           if (options?.secure) cookieStr += `; secure`
           document.cookie = cookieStr
         })

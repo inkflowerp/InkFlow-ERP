@@ -14,89 +14,89 @@
 // This module is retained exclusively for transient local client UI state.
 // ==============================================================================
 
-import {
+import type {
   CustomerRecord,
   CustomerCommunication,
   SupplierRecord,
   SupplierMaterialPrice,
-} from '@/types/crm.types'
-import {
+} from '../../types/crm.types.ts'
+import type {
   SalesOrderRecord,
   JobOrderRecord,
   OrderTimelineEventRecord,
-} from '@/types/order.types'
-import {
+} from '../../types/order.types.ts'
+import type {
   QuotationRecord,
   QuotationActivityRecord,
-} from '@/types/quotation.types'
-import {
+} from '../../types/quotation.types.ts'
+import type {
   ProductRecord,
   PriceHistoryRecord,
-} from '@/types/product.types'
-import {
+} from '../../types/product.types.ts'
+import type {
   MaterialRecord,
   InventoryRollRecord,
   StockLedgerRecord,
   MaterialWastageRecord,
-} from '@/types/inventory.types'
-import {
+} from '../../types/inventory.types.ts'
+import type {
   ProductionJobRecord,
   ProductionReworkRecord,
-} from '@/types/production.types'
-import {
+} from '../../types/production.types.ts'
+import type {
   InvoiceRecord,
   PaymentRecord,
-} from '@/types/billing.types'
-import {
+} from '../../types/billing.types.ts'
+import type {
   ExpenseRecord,
   BankAccountRecord,
   CashBookEntryRecord,
-} from '@/types/accounting.types'
-import {
+} from '../../types/accounting.types.ts'
+import type {
   PurchaseOrderRecord,
   SupplierPriceHistoryRecord,
-} from '@/types/purchase.types'
-import {
+} from '../../types/purchase.types.ts'
+import type {
   DeliveryChallanRecord,
   InstallationRecord,
-} from '@/types/logistics.types'
-import {
+} from '../../types/logistics.types.ts'
+import type {
   JobCostingRecord,
-} from '@/types/costing.types'
-import {
+} from '../../types/costing.types.ts'
+import type {
   DesignJobRecord,
-} from '@/types/design.types'
-import {
+} from '../../types/design.types.ts'
+import type {
   EmployeeRecord,
   AttendanceRecord,
   PayrollPeriodRecord,
   PayrollItemRecord,
-} from '@/types/hr.types'
-import {
+} from '../../types/hr.types.ts'
+import type {
   CommunicationLogRecord,
   MessageTemplateRecord,
   ChannelConfigRecord,
-} from '@/types/communication.types'
-import {
+} from '../../types/communication.types.ts'
+import type {
   CompanyTaxSettingsRecord,
   DocumentTemplateConfigRecord,
   DocumentType,
-} from '@/types/tax-and-docs.types'
-import {
+} from '../../types/tax-and-docs.types.ts'
+import type {
   CompanyUserWithProfile,
   RoleRow,
   BranchRow,
-} from '@/types/tenant.types'
-import {
+} from '../../types/tenant.types.ts'
+import type {
   PlatformTenantCompany,
   PlatformFeatureFlagItem,
   PlatformRBACTemplate,
   PlatformAdminUser,
   PlatformIncidentItem,
-} from '@/types/platform.types'
-import { SubscriptionPlanRecord } from '@/types/subscription.types'
-import { DEFAULT_PLANS } from '@/services/subscription.service'
-import { DEFAULT_ROLE_MATRICES } from '@/lib/auth/rbac.client'
+} from '../../types/platform.types.ts'
+import type { SubscriptionPlanRecord } from '../../types/subscription.types.ts'
+import { DEFAULT_PLANS } from '../subscription/subscription-constants.ts'
+import { DEFAULT_ROLE_MATRICES } from '../auth/rbac.client.ts'
 
 // Storage keys
 export const STORAGE_KEYS = {

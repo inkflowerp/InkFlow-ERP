@@ -52,7 +52,7 @@ import {
   DEFAULT_PLANS,
   DEFAULT_TRIAL_PLAN,
   FEATURE_METADATA,
-} from '@/services/subscription.service'
+} from '@/lib/subscription/subscription-constants'
 import {
   SubscriptionPlanRecord,
   FeatureCode,

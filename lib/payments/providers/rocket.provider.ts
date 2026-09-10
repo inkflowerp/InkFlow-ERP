@@ -14,6 +14,7 @@ export class RocketPaymentProvider implements PaymentProvider {
     const timestamp = Date.now()
     const transactionId = `RKT-${timestamp.toString().slice(-8)}`
     const billerId = '3492'
+    const compCode = params.companyId ? params.companyId.slice(0, 8).toUpperCase() : 'PRINT'
 
     return {
       success: true,
@@ -23,7 +24,7 @@ export class RocketPaymentProvider implements PaymentProvider {
         'Open Rocket App or dial *322#',
         'Select 1 for Payment, then 1 for Bill Pay',
         `Enter PrintERP Biller ID: ${billerId}`,
-        `Enter Bill Number / Company Code: ${params.companyId.slice(0, 8).toUpperCase()}`,
+        `Enter Bill Number / Company Code: ${compCode}`,
         `Enter Amount: ৳${params.amount.toLocaleString()}`,
         'Enter your 4-digit Rocket PIN to confirm',
       ],
@@ -32,7 +33,8 @@ export class RocketPaymentProvider implements PaymentProvider {
   }
 
   async verifyPayment(params: PaymentVerifyParams): Promise<PaymentVerifyResult> {
-    const isValid = Boolean(params.gatewayReference && params.gatewayReference.trim().length >= 6)
+    const ref = params.gatewayReference?.trim() || ''
+    const isValid = Boolean(ref.length >= 6)
 
     if (!isValid) {
       return {
@@ -49,8 +51,8 @@ export class RocketPaymentProvider implements PaymentProvider {
     return {
       success: true,
       status: 'paid',
-      gatewayTransactionId: params.gatewayReference.toUpperCase(),
-      paidAmount: params.amount,
+      gatewayTransactionId: ref.toUpperCase(),
+      paidAmount: params.amount ?? 0,
       paidAt: new Date().toISOString(),
       paymentMethod: 'rocket',
     }

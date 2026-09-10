@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Crown,
@@ -23,6 +23,8 @@ import {
   RotateCcw,
   Clock,
   Ban,
+  Calendar,
+  AlertCircle,
 } from 'lucide-react'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
@@ -33,17 +35,21 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
-import { paymentRegistry } from '@/lib/payments/payment-registry'
 import {
   DEFAULT_PLANS,
-  DEMO_SUBSCRIPTION_INVOICES,
   FEATURE_METADATA,
-} from '@/services/subscription.service'
+} from '@/lib/subscription/subscription-constants'
 import {
   PlanCode,
   BillingInterval,
   PaymentGatewayType,
+  SubscriptionEventRecord,
+  SubscriptionInvoiceRecord,
 } from '@/types/subscription.types'
+import {
+  getSubscriptionEventsAction,
+  getTenantSubscriptionInvoicesAction,
+} from '@/actions/subscription.actions'
 
 export default function TenantSubscriptionPage() {
   const {
@@ -57,58 +63,98 @@ export default function TenantSubscriptionPage() {
     isSuspended,
     isPastDue,
     isTrial,
+    isTrialExpired,
     daysRemainingInTrial,
     getLimitStatus,
-    upgradeSubscription,
-    simulatePlan,
-    simulateStatus,
-    simulateAccountType,
+    openUpgradeModal,
+    scheduleDowngrade,
+    cancelSub,
+    reactivateSub,
+    refreshSubscription,
   } = useSubscription()
 
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const isBn = locale === 'bn'
 
-  const [interval, setInterval] = useState<BillingInterval>('monthly')
-  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
-  const [targetPlan, setTargetPlan] = useState<PlanCode>('enterprise')
-  const [selectedGateway, setSelectedGateway] = useState<PaymentGatewayType>('bkash')
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [events, setEvents] = useState<SubscriptionEventRecord[]>([])
+  const [invoices, setInvoices] = useState<SubscriptionInvoiceRecord[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(false)
+  const [loadingInvoices, setLoadingInvoices] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
-
-  const providers = paymentRegistry.getAllProviders()
-  const activeProvider = paymentRegistry.getProvider(selectedGateway)
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false)
+  const [isDowngradeConfirmOpen, setIsDowngradeConfirmOpen] = useState(false)
+  const [downgradeTargetPlan, setDowngradeTargetPlan] = useState<PlanCode>('starter')
+  const [isActionPending, setIsActionPending] = useState(false)
 
   const showNotification = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const handleConfirmUpgrade = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsProcessing(true)
+  useEffect(() => {
+    async function loadData() {
+      if (company?.id) {
+        setLoadingEvents(true)
+        setLoadingInvoices(true)
 
-    const txnRef = `${selectedGateway.toUpperCase()}-${Date.now().toString().slice(-6)}`
-    await upgradeSubscription({
-      planCode: targetPlan,
-      interval,
-      paymentMethod: selectedGateway,
-      reference: txnRef,
-    })
+        const [evRes, invRes] = await Promise.all([
+          getSubscriptionEventsAction(company.id),
+          getTenantSubscriptionInvoicesAction(company.id),
+        ])
 
-    setIsProcessing(false)
-    setIsUpgradeOpen(false)
-    showNotification(
-      `Plan successfully upgraded to ${targetPlan.toUpperCase()} via ${selectedGateway.toUpperCase()}! Transaction: ${txnRef}`
-    )
+        if (evRes.success && evRes.data) {
+          setEvents(evRes.data)
+        }
+        if (invRes.success && invRes.data) {
+          setInvoices(invRes.data)
+        }
+
+        setLoadingEvents(false)
+        setLoadingInvoices(false)
+      }
+    }
+    loadData()
+  }, [company?.id, subscription.status, subscription.plan_code])
+
+  const handleScheduleDowngrade = async () => {
+    setIsActionPending(true)
+    const res = await scheduleDowngrade(downgradeTargetPlan)
+    setIsActionPending(false)
+    setIsDowngradeConfirmOpen(false)
+
+    if (res.success) {
+      const effStr = ('effectiveAt' in res && res.effectiveAt) ? ` (${new Date(res.effectiveAt).toLocaleDateString()})` : ''
+      showNotification(`Downgrade scheduled for end of billing cycle${effStr}.`)
+    } else {
+      showNotification(`Failed: ${res.error}`)
+    }
   }
 
-  // Calculate pricing for target plan
-  const selectedTargetPlanObj = allPlans.find((p) => p.code === targetPlan) || allPlans[2]
-  const payableAmount =
-    interval === 'yearly'
-      ? selectedTargetPlanObj.price_yearly
-      : selectedTargetPlanObj.price_monthly
+  const handleCancelSubscription = async () => {
+    setIsActionPending(true)
+    const res = await cancelSub(false, 'Tenant requested cancellation at period end')
+    setIsActionPending(false)
+    setIsCancelConfirmOpen(false)
+
+    if (res.success) {
+      showNotification('Subscription scheduled for cancellation at the end of the billing period.')
+    } else {
+      showNotification(`Failed: ${res.error}`)
+    }
+  }
+
+  const handleReactivate = async () => {
+    setIsActionPending(true)
+    const res = await reactivateSub()
+    setIsActionPending(false)
+
+    if (res.success) {
+      showNotification('Subscription reactivated successfully!')
+    } else {
+      showNotification(`Failed: ${res.error}`)
+    }
+  }
 
   // 6 Configurable limits statuses
   const userLimit = getLimitStatus('max_users')
@@ -118,26 +164,18 @@ export default function TenantSubscriptionPage() {
   const customerLimit = getLimitStatus('max_customers')
   const productLimit = getLimitStatus('max_products')
 
-  const trialDays = currentPlan?.trial_days || 14
-  const accountTypesList: Array<{
-    type: 'trial' | 'starter' | 'business' | 'enterprise'
-    label: string
-    badge: string
-  }> = [
-    { type: 'trial', label: `${trialDays}-Day Free Trial`, badge: 'Trial' },
-    { type: 'starter', label: 'Starter (৳1,999/mo)', badge: 'Starter' },
-    { type: 'business', label: 'Business (৳4,999/mo)', badge: 'Business' },
-    { type: 'enterprise', label: 'Enterprise (৳9,999/mo)', badge: 'Enterprise' },
-  ]
+  const isCancelScheduled = Boolean(subscription.cancel_at_period_end)
+  const isDowngradeScheduled = Boolean(subscription.next_plan_id && subscription.change_effective_at)
+  const nextPlanRecord = subscription.next_plan_id ? allPlans.find((p) => p.id === subscription.next_plan_id) : null
 
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Header */}
       <PageHeader
-        titleEn="SaaS Subscription & Account Tiers"
-        titleBn="সাবস্ক্রিপশন ও অ্যাকাউন্ট ধরন"
-        descriptionEn="Manage organization subscription tier (Trial, Starter, Business, Enterprise), monitor usage against 6 configurable limits, and pay via local Bangladesh MFS/Gateways."
-        descriptionBn="আপনার প্রতিষ্ঠানের সাবস্ক্রিপশন প্ল্যান (ট্রায়াল, স্টার্টার, বিজনেস, এন্টারপ্রাইজ) এবং বাংলাদেশ পেমেন্ট মেথড পরিচালনা করুন।"
+        titleEn="SaaS Subscription & Plan Entitlements"
+        titleBn="সাবস্ক্রিপশন ও প্ল্যান ব্যবস্থাপনা"
+        descriptionEn="Manage your organization subscription tier (Trial, Starter, Business, Enterprise), view resource quota meters, and process payments securely."
+        descriptionBn="আপনার প্রতিষ্ঠানের সাবস্ক্রিপশন প্ল্যান, রিসোর্স কোটা ও বিলিং স্ট্যাটাস পরিচালনা করুন।"
         icon={Crown}
         iconColor="text-amber-500"
         actions={
@@ -159,48 +197,41 @@ export default function TenantSubscriptionPage() {
         </div>
       )}
 
-      {/* Interactive Account Type Simulator Banner */}
-      <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-            <RotateCcw className="h-4 w-4" />
-          </div>
-          <div className="text-xs">
-            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-              Account Type &amp; Tier Simulator
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-200 dark:bg-indigo-800 text-indigo-900 dark:text-indigo-200 font-mono">
-                TESTING MODE
-              </span>
-            </div>
-            <div className="text-slate-600 dark:text-slate-400 mt-0.5">
-              Switch account type in real-time (Trial, Starter, Business, Enterprise) to verify feature gating and limit meter behavior.
+      {/* Scheduled Change / Cancellation Alert */}
+      {isCancelScheduled && (
+        <div className="p-4 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+            <div className="text-xs text-amber-900 dark:text-amber-200">
+              <strong>Cancellation Pending:</strong> Your subscription will remain active until{' '}
+              <span className="font-mono font-bold">{new Date(subscription.current_period_end).toLocaleDateString()}</span>, after which it will not renew.
             </div>
           </div>
+          <Button
+            size="sm"
+            onClick={handleReactivate}
+            disabled={isActionPending}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0"
+          >
+            Resume Subscription
+          </Button>
         </div>
+      )}
 
-        <div className="flex items-center gap-1.5 flex-wrap self-end sm:self-center">
-          {accountTypesList.map((item) => {
-            const isSelected = accountType === item.type
-            return (
-              <button
-                key={item.type}
-                type="button"
-                onClick={() => {
-                  simulateAccountType(item.type)
-                  showNotification(`Simulated account type switched to ${item.type.toUpperCase()}!`)
-                }}
-                className={`px-2.5 py-1 rounded text-xs font-bold capitalize transition-colors cursor-pointer ${
-                  isSelected
-                    ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                {item.badge}
-              </button>
-            )
-          })}
+      {isDowngradeScheduled && nextPlanRecord && (
+        <div className="p-4 rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Clock className="h-5 w-5 text-blue-600 shrink-0" />
+            <div className="text-xs text-blue-900 dark:text-blue-200">
+              <strong>Scheduled Downgrade:</strong> Your plan will switch to{' '}
+              <strong>{nextPlanRecord.name}</strong> on{' '}
+              <span className="font-mono font-bold">
+                {new Date(subscription.change_effective_at || subscription.current_period_end).toLocaleDateString()}
+              </span>.
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Active Subscription Banner */}
       <Card className="p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-950 text-white rounded-2xl shadow-md border-0 relative overflow-hidden">
@@ -208,7 +239,7 @@ export default function TenantSubscriptionPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 flex-wrap">
               <Badge className="bg-amber-400 text-slate-950 font-black tracking-wider uppercase text-[10px] px-2.5 py-0.5">
-                {accountType === 'trial' ? (currentPlan.name || `Free Trial (${trialDays} Days)`) : currentPlan.name}
+                {isTrial ? 'Free Trial' : currentPlan.name}
               </Badge>
 
               <Badge
@@ -222,7 +253,7 @@ export default function TenantSubscriptionPage() {
                     : 'bg-red-500 text-white'
                 }`}
               >
-                {isTrial ? `Trial (${daysRemainingInTrial} Days Left)` : subscription.status.replace('_', ' ')}
+                {isTrial ? `Trial (${daysRemainingInTrial} Days Remaining)` : subscription.status.replace('_', ' ')}
               </Badge>
 
               <span className="text-xs text-slate-400 capitalize">
@@ -241,7 +272,7 @@ export default function TenantSubscriptionPage() {
                 }
               />
               <span className="text-xs text-slate-400 font-normal">
-                {isTrial ? `/ ${trialDays} days evaluation` : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`}
+                {isTrial ? '/ 14 days evaluation' : `/ ${subscription.billing_interval === 'yearly' ? 'year' : 'month'}`}
               </span>
             </div>
 
@@ -251,11 +282,18 @@ export default function TenantSubscriptionPage() {
 
             <div className="text-[11px] text-slate-400 pt-1 flex items-center gap-3 flex-wrap">
               <span>
-                Period Ends: <strong className="text-white font-mono">{subscription.trial_ends_at ? subscription.trial_ends_at.slice(0, 10) : subscription.current_period_end.slice(0, 10)}</strong>
+                Period Ends:{' '}
+                <strong className="text-white font-mono">
+                  {subscription.trial_ends_at
+                    ? new Date(subscription.trial_ends_at).toLocaleDateString()
+                    : new Date(subscription.current_period_end).toLocaleDateString()}
+                </strong>
               </span>
               {subscription.last_payment_reference && (
                 <span>
-                  Last Payment: <strong className="text-indigo-300 font-mono">{subscription.last_payment_reference}</strong> ({subscription.payment_method_type?.toUpperCase()})
+                  Last Payment Reference:{' '}
+                  <strong className="text-indigo-300 font-mono">{subscription.last_payment_reference}</strong>{' '}
+                  ({subscription.payment_method_type?.toUpperCase()})
                 </span>
               )}
             </div>
@@ -263,27 +301,38 @@ export default function TenantSubscriptionPage() {
 
           <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto shrink-0">
             <Button
-              onClick={() => {
-                setTargetPlan(currentPlanCode === 'starter' ? 'business' : 'enterprise')
-                setIsUpgradeOpen(true)
-              }}
+              onClick={() => openUpgradeModal()}
               className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black shadow-lg shadow-amber-500/20 text-xs px-5"
             >
               <Zap className="mr-1.5 h-4 w-4" />
-              {isBn ? 'প্ল্যান পরিবর্তন / আপগ্রেড' : 'Change / Upgrade Plan'}
+              {isTrial ? 'Upgrade Free Trial' : 'Change / Upgrade Plan'}
             </Button>
 
-            <Button
-              variant="outline"
-              onClick={() => {
-                const next = subscription.status === 'suspended' ? 'active' : 'suspended'
-                simulateStatus(next)
-                showNotification(`Subscription status simulated to: ${next.toUpperCase()}`)
-              }}
-              className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs"
-            >
-              Simulate {subscription.status === 'suspended' ? 'Active' : 'Suspended'}
-            </Button>
+            {!isTrial && subscription.status === 'active' && !isCancelScheduled && (
+              <div className="flex gap-2">
+                {currentPlanCode !== 'starter' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setDowngradeTargetPlan(currentPlanCode === 'enterprise' ? 'business' : 'starter')
+                      setIsDowngradeConfirmOpen(true)
+                    }}
+                    className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs flex-1"
+                  >
+                    Downgrade
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCancelConfirmOpen(true)}
+                  className="border-red-900/60 text-red-400 hover:bg-red-950/40 text-xs flex-1"
+                >
+                  Cancel Plan
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -297,7 +346,7 @@ export default function TenantSubscriptionPage() {
               {isBn ? 'রিসোর্স ব্যবহার ও কোটা মিটার' : '6 Configurable Limits & Utilization'}
             </h2>
             <p className="text-xs text-slate-500">
-              Real-time consumption tracking against your plan allocation.
+              Authoritative server-side consumption tracking against your plan quota.
             </p>
           </div>
 
@@ -457,15 +506,15 @@ export default function TenantSubscriptionPage() {
         </div>
       </div>
 
-      {/* Plan Feature Matrix Comparison */}
+      {/* Subscription Events & Audit History */}
       <Card className="border-slate-200 dark:border-slate-800">
         <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800">
           <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-indigo-600" />
-            {isBn ? 'প্ল্যান ফিচার তুলনা' : 'Available Subscription Plans in Bangladesh (BDT)'}
+            <Clock className="h-4 w-4 text-indigo-600" />
+            {isBn ? 'সাবস্ক্রিপশন ইভেন্ট ও অ্যাক্টিভেশন হিস্ট্রি' : 'Subscription Events & Audit Ledger'}
           </CardTitle>
           <CardDescription className="text-xs text-slate-500">
-            Choose the best plan suited for your printing factory scale.
+            Immutable server-side audit trail of all plan changes, payment verifications, and renewals.
           </CardDescription>
         </CardHeader>
 
@@ -473,165 +522,45 @@ export default function TenantSubscriptionPage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 dark:bg-slate-950 font-semibold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="py-3 px-4">Feature / Resource</th>
-                <th className="py-3 px-4">Starter</th>
-                <th className="py-3 px-4">Business</th>
-                <th className="py-3 px-4">Enterprise</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Monthly Rate (৳ BDT)
-                </td>
-                <td className="py-2.5 px-4 font-bold font-mono">৳1,999</td>
-                <td className="py-2.5 px-4 font-bold font-mono text-indigo-600 dark:text-indigo-400">
-                  ৳4,999
-                </td>
-                <td className="py-2.5 px-4 font-bold font-mono text-purple-600 dark:text-purple-400">
-                  ৳9,999
-                </td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Yearly Rate (৳ BDT)
-                </td>
-                <td className="py-2.5 px-4 font-mono">৳19,990</td>
-                <td className="py-2.5 px-4 font-mono text-indigo-600 dark:text-indigo-400">৳49,990</td>
-                <td className="py-2.5 px-4 font-mono text-purple-600 dark:text-purple-400">৳99,990</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Max Users
-                </td>
-                <td className="py-2.5 px-4">3 Seats</td>
-                <td className="py-2.5 px-4">10 Seats</td>
-                <td className="py-2.5 px-4 font-bold">Unlimited (999)</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Branches / Factory Hubs
-                </td>
-                <td className="py-2.5 px-4">1 Location</td>
-                <td className="py-2.5 px-4">3 Locations</td>
-                <td className="py-2.5 px-4 font-bold">Unlimited</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Cloud Storage
-                </td>
-                <td className="py-2.5 px-4">1 GB</td>
-                <td className="py-2.5 px-4">10 GB</td>
-                <td className="py-2.5 px-4 font-bold">100 GB</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Raw Material Inventory
-                </td>
-                <td className="py-2.5 px-4 text-slate-400">Locked</td>
-                <td className="py-2.5 px-4 text-emerald-600 font-bold">✓ Included</td>
-                <td className="py-2.5 px-4 text-emerald-600 font-bold">✓ Included</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Production Kanban Floor
-                </td>
-                <td className="py-2.5 px-4 text-slate-400">Locked</td>
-                <td className="py-2.5 px-4 text-emerald-600 font-bold">✓ Included</td>
-                <td className="py-2.5 px-4 text-emerald-600 font-bold">✓ Included</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  HR, Attendance &amp; Payroll
-                </td>
-                <td className="py-2.5 px-4 text-slate-400">Locked</td>
-                <td className="py-2.5 px-4 text-emerald-600 font-bold">✓ Included</td>
-                <td className="py-2.5 px-4 text-emerald-600 font-bold">✓ Included</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Job Costing &amp; Profit Audit
-                </td>
-                <td className="py-2.5 px-4 text-slate-400">Locked</td>
-                <td className="py-2.5 px-4 text-emerald-600 font-bold">✓ Included</td>
-                <td className="py-2.5 px-4 text-emerald-600 font-bold">✓ Included</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
-                  Advanced Analytics &amp; Workflows
-                </td>
-                <td className="py-2.5 px-4 text-slate-400">Locked</td>
-                <td className="py-2.5 px-4 text-slate-400">Locked</td>
-                <td className="py-2.5 px-4 text-purple-600 font-bold">✓ Included</td>
-              </tr>
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
-
-      {/* Subscription Invoices History */}
-      <Card className="border-slate-200 dark:border-slate-800">
-        <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800">
-          <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <FileText className="h-4 w-4 text-indigo-600" />
-            {isBn ? 'সাবস্ক্রিপশন ইনভয়েস হিস্ট্রি' : 'Billing Invoices & Receipts'}
-          </CardTitle>
-          <CardDescription className="text-xs text-slate-500">
-            Download receipts for accounting and tax records.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-950 font-semibold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Invoice #</th>
-                <th className="py-3 px-4">Plan &amp; Interval</th>
+                <th className="py-3 px-4">Event Type</th>
+                <th className="py-3 px-4">Transition</th>
                 <th className="py-3 px-4">Amount</th>
-                <th className="py-3 px-4">Payment Method</th>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Receipt</th>
+                <th className="py-3 px-4">Reason / Reference</th>
+                <th className="py-3 px-4">Timestamp</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {DEMO_SUBSCRIPTION_INVOICES.length === 0 ? (
+              {events.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500">
-                    {isBn ? 'কোনো সাবস্ক্রিপশন ইনভয়েস পাওয়া যায়নি।' : 'No subscription invoices found.'}
+                  <td colSpan={5} className="py-8 text-center text-slate-500">
+                    {loadingEvents ? 'Loading subscription events...' : 'No subscription events recorded yet.'}
                   </td>
                 </tr>
               ) : (
-                DEMO_SUBSCRIPTION_INVOICES.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
-                      {inv.invoice_number}
-                    </td>
+                events.map((ev) => (
+                  <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 px-4">
-                      <span className="font-semibold">{inv.plan_name}</span>
-                      <span className="text-[10px] text-slate-400 ml-1 capitalize">({inv.billing_interval})</span>
-                    </td>
-                    <td className="py-3 px-4 font-mono font-bold">
-                      <CurrencyDisplay amount={inv.amount} />
-                    </td>
-                    <td className="py-3 px-4 uppercase text-slate-600 dark:text-slate-300 font-mono text-[11px]">
-                      {inv.payment_method} ({inv.transaction_ref})
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-500">{inv.billing_date}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200">
-                        PAID
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        ev.event_type === 'PLAN_UPGRADED' || ev.event_type === 'PAYMENT_VERIFIED' || ev.event_type === 'RENEWED'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          : ev.event_type === 'PAYMENT_FAILED' || ev.event_type === 'EXPIRED'
+                          ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                          : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                      }`}>
+                        {ev.event_type}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => showNotification(`Receipt ${inv.invoice_number} downloaded.`)}
-                        className="h-6 text-[11px] text-indigo-600 hover:text-indigo-700"
-                      >
-                        Download PDF
-                      </Button>
+                    <td className="py-3 px-4 font-mono text-[11px]">
+                      {ev.previous_plan_code || 'trial'} → <strong className="text-slate-900 dark:text-white">{ev.new_plan_code || 'starter'}</strong>
+                    </td>
+                    <td className="py-3 px-4 font-mono font-bold">
+                      {ev.amount ? <CurrencyDisplay amount={Number(ev.amount)} /> : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                      {ev.reason || 'Lifecycle action'}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-500">
+                      {new Date(ev.created_at).toLocaleString()}
                     </td>
                   </tr>
                 ))
@@ -641,154 +570,147 @@ export default function TenantSubscriptionPage() {
         </CardContent>
       </Card>
 
-      {/* Upgrade / Plan Selection Modal */}
-      {isUpgradeOpen && (
+      {/* Billing Invoices & Payment Receipts */}
+      <Card className="border-slate-200 dark:border-slate-800">
+        <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800">
+          <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <FileText className="h-4 w-4 text-emerald-600" />
+            {isBn ? 'পেমেন্ট ইনভয়েস ও রসিদ হিস্ট্রি' : 'Billing Invoices & Payment Receipts'}
+          </CardTitle>
+          <CardDescription className="text-xs text-slate-500">
+            Official billing statements, gateway transaction references, and settlement records.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="p-0 overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 dark:bg-slate-950 font-semibold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th className="py-3 px-4">Invoice #</th>
+                <th className="py-3 px-4">Plan & Interval</th>
+                <th className="py-3 px-4">Amount</th>
+                <th className="py-3 px-4">Payment Method</th>
+                <th className="py-3 px-4">Transaction Ref</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              {invoices.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-500">
+                    {loadingInvoices ? 'Loading billing invoices...' : 'No billing transactions recorded yet.'}
+                  </td>
+                </tr>
+              ) : (
+                invoices.map((inv) => (
+                  <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                      {inv.invoice_number}
+                    </td>
+                    <td className="py-3 px-4 uppercase text-slate-700 dark:text-slate-300 font-semibold">
+                      {inv.plan_name} <span className="text-[10px] text-slate-400 font-normal">({inv.billing_interval})</span>
+                    </td>
+                    <td className="py-3 px-4 font-mono font-bold">
+                      <CurrencyDisplay amount={inv.amount} />
+                    </td>
+                    <td className="py-3 px-4 uppercase text-slate-600 dark:text-slate-300">
+                      {inv.payment_method}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-slate-500">
+                      {inv.transaction_ref}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        inv.status === 'paid'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          : inv.status === 'failed'
+                          ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                      }`}>
+                        {inv.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-500">
+                      {new Date(inv.billing_date).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+
+      {/* Downgrade Confirmation Modal */}
+      {isDowngradeConfirmOpen && (
         <ModalDialog
-          open={isUpgradeOpen}
-          onOpenChange={setIsUpgradeOpen}
-          hideFooter
-          title="Upgrade Your PrintERP SaaS Subscription"
+          open={isDowngradeConfirmOpen}
+          onOpenChange={setIsDowngradeConfirmOpen}
+          title="Schedule Plan Downgrade"
         >
-          <form onSubmit={handleConfirmUpgrade} className="space-y-4 text-xs max-h-[80vh] overflow-y-auto pr-1">
-            {/* Interval Toggle: Monthly vs Yearly */}
-            <div className="flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setInterval('monthly')}
-                className={`flex-1 py-1.5 rounded-lg font-bold text-xs transition-all ${
-                  interval === 'monthly'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Monthly Billing
-              </button>
-              <button
-                type="button"
-                onClick={() => setInterval('yearly')}
-                className={`flex-1 py-1.5 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
-                  interval === 'yearly'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Yearly Billing
-                <span className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.2 rounded font-bold">
-                  2 Months Free
-                </span>
-              </button>
+          <div className="space-y-4 text-xs">
+            <p className="text-slate-700 dark:text-slate-300">
+              You are about to downgrade your plan to <strong className="text-slate-900 dark:text-white uppercase">{downgradeTargetPlan}</strong>.
+            </p>
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
+              Your downgrade will safely take effect at the end of your current billing period (<strong>{new Date(subscription.current_period_end).toLocaleDateString()}</strong>). You will retain full access to your current features until that date.
             </div>
-
-            {/* Target Plan Selection */}
-            <div>
-              <div className="font-bold text-slate-900 dark:text-white mb-2">Select Target Plan</div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {allPlans.map((p) => {
-                  const isSelected = targetPlan === p.code
-                  const price = interval === 'yearly' ? p.price_yearly : p.price_monthly
-                  return (
-                    <div
-                      key={p.code}
-                      onClick={() => setTargetPlan(p.code)}
-                      className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                        isSelected
-                          ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="font-bold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-[10px] text-slate-400">{p.name_bn}</div>
-                      <div className="text-base font-black text-indigo-600 dark:text-indigo-400 mt-1">
-                        <CurrencyDisplay amount={price} />
-                      </div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">
-                        {p.max_users} users • {p.max_branches} branches
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Bangladesh Payment Gateway Selection */}
-            <div>
-              <div className="font-bold text-slate-900 dark:text-white mb-2">
-                Select Bangladesh Payment Instrument
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {providers.map((prov) => {
-                  const isSelected = selectedGateway === prov.id
-                  return (
-                    <div
-                      key={prov.id}
-                      onClick={() => setSelectedGateway(prov.id)}
-                      className={`p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                        isSelected
-                          ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/20'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-indigo-600">
-                          {prov.id === 'bkash' ? 'bK' : prov.id === 'nagad' ? 'NG' : prov.id === 'rocket' ? 'RK' : prov.id === 'sslcommerz' ? 'CC' : 'BK'}
-                        </div>
-                        <div>
-                          <div className="font-bold text-xs text-slate-900 dark:text-white">
-                            {prov.name} ({prov.nameBn})
-                          </div>
-                          <div className="text-[10px] text-slate-400">{prov.description}</div>
-                        </div>
-                      </div>
-                      {prov.badge && (
-                        <Badge className="text-[9px] bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 border-0">
-                          {prov.badge}
-                        </Badge>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Payment Summary Box */}
-            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-600 dark:text-slate-400">Plan &amp; Cycle:</span>
-                <strong className="text-slate-900 dark:text-white capitalize">
-                  {selectedTargetPlanObj.name} ({interval})
-                </strong>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-600 dark:text-slate-400">Payment Channel:</span>
-                <strong className="text-slate-900 dark:text-white">{activeProvider.name}</strong>
-              </div>
-              <div className="flex justify-between items-center text-sm font-black pt-2 border-t border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
-                <span>Total Amount Payable (৳ BDT):</span>
-                <span className="text-indigo-600 dark:text-indigo-400">
-                  <CurrencyDisplay amount={payableAmount} />
-                </span>
-              </div>
-            </div>
-
-            {/* Checkout & Complete */}
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex justify-end gap-2 pt-2">
               <Button
-                type="button"
                 variant="outline"
-                onClick={() => setIsUpgradeOpen(false)}
-                className="text-xs"
+                size="sm"
+                onClick={() => setIsDowngradeConfirmOpen(false)}
+                disabled={isActionPending}
               >
                 Cancel
               </Button>
               <Button
-                type="submit"
-                disabled={isProcessing}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs"
+                size="sm"
+                onClick={handleScheduleDowngrade}
+                disabled={isActionPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
               >
-                {isProcessing ? 'Processing...' : `Pay ৳${payableAmount.toLocaleString()} via ${activeProvider.name}`}
+                {isActionPending ? 'Scheduling...' : 'Confirm Scheduled Downgrade'}
               </Button>
             </div>
-          </form>
+          </div>
+        </ModalDialog>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {isCancelConfirmOpen && (
+        <ModalDialog
+          open={isCancelConfirmOpen}
+          onOpenChange={setIsCancelConfirmOpen}
+          title="Cancel Subscription"
+        >
+          <div className="space-y-4 text-xs">
+            <p className="text-slate-700 dark:text-slate-300">
+              Are you sure you want to cancel your PrintERP subscription?
+            </p>
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 text-red-900 dark:text-red-200">
+              Your subscription will remain active until <strong>{new Date(subscription.current_period_end).toLocaleDateString()}</strong> and will not renew. Your company data and invoices will remain intact.
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCancelConfirmOpen(false)}
+                disabled={isActionPending}
+              >
+                Keep Subscription
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleCancelSubscription}
+                disabled={isActionPending}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              >
+                {isActionPending ? 'Cancelling...' : 'Confirm Cancellation'}
+              </Button>
+            </div>
+          </div>
         </ModalDialog>
       )}
     </div>

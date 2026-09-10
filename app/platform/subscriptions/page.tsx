@@ -49,7 +49,7 @@ import {
   PlatformPlanCode,
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
-import { DEFAULT_PLANS } from '@/services/subscription.service'
+import { DEFAULT_PLANS } from '@/lib/subscription/subscription-constants'
 
 export default function PlatformSubscriptionsPage() {
   const [data, setData] = useState<PlatformSubscriptionsOverview | null>(null)

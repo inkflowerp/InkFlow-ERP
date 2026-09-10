@@ -34,7 +34,8 @@ export class NagadPaymentProvider implements PaymentProvider {
   }
 
   async verifyPayment(params: PaymentVerifyParams): Promise<PaymentVerifyResult> {
-    const isValid = Boolean(params.gatewayReference && params.gatewayReference.trim().length >= 6)
+    const ref = params.gatewayReference?.trim() || ''
+    const isValid = Boolean(ref.length >= 6)
 
     if (!isValid) {
       return {
@@ -51,8 +52,8 @@ export class NagadPaymentProvider implements PaymentProvider {
     return {
       success: true,
       status: 'paid',
-      gatewayTransactionId: params.gatewayReference.toUpperCase(),
-      paidAmount: params.amount,
+      gatewayTransactionId: ref.toUpperCase(),
+      paidAmount: params.amount ?? 0,
       paidAt: new Date().toISOString(),
       paymentMethod: 'nagad',
     }

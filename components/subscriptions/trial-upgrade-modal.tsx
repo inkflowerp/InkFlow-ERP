@@ -20,6 +20,8 @@ import {
   Clock,
   Flame,
   Check,
+  AlertCircle,
+  ExternalLink,
 } from 'lucide-react'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
@@ -28,12 +30,13 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { paymentRegistry } from '@/lib/payments/payment-registry'
+import { PAYMENT_GATEWAY_METADATA_LIST } from '@/lib/payments/types'
 import {
   PlanCode,
   BillingInterval,
   PaymentGatewayType,
   SubscriptionPlanRecord,
+  SubscriptionCheckoutResult,
 } from '@/types/subscription.types'
 import { cn } from '@/lib/utils'
 
@@ -47,7 +50,8 @@ export function TrialUpgradeModal() {
     allPlans,
     daysRemainingInTrial,
     isTrial,
-    upgradeSubscription,
+    initiateCheckout,
+    verifyPayment,
   } = useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
@@ -56,8 +60,12 @@ export function TrialUpgradeModal() {
   const [selectedPlan, setSelectedPlan] = useState<PlanCode>('business')
   const [selectedGateway, setSelectedGateway] = useState<PaymentGatewayType>('bkash')
   const [txReference, setTxReference] = useState('')
+  const [currentTrxId, setCurrentTrxId] = useState<string | null>(null)
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
+  const [instructions, setInstructions] = useState<string[] | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (upgradeModalInitialTarget && upgradeModalInitialTarget !== 'trial') {
@@ -73,8 +81,8 @@ export function TrialUpgradeModal() {
 
   if (!isUpgradeModalOpen) return null
 
-  const providers = paymentRegistry.getAllProviders()
-  const activeProvider = paymentRegistry.getProvider(selectedGateway)
+  const providers = PAYMENT_GATEWAY_METADATA_LIST
+  const activeProvider = PAYMENT_GATEWAY_METADATA_LIST.find((p) => p.id === selectedGateway)
   const paidPlans = allPlans.filter((p) => p.code !== 'trial')
   const targetPlanObj = allPlans.find((p) => p.code === selectedPlan) || paidPlans[1]
 
@@ -83,25 +91,72 @@ export function TrialUpgradeModal() {
       ? targetPlanObj.price_yearly
       : targetPlanObj.price_monthly
 
-  const handleConfirmUpgrade = async (e: React.FormEvent) => {
+  const handleInitiateCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsProcessing(true)
+    setErrorMessage(null)
 
-    const ref = txReference.trim() || `${selectedGateway.toUpperCase()}-${Date.now().toString().slice(-6)}`
-    await upgradeSubscription({
-      planCode: selectedPlan,
-      interval,
-      paymentMethod: selectedGateway,
-      reference: ref,
-    })
+    try {
+      const res = await initiateCheckout({
+        planCode: selectedPlan,
+        interval,
+        gatewayProvider: selectedGateway,
+        customerName: company?.name || 'Tenant Administrator',
+        customerPhone: (company as any)?.phone || '',
+        customerEmail: (company as any)?.email || '',
+      })
 
-    setIsProcessing(false)
-    setIsSuccess(true)
+      if (!res.success) {
+        setErrorMessage(res.error || 'Failed to initiate checkout.')
+        setIsProcessing(false)
+        return
+      }
 
-    setTimeout(() => {
-      setIsSuccess(false)
-      closeUpgradeModal()
-    }, 2000)
+      const checkoutRes = res as SubscriptionCheckoutResult
+      setCurrentTrxId(checkoutRes.internalTrxId || null)
+
+      if (checkoutRes.checkoutUrl) {
+        setCheckoutUrl(checkoutRes.checkoutUrl)
+        window.location.href = checkoutRes.checkoutUrl
+        return
+      }
+
+      if (checkoutRes.instructions && checkoutRes.instructions.length > 0) {
+        setInstructions(checkoutRes.instructions)
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Checkout failed.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleManualVerify = async () => {
+    if (!currentTrxId && !txReference) return
+    setIsProcessing(true)
+    setErrorMessage(null)
+
+    try {
+      const verifyRes = await verifyPayment({
+        internalTrxId: currentTrxId || undefined,
+        providerTrxId: txReference || undefined,
+        provider: selectedGateway,
+      })
+
+      if (verifyRes.success) {
+        setIsSuccess(true)
+        setTimeout(() => {
+          setIsSuccess(false)
+          closeUpgradeModal()
+        }, 2500)
+      } else {
+        setErrorMessage(verifyRes.error || 'Payment could not be verified by provider.')
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Verification failed.')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   return (
@@ -139,7 +194,7 @@ export function TrialUpgradeModal() {
           </div>
           <div className="space-y-1">
             <h3 className="text-xl font-black text-slate-900 dark:text-white bangla-text">
-              {tBilingual('Subscription Upgraded Successfully!', 'সাবস্ক্রিপশন সফলভাবে আপগ্রেড হয়েছে!')}
+              {tBilingual('Payment Verified & Plan Activated!', 'পেমেন্ট ভেরিফাইড এবং প্ল্যান সক্রিয় হয়েছে!')}
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto bangla-text">
               {tBilingual(
@@ -150,7 +205,14 @@ export function TrialUpgradeModal() {
           </div>
         </div>
       ) : (
-        <form onSubmit={handleConfirmUpgrade} className="space-y-6">
+        <form onSubmit={handleInitiateCheckout} className="space-y-6">
+          {errorMessage && (
+            <div className="p-3 bg-red-50 text-red-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800">
+              <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           {/* Interval Switcher */}
           <div className="flex items-center justify-center">
             <div className="inline-flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -310,19 +372,43 @@ export function TrialUpgradeModal() {
               })}
             </div>
 
-            {/* Instruction / Mock Reference Input */}
-            <div className="pt-2">
-              <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 bangla-text block mb-1">
-                {tBilingual('Transaction ID / Reference (Optional for Instant Activation):', 'ট্রানজেকশন আইডি / রেফারেন্স নম্বর:')}
-              </label>
-              <input
-                type="text"
-                value={txReference}
-                onChange={(e) => setTxReference(e.target.value)}
-                placeholder={`e.g. ${selectedGateway.toUpperCase()}-987261`}
-                className="w-full text-xs font-mono px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            {/* Instruction / Reference Input */}
+            {instructions && instructions.length > 0 && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 space-y-1">
+                {instructions.map((ins, i) => (
+                  <div key={i} className="text-xs text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                    <span>{ins}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {currentTrxId && (
+              <div className="pt-2 space-y-2">
+                <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 bangla-text block">
+                  {tBilingual('Provider Transaction ID / Reference (For Server Verification):', 'প্রোভাইডার ট্রানজেকশন আইডি / রেফারেন্স নম্বর:')}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={txReference}
+                    onChange={(e) => setTxReference(e.target.value)}
+                    placeholder={`e.g. ${selectedGateway.toUpperCase()}-987261`}
+                    className="flex-1 text-xs font-mono px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleManualVerify}
+                    disabled={isProcessing}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0"
+                  >
+                    {isProcessing ? 'Verifying...' : 'Verify Now'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Modal Footer Actions */}
@@ -344,7 +430,7 @@ export function TrialUpgradeModal() {
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 shadow-md shadow-blue-500/20 bangla-text"
             >
               {isProcessing ? (
-                <span>{tBilingual('Processing Upgrade...', 'প্রক্রিয়াধীন...')}</span>
+                <span>{tBilingual('Processing Checkout...', 'প্রক্রিয়াধীন...')}</span>
               ) : (
                 <>
                   <Zap className="mr-1.5 h-4 w-4 text-amber-300" />

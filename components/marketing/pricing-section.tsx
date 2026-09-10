@@ -9,13 +9,11 @@ import {
   ShieldCheck,
   Sparkles,
   HelpCircle,
-  Clock,
   Crown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/i18n/context'
-import { DEFAULT_PLANS } from '@/services/subscription.service'
+import { DEFAULT_PLANS } from '@/lib/subscription/subscription-constants'
 
 export function PricingSection() {
   const [interval, setInterval] = useState<'monthly' | 'yearly'>('monthly')

@@ -3,14 +3,14 @@
 // Provides bilingual templates, SMS provider abstractions, and template renderers.
 // ==============================================================================
 
-import {
+import type {
   InAppNotificationRecord,
   ChannelConfigRecord,
   MessageTemplateRecord,
   CommunicationLogRecord,
   SmsProvider,
   SmsProviderType,
-} from '@/types/communication.types'
+} from '../types/communication.types.ts'
 
 // Dynamic Template Variable Interpolation
 export function renderTemplate(template: string, variables: Record<string, string>): string {

@@ -21,7 +21,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfigurableLimitType } from '@/types/subscription.types'
-import { getNextTierPlan } from '@/services/subscription.service'
+import { getNextTierPlan } from '@/lib/subscription/subscription-constants'
 
 const LIMIT_LABELS: Record<ConfigurableLimitType, { en: string; bn: string; icon: React.ElementType }> = {
   max_users: { en: 'Team Users Limit Reached', bn: 'সর্বোচ্চ ইউজার অ্যাকাউন্টের সীমা পূর্ণ', icon: Users },

@@ -35,7 +35,8 @@ export class BkashPaymentProvider implements PaymentProvider {
 
   async verifyPayment(params: PaymentVerifyParams): Promise<PaymentVerifyResult> {
     // In production: calls bKash Query / Execute Payment API endpoint
-    const isValid = Boolean(params.gatewayReference && params.gatewayReference.trim().length >= 6)
+    const ref = params.gatewayReference?.trim() || ''
+    const isValid = Boolean(ref.length >= 6)
 
     if (!isValid) {
       return {
@@ -52,8 +53,8 @@ export class BkashPaymentProvider implements PaymentProvider {
     return {
       success: true,
       status: 'paid',
-      gatewayTransactionId: params.gatewayReference.toUpperCase(),
-      paidAmount: params.amount,
+      gatewayTransactionId: ref.toUpperCase(),
+      paidAmount: params.amount ?? 0,
       paidAt: new Date().toISOString(),
       paymentMethod: 'bkash',
     }

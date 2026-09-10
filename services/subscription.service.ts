@@ -1,4 +1,4 @@
-import {
+import type {
   SubscriptionPlanRecord,
   CompanySubscriptionRecord,
   TenantResourceUsage,
@@ -14,8 +14,21 @@ import {
   SubscriptionStatus,
   TenantAccountType,
   TenantAccountTypeMeta,
-  resolveTenantAccountType,
-} from '@/types/subscription.types'
+  SubscriptionEventType,
+  SubscriptionEventRecord,
+  SubscriptionCheckoutInput,
+  SubscriptionCheckoutResult,
+  SubscriptionVerificationResult,
+} from '../types/subscription.types.ts'
+import { resolveTenantAccountType } from '../types/subscription.types.ts'
+import { createAdminClient } from '../lib/supabase/admin.ts'
+import { GatewayService } from './gateway.service.ts'
+import { createPaymentProvider } from '../lib/payments/provider.factory.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+
+const isValidUuid = (str?: string | null): boolean => {
+  return Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
+}
 
 export const TENANT_ACCOUNT_TYPE_METADATA: Record<TenantAccountType, TenantAccountTypeMeta> = {
   trial: {
@@ -290,7 +303,7 @@ export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
     name_bn: 'স্টার্টার প্ল্যান',
     description: 'For small shops needing limited users, basic sales, and essential customer tracking.',
     price_monthly: 1999,
-    price_yearly: 19990, // ~2 months free discount
+    price_yearly: 19990,
     max_users: 3,
     max_branches: 1,
     storage_gb: 1,
@@ -380,12 +393,6 @@ export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
   },
 ]
 
-export function getTrialPlan(plans: SubscriptionPlanRecord[] = DEFAULT_PLANS): SubscriptionPlanRecord {
-  return plans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
-}
-
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-
 export const DEFAULT_TENANT_SUBSCRIPTION: CompanySubscriptionRecord = {
   id: 'sub-default',
   company_id: 'default',
@@ -401,7 +408,1136 @@ export const DEFAULT_TENANT_SUBSCRIPTION: CompanySubscriptionRecord = {
   custom_limits_override: null,
 }
 
-export const DEMO_TENANT_SUBSCRIPTION = DEFAULT_TENANT_SUBSCRIPTION
+export class SubscriptionService {
+  /**
+   * Fetches all active plans from Supabase or fallback
+   */
+  static async getPlans(): Promise<SubscriptionPlanRecord[]> {
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
+        .from('subscription_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+
+      if (!error && data && data.length > 0) {
+        return data as SubscriptionPlanRecord[]
+      }
+    } catch {}
+
+    return DEFAULT_PLANS
+  }
+
+  /**
+   * Fetches plan by plan code
+   */
+  static async getPlanByCode(code: string): Promise<SubscriptionPlanRecord> {
+    const plans = await this.getPlans()
+    return plans.find((p) => p.code === code) || DEFAULT_TRIAL_PLAN
+  }
+
+  /**
+   * Fetches plan by plan ID
+   */
+  static async getPlanById(id: string): Promise<SubscriptionPlanRecord> {
+    const plans = await this.getPlans()
+    return plans.find((p) => p.id === id) || DEFAULT_TRIAL_PLAN
+  }
+
+  /**
+   * Authoritative server-side tenant subscription retrieval
+   */
+  static async getTenantSubscription(
+    companyId: string,
+    companySlug?: string
+  ): Promise<CompanySubscriptionRecord> {
+    const normId = companyId || 'default'
+
+    try {
+      const admin = createAdminClient()
+      const { data: sub, error } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*, subscription_plans(*)')
+        .eq('company_id', normId)
+        .maybeSingle()
+
+      if (!error && sub) {
+        const planCode = sub.subscription_plans?.code || (sub.status === 'trial' ? 'trial' : 'starter')
+        return {
+          id: sub.id,
+          company_id: sub.company_id,
+          plan_id: sub.plan_id,
+          plan_code: planCode,
+          status: sub.status,
+          billing_interval: sub.billing_interval || 'monthly',
+          current_period_start: sub.current_period_start,
+          current_period_end: sub.current_period_end,
+          trial_ends_at: sub.trial_ends_at,
+          cancelled_at: sub.cancelled_at,
+          cancel_at_period_end: Boolean(sub.cancel_at_period_end),
+          next_plan_id: sub.next_plan_id,
+          change_effective_at: sub.change_effective_at,
+          grace_period_ends_at: sub.grace_period_ends_at,
+          started_at: sub.started_at,
+          payment_method_type: sub.payment_method_type,
+          last_payment_reference: sub.last_payment_reference,
+          custom_limits_override: sub.custom_limits_override,
+        }
+      }
+    } catch {}
+
+    // Check local data store for fallback
+    const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
+    const found = localSubs.find((s) => s.company_id === normId || (companySlug && s.company_id === `co-${companySlug}`))
+    if (found) return found
+
+    const defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
+    return {
+      id: `sub-${normId}`,
+      company_id: normId,
+      plan_id: DEFAULT_TRIAL_PLAN.id,
+      plan_code: 'trial',
+      status: 'trial',
+      billing_interval: 'monthly',
+      current_period_start: new Date().toISOString(),
+      current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+      trial_ends_at: new Date(Date.now() + defaultTrialDays * 86400000).toISOString(),
+      payment_method_type: null,
+      last_payment_reference: null,
+      custom_limits_override: null,
+    }
+  }
+
+  /**
+   * Server-authoritative proration and price calculator
+   */
+  static calculateProration(params: {
+    currentSubscription: CompanySubscriptionRecord
+    currentPlan: SubscriptionPlanRecord
+    targetPlan: SubscriptionPlanRecord
+    targetInterval: BillingInterval
+  }): {
+    targetPlanPrice: number
+    unusedCredit: number
+    finalAmount: number
+    remainingDays: number
+    totalDays: number
+    isUpgrade: boolean
+    isDowngrade: boolean
+    currency: string
+  } {
+    const { currentSubscription, currentPlan, targetPlan, targetInterval } = params
+    const currency = 'BDT'
+
+    const targetPlanPrice =
+      targetInterval === 'yearly' ? Number(targetPlan.price_yearly) : Number(targetPlan.price_monthly)
+
+    // If currently on trial or expired, no proration credit applies
+    if (
+      currentSubscription.status === 'trial' ||
+      currentSubscription.plan_code === 'trial' ||
+      currentSubscription.status === 'expired' ||
+      currentSubscription.status === 'cancelled'
+    ) {
+      return {
+        targetPlanPrice,
+        unusedCredit: 0,
+        finalAmount: targetPlanPrice,
+        remainingDays: 0,
+        totalDays: 0,
+        isUpgrade: true,
+        isDowngrade: false,
+        currency,
+      }
+    }
+
+    const isUpgrade = targetPlan.sort_order > currentPlan.sort_order
+    const isDowngrade = targetPlan.sort_order < currentPlan.sort_order
+
+    // Calculate remaining days on current active paid subscription
+    const now = Date.now()
+    const periodEnd = new Date(currentSubscription.current_period_end).getTime()
+    const remainingMs = Math.max(0, periodEnd - now)
+    const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24))
+    const totalDays = currentSubscription.billing_interval === 'yearly' ? 365 : 30
+
+    const currentPrice =
+      currentSubscription.billing_interval === 'yearly'
+        ? Number(currentPlan.price_yearly)
+        : Number(currentPlan.price_monthly)
+
+    const dailyRate = currentPrice / totalDays
+    const unusedCredit = Math.round(Math.max(0, dailyRate * remainingDays))
+
+    const finalAmount = isUpgrade
+      ? Math.max(0, targetPlanPrice - unusedCredit)
+      : targetPlanPrice
+
+    return {
+      targetPlanPrice,
+      unusedCredit,
+      finalAmount,
+      remainingDays,
+      totalDays,
+      isUpgrade,
+      isDowngrade,
+      currency,
+    }
+  }
+
+  /**
+   * Initiates a real payment gateway checkout for plan purchase or upgrade
+   */
+  static async initiatePlanCheckout(
+    input: SubscriptionCheckoutInput,
+    userId?: string
+  ): Promise<SubscriptionCheckoutResult> {
+    const admin = createAdminClient()
+    const {
+      companyId,
+      planCode,
+      interval,
+      gatewayProvider,
+      customerName = 'Tenant Administrator',
+      customerPhone = '',
+      customerEmail = '',
+      successUrl,
+      cancelUrl,
+    } = input
+
+    try {
+      // 1. Fetch Tenant Subscription & Target Plan
+      const currentSub = await this.getTenantSubscription(companyId)
+      const targetPlan = await this.getPlanByCode(planCode)
+      const currentPlan = await this.getPlanById(currentSub.plan_id)
+
+      if (!targetPlan || !targetPlan.is_active || targetPlan.code === 'trial') {
+        return { success: false, error: 'Invalid or inactive target plan selected.' }
+      }
+
+      // 2. Authoritative Price Calculation
+      const proration = this.calculateProration({
+        currentSubscription: currentSub,
+        currentPlan,
+        targetPlan,
+        targetInterval: interval,
+      })
+
+      const amountToPay = proration.finalAmount
+      const internalTrxId = `SUB-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
+      const invoiceId = `INV-${Date.now().toString().slice(-6)}`
+
+      // 3. Resolve Gateway Integration
+      const gateways = await GatewayService.listGateways({ tenantId: null, category: 'payment' })
+      let targetGateway = gateways.find((g) => g.provider === gatewayProvider && g.is_enabled)
+
+      if (!targetGateway) {
+        // Fallback to any enabled payment gateway or default
+        targetGateway = gateways.find((g) => g.is_enabled)
+      }
+
+      // 4. Record pending transaction in gateway_transactions
+      const dbTenantId = isValidUuid(companyId) ? companyId : null
+      const dbGatewayId = targetGateway && isValidUuid(targetGateway.id) ? targetGateway.id : null
+
+      const transactionPayload = {
+        billing_context: 'TENANT',
+        platform_account_id: null,
+        tenant_id: dbTenantId,
+        gateway_id: dbGatewayId,
+        provider: gatewayProvider,
+        subscription_id: isValidUuid(currentSub.id) ? currentSub.id : null,
+        amount: amountToPay,
+        currency: 'BDT',
+        internal_trx_id: internalTrxId,
+        payment_status: 'initiated',
+        verification_status: 'unverified',
+        invoice_id: invoiceId,
+        customer_id: customerPhone || customerEmail || customerName,
+        verification_payload: {
+          companyId,
+          planCode,
+          planId: targetPlan.id,
+          interval,
+          proration,
+          customerName,
+          customerPhone,
+          customerEmail,
+        },
+        created_at: new Date().toISOString(),
+      }
+
+      const { data: txRecord, error: txError } = await (admin as any)
+        .from('gateway_transactions')
+        .insert(transactionPayload)
+        .select()
+        .single()
+
+      if (txError) {
+        console.warn('[SubscriptionService] Transaction insert warning:', txError.message)
+      }
+
+      // 5. Record Subscription Event: PAYMENT_PENDING
+      await this.recordSubscriptionEvent({
+        subscription_id: isValidUuid(currentSub.id) ? currentSub.id : undefined,
+        company_id: companyId,
+        previous_plan_code: currentSub.plan_code,
+        new_plan_code: planCode,
+        previous_status: currentSub.status,
+        new_status: currentSub.status,
+        event_type: 'PAYMENT_PENDING',
+        reason: `Initiated checkout for ${targetPlan.name} (${interval})`,
+        amount: amountToPay,
+        currency: 'BDT',
+        performed_by: userId,
+      })
+
+      // 6. Instantiate Provider Adapter and create checkout session
+      if (targetGateway) {
+        const fullGw = await GatewayService.getGatewayById(targetGateway.id)
+        if (fullGw) {
+          const creds = GatewayService.getDecryptedCredentials(fullGw)
+          const providerAdapter = createPaymentProvider({
+            provider: gatewayProvider,
+            credentials: creds,
+            publicConfig: fullGw.public_config || {},
+            environment: fullGw.environment,
+          })
+
+          const checkoutInit = await providerAdapter.initiatePayment({
+            companyId,
+            companyName: customerName,
+            planCode,
+            planName: targetPlan.name,
+            billingInterval: interval,
+            amount: amountToPay,
+            currency: 'BDT',
+            customerName,
+            customerPhone,
+            customerEmail,
+            redirectUrl: successUrl || `/settings/subscription?status=verifying&trx=${internalTrxId}`,
+            cancelUrl: cancelUrl || `/settings/subscription?status=cancelled`,
+            metadata: {
+              internalTrxId,
+              companyId,
+              planCode,
+              interval,
+            },
+          })
+
+          // Update transaction record with provider reference if returned
+          if (checkoutInit.transactionId || checkoutInit.gatewayReference) {
+            await (admin as any)
+              .from('gateway_transactions')
+              .update({
+                provider_trx_id: checkoutInit.gatewayReference || checkoutInit.transactionId,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('internal_trx_id', internalTrxId)
+          }
+
+          return {
+            success: checkoutInit.success,
+            internalTrxId,
+            checkoutUrl: checkoutInit.checkoutUrl,
+            requiresRedirect: Boolean(checkoutInit.checkoutUrl),
+            instructions: checkoutInit.instructions,
+            accountNumber: checkoutInit.accountNumber,
+            amount: amountToPay,
+            currency: 'BDT',
+            error: checkoutInit.error,
+          }
+        }
+      }
+
+      // Offline / manual fallback instructions
+      return {
+        success: true,
+        internalTrxId,
+        amount: amountToPay,
+        currency: 'BDT',
+        instructions: [
+          `Payment for ${targetPlan.name} (${interval}): ৳${amountToPay} BDT`,
+          `Reference Transaction ID: ${internalTrxId}`,
+          'Please complete payment via selected gateway or contact Platform Admin.',
+        ],
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err?.message || 'Failed to initiate plan checkout.',
+      }
+    }
+  }
+
+  /**
+   * Secure, Idempotent Server-Side Payment Verification and Subscription Activation
+   */
+  static async verifyPaymentAndActivateSubscription(params: {
+    internalTrxId?: string
+    providerTrxId?: string
+    gatewayReference?: string
+    provider?: string
+    userId?: string
+  }): Promise<SubscriptionVerificationResult> {
+    const admin = createAdminClient()
+    const now = new Date().toISOString()
+    const { internalTrxId, providerTrxId, gatewayReference, provider, userId } = params
+
+    try {
+      // 1. Locate Transaction Record
+      let query = (admin as any).from('gateway_transactions').select('*')
+      if (internalTrxId) query = query.eq('internal_trx_id', internalTrxId)
+      else if (providerTrxId) query = query.eq('provider_trx_id', providerTrxId)
+      else if (gatewayReference) query = query.eq('provider_trx_id', gatewayReference)
+      else return { success: false, status: 'failed', error: 'No transaction identifier provided.' }
+
+      const { data: tx, error: txError } = await query.maybeSingle()
+      if (txError || !tx) {
+        return { success: false, status: 'failed', error: 'Transaction record not found.' }
+      }
+
+      // 2. IDEMPOTENCY CHECK: If already verified and paid, return success immediately
+      if (tx.payment_status === 'paid' && tx.verification_status === 'verified') {
+        const sub = tx.tenant_id ? await this.getTenantSubscription(tx.tenant_id) : null
+        return {
+          success: true,
+          status: 'paid',
+          planCode: (sub?.plan_code as PlanCode) || 'starter',
+          billingInterval: sub?.billing_interval || 'monthly',
+          paidAmount: Number(tx.amount),
+          currency: tx.currency || 'BDT',
+          subscriptionId: sub?.id,
+        }
+      }
+
+      const effectiveProvider = provider || tx.provider || 'bkash'
+      const rawMeta = tx.verification_payload || tx.callback_payload || {}
+      const targetPlanCode: PlanCode = rawMeta.planCode || 'starter'
+      const targetInterval: BillingInterval = rawMeta.interval || 'monthly'
+      const companyId = tx.tenant_id || rawMeta.companyId
+
+      // 3. Real Provider Verification via Provider Adapter
+      const { data: gw } = await (admin as any)
+        .from('gateway_integrations')
+        .select('*')
+        .eq('provider', effectiveProvider)
+        .maybeSingle()
+
+      let isVerified = false
+      let verifiedTrxId = providerTrxId || tx.provider_trx_id || internalTrxId || ''
+      let verifyRawResponse: any = null
+      let verificationError: string | null = null
+
+      if (gw && gw.is_enabled) {
+        const creds = GatewayService.getDecryptedCredentials(gw)
+        const adapter = createPaymentProvider({
+          provider: effectiveProvider,
+          credentials: creds,
+          publicConfig: gw.public_config || {},
+          environment: gw.environment,
+        })
+
+        const verifyRes = await adapter.verifyPayment({
+          transactionId: internalTrxId || verifiedTrxId,
+          gatewayReference: gatewayReference || verifiedTrxId,
+          amount: Number(tx.amount),
+          currency: tx.currency,
+        })
+
+        if (verifyRes.success) {
+          // Verify Amount Integrity
+          if (verifyRes.paidAmount !== undefined && verifyRes.paidAmount > 0) {
+            const expectedAmount = Number(tx.amount)
+            if (Math.abs(verifyRes.paidAmount - expectedAmount) > 0.01) {
+              isVerified = false
+              verificationError = `Amount mismatch: Provider reported ৳${verifyRes.paidAmount}, expected ৳${expectedAmount}.`
+            } else {
+              isVerified = true
+            }
+          } else {
+            isVerified = true
+          }
+
+          // Verify Currency Integrity
+          if (isVerified && verifyRes.currency) {
+            const expectedCurrency = (tx.currency || 'BDT').toUpperCase()
+            if (verifyRes.currency.toUpperCase() !== expectedCurrency) {
+              isVerified = false
+              verificationError = `Currency mismatch: Provider reported ${verifyRes.currency}, expected ${expectedCurrency}.`
+            }
+          }
+        } else {
+          isVerified = false
+          verificationError = verifyRes.error || 'Provider payment verification rejected.'
+        }
+
+        if (verifyRes.gatewayTransactionId) verifiedTrxId = verifyRes.gatewayTransactionId
+        verifyRawResponse = verifyRes.rawResponse
+      } else if (effectiveProvider === 'bank_wire' || effectiveProvider === 'manual' || effectiveProvider === 'mock') {
+        // Offline / Manual / Wire transfer verified by authorized platform admin
+        if (userId) {
+          isVerified = true
+          verifiedTrxId = providerTrxId || verifiedTrxId || `OFFLINE-${Date.now()}`
+        } else {
+          isVerified = false
+          verificationError = 'Manual payment verification requires platform administrator authorization.'
+        }
+      } else {
+        // Automated payment gateway is either not configured or disabled
+        isVerified = false
+        verificationError = `Payment gateway '${effectiveProvider}' is not configured or is disabled.`
+      }
+
+      if (!isVerified) {
+        // Record Verification Failure
+        await (admin as any)
+          .from('gateway_transactions')
+          .update({
+            payment_status: 'failed',
+            verification_status: 'rejected',
+            failure_reason: verificationError,
+            verification_payload: { ...rawMeta, verifyResponse: verifyRawResponse, error: verificationError },
+            updated_at: now,
+          })
+          .eq('id', tx.id)
+
+        if (companyId) {
+          await this.recordSubscriptionEvent({
+            company_id: companyId,
+            event_type: 'PAYMENT_FAILED',
+            reason: verificationError || `Payment verification failed for ${tx.internal_trx_id}`,
+            transaction_id: tx.id,
+            amount: Number(tx.amount),
+            currency: tx.currency || 'BDT',
+            performed_by: userId,
+          })
+        }
+
+        return {
+          success: false,
+          status: 'failed',
+          error: verificationError || 'Provider payment verification failed or was rejected.',
+        }
+      }
+
+      // 4. Mark Transaction as VERIFIED and PAID
+      await (admin as any)
+        .from('gateway_transactions')
+        .update({
+          payment_status: 'paid',
+          verification_status: 'verified',
+          provider_trx_id: verifiedTrxId,
+          paid_at: now,
+          verification_payload: { ...rawMeta, verifyResponse: verifyRawResponse },
+          updated_at: now,
+        })
+        .eq('id', tx.id)
+
+      // 5. Update Tenant Subscription Record Atomically
+      const targetPlan = await this.getPlanByCode(targetPlanCode)
+      const currentSub = companyId ? await this.getTenantSubscription(companyId) : null
+      const isUpgrade = currentSub && currentSub.plan_code !== 'trial' && targetPlan.sort_order > 1
+
+      const periodDays = targetInterval === 'yearly' ? 365 : 30
+      const currentPeriodStart = now
+      const currentPeriodEnd = new Date(Date.now() + periodDays * 86400000).toISOString()
+
+      if (companyId && isValidUuid(companyId)) {
+        const updateData = {
+          plan_id: targetPlan.id,
+          status: 'active',
+          billing_interval: targetInterval,
+          current_period_start: currentPeriodStart,
+          current_period_end: currentPeriodEnd,
+          trial_ends_at: null,
+          cancelled_at: null,
+          cancel_at_period_end: false,
+          next_plan_id: null,
+          change_effective_at: null,
+          last_payment_reference: verifiedTrxId,
+          payment_method_type: effectiveProvider,
+          updated_at: now,
+        }
+
+        const { error: subUpdateError } = await (admin as any)
+          .from('company_subscriptions')
+          .update(updateData)
+          .eq('company_id', companyId)
+
+        if (subUpdateError) {
+          console.warn('[SubscriptionService] Sub update error:', subUpdateError.message)
+        }
+
+        // 6. Record Immutable Subscription Event
+        const eventType: SubscriptionEventType =
+          currentSub?.status === 'trial'
+            ? 'SUBSCRIPTION_CREATED'
+            : isUpgrade
+            ? 'PLAN_UPGRADED'
+            : 'RENEWED'
+
+        await this.recordSubscriptionEvent({
+          subscription_id: isValidUuid(currentSub?.id) ? currentSub?.id : undefined,
+          company_id: companyId,
+          previous_plan_code: currentSub?.plan_code || 'trial',
+          new_plan_code: targetPlanCode,
+          previous_status: currentSub?.status || 'trial',
+          new_status: 'active',
+          event_type: eventType,
+          reason: `Verified payment of ৳${tx.amount} via ${effectiveProvider.toUpperCase()} (Ref: ${verifiedTrxId})`,
+          transaction_id: tx.id,
+          amount: Number(tx.amount),
+          currency: tx.currency || 'BDT',
+          performed_by: userId,
+        })
+
+        // 7. Multi-Channel Notification Dispatch (Email, SMS, WhatsApp, Telegram, In-App)
+        try {
+          const { CommunicationService } = await import('./communication-server.service.ts')
+          await CommunicationService.dispatchWorkflowNotification({
+            companyId,
+            eventType: 'payment_received',
+            recipientName: rawMeta.customerName || 'Valued Partner',
+            recipientEmail: rawMeta.customerEmail,
+            recipientPhone: rawMeta.customerPhone,
+            variables: {
+              invoice_number: tx.invoice_id,
+              amount: String(tx.amount),
+              plan_name: targetPlan.name,
+              period_end: new Date(currentPeriodEnd).toLocaleDateString(),
+            },
+            channels: ['email', 'sms', 'whatsapp', 'in_app'],
+            customMessage: `Payment of ৳${tx.amount} BDT confirmed. Your ${targetPlan.name} is active until ${new Date(currentPeriodEnd).toLocaleDateString()}.`,
+          })
+        } catch (commErr) {
+          console.warn('[SubscriptionService] Notification dispatch notice:', commErr)
+        }
+      }
+
+      return {
+        success: true,
+        status: 'paid',
+        planCode: targetPlanCode,
+        billingInterval: targetInterval,
+        paidAmount: Number(tx.amount),
+        currency: tx.currency || 'BDT',
+        subscriptionId: currentSub?.id,
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        status: 'failed',
+        error: err?.message || 'Verification process encountered an internal error.',
+      }
+    }
+  }
+
+  /**
+   * Schedules a safe plan downgrade to take effect at the end of the current billing cycle
+   */
+  static async schedulePlanDowngrade(
+    companyId: string,
+    nextPlanCode: PlanCode,
+    userId?: string
+  ): Promise<{ success: boolean; effectiveAt?: string; error?: string }> {
+    const admin = createAdminClient()
+    try {
+      const currentSub = await this.getTenantSubscription(companyId)
+      const nextPlan = await this.getPlanByCode(nextPlanCode)
+
+      if (!nextPlan || nextPlan.code === 'trial') {
+        return { success: false, error: 'Invalid downgrade target plan.' }
+      }
+
+      const effectiveAt = currentSub.current_period_end
+
+      if (isValidUuid(companyId)) {
+        await (admin as any)
+          .from('company_subscriptions')
+          .update({
+            next_plan_id: nextPlan.id,
+            change_effective_at: effectiveAt,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('company_id', companyId)
+
+        await this.recordSubscriptionEvent({
+          subscription_id: isValidUuid(currentSub.id) ? currentSub.id : undefined,
+          company_id: companyId,
+          previous_plan_code: currentSub.plan_code,
+          new_plan_code: nextPlanCode,
+          previous_status: currentSub.status,
+          new_status: currentSub.status,
+          event_type: 'PLAN_DOWNGRADED',
+          reason: `Downgrade scheduled for end of cycle: ${new Date(effectiveAt).toLocaleDateString()}`,
+          performed_by: userId,
+        })
+
+        // Dispatch Notification
+        try {
+          const { CommunicationService } = await import('./communication-server.service.ts')
+          await CommunicationService.dispatchWorkflowNotification({
+            companyId,
+            eventType: 'plan_downgraded',
+            recipientName: 'Tenant Administrator',
+            variables: {
+              plan_name: nextPlan.name,
+              effective_date: new Date(effectiveAt).toLocaleDateString(),
+            },
+            channels: ['email', 'in_app'],
+            customMessage: `Your plan will switch to ${nextPlan.name} on ${new Date(effectiveAt).toLocaleDateString()} at the end of your current cycle.`,
+          })
+        } catch (commErr) {
+          console.warn('[SubscriptionService] Downgrade notification notice:', commErr)
+        }
+      }
+
+      return { success: true, effectiveAt }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to schedule downgrade.' }
+    }
+  }
+
+  /**
+   * Cancels subscription with default "cancel at period end" safe behavior
+   */
+  static async cancelSubscription(
+    companyId: string,
+    immediately: boolean = false,
+    reason?: string,
+    userId?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const admin = createAdminClient()
+    const now = new Date().toISOString()
+
+    try {
+      const currentSub = await this.getTenantSubscription(companyId)
+
+      if (isValidUuid(companyId)) {
+        const updateData: any = {
+          cancelled_at: now,
+          updated_at: now,
+        }
+
+        if (immediately) {
+          updateData.status = 'cancelled'
+          updateData.cancel_at_period_end = false
+        } else {
+          updateData.cancel_at_period_end = true
+        }
+
+        await (admin as any)
+          .from('company_subscriptions')
+          .update(updateData)
+          .eq('company_id', companyId)
+
+        await this.recordSubscriptionEvent({
+          subscription_id: isValidUuid(currentSub.id) ? currentSub.id : undefined,
+          company_id: companyId,
+          previous_plan_code: currentSub.plan_code,
+          new_plan_code: currentSub.plan_code,
+          previous_status: currentSub.status,
+          new_status: immediately ? 'cancelled' : currentSub.status,
+          event_type: 'CANCELLED',
+          reason: reason || (immediately ? 'Immediate cancellation requested' : 'Cancellation at period end'),
+          performed_by: userId,
+        })
+
+        // Dispatch Notification
+        try {
+          const { CommunicationService } = await import('./communication-server.service.ts')
+          await CommunicationService.dispatchWorkflowNotification({
+            companyId,
+            eventType: 'subscription_cancelled',
+            recipientName: 'Tenant Administrator',
+            variables: {
+              period_end: new Date(currentSub.current_period_end).toLocaleDateString(),
+              reason: reason || 'Cancellation requested',
+            },
+            channels: ['email', 'in_app'],
+            customMessage: immediately
+              ? 'Your subscription has been cancelled immediately.'
+              : `Your subscription is scheduled to cancel at period end on ${new Date(currentSub.current_period_end).toLocaleDateString()}. Your data will remain preserved.`,
+          })
+        } catch (commErr) {
+          console.warn('[SubscriptionService] Cancellation notification notice:', commErr)
+        }
+      }
+
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to cancel subscription.' }
+    }
+  }
+
+  /**
+   * Reactivates a pending cancellation subscription
+   */
+  static async reactivateSubscription(
+    companyId: string,
+    userId?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const admin = createAdminClient()
+    const now = new Date().toISOString()
+
+    try {
+      const currentSub = await this.getTenantSubscription(companyId)
+
+      if (isValidUuid(companyId)) {
+        await (admin as any)
+          .from('company_subscriptions')
+          .update({
+            cancel_at_period_end: false,
+            cancelled_at: null,
+            updated_at: now,
+          })
+          .eq('company_id', companyId)
+
+        await this.recordSubscriptionEvent({
+          subscription_id: isValidUuid(currentSub.id) ? currentSub.id : undefined,
+          company_id: companyId,
+          previous_plan_code: currentSub.plan_code,
+          new_plan_code: currentSub.plan_code,
+          previous_status: currentSub.status,
+          new_status: currentSub.status,
+          event_type: 'REACTIVATED',
+          reason: 'Subscription reactivated by user',
+          performed_by: userId,
+        })
+
+        // Dispatch Notification
+        try {
+          const { CommunicationService } = await import('./communication-server.service.ts')
+          await CommunicationService.dispatchWorkflowNotification({
+            companyId,
+            eventType: 'subscription_reactivated',
+            recipientName: 'Tenant Administrator',
+            variables: {
+              plan_name: currentSub.plan_code.toUpperCase(),
+              period_end: new Date(currentSub.current_period_end).toLocaleDateString(),
+            },
+            channels: ['email', 'in_app'],
+            customMessage: `Your subscription has been reactivated. Next renewal will occur on ${new Date(currentSub.current_period_end).toLocaleDateString()}.`,
+          })
+        } catch (commErr) {
+          console.warn('[SubscriptionService] Reactivation notification notice:', commErr)
+        }
+      }
+
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to reactivate subscription.' }
+    }
+  }
+
+  /**
+   * Background lifecycle evaluation cron job (idempotent, tenant-safe)
+   */
+  static async processLifecycleCron(): Promise<{
+    expiredTrials: number
+    appliedDowngrades: number
+    processedCancellations: number
+  }> {
+    const admin = createAdminClient()
+    const now = new Date().toISOString()
+    let expiredTrials = 0
+    let appliedDowngrades = 0
+    let processedCancellations = 0
+
+    try {
+      // 1. Expire past-due trials
+      const { data: expiredTrialSubs } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*')
+        .eq('status', 'trial')
+        .lt('trial_ends_at', now)
+
+      if (expiredTrialSubs && expiredTrialSubs.length > 0) {
+        for (const sub of expiredTrialSubs) {
+          await (admin as any)
+            .from('company_subscriptions')
+            .update({ status: 'expired', updated_at: now })
+            .eq('id', sub.id)
+
+          await this.recordSubscriptionEvent({
+            subscription_id: sub.id,
+            company_id: sub.company_id,
+            previous_plan_code: 'trial',
+            new_plan_code: 'trial',
+            previous_status: 'trial',
+            new_status: 'expired',
+            event_type: 'EXPIRED',
+            reason: '14-Day Free Trial period ended',
+          })
+
+          try {
+            const { CommunicationService } = await import('./communication-server.service.ts')
+            await CommunicationService.dispatchWorkflowNotification({
+              companyId: sub.company_id,
+              eventType: 'trial_expired',
+              recipientName: 'Tenant Administrator',
+              variables: {},
+              channels: ['email', 'in_app'],
+              customMessage: 'Your 14-day free trial has expired. Upgrade to a paid plan to restore full ERP features.',
+            })
+          } catch {}
+
+          expiredTrials++
+        }
+      }
+
+      // 2. Apply scheduled downgrades
+      const { data: scheduledDowngrades } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*')
+        .not('next_plan_id', 'is', null)
+        .lte('change_effective_at', now)
+
+      if (scheduledDowngrades && scheduledDowngrades.length > 0) {
+        for (const sub of scheduledDowngrades) {
+          const nextPlan = await this.getPlanById(sub.next_plan_id)
+          await (admin as any)
+            .from('company_subscriptions')
+            .update({
+              plan_id: sub.next_plan_id,
+              next_plan_id: null,
+              change_effective_at: null,
+              updated_at: now,
+            })
+            .eq('id', sub.id)
+
+          await this.recordSubscriptionEvent({
+            subscription_id: sub.id,
+            company_id: sub.company_id,
+            previous_plan_code: sub.plan_code,
+            new_plan_code: nextPlan.code,
+            previous_status: sub.status,
+            new_status: sub.status,
+            event_type: 'PLAN_DOWNGRADED',
+            reason: `Scheduled downgrade to ${nextPlan.name} applied at end of period.`,
+          })
+          appliedDowngrades++
+        }
+      }
+
+      // 3. Process cancel_at_period_end whose period has expired
+      const { data: pendingCancellations } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*')
+        .eq('cancel_at_period_end', true)
+        .lte('current_period_end', now)
+
+      if (pendingCancellations && pendingCancellations.length > 0) {
+        for (const sub of pendingCancellations) {
+          await (admin as any)
+            .from('company_subscriptions')
+            .update({
+              status: 'cancelled',
+              cancel_at_period_end: false,
+              updated_at: now,
+            })
+            .eq('id', sub.id)
+
+          await this.recordSubscriptionEvent({
+            subscription_id: sub.id,
+            company_id: sub.company_id,
+            previous_plan_code: sub.plan_code,
+            new_plan_code: sub.plan_code,
+            previous_status: sub.status,
+            new_status: 'cancelled',
+            event_type: 'CANCELLED',
+            reason: 'Subscription period ended following cancellation request.',
+          })
+          processedCancellations++
+        }
+      }
+    } catch (err) {
+      console.warn('[SubscriptionService] Lifecycle cron notice:', err)
+    }
+
+    return { expiredTrials, appliedDowngrades, processedCancellations }
+  }
+
+  /**
+   * Writes an immutable audit entry to subscription_events
+   */
+  static async recordSubscriptionEvent(entry: {
+    subscription_id?: string
+    company_id: string
+    previous_plan_code?: string | null
+    new_plan_code?: string | null
+    previous_status?: string | null
+    new_status?: string | null
+    event_type: SubscriptionEventType
+    reason?: string | null
+    transaction_id?: string | null
+    amount?: number | null
+    currency?: string
+    performed_by?: string | null
+  }): Promise<void> {
+    const admin = createAdminClient()
+    try {
+      const sanitizedCompanyId = isValidUuid(entry.company_id) ? entry.company_id : null
+      const sanitizedSubId = isValidUuid(entry.subscription_id) ? entry.subscription_id : null
+      const sanitizedTxId = isValidUuid(entry.transaction_id) ? entry.transaction_id : null
+      const sanitizedUserId = isValidUuid(entry.performed_by) ? entry.performed_by : null
+
+      if (sanitizedCompanyId) {
+        await (admin as any).from('subscription_events').insert({
+          subscription_id: sanitizedSubId,
+          company_id: sanitizedCompanyId,
+          previous_plan_code: entry.previous_plan_code || null,
+          new_plan_code: entry.new_plan_code || null,
+          previous_status: entry.previous_status || null,
+          new_status: entry.new_status || null,
+          event_type: entry.event_type,
+          reason: entry.reason || null,
+          transaction_id: sanitizedTxId,
+          amount: entry.amount || null,
+          currency: entry.currency || 'BDT',
+          effective_at: new Date().toISOString(),
+          performed_by: sanitizedUserId,
+          created_at: new Date().toISOString(),
+        })
+      }
+    } catch (err) {
+      console.warn('[SubscriptionService] Event ledger notice:', err)
+    }
+  }
+
+  /**
+   * Fetches paginated subscription events for tenant or platform audit
+   */
+  static async getSubscriptionEvents(companyId?: string): Promise<SubscriptionEventRecord[]> {
+    const admin = createAdminClient()
+    try {
+      let query = (admin as any)
+        .from('subscription_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (companyId && isValidUuid(companyId)) {
+        query = query.eq('company_id', companyId)
+      }
+
+      const { data, error } = await query
+      if (!error && data) return data as SubscriptionEventRecord[]
+    } catch {}
+
+    return []
+  }
+
+  /**
+   * Fetches real tenant invoices from gateway_transactions
+   */
+  static async getTenantInvoices(companyId: string): Promise<SubscriptionInvoiceRecord[]> {
+    const admin = createAdminClient()
+    try {
+      const sanitizedCompanyId = isValidUuid(companyId) ? companyId : null
+      if (!sanitizedCompanyId) return []
+
+      const { data: txs, error } = await (admin as any)
+        .from('gateway_transactions')
+        .select('*')
+        .eq('tenant_id', sanitizedCompanyId)
+        .eq('billing_context', 'TENANT')
+        .order('created_at', { ascending: false })
+
+      if (!error && txs && txs.length > 0) {
+        return txs.map((tx: any) => ({
+          id: tx.id,
+          invoice_number: tx.invoice_id || `INV-${tx.id.slice(0, 6)}`,
+          company_id: tx.tenant_id,
+          plan_name: tx.verification_payload?.planCode ? `${tx.verification_payload.planCode.toUpperCase()} PLAN` : 'SUBSCRIPTION',
+          billing_interval: (tx.verification_payload?.interval || 'monthly') as BillingInterval,
+          amount: Number(tx.amount || 0),
+          status: (tx.payment_status === 'paid' && tx.verification_status === 'verified'
+            ? 'paid'
+            : tx.payment_status === 'failed'
+            ? 'failed'
+            : 'pending') as 'paid' | 'pending' | 'failed',
+          payment_method: (tx.provider || 'bkash') as PaymentGatewayType,
+          transaction_ref: tx.provider_trx_id || tx.internal_trx_id || '—',
+          billing_date: tx.created_at,
+          due_date: tx.created_at,
+          receipt_url: tx.payment_url || undefined,
+        }))
+      }
+    } catch {}
+
+    return []
+  }
+
+  /**
+   * Platform Owner Reconciliation Tool: Matches internal transactions with subscriptions
+   */
+  static async getPlatformReconciliationList(): Promise<any[]> {
+    const admin = createAdminClient()
+    try {
+      const { data: transactions } = await (admin as any)
+        .from('gateway_transactions')
+        .select('*, companies(name, slug)')
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      const { data: subscriptions } = await (admin as any)
+        .from('company_subscriptions')
+        .select('*, subscription_plans(*), companies(name, slug)')
+
+      const subMap = new Map<string, any>()
+      if (subscriptions) {
+        for (const s of subscriptions) {
+          subMap.set(s.company_id, s)
+        }
+      }
+
+      return (transactions || []).map((t: any) => {
+        const matchingSub = t.tenant_id ? subMap.get(t.tenant_id) : null
+        const isMismatched =
+          (t.payment_status === 'paid' && t.verification_status !== 'verified') ||
+          (t.verification_status === 'verified' && t.payment_status !== 'paid')
+
+        let mismatchReason: string | null = null
+        if (t.payment_status === 'paid' && t.verification_status !== 'verified') {
+          mismatchReason = 'Marked paid without verified provider signature.'
+        } else if (t.verification_status === 'verified' && t.payment_status !== 'paid') {
+          mismatchReason = 'Verified by provider but settlement state not updated to paid.'
+        }
+
+        return {
+          id: t.id,
+          internalTrxId: t.internal_trx_id,
+          providerTrxId: t.provider_trx_id,
+          provider: t.provider,
+          amount: t.amount,
+          currency: t.currency,
+          paymentStatus: t.payment_status,
+          verificationStatus: t.verification_status,
+          companyName: t.companies?.name || matchingSub?.companies?.name || 'Unknown Tenant',
+          companySlug: t.companies?.slug || matchingSub?.companies?.slug,
+          currentPlan: matchingSub?.subscription_plans?.name || 'Trial',
+          currentSubStatus: matchingSub?.status || 'trial',
+          isMismatched,
+          mismatchReason,
+          createdAt: t.created_at,
+          paidAt: t.paid_at,
+        }
+      })
+    } catch {
+      return []
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Legacy & Helper Export Functions for backwards-compatibility
+// -----------------------------------------------------------------------------
+
+export function getTrialPlan(plans: SubscriptionPlanRecord[] = DEFAULT_PLANS): SubscriptionPlanRecord {
+  return plans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+}
 
 export function getTenantResourceUsage(
   companyId: string = 'default',
@@ -418,23 +1554,18 @@ export function getTenantResourceUsage(
   const isCoMatch = (item: any) =>
     !item.company_id || item.company_id === companyId || item.company_id === 'default' || item.company_id === 'co-main'
 
-  // Users count
   const matchingUsers = users.filter(isCoMatch)
-  const usersCount = Math.max(1, matchingUsers.length) // At least 1 (the owner/logged-in admin)
+  const usersCount = Math.max(1, matchingUsers.length)
 
-  // Branches count
   const matchingBranches = branches.filter(isCoMatch)
   const branchesCount = Math.max(1, matchingBranches.length)
 
-  // Customers count
   const matchingCustomers = customers.filter(isCoMatch)
   const customersCount = matchingCustomers.length
 
-  // Products & Materials count
   const totalProducts = (products.filter(isCoMatch).length || 0) + (materials.filter(isCoMatch).length || 0)
   const productsCount = totalProducts
 
-  // Monthly orders count
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const monthlyOrders = orders.filter((o) => {
@@ -483,86 +1614,15 @@ export const DEMO_RESOURCE_USAGE: TenantResourceUsage = {
   products_limit: 200,
 }
 
+export const DEMO_TENANT_SUBSCRIPTION = DEFAULT_TENANT_SUBSCRIPTION
 export const DEMO_PLATFORM_SUBSCRIPTIONS: PlatformSubscriptionItem[] = []
-
 export const DEMO_SUBSCRIPTION_INVOICES: SubscriptionInvoiceRecord[] = []
-
-import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function getTenantSubscription(
   companyId: string,
   companySlug?: string
 ): Promise<CompanySubscriptionRecord> {
-  const normId = companyId || 'default'
-
-  try {
-    const admin = createAdminClient()
-    const { data: sub, error } = await (admin as any)
-      .from('company_subscriptions')
-      .select('*, subscription_plans(*)')
-      .eq('company_id', normId)
-      .maybeSingle()
-
-    if (!error && sub) {
-      const planCode = sub.subscription_plans?.code || (sub.status === 'trial' ? 'trial' : 'starter')
-      return {
-        id: sub.id,
-        company_id: sub.company_id,
-        plan_id: sub.plan_id,
-        plan_code: planCode,
-        status: sub.status,
-        billing_interval: sub.billing_interval || 'monthly',
-        current_period_start: sub.current_period_start,
-        current_period_end: sub.current_period_end,
-        trial_ends_at: sub.trial_ends_at,
-        cancelled_at: sub.cancelled_at,
-        payment_method_type: sub.payment_method_type,
-        last_payment_reference: sub.last_payment_reference,
-        custom_limits_override: sub.custom_limits_override,
-      }
-    }
-  } catch {}
-
-  // Check local data store for company-specific subscription
-  const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
-  const found = localSubs.find((s) => s.company_id === normId || (companySlug && s.company_id === `co-${companySlug}`))
-  if (found) return found
-
-  // Check platform tenants list to see if plan was specified
-  const platformCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-  const platComp = platformCompanies.find(
-    (c) => c.id === normId || (companySlug && c.slug === companySlug)
-  )
-
-  const defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
-  const targetPlanCode: PlanCode = (platComp?.plan as PlanCode) || 'trial'
-  const targetPlanObj = DEFAULT_PLANS.find((p) => p.code === targetPlanCode) || DEFAULT_TRIAL_PLAN
-  const isTrial = targetPlanCode === 'trial' || platComp?.status === 'trial'
-
-  const newSub: CompanySubscriptionRecord = {
-    id: `sub-${normId}`,
-    company_id: normId,
-    plan_id: targetPlanObj.id,
-    plan_code: targetPlanCode,
-    status: isTrial ? 'trial' : 'active',
-    billing_interval: 'monthly',
-    current_period_start: new Date().toISOString(),
-    current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-    trial_ends_at: isTrial ? new Date(Date.now() + defaultTrialDays * 86400000).toISOString() : null,
-    payment_method_type: isTrial ? null : 'bkash',
-    last_payment_reference: null,
-    custom_limits_override: null,
-  }
-
-  // Persist into localSubs if in browser
-  if (typeof window !== 'undefined') {
-    try {
-      const updatedList = [...localSubs.filter((s) => s.company_id !== normId), newSub]
-      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, updatedList)
-    } catch {}
-  }
-
-  return newSub
+  return SubscriptionService.getTenantSubscription(companyId, companySlug)
 }
 
 export function checkFeatureAccess(
@@ -627,4 +1687,3 @@ export function checkResourceLimit(
     percentage: Math.min(100, percentage),
   }
 }
-

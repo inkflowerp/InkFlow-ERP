@@ -13,7 +13,7 @@ import {
   Crown,
 } from 'lucide-react'
 import { FeatureCode } from '@/types/subscription.types'
-import { FEATURE_METADATA, getMinimumPlanForFeature } from '@/services/subscription.service'
+import { FEATURE_METADATA, getMinimumPlanForFeature } from '@/lib/subscription/subscription-constants'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'

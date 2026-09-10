@@ -1,16 +1,17 @@
 // ==============================================================================
 // PrintERP SaaS - Communication Server Service (Server Only)
-// Handles transactional email sending, notifications dispatching, and gateway interfacing.
+// Handles transactional email, SMS, WhatsApp, Telegram, and In-App notification dispatching.
 // ==============================================================================
 
-import {
+import type {
   InAppNotificationRecord,
   SendEmailOptions,
   SendEmailResult,
   EmailEventType,
-} from '@/types/communication.types'
-import { EmailGatewayService } from './email-gateway.service'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+} from '../types/communication.types.ts'
+import { EmailGatewayService } from './email-gateway.service.ts'
+import { GatewayService } from './gateway.service.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 export class CommunicationService {
   /**
@@ -50,7 +51,7 @@ export class CommunicationService {
   }
 
   /**
-   * Unified notification dispatcher across channels
+   * Unified multi-channel notification dispatcher
    */
   static async dispatchWorkflowNotification(params: {
     companyId: string
@@ -58,22 +59,42 @@ export class CommunicationService {
     recipientName: string
     recipientEmail?: string
     recipientPhone?: string
+    telegramChatId?: string
     variables: Record<string, any>
-    channels?: Array<'email' | 'sms' | 'whatsapp' | 'in_app'>
+    channels?: Array<'email' | 'sms' | 'whatsapp' | 'telegram' | 'in_app'>
     actionUrl?: string
-  }): Promise<{ email?: SendEmailResult; sms?: boolean; in_app?: boolean }> {
+    customMessage?: string
+  }): Promise<{
+    email?: SendEmailResult
+    sms?: boolean
+    whatsapp?: boolean
+    telegram?: boolean
+    in_app?: boolean
+  }> {
     const {
       companyId,
       eventType,
       recipientName,
       recipientEmail,
       recipientPhone,
+      telegramChatId,
       variables,
       channels = ['email', 'in_app'],
       actionUrl,
+      customMessage,
     } = params
 
-    const results: { email?: SendEmailResult; sms?: boolean; in_app?: boolean } = {}
+    const results: {
+      email?: SendEmailResult
+      sms?: boolean
+      whatsapp?: boolean
+      telegram?: boolean
+      in_app?: boolean
+    } = {}
+
+    const textContent =
+      customMessage ||
+      `Dear ${recipientName}, notification regarding ${eventType.replace(/_/g, ' ')} (${variables.order_number || variables.invoice_number || ''}).`
 
     // 1. Email Dispatch
     if (channels.includes('email') && recipientEmail) {
@@ -88,7 +109,40 @@ export class CommunicationService {
       })
     }
 
-    // 2. In-App Notification
+    // 2. SMS Dispatch
+    if (channels.includes('sms') && recipientPhone) {
+      const smsRes = await GatewayService.sendTestMessage({
+        category: 'sms',
+        recipient: recipientPhone,
+        recipientName,
+        message: textContent,
+      })
+      results.sms = smsRes.success
+    }
+
+    // 3. WhatsApp Dispatch
+    if (channels.includes('whatsapp') && recipientPhone) {
+      const waRes = await GatewayService.sendTestMessage({
+        category: 'whatsapp',
+        recipient: recipientPhone,
+        recipientName,
+        message: textContent,
+      })
+      results.whatsapp = waRes.success
+    }
+
+    // 4. Telegram Dispatch
+    if (channels.includes('telegram') && telegramChatId) {
+      const tgRes = await GatewayService.sendTestMessage({
+        category: 'telegram',
+        recipient: telegramChatId,
+        recipientName,
+        message: textContent,
+      })
+      results.telegram = tgRes.success
+    }
+
+    // 5. In-App Notification
     if (channels.includes('in_app')) {
       await this.createInAppNotification(companyId, {
         type: eventType.includes('order')

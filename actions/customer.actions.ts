@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { CrmService, DuplicateCheckResponse } from '@/services/crm.service'
 import { AuditService } from '@/services/audit.service'
+import { EntitlementService } from '@/services/entitlement.service'
 import { CustomerRecord } from '@/types/crm.types'
 import { checkPermission } from '@/lib/auth/rbac.client'
 import { PrimaryRole } from '@/types/rbac.types'
@@ -64,6 +65,9 @@ export async function createCustomerAction(
         error: 'Unauthorized: No active company context found.',
       }
     }
+
+    // Enforce Plan Customer Quota Limit
+    await EntitlementService.enforceLimit(companyId, 'max_customers')
     const userId = tenant?.userId || 'unknown'
     const userEmail = tenant?.userEmail || ''
     const role: PrimaryRole = (tenant?.primaryRole as PrimaryRole) || (input.role as PrimaryRole) || 'business_owner'

@@ -26,12 +26,12 @@ export default function NotificationSettingsPage() {
   const [isSaved, setIsSaved] = useState(false)
 
   const [notif, setNotif] = useDataStore(STORAGE_KEYS.NOTIFICATION_SETTINGS, {
-    whatsapp_enabled: true,
-    whatsapp_number: '+880 1819-876543',
-    sms_enabled: true,
+    whatsapp_enabled: false,
+    whatsapp_number: '',
+    sms_enabled: false,
     sms_gateway: 'Greenweb SMS Gateway',
-    sms_sender_id: 'PRINTERP',
-    sms_api_key: 'gw_live_8f9024a18e27c49b01',
+    sms_sender_id: '',
+    sms_api_key: '',
     email_enabled: true,
     low_stock_alerts: true,
     low_stock_threshold: 50, // 50 sft / rolls

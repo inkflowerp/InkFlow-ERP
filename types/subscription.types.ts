@@ -122,6 +122,8 @@ export type PaymentGatewayType =
   | 'nagad'
   | 'rocket'
   | 'sslcommerz'
+  | 'uddoktapay'
+  | 'stripe'
   | 'bank_wire'
   | 'mock'
 
@@ -189,9 +191,47 @@ export interface CompanySubscriptionRecord {
   current_period_end: string
   trial_ends_at?: string | null
   cancelled_at?: string | null
+  cancel_at_period_end?: boolean
+  next_plan_id?: string | null
+  change_effective_at?: string | null
+  grace_period_ends_at?: string | null
+  started_at?: string
   payment_method_type?: PaymentGatewayType | null
   last_payment_reference?: string | null
   custom_limits_override?: CustomLimitsOverride | null
+}
+
+export type SubscriptionEventType =
+  | 'TRIAL_STARTED'
+  | 'TRIAL_EXTENDED'
+  | 'SUBSCRIPTION_CREATED'
+  | 'PLAN_UPGRADED'
+  | 'PLAN_DOWNGRADED'
+  | 'RENEWED'
+  | 'PAYMENT_PENDING'
+  | 'PAYMENT_VERIFIED'
+  | 'PAYMENT_FAILED'
+  | 'CANCELLED'
+  | 'REACTIVATED'
+  | 'EXPIRED'
+  | 'SUSPENDED'
+
+export interface SubscriptionEventRecord {
+  id: string
+  subscription_id: string
+  company_id: string
+  previous_plan_code?: string | null
+  new_plan_code?: string | null
+  previous_status?: string | null
+  new_status?: string | null
+  event_type: SubscriptionEventType
+  reason?: string | null
+  transaction_id?: string | null
+  amount?: number | null
+  currency: string
+  effective_at: string
+  performed_by?: string | null
+  created_at: string
 }
 
 export interface TenantResourceUsage {
@@ -207,6 +247,66 @@ export interface TenantResourceUsage {
   customers_limit: number
   products_count: number
   products_limit: number
+}
+
+export interface TenantEntitlements {
+  companyId: string
+  companyName: string
+  companySlug: string
+  planCode: PlanCode
+  planName: string
+  planNameBn: string
+  status: SubscriptionStatus
+  isTrial: boolean
+  isSuspended: boolean
+  isPastDue: boolean
+  isTrialExpired: boolean
+  daysRemainingInTrial: number
+  trialProgressPercent: number
+  billingInterval: BillingInterval
+  currentPeriodStart: string
+  currentPeriodEnd: string
+  nextPlanCode?: PlanCode | null
+  nextPlanEffectiveAt?: string | null
+  cancelAtPeriodEnd: boolean
+  features: FeatureCode[]
+  usage: TenantResourceUsage
+  availablePaymentGateways: PaymentGatewayType[]
+}
+
+export interface SubscriptionCheckoutInput {
+  companyId: string
+  planCode: PlanCode
+  interval: BillingInterval
+  gatewayProvider: PaymentGatewayType
+  customerName?: string
+  customerPhone?: string
+  customerEmail?: string
+  successUrl?: string
+  cancelUrl?: string
+}
+
+export interface SubscriptionCheckoutResult {
+  success: boolean
+  internalTrxId?: string
+  checkoutUrl?: string
+  requiresRedirect?: boolean
+  instructions?: string[]
+  accountNumber?: string
+  amount?: number
+  currency?: string
+  error?: string
+}
+
+export interface SubscriptionVerificationResult {
+  success: boolean
+  status: 'paid' | 'pending' | 'failed'
+  planCode?: PlanCode
+  billingInterval?: BillingInterval
+  paidAmount?: number
+  currency?: string
+  subscriptionId?: string
+  error?: string
 }
 
 export interface PlatformSubscriptionItem {

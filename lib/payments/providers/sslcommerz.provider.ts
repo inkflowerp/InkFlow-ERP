@@ -32,7 +32,8 @@ export class SSLCommerzPaymentProvider implements PaymentProvider {
   }
 
   async verifyPayment(params: PaymentVerifyParams): Promise<PaymentVerifyResult> {
-    const isValid = Boolean(params.gatewayReference && params.gatewayReference.trim().length >= 6)
+    const ref = params.gatewayReference?.trim() || ''
+    const isValid = Boolean(ref.length >= 6)
 
     if (!isValid) {
       return {
@@ -49,8 +50,8 @@ export class SSLCommerzPaymentProvider implements PaymentProvider {
     return {
       success: true,
       status: 'paid',
-      gatewayTransactionId: `VAL_${params.gatewayReference.toUpperCase()}`,
-      paidAmount: params.amount,
+      gatewayTransactionId: `VAL_${ref.toUpperCase()}`,
+      paidAmount: params.amount ?? 0,
       paidAt: new Date().toISOString(),
       paymentMethod: 'sslcommerz',
     }

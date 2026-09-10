@@ -56,8 +56,8 @@ import {
   PlatformSubscriptionsOverview,
 } from '@/types/platform.types'
 import { PlatformRole } from '@/lib/auth/types'
-import { SubscriptionPlanRecord } from '@/types/subscription.types'
-import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/services/subscription.service'
+import type { SubscriptionPlanRecord } from '@/types/subscription.types'
+import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
 import { ApiResponse } from '@/types/common.types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 export const DEFAULT_PLATFORM_FEATURE_FLAGS: Array<{
@@ -4684,57 +4684,65 @@ export class PlatformService {
         last_success_at: storageErr ? 'N/A' : now,
       })
 
-      // 4. bKash Merchant Payment Gateway
-      const bkashConfigured = Boolean(process.env.BKASH_APP_KEY && process.env.BKASH_APP_SECRET)
-      integrations.push({
-        key: 'bkash_pgw',
-        name: 'bKash Merchant Payment Gateway (Online Tokenized Checkout)',
-        category: 'payment',
-        status: bkashConfigured ? 'operational' : 'not_configured',
-        latency_ms: bkashConfigured ? 120 : 0,
-        failure_rate_pct: 0,
-        last_success_at: bkashConfigured ? now : 'Not configured',
-        notes: bkashConfigured ? 'Direct API Active' : 'API Keys (BKASH_APP_KEY/SECRET) Not Configured',
-      })
+      // 4. Fetch dynamic configured gateways from gateway_integrations
+      const { data: dbGateways } = await (admin as any)
+        .from('gateway_integrations')
+        .select('*')
+        .is('tenant_id', null)
 
-      // 5. SSLCommerz Multi-Channel Gateway
-      const sslConfigured = Boolean(process.env.SSLCOMMERZ_STORE_ID && process.env.SSLCOMMERZ_STORE_PASSWORD)
-      integrations.push({
-        key: 'sslcommerz',
-        name: 'SSLCommerz Multi-Channel Payment Gateway (Cards / MFS)',
-        category: 'payment',
-        status: sslConfigured ? 'operational' : 'not_configured',
-        latency_ms: sslConfigured ? 140 : 0,
-        failure_rate_pct: 0,
-        last_success_at: sslConfigured ? now : 'Not configured',
-        notes: sslConfigured ? 'Direct Gateway Active' : 'Store ID / Password Not Configured',
-      })
+      const dbMap = new Map((dbGateways || []).map((g: any) => [g.provider, g]))
 
-      // 6. Meta WhatsApp Cloud API
-      const waConfigured = Boolean(process.env.WHATSAPP_API_TOKEN || process.env.META_WHATSAPP_TOKEN)
-      integrations.push({
-        key: 'whatsapp_cloud',
-        name: 'Meta WhatsApp Cloud API (Transactional SMS/Alerts)',
-        category: 'notification',
-        status: waConfigured ? 'operational' : 'not_configured',
-        latency_ms: waConfigured ? 95 : 0,
-        failure_rate_pct: 0,
-        last_success_at: waConfigured ? now : 'Not configured',
-        notes: waConfigured ? 'Meta API Connected' : 'WHATSAPP_API_TOKEN Not Configured',
-      })
+      // Providers list
+      const providerConfigs = [
+        {
+          key: 'bkash_pgw',
+          providerKey: 'bkash',
+          name: 'bKash Merchant Payment Gateway (Online Tokenized Checkout)',
+          category: 'payment' as const,
+        },
+        {
+          key: 'sslcommerz',
+          providerKey: 'sslcommerz',
+          name: 'SSLCommerz Multi-Channel Payment Gateway (Cards / MFS)',
+          category: 'payment' as const,
+        },
+        {
+          key: 'whatsapp_cloud',
+          providerKey: 'meta_whatsapp',
+          name: 'Meta WhatsApp Cloud API (Transactional SMS/Alerts)',
+          category: 'notification' as const,
+        },
+        {
+          key: 'greenweb_sms',
+          providerKey: 'greenweb',
+          name: 'Greenweb SMS Gateway (Bangladeshi Mobile Carrier Routing)',
+          category: 'notification' as const,
+        },
+      ]
 
-      // 7. Greenweb SMS Gateway
-      const smsConfigured = Boolean(process.env.GREENWEB_SMS_TOKEN || process.env.SMS_API_KEY)
-      integrations.push({
-        key: 'greenweb_sms',
-        name: 'Greenweb SMS Gateway (Bangladeshi Mobile Carrier Routing)',
-        category: 'notification',
-        status: smsConfigured ? 'operational' : 'not_configured',
-        latency_ms: smsConfigured ? 80 : 0,
-        failure_rate_pct: 0,
-        last_success_at: smsConfigured ? now : 'Not configured',
-        notes: smsConfigured ? 'SMS Gateway Active' : 'GREENWEB_SMS_TOKEN Not Configured',
-      })
+      for (const p of providerConfigs) {
+        const gw = dbMap.get(p.providerKey) as any
+        const isConfigured = Boolean(gw && gw.encrypted_credentials)
+        const isConnected = gw && gw.status === 'connected'
+        const isError = gw && gw.status === 'error'
+
+        integrations.push({
+          key: p.key,
+          name: p.name,
+          category: p.category,
+          status: isConnected
+            ? 'operational'
+            : isError
+            ? 'degraded'
+            : isConfigured
+            ? 'operational'
+            : 'not_configured',
+          latency_ms: gw?.last_test_latency_ms || 0,
+          failure_rate_pct: gw?.failure_count ? Math.min(100, gw.failure_count * 20) : 0,
+          last_success_at: gw?.last_tested_at || 'Not tested',
+          notes: gw?.last_test_error || (isConfigured ? 'Configured & ready' : 'Not configured'),
+        })
+      }
 
       // 8. NBR Mushak 6.3 Invoicing Engine
       integrations.push({
@@ -4773,40 +4781,34 @@ export class PlatformService {
         const { error } = await (admin as any).storage.listBuckets()
         if (error) throw new Error(error.message)
         message = 'Supabase Storage buckets listed.'
-      } else if (providerKey === 'bkash_pgw') {
-        const isCfg = Boolean(process.env.BKASH_APP_KEY && process.env.BKASH_APP_SECRET)
-        if (!isCfg) {
-          status = 'not_configured'
-          message = 'BKASH_APP_KEY / SECRET environment variables not detected.'
-        } else {
-          message = 'bKash merchant checkout API credentials verified.'
-        }
-      } else if (providerKey === 'sslcommerz') {
-        const isCfg = Boolean(process.env.SSLCOMMERZ_STORE_ID && process.env.SSLCOMMERZ_STORE_PASSWORD)
-        if (!isCfg) {
-          status = 'not_configured'
-          message = 'SSLCOMMERZ_STORE_ID / PASSWORD environment variables not detected.'
-        } else {
-          message = 'SSLCommerz gateway credentials verified.'
-        }
-      } else if (providerKey === 'whatsapp_cloud') {
-        const isCfg = Boolean(process.env.WHATSAPP_API_TOKEN || process.env.META_WHATSAPP_TOKEN)
-        if (!isCfg) {
-          status = 'not_configured'
-          message = 'WHATSAPP_API_TOKEN environment variable not detected.'
-        } else {
-          message = 'Meta WhatsApp Cloud API token verified.'
-        }
-      } else if (providerKey === 'greenweb_sms') {
-        const isCfg = Boolean(process.env.GREENWEB_SMS_TOKEN || process.env.SMS_API_KEY)
-        if (!isCfg) {
-          status = 'not_configured'
-          message = 'GREENWEB_SMS_TOKEN environment variable not detected.'
-        } else {
-          message = 'Greenweb SMS gateway route verified.'
-        }
       } else if (providerKey === 'nbr_vat') {
         message = 'NBR Mushak 6.3 Tax rules engine verified.'
+      } else {
+        // Dynamic gateway lookup
+        const providerMap: Record<string, string> = {
+          bkash_pgw: 'bkash',
+          sslcommerz: 'sslcommerz',
+          whatsapp_cloud: 'meta_whatsapp',
+          greenweb_sms: 'greenweb',
+        }
+        const mappedProvider = providerMap[providerKey] || providerKey
+        const { data: gw } = await (admin as any)
+          .from('gateway_integrations')
+          .select('id, status, encrypted_credentials')
+          .eq('provider', mappedProvider)
+          .is('tenant_id', null)
+          .maybeSingle()
+
+        if (!gw || !gw.encrypted_credentials) {
+          status = 'not_configured'
+          message = `${mappedProvider} is not configured yet.`
+        } else {
+          // Import GatewayService dynamically or use testConnection
+          const { GatewayService } = await import('./gateway.service')
+          const testRes = await GatewayService.testConnection(gw.id)
+          status = testRes.success ? 'operational' : 'failed'
+          message = testRes.message || (testRes.success ? 'Connected' : 'Connection failed')
+        }
       }
 
       const latency = Math.max(1, Date.now() - start)

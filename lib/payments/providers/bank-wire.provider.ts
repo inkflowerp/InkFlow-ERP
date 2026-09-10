@@ -1,4 +1,4 @@
-import { PaymentProvider, PaymentInitiateParams, PaymentInitiateResult, PaymentVerifyParams, PaymentVerifyResult } from '../types'
+import type { PaymentProvider, PaymentInitiateParams, PaymentInitiateResult, PaymentVerifyParams, PaymentVerifyResult } from '../types.ts'
 
 export class BankWirePaymentProvider implements PaymentProvider {
   readonly id = 'bank_wire' as const
@@ -14,11 +14,13 @@ export class BankWirePaymentProvider implements PaymentProvider {
   async initiatePayment(params: PaymentInitiateParams): Promise<PaymentInitiateResult> {
     const timestamp = Date.now()
     const transactionId = `BNK-${timestamp.toString().slice(-8)}`
+    const subRef = params.subscriptionId ? params.subscriptionId.slice(0, 8) : 'SUB'
+    const planRef = params.planCode ? params.planCode.toUpperCase() : 'PLAN'
 
     return {
       success: true,
       transactionId,
-      gatewayReference: `INVOICE_${params.subscriptionId.slice(0, 8)}`,
+      gatewayReference: `INVOICE_${subRef}`,
       requiresManualVerification: true,
       instructions: [
         'Transfer subscription fee to PrintERP Corporate Account:',
@@ -26,7 +28,7 @@ export class BankWirePaymentProvider implements PaymentProvider {
         'Account Name: PrintERP Technologies Bangladesh Ltd.',
         'Account Number: 1102948192001',
         'Routing Number: 225272635',
-        `Reference: ${params.companyName.slice(0, 10).toUpperCase()}-${params.planCode.toUpperCase()}`,
+        `Reference: ${(params.companyName || 'COMPANY').slice(0, 10).toUpperCase()}-${planRef}`,
         'Save deposit slip or BFTN transaction reference to verify below.',
       ],
       accountNumber: '1102948192001 (City Bank PLC)',
@@ -34,7 +36,8 @@ export class BankWirePaymentProvider implements PaymentProvider {
   }
 
   async verifyPayment(params: PaymentVerifyParams): Promise<PaymentVerifyResult> {
-    const isValid = Boolean(params.gatewayReference && params.gatewayReference.trim().length >= 4)
+    const ref = params.gatewayReference?.trim() || ''
+    const isValid = Boolean(ref.length >= 4)
 
     if (!isValid) {
       return {
@@ -51,8 +54,8 @@ export class BankWirePaymentProvider implements PaymentProvider {
     return {
       success: true,
       status: 'paid',
-      gatewayTransactionId: `BNK-REF-${params.gatewayReference.toUpperCase()}`,
-      paidAmount: params.amount,
+      gatewayTransactionId: `BNK-REF-${ref.toUpperCase()}`,
+      paidAmount: params.amount ?? 0,
       paidAt: new Date().toISOString(),
       paymentMethod: 'bank_wire',
     }

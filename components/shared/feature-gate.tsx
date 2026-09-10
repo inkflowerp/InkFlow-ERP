@@ -11,7 +11,7 @@ import { FeatureCode, PlanCode } from '@/types/subscription.types'
 import {
   checkFeatureAccess,
   DEFAULT_PLANS,
-} from '@/services/subscription.service'
+} from '@/lib/subscription/subscription-constants'
 
 export function useFeatureGate(feature: FeatureCode) {
   const { currentPlanCode, allPlans } = useSubscription()

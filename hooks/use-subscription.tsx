@@ -12,6 +12,9 @@ import {
   CustomLimitsOverride,
   TenantAccountType,
   TenantAccountTypeMeta,
+  SubscriptionCheckoutInput,
+  SubscriptionCheckoutResult,
+  SubscriptionVerificationResult,
   resolveTenantAccountType,
 } from '@/types/subscription.types'
 import {
@@ -20,18 +23,24 @@ import {
   DEFAULT_TENANT_SUBSCRIPTION,
   DEMO_TENANT_SUBSCRIPTION,
   DEMO_RESOURCE_USAGE,
-
   TENANT_ACCOUNT_TYPE_METADATA,
   checkFeatureAccess,
   checkResourceLimit,
   getTenantResourceUsage,
-  getTenantSubscription,
   getTrialPlan,
   getNextTierPlan,
   getTrialDaysRemaining,
-} from '@/services/subscription.service'
+} from '@/lib/subscription/subscription-constants'
 import { FeatureCode } from '@/types/subscription.types'
 import { useTenant } from '@/hooks/use-tenant'
+import {
+  getTenantSubscriptionAction,
+  initiateSubscriptionCheckoutAction,
+  verifySubscriptionPaymentAction,
+  schedulePlanDowngradeAction,
+  cancelSubscriptionAction,
+  reactivateSubscriptionAction,
+} from '@/actions/subscription.actions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface LimitCheckResult {
@@ -68,15 +77,12 @@ interface SubscriptionContextType {
     percentage: number
   }
   checkCanCreate: (limitType: ConfigurableLimitType) => LimitCheckResult
-  upgradeSubscription: (params: {
-    planCode: PlanCode
-    interval: BillingInterval
-    paymentMethod: PaymentGatewayType
-    reference: string
-  }) => Promise<boolean>
-  simulatePlan: (planCode: PlanCode) => void
-  simulateStatus: (status: CompanySubscriptionRecord['status']) => void
-  simulateAccountType: (accountType: TenantAccountType) => void
+  initiateCheckout: (input: Omit<SubscriptionCheckoutInput, 'companyId'>) => Promise<SubscriptionCheckoutResult>
+  verifyPayment: (params: { internalTrxId?: string; providerTrxId?: string; gatewayReference?: string; provider?: string }) => Promise<SubscriptionVerificationResult>
+  scheduleDowngrade: (nextPlanCode: PlanCode) => Promise<{ success: boolean; effectiveAt?: string; error?: string }>
+  cancelSub: (immediately?: boolean, reason?: string) => Promise<{ success: boolean; error?: string }>
+  reactivateSub: () => Promise<{ success: boolean; error?: string }>
+  refreshSubscription: () => Promise<void>
   // Modal controls
   isUpgradeModalOpen: boolean
   upgradeModalInitialTarget?: PlanCode
@@ -113,18 +119,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     }
   })
 
-  // Sync subscription whenever tenant company changes
-  useEffect(() => {
-    async function syncCompanySub() {
-      try {
-        const sub = await getTenantSubscription(companyId, companySlug)
-        setSubscription(sub)
-      } catch {
-        // fallback to default trial
+  const refreshSubscription = useCallback(async () => {
+    try {
+      const res = await getTenantSubscriptionAction(companyId, companySlug)
+      if (res.success && res.data) {
+        setSubscription(res.data)
       }
-    }
-    syncCompanySub()
+    } catch {}
   }, [companyId, companySlug])
+
+  useEffect(() => {
+    refreshSubscription()
+  }, [refreshSubscription])
 
   // Compute resource usage dynamically
   const [usageTick, setUsageTick] = useState(0)
@@ -187,17 +193,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setIsLimitExceededModalOpen(false)
     setLimitModalType(null)
   }, [])
-
-  // Persist subscription updates to localStorage per-company
-  useEffect(() => {
-    if (typeof window !== 'undefined' && subscription.company_id) {
-      try {
-        const localSubs = PrintERPDataStore.get<CompanySubscriptionRecord[]>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || []
-        const filtered = localSubs.filter((s) => s.company_id !== subscription.company_id)
-        PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, [...filtered, subscription])
-      } catch {}
-    }
-  }, [subscription])
 
   const accountType: TenantAccountType = useMemo(() => {
     return resolveTenantAccountType(subscription)
@@ -324,104 +319,75 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     [isSuspended, isTrialExpired, getLimitStatus, currentPlan, currentPlanCode, plans]
   )
 
-  const upgradeSubscription = async ({
-    planCode,
-    interval,
-    paymentMethod,
-    reference,
-  }: {
-    planCode: PlanCode
-    interval: BillingInterval
-    paymentMethod: PaymentGatewayType
-    reference: string
-  }): Promise<boolean> => {
-    const nextMonth = new Date()
-    if (interval === 'yearly') {
-      nextMonth.setFullYear(nextMonth.getFullYear() + 1)
-    } else {
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
+  // Real Gateway Checkout Initiation
+  const initiateCheckout = async (
+    input: Omit<SubscriptionCheckoutInput, 'companyId'>
+  ): Promise<SubscriptionCheckoutResult> => {
+    const res = await initiateSubscriptionCheckoutAction({
+      ...input,
+      companyId,
+    })
+
+    if (res.success && res.data) {
+      return res.data
     }
 
-    const updatedPlanObj = plans.find((p) => p.code === planCode) || plans[1]
-
-    const updated: CompanySubscriptionRecord = {
-      ...subscription,
-      plan_id: updatedPlanObj.id,
-      plan_code: planCode,
-      status: 'active',
-      billing_interval: interval,
-      current_period_start: new Date().toISOString(),
-      current_period_end: nextMonth.toISOString(),
-      trial_ends_at: null,
-      payment_method_type: paymentMethod,
-      last_payment_reference: reference,
+    return {
+      success: false,
+      error: res.error || 'Failed to initiate checkout',
     }
-
-    setSubscription(updated)
-
-    // Also sync in Platform Companies list if present
-    try {
-      const platformCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-      const updatedPlat = platformCompanies.map((c) => {
-        if (c.id === companyId || c.slug === companySlug) {
-          return { ...c, plan: planCode, status: 'active' }
-        }
-        return c
-      })
-      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_COMPANIES, updatedPlat)
-    } catch {}
-
-    refreshUsage()
-    return true
   }
 
-  const simulatePlan = useCallback(
-    (planCode: PlanCode) => {
-      const planObj = plans.find((p) => p.code === planCode) || plans[0]
-      setSubscription((prev) => ({
-        ...prev,
-        plan_id: planObj.id,
-        plan_code: planCode,
-        status: planCode === 'trial' ? 'trial' : 'active',
-        trial_ends_at: planCode === 'trial' ? new Date(Date.now() + 14 * 86400000).toISOString() : null,
-      }))
+  // Real Server-Side Payment Verification
+  const verifyPayment = async (params: {
+    internalTrxId?: string
+    providerTrxId?: string
+    gatewayReference?: string
+    provider?: string
+  }): Promise<SubscriptionVerificationResult> => {
+    const res = await verifySubscriptionPaymentAction(params)
+    if (res.success && res.data) {
+      await refreshSubscription()
       refreshUsage()
-    },
-    [plans, refreshUsage]
-  )
+      return res.data
+    }
 
-  const simulateStatus = useCallback(
-    (status: CompanySubscriptionRecord['status']) => {
-      setSubscription((prev) => ({
-        ...prev,
-        status,
-      }))
-      refreshUsage()
-    },
-    [refreshUsage]
-  )
+    return {
+      success: false,
+      status: 'failed',
+      error: res.error || 'Payment verification failed',
+    }
+  }
 
-  const simulateAccountType = useCallback(
-    (accType: TenantAccountType) => {
-      if (accType === 'trial') {
-        setSubscription((prev) => ({
-          ...prev,
-          plan_code: 'trial',
-          status: 'trial',
-          trial_ends_at: new Date(Date.now() + 14 * 86400000).toISOString(),
-        }))
-      } else {
-        setSubscription((prev) => ({
-          ...prev,
-          plan_code: accType,
-          status: 'active',
-          trial_ends_at: null,
-        }))
-      }
-      refreshUsage()
-    },
-    [refreshUsage]
-  )
+  // Schedule Downgrade at period end
+  const scheduleDowngrade = async (nextPlanCode: PlanCode) => {
+    const res = await schedulePlanDowngradeAction(nextPlanCode, companyId)
+    if (res.success) {
+      await refreshSubscription()
+      return { success: true, effectiveAt: res.data?.effectiveAt }
+    }
+    return { success: false, error: res.error }
+  }
+
+  // Cancel subscription
+  const cancelSub = async (immediately = false, reason?: string) => {
+    const res = await cancelSubscriptionAction(immediately, reason, companyId)
+    if (res.success) {
+      await refreshSubscription()
+      return { success: true }
+    }
+    return { success: false, error: res.error }
+  }
+
+  // Reactivate subscription
+  const reactivateSub = async () => {
+    const res = await reactivateSubscriptionAction(companyId)
+    if (res.success) {
+      await refreshSubscription()
+      return { success: true }
+    }
+    return { success: false, error: res.error }
+  }
 
   return (
     <SubscriptionContext.Provider
@@ -442,10 +408,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         hasFeature,
         getLimitStatus,
         checkCanCreate,
-        upgradeSubscription,
-        simulatePlan,
-        simulateStatus,
-        simulateAccountType,
+        initiateCheckout,
+        verifyPayment,
+        scheduleDowngrade,
+        cancelSub,
+        reactivateSub,
+        refreshSubscription,
         isUpgradeModalOpen,
         upgradeModalInitialTarget,
         upgradeModalTriggerFeature,
@@ -493,10 +461,12 @@ export function useSubscription() {
         warning: false,
         exceeded: false,
       }),
-      upgradeSubscription: async () => true,
-      simulatePlan: () => {},
-      simulateStatus: () => {},
-      simulateAccountType: () => {},
+      initiateCheckout: async () => ({ success: false, error: 'Provider not initialized' }),
+      verifyPayment: async () => ({ success: false, status: 'failed' as const, error: 'Provider not initialized' }),
+      scheduleDowngrade: async () => ({ success: false, error: 'Provider not initialized' }),
+      cancelSub: async () => ({ success: false, error: 'Provider not initialized' }),
+      reactivateSub: async () => ({ success: false, error: 'Provider not initialized' }),
+      refreshSubscription: async () => {},
       isUpgradeModalOpen: false,
       upgradeModalInitialTarget: undefined,
       upgradeModalTriggerFeature: undefined,

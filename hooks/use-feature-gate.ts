@@ -7,7 +7,7 @@ import {
   FEATURE_METADATA,
   getMinimumPlanForFeature,
   FeatureMeta,
-} from '@/services/subscription.service'
+} from '@/lib/subscription/subscription-constants'
 import { useSubscription } from './use-subscription'
 
 export interface FeatureGateResult {

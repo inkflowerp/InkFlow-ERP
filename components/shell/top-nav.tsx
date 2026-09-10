@@ -17,15 +17,18 @@ import {
   ShoppingBag,
   CreditCard,
   Users,
+  Radio,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
+import { useRealtime } from '@/components/providers/realtime-provider'
 import { cn } from '@/lib/utils'
 
 export function TopNav() {
   const router = useRouter()
   const { t, tBilingual } = useI18n()
   const { company, currentRole, currentUser } = useTenant()
+  const { isLive, status } = useRealtime()
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false)
 
   const slug = company?.slug || 'app'
@@ -72,7 +75,26 @@ export function TopNav() {
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-
+        {/* Realtime Live Sync Health Indicator */}
+        <div className="hidden lg:flex items-center mr-1">
+          {isLive ? (
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/80"
+              title="Live Database Realtime Connected: Synchronized across all users & tabs"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Live</span>
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/80"
+              title={`Connection State: ${status}`}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              <span>{status === 'connecting' || status === 'reconnecting' ? 'Syncing...' : 'Live Ready'}</span>
+            </span>
+          )}
+        </div>
 
         {/* Quick Action Hub */}
         <div className="relative shrink-0">

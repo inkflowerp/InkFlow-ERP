@@ -1,4 +1,7 @@
-import React, { useState } from 'react'
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Bell, Clock, Truck, FileText, CheckCircle2, AlertCircle, ShoppingBag } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
@@ -6,6 +9,11 @@ import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
+import {
+  getInAppNotificationsAction,
+  markNotificationReadAction,
+  markAllNotificationsReadAction,
+} from '@/actions/notification.actions'
 
 interface NotificationItem {
   id: string
@@ -26,8 +34,9 @@ interface NotificationItem {
 }
 
 export function NotificationsDropdown() {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-  const { currentRole } = useTenant()
+  const { company, currentRole } = useTenant()
   const { isOwner, isDesigner, isOperator, isAccountant, isDelivery } = usePermissions()
   const { tBilingual } = useI18n()
 
@@ -35,6 +44,19 @@ export function NotificationsDropdown() {
     STORAGE_KEYS.IN_APP_NOTIFICATIONS,
     []
   )
+
+  // Fetch initial notifications from database on mount
+  useEffect(() => {
+    if (company?.id) {
+      getInAppNotificationsAction(company.id)
+        .then((res) => {
+          if (res.success && res.data && res.data.length > 0) {
+            setNotifications(res.data)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [company?.id, setNotifications])
 
   const roleKey = isOwner
     ? 'owner'
@@ -55,20 +77,39 @@ export function NotificationsDropdown() {
 
   const unreadCount = notifications.filter((n) => !(n.is_read || n.read)).length
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     const updated = (Array.isArray(rawNotifications) ? rawNotifications : []).map((n) => ({
       ...n,
       is_read: true,
       read: true,
     }))
     setNotifications(updated)
+
+    if (company?.id) {
+      try {
+        await markAllNotificationsReadAction(company.id)
+      } catch {}
+    }
   }
 
-  const markSingleAsRead = (id: string) => {
+  const markSingleAsRead = async (item: NotificationItem) => {
     const updated = (Array.isArray(rawNotifications) ? rawNotifications : []).map((n) =>
-      n.id === id ? { ...n, is_read: true, read: true } : n
+      n.id === item.id ? { ...n, is_read: true, read: true } : n
     )
     setNotifications(updated)
+
+    if (company?.id) {
+      try {
+        await markNotificationReadAction(item.id, company.id)
+      } catch {}
+    }
+
+    if (item.action_url) {
+      setIsOpen(false)
+      const slug = company?.slug || 'app'
+      const url = item.action_url.startsWith('/') ? `/${slug}${item.action_url}` : item.action_url
+      router.push(url)
+    }
   }
 
   const getIcon = (type: string) => {
@@ -154,7 +195,7 @@ export function NotificationsDropdown() {
                   return (
                     <div
                       key={n.id}
-                      onClick={() => markSingleAsRead(n.id)}
+                      onClick={() => markSingleAsRead(n)}
                       className={cn(
                         'flex items-start gap-3 p-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer',
                         !isItemRead && 'bg-blue-50/40 dark:bg-blue-950/20'
