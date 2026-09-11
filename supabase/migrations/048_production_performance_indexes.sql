@@ -76,7 +76,7 @@ CREATE INDEX IF NOT EXISTS idx_email_queue_tenant_status_attempts
   ON public.email_queue (tenant_id, status, attempts, created_at ASC);
 
 CREATE INDEX IF NOT EXISTS idx_gateway_transactions_tenant_status_created
-  ON public.gateway_transactions (tenant_id, status, created_at DESC);
+  ON public.gateway_transactions (tenant_id, payment_status, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_in_app_notifications_company_user_read
   ON public.in_app_notifications (company_id, user_id, is_read, created_at DESC);
