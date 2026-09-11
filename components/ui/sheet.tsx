@@ -37,7 +37,7 @@ export function Sheet({ open, onOpenChange, children, side = 'right', className 
       {/* Sheet panel */}
       <div
         className={cn(
-          'fixed inset-y-0 z-50 flex h-full w-[88vw] sm:w-80 max-w-sm flex-col border-slate-200 bg-white shadow-2xl transition-transform animate-in duration-300 dark:border-slate-800 dark:bg-slate-900',
+          'fixed inset-y-0 z-50 flex h-full h-[100dvh] max-h-screen w-[88vw] sm:w-80 max-w-sm flex-col min-h-0 border-slate-200 bg-white shadow-2xl transition-transform animate-in duration-300 dark:border-slate-800 dark:bg-slate-900 overflow-hidden',
           side === 'left' ? 'left-0 border-r slide-in-from-left' : 'right-0 border-l slide-in-from-right',
           className
         )}
@@ -56,7 +56,7 @@ export function SheetHeader({
 }: React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }) {
   return (
     <div
-      className={cn('flex items-center justify-between border-b border-slate-100 p-3.5 sm:p-4 dark:border-slate-800 shrink-0', className)}
+      className={cn('flex items-center justify-between border-b border-slate-100 dark:border-slate-800 p-3.5 sm:p-4 bg-white dark:bg-slate-900 shrink-0 min-h-[56px]', className)}
       {...props}
     >
       <div className="flex-1 min-w-0">{children}</div>
@@ -75,9 +75,9 @@ export function SheetHeader({
 }
 
 export function SheetContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex-1 overflow-y-auto overscroll-contain p-3.5 sm:p-4 scrollbar-thin', className)} {...props} />
+  return <div className={cn('flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 sm:p-4 scrollbar-thin bg-white dark:bg-slate-900', className)} {...props} />
 }
 
 export function SheetFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('border-t border-slate-100 p-3.5 sm:p-4 dark:border-slate-800 shrink-0', className)} {...props} />
+  return <div className={cn('border-t border-slate-100 dark:border-slate-800 p-3.5 sm:p-4 bg-white dark:bg-slate-900 shrink-0', className)} {...props} />
 }

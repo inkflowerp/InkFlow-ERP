@@ -109,8 +109,8 @@ export function TopNav() {
           )}
         </div>
 
-        {/* Quick Action Hub */}
-        <div className="relative shrink-0">
+        {/* Quick Action Hub (Hidden on mobile <640px to prevent crowding with CompanySelector) */}
+        <div className="relative shrink-0 hidden sm:block">
           <button
             type="button"
             onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
@@ -184,14 +184,16 @@ export function TopNav() {
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
-          className="xl:hidden flex items-center justify-center h-10 w-10 rounded-lg border border-slate-200 bg-slate-50/80 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer shrink-0 min-h-[40px] min-w-[40px]"
+          className="xl:hidden flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-lg border border-slate-200 bg-slate-50/80 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer shrink-0 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
           title="Global Search (/)"
           aria-label="Search"
         >
           <Search className="h-4 w-4 shrink-0" />
         </button>
 
-        <LanguageSwitcher />
+        <div className="hidden sm:block shrink-0">
+          <LanguageSwitcher />
+        </div>
         <NotificationsDropdown />
         <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0" />
         <UserMenu />

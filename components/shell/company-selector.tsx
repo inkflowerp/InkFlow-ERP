@@ -33,7 +33,7 @@ export function CompanySelector() {
         >
           {company?.name ? company.name.charAt(0).toUpperCase() : 'P'}
         </div>
-        <div className="flex flex-col text-left max-w-[85px] xs:max-w-[125px] sm:max-w-[170px] lg:max-w-[200px] min-w-0" suppressHydrationWarning>
+        <div className="flex flex-col text-left max-w-[110px] xs:max-w-[150px] sm:max-w-[180px] lg:max-w-[220px] min-w-0" suppressHydrationWarning>
           <div className="flex items-center gap-1.5">
             <span className="truncate font-semibold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap" suppressHydrationWarning>
               {displayName}

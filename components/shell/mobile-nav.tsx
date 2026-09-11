@@ -447,9 +447,9 @@ export function MobileNav() {
               setOpen(false)
               signOut()
             }}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-200/80 dark:border-red-900/60 bg-red-50/60 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors cursor-pointer min-h-[40px] bangla-text"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-red-200/80 dark:border-red-900/60 bg-red-50/80 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs"
           >
-            <LogOut className="h-3.5 w-3.5" />
+            <LogOut className="h-4 w-4" />
             <span>{tBilingual('Sign Out', 'লগ আউট')}</span>
           </button>
         </SheetFooter>
