@@ -22,10 +22,6 @@ CREATE INDEX IF NOT EXISTS idx_production_reworks_job_id
 CREATE INDEX IF NOT EXISTS idx_customers_company_name
   ON public.customers (company_id, name);
 
-CREATE INDEX IF NOT EXISTS idx_customers_company_due_balance
-  ON public.customers (company_id, total_due_balance DESC)
-  WHERE total_due_balance > 0;
-
 CREATE INDEX IF NOT EXISTS idx_customer_comms_company_cust_created
   ON public.customer_communications (company_id, customer_id, created_at DESC);
 
@@ -43,11 +39,14 @@ CREATE INDEX IF NOT EXISTS idx_invoices_company_invoice_number
 CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id
   ON public.invoice_items (invoice_id);
 
-CREATE INDEX IF NOT EXISTS idx_payments_company_invoice_date
-  ON public.payments (company_id, invoice_id, payment_date DESC);
+CREATE INDEX IF NOT EXISTS idx_payments_company_customer_date
+  ON public.payments (company_id, customer_id, payment_date DESC);
 
-CREATE INDEX IF NOT EXISTS idx_payment_adjustments_payment_id
-  ON public.payment_adjustments (payment_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_payment_allocations_payment_invoice
+  ON public.payment_allocations (payment_id, invoice_id);
+
+CREATE INDEX IF NOT EXISTS idx_financial_write_offs_company_invoice
+  ON public.financial_write_offs (company_id, invoice_id);
 
 -- 6. INVENTORY & STOCK LEDGER
 CREATE INDEX IF NOT EXISTS idx_materials_company_sku
@@ -58,45 +57,45 @@ CREATE INDEX IF NOT EXISTS idx_inventory_rolls_material_status
 
 -- 7. HR, ATTENDANCE & PAYROLL
 CREATE INDEX IF NOT EXISTS idx_attendance_records_company_employee_date
-  ON public.attendance_records (company_id, employee_id, date DESC);
+  ON public.attendance_records (company_id, employee_id, attendance_date DESC);
 
 CREATE INDEX IF NOT EXISTS idx_attendance_records_company_date_status
-  ON public.attendance_records (company_id, date DESC, status);
+  ON public.attendance_records (company_id, attendance_date DESC, verification_status);
 
 CREATE INDEX IF NOT EXISTS idx_attendance_locations_company_active
   ON public.attendance_locations (company_id, is_active);
 
-CREATE INDEX IF NOT EXISTS idx_payroll_period_employee
-  ON public.payroll (payroll_period_id, employee_id);
+CREATE INDEX IF NOT EXISTS idx_payroll_items_period_employee
+  ON public.payroll_items (payroll_period_id, employee_id);
 
 -- 8. COMMUNICATIONS, GATEWAYS & LOGS
-CREATE INDEX IF NOT EXISTS idx_email_logs_company_status_created
-  ON public.email_logs (company_id, status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_email_logs_tenant_status_created
+  ON public.email_logs (tenant_id, status, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_email_queue_status_attempts
-  ON public.email_queue (status, attempts, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_email_queue_tenant_status_attempts
+  ON public.email_queue (tenant_id, status, attempts, created_at ASC);
 
-CREATE INDEX IF NOT EXISTS idx_gateway_transactions_company_status_created
-  ON public.gateway_transactions (company_id, status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_gateway_transactions_tenant_status_created
+  ON public.gateway_transactions (tenant_id, status, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_in_app_notifications_company_user_read
   ON public.in_app_notifications (company_id, user_id, is_read, created_at DESC);
 
 -- 9. PLATFORM & MULTI-TENANT SUBSCRIPTIONS
-CREATE INDEX IF NOT EXISTS idx_company_users_company_user_active
-  ON public.company_users (company_id, user_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_company_users_company_user_status
+  ON public.company_users (company_id, user_id, status);
 
 CREATE INDEX IF NOT EXISTS idx_company_subscriptions_company_status
   ON public.company_subscriptions (company_id, status, plan_id);
 
-CREATE INDEX IF NOT EXISTS idx_platform_subscriptions_company_status
-  ON public.platform_subscriptions (company_id, status, plan_id);
+CREATE INDEX IF NOT EXISTS idx_platform_subscriptions_account_status
+  ON public.platform_subscriptions (platform_account_id, status, plan_id);
 
-CREATE INDEX IF NOT EXISTS idx_platform_subscription_events_company_created
-  ON public.platform_subscription_events (company_id, event_type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_platform_subscription_events_account_created
+  ON public.platform_subscription_events (platform_account_id, event_type, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_platform_audit_logs_created_desc
-  ON public.platform_audit_logs (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_platform_audit_logs_target_created
+  ON public.platform_audit_logs (target_company_id, created_at DESC);
 
 -- 10. OPTIMIZED SERVER-SIDE DASHBOARD AGGREGATION RPC
 CREATE OR REPLACE FUNCTION public.get_tenant_dashboard_metrics_v2(
