@@ -78,7 +78,7 @@ export function TopNav() {
   ]
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-1.5 sm:gap-2">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-1.5 sm:gap-2">
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
         <MobileNav />
         <CompanySelector />

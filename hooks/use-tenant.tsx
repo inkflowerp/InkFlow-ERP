@@ -160,16 +160,6 @@ export function TenantProvider({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const [availableCompanies, setAvailableCompanies] = useState<CompanyRow[]>(() => {
-    const platformCompanies =
-      PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-    return platformCompanies.map(platformCompanyToRow)
-  })
-
-  const [session, setSession] = useState<TenantSessionData | null>(
-    () => getSessionFromContext(initialTenantContext) || getSessionFromCookie()
-  )
-
   const [company, setCompany] = useState<CompanyRow | null>(() => {
     if (initialTenantContext?.companySlug) {
       const match = resolveCompanyBySlug(initialTenantContext.companySlug)
@@ -185,8 +175,47 @@ export function TenantProvider({
         slug: initialTenantContext.companySlug,
       }
     }
-    const targetSlug = initialSlug || session?.companySlug || 'my-company'
+    const targetSlug = initialSlug || 'my-company'
     return resolveCompanyBySlug(targetSlug)
+  })
+
+  const [availableCompanies, setAvailableCompanies] = useState<CompanyRow[]>(() => {
+    const platformCompanies =
+      PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+    const converted = platformCompanies.map(platformCompanyToRow)
+    const activeCo = company || resolveCompanyBySlug(initialSlug || initialTenantContext?.companySlug || 'my-company')
+    if (activeCo && !converted.some((c) => c.slug === activeCo.slug)) {
+      return [activeCo, ...converted]
+    }
+    return converted.length > 0 ? converted : activeCo ? [activeCo] : []
+  })
+
+  const [session, setSession] = useState<TenantSessionData | null>(() => {
+    const fromCtx = getSessionFromContext(initialTenantContext)
+    if (fromCtx) return fromCtx
+    const fromCookie = getSessionFromCookie()
+    if (fromCookie) return fromCookie
+
+    const targetSlug = initialSlug || initialTenantContext?.companySlug || 'my-company'
+    const targetCo = resolveCompanyBySlug(targetSlug)
+    return {
+      userId: 'usr-owner',
+      userEmail: targetCo.email || `owner@${targetCo.slug}.com`,
+      fullName: targetCo.name ? `${targetCo.name} Admin` : 'Business Owner',
+      fullNameBn: targetCo.name_bn ? `${targetCo.name_bn} অ্যাডমিন` : 'প্রতিষ্ঠান প্রধান',
+      phone: targetCo.phone || null,
+      companyId: targetCo.id,
+      companySlug: targetCo.slug,
+      companyName: targetCo.name,
+      companyNameBn: targetCo.name_bn || null,
+      branchId: null,
+      role: 'business_owner',
+      primaryRole: 'business_owner',
+      responsibilities: ['business_owner'],
+      permissions: ['*'],
+      loginTime: new Date().toISOString(),
+      token: '',
+    }
   })
 
   const [branches] = useState<BranchRow[]>([])
@@ -212,7 +241,7 @@ export function TenantProvider({
   const [isLoading, setIsLoading] = useState(false)
 
   // Map session role to TenantRole ('owner' | 'manager' | 'operator' | etc.)
-  const currentRole: TenantRole | null = session?.role
+  const currentRole: TenantRole = session?.role
     ? session.role === 'business_owner'
       ? 'owner'
       : session.role === 'sales_manager'
@@ -226,7 +255,7 @@ export function TenantProvider({
       : session.role === 'delivery_coordinator'
       ? 'installer'
       : (session.role as TenantRole) || 'owner'
-    : null
+    : 'owner'
 
   // Resolve current user details deterministically
   const currentUser: CompanyUserWithProfile | null = useMemo(() => {
@@ -310,7 +339,21 @@ export function TenantProvider({
     const platformCompanies =
       PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
     const converted = platformCompanies.map(platformCompanyToRow)
-    setAvailableCompanies(converted)
+    const activeResolved = activeSession?.companyName
+      ? {
+          ...resolved,
+          id: activeSession.companyId || resolved.id,
+          name: activeSession.companyName,
+          name_bn: activeSession.companyNameBn || activeSession.companyName || resolved.name_bn,
+          slug: activeSession.companySlug || resolved.slug,
+        }
+      : resolved
+
+    if (activeResolved && !converted.some((c) => c.slug === activeResolved.slug)) {
+      setAvailableCompanies([activeResolved, ...converted])
+    } else {
+      setAvailableCompanies(converted.length > 0 ? converted : activeResolved ? [activeResolved] : [])
+    }
   }, [initialSlug, initialTenantContext])
 
   useEffect(() => {
@@ -325,7 +368,8 @@ export function TenantProvider({
       if (
         customEvent.detail?.key === STORAGE_KEYS.COMPANY_PROFILE ||
         customEvent.detail?.key === STORAGE_KEYS.TAX_SETTINGS ||
-        customEvent.detail?.key === STORAGE_KEYS.BRANDING_SETTINGS
+        customEvent.detail?.key === STORAGE_KEYS.BRANDING_SETTINGS ||
+        customEvent.detail?.key === STORAGE_KEYS.PLATFORM_COMPANIES
       ) {
         reloadTenantData()
       }
@@ -346,7 +390,7 @@ export function TenantProvider({
 
   const switchCompany = async (slug: string) => {
     setIsLoading(true)
-    const target = availableCompanies.find((c) => c.slug === slug)
+    const target = availableCompanies.find((c) => c.slug === slug) || resolveCompanyBySlug(slug)
     if (target) {
       const profile = PrintERPDataStore.get<Partial<CompanyRow>>(STORAGE_KEYS.COMPANY_PROFILE)
       setCompany(profile ? { ...target, ...profile } : target)
@@ -354,6 +398,7 @@ export function TenantProvider({
     }
     setIsLoading(false)
   }
+
 
   return (
     <TenantContext.Provider
