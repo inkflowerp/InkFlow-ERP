@@ -174,7 +174,7 @@ export default function OperatorPanelPage() {
                   </div>
 
                   {/* Right Column: Actions */}
-                  <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0 pt-2 lg:pt-0">
                     <Button
                       variant="outline"
                       size="sm"
@@ -184,9 +184,9 @@ export default function OperatorPanelPage() {
                         setWastageSft(Math.round(totalAreaSft * 0.05))
                         setIsLogMaterialOpen(true)
                       }}
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto h-11 sm:h-9 text-xs font-medium"
                     >
-                      <Layers className="h-4 w-4 mr-1.5" />
+                      <Layers className="h-4 w-4 mr-1.5 shrink-0" />
                       Log Material ({job.materialLoggedSft ? `${job.materialLoggedSft} sft` : 'Add'})
                     </Button>
 
@@ -194,9 +194,9 @@ export default function OperatorPanelPage() {
                       <Button
                         size="sm"
                         onClick={() => handleStartPrint(job.id)}
-                        className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto font-semibold"
+                        className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 font-semibold text-xs text-white"
                       >
-                        <Play className="h-4 w-4 mr-1.5" />
+                        <Play className="h-4 w-4 mr-1.5 shrink-0" />
                         Start Print
                       </Button>
                     )}
@@ -205,9 +205,9 @@ export default function OperatorPanelPage() {
                       <Button
                         size="sm"
                         onClick={() => handleCompleteJob(job.id)}
-                        className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto font-bold text-white shadow-md"
+                        className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto h-11 sm:h-9 font-bold text-xs text-white shadow-md"
                       >
-                        <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                        <CheckCircle2 className="h-4 w-4 mr-1.5 shrink-0" />
                         Complete & QC Pass
                       </Button>
                     )}
@@ -237,6 +237,7 @@ export default function OperatorPanelPage() {
               type="number"
               value={loggedSft}
               onChange={(e) => setLoggedSft(Number(e.target.value))}
+              className="h-10 text-sm"
               required
             />
           </div>
@@ -250,17 +251,18 @@ export default function OperatorPanelPage() {
               type="number"
               value={wastageSft}
               onChange={(e) => setWastageSft(Number(e.target.value))}
+              className="h-10 text-sm"
             />
             <span className="text-[11px] text-slate-500">
               Typically 5% margin for machine grip and roll alignment.
             </span>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setIsLogMaterialOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsLogMaterialOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-10 sm:h-9">
               <Save className="h-4 w-4 mr-1.5" />
               Save Consumption
             </Button>

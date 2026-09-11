@@ -408,131 +408,240 @@ export default function InventoryDashboardPage() {
             <span className="text-xs text-slate-400">Active stock balances & valuation</span>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">SKU & Item Name</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Current Stock</th>
-                <th className="py-3 px-4">Roll Area / Coverage</th>
-                <th className="py-3 px-4">Unit Cost (Avg)</th>
-                <th className="py-3 px-4">Asset Value</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((mat: MaterialRecord) => {
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">SKU & Item Name</th>
+                  <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Current Stock</th>
+                  <th className="py-3 px-4">Roll Area / Coverage</th>
+                  <th className="py-3 px-4">Unit Cost (Avg)</th>
+                  <th className="py-3 px-4">Asset Value</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map((mat: MaterialRecord) => {
+                  const isLow = mat.current_stock <= mat.min_stock_level
+                  const valuation = mat.current_stock * mat.average_cost
+
+                  return (
+                    <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      {/* SKU & Name */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
+                          {mat.sku}
+                        </div>
+                        <div className="font-bold text-slate-900 dark:text-white text-xs mt-0.5">
+                          {mat.name}
+                        </div>
+                        {mat.name_bn && (
+                          <div className="text-[11px] text-slate-400 font-normal">{mat.name_bn}</div>
+                        )}
+                      </td>
+
+                      {/* Category */}
+                      <td className="py-3.5 px-4">
+                        <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {mat.category.replace('_', ' ')}
+                        </span>
+                      </td>
+
+                      {/* Current Stock */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-sm font-black text-slate-900 dark:text-white">
+                            {mat.current_stock} {mat.unit}
+                          </span>
+                          {isLow && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800 border border-red-300 animate-pulse">
+                              <AlertTriangle className="h-2.5 w-2.5" /> Low Stock
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-400">Min floor: {mat.min_stock_level} {mat.unit}</div>
+                      </td>
+
+                      {/* Roll Area / Coverage */}
+                      <td className="py-3.5 px-4 text-xs font-mono">
+                        {mat.is_roll && mat.total_roll_area_sft ? (
+                          <div>
+                            <strong className="text-slate-800 dark:text-slate-200">
+                              {mat.total_roll_area_sft} SFT / roll
+                            </strong>
+                            <div className="text-[11px] text-slate-400">
+                              ({mat.roll_width_ft}ft × {mat.roll_length_ft}ft)
+                            </div>
+                          </div>
+                        ) : mat.coverage_rate_sft_per_unit ? (
+                          <div>
+                            <strong className="text-amber-600">
+                              {mat.coverage_rate_sft_per_unit} SFT / {mat.unit}
+                            </strong>
+                            <div className="text-[10px] text-slate-400">Configured coverage</div>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">Standard unit</span>
+                        )}
+                      </td>
+
+                      {/* Unit Cost */}
+                      <td className="py-3.5 px-4 text-xs">
+                        <div className="font-mono font-bold text-slate-900 dark:text-white">
+                          <CurrencyDisplay amount={mat.average_cost} />
+                        </div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400">
+                          {mat.valuation_method.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+
+                      {/* Asset Value */}
+                      <td className="py-3.5 px-4 font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                        <CurrencyDisplay amount={valuation} />
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedMaterialForTx(mat)
+                              setTxUnitCost(mat.average_cost)
+                            }}
+                            className="h-7 text-[11px] px-2"
+                          >
+                            <ArrowDownUp className="h-3 w-3 mr-1" />
+                            Stock Tx
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedMaterialForWastage(mat)}
+                            className="h-7 text-[11px] px-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
+                          >
+                            <TrendingDown className="h-3 w-3 mr-1" />
+                            Wastage
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-400">
+                {tBilingual('No raw materials found matching filter.', 'কোন কাঁচামাল পাওয়া যায়নি।')}
+              </div>
+            ) : (
+              filtered.map((mat: MaterialRecord) => {
                 const isLow = mat.current_stock <= mat.min_stock_level
                 const valuation = mat.current_stock * mat.average_cost
 
                 return (
-                  <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* SKU & Name */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
-                        {mat.sku}
+                  <div key={mat.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Top: SKU & Category Badge & Low Stock */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
+                          {mat.sku}
+                        </span>
+                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {mat.category.replace('_', ' ')}
+                        </span>
                       </div>
-                      <div className="font-bold text-slate-900 dark:text-white text-xs mt-0.5">
-                        {mat.name}
-                      </div>
-                      {mat.name_bn && (
-                        <div className="text-[11px] text-slate-400 font-normal">{mat.name_bn}</div>
+                      {isLow && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800 border border-red-300 animate-pulse shrink-0">
+                          <AlertTriangle className="h-2.5 w-2.5" /> Low Stock
+                        </span>
                       )}
-                    </td>
+                    </div>
 
-                    {/* Category */}
-                    <td className="py-3.5 px-4">
-                      <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                        {mat.category.replace('_', ' ')}
-                      </span>
-                    </td>
+                    {/* Name & Bengali */}
+                    <div>
+                      <div className="font-bold text-sm text-slate-900 dark:text-white">{mat.name}</div>
+                      {mat.name_bn && (
+                        <div className="text-xs text-slate-400">{mat.name_bn}</div>
+                      )}
+                    </div>
 
-                    {/* Current Stock */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-sm font-black text-slate-900 dark:text-white">
+                    {/* Stock & Valuation Grid */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Current Stock</span>
+                        <span className="font-mono font-black text-sm text-slate-900 dark:text-white">
                           {mat.current_stock} {mat.unit}
                         </span>
-                        {isLow && (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800 border border-red-300 animate-pulse">
-                            <AlertTriangle className="h-2.5 w-2.5" /> Low Stock
+                        <div className="text-[10px] text-slate-400">Min: {mat.min_stock_level} {mat.unit}</div>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total Valuation</span>
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                          <CurrencyDisplay amount={valuation} />
+                        </span>
+                        <div className="text-[10px] text-slate-400 font-mono">Avg: ৳ {formatBDT(mat.average_cost)}</div>
+                      </div>
+
+                      {mat.is_roll && mat.total_roll_area_sft && (
+                        <div className="col-span-2 pt-1 border-t border-slate-200/60 dark:border-slate-800 flex justify-between items-center text-[11px]">
+                          <span className="text-slate-400">Roll Size:</span>
+                          <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
+                            {mat.total_roll_area_sft} SFT ({mat.roll_width_ft}ft × {mat.roll_length_ft}ft)
                           </span>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-slate-400">Min floor: {mat.min_stock_level} {mat.unit}</div>
-                    </td>
-
-                    {/* Roll Area / Coverage */}
-                    <td className="py-3.5 px-4 text-xs font-mono">
-                      {mat.is_roll && mat.total_roll_area_sft ? (
-                        <div>
-                          <strong className="text-slate-800 dark:text-slate-200">
-                            {mat.total_roll_area_sft} SFT / roll
-                          </strong>
-                          <div className="text-[11px] text-slate-400">
-                            ({mat.roll_width_ft}ft × {mat.roll_length_ft}ft)
-                          </div>
                         </div>
-                      ) : mat.coverage_rate_sft_per_unit ? (
-                        <div>
-                          <strong className="text-amber-600">
-                            {mat.coverage_rate_sft_per_unit} SFT / {mat.unit}
-                          </strong>
-                          <div className="text-[10px] text-slate-400">Configured coverage</div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400">Standard unit</span>
                       )}
-                    </td>
 
-                    {/* Unit Cost */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <div className="font-mono font-bold text-slate-900 dark:text-white">
-                        <CurrencyDisplay amount={mat.average_cost} />
-                      </div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400">
-                        {mat.valuation_method.replace(/_/g, ' ')}
-                      </span>
-                    </td>
+                      {mat.coverage_rate_sft_per_unit && (
+                        <div className="col-span-2 pt-1 border-t border-slate-200/60 dark:border-slate-800 flex justify-between items-center text-[11px]">
+                          <span className="text-slate-400">Yield Coverage:</span>
+                          <span className="font-mono font-semibold text-amber-600">
+                            {mat.coverage_rate_sft_per_unit} SFT / {mat.unit}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
-                    {/* Asset Value */}
-                    <td className="py-3.5 px-4 font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm">
-                      <CurrencyDisplay amount={valuation} />
-                    </td>
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedMaterialForTx(mat)
+                          setTxUnitCost(mat.average_cost)
+                        }}
+                        className="flex-1 sm:flex-initial h-9 text-xs font-semibold"
+                      >
+                        <ArrowDownUp className="h-3.5 w-3.5 mr-1" />
+                        Stock Tx
+                      </Button>
 
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedMaterialForTx(mat)
-                            setTxUnitCost(mat.average_cost)
-                          }}
-                          className="h-7 text-[11px] px-2"
-                        >
-                          <ArrowDownUp className="h-3 w-3 mr-1" />
-                          Stock Tx
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setSelectedMaterialForWastage(mat)}
-                          className="h-7 text-[11px] px-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
-                        >
-                          <TrendingDown className="h-3 w-3 mr-1" />
-                          Wastage
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedMaterialForWastage(mat)}
+                        className="flex-1 sm:flex-initial h-9 text-xs font-semibold text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
+                      >
+                        <TrendingDown className="h-3.5 w-3.5 mr-1" />
+                        Wastage
+                      </Button>
+                    </div>
+                  </div>
                 )
-              })}
-            </tbody>
-          </table>
+              })
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -617,11 +726,11 @@ export default function InventoryDashboardPage() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedMaterialForTx(null)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setSelectedMaterialForTx(null)} className="w-full sm:w-auto min-h-[40px]">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
                 Log Ledger Transaction
               </Button>
             </div>
@@ -688,11 +797,11 @@ export default function InventoryDashboardPage() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedMaterialForWastage(null)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setSelectedMaterialForWastage(null)} className="w-full sm:w-auto min-h-[40px]">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white font-bold">
+              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-red-600 hover:bg-red-700 text-white font-bold">
                 Log Wastage Entry
               </Button>
             </div>
@@ -709,7 +818,7 @@ export default function InventoryDashboardPage() {
         hideFooter
       >
         <form onSubmit={handleCreateMaterial} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="mSku" required>SKU Code</Label>
               <Input
@@ -767,7 +876,7 @@ export default function InventoryDashboardPage() {
           {newIsRoll && (
             <div className="p-3 bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg space-y-2 text-xs">
               <span className="font-bold text-blue-900 dark:text-blue-200">Roll Dimensions (SFT Accounting):</span>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
                   <Label htmlFor="rw">Width (ft)</Label>
                   <Input
@@ -811,7 +920,7 @@ export default function InventoryDashboardPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="mCost" required>Standard Cost (৳ BDT)</Label>
               <Input
@@ -835,13 +944,13 @@ export default function InventoryDashboardPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)} className="w-full sm:w-auto min-h-[40px]">
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
             >
               Save Material
             </Button>

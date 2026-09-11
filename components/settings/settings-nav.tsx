@@ -96,7 +96,7 @@ export function SettingsNav() {
   ]
 
   return (
-    <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto gap-1 pb-px scrollbar-none mb-6">
+    <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto gap-1 pb-px scrollbar-none mb-6 touch-scroll">
       {links.map((link) => {
         const Icon = link.icon
         const isActive = pathname === link.href
@@ -105,9 +105,9 @@ export function SettingsNav() {
             key={link.href}
             href={link.href}
             className={cn(
-              'flex items-center gap-2 px-3.5 py-2.5 rounded-t-lg text-xs font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px',
+              'flex items-center gap-2 px-3.5 py-2.5 rounded-t-lg text-xs font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px h-10 sm:h-9 shrink-0',
               isActive
-                ? 'border-blue-600 text-blue-600 bg-blue-50/50 dark:border-blue-500 dark:text-blue-400 dark:bg-blue-950/20'
+                ? 'border-blue-600 text-blue-600 bg-blue-50/50 dark:border-blue-500 dark:text-blue-400 dark:bg-blue-950/20 font-bold'
                 : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:hover:text-slate-200 dark:hover:bg-slate-800/40'
             )}
           >

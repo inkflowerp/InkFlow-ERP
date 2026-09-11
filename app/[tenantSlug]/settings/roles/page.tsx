@@ -161,7 +161,7 @@ export default function RolesMatrixPage() {
         icon={ShieldCheck}
         iconColor="text-blue-600"
         actions={
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {isSaved && (
               <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 bangla-text">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
@@ -169,12 +169,12 @@ export default function RolesMatrixPage() {
               </span>
             )}
 
-            <Button variant="outline" size="sm" onClick={handleResetToDefault} disabled={isOwnerRole} className="bangla-text">
+            <Button variant="outline" size="sm" onClick={handleResetToDefault} disabled={isOwnerRole} className="bangla-text h-9 text-xs">
               <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Reset to Default', 'ডিফল্টে ফিরুন')}
             </Button>
 
-            <Button size="sm" onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 bangla-text">
+            <Button size="sm" onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 bangla-text h-9 text-xs">
               <Save className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Save Changes', 'সংরক্ষণ করুন')}
             </Button>
@@ -183,13 +183,13 @@ export default function RolesMatrixPage() {
       />
 
       {/* Main Tabs (Matrix vs User Overrides) */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2">
+      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 gap-2 overflow-x-auto touch-scroll">
         <button
           onClick={() => setActiveTab('matrix')}
           className={cn(
-            'px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors flex items-center gap-2',
+            'px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors flex items-center gap-2 whitespace-nowrap h-10 sm:h-9 shrink-0',
             activeTab === 'matrix'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+              ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           )}
         >
@@ -200,9 +200,9 @@ export default function RolesMatrixPage() {
         <button
           onClick={() => setActiveTab('overrides')}
           className={cn(
-            'px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors flex items-center gap-2',
+            'px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors flex items-center gap-2 whitespace-nowrap h-10 sm:h-9 shrink-0',
             activeTab === 'overrides'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+              ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           )}
         >
@@ -337,7 +337,7 @@ export default function RolesMatrixPage() {
                                   onClick={() => toggleCell(res.resource, action.action)}
                                   disabled={isOwnerRole}
                                   className={cn(
-                                    'h-6 w-6 rounded-md inline-flex items-center justify-center transition-all cursor-pointer border',
+                                    'h-7 w-7 sm:h-6 sm:w-6 rounded-md inline-flex items-center justify-center transition-all cursor-pointer border',
                                     isOwnerRole
                                       ? 'bg-blue-100 border-blue-200 text-blue-700 cursor-not-allowed dark:bg-blue-950 dark:border-blue-900'
                                       : isChecked

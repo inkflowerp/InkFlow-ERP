@@ -155,7 +155,7 @@ export default function SupplierPriceHistoryPage({ params }: PriceHistoryPagePro
         </div>
       </Card>
 
-      {/* Price History Table */}
+      {/* Price History Table & Mobile Cards */}
       <Card>
         <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
           <CardTitle className="text-base">Procurement Price Audit Trail ({filtered.length})</CardTitle>
@@ -163,73 +163,131 @@ export default function SupplierPriceHistoryPage({ params }: PriceHistoryPagePro
             Historical invoice prices paid to vendors across procurement POs.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">PO Date</th>
-                <th className="py-3 px-4">Material</th>
-                <th className="py-3 px-4">Supplier</th>
-                <th className="py-3 px-4 text-right">Qty</th>
-                <th className="py-3 px-4 text-right">Purchase Price (৳)</th>
-                <th className="py-3 px-4 text-right">Previous Price</th>
-                <th className="py-3 px-4 text-right">Variance</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.length === 0 ? (
+        <CardContent className="p-0">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500">
-                    No supplier price history records available.
-                  </td>
+                  <th className="py-3 px-4">PO Date</th>
+                  <th className="py-3 px-4">Material</th>
+                  <th className="py-3 px-4">Supplier</th>
+                  <th className="py-3 px-4 text-right">Qty</th>
+                  <th className="py-3 px-4 text-right">Purchase Price (৳)</th>
+                  <th className="py-3 px-4 text-right">Previous Price</th>
+                  <th className="py-3 px-4 text-right">Variance</th>
                 </tr>
-              ) : (
-                filtered.map((item) => {
-                  const diff = item.previous_price ? item.purchase_price - item.previous_price : 0
-                  const isIncreased = diff > 0
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                      No supplier price history records available.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((item) => {
+                    const diff = item.previous_price ? item.purchase_price - item.previous_price : 0
+                    const isIncreased = diff > 0
 
-                  return (
-                    <tr key={item.id} className="hover:bg-slate-50/50">
-                      <td className="py-3 px-4 font-mono text-slate-500">{item.po_date}</td>
-                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
-                        {item.material_name}
-                      </td>
-                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
-                        {item.supplier_name}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-medium">
-                        {item.quantity}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
-                        ৳ {formatBDT(item.purchase_price)}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-400">
-                        {item.previous_price ? `৳ ${formatBDT(item.previous_price)}` : 'N/A'}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono text-xs">
+                    return (
+                      <tr key={item.id} className="hover:bg-slate-50/50">
+                        <td className="py-3 px-4 font-mono text-slate-500">{item.po_date}</td>
+                        <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                          {item.material_name}
+                        </td>
+                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
+                          {item.supplier_name}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-medium">
+                          {item.quantity}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
+                          ৳ {formatBDT(item.purchase_price)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-slate-400">
+                          {item.previous_price ? `৳ ${formatBDT(item.previous_price)}` : 'N/A'}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-xs">
+                          {item.previous_price ? (
+                            <span
+                              className={`inline-flex items-center gap-0.5 font-bold ${
+                                isIncreased ? 'text-red-600' : 'text-emerald-600'
+                              }`}
+                            >
+                              {isIncreased ? (
+                                <ArrowUpRight className="h-3 w-3" />
+                              ) : (
+                                <ArrowDownRight className="h-3 w-3" />
+                              )}
+                              {isIncreased ? `+৳ ${diff}` : `-৳ ${Math.abs(diff)}`}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">Baseline</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="py-8 text-center text-slate-500 text-xs">
+                No supplier price history records available.
+              </div>
+            ) : (
+              filtered.map((item) => {
+                const diff = item.previous_price ? item.purchase_price - item.previous_price : 0
+                const isIncreased = diff > 0
+
+                return (
+                  <div key={item.id} className="p-4 space-y-2 text-xs bg-white dark:bg-slate-900">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-white text-sm">{item.material_name}</div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                          <Building className="h-3 w-3 text-slate-400" /> {item.supplier_name}
+                        </div>
+                      </div>
+                      <span className="font-mono text-[11px] text-slate-400 shrink-0">{item.po_date}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 font-mono">
+                      <div>
+                        <div className="text-[10px] text-slate-400">Qty: {item.quantity}</div>
+                        <div className="text-sm font-black text-slate-900 dark:text-white">
+                          ৳ {formatBDT(item.purchase_price)}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-[10px] text-slate-400">
+                          Prev: {item.previous_price ? `৳ ${formatBDT(item.previous_price)}` : 'N/A'}
+                        </div>
                         {item.previous_price ? (
                           <span
-                            className={`inline-flex items-center gap-0.5 font-bold ${
+                            className={`inline-flex items-center gap-0.5 font-bold text-xs ${
                               isIncreased ? 'text-red-600' : 'text-emerald-600'
                             }`}
                           >
-                            {isIncreased ? (
-                              <ArrowUpRight className="h-3 w-3" />
-                            ) : (
-                              <ArrowDownRight className="h-3 w-3" />
-                            )}
+                            {isIncreased ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                             {isIncreased ? `+৳ ${diff}` : `-৳ ${Math.abs(diff)}`}
                           </span>
                         ) : (
-                          <span className="text-slate-400">Baseline</span>
+                          <span className="text-[11px] text-slate-400">Baseline</span>
                         )}
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

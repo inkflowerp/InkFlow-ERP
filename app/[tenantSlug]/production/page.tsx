@@ -265,18 +265,15 @@ export default function ProductionDashboardPage() {
         </div>
       </div>
 
-      {/* =========================================================================
-          DYNAMIC ADAPTIVE KANBAN BOARD
-          Columns change dynamically based on the selected department!
-         ========================================================================= */}
-      <div className={`grid grid-cols-1 md:grid-cols-${activeColumns.length} gap-4 overflow-x-auto pb-4`}>
+      {/* DYNAMIC ADAPTIVE KANBAN BOARD */}
+      <div className="flex md:grid md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-x-auto pb-4 touch-scroll snap-x snap-mandatory">
         {activeColumns.map((col) => {
           const colJobs = filteredJobs.filter((j) => col.statusMatch.includes(j.status))
 
           return (
             <div
               key={col.id}
-              className="bg-slate-50/90 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200 dark:border-slate-800 flex flex-col min-w-[280px]"
+              className="bg-slate-50/90 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200 dark:border-slate-800 flex flex-col min-w-[280px] xs:min-w-[300px] md:min-w-0 snap-start shrink-0 md:shrink"
             >
               {/* Column Header */}
               <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800 mb-3">
@@ -405,9 +402,9 @@ export default function ProductionDashboardPage() {
                           <Button
                             size="sm"
                             onClick={() => handleStartJob(job.id)}
-                            className="h-7 text-[11px] px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold flex-1"
+                            className="h-8 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold flex-1 min-h-[36px]"
                           >
-                            <Play className="h-3 w-3 mr-1" />
+                            <Play className="h-3.5 w-3.5 mr-1" />
                             Start Run
                           </Button>
                         )}
@@ -421,18 +418,18 @@ export default function ProductionDashboardPage() {
                                 setSelectedJobForPause(job)
                                 setPauseReason('')
                               }}
-                              className="h-7 text-[11px] px-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+                              className="h-8 text-xs px-2.5 border-amber-300 text-amber-700 hover:bg-amber-50 min-h-[36px]"
                             >
-                              <Pause className="h-3 w-3 mr-1" />
+                              <Pause className="h-3.5 w-3.5 mr-1" />
                               Pause
                             </Button>
 
                             <Button
                               size="sm"
                               onClick={() => handleCompleteJob(job.id)}
-                              className="h-7 text-[11px] px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex-1"
+                              className="h-8 text-xs px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex-1 min-h-[36px]"
                             >
-                              <Check className="h-3 w-3 mr-1" />
+                              <Check className="h-3.5 w-3.5 mr-1" />
                               Complete
                             </Button>
                           </>
@@ -442,9 +439,9 @@ export default function ProductionDashboardPage() {
                           <Button
                             size="sm"
                             onClick={() => handleStartJob(job.id)}
-                            className="h-7 text-[11px] px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold flex-1"
+                            className="h-8 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold flex-1 min-h-[36px]"
                           >
-                            <Play className="h-3 w-3 mr-1" />
+                            <Play className="h-3.5 w-3.5 mr-1" />
                             Resume
                           </Button>
                         )}
@@ -460,9 +457,9 @@ export default function ProductionDashboardPage() {
                               setReworkReason('')
                               setMaterialWastage('')
                             }}
-                            className="h-7 text-[11px] px-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800"
+                            className="h-8 text-xs px-2.5 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 min-h-[36px]"
                           >
-                            <RotateCcw className="h-3 w-3" />
+                            <RotateCcw className="h-3.5 w-3.5" />
                           </Button>
                         )}
                       </div>
@@ -502,7 +499,7 @@ export default function ProductionDashboardPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="rwkDept" required>Responsible Department</Label>
                 <select
@@ -555,11 +552,11 @@ export default function ProductionDashboardPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedJobForRework(null)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setSelectedJobForRework(null)} className="w-full sm:w-auto min-h-[40px]">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white font-bold">
+              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-red-600 hover:bg-red-700 text-white font-bold">
                 Register Rework & Scrap Ticket
               </Button>
             </div>
@@ -589,11 +586,11 @@ export default function ProductionDashboardPage() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedJobForPause(null)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setSelectedJobForPause(null)} className="w-full sm:w-auto min-h-[40px]">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white">
+              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-amber-600 hover:bg-amber-700 text-white font-medium">
                 Confirm Pause
               </Button>
             </div>

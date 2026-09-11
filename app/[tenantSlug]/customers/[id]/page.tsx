@@ -503,49 +503,79 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Order Code</th>
-                  <th className="py-3 px-4">Item & Dimensions</th>
-                  <th className="py-3 px-4">Amount</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {customerOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
-                      No job orders recorded for this customer yet.
-                    </td>
-                  </tr>
-                ) : (
-                  customerOrders.map((ord: any, idx: number) => (
-                    <tr key={ord.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
-                        {ord.order_number || ord.order_code || ord.code || `ORD-${ord.id?.slice(0, 6)}`}
-                      </td>
-                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
-                        {ord.title || ord.product_name || (Array.isArray(ord.items) && ord.items[0]?.title) || 'Print Job'}
-                      </td>
-                      <td className="py-3 px-4 font-bold">
-                        <CurrencyDisplay amount={ord.total_amount || ord.grand_total || 0} />
-                      </td>
-                      <td className="py-3 px-4 text-slate-500">
-                        {ord.created_at ? new Date(ord.created_at).toLocaleDateString() : '—'}
-                      </td>
-                      <td className="py-3 px-4">
+          <CardContent className="p-0">
+            {customerOrders.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 text-xs">
+                No job orders recorded for this customer yet.
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                      <tr>
+                        <th className="py-3 px-4">Order Code</th>
+                        <th className="py-3 px-4">Item & Dimensions</th>
+                        <th className="py-3 px-4">Amount</th>
+                        <th className="py-3 px-4">Date</th>
+                        <th className="py-3 px-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {customerOrders.map((ord: any, idx: number) => (
+                        <tr key={ord.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                          <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                            {ord.order_number || ord.order_code || ord.code || `ORD-${ord.id?.slice(0, 6)}`}
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                            {ord.title || ord.product_name || (Array.isArray(ord.items) && ord.items[0]?.title) || 'Print Job'}
+                          </td>
+                          <td className="py-3 px-4 font-bold">
+                            <CurrencyDisplay amount={ord.total_amount || ord.grand_total || 0} />
+                          </td>
+                          <td className="py-3 px-4 text-slate-500">
+                            {ord.created_at ? new Date(ord.created_at).toLocaleDateString() : '—'}
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant="outline" className="text-[10px] capitalize">
+                              {ord.status || 'Active'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+                  {customerOrders.map((ord: any, idx: number) => (
+                    <div key={ord.id || idx} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                      <div className="flex justify-between items-start">
+                        <span className="font-mono font-bold text-blue-600 text-sm">
+                          {ord.order_number || ord.order_code || ord.code || `ORD-${ord.id?.slice(0, 6)}`}
+                        </span>
                         <Badge variant="outline" className="text-[10px] capitalize">
                           {ord.status || 'Active'}
                         </Badge>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      </div>
+                      <div className="font-semibold text-slate-900 dark:text-white">
+                        {ord.title || ord.product_name || (Array.isArray(ord.items) && ord.items[0]?.title) || 'Print Job'}
+                      </div>
+                      <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800 font-mono">
+                        <span className="text-slate-400">
+                          {ord.created_at ? new Date(ord.created_at).toLocaleDateString() : '—'}
+                        </span>
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          <CurrencyDisplay amount={ord.total_amount || ord.grand_total || 0} />
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
@@ -556,49 +586,77 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base font-bold">Estimated Quotations ({customerQuotes.length})</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Quote No.</th>
-                  <th className="py-3 px-4">Specifications</th>
-                  <th className="py-3 px-4">Estimated Rate</th>
-                  <th className="py-3 px-4">Total Amount</th>
-                  <th className="py-3 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {customerQuotes.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
-                      No price quotations estimated for this customer yet.
-                    </td>
-                  </tr>
-                ) : (
-                  customerQuotes.map((q: any, idx: number) => (
-                    <tr key={q.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
-                        {q.quotation_number || q.quote_number || q.code || `QUO-${q.id?.slice(0, 6)}`}
-                      </td>
-                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
-                        {q.title || q.specifications || (Array.isArray(q.items) && q.items[0]?.item_name) || 'Custom Print Quotation'}
-                      </td>
-                      <td className="py-3 px-4 text-slate-500 font-mono">
-                        {q.rate ? `৳ ${q.rate}` : '—'}
-                      </td>
-                      <td className="py-3 px-4 font-bold">
-                        <CurrencyDisplay amount={q.grand_total || q.total_amount || 0} />
-                      </td>
-                      <td className="py-3 px-4">
+          <CardContent className="p-0">
+            {customerQuotes.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 text-xs">
+                No price quotations estimated for this customer yet.
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                      <tr>
+                        <th className="py-3 px-4">Quote No.</th>
+                        <th className="py-3 px-4">Specifications</th>
+                        <th className="py-3 px-4">Estimated Rate</th>
+                        <th className="py-3 px-4">Total Amount</th>
+                        <th className="py-3 px-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {customerQuotes.map((q: any, idx: number) => (
+                        <tr key={q.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                          <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                            {q.quotation_number || q.quote_number || q.code || `QUO-${q.id?.slice(0, 6)}`}
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                            {q.title || q.specifications || (Array.isArray(q.items) && q.items[0]?.item_name) || 'Custom Print Quotation'}
+                          </td>
+                          <td className="py-3 px-4 text-slate-500 font-mono">
+                            {q.rate ? `৳ ${q.rate}` : '—'}
+                          </td>
+                          <td className="py-3 px-4 font-bold">
+                            <CurrencyDisplay amount={q.grand_total || q.total_amount || 0} />
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant="outline" className="text-[10px] capitalize">
+                              {q.status || 'Draft'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+                  {customerQuotes.map((q: any, idx: number) => (
+                    <div key={q.id || idx} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                      <div className="flex justify-between items-start">
+                        <span className="font-mono font-bold text-blue-600 text-sm">
+                          {q.quotation_number || q.quote_number || q.code || `QUO-${q.id?.slice(0, 6)}`}
+                        </span>
                         <Badge variant="outline" className="text-[10px] capitalize">
                           {q.status || 'Draft'}
                         </Badge>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      </div>
+                      <div className="text-slate-900 dark:text-white font-medium">
+                        {q.title || q.specifications || (Array.isArray(q.items) && q.items[0]?.item_name) || 'Custom Print Quotation'}
+                      </div>
+                      <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800 font-mono">
+                        <span className="text-slate-400">{q.rate ? `Rate: ৳ ${q.rate}` : 'Estimated'}</span>
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          <CurrencyDisplay amount={q.grand_total || q.total_amount || 0} />
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
@@ -609,53 +667,89 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base font-bold">Commercial Tax Invoices (Mushak 6.3) ({customerInvoices.length})</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Invoice No.</th>
-                  <th className="py-3 px-4">Mushak Ref</th>
-                  <th className="py-3 px-4">Invoice Total</th>
-                  <th className="py-3 px-4">Paid</th>
-                  <th className="py-3 px-4">Balance Due</th>
-                  <th className="py-3 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {customerInvoices.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-500 text-xs">
-                      No commercial tax invoices issued for this customer yet.
-                    </td>
-                  </tr>
-                ) : (
-                  customerInvoices.map((inv: any, idx: number) => (
-                    <tr key={inv.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
-                        {inv.invoice_number || `INV-${inv.id?.slice(0, 6)}`}
-                      </td>
-                      <td className="py-3 px-4 font-mono text-slate-500">
-                        {inv.mushak_number || inv.mushak_ref || '—'}
-                      </td>
-                      <td className="py-3 px-4 font-bold">
-                        <CurrencyDisplay amount={inv.grand_total || inv.total_amount || 0} />
-                      </td>
-                      <td className="py-3 px-4 text-emerald-600 font-semibold">
-                        <CurrencyDisplay amount={inv.paid_amount || 0} />
-                      </td>
-                      <td className="py-3 px-4 text-red-600 font-bold">
-                        <CurrencyDisplay amount={inv.balance_due ?? (inv.grand_total ? inv.grand_total - (inv.paid_amount || 0) : 0)} />
-                      </td>
-                      <td className="py-3 px-4">
+          <CardContent className="p-0">
+            {customerInvoices.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 text-xs">
+                No commercial tax invoices issued for this customer yet.
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                      <tr>
+                        <th className="py-3 px-4">Invoice No.</th>
+                        <th className="py-3 px-4">Mushak Ref</th>
+                        <th className="py-3 px-4">Invoice Total</th>
+                        <th className="py-3 px-4">Paid</th>
+                        <th className="py-3 px-4">Balance Due</th>
+                        <th className="py-3 px-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {customerInvoices.map((inv: any, idx: number) => (
+                        <tr key={inv.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                          <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                            {inv.invoice_number || `INV-${inv.id?.slice(0, 6)}`}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-slate-500">
+                            {inv.mushak_number || inv.mushak_ref || '—'}
+                          </td>
+                          <td className="py-3 px-4 font-bold">
+                            <CurrencyDisplay amount={inv.grand_total || inv.total_amount || 0} />
+                          </td>
+                          <td className="py-3 px-4 text-emerald-600 font-semibold">
+                            <CurrencyDisplay amount={inv.paid_amount || 0} />
+                          </td>
+                          <td className="py-3 px-4 text-red-600 font-bold">
+                            <CurrencyDisplay amount={inv.balance_due ?? (inv.grand_total ? inv.grand_total - (inv.paid_amount || 0) : 0)} />
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant="outline" className="capitalize text-[10px]">
+                              {inv.status || 'Issued'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+                  {customerInvoices.map((inv: any, idx: number) => (
+                    <div key={inv.id || idx} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="font-mono font-bold text-blue-600 text-sm">
+                            {inv.invoice_number || `INV-${inv.id?.slice(0, 6)}`}
+                          </span>
+                          {inv.mushak_number && (
+                            <div className="text-[10px] text-slate-400 font-mono">Mushak: {inv.mushak_number}</div>
+                          )}
+                        </div>
                         <Badge variant="outline" className="capitalize text-[10px]">
                           {inv.status || 'Issued'}
                         </Badge>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[11px] font-mono p-2 bg-white dark:bg-slate-950 rounded border border-slate-200/60 dark:border-slate-800">
+                        <div>Total: <strong className="text-slate-900 dark:text-white"><CurrencyDisplay amount={inv.grand_total || inv.total_amount || 0} /></strong></div>
+                        <div>Paid: <strong className="text-emerald-600"><CurrencyDisplay amount={inv.paid_amount || 0} /></strong></div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800 font-mono">
+                        <span className="text-slate-400">Balance Due:</span>
+                        <span className="font-bold text-red-600 text-sm">
+                          <CurrencyDisplay amount={inv.balance_due ?? (inv.grand_total ? inv.grand_total - (inv.paid_amount || 0) : 0)} />
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
@@ -666,47 +760,74 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base font-bold">Money Receipts & Payment Ledger ({customerPayments.length})</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Receipt No.</th>
-                  <th className="py-3 px-4">Payment Method</th>
-                  <th className="py-3 px-4">Collected Amount</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Issued By</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {customerPayments.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
-                      No payment transactions recorded for this customer yet.
-                    </td>
-                  </tr>
-                ) : (
-                  customerPayments.map((p: any, idx: number) => (
-                    <tr key={p.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
-                        {p.receipt_number || p.payment_number || `PAY-${p.id?.slice(0, 6)}`}
-                      </td>
-                      <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200 capitalize">
-                        {p.payment_method || p.method || 'Cash'}
-                      </td>
-                      <td className="py-3 px-4 font-bold text-emerald-600">
-                        <CurrencyDisplay amount={p.amount || 0} />
-                      </td>
-                      <td className="py-3 px-4 text-slate-500">
-                        {p.payment_date || (p.created_at ? new Date(p.created_at).toLocaleDateString() : '—')}
-                      </td>
-                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
-                        {p.collected_by || p.issued_by || 'Accounts'}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <CardContent className="p-0">
+            {customerPayments.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 text-xs">
+                No payment transactions recorded for this customer yet.
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                      <tr>
+                        <th className="py-3 px-4">Receipt No.</th>
+                        <th className="py-3 px-4">Payment Method</th>
+                        <th className="py-3 px-4">Collected Amount</th>
+                        <th className="py-3 px-4">Date</th>
+                        <th className="py-3 px-4">Issued By</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {customerPayments.map((p: any, idx: number) => (
+                        <tr key={p.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                          <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                            {p.receipt_number || p.payment_number || `PAY-${p.id?.slice(0, 6)}`}
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200 capitalize">
+                            {p.payment_method || p.method || 'Cash'}
+                          </td>
+                          <td className="py-3 px-4 font-bold text-emerald-600">
+                            <CurrencyDisplay amount={p.amount || 0} />
+                          </td>
+                          <td className="py-3 px-4 text-slate-500">
+                            {p.payment_date || (p.created_at ? new Date(p.created_at).toLocaleDateString() : '—')}
+                          </td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                            {p.collected_by || p.issued_by || 'Accounts'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+                  {customerPayments.map((p: any, idx: number) => (
+                    <div key={p.id || idx} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                      <div className="flex justify-between items-center">
+                        <span className="font-mono font-bold text-blue-600">
+                          {p.receipt_number || p.payment_number || `PAY-${p.id?.slice(0, 6)}`}
+                        </span>
+                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-200 dark:bg-slate-800">
+                          {p.payment_method || p.method || 'Cash'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800 font-mono">
+                        <span className="text-slate-400">
+                          {p.payment_date || (p.created_at ? new Date(p.created_at).toLocaleDateString() : '—')}
+                        </span>
+                        <span className="font-bold text-emerald-600 text-sm">
+                          <CurrencyDisplay amount={p.amount || 0} />
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
@@ -717,47 +838,72 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base font-bold">Delivery Challans & Gate Passes ({customerChallans.length})</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Challan No.</th>
-                  <th className="py-3 px-4">Items Delivered</th>
-                  <th className="py-3 px-4">Destination Site</th>
-                  <th className="py-3 px-4">Vehicle / Driver</th>
-                  <th className="py-3 px-4">Sign-off</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {customerChallans.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
-                      No delivery challans issued for this customer yet.
-                    </td>
-                  </tr>
-                ) : (
-                  customerChallans.map((ch: any, idx: number) => (
-                    <tr key={ch.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
-                        {ch.challan_number || `CHL-${ch.id?.slice(0, 6)}`}
-                      </td>
-                      <td className="py-3 px-4">
+          <CardContent className="p-0">
+            {customerChallans.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 text-xs">
+                No delivery challans issued for this customer yet.
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                      <tr>
+                        <th className="py-3 px-4">Challan No.</th>
+                        <th className="py-3 px-4">Items Delivered</th>
+                        <th className="py-3 px-4">Destination Site</th>
+                        <th className="py-3 px-4">Vehicle / Driver</th>
+                        <th className="py-3 px-4">Sign-off</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {customerChallans.map((ch: any, idx: number) => (
+                        <tr key={ch.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                          <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                            {ch.challan_number || `CHL-${ch.id?.slice(0, 6)}`}
+                          </td>
+                          <td className="py-3 px-4">
+                            {ch.items_summary || ch.items || 'Print materials and finished goods'}
+                          </td>
+                          <td className="py-3 px-4">
+                            {ch.destination_site || ch.delivery_address || customer.address || 'Customer Site'}
+                          </td>
+                          <td className="py-3 px-4 text-slate-500">
+                            {ch.vehicle_number || ch.driver_name || 'Assigned Courier/Van'}
+                          </td>
+                          <td className="py-3 px-4 text-emerald-600 font-semibold capitalize">
+                            {ch.status === 'delivered' ? 'Signed & Received' : ch.status || 'In Transit'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+                  {customerChallans.map((ch: any, idx: number) => (
+                    <div key={ch.id || idx} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                      <div className="flex justify-between items-center">
+                        <span className="font-mono font-bold text-blue-600 text-sm">
+                          {ch.challan_number || `CHL-${ch.id?.slice(0, 6)}`}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] capitalize text-emerald-600 border-emerald-300">
+                          {ch.status === 'delivered' ? 'Delivered' : ch.status || 'In Transit'}
+                        </Badge>
+                      </div>
+                      <div className="text-slate-800 dark:text-slate-200">
                         {ch.items_summary || ch.items || 'Print materials and finished goods'}
-                      </td>
-                      <td className="py-3 px-4">
-                        {ch.destination_site || ch.delivery_address || customer.address || 'Customer Site'}
-                      </td>
-                      <td className="py-3 px-4 text-slate-500">
-                        {ch.vehicle_number || ch.driver_name || 'Assigned Courier/Van'}
-                      </td>
-                      <td className="py-3 px-4 text-emerald-600 font-semibold capitalize">
-                        {ch.status === 'delivered' ? 'Signed & Received' : ch.status || 'In Transit'}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      </div>
+                      <div className="text-slate-500 text-[11px]">
+                        📍 {ch.destination_site || ch.delivery_address || customer.address || 'Customer Site'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
@@ -815,7 +961,7 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
         title="Log Customer Interaction"
         description={`Record phone call, WhatsApp conversation, or site inspection for ${customer.name}.`}
       >
-        <form onSubmit={handleAddCommunication} className="space-y-4 pt-2">
+        <form onSubmit={handleAddCommunication} className="space-y-4 pt-2 max-h-[75vh] overflow-y-auto px-1">
           <div className="space-y-1.5">
             <Label htmlFor="commType" required>Interaction Channel</Label>
             <select
@@ -854,11 +1000,11 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setIsLogCommOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsLogCommOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Save Interaction
             </Button>
           </div>
@@ -872,8 +1018,8 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
         title="Collect Payment & Issue Money Receipt"
         description={`Record customer payment for outstanding balance (৳ ${customer.total_due_balance || 0} due).`}
       >
-        <form onSubmit={handleRecordPayment} className="space-y-4 pt-2">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleRecordPayment} className="space-y-4 pt-2 max-h-[75vh] overflow-y-auto px-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="payAmt" required>Amount (৳ BDT)</Label>
               <Input
@@ -899,7 +1045,7 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
                 <option>Bank Deposit / Cheque</option>
               </select>
             </div>
-            <div className="space-y-1.5 col-span-2">
+            <div className="space-y-1.5 col-span-1 sm:col-span-2">
               <Label htmlFor="payRef">Transaction / Receipt Reference</Label>
               <Input
                 id="payRef"
@@ -910,11 +1056,11 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setIsRecordPayOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsRecordPayOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Record Payment
             </Button>
           </div>
@@ -928,7 +1074,7 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
         title="Edit Customer Profile"
         description={`Update contact and billing details for ${customer.name}.`}
       >
-        <form onSubmit={handleSaveCustomerEdit} className="space-y-4 pt-2">
+        <form onSubmit={handleSaveCustomerEdit} className="space-y-4 pt-2 max-h-[75vh] overflow-y-auto px-1">
           {editError && (
             <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
@@ -1036,11 +1182,11 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" disabled={isSavingCustomer} onClick={() => setIsEditOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" disabled={isSavingCustomer} onClick={() => setIsEditOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" isLoading={isSavingCustomer} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button type="submit" isLoading={isSavingCustomer} className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Save Changes
             </Button>
           </div>

@@ -103,12 +103,12 @@ export default function TenantAuditLogsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button
             size="sm"
             variant="outline"
             onClick={handleExportJSON}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="flex-1 sm:flex-none h-10 sm:h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
           >
             <ArrowDownToLine className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
             Export Audit Log
@@ -117,7 +117,7 @@ export default function TenantAuditLogsPage() {
             size="sm"
             variant="outline"
             onClick={loadLogs}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="flex-1 sm:flex-none h-10 sm:h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -131,7 +131,7 @@ export default function TenantAuditLogsPage() {
           <Lock className="h-5 w-5" />
         </div>
         <div className="text-xs space-y-1">
-          <div className="font-bold text-white text-sm flex items-center gap-2">
+          <div className="font-bold text-white text-sm flex flex-wrap items-center gap-2">
             <span>Immutable Append-Only Audit Integrity Active</span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
               ANTI-DELETION ENFORCED
@@ -151,17 +151,17 @@ export default function TenantAuditLogsPage() {
             placeholder="Search action, actor email, entity ID, or details..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-500 rounded-xl"
+            className="pl-9 h-10 sm:h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-500 rounded-xl"
           />
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Filter className="h-3.5 w-3.5 text-slate-500" />
-          <span>Category:</span>
+        <div className="flex items-center gap-2 text-xs text-slate-400 w-full sm:w-auto">
+          <Filter className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+          <span className="shrink-0">Category:</span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-hidden"
+            className="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 sm:py-1.5 text-xs font-semibold focus:outline-hidden w-full sm:w-auto"
           >
             {Object.entries(CATEGORY_GROUPS).map(([key, item]) => (
               <option key={key} value={key}>
@@ -172,7 +172,7 @@ export default function TenantAuditLogsPage() {
         </div>
       </div>
 
-      {/* Audit Logs Table */}
+      {/* Audit Logs Table & Mobile Cards */}
       <Card className="bg-slate-900 border-slate-800 rounded-2xl shadow-xl overflow-hidden">
         <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
           <div className="flex items-center justify-between">
@@ -190,129 +190,207 @@ export default function TenantAuditLogsPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[11px]">
-              <tr>
-                <th className="py-3.5 px-4">Timestamp & Device</th>
-                <th className="py-3.5 px-4">Operator / Actor</th>
-                <th className="py-3.5 px-4">Action & Domain</th>
-                <th className="py-3.5 px-4">Event Description</th>
-                <th className="py-3.5 px-4 text-right">Payload Diff</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/80 text-slate-200">
-              {loading ? (
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-500">
-                    <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
-                    <span>Loading audit records...</span>
-                  </td>
+                  <th className="py-3.5 px-4">Timestamp & Device</th>
+                  <th className="py-3.5 px-4">Operator / Actor</th>
+                  <th className="py-3.5 px-4">Action & Domain</th>
+                  <th className="py-3.5 px-4">Event Description</th>
+                  <th className="py-3.5 px-4 text-right">Payload Diff</th>
                 </tr>
-              ) : logs.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-500">
-                    No audit records matched your filter criteria.
-                  </td>
-                </tr>
-              ) : (
-                logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-850/50 transition-colors">
-                    {/* Timestamp */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-white">
-                        {new Date(log.timestamp).toLocaleDateString()}
-                        <span className="text-slate-400 font-mono ml-1">
-                          {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <div className="text-[10px] font-mono text-slate-500 flex items-center gap-1 mt-0.5">
-                        <Globe className="h-2.5 w-2.5 text-slate-500" />
-                        <span>{log.ip_address || 'unavailable'}</span>
-                        {log.device_metadata?.browser && (
-                          <span className="text-slate-600">• {log.device_metadata.browser}</span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Operator */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                        <User className="h-3 w-3 text-indigo-400" />
-                        <span>{log.user_email}</span>
-                      </div>
-                      <div className="text-[10px] text-slate-500 font-mono">
-                        ID: {log.user_id || 'System'}
-                      </div>
-                    </td>
-
-                    {/* Action */}
-                    <td className="py-3.5 px-4">
-                      <div className="space-y-1">
-                        <span
-                          className={`inline-block font-mono text-[11px] font-bold px-2 py-0.5 rounded-lg border ${
-                            log.action.includes('cancel') || log.action.includes('logout')
-                              ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                              : log.action.includes('login') || log.action.includes('approve') || log.action.includes('create')
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                              : log.action.includes('override') || log.action.includes('adjustment')
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                              : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
-                          }`}
-                        >
-                          {log.action}
-                        </span>
-                        <div className="text-[10px] text-slate-400 font-mono">
-                          Entity: {log.entity} {log.entity_id ? `(${log.entity_id})` : ''}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Description */}
-                    <td className="py-3.5 px-4 max-w-sm">
-                      <div className="text-xs text-slate-300 line-clamp-2">
-                        {log.description || `Action performed on ${log.entity}`}
-                      </div>
-                    </td>
-
-                    {/* Diff button */}
-                    <td className="py-3.5 px-4 text-right">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setSelectedLog(log)}
-                        className="h-8 px-2.5 text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-950/30 hover:bg-indigo-900/50 border border-indigo-800/40 rounded-lg"
-                      >
-                        <Eye className="h-3.5 w-3.5 mr-1" />
-                        <span>View Diff</span>
-                      </Button>
+              </thead>
+              <tbody className="divide-y divide-slate-800/80 text-slate-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-slate-500">
+                      <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
+                      <span>Loading audit records...</span>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : logs.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-slate-500">
+                      No audit records matched your filter criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  logs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-850/50 transition-colors">
+                      {/* Timestamp */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-white">
+                          {new Date(log.timestamp).toLocaleDateString()}
+                          <span className="text-slate-400 font-mono ml-1">
+                            {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <div className="text-[10px] font-mono text-slate-500 flex items-center gap-1 mt-0.5">
+                          <Globe className="h-2.5 w-2.5 text-slate-500" />
+                          <span>{log.ip_address || 'unavailable'}</span>
+                          {log.device_metadata?.browser && (
+                            <span className="text-slate-600">• {log.device_metadata.browser}</span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Operator */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-slate-200 flex items-center gap-1.5">
+                          <User className="h-3 w-3 text-indigo-400" />
+                          <span>{log.user_email}</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-mono">
+                          ID: {log.user_id || 'System'}
+                        </div>
+                      </td>
+
+                      {/* Action */}
+                      <td className="py-3.5 px-4">
+                        <div className="space-y-1">
+                          <span
+                            className={`inline-block font-mono text-[11px] font-bold px-2 py-0.5 rounded-lg border ${
+                              log.action.includes('cancel') || log.action.includes('logout')
+                                ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                                : log.action.includes('login') || log.action.includes('approve') || log.action.includes('create')
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : log.action.includes('override') || log.action.includes('adjustment')
+                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                            }`}
+                          >
+                            {log.action}
+                          </span>
+                          <div className="text-[10px] text-slate-400 font-mono">
+                            Entity: {log.entity} {log.entity_id ? `(${log.entity_id})` : ''}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Description */}
+                      <td className="py-3.5 px-4 max-w-sm">
+                        <div className="text-xs text-slate-300 line-clamp-2">
+                          {log.description || `Action performed on ${log.entity}`}
+                        </div>
+                      </td>
+
+                      {/* Diff button */}
+                      <td className="py-3.5 px-4 text-right">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setSelectedLog(log)}
+                          className="h-8 px-2.5 text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-950/30 hover:bg-indigo-900/50 border border-indigo-800/40 rounded-lg"
+                        >
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          <span>View Diff</span>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Touch Cards View */}
+          <div className="md:hidden divide-y divide-slate-800/80">
+            {loading ? (
+              <div className="py-12 text-center text-slate-500">
+                <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
+                <span className="text-xs">Loading audit records...</span>
+              </div>
+            ) : logs.length === 0 ? (
+              <div className="py-12 text-center text-slate-500 text-xs">
+                No audit records matched your filter criteria.
+              </div>
+            ) : (
+              logs.map((log) => (
+                <div key={log.id} className="p-4 space-y-2.5 hover:bg-slate-850/40 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <span
+                      className={`inline-block font-mono text-[10px] font-bold px-2 py-0.5 rounded-lg border ${
+                        log.action.includes('cancel') || log.action.includes('logout')
+                          ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                          : log.action.includes('login') || log.action.includes('approve') || log.action.includes('create')
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                          : log.action.includes('override') || log.action.includes('adjustment')
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                          : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                      }`}
+                    >
+                      {log.action}
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-400">
+                      {new Date(log.timestamp).toLocaleDateString()}{' '}
+                      {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-slate-200 font-medium">
+                    {log.description || `Action performed on ${log.entity}`}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Actor:</span>
+                      <span className="text-slate-300 font-bold truncate block">{log.user_email}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Entity:</span>
+                      <span className="text-indigo-400 font-mono truncate block">
+                        {log.entity} {log.entity_id ? `(${log.entity_id})` : ''}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">IP / Device:</span>
+                      <span className="text-slate-400 font-mono truncate block">
+                        {log.ip_address || 'unavailable'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Actor ID:</span>
+                      <span className="text-slate-400 font-mono truncate block">{log.user_id || 'System'}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedLog(log)}
+                    className="w-full h-10 text-xs font-semibold text-indigo-400 bg-indigo-950/30 hover:bg-indigo-900/50 border border-indigo-800/40 rounded-xl"
+                  >
+                    <Eye className="h-4 w-4 mr-1.5" />
+                    <span>Inspect Value Diff</span>
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
       {/* DETAIL MODAL: BEFORE / AFTER VALUE DIFF INSPECTOR */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in-0">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedLog(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
+            <div className="flex items-center gap-3 pr-8">
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0">
                 <FileClock className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Audit Event Value Diff</h3>
-                <p className="text-xs font-mono text-slate-400">
+                <h3 className="text-sm sm:text-base font-bold text-white">Audit Event Value Diff</h3>
+                <p className="text-[11px] sm:text-xs font-mono text-slate-400 break-all">
                   {selectedLog.action} • {selectedLog.id}
                 </p>
               </div>
@@ -321,23 +399,23 @@ export default function TenantAuditLogsPage() {
             {/* Metadata Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
               <div>
-                <span className="text-slate-500">Operator:</span>
+                <span className="text-slate-500 text-[10px] block">Operator:</span>
                 <div className="font-bold text-white mt-0.5 truncate">{selectedLog.user_email}</div>
               </div>
               <div>
-                <span className="text-slate-500">Target Entity:</span>
-                <div className="font-bold text-indigo-400 font-mono mt-0.5">
+                <span className="text-slate-500 text-[10px] block">Target Entity:</span>
+                <div className="font-bold text-indigo-400 font-mono mt-0.5 truncate">
                   {selectedLog.entity} {selectedLog.entity_id ? `(${selectedLog.entity_id})` : ''}
                 </div>
               </div>
               <div>
-                <span className="text-slate-500">IP Address:</span>
-                <div className="font-bold text-slate-300 font-mono mt-0.5">
+                <span className="text-slate-500 text-[10px] block">IP Address:</span>
+                <div className="font-bold text-slate-300 font-mono mt-0.5 truncate">
                   {selectedLog.ip_address || 'unavailable'}
                 </div>
               </div>
               <div>
-                <span className="text-slate-500">Timestamp:</span>
+                <span className="text-slate-500 text-[10px] block">Timestamp:</span>
                 <div className="font-medium text-slate-300 mt-0.5">
                   {new Date(selectedLog.timestamp).toLocaleTimeString()}
                 </div>
@@ -352,9 +430,9 @@ export default function TenantAuditLogsPage() {
                   <span className="h-2 w-2 rounded-full bg-red-400" />
                   <span>Previous State (Before)</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-red-300/90 h-52 overflow-y-auto">
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-red-300/90 max-h-48 sm:h-52 overflow-y-auto">
                   {selectedLog.previous_value ? (
-                    <pre>{JSON.stringify(selectedLog.previous_value, null, 2)}</pre>
+                    <pre className="whitespace-pre-wrap break-all">{JSON.stringify(selectedLog.previous_value, null, 2)}</pre>
                   ) : (
                     <span className="text-slate-600 italic">None (Newly Created Entity)</span>
                   )}
@@ -367,9 +445,9 @@ export default function TenantAuditLogsPage() {
                   <span className="h-2 w-2 rounded-full bg-emerald-400" />
                   <span>Modified State (After)</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-emerald-300/90 h-52 overflow-y-auto">
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-emerald-300/90 max-h-48 sm:h-52 overflow-y-auto">
                   {selectedLog.new_value ? (
-                    <pre>{JSON.stringify(selectedLog.new_value, null, 2)}</pre>
+                    <pre className="whitespace-pre-wrap break-all">{JSON.stringify(selectedLog.new_value, null, 2)}</pre>
                   ) : (
                     <span className="text-slate-600 italic">None (Deleted / Terminated)</span>
                   )}
@@ -379,17 +457,17 @@ export default function TenantAuditLogsPage() {
 
             {/* Device Metadata */}
             {selectedLog.device_metadata && (
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 font-mono flex items-center justify-between">
-                <span>Device Fingerprint: {selectedLog.device_metadata.browser || 'Browser'} on {selectedLog.device_metadata.os || 'OS'}</span>
+              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 font-mono flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+                <span>Device: {selectedLog.device_metadata.browser || 'Browser'} on {selectedLog.device_metadata.os || 'OS'}</span>
                 <span>{selectedLog.device_metadata.geo_city || 'Dhaka'}, {selectedLog.device_metadata.geo_country || 'BD'}</span>
               </div>
             )}
 
-            <div className="flex items-center justify-end pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-800">
               <Button
                 size="sm"
                 onClick={() => setSelectedLog(null)}
-                className="bg-slate-800 hover:bg-slate-700 text-xs text-white"
+                className="w-full sm:w-auto h-10 sm:h-9 bg-slate-800 hover:bg-slate-700 text-xs text-white"
               >
                 Close Inspector
               </Button>

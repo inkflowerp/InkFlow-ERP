@@ -24,7 +24,7 @@ export function CompanySelector() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 sm:gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-2.5 sm:px-3 py-1.5 text-left text-sm font-medium transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:hover:bg-slate-800 cursor-pointer shrink-0 whitespace-nowrap"
+        className="flex items-center gap-1.5 sm:gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-2 sm:px-3 py-1.5 text-left text-sm font-medium transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:hover:bg-slate-800 cursor-pointer shrink-0 whitespace-nowrap min-h-[40px]"
         suppressHydrationWarning
       >
         <div
@@ -33,19 +33,19 @@ export function CompanySelector() {
         >
           {company?.name ? company.name.charAt(0).toUpperCase() : 'P'}
         </div>
-        <div className="flex flex-col text-left max-w-[130px] sm:max-w-[170px] lg:max-w-[200px] min-w-0" suppressHydrationWarning>
+        <div className="flex flex-col text-left max-w-[85px] xs:max-w-[125px] sm:max-w-[170px] lg:max-w-[200px] min-w-0" suppressHydrationWarning>
           <div className="flex items-center gap-1.5">
             <span className="truncate font-semibold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap" suppressHydrationWarning>
               {displayName}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-[10px] text-slate-400 capitalize whitespace-nowrap" suppressHydrationWarning>
+            <span className="truncate text-[10px] text-slate-400 capitalize whitespace-nowrap hidden xs:inline" suppressHydrationWarning>
               {company?.business_type?.replace('_', ' ') || 'Printing & Signage'}
             </span>
             <span
               className={cn(
-                'text-[9px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider border shrink-0',
+                'text-[8px] xs:text-[9px] px-1 xs:px-1.5 py-0.2 rounded font-bold uppercase tracking-wider border shrink-0',
                 accountTypeMeta.badgeClass
               )}
             >
@@ -57,7 +57,7 @@ export function CompanySelector() {
             </span>
           </div>
         </div>
-        <ChevronsUpDown className="h-4 w-4 text-slate-400 shrink-0 ml-0.5 sm:ml-1" />
+        <ChevronsUpDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400 shrink-0 ml-0.5" />
       </button>
 
       {isOpen && (

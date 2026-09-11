@@ -190,7 +190,7 @@ export default function JobCostingPage() {
       )}
 
       {/* Executive Profitability Intelligence */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Realized Margin */}
         <Card className="p-4 border-l-4 border-l-emerald-600 bg-emerald-50/20 dark:bg-emerald-950/10">
           <div className="flex items-center justify-between">
@@ -237,7 +237,7 @@ export default function JobCostingPage() {
 
       {/* Sensitive Cost Notice for Sales Mode */}
       {isSalesRoleShielded && (
-        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs flex items-center justify-between text-amber-900 dark:text-amber-200">
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-amber-900 dark:text-amber-200">
           <div className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0" />
             <span>
@@ -245,7 +245,7 @@ export default function JobCostingPage() {
               Factory internal substrate purchase rates, machine electricity costs, and raw margin % are hidden.
             </span>
           </div>
-          <span className="font-mono text-[10px] uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded">
+          <span className="font-mono text-[10px] uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
             Role: Sales Executive
           </span>
         </div>
@@ -262,7 +262,7 @@ export default function JobCostingPage() {
               </CardDescription>
             </div>
 
-            <div className="relative w-64">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
               <Input
                 placeholder="Search job #, customer, or title..."
@@ -273,73 +273,190 @@ export default function JobCostingPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-              <tr>
-                <th className="py-3 px-4">Job & Client</th>
-                <th className="py-3 px-4">Work Description</th>
-                <th className="py-3 px-4 font-mono">Selling Price</th>
-                <th className="py-3 px-4 font-mono">Estimated Cost</th>
-                <th className="py-3 px-4 font-mono">Actual Cost</th>
-                <th className="py-3 px-4 font-mono text-center">Realized Margin</th>
-                <th className="py-3 px-4">Variance Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filteredCostings.map((cst: JobCostingRecord) => (
-                <tr key={cst.id} className="hover:bg-slate-50/50">
-                  {/* Job & Customer */}
-                  <td className="py-3.5 px-4">
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
+                <tr>
+                  <th className="py-3 px-4">Job & Client</th>
+                  <th className="py-3 px-4">Work Description</th>
+                  <th className="py-3 px-4 font-mono">Selling Price</th>
+                  <th className="py-3 px-4 font-mono">Estimated Cost</th>
+                  <th className="py-3 px-4 font-mono">Actual Cost</th>
+                  <th className="py-3 px-4 font-mono text-center">Realized Margin</th>
+                  <th className="py-3 px-4">Variance Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredCostings.map((cst: JobCostingRecord) => (
+                  <tr key={cst.id} className="hover:bg-slate-50/50">
+                    {/* Job & Customer */}
+                    <td className="py-3.5 px-4">
+                      <Link
+                        href={`/${slug}/costing/${cst.id}`}
+                        className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
+                      >
+                        <span>{cst.job_number}</span>
+                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{cst.customer_name}</div>
+                    </td>
+
+                    {/* Work Description */}
+                    <td className="py-3.5 px-4">
+                      <div className="font-medium text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
+                        {cst.item_title}
+                      </div>
+                      <div className="text-[10px] font-mono text-slate-400">{cst.dimensions_spec}</div>
+                    </td>
+
+                    {/* Selling Price */}
+                    <td className="py-3.5 px-4 font-mono font-black text-sm text-slate-900 dark:text-white">
+                      ৳ {formatBDT(cst.selling_price)}
+                    </td>
+
+                    {/* Estimated Cost */}
+                    <td className="py-3.5 px-4 font-mono text-slate-500">
+                      {isSalesRoleShielded ? '••••••' : `৳ ${formatBDT(cst.est.total_cost)}`}
+                    </td>
+
+                    {/* Actual Cost */}
+                    <td className="py-3.5 px-4 font-mono font-bold">
+                      {isSalesRoleShielded ? (
+                        '••••••'
+                      ) : cst.status === 'actualized' ? (
+                        <span className="text-slate-900 dark:text-white">৳ {formatBDT(cst.act.total_cost)}</span>
+                      ) : (
+                        <span className="text-slate-400 italic">In progress</span>
+                      )}
+                    </td>
+
+                    {/* Realized Margin */}
+                    <td className="py-3.5 px-4 text-center font-mono">
+                      {isSalesRoleShielded ? (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+                          Shielded
+                        </span>
+                      ) : cst.status === 'actualized' ? (
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black ${
+                            cst.act.margin_percentage >= 35
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              : cst.act.margin_percentage >= 20
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {cst.act.margin_percentage}%
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 text-[10px]">Est: {cst.est.margin_percentage}%</span>
+                      )}
+                    </td>
+
+                    {/* Variance Status */}
+                    <td className="py-3.5 px-4">
+                      {isSalesRoleShielded ? (
+                        <span className="text-[10px] text-slate-400 font-mono">Active</span>
+                      ) : cst.status === 'actualized' ? (
+                        cst.variances.total_variance < 0 ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            <TrendingDown className="h-3 w-3 text-emerald-600" />
+                            Saved ৳ {formatBDT(Math.abs(cst.variances.total_variance))}
+                          </span>
+                        ) : cst.variances.total_variance > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                            <TrendingUp className="h-3 w-3 text-red-600" />
+                            Overrun +৳ {formatBDT(cst.variances.total_variance)}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-500 font-mono">On Budget</span>
+                        )
+                      ) : (
+                        <span className="text-[10px] text-blue-600 font-mono">In Production</span>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setNegotiatingJob(cst)
+                            setDiscountPercent(5)
+                          }}
+                          className="h-7 text-[11px] px-2 text-slate-700 border-slate-300 hover:bg-slate-50"
+                        >
+                          Negotiate
+                        </Button>
+
+                        {!isSalesRoleShielded && (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setEditingJob(cst)
+                              setActMaterial(cst.act.material_cost || cst.est.material_cost)
+                              setActLabor(cst.act.labor_cost || cst.est.labor_cost)
+                              setActTransport(cst.act.transport_cost || cst.est.transport_cost)
+                            }}
+                            className="h-7 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                          >
+                            Actuals
+                          </Button>
+                        )}
+
+                        <Link
+                          href={`/${slug}/costing/${cst.id}`}
+                          className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold text-blue-600 hover:bg-blue-50"
+                        >
+                          Details
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredCostings.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
+                      No job costings found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filteredCostings.map((cst: JobCostingRecord) => (
+              <div key={cst.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
                     <Link
                       href={`/${slug}/costing/${cst.id}`}
-                      className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
+                      className="font-mono font-bold text-xs text-blue-600 hover:underline"
                     >
-                      <span>{cst.job_number}</span>
-                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {cst.job_number}
                     </Link>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{cst.customer_name}</div>
-                  </td>
-
-                  {/* Work Description */}
-                  <td className="py-3.5 px-4">
-                    <div className="font-medium text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
-                      {cst.item_title}
+                    <div className="font-semibold text-sm text-slate-900 dark:text-white mt-0.5">
+                      {cst.customer_name}
                     </div>
-                    <div className="text-[10px] font-mono text-slate-400">{cst.dimensions_spec}</div>
-                  </td>
-
-                  {/* Selling Price */}
-                  <td className="py-3.5 px-4 font-mono font-black text-sm text-slate-900 dark:text-white">
-                    ৳ {formatBDT(cst.selling_price)}
-                  </td>
-
-                  {/* Estimated Cost */}
-                  <td className="py-3.5 px-4 font-mono text-slate-500">
-                    {isSalesRoleShielded ? '••••••' : `৳ ${formatBDT(cst.est.total_cost)}`}
-                  </td>
-
-                  {/* Actual Cost */}
-                  <td className="py-3.5 px-4 font-mono font-bold">
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono font-black text-sm text-slate-900 dark:text-white">
+                      ৳ {formatBDT(cst.selling_price)}
+                    </div>
                     {isSalesRoleShielded ? (
-                      '••••••'
-                    ) : cst.status === 'actualized' ? (
-                      <span className="text-slate-900 dark:text-white">৳ {formatBDT(cst.act.total_cost)}</span>
-                    ) : (
-                      <span className="text-slate-400 italic">In progress</span>
-                    )}
-                  </td>
-
-                  {/* Realized Margin */}
-                  <td className="py-3.5 px-4 text-center font-mono">
-                    {isSalesRoleShielded ? (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+                      <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
                         Shielded
                       </span>
                     ) : cst.status === 'actualized' ? (
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black ${
+                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black ${
                           cst.act.margin_percentage >= 35
                             ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                             : cst.act.margin_percentage >= 20
@@ -347,78 +464,93 @@ export default function JobCostingPage() {
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        {cst.act.margin_percentage}%
+                        {cst.act.margin_percentage}% Margin
                       </span>
                     ) : (
                       <span className="text-slate-400 text-[10px]">Est: {cst.est.margin_percentage}%</span>
                     )}
-                  </td>
+                  </div>
+                </div>
 
-                  {/* Variance Status */}
-                  <td className="py-3.5 px-4">
+                <div className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/60">
+                  <div className="font-medium text-slate-800 dark:text-slate-200">{cst.item_title}</div>
+                  <div className="text-[11px] font-mono text-slate-400 mt-0.5">{cst.dimensions_spec}</div>
+                </div>
+
+                {/* Costs & Variance Grid */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2 rounded bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-400 block uppercase">Est vs Act Cost</span>
+                    <span className="font-mono font-semibold">
+                      {isSalesRoleShielded ? '••••••' : `৳${formatBDT(cst.est.total_cost)} / ৳${cst.status === 'actualized' ? formatBDT(cst.act.total_cost) : '—'}`}
+                    </span>
+                  </div>
+                  <div className="p-2 rounded bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-400 block uppercase">Variance</span>
                     {isSalesRoleShielded ? (
-                      <span className="text-[10px] text-slate-400 font-mono">Active</span>
+                      <span className="font-mono text-slate-400">••••</span>
                     ) : cst.status === 'actualized' ? (
                       cst.variances.total_variance < 0 ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                          <TrendingDown className="h-3 w-3 text-emerald-600" />
-                          Saved ৳ {formatBDT(Math.abs(cst.variances.total_variance))}
+                        <span className="text-[11px] font-bold text-emerald-600 font-mono">
+                          Saved ৳{formatBDT(Math.abs(cst.variances.total_variance))}
                         </span>
                       ) : cst.variances.total_variance > 0 ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                          <TrendingUp className="h-3 w-3 text-red-600" />
-                          Overrun +৳ {formatBDT(cst.variances.total_variance)}
+                        <span className="text-[11px] font-bold text-red-600 font-mono">
+                          +৳{formatBDT(cst.variances.total_variance)}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-500 font-mono">On Budget</span>
+                        <span className="text-[11px] text-slate-500 font-mono">On Budget</span>
                       )
                     ) : (
-                      <span className="text-[10px] text-blue-600 font-mono">In Production</span>
+                      <span className="text-[11px] text-blue-600 font-mono">In Prod</span>
                     )}
-                  </td>
+                  </div>
+                </div>
 
-                  {/* Actions */}
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setNegotiatingJob(cst)
-                          setDiscountPercent(5)
-                        }}
-                        className="h-7 text-[11px] px-2 text-slate-700 border-slate-300 hover:bg-slate-50"
-                      >
-                        Negotiate
-                      </Button>
+                {/* Mobile Action Buttons */}
+                <div className="flex items-center gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setNegotiatingJob(cst)
+                      setDiscountPercent(5)
+                    }}
+                    className="flex-1 h-9 text-xs font-semibold"
+                  >
+                    Negotiate
+                  </Button>
 
-                      {!isSalesRoleShielded && (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setEditingJob(cst)
-                            setActMaterial(cst.act.material_cost || cst.est.material_cost)
-                            setActLabor(cst.act.labor_cost || cst.est.labor_cost)
-                            setActTransport(cst.act.transport_cost || cst.est.transport_cost)
-                          }}
-                          className="h-7 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                        >
-                          Actuals
-                        </Button>
-                      )}
+                  {!isSalesRoleShielded && (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setEditingJob(cst)
+                        setActMaterial(cst.act.material_cost || cst.est.material_cost)
+                        setActLabor(cst.act.labor_cost || cst.est.labor_cost)
+                        setActTransport(cst.act.transport_cost || cst.est.transport_cost)
+                      }}
+                      className="flex-1 h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                    >
+                      Actuals
+                    </Button>
+                  )}
 
-                      <Link
-                        href={`/${slug}/costing/${cst.id}`}
-                        className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold text-blue-600 hover:bg-blue-50"
-                      >
-                        Details
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  <Link
+                    href={`/${slug}/costing/${cst.id}`}
+                    className="inline-flex items-center justify-center h-9 px-3 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    Details
+                  </Link>
+                </div>
+              </div>
+            ))}
+            {filteredCostings.length === 0 && (
+              <div className="p-8 text-center text-slate-400 text-xs">
+                No job costings found.
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -432,7 +564,7 @@ export default function JobCostingPage() {
         description="Simulate discount proposal and verify profitability before confirming quotation."
       >
         {negotiatingJob && negotiationResult && (
-          <div className="space-y-4 pt-1">
+          <div className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
             <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1 text-xs">
               <div className="flex justify-between font-bold">
                 <span>Job: {negotiatingJob.job_number}</span>
@@ -519,8 +651,8 @@ export default function JobCostingPage() {
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button type="button" variant="outline" onClick={() => setNegotiatingJob(null)}>
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setNegotiatingJob(null)} className="w-full sm:w-auto h-10 sm:h-9">
                 Cancel
               </Button>
               <Button
@@ -531,7 +663,7 @@ export default function JobCostingPage() {
                   )
                   setNegotiatingJob(null)
                 }}
-                className={`font-bold text-white ${
+                className={`font-bold text-white w-full sm:w-auto h-10 sm:h-9 ${
                   negotiationResult.isSafeMargin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-amber-600 hover:bg-amber-700'
                 }`}
               >
@@ -552,12 +684,12 @@ export default function JobCostingPage() {
         description="Update realized substrate consumption, machine operator hours, and delivery transit."
       >
         {editingJob && (
-          <form onSubmit={handleSaveActuals} className="space-y-4 pt-1">
+          <form onSubmit={handleSaveActuals} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
             <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border text-xs">
               <strong>{editingJob.job_number}</strong>: {editingJob.item_title}
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="actMat" required>Actual Material (৳)</Label>
                 <Input
@@ -592,11 +724,11 @@ export default function JobCostingPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button type="button" variant="outline" onClick={() => setEditingJob(null)}>
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setEditingJob(null)} className="w-full sm:w-auto h-10 sm:h-9">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
                 Compute Variance & Finalize Costing
               </Button>
             </div>

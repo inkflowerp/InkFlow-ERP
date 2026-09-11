@@ -294,52 +294,87 @@ export default function SupplierProfilePage({ params }: SupplierProfilePageProps
       {activeTab === 'prices' && (
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-base font-bold">Negotiated Material Contract Prices</CardTitle>
                 <CardDescription className="text-xs">Base procurement costs used in quotation cost estimators</CardDescription>
               </div>
-              <Button size="sm" onClick={() => setIsAddPriceOpen(true)} className="bg-teal-600 hover:bg-teal-700 text-xs text-white">
+              <Button size="sm" onClick={() => setIsAddPriceOpen(true)} className="bg-teal-600 hover:bg-teal-700 text-xs text-white shrink-0">
                 <Plus className="h-3.5 w-3.5 mr-1" />
                 Add Material Rate
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Material Specification</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Unit of Measure</th>
-                  <th className="py-3 px-4">Contract Price (৳ BDT)</th>
-                  <th className="py-3 px-4">Effective Date</th>
-                  <th className="py-3 px-4">Remarks</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {materialPrices.length === 0 ? (
+          <CardContent className="p-0">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
-                      No material contract rates recorded for this supplier.
-                    </td>
+                    <th className="py-3 px-4">Material Specification</th>
+                    <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">Unit of Measure</th>
+                    <th className="py-3 px-4">Contract Price (৳ BDT)</th>
+                    <th className="py-3 px-4">Effective Date</th>
+                    <th className="py-3 px-4">Remarks</th>
                   </tr>
-                ) : (
-                  materialPrices.map((price) => (
-                    <tr key={price.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">{price.material_name}</td>
-                      <td className="py-3 px-4 capitalize text-slate-500">{price.category}</td>
-                      <td className="py-3 px-4 uppercase font-mono">{price.unit}</td>
-                      <td className="py-3 px-4 font-bold text-teal-700 dark:text-teal-400">
-                        <CurrencyDisplay amount={price.contract_price_bdt} /> / {price.unit}
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {materialPrices.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-400">
+                        No material contract rates recorded for this supplier.
                       </td>
-                      <td className="py-3 px-4 text-slate-500">{price.effective_date}</td>
-                      <td className="py-3 px-4 text-slate-400">{price.notes || '—'}</td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    materialPrices.map((price) => (
+                      <tr key={price.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                        <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">{price.material_name}</td>
+                        <td className="py-3 px-4 capitalize text-slate-500">{price.category}</td>
+                        <td className="py-3 px-4 uppercase font-mono">{price.unit}</td>
+                        <td className="py-3 px-4 font-bold text-teal-700 dark:text-teal-400">
+                          <CurrencyDisplay amount={price.contract_price_bdt} /> / {price.unit}
+                        </td>
+                        <td className="py-3 px-4 text-slate-500">{price.effective_date}</td>
+                        <td className="py-3 px-4 text-slate-400">{price.notes || '—'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {materialPrices.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 text-xs">
+                  No material contract rates recorded for this supplier.
+                </div>
+              ) : (
+                materialPrices.map((price) => (
+                  <div key={price.id} className="p-4 space-y-2 text-xs bg-white dark:bg-slate-900">
+                    <div className="flex items-start justify-between gap-2">
+                      <strong className="font-bold text-slate-900 dark:text-white text-sm">{price.material_name}</strong>
+                      <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-teal-50 text-teal-800 dark:bg-teal-950/40 dark:text-teal-300 shrink-0">
+                        {price.category}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 font-mono">
+                      <span className="text-slate-500">Unit: {price.unit.toUpperCase()}</span>
+                      <span className="font-black text-teal-700 dark:text-teal-400 text-sm">
+                        <CurrencyDisplay amount={price.contract_price_bdt} /> / {price.unit}
+                      </span>
+                    </div>
+
+                    {price.notes && (
+                      <p className="text-[11px] text-slate-500 italic">{price.notes}</p>
+                    )}
+                    <div className="text-[10px] text-slate-400 text-right">Effective: {price.effective_date}</div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -350,27 +385,45 @@ export default function SupplierProfilePage({ params }: SupplierProfilePageProps
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base font-bold">Purchase Orders & GRN Receiving</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">PO Number</th>
-                  <th className="py-3 px-4">Items Received</th>
-                  <th className="py-3 px-4">Total Amount</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Warehouse Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr>
-                  <td className="py-3 px-4 font-mono font-bold text-teal-600">PUR-000034</td>
-                  <td className="py-3 px-4 font-medium text-slate-900 dark:text-white">Star Flex Gloss 320g (5 Rolls - 2,500 sft)</td>
-                  <td className="py-3 px-4 font-bold"><CurrencyDisplay amount={23750} /></td>
-                  <td className="py-3 px-4 text-slate-500">28/08/2024</td>
-                  <td className="py-3 px-4"><Badge variant="outline" className="text-emerald-700 bg-emerald-50">Stocked in Hub</Badge></td>
-                </tr>
-              </tbody>
-            </table>
+          <CardContent className="p-0">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">PO Number</th>
+                    <th className="py-3 px-4">Items Received</th>
+                    <th className="py-3 px-4">Total Amount</th>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Warehouse Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr>
+                    <td className="py-3 px-4 font-mono font-bold text-teal-600">PUR-000034</td>
+                    <td className="py-3 px-4 font-medium text-slate-900 dark:text-white">Star Flex Gloss 320g (5 Rolls - 2,500 sft)</td>
+                    <td className="py-3 px-4 font-bold"><CurrencyDisplay amount={23750} /></td>
+                    <td className="py-3 px-4 text-slate-500">28/08/2024</td>
+                    <td className="py-3 px-4"><Badge variant="outline" className="text-emerald-700 bg-emerald-50">Stocked in Hub</Badge></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-4">
+              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono font-bold text-teal-600">PUR-000034</span>
+                  <Badge variant="outline" className="text-emerald-700 bg-emerald-50 text-[10px]">Stocked in Hub</Badge>
+                </div>
+                <div className="font-medium text-slate-900 dark:text-white">Star Flex Gloss 320g (5 Rolls - 2,500 sft)</div>
+                <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800 font-mono">
+                  <span className="text-slate-400">28/08/2024</span>
+                  <span className="font-bold text-slate-900 dark:text-white"><CurrencyDisplay amount={23750} /></span>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -381,27 +434,45 @@ export default function SupplierProfilePage({ params }: SupplierProfilePageProps
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base font-bold">Payment Vouchers to Vendor</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Voucher No.</th>
-                  <th className="py-3 px-4">Payment Method / Cheque</th>
-                  <th className="py-3 px-4">Amount Paid</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr>
-                  <td className="py-3 px-4 font-mono font-bold text-teal-600">PV-2024-0012</td>
-                  <td className="py-3 px-4">City Bank Cheque #982104</td>
-                  <td className="py-3 px-4 font-bold text-emerald-600"><CurrencyDisplay amount={100000} /></td>
-                  <td className="py-3 px-4 text-slate-500">20/08/2024</td>
-                  <td className="py-3 px-4"><Badge variant="outline" className="text-emerald-700 bg-emerald-50">Cheque Cleared</Badge></td>
-                </tr>
-              </tbody>
-            </table>
+          <CardContent className="p-0">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Voucher No.</th>
+                    <th className="py-3 px-4">Payment Method / Cheque</th>
+                    <th className="py-3 px-4">Amount Paid</th>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr>
+                    <td className="py-3 px-4 font-mono font-bold text-teal-600">PV-2024-0012</td>
+                    <td className="py-3 px-4">City Bank Cheque #982104</td>
+                    <td className="py-3 px-4 font-bold text-emerald-600"><CurrencyDisplay amount={100000} /></td>
+                    <td className="py-3 px-4 text-slate-500">20/08/2024</td>
+                    <td className="py-3 px-4"><Badge variant="outline" className="text-emerald-700 bg-emerald-50">Cheque Cleared</Badge></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-4">
+              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono font-bold text-teal-600">PV-2024-0012</span>
+                  <Badge variant="outline" className="text-emerald-700 bg-emerald-50 text-[10px]">Cheque Cleared</Badge>
+                </div>
+                <div className="text-slate-700 dark:text-slate-300">City Bank Cheque #982104</div>
+                <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800 font-mono">
+                  <span className="text-slate-400">20/08/2024</span>
+                  <span className="font-bold text-emerald-600"><CurrencyDisplay amount={100000} /></span>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -423,7 +494,7 @@ export default function SupplierProfilePage({ params }: SupplierProfilePageProps
         title="Add Material Contract Rate"
         description={`Record agreed procurement price for ${supplier.supplier_name}.`}
       >
-        <form onSubmit={handleAddPrice} className="space-y-4 pt-2">
+        <form onSubmit={handleAddPrice} className="space-y-4 pt-2 max-h-[75vh] overflow-y-auto px-1">
           <div className="space-y-1.5">
             <Label htmlFor="matName" required>Material Name & Specification</Label>
             <Input
@@ -435,7 +506,7 @@ export default function SupplierProfilePage({ params }: SupplierProfilePageProps
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="matUnit">Unit of Measure</Label>
               <select
@@ -478,11 +549,11 @@ export default function SupplierProfilePage({ params }: SupplierProfilePageProps
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setIsAddPriceOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsAddPriceOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white">
+            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Save Contract Rate
             </Button>
           </div>
@@ -496,8 +567,8 @@ export default function SupplierProfilePage({ params }: SupplierProfilePageProps
         title="Issue Payment Voucher to Supplier"
         description={`Record disbursement for outstanding balance (৳ ${supplier.outstanding_balance || 0} payable).`}
       >
-        <form onSubmit={handlePaySupplier} className="space-y-4 pt-2">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handlePaySupplier} className="space-y-4 pt-2 max-h-[75vh] overflow-y-auto px-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="paySupAmt" required>Amount (৳ BDT)</Label>
               <Input
@@ -525,11 +596,11 @@ export default function SupplierProfilePage({ params }: SupplierProfilePageProps
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setIsRecordPayOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsRecordPayOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white">
+            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Create Payment Voucher
             </Button>
           </div>

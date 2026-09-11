@@ -245,42 +245,144 @@ export default function ProductsCatalogPage() {
       {/* Products Table */}
       <Card>
         <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <CardTitle className="text-base">Catalog Items ({filtered.length})</CardTitle>
             <span className="text-xs text-slate-400">Standard rates and production floor benchmarks</span>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Item & SKU</th>
-                <th className="py-3 px-4">Type</th>
-                <th className="py-3 px-4">Unit</th>
-                <th className="py-3 px-4">Base Cost</th>
-                <th className="py-3 px-4">Selling Rate</th>
-                <th className="py-3 px-4">Min Price</th>
-                <th className="py-3 px-4">Gross Margin</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((item) => {
-                const marginPercent =
-                  item.selling_price > 0
-                    ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 100)
-                    : 0
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Item & SKU</th>
+                  <th className="py-3 px-4">Type</th>
+                  <th className="py-3 px-4">Unit</th>
+                  <th className="py-3 px-4">Base Cost</th>
+                  <th className="py-3 px-4">Selling Rate</th>
+                  <th className="py-3 px-4">Min Price</th>
+                  <th className="py-3 px-4">Gross Margin</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map((item) => {
+                  const marginPercent =
+                    item.selling_price > 0
+                      ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 100)
+                      : 0
 
-                return (
-                  <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Item & SKU */}
-                    <td className="py-3.5 px-4">
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      {/* Item & SKU */}
+                      <td className="py-3.5 px-4">
+                        <Link
+                          href={`/${slug}/products/${item.id}`}
+                          className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                        >
+                          <span>{item.name}</span>
+                          <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                        </Link>
+                        {item.name_bn && (
+                          <div className="text-xs text-slate-500">{item.name_bn}</div>
+                        )}
+                        <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                          {item.sku} • {item.material_spec || 'Standard Spec'}
+                        </div>
+                      </td>
+
+                      {/* Product Type */}
+                      <td className="py-3.5 px-4">
+                        <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900">
+                          {item.product_type.replace('_', ' ')}
+                        </span>
+                      </td>
+
+                      {/* Unit */}
+                      <td className="py-3.5 px-4">
+                        <span className="uppercase font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+                          {item.unit}
+                        </span>
+                      </td>
+
+                      {/* Base Cost */}
+                      <td className="py-3.5 px-4 text-xs font-medium text-slate-500">
+                        <CurrencyDisplay amount={item.base_cost} />
+                      </td>
+
+                      {/* Selling Rate */}
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                        <CurrencyDisplay amount={item.selling_price} />
+                        <span className="text-xs font-normal text-slate-400">/{item.unit}</span>
+                      </td>
+
+                      {/* Min Price Floor */}
+                      <td className="py-3.5 px-4 text-xs text-amber-700 dark:text-amber-400 font-medium">
+                        <CurrencyDisplay amount={item.min_price} />
+                      </td>
+
+                      {/* Gross Margin */}
+                      <td className="py-3.5 px-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900">
+                          {marginPercent}%
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingProduct(item)
+                              setNewPrice(item.selling_price)
+                            }}
+                            className="h-7 text-xs px-2"
+                          >
+                            <Edit3 className="h-3 w-3 mr-1" />
+                            Price
+                          </Button>
+                          <Link
+                            href={`/${slug}/products/${item.id}`}
+                            className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                          >
+                            Formula
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
+                      No products found matching your search.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.map((item) => {
+              const marginPercent =
+                item.selling_price > 0
+                  ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 100)
+                  : 0
+
+              return (
+                <div key={item.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
                       <Link
                         href={`/${slug}/products/${item.id}`}
-                        className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                        className="font-bold text-sm text-slate-900 dark:text-white hover:text-blue-600"
                       >
-                        <span>{item.name}</span>
-                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                        {item.name}
                       </Link>
                       {item.name_bn && (
                         <div className="text-xs text-slate-500">{item.name_bn}</div>
@@ -288,73 +390,65 @@ export default function ProductsCatalogPage() {
                       <div className="text-[11px] font-mono text-slate-400 mt-0.5">
                         {item.sku} • {item.material_spec || 'Standard Spec'}
                       </div>
-                    </td>
+                    </div>
+                    <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900 shrink-0">
+                      {item.product_type.replace('_', ' ')}
+                    </span>
+                  </div>
 
-                    {/* Product Type */}
-                    <td className="py-3.5 px-4">
-                      <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900">
-                        {item.product_type.replace('_', ' ')}
-                      </span>
-                    </td>
-
-                    {/* Unit */}
-                    <td className="py-3.5 px-4">
-                      <span className="uppercase font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
-                        {item.unit}
-                      </span>
-                    </td>
-
-                    {/* Base Cost */}
-                    <td className="py-3.5 px-4 text-xs font-medium text-slate-500">
-                      <CurrencyDisplay amount={item.base_cost} />
-                    </td>
-
-                    {/* Selling Rate */}
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                      <CurrencyDisplay amount={item.selling_price} />
-                      <span className="text-xs font-normal text-slate-400">/{item.unit}</span>
-                    </td>
-
-                    {/* Min Price Floor */}
-                    <td className="py-3.5 px-4 text-xs text-amber-700 dark:text-amber-400 font-medium">
-                      <CurrencyDisplay amount={item.min_price} />
-                    </td>
-
-                    {/* Gross Margin */}
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900">
-                        {marginPercent}%
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingProduct(item)
-                            setNewPrice(item.selling_price)
-                          }}
-                          className="h-7 text-xs px-2"
-                        >
-                          <Edit3 className="h-3 w-3 mr-1" />
-                          Price
-                        </Button>
-                        <Link
-                          href={`/${slug}/products/${item.id}`}
-                          className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                        >
-                          Formula
-                        </Link>
+                  {/* Financial Metrics Grid */}
+                  <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800/60 text-center">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase block">Selling Rate</span>
+                      <div className="font-mono font-bold text-xs text-slate-900 dark:text-white">
+                        ৳{item.selling_price}/{item.unit}
                       </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase block">Base Cost</span>
+                      <div className="font-mono text-xs text-slate-500">
+                        ৳{item.base_cost}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-emerald-600 uppercase block">Margin</span>
+                      <div className="font-mono font-bold text-xs text-emerald-600">
+                        {marginPercent}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingProduct(item)
+                        setNewPrice(item.selling_price)
+                      }}
+                      className="flex-1 h-9 text-xs font-semibold"
+                    >
+                      <Edit3 className="h-3.5 w-3.5 mr-1.5" />
+                      Adjust Price
+                    </Button>
+                    <Link
+                      href={`/${slug}/products/${item.id}`}
+                      className="flex-1 inline-flex items-center justify-center h-9 px-3 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      <Layers className="h-3.5 w-3.5 mr-1.5" />
+                      Formula Spec
+                    </Link>
+                  </div>
+                </div>
+              )
+            })}
+            {filtered.length === 0 && (
+              <div className="p-8 text-center text-slate-400 text-xs">
+                No products found matching your search.
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -408,7 +502,7 @@ export default function ProductsCatalogPage() {
                 id="pType"
                 value={newProduct.product_type}
                 onChange={(e) => setNewProduct({ ...newProduct, product_type: e.target.value as ProductType })}
-                className="w-full h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
               >
                 <option value="print_service">Print Service</option>
                 <option value="fabrication_service">Fabrication Service</option>
@@ -425,7 +519,7 @@ export default function ProductsCatalogPage() {
                 id="pUnit"
                 value={newProduct.unit}
                 onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value as UnitOfMeasure })}
-                className="w-full h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
               >
                 <option value="sft">Square Feet (sft)</option>
                 <option value="pcs">Piece (pcs)</option>
@@ -491,13 +585,13 @@ export default function ProductsCatalogPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9"
             >
               Register Item
             </Button>
@@ -513,7 +607,7 @@ export default function ProductsCatalogPage() {
         description={`Update official rate for ${editingProduct?.name} (${editingProduct?.sku}).`}
         hideFooter
       >
-        <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1">
+        <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs">
             <div className="flex justify-between">
               <span>Current Base Cost:</span>
@@ -552,11 +646,11 @@ export default function ProductsCatalogPage() {
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setEditingProduct(null)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setEditingProduct(null)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Save & Log Audit History
             </Button>
           </div>

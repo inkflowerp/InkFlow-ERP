@@ -304,7 +304,7 @@ Final Price: ৳ ${appliedOverride ? appliedOverride.override_price : pricingRes
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="width">Width (প্রস্থ)</Label>
                 <Input
@@ -621,7 +621,7 @@ Final Price: ৳ ${appliedOverride ? appliedOverride.override_price : pricingRes
               </div>
 
               {/* Grand Total */}
-              <div className="p-4 rounded-xl bg-slate-900 text-white dark:bg-slate-950 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-slate-900 text-white dark:bg-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <div className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
                     Payable Amount (মোট মূল্য)
@@ -631,7 +631,7 @@ Final Price: ৳ ${appliedOverride ? appliedOverride.override_price : pricingRes
                   </div>
                 </div>
 
-                <div className="text-right">
+                <div className="sm:text-right border-t sm:border-t-0 pt-1 sm:pt-0 border-slate-800">
                   <div className="text-[11px] text-slate-400">Unit Rate:</div>
                   <div className="text-sm font-mono font-bold text-white">
                     ৳ {formatBDT(Math.round(finalPayable / quantity))} / {activeProduct.unit}
@@ -640,7 +640,7 @@ Final Price: ৳ ${appliedOverride ? appliedOverride.override_price : pricingRes
               </div>
 
               <div className="pt-2">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-xs font-bold py-2.5">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-xs font-bold h-10 sm:h-9">
                   <FileSpreadsheet className="mr-2 h-4 w-4" />
                   Save as Official Quotation
                 </Button>
@@ -657,7 +657,7 @@ Final Price: ৳ ${appliedOverride ? appliedOverride.override_price : pricingRes
         title="Apply Custom Price Override"
         description="Manually adjust quoted rate. System requires an audit reason for compliance."
       >
-        <form onSubmit={handleApplyOverride} className="space-y-4 pt-1">
+        <form onSubmit={handleApplyOverride} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs">
             <div className="flex justify-between">
               <span>Calculated Price:</span>
@@ -693,11 +693,11 @@ Final Price: ৳ ${appliedOverride ? appliedOverride.override_price : pricingRes
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsOverrideOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsOverrideOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Log Override & Apply
             </Button>
           </div>

@@ -418,103 +418,188 @@ export default function DeliveryLogisticsPage() {
               <span className="text-xs text-slate-400">Transit slips with receiver verification</span>
             </div>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Challan #</th>
-                  <th className="py-3 px-4">Customer & Destination</th>
-                  <th className="py-3 px-4">Delivery Method</th>
-                  <th className="py-3 px-4">Vehicle / Consignment</th>
-                  <th className="py-3 px-4">Scheduled Date</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {challans.map((ch: DeliveryChallanRecord) => (
-                  <tr key={ch.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Challan # */}
-                    <td className="py-3.5 px-4">
-                      <Link
-                        href={`/${slug}/delivery/${ch.id}`}
-                        className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
-                      >
-                        <span>{ch.challan_number}</span>
-                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </Link>
-                      <div className="text-[10px] font-mono text-slate-400 mt-0.5">{ch.order_number}</div>
-                    </td>
-
-                    {/* Customer & Address */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                        {ch.customer_name}
-                      </div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[220px]">
-                        <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
-                        <span className="truncate">{ch.delivery_address}</span>
-                      </div>
-                    </td>
-
-                    {/* Delivery Method */}
-                    <td className="py-3.5 px-4">
-                      {getMethodBadge(ch.delivery_method)}
-                    </td>
-
-                    {/* Vehicle */}
-                    <td className="py-3.5 px-4 text-xs font-mono">
-                      <div className="font-medium text-slate-800 dark:text-slate-200">
-                        {ch.vehicle_info || 'Factory Pickup'}
-                      </div>
-                      <div className="text-[10px] text-slate-400">{ch.delivery_person_name}</div>
-                    </td>
-
-                    {/* Scheduled Date */}
-                    <td className="py-3.5 px-4 text-xs font-mono text-slate-600 dark:text-slate-300">
-                      {ch.scheduled_date}
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3.5 px-4">
-                      {getDeliveryStatusBadge(ch.status)}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+          <CardContent className="p-0">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Challan #</th>
+                    <th className="py-3 px-4">Customer & Destination</th>
+                    <th className="py-3 px-4">Delivery Method</th>
+                    <th className="py-3 px-4">Vehicle / Consignment</th>
+                    <th className="py-3 px-4">Scheduled Date</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {challans.map((ch: DeliveryChallanRecord) => (
+                    <tr key={ch.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      {/* Challan # */}
+                      <td className="py-3.5 px-4">
                         <Link
                           href={`/${slug}/delivery/${ch.id}`}
-                          className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                          className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
                         >
-                          Challan PDF
+                          <span>{ch.challan_number}</span>
+                          <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </Link>
+                        <div className="text-[10px] font-mono text-slate-400 mt-0.5">{ch.order_number}</div>
+                      </td>
 
-                        {ch.status === 'scheduled' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarkOutForDelivery(ch.id)}
-                            className="h-7 text-[11px] px-2 bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            Dispatch Van
-                          </Button>
-                        )}
+                      {/* Customer & Address */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-900 dark:text-white text-xs">
+                          {ch.customer_name}
+                        </div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[220px]">
+                          <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+                          <span className="truncate">{ch.delivery_address}</span>
+                        </div>
+                      </td>
 
-                        {ch.status === 'out_for_delivery' && (
-                          <Button
-                            size="sm"
-                            onClick={() => setSelectedChallanForDelivery(ch)}
-                            className="h-7 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                      {/* Delivery Method */}
+                      <td className="py-3.5 px-4">
+                        {getMethodBadge(ch.delivery_method)}
+                      </td>
+
+                      {/* Vehicle */}
+                      <td className="py-3.5 px-4 text-xs font-mono">
+                        <div className="font-medium text-slate-800 dark:text-slate-200">
+                          {ch.vehicle_info || 'Factory Pickup'}
+                        </div>
+                        <div className="text-[10px] text-slate-400">{ch.delivery_person_name}</div>
+                      </td>
+
+                      {/* Scheduled Date */}
+                      <td className="py-3.5 px-4 text-xs font-mono text-slate-600 dark:text-slate-300">
+                        {ch.scheduled_date}
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3.5 px-4">
+                        {getDeliveryStatusBadge(ch.status)}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            href={`/${slug}/delivery/${ch.id}`}
+                            className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
                           >
-                            Confirm Delivery
-                          </Button>
-                        )}
+                            Challan PDF
+                          </Link>
+
+                          {ch.status === 'scheduled' && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkOutForDelivery(ch.id)}
+                              className="h-7 text-[11px] px-2 bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              Dispatch Van
+                            </Button>
+                          )}
+
+                          {ch.status === 'out_for_delivery' && (
+                            <Button
+                              size="sm"
+                              onClick={() => setSelectedChallanForDelivery(ch)}
+                              className="h-7 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                            >
+                              Confirm Delivery
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {challans.length === 0 ? (
+                <div className="p-6 text-center text-xs text-slate-400">
+                  {tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
+                </div>
+              ) : (
+                challans.map((ch: DeliveryChallanRecord) => (
+                  <div key={ch.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Top: Challan # & Status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <Link
+                        href={`/${slug}/delivery/${ch.id}`}
+                        className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                      >
+                        <span>{ch.challan_number}</span>
+                        <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                      </Link>
+                      {getDeliveryStatusBadge(ch.status)}
+                    </div>
+
+                    {/* Customer & Address */}
+                    <div>
+                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{ch.customer_name}</div>
+                      <div className="text-xs text-slate-500 flex items-start gap-1 mt-0.5">
+                        <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
+                        <span>{ch.delivery_address}</span>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+
+                    {/* Meta Grid */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Method</span>
+                        <div className="mt-0.5">{getMethodBadge(ch.delivery_method)}</div>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Scheduled Date</span>
+                        <span className="font-mono text-slate-700 dark:text-slate-300">{ch.scheduled_date}</span>
+                      </div>
+                      {ch.vehicle_info && (
+                        <div className="col-span-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                          Vehicle: <strong className="font-mono text-slate-800 dark:text-slate-200">{ch.vehicle_info}</strong>
+                          {ch.delivery_person_name && <span> ({ch.delivery_person_name})</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <Link
+                        href={`/${slug}/delivery/${ch.id}`}
+                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 min-h-[36px]"
+                      >
+                        Challan PDF
+                      </Link>
+
+                      {ch.status === 'scheduled' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleMarkOutForDelivery(ch.id)}
+                          className="h-9 text-xs px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                        >
+                          Dispatch Van
+                        </Button>
+                      )}
+
+                      {ch.status === 'out_for_delivery' && (
+                        <Button
+                          size="sm"
+                          onClick={() => setSelectedChallanForDelivery(ch)}
+                          className="h-9 text-xs px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                        >
+                          Confirm Delivery
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -530,82 +615,140 @@ export default function DeliveryLogisticsPage() {
               <span className="text-xs text-slate-400">Field rigging, crane hookups, and customer sign-offs</span>
             </div>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Installation #</th>
-                  <th className="py-3 px-4">Customer & Site Location</th>
-                  <th className="py-3 px-4">Crew Lead & Riggers</th>
-                  <th className="py-3 px-4">Scheduled Window</th>
-                  <th className="py-3 px-4">Equipment Used</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Customer Confirmation</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {installations.map((ins: InstallationRecord) => (
-                  <tr key={ins.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Installation # */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
+          <CardContent className="p-0">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Installation #</th>
+                    <th className="py-3 px-4">Customer & Site Location</th>
+                    <th className="py-3 px-4">Crew Lead & Riggers</th>
+                    <th className="py-3 px-4">Scheduled Window</th>
+                    <th className="py-3 px-4">Equipment Used</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Customer Confirmation</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {installations.map((ins: InstallationRecord) => (
+                    <tr key={ins.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      {/* Installation # */}
+                      <td className="py-3.5 px-4">
+                        <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
+                          {ins.installation_number}
+                        </span>
+                        <div className="text-[10px] font-mono text-slate-400 mt-0.5">{ins.order_number}</div>
+                      </td>
+
+                      {/* Customer & Location */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-900 dark:text-white text-xs">
+                          {ins.customer_name}
+                        </div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[200px]">
+                          <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+                          <span className="truncate">{ins.site_location}</span>
+                        </div>
+                      </td>
+
+                      {/* Crew */}
+                      <td className="py-3.5 px-4 text-xs">
+                        <div className="font-bold text-slate-800 dark:text-slate-200">
+                          {ins.installer_lead_name}
+                        </div>
+                        <div className="text-[10px] text-slate-400">+{ins.crew_members.length} technicians</div>
+                      </td>
+
+                      {/* Scheduled Time */}
+                      <td className="py-3.5 px-4 text-xs font-mono">
+                        <div>{ins.installation_date}</div>
+                        <div className="text-[10px] text-slate-400">{ins.scheduled_time}</div>
+                      </td>
+
+                      {/* Equipment */}
+                      <td className="py-3.5 px-4 text-xs truncate max-w-[180px] text-slate-600 dark:text-slate-300">
+                        {ins.equipment_used || 'Standard Hand Tools'}
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3.5 px-4">
+                        {getInstallationStatusBadge(ins.status)}
+                      </td>
+
+                      {/* Confirmation */}
+                      <td className="py-3.5 px-4 text-xs">
+                        {ins.customer_confirmed_by ? (
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-0.5 font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px] border border-emerald-200">
+                              <Star className="h-3 w-3 fill-emerald-500 text-emerald-500" /> Sign-Off Verified
+                            </span>
+                            <div className="text-[10px] text-slate-500">{ins.customer_confirmed_by}</div>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 text-[11px] italic">Pending site sign-off</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {installations.length === 0 ? (
+                <div className="p-6 text-center text-xs text-slate-400">
+                  {tBilingual('No installation jobs found.', 'কোন ইনস্টলেশন কাজ পাওয়া যায়নি।')}
+                </div>
+              ) : (
+                installations.map((ins: InstallationRecord) => (
+                  <div key={ins.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Top: Installation # & Status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono font-bold text-sm text-purple-600 dark:text-purple-400">
                         {ins.installation_number}
                       </span>
-                      <div className="text-[10px] font-mono text-slate-400 mt-0.5">{ins.order_number}</div>
-                    </td>
+                      {getInstallationStatusBadge(ins.status)}
+                    </div>
 
                     {/* Customer & Location */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                        {ins.customer_name}
+                    <div>
+                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{ins.customer_name}</div>
+                      <div className="text-xs text-slate-500 flex items-start gap-1 mt-0.5">
+                        <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
+                        <span>{ins.site_location}</span>
                       </div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[200px]">
-                        <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
-                        <span className="truncate">{ins.site_location}</span>
+                    </div>
+
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Lead Tech</span>
+                        <strong className="text-slate-800 dark:text-slate-200">{ins.installer_lead_name}</strong>
                       </div>
-                    </td>
-
-                    {/* Crew */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <div className="font-bold text-slate-800 dark:text-slate-200">
-                        {ins.installer_lead_name}
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Date & Window</span>
+                        <span className="font-mono text-slate-700 dark:text-slate-300">{ins.installation_date}</span>
                       </div>
-                      <div className="text-[10px] text-slate-400">+{ins.crew_members.length} technicians</div>
-                    </td>
-
-                    {/* Scheduled Time */}
-                    <td className="py-3.5 px-4 text-xs font-mono">
-                      <div>{ins.installation_date}</div>
-                      <div className="text-[10px] text-slate-400">{ins.scheduled_time}</div>
-                    </td>
-
-                    {/* Equipment */}
-                    <td className="py-3.5 px-4 text-xs truncate max-w-[180px] text-slate-600 dark:text-slate-300">
-                      {ins.equipment_used || 'Standard Hand Tools'}
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3.5 px-4">
-                      {getInstallationStatusBadge(ins.status)}
-                    </td>
-
-                    {/* Confirmation */}
-                    <td className="py-3.5 px-4 text-xs">
-                      {ins.customer_confirmed_by ? (
-                        <div className="space-y-0.5">
-                          <span className="inline-flex items-center gap-0.5 font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px] border border-emerald-200">
-                            <Star className="h-3 w-3 fill-emerald-500 text-emerald-500" /> Sign-Off Verified
-                          </span>
-                          <div className="text-[10px] text-slate-500">{ins.customer_confirmed_by}</div>
+                      {ins.equipment_used && (
+                        <div className="col-span-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                          Gear: <span>{ins.equipment_used}</span>
                         </div>
-                      ) : (
-                        <span className="text-slate-400 text-[11px] italic">Pending site sign-off</span>
                       )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+
+                    {/* Sign-off badge if present */}
+                    {ins.customer_confirmed_by && (
+                      <div className="flex items-center gap-1.5 p-2 rounded bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs border border-emerald-200">
+                        <Star className="h-3.5 w-3.5 fill-emerald-500 text-emerald-500" />
+                        <span>Signed off by: <strong>{ins.customer_confirmed_by}</strong></span>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -756,11 +899,11 @@ export default function DeliveryLogisticsPage() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedChallanForDelivery(null)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setSelectedChallanForDelivery(null)} className="w-full sm:w-auto min-h-[40px]">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
                 Confirm Delivery & Archive Challan
               </Button>
             </div>
@@ -776,7 +919,7 @@ export default function DeliveryLogisticsPage() {
         description="Dispatch printed products or signage structures to the customer site."
       >
         <form onSubmit={handleCreateChallan} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="chCust" required>Customer</Label>
               <select
@@ -824,7 +967,7 @@ export default function DeliveryLogisticsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="chVeh">Vehicle Number / Courier Consignment</Label>
               <Input
@@ -856,7 +999,7 @@ export default function DeliveryLogisticsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="chQ" required>Quantity</Label>
               <Input
@@ -891,11 +1034,11 @@ export default function DeliveryLogisticsPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewChallanOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewChallanOpen(false)} className="w-full sm:w-auto min-h-[40px]">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+            <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold">
               Issue Delivery Challan
             </Button>
           </div>
@@ -910,7 +1053,7 @@ export default function DeliveryLogisticsPage() {
         description="Deploy rigging technicians, cranes, and safety gear to the client installation site."
       >
         <form onSubmit={handleCreateInstallation} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="insCust" required>Customer</Label>
               <select
@@ -951,7 +1094,7 @@ export default function DeliveryLogisticsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="insLead" required>Lead Technician</Label>
               <Input
@@ -982,11 +1125,11 @@ export default function DeliveryLogisticsPage() {
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewInstallationOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewInstallationOpen(false)} className="w-full sm:w-auto min-h-[40px]">
               Cancel
             </Button>
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold">
+            <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-purple-600 hover:bg-purple-700 text-white font-bold">
               Dispatch Installation Team
             </Button>
           </div>

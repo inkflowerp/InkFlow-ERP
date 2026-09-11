@@ -225,17 +225,17 @@ export default function ReportingAnalyticsPage() {
         />
 
         {/* Global Multi-Dimensional Filter Toolbar */}
-        <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-3 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold">
-            <Filter className="h-3.5 w-3.5 text-blue-600" />
-            Filters:
+        <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-2.5 text-xs">
+          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold sm:col-span-2 lg:col-span-1">
+            <Filter className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+            <span>Filters:</span>
           </div>
 
           {/* Date Range */}
           <select
             value={filters.dateRange}
             onChange={(e) => setFilters({ ...filters, dateRange: e.target.value as any })}
-            className="h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold"
+            className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
           >
             <option value="today">Today</option>
             <option value="7d">Last 7 Days</option>
@@ -248,7 +248,7 @@ export default function ReportingAnalyticsPage() {
           <select
             value={filters.branch}
             onChange={(e) => setFilters({ ...filters, branch: e.target.value as any })}
-            className="h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold"
+            className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
           >
             <option value="all">All Branches</option>
           </select>
@@ -257,7 +257,7 @@ export default function ReportingAnalyticsPage() {
           <select
             value={filters.customerType}
             onChange={(e) => setFilters({ ...filters, customerType: e.target.value as any })}
-            className="h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold"
+            className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
           >
             <option value="all">All Customer Types</option>
             <option value="corporate">Corporate Accounts</option>
@@ -269,7 +269,7 @@ export default function ReportingAnalyticsPage() {
           <select
             value={filters.department}
             onChange={(e) => setFilters({ ...filters, department: e.target.value as any })}
-            className="h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold"
+            className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
           >
             <option value="all">All Production Depts</option>
             <option value="printing">Wide-Format Printing</option>
@@ -281,7 +281,7 @@ export default function ReportingAnalyticsPage() {
       </div>
 
       {/* Top Highlight Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <Card className="p-3.5 border-l-4 border-l-blue-600">
           <span className="text-[11px] font-semibold text-slate-500 block">Gross Sales Turnover</span>
           <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
@@ -320,65 +320,65 @@ export default function ReportingAnalyticsPage() {
       </div>
 
       {/* Module Navigation Tabs */}
-      <div className="print:hidden flex items-center gap-1.5 p-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-x-auto">
+      <div className="print:hidden flex items-center gap-1.5 p-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-x-auto touch-scroll">
         <Button
           size="sm"
           variant={activeTab === 'sales' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('sales')}
-          className={`text-xs h-8 px-3.5 ${
+          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
             activeTab === 'sales' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           <BarChart3 className="h-3.5 w-3.5 mr-1.5" />
-          Sales & Commercial (বিক্রয়)
+          {tBilingual('Sales & Commercial (বিক্রয়)', 'বিক্রয় ও সেলস')}
         </Button>
 
         <Button
           size="sm"
           variant={activeTab === 'production' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('production')}
-          className={`text-xs h-8 px-3.5 ${
+          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
             activeTab === 'production' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           <PrintIcon className="h-3.5 w-3.5 mr-1.5" />
-          Production & Quality (প্রোডাকশন)
+          {tBilingual('Production & Quality (প্রোডাকশন)', 'প্রোডাকশন')}
         </Button>
 
         <Button
           size="sm"
           variant={activeTab === 'financial' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('financial')}
-          className={`text-xs h-8 px-3.5 ${
+          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
             activeTab === 'financial' ? 'bg-amber-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           <DollarSign className="h-3.5 w-3.5 mr-1.5" />
-          Financial & Aging (বাকি ও নগদ)
+          {tBilingual('Financial & Aging (বাকি ও নগদ)', 'বাকি ও নগদ')}
         </Button>
 
         <Button
           size="sm"
           variant={activeTab === 'inventory' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('inventory')}
-          className={`text-xs h-8 px-3.5 ${
+          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
             activeTab === 'inventory' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           <Package className="h-3.5 w-3.5 mr-1.5" />
-          Inventory & Valuation (মজুদ)
+          {tBilingual('Inventory & Valuation (মজুদ)', 'মজুদ হিসাব')}
         </Button>
 
         <Button
           size="sm"
           variant={activeTab === 'customers' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('customers')}
-          className={`text-xs h-8 px-3.5 ${
+          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
             activeTab === 'customers' ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           <Users className="h-3.5 w-3.5 mr-1.5" />
-          Customer Insights (গ্রাহক)
+          {tBilingual('Customer Insights (গ্রাহক)', 'গ্রাহক তথ্য')}
         </Button>
       </div>
 
@@ -387,7 +387,7 @@ export default function ReportingAnalyticsPage() {
          ========================================================================= */}
       {activeTab === 'sales' && (
         <div className="space-y-4">
-          <div className="print:hidden flex items-center gap-1.5 overflow-x-auto pb-1">
+          <div className="print:hidden flex items-center gap-1.5 overflow-x-auto touch-scroll pb-1.5">
             {[
               { id: 'product', label: 'Product-Wise Sales' },
               { id: 'customer', label: 'Customer-Wise Sales' },
@@ -400,7 +400,7 @@ export default function ReportingAnalyticsPage() {
                 size="sm"
                 variant={salesSubTab === sub.id ? 'default' : 'outline'}
                 onClick={() => setSalesSubTab(sub.id as any)}
-                className="text-xs h-7 px-2.5"
+                className="text-xs h-8 px-3 shrink-0 whitespace-nowrap"
               >
                 {sub.label}
               </Button>
@@ -409,7 +409,7 @@ export default function ReportingAnalyticsPage() {
 
           <Card>
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <CardTitle className="text-base capitalize">
                   {salesSubTab.replace('_', ' ')} Sales Breakdown
                 </CardTitle>
@@ -418,44 +418,85 @@ export default function ReportingAnalyticsPage() {
                 </span>
               </div>
             </CardHeader>
-            <CardContent className="p-0 overflow-x-auto">
+            <CardContent className="p-0">
               {activeSalesDataset.length === 0 ? (
                 <EmptyReportState />
               ) : (
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                    <tr>
-                      <th className="py-3 px-4">Segment / Item Name</th>
-                      <th className="py-3 px-4 font-mono text-center">Orders Count</th>
-                      <th className="py-3 px-4 font-mono text-right">Revenue (৳ BDT)</th>
-                      <th className="py-3 px-4 text-right">Turnover Share</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
+                        <tr>
+                          <th className="py-3 px-4">Segment / Item Name</th>
+                          <th className="py-3 px-4 font-mono text-center">Orders Count</th>
+                          <th className="py-3 px-4 font-mono text-right">Revenue (৳ BDT)</th>
+                          <th className="py-3 px-4 text-right">Turnover Share</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {activeSalesDataset.map((row: any) => (
+                          <tr key={row.id} className="hover:bg-slate-50/50">
+                            <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                              {row.label}
+                              {row.category && (
+                                <span className="ml-2 text-[10px] font-normal text-slate-400">({row.category})</span>
+                              )}
+                            </td>
+                            <td className="py-3.5 px-4 font-mono text-center">{row.ordersCount}</td>
+                            <td className="py-3.5 px-4 font-mono font-bold text-right text-slate-900 dark:text-white">
+                              ৳ {formatBDT(row.revenue)}
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <div className="flex items-center justify-end gap-2 font-mono font-bold">
+                                <span>{row.sharePercent}%</span>
+                                <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                                  <div className="h-full bg-blue-600 rounded-full" style={{ width: `${row.sharePercent}%` }} />
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card List */}
+                  <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
                     {activeSalesDataset.map((row: any) => (
-                      <tr key={row.id} className="hover:bg-slate-50/50">
-                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                          {row.label}
-                          {row.category && (
-                            <span className="ml-2 text-[10px] font-normal text-slate-400">({row.category})</span>
-                          )}
-                        </td>
-                        <td className="py-3.5 px-4 font-mono text-center">{row.ordersCount}</td>
-                        <td className="py-3.5 px-4 font-mono font-bold text-right text-slate-900 dark:text-white">
-                          ৳ {formatBDT(row.revenue)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right">
-                          <div className="flex items-center justify-end gap-2 font-mono font-bold">
+                      <div key={row.id} className="p-4 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="font-bold text-sm text-slate-900 dark:text-white">
+                              {row.label}
+                            </div>
+                            {row.category && (
+                              <span className="text-[11px] text-slate-400">{row.category}</span>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="font-mono font-bold text-sm text-slate-900 dark:text-white">
+                              ৳ {formatBDT(row.revenue)}
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {row.ordersCount} orders
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                          <span className="text-[11px] text-slate-500">Market Share:</span>
+                          <div className="flex items-center gap-2 font-mono font-bold text-xs">
                             <span>{row.sharePercent}%</span>
-                            <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div className="w-20 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                               <div className="h-full bg-blue-600 rounded-full" style={{ width: `${row.sharePercent}%` }} />
                             </div>
                           </div>
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -470,7 +511,7 @@ export default function ReportingAnalyticsPage() {
           {productionMetrics.length === 0 ? (
             <Card><CardContent className="p-6"><EmptyReportState /></CardContent></Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {productionMetrics.map((pm: any) => (
                 <Card key={pm.id} className="p-4 space-y-1">
                   <span className="text-xs text-slate-500 font-semibold">{pm.metric}</span>
@@ -494,45 +535,81 @@ export default function ReportingAnalyticsPage() {
               Client debt categorization based on invoice issue and overdue dates.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
+          <CardContent className="p-0">
             {financialAging.length === 0 ? (
               <EmptyReportState />
             ) : (
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                  <tr>
-                    <th className="py-3 px-4">Aging Bracket</th>
-                    <th className="py-3 px-4 text-center">Invoices Count</th>
-                    <th className="py-3 px-4 text-right">Overdue Amount</th>
-                    <th className="py-3 px-4 text-center">Collection Risk</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
+                      <tr>
+                        <th className="py-3 px-4">Aging Bracket</th>
+                        <th className="py-3 px-4 text-center">Invoices Count</th>
+                        <th className="py-3 px-4 text-right">Overdue Amount</th>
+                        <th className="py-3 px-4 text-center">Collection Risk</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {financialAging.map((fa: any) => (
+                        <tr key={fa.id} className="hover:bg-slate-50/50">
+                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{fa.range}</td>
+                          <td className="py-3.5 px-4 text-center">{fa.invoicesCount} Invoices</td>
+                          <td className="py-3.5 px-4 text-right font-black text-sm">৳ {formatBDT(fa.amount)}</td>
+                          <td className="py-3.5 px-4 text-center">
+                            <Badge
+                              variant="outline"
+                              className={`capitalize text-[10px] ${
+                                fa.riskLevel === 'low'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : fa.riskLevel === 'moderate'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                  : fa.riskLevel === 'high'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : 'bg-red-50 text-red-700 border-red-200'
+                              }`}
+                            >
+                              {fa.riskLevel}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card List */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 font-mono">
                   {financialAging.map((fa: any) => (
-                    <tr key={fa.id} className="hover:bg-slate-50/50">
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{fa.range}</td>
-                      <td className="py-3.5 px-4 text-center">{fa.invoicesCount} Invoices</td>
-                      <td className="py-3.5 px-4 text-right font-black text-sm">৳ {formatBDT(fa.amount)}</td>
-                      <td className="py-3.5 px-4 text-center">
-                        <Badge
-                          variant="outline"
-                          className={`capitalize text-[10px] ${
-                            fa.riskLevel === 'low'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : fa.riskLevel === 'moderate'
-                              ? 'bg-blue-50 text-blue-700 border-blue-200'
-                              : fa.riskLevel === 'high'
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-red-50 text-red-700 border-red-200'
-                          }`}
-                        >
-                          {fa.riskLevel}
-                        </Badge>
-                      </td>
-                    </tr>
+                    <div key={fa.id} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-white">{fa.range}</div>
+                          <span className="text-[11px] text-slate-400">{fa.invoicesCount} Invoices</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-black text-base text-red-600">৳ {formatBDT(fa.amount)}</div>
+                          <Badge
+                            variant="outline"
+                            className={`capitalize text-[9px] mt-1 ${
+                              fa.riskLevel === 'low'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : fa.riskLevel === 'moderate'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : fa.riskLevel === 'high'
+                                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                : 'bg-red-50 text-red-700 border-red-200'
+                            }`}
+                          >
+                            {fa.riskLevel} Risk
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -544,7 +621,7 @@ export default function ReportingAnalyticsPage() {
       {activeTab === 'inventory' && (
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
               <div>
                 <CardTitle className="text-base">Stock Ledger Valuation (গুদাম মজুদ মূল্যায়ন)</CardTitle>
                 <CardDescription className="text-xs">
@@ -556,48 +633,86 @@ export default function ReportingAnalyticsPage() {
               </strong>
             </div>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
+          <CardContent className="p-0">
             {inventoryValuation.length === 0 ? (
               <EmptyReportState />
             ) : (
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                  <tr>
-                    <th className="py-3 px-4">Material Substrate</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4 text-center">Stock on Hand</th>
-                    <th className="py-3 px-4 text-right">Avg Unit Cost</th>
-                    <th className="py-3 px-4 text-right">Stock Valuation</th>
-                    <th className="py-3 px-4 text-center">Reorder Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
+                      <tr>
+                        <th className="py-3 px-4">Material Substrate</th>
+                        <th className="py-3 px-4">Category</th>
+                        <th className="py-3 px-4 text-center">Stock on Hand</th>
+                        <th className="py-3 px-4 text-right">Avg Unit Cost</th>
+                        <th className="py-3 px-4 text-right">Stock Valuation</th>
+                        <th className="py-3 px-4 text-center">Reorder Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {inventoryValuation.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/50">
+                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{item.materialName}</td>
+                          <td className="py-3.5 px-4 font-sans text-slate-500">{item.category}</td>
+                          <td className="py-3.5 px-4 text-center font-bold">
+                            {item.stockQty} {item.unit}s
+                          </td>
+                          <td className="py-3.5 px-4 text-right text-slate-600">৳ {formatBDT(item.unitCost)}</td>
+                          <td className="py-3.5 px-4 text-right font-black text-slate-900 dark:text-white">
+                            ৳ {formatBDT(item.totalValue)}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {item.isLowStock ? (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">
+                                Low Stock Warning
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                Healthy
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card List */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 font-mono">
                   {inventoryValuation.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50">
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{item.materialName}</td>
-                      <td className="py-3.5 px-4 font-sans text-slate-500">{item.category}</td>
-                      <td className="py-3.5 px-4 text-center font-bold">
-                        {item.stockQty} {item.unit}s
-                      </td>
-                      <td className="py-3.5 px-4 text-right text-slate-600">৳ {formatBDT(item.unitCost)}</td>
-                      <td className="py-3.5 px-4 text-right font-black text-slate-900 dark:text-white">
-                        ৳ {formatBDT(item.totalValue)}
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
+                    <div key={item.id} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-white">{item.materialName}</div>
+                          <span className="font-sans text-[11px] text-slate-400">{item.category}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-black text-sm text-slate-900 dark:text-white">৳ {formatBDT(item.totalValue)}</div>
+                          <div className="text-[10px] text-slate-400">@ ৳{formatBDT(item.unitCost)}/{item.unit}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                        <span className="font-bold text-slate-700 dark:text-slate-300">
+                          Stock: {item.stockQty} {item.unit}s
+                        </span>
                         {item.isLowStock ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">
+                          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-800">
                             Low Stock Warning
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">
                             Healthy
                           </span>
                         )}
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -611,42 +726,78 @@ export default function ReportingAnalyticsPage() {
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base">Top Customer Lifetime Value (LTV) & Dues</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
+          <CardContent className="p-0">
             {customerReports.length === 0 ? (
               <EmptyReportState />
             ) : (
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                  <tr>
-                    <th className="py-3 px-4 font-sans">Customer Account</th>
-                    <th className="py-3 px-4 font-sans">Type</th>
-                    <th className="py-3 px-4 text-center">Total Orders</th>
-                    <th className="py-3 px-4 text-right">Lifetime Sales</th>
-                    <th className="py-3 px-4 text-right text-emerald-700">Total Paid</th>
-                    <th className="py-3 px-4 text-right text-amber-700">Current Due</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
+                      <tr>
+                        <th className="py-3 px-4 font-sans">Customer Account</th>
+                        <th className="py-3 px-4 font-sans">Type</th>
+                        <th className="py-3 px-4 text-center">Total Orders</th>
+                        <th className="py-3 px-4 text-right">Lifetime Sales</th>
+                        <th className="py-3 px-4 text-right text-emerald-700">Total Paid</th>
+                        <th className="py-3 px-4 text-right text-amber-700">Current Due</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {customerReports.map((cust) => (
+                        <tr key={cust.id} className="hover:bg-slate-50/50">
+                          <td className="py-3.5 px-4 font-sans font-bold text-slate-900 dark:text-white">
+                            {cust.customerName}
+                          </td>
+                          <td className="py-3.5 px-4 font-sans text-slate-500">{cust.customerType}</td>
+                          <td className="py-3.5 px-4 text-center font-bold">{cust.ordersCount}</td>
+                          <td className="py-3.5 px-4 text-right font-bold text-slate-900 dark:text-white">
+                            ৳ {formatBDT(cust.lifetimeSales)}
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-bold text-emerald-700">
+                            ৳ {formatBDT(cust.totalPaid)}
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-black text-amber-700">
+                            ৳ {formatBDT(cust.dueBalance)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card List */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 font-mono">
                   {customerReports.map((cust) => (
-                    <tr key={cust.id} className="hover:bg-slate-50/50">
-                      <td className="py-3.5 px-4 font-sans font-bold text-slate-900 dark:text-white">
-                        {cust.customerName}
-                      </td>
-                      <td className="py-3.5 px-4 font-sans text-slate-500">{cust.customerType}</td>
-                      <td className="py-3.5 px-4 text-center font-bold">{cust.ordersCount}</td>
-                      <td className="py-3.5 px-4 text-right font-bold text-slate-900 dark:text-white">
-                        ৳ {formatBDT(cust.lifetimeSales)}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-emerald-700">
-                        ৳ {formatBDT(cust.totalPaid)}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-black text-amber-700">
-                        ৳ {formatBDT(cust.dueBalance)}
-                      </td>
-                    </tr>
+                    <div key={cust.id} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="font-sans font-bold text-sm text-slate-900 dark:text-white">
+                            {cust.customerName}
+                          </div>
+                          <span className="font-sans text-[11px] text-slate-400 capitalize">{cust.customerType}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-slate-400 font-sans">{cust.ordersCount} orders</div>
+                          <div className="font-bold text-xs text-slate-900 dark:text-white">
+                            Sales: ৳{formatBDT(cust.lifetimeSales)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                        <span className="text-emerald-700 font-bold">
+                          Paid: ৳{formatBDT(cust.totalPaid)}
+                        </span>
+                        <span className="text-amber-700 font-black">
+                          Due: ৳{formatBDT(cust.dueBalance)}
+                        </span>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

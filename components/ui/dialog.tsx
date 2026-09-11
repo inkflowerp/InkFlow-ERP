@@ -35,7 +35,7 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 xs:p-3 sm:p-4 overflow-y-auto">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in-0"
@@ -45,7 +45,7 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
       <div
         style={style}
         className={cn(
-          'relative z-50 w-full my-auto max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
+          'relative z-50 w-full my-auto max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
           maxWidth || 'max-w-lg',
           className
         )}
@@ -71,7 +71,7 @@ export function DialogContent({
     <div
       style={style}
       className={cn(
-        'relative w-full max-h-[calc(100dvh-2.5rem)] flex flex-col rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xl transition-all overflow-hidden dark:border-slate-800 dark:bg-slate-900',
+        'relative w-full max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] flex flex-col rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl transition-all overflow-hidden dark:border-slate-800 dark:bg-slate-900',
         className
       )}
     >

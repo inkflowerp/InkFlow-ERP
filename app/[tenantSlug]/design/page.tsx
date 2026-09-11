@@ -198,7 +198,7 @@ export default function DesignDashboardPage() {
       )}
 
       {/* Designer Dashboard Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 border-l-4 border-l-blue-500">
           <span className="text-xs font-semibold text-slate-500">In Progress (Designing)</span>
           <div className="text-2xl font-black text-blue-600 mt-1">{countDesigning}</div>
@@ -239,12 +239,12 @@ export default function DesignDashboardPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               size="sm"
               variant={onlyMyJobs ? 'default' : 'outline'}
               onClick={() => setOnlyMyJobs(!onlyMyJobs)}
-              className="text-xs h-9"
+              className="text-xs h-9 w-full sm:w-auto"
             >
               <User className="h-3.5 w-3.5 mr-1" />
               {onlyMyJobs ? 'Showing: My Jobs Only' : 'Filter: My Jobs'}
@@ -257,7 +257,7 @@ export default function DesignDashboardPage() {
           KANBAN WORKFLOW BOARD VIEW
          ========================================================================= */}
       {viewMode === 'kanban' ? (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4">
+        <div className="flex md:grid md:grid-cols-5 gap-4 overflow-x-auto touch-scroll snap-x snap-mandatory pb-4">
           {KANBAN_COLUMNS.map((col) => {
             const colJobs = filtered.filter((j: DesignJobRecord) => {
               if (col.id === 'approved') return j.status === 'approved'
@@ -270,7 +270,7 @@ export default function DesignDashboardPage() {
             return (
               <div
                 key={col.id}
-                className="bg-slate-50/80 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200 dark:border-slate-800 flex flex-col min-w-[240px]"
+                className="bg-slate-50/80 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200 dark:border-slate-800 flex flex-col min-w-[280px] sm:min-w-[260px] md:min-w-0 snap-center shrink-0 md:shrink"
               >
                 {/* Column Header */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-3">
@@ -377,59 +377,116 @@ export default function DesignDashboardPage() {
       ) : (
         /* TABLE VIEW */
         <Card>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Design #</th>
-                  <th className="py-3 px-4">Title & Format</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Designer</th>
-                  <th className="py-3 px-4">Version</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Deadline</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((job: DesignJobRecord) => (
-                  <tr key={job.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                    <td className="py-3.5 px-4 font-mono font-bold text-pink-600">
-                      {job.design_number}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 dark:text-white">{job.title}</div>
-                      <div className="text-[11px] text-slate-400">{job.dimensions_spec}</div>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
-                      {job.customer_name}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
-                      {job.designer_name}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-bold">
-                      v{job.current_version}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="capitalize px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                        {job.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-slate-500 font-mono">
-                      {job.deadline}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
+          <CardContent className="p-0">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Design #</th>
+                    <th className="py-3 px-4">Title & Format</th>
+                    <th className="py-3 px-4">Customer</th>
+                    <th className="py-3 px-4">Designer</th>
+                    <th className="py-3 px-4">Version</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Deadline</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filtered.map((job: DesignJobRecord) => (
+                    <tr key={job.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                      <td className="py-3.5 px-4 font-mono font-bold text-pink-600">
+                        {job.design_number}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-900 dark:text-white">{job.title}</div>
+                        <div className="text-[11px] text-slate-400">{job.dimensions_spec}</div>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
+                        {job.customer_name}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
+                        {job.designer_name}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-xs font-bold">
+                        v{job.current_version}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="capitalize px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {job.status.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-slate-500 font-mono">
+                        {job.deadline}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <Link
+                          href={`/${slug}/design/${job.id}`}
+                          className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        >
+                          Workbench
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards List */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {filtered.map((job: DesignJobRecord) => (
+                <div key={job.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
                       <Link
                         href={`/${slug}/design/${job.id}`}
-                        className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        className="font-mono font-bold text-xs text-pink-600 hover:underline"
                       >
-                        Workbench
+                        {job.design_number}
                       </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <div className="font-semibold text-sm text-slate-900 dark:text-white mt-0.5">
+                        {job.title}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 block">
+                        {job.status.replace('_', ' ')}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400 mt-1 block">
+                        v{job.current_version}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/60 flex justify-between items-center">
+                    <div>
+                      <span className="text-slate-400">Client: </span>
+                      <strong className="text-slate-700 dark:text-slate-300">{job.customer_name}</strong>
+                    </div>
+                    <div className="text-[11px] font-mono text-slate-400">
+                      {job.dimensions_spec}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <span className="text-slate-400 text-[11px]">Due: {job.deadline}</span>
+                    <Link
+                      href={`/${slug}/design/${job.id}`}
+                      className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-semibold bg-pink-50 text-pink-700 border border-pink-200 dark:bg-pink-950/40 dark:text-pink-300 dark:border-pink-900 hover:bg-pink-100"
+                    >
+                      Open Workbench &rarr;
+                    </Link>
+                  </div>
+                </div>
+              ))}
+              {filtered.length === 0 && (
+                <div className="p-8 text-center text-slate-400 text-xs">
+                  No design jobs found.
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -470,7 +527,7 @@ export default function DesignDashboardPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="djDims" required>Dimensions (W × H)</Label>
               <Input
@@ -526,11 +583,11 @@ export default function DesignDashboardPage() {
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-pink-600 hover:bg-pink-700 text-white">
+            <Button type="submit" className="bg-pink-600 hover:bg-pink-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Launch Design Job
             </Button>
           </div>

@@ -144,47 +144,108 @@ export default function StockLedgerPage({ params }: StockLedgerPageProps) {
             Every inventory movement is permanently registered with balance after calculations.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Timestamp</th>
-                <th className="py-3 px-4">Material Name</th>
-                <th className="py-3 px-4">Tx Type</th>
-                <th className="py-3 px-4 text-right">Qty Change</th>
-                <th className="py-3 px-4 text-right">Balance After</th>
-                <th className="py-3 px-4 text-right">Total Cost</th>
-                <th className="py-3 px-4">Reference</th>
-                <th className="py-3 px-4">Audited By</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((row: StockLedgerRecord) => (
-                <tr key={row.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                  <td className="py-3 px-4 text-slate-500 font-mono">{row.created_at}</td>
-                  <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
-                    {row.material_name}
-                  </td>
-                  <td className="py-3 px-4">{getTxBadge(row.transaction_type)}</td>
-                  <td
-                    className={`py-3 px-4 text-right font-mono font-bold ${
-                      row.quantity_change > 0 ? 'text-emerald-600' : 'text-red-600'
-                    }`}
-                  >
-                    {row.quantity_change > 0 ? `+${row.quantity_change}` : row.quantity_change} {row.unit}
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
-                    {row.balance_after} {row.unit}
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono">
-                    <CurrencyDisplay amount={row.total_cost} />
-                  </td>
-                  <td className="py-3 px-4 font-mono text-blue-600">{row.reference_id || 'N/A'}</td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{row.performed_by_name}</td>
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Timestamp</th>
+                  <th className="py-3 px-4">Material Name</th>
+                  <th className="py-3 px-4">Tx Type</th>
+                  <th className="py-3 px-4 text-right">Qty Change</th>
+                  <th className="py-3 px-4 text-right">Balance After</th>
+                  <th className="py-3 px-4 text-right">Total Cost</th>
+                  <th className="py-3 px-4">Reference</th>
+                  <th className="py-3 px-4">Audited By</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map((row: StockLedgerRecord) => (
+                  <tr key={row.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                    <td className="py-3 px-4 text-slate-500 font-mono">{row.created_at}</td>
+                    <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                      {row.material_name}
+                    </td>
+                    <td className="py-3 px-4">{getTxBadge(row.transaction_type)}</td>
+                    <td
+                      className={`py-3 px-4 text-right font-mono font-bold ${
+                        row.quantity_change > 0 ? 'text-emerald-600' : 'text-red-600'
+                      }`}
+                    >
+                      {row.quantity_change > 0 ? `+${row.quantity_change}` : row.quantity_change} {row.unit}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
+                      {row.balance_after} {row.unit}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono">
+                      <CurrencyDisplay amount={row.total_cost} />
+                    </td>
+                    <td className="py-3 px-4 font-mono text-blue-600">{row.reference_id || 'N/A'}</td>
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{row.performed_by_name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-400">
+                {tBilingual('No stock journal entries found.', 'কোন স্টক লেজার এন্ট্রি পাওয়া যায়নি।')}
+              </div>
+            ) : (
+              filtered.map((row: StockLedgerRecord) => (
+                <div key={row.id} className="p-4 space-y-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                  {/* Top: Material Name & Tx Badge */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-sm text-slate-900 dark:text-white">{row.material_name}</span>
+                    {getTxBadge(row.transaction_type)}
+                  </div>
+
+                  {/* Quantity and Balance */}
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Quantity Change</span>
+                      <span
+                        className={`font-mono font-bold text-sm ${
+                          row.quantity_change > 0 ? 'text-emerald-600' : 'text-red-600'
+                        }`}
+                      >
+                        {row.quantity_change > 0 ? `+${row.quantity_change}` : row.quantity_change} {row.unit}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Balance After</span>
+                      <span className="font-mono font-bold text-sm text-slate-900 dark:text-white">
+                        {row.balance_after} {row.unit}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total Cost</span>
+                      <span className="font-mono text-slate-700 dark:text-slate-300">
+                        <CurrencyDisplay amount={row.total_cost} />
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Reference</span>
+                      <span className="font-mono text-blue-600">{row.reference_id || 'N/A'}</span>
+                    </div>
+                  </div>
+
+                  {/* Footer Meta */}
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                    <span className="font-mono">{row.created_at}</span>
+                    <span>Audited by: <strong className="text-slate-600 dark:text-slate-300">{row.performed_by_name}</strong></span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
       </div>

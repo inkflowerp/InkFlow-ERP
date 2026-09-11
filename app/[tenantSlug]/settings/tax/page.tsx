@@ -205,7 +205,7 @@ export default function TaxSettingsPage() {
             {/* Pricing Mode */}
             <div className="space-y-2">
               <Label className="font-bold text-xs">Pricing Calculation Mode</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -247,7 +247,7 @@ export default function TaxSettingsPage() {
             {/* Default VAT Rate */}
             <div className="space-y-2">
               <Label className="font-bold text-xs">Default VAT Rate (%)</Label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {[5, 7.5, 10, 15].map((rate) => (
                   <Button
                     key={rate}
@@ -352,7 +352,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="flex justify-end pt-3 border-t">
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold w-full sm:w-auto h-11 sm:h-9">
               <Save className="mr-1.5 h-3.5 w-3.5" />
               Save Tax Particulars
             </Button>

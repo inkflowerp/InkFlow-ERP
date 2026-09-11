@@ -286,7 +286,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Receive Material Button */}
             {po.status !== 'received' && po.status !== 'paid' && (
               <Button
@@ -295,7 +295,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                   setReceivingQty(primaryItem?.quantity_remaining || 1)
                   setIsReceiveOpen(true)
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-xs text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-xs text-white h-9 px-3"
               >
                 <ArrowDownLeft className="mr-1.5 h-3.5 w-3.5" />
                 Receive Material (GRN)
@@ -310,7 +310,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                   setPayAmount(po.due_amount)
                   setIsPayOpen(true)
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 px-3"
               >
                 <DollarSign className="mr-1.5 h-3.5 w-3.5" />
                 Record Payment
@@ -321,7 +321,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
               size="sm"
               variant="outline"
               onClick={() => window.print()}
-              className="text-xs"
+              className="text-xs h-9 px-3"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               Print PO
@@ -380,53 +380,87 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
             <span className="text-xs text-slate-400">Stock updates strictly for received units</span>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Material Name</th>
-                <th className="py-3 px-4 text-center">Ordered</th>
-                <th className="py-3 px-4 text-center">Received (GRN)</th>
-                <th className="py-3 px-4 text-center">Remaining</th>
-                <th className="py-3 px-4 text-right">Unit Cost</th>
-                <th className="py-3 px-4 text-right">Total (৳)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {po.items.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/50">
-                  <td className="py-3.5 px-4">
-                    <strong className="text-slate-900 dark:text-white text-xs">{item.material_name}</strong>
-                  </td>
-
-                  {/* Ordered */}
-                  <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-900 dark:text-white">
-                    {item.quantity_ordered} {item.unit}
-                  </td>
-
-                  {/* Received */}
-                  <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20">
-                    {item.quantity_received} {item.unit}
-                  </td>
-
-                  {/* Remaining */}
-                  <td className="py-3.5 px-4 text-center font-mono font-bold text-red-600 bg-red-50/40 dark:bg-red-950/20">
-                    {item.quantity_remaining} {item.unit}
-                  </td>
-
-                  {/* Unit Cost */}
-                  <td className="py-3.5 px-4 text-right font-mono text-xs">
-                    ৳ {formatBDT(item.unit_cost)}
-                  </td>
-
-                  {/* Total */}
-                  <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
-                    ৳ {formatBDT(item.total_cost)}
-                  </td>
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Material Name</th>
+                  <th className="py-3 px-4 text-center">Ordered</th>
+                  <th className="py-3 px-4 text-center">Received (GRN)</th>
+                  <th className="py-3 px-4 text-center">Remaining</th>
+                  <th className="py-3 px-4 text-right">Unit Cost</th>
+                  <th className="py-3 px-4 text-right">Total (৳)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {po.items.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/50">
+                    <td className="py-3.5 px-4">
+                      <strong className="text-slate-900 dark:text-white text-xs">{item.material_name}</strong>
+                    </td>
+
+                    {/* Ordered */}
+                    <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-900 dark:text-white">
+                      {item.quantity_ordered} {item.unit}
+                    </td>
+
+                    {/* Received */}
+                    <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20">
+                      {item.quantity_received} {item.unit}
+                    </td>
+
+                    {/* Remaining */}
+                    <td className="py-3.5 px-4 text-center font-mono font-bold text-red-600 bg-red-50/40 dark:bg-red-950/20">
+                      {item.quantity_remaining} {item.unit}
+                    </td>
+
+                    {/* Unit Cost */}
+                    <td className="py-3.5 px-4 text-right font-mono text-xs">
+                      ৳ {formatBDT(item.unit_cost)}
+                    </td>
+
+                    {/* Total */}
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
+                      ৳ {formatBDT(item.total_cost)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Item Cards */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+            {po.items.map((item) => (
+              <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <strong className="text-slate-900 dark:text-white font-bold text-sm">{item.material_name}</strong>
+                  <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                    ৳ {formatBDT(item.total_cost)}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                  <div className="p-1.5 rounded bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                    <div className="text-[10px] text-slate-400">Ordered</div>
+                    <div className="font-mono font-bold text-slate-900 dark:text-white">{item.quantity_ordered} {item.unit}</div>
+                  </div>
+                  <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                    <div className="text-[10px] text-emerald-600">Received</div>
+                    <div className="font-mono font-bold text-emerald-700 dark:text-emerald-300">{item.quantity_received} {item.unit}</div>
+                  </div>
+                  <div className="p-1.5 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800">
+                    <div className="text-[10px] text-red-600">Remaining</div>
+                    <div className="font-mono font-bold text-red-700 dark:text-red-300">{item.quantity_remaining} {item.unit}</div>
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400 text-right font-mono">
+                  Unit Cost: ৳ {formatBDT(item.unit_cost)} / {item.unit}
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -555,7 +589,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
         title="Receive Goods & Partial Shipment (GRN)"
         description="Records incoming material arrival. Inventory stock is updated ONLY for the received quantity."
       >
-        <form onSubmit={handleApplyReceiving} className="space-y-4 pt-1">
+        <form onSubmit={handleApplyReceiving} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           {primaryItem && (
             <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs space-y-1">
               <div className="flex justify-between">
@@ -577,7 +611,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="rcvQty" required>Quantity Received Today</Label>
               <Input
@@ -614,11 +648,11 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsReceiveOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsReceiveOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Confirm Receipt & Update Inventory
             </Button>
           </div>
@@ -632,8 +666,8 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
         title="Record Supplier Bill Settlement"
         description={`Settle outstanding payables for ${po.supplier_name} (Current Due: ৳ ${po.due_amount}).`}
       >
-        <form onSubmit={handleRecordPayment} className="space-y-4 pt-1">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleRecordPayment} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="spAmt" required>Payment Amount (৳ BDT)</Label>
               <Input
@@ -663,7 +697,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
           </div>
 
           {(payMethod === 'bank' || payMethod === 'cheque') && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="bName">Bank Name</Label>
                 <Input
@@ -700,11 +734,11 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Issue Payment Voucher
             </Button>
           </div>

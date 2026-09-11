@@ -297,81 +297,148 @@ export default function QuotationsPage() {
             <span className="text-xs text-slate-400">All customer price quotes</span>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Quote Number</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Primary Item</th>
-                <th className="py-3 px-4">Subtotal</th>
-                <th className="py-3 px-4">Grand Total (৳)</th>
-                <th className="py-3 px-4">Valid Until</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((q) => (
-                <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                  {/* Quote Number */}
-                  <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Quote Number</th>
+                  <th className="py-3 px-4">Customer</th>
+                  <th className="py-3 px-4">Primary Item</th>
+                  <th className="py-3 px-4">Subtotal</th>
+                  <th className="py-3 px-4">Grand Total (৳)</th>
+                  <th className="py-3 px-4">Valid Until</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map((q) => (
+                  <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Quote Number */}
+                    <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
+                      <Link
+                        href={`/${slug}/quotations/${q.id}`}
+                        className="hover:underline flex items-center gap-1 group"
+                      >
+                        <span>{q.quotation_number}</span>
+                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+                    </td>
+
+                    {/* Customer */}
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-900 dark:text-white">{q.customer_name}</div>
+                      <div className="text-[11px] font-mono text-slate-400">{q.customer_phone}</div>
+                    </td>
+
+                    {/* Primary Item */}
+                    <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300">
+                      {q.items[0]?.description || 'Custom Job'}
+                      {q.items.length > 1 && (
+                        <span className="text-slate-400 ml-1">(+{q.items.length - 1} more)</span>
+                      )}
+                    </td>
+
+                    {/* Subtotal */}
+                    <td className="py-3.5 px-4 text-xs font-medium text-slate-500">
+                      <CurrencyDisplay amount={q.subtotal} />
+                    </td>
+
+                    {/* Grand Total */}
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                      <CurrencyDisplay amount={q.grand_total} />
+                    </td>
+
+                    {/* Valid Until */}
+                    <td className="py-3.5 px-4 text-xs text-slate-500">
+                      {q.valid_until}
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-3.5 px-4">
+                      {getStatusBadge(q.status)}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3.5 px-4 text-right">
+                      <Link
+                        href={`/${slug}/quotations/${q.id}`}
+                        className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      >
+                        Open Cockpit
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-400">
+                {tBilingual('No quotations found matching filter.', 'কোন কোটেশন পাওয়া যায়নি।')}
+              </div>
+            ) : (
+              filtered.map((q) => (
+                <div key={q.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                  {/* Top: Quote # & Status */}
+                  <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/${slug}/quotations/${q.id}`}
-                      className="hover:underline flex items-center gap-1 group"
+                      className="font-mono font-bold text-sm text-blue-600 hover:underline flex items-center gap-1"
                     >
                       <span>{q.quotation_number}</span>
-                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ExternalLink className="h-3.5 w-3.5 opacity-70" />
                     </Link>
-                  </td>
-
-                  {/* Customer */}
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-900 dark:text-white">{q.customer_name}</div>
-                    <div className="text-[11px] font-mono text-slate-400">{q.customer_phone}</div>
-                  </td>
-
-                  {/* Primary Item */}
-                  <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300">
-                    {q.items[0]?.description || 'Custom Job'}
-                    {q.items.length > 1 && (
-                      <span className="text-slate-400 ml-1">(+{q.items.length - 1} more)</span>
-                    )}
-                  </td>
-
-                  {/* Subtotal */}
-                  <td className="py-3.5 px-4 text-xs font-medium text-slate-500">
-                    <CurrencyDisplay amount={q.subtotal} />
-                  </td>
-
-                  {/* Grand Total */}
-                  <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                    <CurrencyDisplay amount={q.grand_total} />
-                  </td>
-
-                  {/* Valid Until */}
-                  <td className="py-3.5 px-4 text-xs text-slate-500">
-                    {q.valid_until}
-                  </td>
-
-                  {/* Status */}
-                  <td className="py-3.5 px-4">
                     {getStatusBadge(q.status)}
-                  </td>
+                  </div>
+
+                  {/* Customer Info */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{q.customer_name}</div>
+                      {q.customer_phone && (
+                        <a href={`tel:${q.customer_phone}`} className="text-xs font-mono text-blue-600 hover:underline">
+                          {q.customer_phone}
+                        </a>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Grand Total</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white">
+                        <CurrencyDisplay amount={q.grand_total} />
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Primary Item Spec */}
+                  <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800 space-y-1">
+                    <div className="text-slate-700 dark:text-slate-300 font-medium line-clamp-2">
+                      {q.items[0]?.description || 'Custom Job'}
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                      <span>Subtotal: <CurrencyDisplay amount={q.subtotal} /></span>
+                      <span>Valid: {q.valid_until}</span>
+                    </div>
+                  </div>
 
                   {/* Actions */}
-                  <td className="py-3.5 px-4 text-right">
+                  <div className="flex justify-end pt-1">
                     <Link
                       href={`/${slug}/quotations/${q.id}`}
-                      className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60 min-h-[38px]"
                     >
-                      Open Cockpit
+                      Open Quotation Cockpit →
                     </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -509,13 +576,13 @@ export default function QuotationsPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)} className="w-full sm:w-auto min-h-[40px]">
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="w-full sm:w-auto min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-medium"
             >
               Create & Review
             </Button>

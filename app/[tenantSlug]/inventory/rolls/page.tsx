@@ -234,11 +234,11 @@ export default function MountedRollsPage({ params }: MountedRollsPageProps) {
               </strong>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedRollForCut(null)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setSelectedRollForCut(null)} className="w-full sm:w-auto min-h-[40px]">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold">
                 Deduct & Update Roll
               </Button>
             </div>

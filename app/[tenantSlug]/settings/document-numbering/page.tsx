@@ -111,67 +111,117 @@ export default function DocumentNumberingSettingsPage() {
               Customize prefixes (e.g. QUO, ORD, INV) and zero-padding lengths for each business paper.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Document Type</th>
-                  <th className="py-3 px-4 w-36">Prefix</th>
-                  <th className="py-3 px-4 w-32">Digits Padding</th>
-                  <th className="py-3 px-4">Live Sample Preview</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {sequences.map((seq) => (
-                  <tr key={seq.doc_type} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                    <td className="py-3 px-4">
-                      <div className="font-semibold text-slate-900 dark:text-white">
+          <CardContent className="p-0">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Document Type</th>
+                    <th className="py-3 px-4 w-36">Prefix</th>
+                    <th className="py-3 px-4 w-32">Digits Padding</th>
+                    <th className="py-3 px-4">Live Sample Preview</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {sequences.map((seq) => (
+                    <tr key={seq.doc_type} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                      <td className="py-3 px-4">
+                        <div className="font-semibold text-slate-900 dark:text-white">
+                          {seq.name}
+                        </div>
+                        <div className="text-xs text-slate-400">{seq.nameBn}</div>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <Input
+                          value={seq.prefix}
+                          onChange={(e) => handlePrefixChange(seq.doc_type, e.target.value)}
+                          maxLength={6}
+                          className="font-mono text-xs font-bold uppercase h-8"
+                        />
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <select
+                          value={seq.padding}
+                          onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}
+                          className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono px-2"
+                        >
+                          <option value={4}>4 digits (0001)</option>
+                          <option value={5}>5 digits (00001)</option>
+                          <option value={6}>6 digits (000001)</option>
+                          <option value={7}>7 digits (0000001)</option>
+                        </select>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
+                            {formatPreview(seq)}
+                          </span>
+                          <Badge variant="outline" className="text-[10px]">
+                            Next Issued
+                          </Badge>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Touch Cards View */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {sequences.map((seq) => (
+                <div key={seq.doc_type} className="p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-sm text-slate-900 dark:text-white">
                         {seq.name}
                       </div>
-                      <div className="text-xs text-slate-400">{seq.nameBn}</div>
-                    </td>
+                      <div className="text-xs text-slate-500">{seq.nameBn}</div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        {formatPreview(seq)}
+                      </span>
+                    </div>
+                  </div>
 
-                    <td className="py-3 px-4">
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] text-slate-500">Prefix Code</Label>
                       <Input
                         value={seq.prefix}
                         onChange={(e) => handlePrefixChange(seq.doc_type, e.target.value)}
                         maxLength={6}
-                        className="font-mono text-xs font-bold uppercase h-8"
+                        className="font-mono text-xs font-bold uppercase h-9"
                       />
-                    </td>
+                    </div>
 
-                    <td className="py-3 px-4">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] text-slate-500">Zero Padding</Label>
                       <select
                         value={seq.padding}
                         onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}
-                        className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono px-2"
+                        className="h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono px-2"
                       >
                         <option value={4}>4 digits (0001)</option>
                         <option value={5}>5 digits (00001)</option>
                         <option value={6}>6 digits (000001)</option>
                         <option value={7}>7 digits (0000001)</option>
                       </select>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
-                          {formatPreview(seq)}
-                        </span>
-                        <Badge variant="outline" className="text-[10px]">
-                          Next Issued
-                        </Badge>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+          <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Document Numbering
           </Button>

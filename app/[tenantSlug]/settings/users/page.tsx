@@ -454,200 +454,359 @@ export default function UsersManagementPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Member / User</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Assigned Branch</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {isLoading && users.length === 0 ? (
-                [1, 2, 3].map((n) => (
-                  <tr key={n} className="animate-pulse">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
-                        <div className="space-y-1.5">
-                          <div className="h-3.5 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
-                          <div className="h-2.5 w-44 bg-slate-100 dark:bg-slate-800 rounded" />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="h-5 w-20 bg-slate-200 dark:bg-slate-700 rounded-full" />
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="h-3.5 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-full" />
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="inline-block h-7 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
-                    </td>
-                  </tr>
-                ))
-              ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
-                    {searchQuery ? 'No members found matching your search.' : 'No members found in this workspace.'}
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((user) => {
-                  const profile = user.profile
-                  const primaryRole = user.roles?.[0]
-                const isOwner = primaryRole?.slug === 'owner'
-                const isUserActive = user.status === 'active'
-                const isUserDisabled = user.status === 'disabled'
-                const isUserInvited = user.status === 'invited'
+        <CardContent className="p-0">
+          {isLoading && users.length === 0 ? (
+            <div className="p-4 space-y-3">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="animate-pulse p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
+                    <div className="h-3 w-48 bg-slate-100 dark:bg-slate-800 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="py-12 text-center text-slate-500 text-xs">
+              {searchQuery ? 'No members found matching your search.' : 'No members found in this workspace.'}
+            </div>
+          ) : (
+            <>
+              {/* 1. DESKTOP VIEW: Structured Table (md and up) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Member / User</th>
+                      <th className="py-3 px-4">Role</th>
+                      <th className="py-3 px-4">Assigned Branch</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredUsers.map((user) => {
+                      const profile = user.profile
+                      const primaryRole = user.roles?.[0]
+                      const isOwner = primaryRole?.slug === 'owner'
+                      const isUserActive = user.status === 'active'
+                      const isUserDisabled = user.status === 'disabled'
+                      const isUserInvited = user.status === 'invited'
 
-                return (
-                  <tr
-                    key={user.id}
-                    className={`hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors ${
-                      isUserDisabled ? 'opacity-60 bg-slate-50/30' : ''
-                    }`}
-                  >
-                    {/* Member Info */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                            isUserDisabled
-                              ? 'bg-slate-200 text-slate-500'
-                              : 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white'
+                      return (
+                        <tr
+                          key={user.id}
+                          className={`hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors ${
+                            isUserDisabled ? 'opacity-60 bg-slate-50/30' : ''
                           }`}
                         >
-                          {(profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                            {profile?.full_name || user.invited_email}
-                            {profile?.full_name_bn && (
-                              <span className="text-xs font-normal text-slate-400">
-                                ({profile.full_name_bn})
+                          {/* Member Info */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                                  isUserDisabled
+                                    ? 'bg-slate-200 text-slate-500'
+                                    : 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white'
+                                }`}
+                              >
+                                {(profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                  {profile?.full_name || user.invited_email}
+                                  {profile?.full_name_bn && (
+                                    <span className="text-xs font-normal text-slate-400">
+                                      ({profile.full_name_bn})
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-slate-500 flex items-center gap-2">
+                                  <span>{profile?.email || user.invited_email}</span>
+                                  {profile?.phone && <span>• {profile.phone}</span>}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Role Badge */}
+                          <td className="py-3.5 px-4">
+                            <Badge
+                              variant="outline"
+                              className="font-medium text-xs border-blue-200 bg-blue-50/50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300"
+                            >
+                              <Shield className="mr-1 h-3 w-3" />
+                              {primaryRole?.name || 'Team Member'}
+                              {primaryRole?.name_bn && ` (${primaryRole.name_bn})`}
+                            </Badge>
+                          </td>
+
+                          {/* Branch */}
+                          <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-300">
+                            {user.branch ? (
+                              <div className="flex items-center gap-1.5">
+                                <Building className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                <span className="truncate max-w-[180px]">{user.branch.name}</span>
+                              </div>
+                            ) : (
+                              <span className="text-slate-400 italic">All Branches</span>
+                            )}
+                          </td>
+
+                          {/* Status Badge */}
+                          <td className="py-3.5 px-4">
+                            {isUserActive && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                Active
                               </span>
                             )}
+                            {isUserDisabled && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300">
+                                Disabled
+                              </span>
+                            )}
+                            {isUserInvited && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                                Pending Invite
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Action Buttons */}
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 px-2.5 text-xs text-blue-700 bg-blue-50/60 hover:bg-blue-100/80 border-blue-200 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 font-semibold"
+                                onClick={() => {
+                                  setSelectedUserForPermissions(user)
+                                  setIsPermissionsDrawerOpen(true)
+                                }}
+                                title="Configure Access & Permissions"
+                              >
+                                <Shield className="mr-1 h-3.5 w-3.5 text-blue-600" />
+                                Permissions
+                              </Button>
+
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2 text-xs"
+                                onClick={() => {
+                                  setSelectedUser(user)
+                                  setTargetRoleId(primaryRole?.id || roles[0]?.id || '')
+                                  setIsChangeRoleOpen(true)
+                                }}
+                                disabled={isOwner}
+                                title="Change Role"
+                              >
+                                Role
+                              </Button>
+
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2 text-xs"
+                                onClick={() => {
+                                  setSelectedUser(user)
+                                  setTargetBranchId(user.branch_id || '')
+                                  setIsAssignBranchOpen(true)
+                                }}
+                                title="Assign Branch"
+                              >
+                                Branch
+                              </Button>
+
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2 text-xs text-blue-600"
+                                onClick={() => handleResetAccess(user)}
+                                title="Send Password Reset"
+                              >
+                                <KeyRound className="h-3.5 w-3.5" />
+                              </Button>
+
+                              {!isOwner && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={`h-8 px-2 text-xs ${
+                                    isUserDisabled ? 'text-emerald-600' : 'text-red-600'
+                                  }`}
+                                  onClick={() => {
+                                    setSelectedUser(user)
+                                    if (isUserDisabled) {
+                                      handleToggleStatus(user)
+                                    } else {
+                                      setIsDisableConfirmOpen(true)
+                                    }
+                                  }}
+                                >
+                                  {isUserDisabled ? <RotateCcw className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 2. MOBILE VIEW: Touch-Friendly User Cards (Phones & Small Tablets) */}
+              <div className="md:hidden p-3 space-y-3">
+                {filteredUsers.map((user) => {
+                  const profile = user.profile
+                  const primaryRole = user.roles?.[0]
+                  const isOwner = primaryRole?.slug === 'owner'
+                  const isUserActive = user.status === 'active'
+                  const isUserDisabled = user.status === 'disabled'
+                  const isUserInvited = user.status === 'invited'
+
+                  return (
+                    <div
+                      key={user.id}
+                      className={`p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3 transition-all ${
+                        isUserDisabled ? 'opacity-65 bg-slate-50/50 dark:bg-slate-950/40' : ''
+                      }`}
+                    >
+                      {/* Top Header: Avatar, Name & Status */}
+                      <div className="flex items-start justify-between gap-2.5">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+                              isUserDisabled
+                                ? 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                                : 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white'
+                            }`}
+                          >
+                            {(profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
                           </div>
-                          <div className="text-xs text-slate-500 flex items-center gap-2">
-                            <span>{profile?.email || user.invited_email}</span>
-                            {profile?.phone && <span>• {profile.phone}</span>}
+                          <div className="min-w-0">
+                            <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                              {profile?.full_name || user.invited_email}
+                            </div>
+                            {profile?.full_name_bn && (
+                              <div className="text-xs text-slate-400 bangla-text truncate">
+                                {profile.full_name_bn}
+                              </div>
+                            )}
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                              {profile?.email || user.invited_email}
+                            </div>
                           </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="shrink-0">
+                          {isUserActive && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+                              Active
+                            </span>
+                          )}
+                          {isUserDisabled && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300">
+                              Disabled
+                            </span>
+                          )}
+                          {isUserInvited && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
+                              Pending
+                            </span>
+                          )}
                         </div>
                       </div>
-                    </td>
 
-                    {/* Role Badge */}
-                    <td className="py-3.5 px-4">
-                      <Badge
-                        variant="outline"
-                        className="font-medium text-xs border-blue-200 bg-blue-50/50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300"
-                      >
-                        <Shield className="mr-1 h-3 w-3" />
-                        {primaryRole?.name || 'Team Member'}
-                        {primaryRole?.name_bn && ` (${primaryRole.name_bn})`}
-                      </Badge>
-                    </td>
+                      {/* Meta Tags: Role & Branch */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                        <Badge
+                          variant="outline"
+                          className="text-[11px] py-0.5 px-2 bg-blue-50/70 border-blue-200 text-blue-700 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 font-semibold"
+                        >
+                          <Shield className="mr-1 h-3 w-3" />
+                          <span>{primaryRole?.name || 'Member'}</span>
+                          {primaryRole?.name_bn && <span className="ml-1 opacity-80">({primaryRole.name_bn})</span>}
+                        </Badge>
 
-                    {/* Branch */}
-                    <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-300">
-                      {user.branch ? (
-                        <div className="flex items-center gap-1.5">
-                          <Building className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate max-w-[180px]">{user.branch.name}</span>
+                        <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md">
+                          <Building className="h-3 w-3 shrink-0" />
+                          <span className="truncate max-w-[140px]">{user.branch?.name || 'All Branches'}</span>
                         </div>
-                      ) : (
-                        <span className="text-slate-400 italic">All Branches</span>
-                      )}
-                    </td>
 
-                    {/* Status Badge */}
-                    <td className="py-3.5 px-4">
-                      {isUserActive && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-                          Active
-                        </span>
-                      )}
-                      {isUserDisabled && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300">
-                          Disabled
-                        </span>
-                      )}
-                      {isUserInvited && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-                          Pending Invite
-                        </span>
-                      )}
-                    </td>
+                        {profile?.phone && (
+                          <a
+                            href={`tel:${profile.phone}`}
+                            className="text-[11px] text-indigo-600 dark:text-indigo-400 font-mono bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md"
+                          >
+                            {profile.phone}
+                          </a>
+                        )}
+                      </div>
 
-                    {/* Action Buttons */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                      {/* Touch Action Bar */}
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center gap-1.5">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 px-2.5 text-xs text-blue-700 bg-blue-50/60 hover:bg-blue-100/80 border-blue-200 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 font-semibold"
+                          className="flex-1 min-h-[38px] text-xs text-blue-700 bg-blue-50/60 hover:bg-blue-100/80 border-blue-200 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 font-semibold"
                           onClick={() => {
                             setSelectedUserForPermissions(user)
                             setIsPermissionsDrawerOpen(true)
                           }}
-                          title="Configure Access & Permissions"
                         >
                           <Shield className="mr-1 h-3.5 w-3.5 text-blue-600" />
                           Permissions
                         </Button>
 
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="h-8 px-2 text-xs"
+                          className="min-h-[38px] px-2.5 text-xs text-slate-700 dark:text-slate-300"
                           onClick={() => {
                             setSelectedUser(user)
                             setTargetRoleId(primaryRole?.id || roles[0]?.id || '')
                             setIsChangeRoleOpen(true)
                           }}
                           disabled={isOwner}
-                          title="Change Role"
                         >
                           Role
                         </Button>
 
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="h-8 px-2 text-xs"
+                          className="min-h-[38px] px-2.5 text-xs text-slate-700 dark:text-slate-300"
                           onClick={() => {
                             setSelectedUser(user)
                             setTargetBranchId(user.branch_id || '')
                             setIsAssignBranchOpen(true)
                           }}
-                          title="Assign Branch"
                         >
                           Branch
                         </Button>
 
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="h-8 px-2 text-xs text-blue-600"
+                          className="min-h-[38px] px-2.5 text-xs text-blue-600 dark:text-blue-400"
                           onClick={() => handleResetAccess(user)}
-                          title="Send Password Reset"
+                          title="Reset Password"
                         >
                           <KeyRound className="h-3.5 w-3.5" />
                         </Button>
 
                         {!isOwner && (
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            className={`h-8 px-2 text-xs ${
-                              isUserDisabled ? 'text-emerald-600' : 'text-red-600'
+                            className={`min-h-[38px] px-2.5 text-xs ${
+                              isUserDisabled
+                                ? 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30'
+                                : 'text-red-600 border-red-200 bg-red-50 dark:bg-red-950/30'
                             }`}
                             onClick={() => {
                               setSelectedUser(user)
@@ -662,12 +821,12 @@ export default function UsersManagementPage() {
                           </Button>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                )
-              }))}
-            </tbody>
-          </table>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

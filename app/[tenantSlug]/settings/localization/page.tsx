@@ -166,7 +166,7 @@ export default function LocalizationSettingsPage() {
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+          <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Localization Settings
           </Button>

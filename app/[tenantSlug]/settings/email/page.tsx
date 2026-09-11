@@ -771,68 +771,113 @@ export default function TenantEmailSettingsPage() {
          ======================================================================= */}
       {activeTab === 'logs' && (
         <Card>
-          <CardHeader className="pb-3 border-b flex justify-between items-center">
+          <CardHeader className="pb-3 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle className="text-sm">Tenant Email Delivery History</CardTitle>
-            <div className="w-56">
+            <div className="w-full sm:w-56">
               <Input
                 placeholder="Search logs..."
                 value={logSearch}
                 onChange={(e) => setLogSearch(e.target.value)}
-                className="h-8 text-xs"
+                className="h-9 text-xs"
               />
             </div>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 border-b">
-                <tr>
-                  <th className="py-2.5 px-3">Date &amp; Event</th>
-                  <th className="py-2.5 px-3">Recipient</th>
-                  <th className="py-2.5 px-3">Subject</th>
-                  <th className="py-2.5 px-3 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {logs.length === 0 ? (
+          <CardContent className="p-0">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 border-b">
                   <tr>
-                    <td colSpan={4} className="py-6 text-center text-slate-400">
-                      No email transmissions logged yet.
-                    </td>
+                    <th className="py-2.5 px-3">Date &amp; Event</th>
+                    <th className="py-2.5 px-3">Recipient</th>
+                    <th className="py-2.5 px-3">Subject</th>
+                    <th className="py-2.5 px-3 text-center">Status</th>
                   </tr>
-                ) : (
-                  logs
-                    .filter(
-                      (l) =>
-                        !logSearch ||
-                        l.recipient.toLowerCase().includes(logSearch.toLowerCase()) ||
-                        l.subject.toLowerCase().includes(logSearch.toLowerCase())
-                    )
-                    .map((log) => (
-                      <tr key={log.id} className="hover:bg-slate-50/50">
-                        <td className="py-2.5 px-3">
-                          <span className="font-mono text-blue-600 font-semibold">{log.event_type}</span>
-                          <span className="text-[10px] text-slate-400 block">{new Date(log.created_at).toLocaleDateString()}</span>
-                        </td>
-                        <td className="py-2.5 px-3 font-mono">{log.recipient}</td>
-                        <td className="py-2.5 px-3 max-w-xs truncate text-slate-700 dark:text-slate-300">{log.subject}</td>
-                        <td className="py-2.5 px-3 text-center">
-                          <Badge
-                            className={`text-[10px] ${
-                              log.status === 'sent'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : log.status === 'queued'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-rose-100 text-rose-800'
-                            }`}
-                          >
-                            {log.status.toUpperCase()}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y">
+                  {logs.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-6 text-center text-slate-400">
+                        No email transmissions logged yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    logs
+                      .filter(
+                        (l) =>
+                          !logSearch ||
+                          l.recipient.toLowerCase().includes(logSearch.toLowerCase()) ||
+                          l.subject.toLowerCase().includes(logSearch.toLowerCase())
+                      )
+                      .map((log) => (
+                        <tr key={log.id} className="hover:bg-slate-50/50">
+                          <td className="py-2.5 px-3">
+                            <span className="font-mono text-blue-600 font-semibold">{log.event_type}</span>
+                            <span className="text-[10px] text-slate-400 block">{new Date(log.created_at).toLocaleDateString()}</span>
+                          </td>
+                          <td className="py-2.5 px-3 font-mono">{log.recipient}</td>
+                          <td className="py-2.5 px-3 max-w-xs truncate text-slate-700 dark:text-slate-300">{log.subject}</td>
+                          <td className="py-2.5 px-3 text-center">
+                            <Badge
+                              className={`text-[10px] ${
+                                log.status === 'sent'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : log.status === 'queued'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-rose-100 text-rose-800'
+                              }`}
+                            >
+                              {log.status.toUpperCase()}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Touch Cards */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {logs.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  No email transmissions logged yet.
+                </div>
+              ) : (
+                logs
+                  .filter(
+                    (l) =>
+                      !logSearch ||
+                      l.recipient.toLowerCase().includes(logSearch.toLowerCase()) ||
+                      l.subject.toLowerCase().includes(logSearch.toLowerCase())
+                  )
+                  .map((log) => (
+                    <div key={log.id} className="p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs text-blue-600 font-bold">{log.event_type}</span>
+                        <Badge
+                          className={`text-[10px] ${
+                            log.status === 'sent'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : log.status === 'queued'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {log.status.toUpperCase()}
+                        </Badge>
+                      </div>
+                      <div className="text-xs font-semibold text-slate-900 dark:text-white">
+                        {log.subject}
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+                        <span>To: {log.recipient}</span>
+                        <span>{new Date(log.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -852,19 +897,19 @@ export default function TenantEmailSettingsPage() {
               value={testRecipient}
               onChange={(e) => setTestRecipient(e.target.value)}
               placeholder="you@domain.com"
-              className="h-9 text-xs"
+              className="h-10 text-sm"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t">
-            <Button variant="outline" size="sm" onClick={() => setIsTestModalOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button variant="outline" size="sm" onClick={() => setIsTestModalOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
             <Button
               size="sm"
               disabled={sendingTestEmail || !testRecipient}
               onClick={handleSendTestEmail}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9"
             >
               <Send className="h-3.5 w-3.5 mr-1.5" />
               {sendingTestEmail ? 'Sending...' : 'Send Test'}

@@ -379,101 +379,193 @@ export default function OrdersPage() {
             <span className="text-xs text-slate-400">All booked sales contracts</span>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Order # & Priority</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Jobs Queued</th>
-                <th className="py-3 px-4">Delivery Deadline</th>
-                <th className="py-3 px-4">Final Price</th>
-                <th className="py-3 px-4">Advance Paid</th>
-                <th className="py-3 px-4">Due Balance</th>
-                <th className="py-3 px-4">Terms</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((order) => (
-                <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                  {/* Order Number & Priority */}
-                  <td className="py-3.5 px-4">
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Order # & Priority</th>
+                  <th className="py-3 px-4">Customer</th>
+                  <th className="py-3 px-4">Jobs Queued</th>
+                  <th className="py-3 px-4">Delivery Deadline</th>
+                  <th className="py-3 px-4">Final Price</th>
+                  <th className="py-3 px-4">Advance Paid</th>
+                  <th className="py-3 px-4">Due Balance</th>
+                  <th className="py-3 px-4">Terms</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Order Number & Priority */}
+                    <td className="py-3.5 px-4">
+                      <Link
+                        href={`/${slug}/orders/${order.id}`}
+                        className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 group"
+                      >
+                        <span>{order.order_number}</span>
+                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+                      <div className="mt-1">{getPriorityBadge(order.priority)}</div>
+                    </td>
+
+                    {/* Customer */}
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-900 dark:text-white">{order.customer_name}</div>
+                      <div className="text-[11px] font-mono text-slate-400">{order.customer_phone}</div>
+                    </td>
+
+                    {/* Jobs Queued */}
+                    <td className="py-3.5 px-4">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        <Layers className="h-3 w-3 text-indigo-600" />
+                        {order.jobs_count || order.items.length} Production Jobs
+                      </span>
+                    </td>
+
+                    {/* Delivery Deadline */}
+                    <td className="py-3.5 px-4 text-xs">
+                      <div className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-medium">
+                        <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                        {order.delivery_date}
+                      </div>
+                    </td>
+
+                    {/* Final Price */}
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                      <CurrencyDisplay amount={order.final_price} />
+                    </td>
+
+                    {/* Advance Paid */}
+                    <td className="py-3.5 px-4 text-xs font-medium text-emerald-600">
+                      <CurrencyDisplay amount={order.advance_amount} />
+                    </td>
+
+                    {/* Due Balance */}
+                    <td className="py-3.5 px-4">
+                      {order.due_amount > 0 ? (
+                        <span className="text-xs font-bold text-red-600">
+                          <CurrencyDisplay amount={order.due_amount} />
+                        </span>
+                      ) : (
+                        <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" /> Paid
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Payment Terms */}
+                    <td className="py-3.5 px-4">
+                      <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        {order.payment_terms}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3.5 px-4 text-right">
+                      <Link
+                        href={`/${slug}/orders/${order.id}`}
+                        className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      >
+                        Shop Floor Board
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-400">
+                {tBilingual('No orders found matching filter.', 'কোন অর্ডার পাওয়া যায়নি।')}
+              </div>
+            ) : (
+              filtered.map((order) => (
+                <div key={order.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                  {/* Top Bar: Order # & Priority */}
+                  <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/${slug}/orders/${order.id}`}
-                      className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 group"
+                      className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
                     >
                       <span>{order.order_number}</span>
-                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ExternalLink className="h-3.5 w-3.5 opacity-70" />
                     </Link>
-                    <div className="mt-1">{getPriorityBadge(order.priority)}</div>
-                  </td>
+                    {getPriorityBadge(order.priority)}
+                  </div>
 
-                  {/* Customer */}
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-900 dark:text-white">{order.customer_name}</div>
-                    <div className="text-[11px] font-mono text-slate-400">{order.customer_phone}</div>
-                  </td>
-
-                  {/* Jobs Queued */}
-                  <td className="py-3.5 px-4">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                      <Layers className="h-3 w-3 text-indigo-600" />
-                      {order.jobs_count || order.items.length} Production Jobs
-                    </span>
-                  </td>
-
-                  {/* Delivery Deadline */}
-                  <td className="py-3.5 px-4 text-xs">
-                    <div className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-medium">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                      {order.delivery_date}
+                  {/* Customer Info & Status */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{order.customer_name}</div>
+                      {order.customer_phone && (
+                        <a href={`tel:${order.customer_phone}`} className="text-xs font-mono text-indigo-600 dark:text-indigo-400 hover:underline">
+                          {order.customer_phone}
+                        </a>
+                      )}
                     </div>
-                  </td>
-
-                  {/* Final Price */}
-                  <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                    <CurrencyDisplay amount={order.final_price} />
-                  </td>
-
-                  {/* Advance Paid */}
-                  <td className="py-3.5 px-4 text-xs font-medium text-emerald-600">
-                    <CurrencyDisplay amount={order.advance_amount} />
-                  </td>
-
-                  {/* Due Balance */}
-                  <td className="py-3.5 px-4">
-                    {order.due_amount > 0 ? (
-                      <span className="text-xs font-bold text-red-600">
-                        <CurrencyDisplay amount={order.due_amount} />
-                      </span>
-                    ) : (
-                      <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" /> Paid
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Payment Terms */}
-                  <td className="py-3.5 px-4">
-                    <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                    <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
                       {order.payment_terms}
                     </span>
-                  </td>
+                  </div>
 
-                  {/* Actions */}
-                  <td className="py-3.5 px-4 text-right">
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total Booked</span>
+                      <span className="font-bold text-slate-900 dark:text-white">
+                        <CurrencyDisplay amount={order.final_price} />
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Due Balance</span>
+                      {order.due_amount > 0 ? (
+                        <span className="font-bold text-red-600">
+                          <CurrencyDisplay amount={order.due_amount} />
+                        </span>
+                      ) : (
+                        <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" /> Paid
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Advance</span>
+                      <span className="font-medium text-emerald-600">
+                        <CurrencyDisplay amount={order.advance_amount} />
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Delivery</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-slate-400" />
+                        {order.delivery_date}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Footer Actions */}
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                      <Layers className="h-3 w-3 text-indigo-600" />
+                      {order.jobs_count || order.items.length} Jobs
+                    </span>
                     <Link
                       href={`/${slug}/orders/${order.id}`}
-                      className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 min-h-[36px]"
                     >
-                      Shop Floor Board
+                      Shop Floor Board →
                     </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -632,13 +724,13 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)} className="w-full sm:w-auto min-h-[40px]">
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="w-full sm:w-auto min-h-[40px] bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
             >
               Confirm & Dispatch to Shop Floor
             </Button>

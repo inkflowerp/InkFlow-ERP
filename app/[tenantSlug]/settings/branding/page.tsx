@@ -100,8 +100,8 @@ export default function BrandingSettingsPage() {
                 </button>
               ))}
 
-              <div className="flex items-center gap-2 ml-auto">
-                <Label htmlFor="customColor" className="text-xs">Custom HEX:</Label>
+              <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto pt-2 sm:pt-0">
+                <Label htmlFor="customColor" className="text-xs shrink-0">Custom HEX:</Label>
                 <Input
                   id="customColor"
                   value={branding.primary_color}
@@ -139,7 +139,7 @@ export default function BrandingSettingsPage() {
                 placeholder="Logo image URL"
                 value={branding.logo_url || ''}
                 onChange={(e) => setBranding({ ...branding, logo_url: e.target.value })}
-                className="text-xs"
+                className="text-xs h-9"
               />
             </CardContent>
           </Card>
@@ -168,7 +168,7 @@ export default function BrandingSettingsPage() {
                 placeholder="Invoice Logo URL"
                 value={branding.invoice_logo_url || ''}
                 onChange={(e) => setBranding({ ...branding, invoice_logo_url: e.target.value })}
-                className="text-xs"
+                className="text-xs h-9"
               />
             </CardContent>
           </Card>
@@ -197,7 +197,7 @@ export default function BrandingSettingsPage() {
                 placeholder="Quotation Logo URL"
                 value={branding.quotation_logo_url || ''}
                 onChange={(e) => setBranding({ ...branding, quotation_logo_url: e.target.value })}
-                className="text-xs"
+                className="text-xs h-9"
               />
             </CardContent>
           </Card>
@@ -220,6 +220,7 @@ export default function BrandingSettingsPage() {
                 id="footer_text"
                 value={branding.footer_text}
                 onChange={(e) => setBranding({ ...branding, footer_text: e.target.value })}
+                className="h-9 text-xs"
               />
             </div>
 
@@ -231,13 +232,14 @@ export default function BrandingSettingsPage() {
                 id="footer_text_bn"
                 value={branding.footer_text_bn}
                 onChange={(e) => setBranding({ ...branding, footer_text_bn: e.target.value })}
+                className="h-9 text-xs"
               />
             </div>
           </CardContent>
         </Card>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+          <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Branding Configuration
           </Button>

@@ -545,55 +545,93 @@ export default function TenantSubscriptionPage() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-950 font-semibold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Event Type</th>
-                <th className="py-3 px-4">Transition</th>
-                <th className="py-3 px-4">Amount</th>
-                <th className="py-3 px-4">Reason / Reference</th>
-                <th className="py-3 px-4">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {events.length === 0 ? (
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-950 font-semibold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-500">
-                    {loadingEvents ? 'Loading subscription events...' : 'No subscription events recorded yet.'}
-                  </td>
+                  <th className="py-3 px-4">Event Type</th>
+                  <th className="py-3 px-4">Transition</th>
+                  <th className="py-3 px-4">Amount</th>
+                  <th className="py-3 px-4">Reason / Reference</th>
+                  <th className="py-3 px-4">Timestamp</th>
                 </tr>
-              ) : (
-                events.map((ev) => (
-                  <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        ev.event_type === 'PLAN_UPGRADED' || ev.event_type === 'PAYMENT_VERIFIED' || ev.event_type === 'RENEWED'
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          : ev.event_type === 'PAYMENT_FAILED' || ev.event_type === 'EXPIRED'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                      }`}>
-                        {ev.event_type}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-[11px]">
-                      {ev.previous_plan_code || 'trial'} → <strong className="text-slate-900 dark:text-white">{ev.new_plan_code || 'starter'}</strong>
-                    </td>
-                    <td className="py-3 px-4 font-mono font-bold">
-                      {ev.amount ? <CurrencyDisplay amount={Number(ev.amount)} /> : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
-                      {ev.reason || 'Lifecycle action'}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-500">
-                      {new Date(ev.created_at).toLocaleString()}
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {events.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-slate-500">
+                      {loadingEvents ? 'Loading subscription events...' : 'No subscription events recorded yet.'}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  events.map((ev) => (
+                    <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          ev.event_type === 'PLAN_UPGRADED' || ev.event_type === 'PAYMENT_VERIFIED' || ev.event_type === 'RENEWED'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : ev.event_type === 'PAYMENT_FAILED' || ev.event_type === 'EXPIRED'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                        }`}>
+                          {ev.event_type}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[11px]">
+                        {ev.previous_plan_code || 'trial'} → <strong className="text-slate-900 dark:text-white">{ev.new_plan_code || 'starter'}</strong>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold">
+                        {ev.amount ? <CurrencyDisplay amount={Number(ev.amount)} /> : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                        {ev.reason || 'Lifecycle action'}
+                      </td>
+                      <td className="py-3 px-4 font-mono text-slate-500">
+                        {new Date(ev.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Touch Cards View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {events.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-500">
+                {loadingEvents ? 'Loading subscription events...' : 'No subscription events recorded yet.'}
+              </div>
+            ) : (
+              events.map((ev) => (
+                <div key={ev.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      ev.event_type === 'PLAN_UPGRADED' || ev.event_type === 'PAYMENT_VERIFIED' || ev.event_type === 'RENEWED'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : ev.event_type === 'PAYMENT_FAILED' || ev.event_type === 'EXPIRED'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                        : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                    }`}>
+                      {ev.event_type}
+                    </span>
+                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                      {ev.amount ? <CurrencyDisplay amount={Number(ev.amount)} /> : '—'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-700 dark:text-slate-300 font-mono">
+                    {ev.previous_plan_code || 'trial'} → <strong className="text-slate-900 dark:text-white">{ev.new_plan_code || 'starter'}</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                    <span>{ev.reason || 'Lifecycle action'}</span>
+                    <span>{new Date(ev.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -609,63 +647,106 @@ export default function TenantSubscriptionPage() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-950 font-semibold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Invoice #</th>
-                <th className="py-3 px-4">Plan & Interval</th>
-                <th className="py-3 px-4">Amount</th>
-                <th className="py-3 px-4">Payment Method</th>
-                <th className="py-3 px-4">Transaction Ref</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {invoices.length === 0 ? (
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-950 font-semibold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500">
-                    {loadingInvoices ? 'Loading billing invoices...' : 'No billing transactions recorded yet.'}
-                  </td>
+                  <th className="py-3 px-4">Invoice #</th>
+                  <th className="py-3 px-4">Plan & Interval</th>
+                  <th className="py-3 px-4">Amount</th>
+                  <th className="py-3 px-4">Payment Method</th>
+                  <th className="py-3 px-4">Transaction Ref</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Date</th>
                 </tr>
-              ) : (
-                invoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
-                      {inv.invoice_number}
-                    </td>
-                    <td className="py-3 px-4 uppercase text-slate-700 dark:text-slate-300 font-semibold">
-                      {inv.plan_name} <span className="text-[10px] text-slate-400 font-normal">({inv.billing_interval})</span>
-                    </td>
-                    <td className="py-3 px-4 font-mono font-bold">
-                      <CurrencyDisplay amount={inv.amount} />
-                    </td>
-                    <td className="py-3 px-4 uppercase text-slate-600 dark:text-slate-300">
-                      {inv.payment_method}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-[11px] text-slate-500">
-                      {inv.transaction_ref}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        inv.status === 'paid'
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          : inv.status === 'failed'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                      }`}>
-                        {inv.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-500">
-                      {new Date(inv.billing_date).toLocaleDateString()}
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {invoices.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                      {loadingInvoices ? 'Loading billing invoices...' : 'No billing transactions recorded yet.'}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  invoices.map((inv) => (
+                    <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                        {inv.invoice_number}
+                      </td>
+                      <td className="py-3 px-4 uppercase text-slate-700 dark:text-slate-300 font-semibold">
+                        {inv.plan_name} <span className="text-[10px] text-slate-400 font-normal">({inv.billing_interval})</span>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold">
+                        <CurrencyDisplay amount={inv.amount} />
+                      </td>
+                      <td className="py-3 px-4 uppercase text-slate-600 dark:text-slate-300">
+                        {inv.payment_method}
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[11px] text-slate-500">
+                        {inv.transaction_ref}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          inv.status === 'paid'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : inv.status === 'failed'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                        }`}>
+                          {inv.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-slate-500">
+                        {new Date(inv.billing_date).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Touch Cards View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {invoices.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-500">
+                {loadingInvoices ? 'Loading billing invoices...' : 'No billing transactions recorded yet.'}
+              </div>
+            ) : (
+              invoices.map((inv) => (
+                <div key={inv.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                      {inv.invoice_number}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      inv.status === 'paid'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : inv.status === 'failed'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                    }`}>
+                      {inv.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-600 dark:text-slate-300 font-semibold uppercase">
+                      {inv.plan_name} ({inv.billing_interval})
+                    </span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      <CurrencyDisplay amount={inv.amount} />
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+                    <span>{inv.payment_method?.toUpperCase()} • {inv.transaction_ref}</span>
+                    <span>{new Date(inv.billing_date).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -683,12 +764,13 @@ export default function TenantSubscriptionPage() {
             <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
               Your downgrade will safely take effect at the end of your current billing period (<strong>{new Date(subscription.current_period_end).toLocaleDateString()}</strong>). You will retain full access to your current features until that date.
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsDowngradeConfirmOpen(false)}
                 disabled={isActionPending}
+                className="w-full sm:w-auto h-10 sm:h-9"
               >
                 Cancel
               </Button>
@@ -696,7 +778,7 @@ export default function TenantSubscriptionPage() {
                 size="sm"
                 onClick={handleScheduleDowngrade}
                 disabled={isActionPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9"
               >
                 {isActionPending ? 'Scheduling...' : 'Confirm Scheduled Downgrade'}
               </Button>
@@ -719,12 +801,13 @@ export default function TenantSubscriptionPage() {
             <div className="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 text-red-900 dark:text-red-200">
               Your subscription will remain active until <strong>{new Date(subscription.current_period_end).toLocaleDateString()}</strong> and will not renew. Your company data and invoices will remain intact.
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsCancelConfirmOpen(false)}
                 disabled={isActionPending}
+                className="w-full sm:w-auto h-10 sm:h-9"
               >
                 Keep Subscription
               </Button>
@@ -732,7 +815,7 @@ export default function TenantSubscriptionPage() {
                 size="sm"
                 onClick={handleCancelSubscription}
                 disabled={isActionPending}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9"
               >
                 {isActionPending ? 'Cancelling...' : 'Confirm Cancellation'}
               </Button>

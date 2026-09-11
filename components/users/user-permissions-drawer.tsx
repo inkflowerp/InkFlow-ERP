@@ -678,7 +678,7 @@ export function UserPermissionsDrawer({
           </div>
 
           {/* Sticky Bottom Save / Action Bar */}
-          <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/95 dark:bg-slate-900/95 flex items-center justify-between gap-3 shrink-0">
+          <div className="p-3.5 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/95 dark:bg-slate-900/95 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
             <div>
               {isDirty ? (
                 <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold animate-pulse">
@@ -693,14 +693,14 @@ export function UserPermissionsDrawer({
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
               {isDirty && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleResetToUserInitial}
                   disabled={isSaving}
-                  className="h-9 text-xs"
+                  className="h-10 sm:h-9 text-xs flex-1 sm:flex-initial"
                 >
                   <RotateCcw className="mr-1 h-3.5 w-3.5" />
                   Reset
@@ -711,7 +711,7 @@ export function UserPermissionsDrawer({
                 size="sm"
                 onClick={handleSave}
                 disabled={isSaving || !isDirty}
-                className="h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 shadow-sm font-semibold"
+                className="h-10 sm:h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 shadow-sm font-semibold flex-1 sm:flex-initial"
               >
                 {isSaving ? (
                   <>

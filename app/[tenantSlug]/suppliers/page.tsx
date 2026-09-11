@@ -206,7 +206,7 @@ export default function SuppliersPage() {
         </div>
       </Card>
 
-      {/* Suppliers Table */}
+      {/* Suppliers Table & Mobile Cards */}
       <Card>
         <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between">
@@ -214,87 +214,183 @@ export default function SuppliersPage() {
             <span className="text-xs text-slate-400">Showing all vendor partner records</span>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Supplier & Trading Name</th>
-                <th className="py-3 px-4">Material Category</th>
-                <th className="py-3 px-4">Contact Person</th>
-                <th className="py-3 px-4">Phone & WhatsApp</th>
-                <th className="py-3 px-4">Market Hub</th>
-                <th className="py-3 px-4">Payable Balance (বাকি)</th>
-                <th className="py-3 px-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((supplier) => (
-                <tr key={supplier.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <Link
-                      href={`/${slug}/suppliers/${supplier.id}`}
-                      className="font-bold text-slate-900 dark:text-white hover:text-teal-600 flex items-center gap-1.5 group"
-                    >
-                      <span>{supplier.supplier_name}</span>
-                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-teal-600 transition-opacity" />
-                    </Link>
-                    {supplier.company && (
-                      <div className="text-xs text-slate-500">{supplier.company}</div>
-                    )}
-                  </td>
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Supplier & Trading Name</th>
+                  <th className="py-3 px-4">Material Category</th>
+                  <th className="py-3 px-4">Contact Person</th>
+                  <th className="py-3 px-4">Phone & WhatsApp</th>
+                  <th className="py-3 px-4">Market Hub</th>
+                  <th className="py-3 px-4">Payable Balance (বাকি)</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map((supplier) => (
+                  <tr key={supplier.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <Link
+                        href={`/${slug}/suppliers/${supplier.id}`}
+                        className="font-bold text-slate-900 dark:text-white hover:text-teal-600 flex items-center gap-1.5 group"
+                      >
+                        <span>{supplier.supplier_name}</span>
+                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-teal-600 transition-opacity" />
+                      </Link>
+                      {supplier.company && (
+                        <div className="text-xs text-slate-500">{supplier.company}</div>
+                      )}
+                    </td>
 
-                  <td className="py-3.5 px-4">
-                    <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-900">
+                    <td className="py-3.5 px-4">
+                      <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-900">
+                        {supplier.category}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
+                      {supplier.contact_person || '—'}
+                    </td>
+
+                    <td className="py-3.5 px-4 text-xs font-mono">
+                      <div className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
+                        <Phone className="h-3 w-3 text-slate-400" />
+                        <span>{supplier.mobile}</span>
+                      </div>
+                      {supplier.whatsapp && (
+                        <div className="flex items-center gap-1 text-emerald-600 mt-0.5">
+                          <MessageSquare className="h-3 w-3" />
+                          <span>{supplier.whatsapp}</span>
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4 text-xs text-slate-500">
+                      {supplier.address || 'Dhaka'}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      {(supplier.outstanding_balance || 0) > 0 ? (
+                        <span className="font-bold text-amber-700 dark:text-amber-400">
+                          <CurrencyDisplay amount={supplier.outstanding_balance || 0} />
+                        </span>
+                      ) : (
+                        <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Settled
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4 text-right">
+                      <Link
+                        href={`/${slug}/suppliers/${supplier.id}`}
+                        className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      >
+                        Rate Sheet & History
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-xs">
+                No suppliers found matching your query.
+              </div>
+            ) : (
+              filtered.map((supplier) => (
+                <div key={supplier.id} className="p-4 space-y-3 bg-white dark:bg-slate-900">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <Link
+                        href={`/${slug}/suppliers/${supplier.id}`}
+                        className="font-bold text-slate-900 dark:text-white hover:text-teal-600 text-sm flex items-center gap-1"
+                      >
+                        <span>{supplier.supplier_name}</span>
+                        <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+                      </Link>
+                      {supplier.company && (
+                        <div className="text-xs text-slate-500 mt-0.5">{supplier.company}</div>
+                      )}
+                    </div>
+                    <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 shrink-0">
                       {supplier.category}
                     </span>
-                  </td>
+                  </div>
 
-                  <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
-                    {supplier.contact_person || '—'}
-                  </td>
-
-                  <td className="py-3.5 px-4 text-xs font-mono">
-                    <div className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
-                      <Phone className="h-3 w-3 text-slate-400" />
-                      <span>{supplier.mobile}</span>
-                    </div>
-                    {supplier.whatsapp && (
-                      <div className="flex items-center gap-1 text-emerald-600 mt-0.5">
-                        <MessageSquare className="h-3 w-3" />
-                        <span>{supplier.whatsapp}</span>
+                  {/* Contact Info & Market Hub */}
+                  <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg space-y-2 text-xs">
+                    {supplier.contact_person && (
+                      <div className="text-slate-700 dark:text-slate-300">
+                        Contact: <strong>{supplier.contact_person}</strong>
                       </div>
                     )}
-                  </td>
 
-                  <td className="py-3.5 px-4 text-xs text-slate-500">
-                    {supplier.address || 'Dhaka'}
-                  </td>
+                    <div className="flex flex-wrap items-center gap-3 font-mono text-[11px]">
+                      {supplier.mobile && (
+                        <a
+                          href={`tel:${supplier.mobile}`}
+                          className="flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline"
+                        >
+                          <Phone className="h-3 w-3" />
+                          <span>{supplier.mobile}</span>
+                        </a>
+                      )}
+                      {supplier.whatsapp && (
+                        <a
+                          href={`https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline"
+                        >
+                          <MessageSquare className="h-3 w-3" />
+                          <span>WhatsApp</span>
+                        </a>
+                      )}
+                    </div>
 
-                  <td className="py-3.5 px-4">
-                    {(supplier.outstanding_balance || 0) > 0 ? (
-                      <span className="font-bold text-amber-700 dark:text-amber-400">
-                        <CurrencyDisplay amount={supplier.outstanding_balance || 0} />
-                      </span>
-                    ) : (
-                      <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        Settled
-                      </span>
+                    {supplier.address && (
+                      <div className="text-slate-500 text-[11px] pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                        📍 {supplier.address}
+                      </div>
                     )}
-                  </td>
+                  </div>
 
-                  <td className="py-3.5 px-4 text-right">
-                    <Link
-                      href={`/${slug}/suppliers/${supplier.id}`}
-                      className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                    >
-                      Rate Sheet & History
+                  {/* Balance & Action */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase font-semibold">Payable Balance</div>
+                      <div className="text-sm font-black font-mono">
+                        {(supplier.outstanding_balance || 0) > 0 ? (
+                          <span className="text-amber-700 dark:text-amber-400">
+                            ৳ {(supplier.outstanding_balance || 0).toLocaleString()}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Settled
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <Link href={`/${slug}/suppliers/${supplier.id}`}>
+                      <Button size="sm" variant="outline" className="h-9 px-3 text-xs font-semibold">
+                        Rate Sheet & History
+                      </Button>
                     </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -421,11 +517,11 @@ export default function SuppliersPage() {
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white">
+            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Save Supplier
             </Button>
           </div>

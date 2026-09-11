@@ -928,10 +928,11 @@ export function DashboardView() {
               placeholder="e.g. Acme Advertising Ltd."
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
+              className="h-10 text-xs"
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="custPhone" required>Phone / Mobile</Label>
               <Input
@@ -939,6 +940,7 @@ export function DashboardView() {
                 placeholder="01711-XXXXXX"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
+                className="h-10 text-xs"
                 required
               />
             </div>
@@ -949,12 +951,25 @@ export function DashboardView() {
                 type="number"
                 value={customerLimit}
                 onChange={(e) => setCustomerLimit(e.target.value)}
+                className="h-10 text-xs"
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setActiveModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Save Customer</Button>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setActiveModal(null)}
+              className="w-full sm:w-auto h-11 sm:h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="w-full sm:w-auto h-11 sm:h-9 bg-blue-600 hover:bg-blue-700 font-bold"
+            >
+              Save Customer
+            </Button>
           </div>
         </form>
       </ModalDialog>
@@ -973,7 +988,7 @@ export function DashboardView() {
               id="payCust"
               value={selectedCustomerId || customers?.[0]?.id || ''}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
             >
               {(customers || []).length === 0 ? (
                 <option value="">No customers found - please add a customer first</option>
@@ -986,7 +1001,7 @@ export function DashboardView() {
               )}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="payAmount" required>Amount (৳ BDT)</Label>
               <Input
@@ -995,6 +1010,7 @@ export function DashboardView() {
                 placeholder="e.g. 25000"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
+                className="h-10 text-xs"
                 required
               />
             </div>
@@ -1004,7 +1020,7 @@ export function DashboardView() {
                 id="payMethod"
                 value={payMethod}
                 onChange={(e) => setPayMethod(e.target.value as any)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
               >
                 <option value="cash">Cash Counter</option>
                 <option value="bkash">bKash Merchant</option>
@@ -1013,9 +1029,21 @@ export function DashboardView() {
               </select>
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setActiveModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">Issue Money Receipt</Button>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setActiveModal(null)}
+              className="w-full sm:w-auto h-11 sm:h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="w-full sm:w-auto h-11 sm:h-9 bg-emerald-600 hover:bg-emerald-700 font-bold"
+            >
+              Issue Money Receipt
+            </Button>
           </div>
         </form>
       </ModalDialog>
@@ -1035,10 +1063,11 @@ export function DashboardView() {
               placeholder="e.g. Machine Solvent Cleaner & Wipes"
               value={expenseTitle}
               onChange={(e) => setExpenseTitle(e.target.value)}
+              className="h-10 text-xs"
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="expAmount" required>Amount (৳ BDT)</Label>
               <Input
@@ -1047,6 +1076,7 @@ export function DashboardView() {
                 placeholder="3500"
                 value={expenseAmount}
                 onChange={(e) => setExpenseAmount(e.target.value)}
+                className="h-10 text-xs"
                 required
               />
             </div>
@@ -1056,7 +1086,7 @@ export function DashboardView() {
                 id="expCategory"
                 value={expenseCategory}
                 onChange={(e) => setExpenseCategory(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
               >
                 <option value="maintenance">Machine Maintenance</option>
                 <option value="electricity">Factory Utilities / Electricity</option>
@@ -1065,9 +1095,21 @@ export function DashboardView() {
               </select>
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setActiveModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white">Record Expense</Button>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setActiveModal(null)}
+              className="w-full sm:w-auto h-11 sm:h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="w-full sm:w-auto h-11 sm:h-9 bg-red-600 hover:bg-red-700 text-white font-bold"
+            >
+              Record Expense
+            </Button>
           </div>
         </form>
       </ModalDialog>
@@ -1087,10 +1129,11 @@ export function DashboardView() {
               placeholder="e.g. Star Flex 320gsm (10ft roll)"
               value={materialName}
               onChange={(e) => setMaterialName(e.target.value)}
+              className="h-10 text-xs"
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="matQty" required>Quantity (Rolls / Sheets / Sft)</Label>
               <Input
@@ -1098,21 +1141,34 @@ export function DashboardView() {
                 placeholder="500"
                 value={materialQty}
                 onChange={(e) => setMaterialQty(e.target.value)}
+                className="h-10 text-xs"
                 required
               />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="matSupplier">Vendor</Label>
-              <select id="matSupplier" className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs">
+              <select id="matSupplier" className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">
                 <option>Bangla Plastic & Media Ltd.</option>
                 <option>Dhaka Acrylic Center</option>
                 <option>Karnafuli Paper Mills</option>
               </select>
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setActiveModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white">Save Inventory</Button>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setActiveModal(null)}
+              className="w-full sm:w-auto h-11 sm:h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="w-full sm:w-auto h-11 sm:h-9 bg-teal-600 hover:bg-teal-700 text-white font-bold"
+            >
+              Save Inventory
+            </Button>
           </div>
         </form>
       </ModalDialog>
@@ -1131,7 +1187,7 @@ export function DashboardView() {
               id="probType"
               value={problemSeverity}
               onChange={(e) => setProblemSeverity(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
             >
               <option value="rework">Media Head Strike / Reprint Needed</option>
               <option value="color_mismatch">Color Calibration / ICC Profile Mismatch</option>
@@ -1146,12 +1202,25 @@ export function DashboardView() {
               placeholder="e.g. Banding on Cyan head after 8ft run"
               value={problemDescription}
               onChange={(e) => setProblemDescription(e.target.value)}
+              className="h-10 text-xs"
               required
             />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setActiveModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white">Dispatch Alert</Button>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setActiveModal(null)}
+              className="w-full sm:w-auto h-11 sm:h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="w-full sm:w-auto h-11 sm:h-9 bg-red-600 hover:bg-red-700 text-white font-bold"
+            >
+              Dispatch Alert
+            </Button>
           </div>
         </form>
       </ModalDialog>

@@ -415,32 +415,139 @@ export default function BillingPage() {
             <span className="text-xs text-slate-400">Multi-type invoices with aging tracking</span>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">Invoice #</th>
-                <th className="py-3 px-4">Customer & BIN</th>
-                <th className="py-3 px-4">Date / Due Date</th>
-                <th className="py-3 px-4">Grand Total</th>
-                <th className="py-3 px-4">Paid / Due</th>
-                <th className="py-3 px-4">Status & Overdue</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map((inv: InvoiceRecord) => (
-                <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                  {/* Invoice # */}
-                  <td className="py-3.5 px-4">
-                    <Link
-                      href={`/${slug}/billing/${inv.id}`}
-                      className="font-mono font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 group"
-                    >
-                      <span>{inv.invoice_number}</span>
-                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </Link>
-                    <div className="mt-0.5">
+        <CardContent className="p-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Invoice #</th>
+                  <th className="py-3 px-4">Customer & BIN</th>
+                  <th className="py-3 px-4">Date / Due Date</th>
+                  <th className="py-3 px-4">Grand Total</th>
+                  <th className="py-3 px-4">Paid / Due</th>
+                  <th className="py-3 px-4">Status & Overdue</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map((inv: InvoiceRecord) => (
+                  <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Invoice # */}
+                    <td className="py-3.5 px-4">
+                      <Link
+                        href={`/${slug}/billing/${inv.id}`}
+                        className="font-mono font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 group"
+                      >
+                        <span>{inv.invoice_number}</span>
+                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+                      <div className="mt-0.5">
+                        {inv.invoice_type === 'vat_invoice' ? (
+                          <span className="inline-block text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">
+                            মূসক ৬.৩
+                          </span>
+                        ) : (
+                          <span className="inline-block text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                            Sales Inv
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Customer */}
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-900 dark:text-white text-xs">
+                        {inv.customer_name}
+                      </div>
+                      {inv.customer_bin && (
+                        <div className="text-[10px] font-mono text-purple-600">
+                          BIN: {inv.customer_bin}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Dates */}
+                    <td className="py-3.5 px-4 text-xs">
+                      <div className="font-mono text-slate-600 dark:text-slate-300">
+                        {inv.invoice_date}
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-400">
+                        Due: {inv.due_date}
+                      </div>
+                    </td>
+
+                    {/* Grand Total */}
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white font-mono text-xs">
+                      <CurrencyDisplay amount={inv.grand_total} />
+                    </td>
+
+                    {/* Paid / Due */}
+                    <td className="py-3.5 px-4 text-xs font-mono">
+                      <div className="text-emerald-600 font-medium">Paid: ৳ {formatBDT(inv.paid_amount)}</div>
+                      {inv.due_amount > 0 ? (
+                        <div className="text-red-600 font-bold">Due: ৳ {formatBDT(inv.due_amount)}</div>
+                      ) : (
+                        <div className="text-slate-400">Due: ৳ 0</div>
+                      )}
+                    </td>
+
+                    {/* Status & Overdue */}
+                    <td className="py-3.5 px-4">
+                      {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Link
+                          href={`/${slug}/billing/${inv.id}`}
+                          className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                        >
+                          Cockpit
+                        </Link>
+
+                        {inv.due_amount > 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedInvoiceForWriteOff(inv)
+                              setWriteOffAmount(Math.min(inv.due_amount, 2000))
+                            }}
+                            className="h-7 text-[11px] px-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
+                          >
+                            <TrendingDown className="h-3 w-3 mr-1" />
+                            Write-off
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-400">
+                {tBilingual('No invoices found matching filter.', 'কোন ইনভয়েস পাওয়া যায়নি।')}
+              </div>
+            ) : (
+              filtered.map((inv: InvoiceRecord) => (
+                <div key={inv.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                  {/* Top Bar: Invoice # & Document Type & Status */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/${slug}/billing/${inv.id}`}
+                        className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                      >
+                        <span>{inv.invoice_number}</span>
+                        <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                      </Link>
                       {inv.invoice_type === 'vat_invoice' ? (
                         <span className="inline-block text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">
                           মূসক ৬.৩
@@ -451,80 +558,76 @@ export default function BillingPage() {
                         </span>
                       )}
                     </div>
-                  </td>
-
-                  {/* Customer */}
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                      {inv.customer_name}
-                    </div>
-                    {inv.customer_bin && (
-                      <div className="text-[10px] font-mono text-purple-600">
-                        BIN: {inv.customer_bin}
-                      </div>
-                    )}
-                  </td>
-
-                  {/* Dates */}
-                  <td className="py-3.5 px-4 text-xs">
-                    <div className="font-mono text-slate-600 dark:text-slate-300">
-                      {inv.invoice_date}
-                    </div>
-                    <div className="text-[11px] font-mono text-slate-400">
-                      Due: {inv.due_date}
-                    </div>
-                  </td>
-
-                  {/* Grand Total */}
-                  <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white font-mono text-xs">
-                    <CurrencyDisplay amount={inv.grand_total} />
-                  </td>
-
-                  {/* Paid / Due */}
-                  <td className="py-3.5 px-4 text-xs font-mono">
-                    <div className="text-emerald-600 font-medium">Paid: ৳ {formatBDT(inv.paid_amount)}</div>
-                    {inv.due_amount > 0 ? (
-                      <div className="text-red-600 font-bold">Due: ৳ {formatBDT(inv.due_amount)}</div>
-                    ) : (
-                      <div className="text-slate-400">Due: ৳ 0</div>
-                    )}
-                  </td>
-
-                  {/* Status & Overdue */}
-                  <td className="py-3.5 px-4">
                     {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
-                  </td>
+                  </div>
 
-                  {/* Actions */}
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Link
-                        href={`/${slug}/billing/${inv.id}`}
-                        className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
-                      >
-                        Cockpit
-                      </Link>
-
-                      {inv.due_amount > 0 && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedInvoiceForWriteOff(inv)
-                            setWriteOffAmount(Math.min(inv.due_amount, 2000))
-                          }}
-                          className="h-7 text-[11px] px-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
-                        >
-                          <TrendingDown className="h-3 w-3 mr-1" />
-                          Write-off
-                        </Button>
+                  {/* Customer Info */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{inv.customer_name}</div>
+                      {inv.customer_bin && (
+                        <div className="text-[11px] font-mono text-purple-600">BIN: {inv.customer_bin}</div>
                       )}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white">
+                        <CurrencyDisplay amount={inv.grand_total} />
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Payment Breakdown Card */}
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Paid Amount</span>
+                      <span className="font-medium text-emerald-600">৳ {formatBDT(inv.paid_amount)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Due Balance</span>
+                      {inv.due_amount > 0 ? (
+                        <span className="font-bold text-red-600">৳ {formatBDT(inv.due_amount)}</span>
+                      ) : (
+                        <span className="text-emerald-600 font-semibold">৳ 0 (Paid)</span>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Invoice Date</span>
+                      <span className="font-mono text-slate-600 dark:text-slate-300">{inv.invoice_date}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Due Date</span>
+                      <span className="font-mono text-slate-600 dark:text-slate-300">{inv.due_date}</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    {inv.due_amount > 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedInvoiceForWriteOff(inv)
+                          setWriteOffAmount(Math.min(inv.due_amount, 2000))
+                        }}
+                        className="h-9 text-xs px-3 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
+                      >
+                        <TrendingDown className="h-3.5 w-3.5 mr-1" />
+                        Write-off
+                      </Button>
+                    )}
+                    <Link
+                      href={`/${slug}/billing/${inv.id}`}
+                      className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/60 min-h-[36px]"
+                    >
+                      Invoice Cockpit →
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -646,11 +749,11 @@ export default function BillingPage() {
             </p>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsRecordPaymentOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsRecordPaymentOpen(false)} className="w-full sm:w-auto min-h-[40px]">
               Cancel
             </Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+            <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
               Generate Money Receipt
             </Button>
           </div>
@@ -711,11 +814,11 @@ export default function BillingPage() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedInvoiceForWriteOff(null)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setSelectedInvoiceForWriteOff(null)} className="w-full sm:w-auto min-h-[40px]">
                 Cancel
               </Button>
-              <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white font-bold">
+              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-red-600 hover:bg-red-700 text-white font-bold">
                 Log Authorized Write-Off
               </Button>
             </div>
@@ -731,7 +834,7 @@ export default function BillingPage() {
         description="Issue standard commercial sales invoice or official NBR Mushak 6.3 VAT document."
       >
         <form onSubmit={handleCreateInvoice} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="invCust" required>Select Customer</Label>
@@ -819,7 +922,7 @@ export default function BillingPage() {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="invDim">Size / Specs</Label>
               <Input
@@ -853,11 +956,11 @@ export default function BillingPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewInvoiceOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewInvoiceOpen(false)} className="w-full sm:w-auto min-h-[40px]">
               Cancel
             </Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+            <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
               Issue Invoice
             </Button>
           </div>

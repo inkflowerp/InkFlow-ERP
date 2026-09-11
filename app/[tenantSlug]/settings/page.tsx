@@ -161,7 +161,7 @@ export default function CompanySettingsPage() {
       <SettingsNav />
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto">
+      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto touch-scroll">
         {[
           { id: 'general', label: 'General Identity', icon: Building2 },
           { id: 'tax', label: 'BIN, TIN & VAT', icon: ShieldCheck },
@@ -175,13 +175,13 @@ export default function CompanySettingsPage() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap h-10 sm:h-9 shrink-0 ${
                 isActive
-                  ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400'
+                  ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400 font-bold'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4 shrink-0" />
               {tab.label}
             </button>
           )
@@ -407,7 +407,7 @@ export default function CompanySettingsPage() {
 
         {/* Action Buttons */}
         <div className="mt-6 flex items-center justify-end gap-3">
-          <Button type="submit" isLoading={isLoading} className="bg-blue-600 hover:bg-blue-700">
+          <Button type="submit" isLoading={isLoading} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Changes
           </Button>

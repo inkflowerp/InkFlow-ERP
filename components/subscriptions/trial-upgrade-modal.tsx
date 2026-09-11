@@ -483,13 +483,14 @@ export function TrialUpgradeModal() {
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={closeUpgradeModal}
               disabled={isProcessing}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
             >
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
@@ -498,7 +499,7 @@ export function TrialUpgradeModal() {
               type="submit"
               size="sm"
               disabled={isProcessing}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 shadow-md shadow-blue-500/20 bangla-text"
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 shadow-md shadow-blue-500/20 bangla-text"
             >
               {isProcessing ? (
                 <span>{tBilingual('Processing Checkout...', 'প্রক্রিয়াধীন...')}</span>

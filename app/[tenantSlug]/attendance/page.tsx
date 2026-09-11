@@ -634,21 +634,19 @@ export default function EmployeeAttendancePage() {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-800">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   onClick={() => setIsCorrectionOpen(false)}
-                  className="border-slate-700 text-slate-300 text-xs"
+                  className="w-full sm:w-auto h-10 sm:h-9 border-slate-700 text-slate-300 text-xs"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  size="sm"
                   isLoading={corrSubmitting}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+                  className="w-full sm:w-auto h-10 sm:h-9 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
                 >
                   Submit Request
                 </Button>

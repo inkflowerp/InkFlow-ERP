@@ -220,12 +220,12 @@ export default function BranchesSettingsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
                 {!branch.isMain && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs"
+                    className="text-xs h-9"
                     onClick={() => handleMakeMain(branch.id)}
                   >
                     Set as Head Office
@@ -233,7 +233,7 @@ export default function BranchesSettingsPage() {
                 )}
                 <Badge
                   variant="outline"
-                  className="text-xs bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  className="text-xs bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 py-1.5 sm:py-0.5 justify-center"
                 >
                   <Check className="h-3 w-3 mr-1" />
                   Operational
@@ -263,6 +263,7 @@ export default function BranchesSettingsPage() {
                 placeholder="e.g. FCT-UTTR"
                 value={newBranch.code}
                 onChange={(e) => setNewBranch({ ...newBranch, code: e.target.value })}
+                className="h-10 text-sm"
                 required
               />
             </div>
@@ -275,6 +276,7 @@ export default function BranchesSettingsPage() {
                 placeholder="+880 1711-XXXXXX"
                 value={newBranch.phone}
                 onChange={(e) => setNewBranch({ ...newBranch, phone: e.target.value })}
+                className="h-10 text-sm"
                 required
               />
             </div>
@@ -289,6 +291,7 @@ export default function BranchesSettingsPage() {
               placeholder="e.g. Uttara Signage & Fast Print Hub"
               value={newBranch.name}
               onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })}
+              className="h-10 text-sm"
               required
             />
           </div>
@@ -302,6 +305,7 @@ export default function BranchesSettingsPage() {
               placeholder="যেমন: উত্তরা সাইনেজ অ্যান্ড ফাস্ট প্রিন্ট হাব"
               value={newBranch.nameBn}
               onChange={(e) => setNewBranch({ ...newBranch, nameBn: e.target.value })}
+              className="h-10 text-sm"
             />
           </div>
 
@@ -314,17 +318,18 @@ export default function BranchesSettingsPage() {
               placeholder="Sector 3, Uttara, Dhaka-1230"
               value={newBranch.address}
               onChange={(e) => setNewBranch({ ...newBranch, address: e.target.value })}
+              className="h-10 text-sm"
               required
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-10 sm:h-9"
             >
               Create Branch
             </Button>

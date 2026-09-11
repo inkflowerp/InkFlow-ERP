@@ -704,76 +704,124 @@ export default function HumanResourcesPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-0 overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                    <tr>
-                      <th className="py-3 px-4">Employee</th>
-                      <th className="py-3 px-4">Base Salary</th>
-                      <th className="py-3 px-4">Overtime (OT)</th>
-                      <th className="py-3 px-4">Allowances</th>
-                      <th className="py-3 px-4">Gross Salary</th>
-                      <th className="py-3 px-4 text-red-600">Advance Deducted</th>
-                      <th className="py-3 px-4 font-black text-emerald-700">Net Payable</th>
-                      <th className="py-3 px-4 text-right">Slip</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {period.items.map((item: PayrollItemRecord) => (
-                      <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                          {item.employee_name}
-                          <div className="text-[10px] text-slate-400 font-normal">{item.role}</div>
-                        </td>
-
-                        <td className="py-3.5 px-4 font-mono">৳ {formatBDT(item.base_salary)}</td>
-
-                        <td className="py-3.5 px-4 font-mono">
-                          +{item.overtime_hours}h (৳ {formatBDT(item.overtime_amount)})
-                        </td>
-
-                        <td className="py-3.5 px-4 font-mono">৳ {formatBDT(item.allowances)}</td>
-
-                        <td className="py-3.5 px-4 font-mono font-bold">৳ {formatBDT(item.gross_salary)}</td>
-
-                        {/* Partial Salary Advance Deduction (User's Exact Example: -৳ 10,000) */}
-                        <td className="py-3.5 px-4 font-mono font-bold text-red-600 bg-red-50/30 dark:bg-red-950/20">
-                          -৳ {formatBDT(item.advance_salary_deducted)}
-                        </td>
-
-                        {/* Net Remaining Salary (User's Exact Example: ৳ 23,440) */}
-                        <td className="py-3.5 px-4 font-mono font-black text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-950/20">
-                          ৳ {formatBDT(item.net_salary)}
-                        </td>
-
-                        <td className="py-3.5 px-4 text-right">
-                          <Link
-                            href={`/${slug}/hr/payroll/${period.id}`}
-                            className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100"
-                          >
-                            Pay Slip
-                          </Link>
-                        </td>
+              <CardContent className="p-0">
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
+                      <tr>
+                        <th className="py-3 px-4">Employee</th>
+                        <th className="py-3 px-4">Base Salary</th>
+                        <th className="py-3 px-4">Overtime (OT)</th>
+                        <th className="py-3 px-4">Allowances</th>
+                        <th className="py-3 px-4">Gross Salary</th>
+                        <th className="py-3 px-4 text-red-600">Advance Deducted</th>
+                        <th className="py-3 px-4 font-black text-emerald-700">Net Payable</th>
+                        <th className="py-3 px-4 text-right">Slip</th>
                       </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-slate-100 dark:bg-slate-900 font-mono font-bold text-xs">
-                      <td className="py-3 px-4">Period Totals:</td>
-                      <td colSpan={3} />
-                      <td className="py-3 px-4 font-black text-slate-900 dark:text-white">
-                        ৳ {formatBDT(period.total_gross_salary)}
-                      </td>
-                      <td className="py-3 px-4 text-red-600 font-black">
-                        -৳ {formatBDT(period.total_advances_deducted)}
-                      </td>
-                      <td className="py-3 px-4 text-emerald-700 dark:text-emerald-400 font-black text-sm">
-                        ৳ {formatBDT(period.total_net_salary)}
-                      </td>
-                      <td />
-                    </tr>
-                  </tfoot>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {period.items.map((item: PayrollItemRecord) => (
+                        <tr key={item.id} className="hover:bg-slate-50/50">
+                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                            {item.employee_name}
+                            <div className="text-[10px] text-slate-400 font-normal">{item.role}</div>
+                          </td>
+
+                          <td className="py-3.5 px-4 font-mono">৳ {formatBDT(item.base_salary)}</td>
+
+                          <td className="py-3.5 px-4 font-mono">
+                            +{item.overtime_hours}h (৳ {formatBDT(item.overtime_amount)})
+                          </td>
+
+                          <td className="py-3.5 px-4 font-mono">৳ {formatBDT(item.allowances)}</td>
+
+                          <td className="py-3.5 px-4 font-mono font-bold">৳ {formatBDT(item.gross_salary)}</td>
+
+                          {/* Partial Salary Advance Deduction (User's Exact Example: -৳ 10,000) */}
+                          <td className="py-3.5 px-4 font-mono font-bold text-red-600 bg-red-50/30 dark:bg-red-950/20">
+                            -৳ {formatBDT(item.advance_salary_deducted)}
+                          </td>
+
+                          {/* Net Remaining Salary (User's Exact Example: ৳ 23,440) */}
+                          <td className="py-3.5 px-4 font-mono font-black text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-950/20">
+                            ৳ {formatBDT(item.net_salary)}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right">
+                            <Link
+                              href={`/${slug}/hr/payroll/${period.id}`}
+                              className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100"
+                            >
+                              Pay Slip
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-slate-100 dark:bg-slate-900 font-mono font-bold text-xs">
+                        <td className="py-3 px-4">Period Totals:</td>
+                        <td colSpan={3} />
+                        <td className="py-3 px-4 font-black text-slate-900 dark:text-white">
+                          ৳ {formatBDT(period.total_gross_salary)}
+                        </td>
+                        <td className="py-3 px-4 text-red-600 font-black">
+                          -৳ {formatBDT(period.total_advances_deducted)}
+                        </td>
+                        <td className="py-3 px-4 text-emerald-700 dark:text-emerald-400 font-black text-sm">
+                          ৳ {formatBDT(period.total_net_salary)}
+                        </td>
+                        <td />
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                {/* Mobile Payroll Cards */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+                  {period.items.map((item: PayrollItemRecord) => (
+                    <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <strong className="text-slate-900 dark:text-white font-bold text-sm">{item.employee_name}</strong>
+                          <div className="text-[11px] text-slate-400">{item.role}</div>
+                        </div>
+                        <Link
+                          href={`/${slug}/hr/payroll/${period.id}`}
+                          className="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                        >
+                          Pay Slip
+                        </Link>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[11px] font-mono p-2 bg-white dark:bg-slate-950 rounded border border-slate-200/60 dark:border-slate-800">
+                        <div>Base: ৳ {formatBDT(item.base_salary)}</div>
+                        <div>OT ({item.overtime_hours}h): +৳ {formatBDT(item.overtime_amount)}</div>
+                        <div>Gross: ৳ {formatBDT(item.gross_salary)}</div>
+                        <div className="text-red-600 font-bold">Advance: -৳ {formatBDT(item.advance_salary_deducted)}</div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                        <span className="text-slate-500 font-semibold">Net Payable:</span>
+                        <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-base">
+                          ৳ {formatBDT(item.net_salary)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Mobile Period Summary */}
+                  <div className="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-lg border border-purple-200 dark:border-purple-800 font-mono text-xs space-y-1">
+                    <div className="font-bold text-purple-900 dark:text-purple-200">Period Total Net Payout:</div>
+                    <div className="text-xl font-black text-purple-700 dark:text-purple-300">
+                      ৳ {formatBDT(period.total_net_salary)}
+                    </div>
+                    <div className="text-[10px] text-purple-600">
+                      (Gross: ৳ {formatBDT(period.total_gross_salary)} | Advances: -৳ {formatBDT(period.total_advances_deducted)})
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -785,11 +833,11 @@ export default function HumanResourcesPage() {
          ========================================================================= */}
       {activeTab === 'daily_labor' && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <span className="text-xs text-slate-500">
               Shift-based laborers assigned to specific wide-format printing and fabrication jobs.
             </span>
-            <Button size="sm" onClick={() => setIsDailyShiftOpen(true)} className="text-xs">
+            <Button size="sm" onClick={() => setIsDailyShiftOpen(true)} className="text-xs w-full sm:w-auto">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               Log Daily Worker Shift
             </Button>
@@ -799,57 +847,91 @@ export default function HumanResourcesPage() {
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
               <CardTitle className="text-base">Daily Labor Shift & Job Attribution ({dailyLaborLogs.length})</CardTitle>
             </CardHeader>
-            <CardContent className="p-0 overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                  <tr>
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4">Worker Name</th>
-                    <th className="py-3 px-4">Assigned Job #</th>
-                    <th className="py-3 px-4">Shift Contribution</th>
-                    <th className="py-3 px-4 font-mono">Daily Rate</th>
-                    <th className="py-3 px-4 text-right font-mono">Total Payout (৳)</th>
-                    <th className="py-3 px-4">Payment</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {dailyLaborLogs.map((log: DailyLaborLogRecord) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50">
-                      <td className="py-3.5 px-4 font-mono text-slate-500">{log.work_date}</td>
-
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                        {log.employee_name}
-                      </td>
-
-                      <td className="py-3.5 px-4 font-mono text-blue-600 font-bold">
-                        {log.assigned_job_number || 'General Floor'}
-                      </td>
-
-                      <td className="py-3.5 px-4 max-w-[240px] text-slate-700 dark:text-slate-300">
-                        {log.production_contribution}
-                      </td>
-
-                      <td className="py-3.5 px-4 font-mono">৳ {formatBDT(log.daily_rate)}</td>
-
-                      <td className="py-3.5 px-4 text-right font-mono font-black text-sm text-emerald-600">
-                        ৳ {formatBDT(log.total_payout)}
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        {log.payment_status === 'paid' ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                            Cash Paid
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
-                            Unpaid
-                          </span>
-                        )}
-                      </td>
+            <CardContent className="p-0">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
+                    <tr>
+                      <th className="py-3 px-4">Date</th>
+                      <th className="py-3 px-4">Worker Name</th>
+                      <th className="py-3 px-4">Assigned Job #</th>
+                      <th className="py-3 px-4">Shift Contribution</th>
+                      <th className="py-3 px-4 font-mono">Daily Rate</th>
+                      <th className="py-3 px-4 text-right font-mono">Total Payout (৳)</th>
+                      <th className="py-3 px-4">Payment</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {dailyLaborLogs.map((log: DailyLaborLogRecord) => (
+                      <tr key={log.id} className="hover:bg-slate-50/50">
+                        <td className="py-3.5 px-4 font-mono text-slate-500">{log.work_date}</td>
+
+                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                          {log.employee_name}
+                        </td>
+
+                        <td className="py-3.5 px-4 font-mono text-blue-600 font-bold">
+                          {log.assigned_job_number || 'General Floor'}
+                        </td>
+
+                        <td className="py-3.5 px-4 max-w-[240px] text-slate-700 dark:text-slate-300">
+                          {log.production_contribution}
+                        </td>
+
+                        <td className="py-3.5 px-4 font-mono">৳ {formatBDT(log.daily_rate)}</td>
+
+                        <td className="py-3.5 px-4 text-right font-mono font-black text-sm text-emerald-600">
+                          ৳ {formatBDT(log.total_payout)}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          {log.payment_status === 'paid' ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              Cash Paid
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+                              Unpaid
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Daily Labor Cards */}
+              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+                {dailyLaborLogs.map((log: DailyLaborLogRecord) => (
+                  <div key={log.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <strong className="text-slate-900 dark:text-white font-bold text-sm">{log.employee_name}</strong>
+                        <div className="text-[11px] font-mono text-blue-600 font-bold">
+                          {log.assigned_job_number || 'General Floor'}
+                        </div>
+                      </div>
+                      <span className="font-mono text-[11px] text-slate-400">{log.work_date}</span>
+                    </div>
+
+                    <p className="text-slate-600 dark:text-slate-300 text-[11px]">
+                      {log.production_contribution}
+                    </p>
+
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-200/60 dark:border-slate-800 font-mono">
+                      <span className="text-[11px] text-slate-400">Rate: ৳ {formatBDT(log.daily_rate)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-emerald-600 text-sm">৳ {formatBDT(log.total_payout)}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          Cash Paid
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -862,7 +944,7 @@ export default function HumanResourcesPage() {
         title="Disburse Early Salary Advance (অগ্রিম বেতন)"
         description="Records early partial salary payment. The amount is automatically deducted on the month-end payroll run."
       >
-        <form onSubmit={handleDisburseAdvance} className="space-y-4 pt-1">
+        <form onSubmit={handleDisburseAdvance} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="space-y-1.5">
             <Label htmlFor="advEmp" required>Select Employee</Label>
             <select
@@ -879,7 +961,7 @@ export default function HumanResourcesPage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="advAmt" required>Advance Amount (৳ BDT)</Label>
               <Input
@@ -919,11 +1001,11 @@ export default function HumanResourcesPage() {
             </p>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsAdvanceOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsAdvanceOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
+            <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Disburse Advance Voucher
             </Button>
           </div>
@@ -938,7 +1020,7 @@ export default function HumanResourcesPage() {
         description="Configure employee classification, salary structure, and overtime rates."
       >
         <form onSubmit={handleCreateEmployee} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="enName" required>Full Name (English)</Label>
               <Input
@@ -961,7 +1043,7 @@ export default function HumanResourcesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="emMob" required>Mobile Number</Label>
               <Input
@@ -988,7 +1070,7 @@ export default function HumanResourcesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="emDept" required>Department</Label>
               <select
@@ -1019,7 +1101,7 @@ export default function HumanResourcesPage() {
           </div>
 
           {empType !== 'daily_labor' ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="emSal" required>Monthly Base Salary (৳ BDT)</Label>
                 <Input
@@ -1043,7 +1125,7 @@ export default function HumanResourcesPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="emDr" required>Daily Shift Rate (৳ / Day)</Label>
                 <Input
@@ -1068,11 +1150,11 @@ export default function HumanResourcesPage() {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewEmpOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewEmpOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Save Employee
             </Button>
           </div>
@@ -1086,7 +1168,7 @@ export default function HumanResourcesPage() {
         title="Log Daily Laborer Shift & Job Attribution"
         description="Attribute daily wage payouts to specific machine production job orders."
       >
-        <form onSubmit={handleLogDailyShift} className="space-y-4 pt-1">
+        <form onSubmit={handleLogDailyShift} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="space-y-1.5">
             <Label htmlFor="shfEmp" required>Daily Worker</Label>
             <select
@@ -1105,7 +1187,7 @@ export default function HumanResourcesPage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="shfJob">Assigned Job #</Label>
               <Input
@@ -1140,11 +1222,11 @@ export default function HumanResourcesPage() {
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsDailyShiftOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsDailyShiftOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
+            <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
               Record Shift & Cash Payout
             </Button>
           </div>

@@ -272,7 +272,7 @@ export default function CompanyProfileSettingsPage() {
         </Card>
 
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+          <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Profile Settings
           </Button>

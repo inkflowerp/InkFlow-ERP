@@ -118,9 +118,9 @@ export default function DocumentDesignerPage() {
         )}
 
         {/* Document Selector & Language Switcher Toolbar */}
-        <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
           {/* Document Types */}
-          <div className="flex items-center gap-1.5 overflow-x-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 touch-scroll w-full sm:w-auto">
             {[
               { id: 'quotation', label: 'Quotation (দরপত্র)' },
               { id: 'invoice', label: 'Sales Invoice (চালান বিল)' },
@@ -134,8 +134,8 @@ export default function DocumentDesignerPage() {
                 size="sm"
                 variant={selectedDoc === doc.id ? 'default' : 'ghost'}
                 onClick={() => setSelectedDoc(doc.id as DocumentType)}
-                className={`text-xs h-7 px-3 ${
-                  selectedDoc === doc.id ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-400'
+                className={`text-xs h-9 sm:h-7 px-3 whitespace-nowrap shrink-0 ${
+                  selectedDoc === doc.id ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
                 }`}
               >
                 {doc.label}
@@ -144,24 +144,29 @@ export default function DocumentDesignerPage() {
           </div>
 
           {/* Language Mode Switcher */}
-          <div className="flex items-center gap-1 bg-white dark:bg-slate-950 p-1 rounded-lg border">
-            <Languages className="h-3.5 w-3.5 text-slate-400 ml-1.5 mr-1" />
-            {[
-              { id: 'english', label: 'English' },
-              { id: 'bengali', label: 'বাংলা' },
-            ].map((lang) => (
-              <Button
-                key={lang.id}
-                size="sm"
-                variant={langMode === lang.id ? 'default' : 'ghost'}
-                onClick={() => setLangMode(lang.id as DocumentLanguageMode)}
-                className={`text-xs h-6 px-2.5 font-bold ${
-                  langMode === lang.id ? 'bg-slate-800 text-white' : 'text-slate-500'
-                }`}
-              >
-                {lang.label}
-              </Button>
-            ))}
+          <div className="flex items-center justify-between sm:justify-start gap-1 bg-white dark:bg-slate-950 p-1 rounded-lg border shrink-0">
+            <div className="flex items-center">
+              <Languages className="h-3.5 w-3.5 text-slate-400 ml-1.5 mr-1" />
+              <span className="text-[11px] text-slate-500 mr-2 sm:hidden">Language:</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {[
+                { id: 'english', label: 'English' },
+                { id: 'bengali', label: 'বাংলা' },
+              ].map((lang) => (
+                <Button
+                  key={lang.id}
+                  size="sm"
+                  variant={langMode === lang.id ? 'default' : 'ghost'}
+                  onClick={() => setLangMode(lang.id as DocumentLanguageMode)}
+                  className={`text-xs h-8 sm:h-6 px-3 sm:px-2.5 font-bold ${
+                    langMode === lang.id ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-500'
+                  }`}
+                >
+                  {lang.label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -170,7 +175,7 @@ export default function DocumentDesignerPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Controls Column (Hidden on Print) */}
         <div className="print:hidden space-y-4">
-          <Card className="p-4 space-y-3">
+          <Card className="p-4 space-y-3 rounded-2xl">
             <CardTitle className="text-sm font-bold flex items-center gap-1.5">
               <Sliders className="h-4 w-4 text-blue-600" />
               Template Controls
@@ -182,7 +187,7 @@ export default function DocumentDesignerPage() {
                 <Input
                   value={activeTpl.company_name_bn || ''}
                   onChange={(e) => handleUpdateTemplate({ company_name_bn: e.target.value })}
-                  className="text-xs font-semibold"
+                  className="h-10 sm:h-9 text-xs font-semibold"
                 />
               </div>
 
@@ -193,7 +198,7 @@ export default function DocumentDesignerPage() {
                   onChange={(e) =>
                     handleUpdateTemplate({ authorized_signatory_title: e.target.value })
                   }
-                  className="text-xs"
+                  className="h-10 sm:h-9 text-xs"
                 />
               </div>
 
@@ -203,7 +208,7 @@ export default function DocumentDesignerPage() {
                   rows={3}
                   value={activeTpl.footer_terms_en}
                   onChange={(e) => handleUpdateTemplate({ footer_terms_en: e.target.value })}
-                  className="w-full p-2 rounded-md border text-xs bg-white dark:bg-slate-900"
+                  className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900"
                 />
               </div>
 
@@ -213,7 +218,7 @@ export default function DocumentDesignerPage() {
                   rows={3}
                   value={activeTpl.footer_terms_bn}
                   onChange={(e) => handleUpdateTemplate({ footer_terms_bn: e.target.value })}
-                  className="w-full p-2 rounded-md border text-xs bg-white dark:bg-slate-900"
+                  className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900"
                 />
               </div>
 
@@ -223,7 +228,7 @@ export default function DocumentDesignerPage() {
                   size="sm"
                   variant={activeTpl.show_seal_box ? 'default' : 'outline'}
                   onClick={() => handleUpdateTemplate({ show_seal_box: !activeTpl.show_seal_box })}
-                  className="h-6 text-[10px] px-2"
+                  className="h-8 sm:h-6 text-xs sm:text-[10px] px-3 sm:px-2"
                 >
                   {activeTpl.show_seal_box ? 'Enabled' : 'Hidden'}
                 </Button>
@@ -235,12 +240,12 @@ export default function DocumentDesignerPage() {
         {/* =========================================================================
             LIVE PRINTABLE DOCUMENT PREVIEW CANVAS
            ========================================================================= */}
-        <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-slate-950 p-8 sm:p-12 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0 text-xs text-slate-900 dark:text-white space-y-6">
+        <div className="lg:col-span-2 overflow-x-auto">
+          <div className="bg-white dark:bg-slate-950 p-4 sm:p-8 lg:p-12 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0 text-xs text-slate-900 dark:text-white space-y-6 min-w-[300px]">
             {/* Document Header */}
             <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100">
               {/* English & Bengali Company Name */}
-              <h1 className="text-xl font-black tracking-tight">
+              <h1 className="text-lg sm:text-xl font-black tracking-tight">
                 {langMode === 'bengali'
                   ? activeTpl.company_name_bn || company?.name_bn || company?.name || 'প্রতিষ্ঠানের নাম'
                   : company?.name || 'Company Name'}
@@ -251,7 +256,7 @@ export default function DocumentDesignerPage() {
               </p>
 
               {/* NBR Tax Credentials */}
-              <div className="pt-1 text-[10px] font-mono text-slate-500 flex items-center justify-center gap-3">
+              <div className="pt-1 text-[10px] font-mono text-slate-500 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <span>BIN: <strong>{taxSettings.bin_number || 'N/A'}</strong></span>
                 <span>•</span>
                 <span>TIN: <strong>{taxSettings.tin_number || 'N/A'}</strong></span>
@@ -260,7 +265,7 @@ export default function DocumentDesignerPage() {
               </div>
 
               {/* Document Banner */}
-              <div className="inline-block mt-3 px-6 py-1 rounded-full bg-slate-100 dark:bg-slate-900 font-black text-xs tracking-wider uppercase border border-slate-300 dark:border-slate-700">
+              <div className="inline-block mt-3 px-4 sm:px-6 py-1 rounded-full bg-slate-100 dark:bg-slate-900 font-black text-[11px] sm:text-xs tracking-wider uppercase border border-slate-300 dark:border-slate-700">
                 {selectedDoc === 'quotation' && (langMode === 'bengali' ? 'আনুষ্ঠানিক বাণিজ্যিক দরপত্র' : 'COMMERCIAL QUOTATION')}
                 {selectedDoc === 'invoice' && (langMode === 'bengali' ? 'বাণিজ্যিক বিক্রয় চালান বিল' : 'COMMERCIAL SALES INVOICE')}
                 {selectedDoc === 'vat_mushak' && 'গণপ্রজাতন্ত্রী বাংলাদেশ সরকার — কর চালানপত্র [মূসক-৬.৩]'}
@@ -271,7 +276,7 @@ export default function DocumentDesignerPage() {
             </div>
 
             {/* Recipient & Document Meta */}
-            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border text-xs">
               <div className="space-y-1">
                 <span className="text-[10px] uppercase font-bold text-slate-400">
                   {langMode === 'bengali' ? 'প্রাপকের বিবরণ:' : 'Customer / Consignee:'}
@@ -281,7 +286,7 @@ export default function DocumentDesignerPage() {
                 <div className="text-slate-400 font-mono text-[11px]">BIN: [Customer BIN] • Contact: [Customer Phone]</div>
               </div>
 
-              <div className="space-y-1 text-right font-mono">
+              <div className="space-y-1 sm:text-right font-mono">
                 <div>Document No: <strong className="text-blue-600 font-black">DOC-00001</strong></div>
                 <div>Date: <strong>{new Date().toLocaleDateString()}</strong></div>
                 <div>Payment Terms: <strong>Agreed Terms</strong></div>
@@ -290,45 +295,47 @@ export default function DocumentDesignerPage() {
             </div>
 
             {/* Line Items Table */}
-            <table className="w-full text-left border-collapse border border-slate-300 dark:border-slate-700 text-xs font-mono">
-              <thead className="bg-slate-100 dark:bg-slate-900 font-bold border-b border-slate-300 dark:border-slate-700">
-                <tr>
-                  <th className="p-2 border text-center">SL</th>
-                  <th className="p-2 border">Description (বিবরণ)</th>
-                  <th className="p-2 border text-center">Dimensions</th>
-                  <th className="p-2 border text-center">Qty</th>
-                  <th className="p-2 border text-right">Rate</th>
-                  <th className="p-2 border text-right">Total (৳)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="p-2 border text-center">1</td>
-                  <td className="p-2 border font-sans font-bold">[Item Description / Print Specification]</td>
-                  <td className="p-2 border text-center">—</td>
-                  <td className="p-2 border text-center">1 Unit</td>
-                  <td className="p-2 border text-right">৳ 0</td>
-                  <td className="p-2 border text-right font-bold">৳ 0</td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={4} className="border" />
-                  <td className="p-2 border text-right font-bold">Subtotal:</td>
-                  <td className="p-2 border text-right font-bold">৳ 0</td>
-                </tr>
-                <tr>
-                  <td colSpan={4} className="border" />
-                  <td className="p-2 border text-right text-blue-600 font-bold">VAT ({taxSettings.default_vat_rate}%):</td>
-                  <td className="p-2 border text-right text-blue-600 font-bold">৳ 0</td>
-                </tr>
-                <tr className="bg-slate-100 dark:bg-slate-900 font-black text-sm">
-                  <td colSpan={4} className="border" />
-                  <td className="p-2 border text-right">Net Payable:</td>
-                  <td className="p-2 border text-right text-emerald-600">৳ 0</td>
-                </tr>
-              </tfoot>
-            </table>
+            <div className="overflow-x-auto -mx-1 px-1">
+              <table className="w-full text-left border-collapse border border-slate-300 dark:border-slate-700 text-xs font-mono">
+                <thead className="bg-slate-100 dark:bg-slate-900 font-bold border-b border-slate-300 dark:border-slate-700">
+                  <tr>
+                    <th className="p-2 border text-center">SL</th>
+                    <th className="p-2 border">Description (বিবরণ)</th>
+                    <th className="p-2 border text-center">Dimensions</th>
+                    <th className="p-2 border text-center">Qty</th>
+                    <th className="p-2 border text-right">Rate</th>
+                    <th className="p-2 border text-right">Total (৳)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="p-2 border text-center">1</td>
+                    <td className="p-2 border font-sans font-bold">[Item Description / Print Specification]</td>
+                    <td className="p-2 border text-center">—</td>
+                    <td className="p-2 border text-center">1 Unit</td>
+                    <td className="p-2 border text-right">৳ 0</td>
+                    <td className="p-2 border text-right font-bold">৳ 0</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan={4} className="border" />
+                    <td className="p-2 border text-right font-bold">Subtotal:</td>
+                    <td className="p-2 border text-right font-bold">৳ 0</td>
+                  </tr>
+                  <tr>
+                    <td colSpan={4} className="border" />
+                    <td className="p-2 border text-right text-blue-600 font-bold">VAT ({taxSettings.default_vat_rate}%):</td>
+                    <td className="p-2 border text-right text-blue-600 font-bold">৳ 0</td>
+                  </tr>
+                  <tr className="bg-slate-100 dark:bg-slate-900 font-black text-sm">
+                    <td colSpan={4} className="border" />
+                    <td className="p-2 border text-right">Net Payable:</td>
+                    <td className="p-2 border text-right text-emerald-600">৳ 0</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
 
             {/* Terms and Conditions */}
             <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
@@ -343,16 +350,16 @@ export default function DocumentDesignerPage() {
             </div>
 
             {/* Dual Signatures */}
-            <div className="pt-10 flex justify-between items-end text-xs">
-              <div className="text-center space-y-2">
-                <div className="border-t border-slate-400 w-48 pt-1 font-bold">
+            <div className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 text-xs">
+              <div className="text-center space-y-2 w-full sm:w-auto">
+                <div className="border-t border-slate-400 w-full sm:w-48 pt-1 font-bold">
                   {langMode === 'bengali' ? 'গ্রাহকের স্বাক্ষর' : 'Customer Acceptance'}
                 </div>
               </div>
 
-              <div className="text-center space-y-2">
+              <div className="text-center space-y-2 w-full sm:w-auto">
                 <div className="font-mono text-slate-400 text-[11px]">{activeTpl.authorized_signatory_title}</div>
-                <div className="border-t border-slate-400 w-60 pt-1 font-bold">
+                <div className="border-t border-slate-400 w-full sm:w-60 pt-1 font-bold">
                   {langMode === 'bengali' ? 'অনুমোদিত স্বাক্ষর ও সিল' : 'Authorized Signature & Seal'}
                 </div>
               </div>

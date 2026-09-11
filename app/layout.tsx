@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Hind_Siliguri } from 'next/font/google'
 import { I18nProvider } from '@/i18n/context'
 import './globals.css'
@@ -10,6 +10,18 @@ const hindSiliguri = Hind_Siliguri({
   display: 'swap',
   preload: false,
 })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#090d16' },
+  ],
+}
 
 export const metadata: Metadata = {
   title: 'PrintERP SaaS - Operating System for Printing & Signage in Bangladesh',
