@@ -80,7 +80,8 @@ export function Sidebar() {
   const { tBilingual } = useI18n()
 
 
-  const tenantSlug = company?.slug || 'app'
+  const pathSlug = pathname ? pathname.split('/')[1] : null
+  const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
   const navSections = getNavigationConfig(tenantSlug)
 
   const isNavItemAllowed = (href: string): boolean => {

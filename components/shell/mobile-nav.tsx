@@ -97,7 +97,8 @@ export function MobileNav() {
   const { isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { locale, setLocale, tBilingual } = useI18n()
 
-  const tenantSlug = company?.slug || 'app'
+  const pathSlug = pathname ? pathname.split('/')[1] : null
+  const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
   const navSections = getNavigationConfig(tenantSlug)
 
   // Close drawer automatically on route navigation

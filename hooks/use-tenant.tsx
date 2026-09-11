@@ -394,6 +394,22 @@ export function TenantProvider({
     if (target) {
       const profile = PrintERPDataStore.get<Partial<CompanyRow>>(STORAGE_KEYS.COMPANY_PROFILE)
       setCompany(profile ? { ...target, ...profile } : target)
+      if (typeof window !== 'undefined') {
+        try {
+          const storedSession = getSessionFromCookie() || session
+          if (storedSession) {
+            const updatedSession: TenantSessionData = {
+              ...storedSession,
+              companyId: target.id,
+              companySlug: target.slug,
+              companyName: target.name,
+              companyNameBn: target.name_bn || null,
+            }
+            setSession(updatedSession)
+            document.cookie = `${TENANT_SESSION_COOKIE}=${encodeURIComponent(JSON.stringify(updatedSession))}; path=/; max-age=604800; SameSite=Lax`
+          }
+        } catch {}
+      }
       router.push(`/${target.slug}/dashboard`)
     }
     setIsLoading(false)

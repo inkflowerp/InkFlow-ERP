@@ -20,7 +20,8 @@ import { useTenant } from '@/hooks/use-tenant'
 export function MobileBottomNav() {
   const pathname = usePathname()
   const { company } = useTenant()
-  const tenantSlug = company?.slug || 'app'
+  const pathSlug = pathname ? pathname.split('/')[1] : null
+  const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
 
   const { isOnline } = useNetworkStatus()
   const { pendingCount } = useOfflineQueue()

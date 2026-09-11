@@ -1,13 +1,12 @@
-'use client'
-
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Bell, Clock, Truck, FileText, CheckCircle2, AlertCircle, ShoppingBag } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useDataStore } from '@/hooks/use-data-store'
+import { useOutsideClick } from '@/hooks/use-outside-click'
 import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
 import {
   getInAppNotificationsAction,
@@ -35,10 +34,15 @@ interface NotificationItem {
 
 export function NotificationsDropdown() {
   const router = useRouter()
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useOutsideClick<HTMLDivElement>(() => setIsOpen(false), isOpen)
   const { company, currentRole } = useTenant()
   const { isOwner, isDesigner, isOperator, isAccountant, isDelivery } = usePermissions()
   const { tBilingual } = useI18n()
+
+  const pathSlug = pathname ? pathname.split('/')[1] : null
+  const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
 
   const { data: rawNotifications = [], set: setNotifications } = useDataStore<any[]>(
     STORAGE_KEYS.IN_APP_NOTIFICATIONS,
@@ -106,7 +110,6 @@ export function NotificationsDropdown() {
 
     if (item.action_url) {
       setIsOpen(false)
-      const slug = company?.slug || 'app'
       const url = item.action_url.startsWith('/') ? `/${slug}${item.action_url}` : item.action_url
       router.push(url)
     }
@@ -135,7 +138,7 @@ export function NotificationsDropdown() {
   }
 
   return (
-    <div className="relative">
+    <div ref={menuRef} className="relative">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -152,9 +155,7 @@ export function NotificationsDropdown() {
       </button>
 
       {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-80 md:w-96 rounded-2xl border border-slate-200 bg-white shadow-2xl z-50 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
+        <div className="absolute right-0 mt-2 w-80 md:w-96 rounded-2xl border border-slate-200 bg-white shadow-2xl z-50 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 p-3.5 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm text-slate-900 dark:text-slate-100 bangla-text">
@@ -226,7 +227,6 @@ export function NotificationsDropdown() {
               )}
             </div>
           </div>
-        </>
       )}
     </div>
   )

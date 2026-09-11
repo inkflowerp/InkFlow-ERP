@@ -1,8 +1,6 @@
-'use client'
-
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { CompanySelector } from './company-selector'
 import { Breadcrumbs } from './breadcrumbs'
 import { LanguageSwitcher } from './language-switcher'
@@ -23,18 +21,22 @@ import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useRealtime } from '@/components/providers/realtime-provider'
+import { useOutsideClick } from '@/hooks/use-outside-click'
 import { ConfigurableLimitType } from '@/types/subscription.types'
 import { cn } from '@/lib/utils'
 
 export function TopNav() {
   const router = useRouter()
+  const pathname = usePathname()
   const { t, tBilingual } = useI18n()
   const { company, currentRole, currentUser } = useTenant()
   const { isLive, status } = useRealtime()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, isTrialExpired } = useSubscription()
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false)
+  const quickActionRef = useOutsideClick<HTMLDivElement>(() => setIsQuickActionOpen(false), isQuickActionOpen)
 
-  const slug = company?.slug || 'app'
+  const pathSlug = pathname ? pathname.split('/')[1] : null
+  const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
 
   const quickActions: Array<{
     titleEn: string
@@ -110,7 +112,7 @@ export function TopNav() {
         </div>
 
         {/* Quick Action Hub (Hidden on mobile <640px to prevent crowding with CompanySelector) */}
-        <div className="relative shrink-0 hidden sm:block">
+        <div ref={quickActionRef} className="relative shrink-0 hidden sm:block">
           <button
             type="button"
             onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
@@ -123,47 +125,44 @@ export function TopNav() {
           </button>
 
           {isQuickActionOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setIsQuickActionOpen(false)} />
-              <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 p-2 z-50 animate-in fade-in-0">
-                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                  <span>{tBilingual('Quick Operations', 'দ্রুত অপারেশন')}</span>
-                  <span className="font-mono text-[9px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Hotkey: N</span>
-                </div>
-                <div className="space-y-1 mt-1">
-                  {quickActions.map((qa) => {
-                    const Icon = qa.icon
-                    const limitCheck = qa.limitType ? checkCanCreate(qa.limitType) : { allowed: !isTrialExpired }
-                    const isBlocked = !limitCheck.allowed || isTrialExpired
-
-                    return (
-                      <button
-                        key={qa.titleEn}
-                        type="button"
-                        onClick={() => {
-                          setIsQuickActionOpen(false)
-                          if (isBlocked) {
-                            if (qa.limitType) {
-                              openLimitExceededModal(qa.limitType)
-                            } else {
-                              openUpgradeModal('business')
-                            }
-                            return
-                          }
-                          router.push(qa.href)
-                        }}
-                        className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-xs text-left transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 min-h-[44px] cursor-pointer"
-                      >
-                        <div className={cn('p-1.5 rounded-md', qa.color)}>
-                          <Icon className="h-3.5 w-3.5" />
-                        </div>
-                        <span className="font-semibold">{tBilingual(qa.titleEn, qa.titleBn)}</span>
-                      </button>
-                    )
-                  })}
-                </div>
+            <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 p-2 z-50 animate-in fade-in-0">
+              <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                <span>{tBilingual('Quick Operations', 'দ্রুত অপারেশন')}</span>
+                <span className="font-mono text-[9px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Hotkey: N</span>
               </div>
-            </>
+              <div className="space-y-1 mt-1">
+                {quickActions.map((qa) => {
+                  const Icon = qa.icon
+                  const limitCheck = qa.limitType ? checkCanCreate(qa.limitType) : { allowed: !isTrialExpired }
+                  const isBlocked = !limitCheck.allowed || isTrialExpired
+
+                  return (
+                    <button
+                      key={qa.titleEn}
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionOpen(false)
+                        if (isBlocked) {
+                          if (qa.limitType) {
+                            openLimitExceededModal(qa.limitType)
+                          } else {
+                            openUpgradeModal('business')
+                          }
+                          return
+                        }
+                        router.push(qa.href)
+                      }}
+                      className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-xs text-left transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 min-h-[44px] cursor-pointer"
+                    >
+                      <div className={cn('p-1.5 rounded-md', qa.color)}>
+                        <Icon className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="font-semibold">{tBilingual(qa.titleEn, qa.titleBn)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           )}
         </div>
 
