@@ -384,6 +384,18 @@ export function TenantProvider({
     }
   }, [reloadTenantData])
 
+  // Sync session cookie to browser document.cookie for Next.js App Router server navigation
+  useEffect(() => {
+    if (typeof window !== 'undefined' && session) {
+      try {
+        const existing = getSessionFromCookie()
+        if (!existing || existing.companySlug !== session.companySlug || existing.userId !== session.userId) {
+          document.cookie = `${TENANT_SESSION_COOKIE}=${encodeURIComponent(JSON.stringify(session))}; path=/; max-age=604800; SameSite=Lax`
+        }
+      } catch {}
+    }
+  }, [session])
+
   const refreshTenant = useCallback(async () => {
     reloadTenantData()
   }, [reloadTenantData])

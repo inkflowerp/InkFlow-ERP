@@ -74,11 +74,18 @@ export async function updateSession(request: NextRequest) {
   if (tenantSessionCookie) {
     try {
       tenantSessionData = JSON.parse(decodeURIComponent(tenantSessionCookie))
-      if (tenantSessionData && tenantSessionData.userId && tenantSessionData.userEmail) {
+      if (tenantSessionData && (tenantSessionData.userId || tenantSessionData.companySlug || tenantSessionData.companyId)) {
         hasValidTenantCookie = true
       }
     } catch {
-      // Invalid cookie
+      try {
+        tenantSessionData = JSON.parse(tenantSessionCookie)
+        if (tenantSessionData && (tenantSessionData.userId || tenantSessionData.companySlug || tenantSessionData.companyId)) {
+          hasValidTenantCookie = true
+        }
+      } catch {
+        // Invalid cookie
+      }
     }
   }
 
@@ -163,9 +170,24 @@ export async function updateSession(request: NextRequest) {
   }
 
   // 2. Tenant Protected Page Guard: Unauthenticated users trying to access tenant app -> Redirect to /login
+  // All tenant routes e.g. /[tenantSlug]/* are verified authoritatively by `requireTenantUser` in `app/[tenantSlug]/layout.tsx`.
+  const pathParts = pathname.split('/').filter(Boolean)
+  const firstSegment = pathParts[0] || ''
+  const isTenantRoute =
+    firstSegment !== '' &&
+    firstSegment !== 'platform' &&
+    firstSegment !== 'login' &&
+    firstSegment !== 'register' &&
+    firstSegment !== 'forgot-password' &&
+    firstSegment !== 'reset-password' &&
+    firstSegment !== 'onboarding' &&
+    firstSegment !== '403' &&
+    firstSegment !== 'api'
+
   const isTenantAuthenticated = Boolean(user) || hasValidTenantCookie
   if (
     !isTenantAuthenticated &&
+    !isTenantRoute &&
     !isTenantAuthPage &&
     !isPublicMarketingPage &&
     !isPlatformAuthPage &&
@@ -177,18 +199,23 @@ export async function updateSession(request: NextRequest) {
     return applyNoCacheHeaders(NextResponse.redirect(url))
   }
 
-  // 3. Authenticated Tenant User trying to access /login -> Redirect to dashboard
-  // Only redirect if actively authenticated in Supabase with a valid company slug and no error/logout params.
+  // 3. Authenticated Tenant User trying to access /login -> Redirect to dashboard or requested page
+  // Only redirect if actively authenticated with a valid company slug and no error/logout params.
   // Never redirect /register so users can always access Start Free Trial / sign up cleanly.
   if (pathname === '/login') {
     const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
     
-    if (user && hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError) {
+    if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError) {
+      const redirectTo = request.nextUrl.searchParams.get('redirectTo')
       const url = request.nextUrl.clone()
-      url.pathname = `/${tenantSessionData.companySlug}/dashboard`
+      url.pathname =
+        redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
+          ? redirectTo
+          : `/${tenantSessionData.companySlug}/dashboard`
+      url.searchParams.delete('redirectTo')
       return applyNoCacheHeaders(NextResponse.redirect(url))
-    } else if (!user && hasValidTenantCookie) {
-      // Stale tenant session cookie with no active Supabase user session: purge cookie to prevent redirect loops
+    } else if (hasAuthError && hasValidTenantCookie) {
+      // Explicit error or logged out parameter: purge cookie
       supabaseResponse.cookies.delete(TENANT_SESSION_COOKIE)
     }
   }

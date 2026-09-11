@@ -46,13 +46,16 @@ export default function TenantError({ error, reset }: ErrorProps) {
         </Button>
 
         <Button
-          asChild
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              const seg = window.location.pathname.split('/')[1]
+              window.location.href = seg ? `/${seg}/dashboard` : '/'
+            }
+          }}
           className="h-10 px-4 gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold cursor-pointer min-h-[44px]"
         >
-          <Link href="/dashboard">
-            <Home className="h-4 w-4" />
-            <span>{tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরে যান')}</span>
-          </Link>
+          <Home className="h-4 w-4" />
+          <span>{tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরে যান')}</span>
         </Button>
       </div>
     </div>
