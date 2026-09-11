@@ -8,6 +8,9 @@ import {
   Upload,
   Keyboard,
   ShieldAlert,
+  Loader2,
+  RefreshCw,
+  Camera,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +29,7 @@ export function CameraQrScanner({
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const onScanSuccessRef = useRef(onScanSuccess)
 
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment')
   const [torchOn, setTorchOn] = useState(false)
@@ -34,64 +38,180 @@ export function CameraQrScanner({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [manualMode, setManualMode] = useState(false)
   const [manualCode, setManualCode] = useState('')
+  const [retryTrigger, setRetryTrigger] = useState(0)
 
   const isScanningRef = useRef(true)
 
-  // Start Camera Stream
-  const startCamera = useCallback(async () => {
-    setCameraStatus('requesting')
-    setErrorMessage(null)
+  // Keep latest callback ref without restarting effects
+  useEffect(() => {
+    onScanSuccessRef.current = onScanSuccess
+  }, [onScanSuccess])
 
-    // Stop existing stream if any
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-    }
+  const handleSuccessfulDetection = useCallback((scannedValue: string) => {
+    if (!isScanningRef.current) return
+    isScanningRef.current = false
 
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      setCameraStatus('unsupported')
-      setErrorMessage('Camera access is not supported in this browser.')
+    try {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([80, 40, 80])
+      }
+    } catch {}
+
+    onScanSuccessRef.current(scannedValue)
+  }, [])
+
+  // 1. Manage Camera MediaStream Lifecycle
+  // Separate from detection logic to prevent cyclic re-render / track restart loops
+  useEffect(() => {
+    if (manualMode) {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
       return
     }
 
-    try {
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
+    let isMounted = true
+    let activeStream: MediaStream | null = null
+
+    async function initCamera() {
+      setCameraStatus('requesting')
+      setErrorMessage(null)
+      setTorchOn(false)
+      setHasTorch(false)
+
+      // Stop any existing stream before requesting new constraints
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints)
-      streamRef.current = stream
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+        if (isMounted) {
+          setCameraStatus('unsupported')
+          setErrorMessage('Camera access is not supported in this browser.')
+        }
+        return
       }
 
-      setCameraStatus('active')
-      isScanningRef.current = true
+      try {
+        const constraints: MediaStreamConstraints = {
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        }
 
-      // Check for torch capability
-      const track = stream.getVideoTracks()[0]
-      if (track) {
-        const capabilities: any = track.getCapabilities?.() || {}
-        setHasTorch(Boolean(capabilities.torch))
-      }
-    } catch (err: any) {
-      console.warn('[CameraQrScanner] Camera start error:', err)
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setCameraStatus('denied')
-        setErrorMessage('Camera permission was denied. Please allow camera access in browser settings to scan attendance QR.')
-      } else {
-        setCameraStatus('unsupported')
-        setErrorMessage(err.message || 'Unable to access video camera.')
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        if (!isMounted) {
+          stream.getTracks().forEach((t) => t.stop())
+          return
+        }
+
+        activeStream = stream
+        streamRef.current = stream
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          try {
+            await videoRef.current.play()
+          } catch (playErr: any) {
+            // Ignore AbortError caused by normal stream switching
+            if (playErr.name !== 'AbortError') {
+              console.warn('[CameraQrScanner] Video play warning:', playErr)
+            }
+          }
+        }
+
+        if (isMounted) {
+          setCameraStatus('active')
+          isScanningRef.current = true
+
+          // Check for hardware torch capability
+          const track = stream.getVideoTracks()[0]
+          if (track) {
+            const capabilities: any = track.getCapabilities?.() || {}
+            setHasTorch(Boolean(capabilities.torch))
+          }
+        }
+      } catch (err: any) {
+        if (!isMounted) return
+        console.warn('[CameraQrScanner] Camera start error:', err)
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setCameraStatus('denied')
+          setErrorMessage('Camera permission was denied. Please allow camera access in browser settings to scan attendance QR.')
+        } else {
+          setCameraStatus('unsupported')
+          setErrorMessage(err.message || 'Unable to access video camera.')
+        }
       }
     }
-  }, [facingMode])
+
+    initCamera()
+
+    return () => {
+      isMounted = false
+      if (activeStream) {
+        activeStream.getTracks().forEach((track) => track.stop())
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
+    }
+  }, [facingMode, manualMode, retryTrigger])
+
+  // 2. Barcode Detection Loop
+  // Runs throttled at ~6.6 FPS (150ms) to ensure smooth 60fps video rendering without CPU throttling or blinking
+  useEffect(() => {
+    if (manualMode || cameraStatus !== 'active') return
+
+    let isRunning = true
+    let isProcessing = false
+    let detector: any = null
+
+    if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+      try {
+        detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] })
+      } catch (e) {
+        detector = null
+      }
+    }
+
+    const intervalId = setInterval(async () => {
+      if (!isRunning || !isScanningRef.current || isProcessing) return
+      const video = videoRef.current
+      if (!video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0) {
+        return
+      }
+
+      isProcessing = true
+      try {
+        if (detector) {
+          const barcodes = await detector.detect(video)
+          if (barcodes && barcodes.length > 0) {
+            const code = barcodes[0]?.rawValue
+            if (code && isScanningRef.current) {
+              isRunning = false
+              handleSuccessfulDetection(code)
+              return
+            }
+          }
+        }
+      } catch (scanErr) {
+        // Ignore single frame detection errors
+      } finally {
+        isProcessing = false
+      }
+    }, 150)
+
+    return () => {
+      isRunning = false
+      clearInterval(intervalId)
+    }
+  }, [cameraStatus, manualMode, handleSuccessfulDetection])
 
   // Torch Toggle
   const toggleTorch = async () => {
@@ -115,68 +235,8 @@ export function CameraQrScanner({
     setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'))
   }
 
-  // Barcode Detection Loop
-  useEffect(() => {
-    let animationFrameId: number
-    let detector: any = null
-
-    // Initialize BarcodeDetector if natively available
-    if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
-      try {
-        detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] })
-      } catch (e) {
-        detector = null
-      }
-    }
-
-    const scanFrame = async () => {
-      if (!isScanningRef.current || cameraStatus !== 'active' || !videoRef.current) {
-        animationFrameId = requestAnimationFrame(scanFrame)
-        return
-      }
-
-      const video = videoRef.current
-      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-        try {
-          if (detector) {
-            const barcodes = await detector.detect(video)
-            if (barcodes && barcodes.length > 0) {
-              const code = barcodes[0].rawValue
-              if (code) {
-                handleSuccessfulDetection(code)
-                return
-              }
-            }
-          }
-        } catch (scanErr) {
-          // Non-blocking scan frame error
-        }
-      }
-
-      animationFrameId = requestAnimationFrame(scanFrame)
-    }
-
-    startCamera().then(() => {
-      animationFrameId = requestAnimationFrame(scanFrame)
-    })
-
-    return () => {
-      cancelAnimationFrame(animationFrameId)
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop())
-      }
-    }
-  }, [startCamera, cameraStatus])
-
-  const handleSuccessfulDetection = (scannedValue: string) => {
-    isScanningRef.current = false
-    try {
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate([80, 40, 80])
-      }
-    } catch {}
-
-    onScanSuccess(scannedValue)
+  const handleRetryCamera = () => {
+    setRetryTrigger((prev) => prev + 1)
   }
 
   // Fallback: Handle Image Upload Scan
@@ -221,31 +281,42 @@ export function CameraQrScanner({
         <div className="relative aspect-square sm:aspect-[4/3] w-full bg-black flex items-center justify-center overflow-hidden">
           <video
             ref={videoRef}
+            autoPlay
             playsInline
             muted
             className="w-full h-full object-cover"
           />
           <canvas ref={canvasRef} className="hidden" />
 
-          {/* Scanning Reticle & Corner Brackets */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="relative w-56 h-56 sm:w-64 sm:h-64 border-2 border-indigo-500/40 rounded-2xl bg-indigo-500/5 backdrop-contrast-125">
-              {/* Animated Laser Bar */}
-              <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-indigo-400 to-transparent shadow-[0_0_12px_rgba(99,102,241,1)] animate-[scan_2s_ease-in-out_infinite]" />
-
-              {/* Glowing Corner Accents */}
-              <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-indigo-400 rounded-tl-lg" />
-              <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-indigo-400 rounded-tr-lg" />
-              <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-indigo-400 rounded-bl-lg" />
-              <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-indigo-400 rounded-br-lg" />
+          {/* Camera Loading Spinner State */}
+          {cameraStatus === 'requesting' && (
+            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-slate-300 z-10">
+              <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
+              <span className="text-xs font-medium tracking-wide">Starting camera feed...</span>
             </div>
-          </div>
+          )}
+
+          {/* Scanning Reticle & Corner Brackets */}
+          {cameraStatus === 'active' && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="relative w-56 h-56 sm:w-64 sm:h-64 border-2 border-indigo-500/40 rounded-2xl bg-indigo-500/5 backdrop-contrast-125">
+                {/* Animated Laser Bar */}
+                <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-indigo-400 to-transparent shadow-[0_0_12px_rgba(99,102,241,1)] animate-[scan_2s_ease-in-out_infinite]" />
+
+                {/* Glowing Corner Accents */}
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-indigo-400 rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-indigo-400 rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-indigo-400 rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-indigo-400 rounded-br-lg" />
+              </div>
+            </div>
+          )}
 
           {/* Top Control Overlay */}
-          <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-auto">
+          <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-auto z-20">
             <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-medium text-slate-200 flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Align QR in frame</span>
+              <span className={`h-2 w-2 rounded-full ${cameraStatus === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span>{cameraStatus === 'active' ? 'Align QR in frame' : 'Connecting camera'}</span>
             </div>
 
             <div className="flex items-center gap-1.5">
@@ -258,6 +329,7 @@ export function CameraQrScanner({
                       ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg'
                       : 'bg-black/60 text-white border-white/10 hover:bg-black/80'
                   }`}
+                  title={torchOn ? 'Turn off flash' : 'Turn on flash'}
                 >
                   {torchOn ? <Zap className="h-4 w-4" /> : <ZapOff className="h-4 w-4" />}
                 </button>
@@ -267,7 +339,7 @@ export function CameraQrScanner({
                 type="button"
                 onClick={toggleFacingMode}
                 className="p-2 rounded-full bg-black/60 text-white backdrop-blur-md border border-white/10 hover:bg-black/80 transition-all cursor-pointer"
-                title="Switch Camera"
+                title="Switch Camera (Front/Back)"
               >
                 <SwitchCamera className="h-4 w-4" />
               </button>
@@ -275,28 +347,31 @@ export function CameraQrScanner({
           </div>
 
           {/* Camera Permission Denied / Error State */}
-          {cameraStatus === 'denied' && (
-            <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4">
+          {(cameraStatus === 'denied' || cameraStatus === 'unsupported') && (
+            <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
               <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
                 <ShieldAlert className="h-8 w-8" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-base font-bold text-white">Camera Permission Required</h4>
+                <h4 className="text-base font-bold text-white">
+                  {cameraStatus === 'denied' ? 'Camera Permission Required' : 'Camera Unavailable'}
+                </h4>
                 <p className="text-xs text-slate-400 max-w-xs">{errorMessage}</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
                 <Button
                   type="button"
-                  onClick={startCamera}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs h-10 rounded-xl font-bold flex-1"
+                  onClick={handleRetryCamera}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs h-10 rounded-xl font-bold flex-1 cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  Grant Permission & Retry
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  <span>Retry Camera</span>
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setManualMode(true)}
-                  className="border-slate-700 bg-slate-800 text-slate-300 text-xs h-10 rounded-xl"
+                  className="border-slate-700 bg-slate-800 text-slate-300 text-xs h-10 rounded-xl cursor-pointer"
                 >
                   Manual Code
                 </Button>
@@ -327,18 +402,16 @@ export function CameraQrScanner({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  setManualMode(false)
-                  startCamera()
-                }}
-                className="border-slate-700 bg-slate-900 text-slate-300 text-xs h-10 rounded-xl flex-1"
+                onClick={() => setManualMode(false)}
+                className="border-slate-700 bg-slate-900 text-slate-300 text-xs h-10 rounded-xl flex-1 cursor-pointer flex items-center justify-center gap-1.5"
               >
-                Back to Camera
+                <Camera className="h-3.5 w-3.5" />
+                <span>Back to Camera</span>
               </Button>
               <Button
                 type="submit"
                 disabled={!manualCode.trim()}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs h-10 rounded-xl font-bold flex-1"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs h-10 rounded-xl font-bold flex-1 cursor-pointer"
               >
                 Submit Code
               </Button>
@@ -372,13 +445,11 @@ export function CameraQrScanner({
         ) : (
           <button
             type="button"
-            onClick={() => {
-              setManualMode(false)
-              startCamera()
-            }}
-            className="text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer font-medium"
+            onClick={() => setManualMode(false)}
+            className="text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer font-medium flex items-center gap-1"
           >
-            Use Camera
+            <Camera className="h-3 w-3" />
+            <span>Use Camera</span>
           </button>
         )}
       </div>

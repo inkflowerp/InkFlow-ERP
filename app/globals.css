@@ -165,3 +165,16 @@ body {
   background: #475569;
 }
 
+/* Scanner laser bar animation */
+@keyframes scan {
+  0%, 100% {
+    top: 6%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+}
+
+
