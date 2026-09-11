@@ -70,6 +70,7 @@ export default function AccountingPage() {
   const [expenses, setExpenses] = useDataStore<ExpenseRecord[]>(STORAGE_KEYS.EXPENSES, [])
   const [bankAccounts, setBankAccounts] = useDataStore<BankAccountRecord[]>(STORAGE_KEYS.BANK_ACCOUNTS, [])
   const [cashBook, setCashBook] = useDataStore<CashBookEntryRecord[]>(STORAGE_KEYS.CASH_BOOK, [])
+  const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [])
   const [activeTab, setActiveTab] = useState<'expenses' | 'cash_book' | 'bank' | 'profit'>('expenses')
   const [selectedCat, setSelectedCat] = useState<string>('all')
   const [search, setSearch] = useState('')
@@ -134,8 +135,7 @@ export default function AccountingPage() {
   const cashInHand = totalCashIn - totalCashOut
 
   // Dynamic Profit Waterfall Calculation
-  const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-  const grossSales = invoices.reduce((sum, inv) => sum + (Number(inv.grand_total) || 0), 0)
+  const grossSales = (invoices || []).reduce((sum, inv) => sum + (Number(inv.grand_total) || 0), 0)
   const materialCost = Math.round(grossSales * 0.45)
   const laborCost = Math.round(grossSales * 0.15)
   const deliveryCost = Math.round(grossSales * 0.05)

@@ -47,51 +47,11 @@ export default function UsersManagementPage() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, isTrial, refreshUsage, usage } = useSubscription()
-  const [users, setUsers] = useState<CompanyUserWithProfile[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS)
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-          return stored
-        }
-      } catch {}
-    }
-    return []
-  })
-  const [roles, setRoles] = useState<RoleRow[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = PrintERPDataStore.get<RoleRow[]>(STORAGE_KEYS.ROLES)
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-          return stored
-        }
-      } catch {}
-    }
-    return []
-  })
-  const [branches, setBranches] = useState<BranchRow[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = PrintERPDataStore.get<BranchRow[]>(STORAGE_KEYS.BRANCHES)
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-          return stored
-        }
-      } catch {}
-    }
-    return []
-  })
+  const [users, setUsers] = useState<CompanyUserWithProfile[]>([])
+  const [roles, setRoles] = useState<RoleRow[]>([])
+  const [branches, setBranches] = useState<BranchRow[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS)
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-          return false
-        }
-      } catch {}
-    }
-    return true
-  })
+  const [isLoading, setIsLoading] = useState(true)
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [branchFilter, setBranchFilter] = useState<string>('all')

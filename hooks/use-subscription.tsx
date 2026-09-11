@@ -77,71 +77,7 @@ function getInitialSubscription(
     return memoryCachedSubscriptions[companyId]
   }
 
-  if (typeof window !== 'undefined') {
-    try {
-      const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord> | CompanySubscriptionRecord[]>(
-        STORAGE_KEYS.COMPANY_SUBSCRIPTIONS
-      )
-      if (storedSubs) {
-        if (Array.isArray(storedSubs)) {
-          const found = storedSubs.find(
-            (s) => s.company_id === companyId || (companySlug && s.company_id === companySlug)
-          )
-          if (found) {
-            memoryCachedSubscriptions[companyId] = found
-            return found
-          }
-        } else if (typeof storedSubs === 'object') {
-          const found = storedSubs[companyId] || (companySlug ? storedSubs[companySlug] : undefined)
-          if (found) {
-            memoryCachedSubscriptions[companyId] = found
-            return found
-          }
-        }
-      }
 
-      const platCompanies = PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-      const matchedCo = platCompanies.find(
-        (c) => c.id === companyId || (companySlug && c.slug === companySlug)
-      )
-
-      const trialPlan = initialPlans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
-      const trialDays = trialPlan.trial_days || 14
-
-      if (matchedCo) {
-        const isTrial = matchedCo.status === 'trial' || matchedCo.plan === 'trial'
-        const normalizedPlanCode: PlanCode = isTrial
-          ? 'trial'
-          : matchedCo.plan === 'business' || matchedCo.plan === 'growth'
-          ? 'business'
-          : matchedCo.plan === 'enterprise' || matchedCo.plan === 'custom'
-          ? 'enterprise'
-          : matchedCo.plan === 'starter'
-          ? 'starter'
-          : 'trial'
-        const matchedPlan = initialPlans.find((p) => p.code === normalizedPlanCode) || trialPlan
-        const createdAt = matchedCo.created_at || new Date().toISOString()
-        const trialEndsAt = new Date(new Date(createdAt).getTime() + (trialPlan.trial_days || trialDays) * 86400000).toISOString()
-
-        const syntheticSub: CompanySubscriptionRecord = {
-          id: `sub-${companyId}`,
-          company_id: companyId,
-          plan_id: matchedPlan.id,
-          plan_code: normalizedPlanCode,
-          status: isTrial ? 'trial' : 'active',
-          billing_interval: matchedCo.billing_interval || 'monthly',
-          current_period_start: createdAt,
-          current_period_end: new Date(new Date(createdAt).getTime() + 30 * 86400000).toISOString(),
-          trial_ends_at: isTrial ? trialEndsAt : null,
-          payment_method_type: null,
-          last_payment_reference: null,
-          custom_limits_override: null,
-        }
-        memoryCachedSubscriptions[companyId] = syntheticSub
-        return syntheticSub
-      }
-    } catch {}
-  }
 
   const trialPlan = initialPlans.find((p) => p.code === 'trial') || (initialPlans.length > 0 ? initialPlans[0] : DEFAULT_TRIAL_PLAN)
   const trialDays = trialPlan.trial_days || 14

@@ -119,7 +119,7 @@ export default function InventoryDashboardPage() {
   // Executive Valuation & Analytics
   const totalValuation = materials.reduce((acc: number, m: MaterialRecord) => acc + m.current_stock * m.average_cost, 0)
   const lowStockCount = materials.filter((m: MaterialRecord) => m.current_stock <= m.min_stock_level).length
-  const mountedRolls = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+  const [mountedRolls] = useDataStore<any[]>(STORAGE_KEYS.MOUNTED_ROLLS, [])
   const totalMountedArea = mountedRolls.reduce((acc: number, r: any) => acc + (r.remaining_area_sft || 0), 0)
 
   // Handle Record Transaction

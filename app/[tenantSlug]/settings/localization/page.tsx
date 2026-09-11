@@ -23,10 +23,18 @@ export default function LocalizationSettingsPage() {
   const { locale, setLocale, tBilingual } = useI18n()
   const [isSaved, setIsSaved] = useState(false)
 
-  const savedLoc = PrintERPDataStore.get<any>('printerp_tenant_localization' as any)
-  const [languageMode, setLanguageMode] = useState<'en' | 'bn'>(savedLoc?.languageMode || locale || 'bn')
-  const [currency, setCurrency] = useState(savedLoc?.currency || 'BDT')
-  const [dateFormat, setDateFormat] = useState(savedLoc?.dateFormat || 'DD/MM/YYYY')
+  const [languageMode, setLanguageMode] = useState<'en' | 'bn'>(locale || 'bn')
+  const [currency, setCurrency] = useState('BDT')
+  const [dateFormat, setDateFormat] = useState('DD/MM/YYYY')
+
+  React.useEffect(() => {
+    const savedLoc = PrintERPDataStore.get<any>('printerp_tenant_localization' as any)
+    if (savedLoc) {
+      if (savedLoc.languageMode) setLanguageMode(savedLoc.languageMode)
+      if (savedLoc.currency) setCurrency(savedLoc.currency)
+      if (savedLoc.dateFormat) setDateFormat(savedLoc.dateFormat)
+    }
+  }, [])
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()

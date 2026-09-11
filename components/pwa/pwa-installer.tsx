@@ -31,11 +31,24 @@ export function PWAInstaller() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
-    // Register Service Worker
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .catch((err) => console.debug('SW registration error:', err))
+    // Register Service Worker in production only, cleanup in development
+    if ('serviceWorker' in navigator) {
+      const isLocalhost =
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1'
+
+      if (process.env.NODE_ENV === 'production' && !isLocalhost) {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .catch((err) => console.debug('SW registration error:', err))
+      } else {
+        // In local development, unregister any existing service workers to avoid intercepting dev server requests
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister()
+          }
+        }).catch(() => {})
+      }
     }
 
     return () => {

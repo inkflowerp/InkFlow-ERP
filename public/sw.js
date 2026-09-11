@@ -42,11 +42,18 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Never intercept Supabase, auth, API, or Server Action calls
+  // Never intercept local development traffic
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+    return
+  }
+
+  // Never intercept Supabase, auth, API, Next.js internal files, or Server Action calls
   if (
     url.hostname.includes('supabase.co') ||
     url.pathname.startsWith('/api/') ||
     url.pathname.startsWith('/auth/') ||
+    url.pathname.startsWith('/_next/') ||
+    url.pathname.includes('/_next/') ||
     request.headers.get('accept')?.includes('application/json')
   ) {
     return

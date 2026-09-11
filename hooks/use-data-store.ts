@@ -52,19 +52,18 @@ export function useDataStore<T = any>(
   }, [initialSeed])
 
   const [data, setData] = useState<T>(() => {
-    const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-    if (isTransactionalKey(key)) {
-      const stored = PrintERPDataStore.get<T>(key, slug)
-      return (stored !== undefined && stored !== null ? stored : ([] as unknown as T))
-    }
     if (initialSeed !== undefined) {
       return initialSeed
+    }
+    const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
+    if (isTransactionalKey(key)) {
+      return [] as unknown as T
     }
     const seed = getInitialSeedData(key, slug)
     if (seed !== null && seed !== undefined) {
       return seed as T
     }
-    return PrintERPDataStore.get<T>(key, slug)
+    return [] as unknown as T
   })
 
   const reload = useCallback(() => {
