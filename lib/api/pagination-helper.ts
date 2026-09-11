@@ -90,17 +90,25 @@ export function buildPaginatedResponse<T>(
   }
 }
 
-// In-memory sliding window rate limiter for tenant API requests
+export interface RateLimitResult {
+  isAllowed: boolean
+  remaining: number
+  resetTime: number
+  source: 'local_memory' | 'distributed_store'
+}
+
+// In-memory sliding window rate limiter for tenant API requests (Single-Instance / Local Protection)
 const RATE_LIMIT_CACHE = new Map<string, { timestamps: number[] }>()
 
 /**
- * Rate limiter: 120 requests per minute per tenant endpoint
+ * Synchronous local sliding-window rate limiter (Single-Instance Protection)
+ * Default limit: 120 requests per minute per tenant endpoint
  */
 export function checkTenantRateLimit(
   companyId: string,
   endpoint: string,
   maxRequestsPerMinute = 120
-): { isAllowed: boolean; remaining: number; resetTime: number } {
+): { isAllowed: boolean; remaining: number; resetTime: number; source: 'local_memory' } {
   const key = `${companyId}:${endpoint}`
   const now = Date.now()
   const windowMs = 60 * 1000
@@ -121,6 +129,7 @@ export function checkTenantRateLimit(
       isAllowed: false,
       remaining: 0,
       resetTime,
+      source: 'local_memory',
     }
   }
 
@@ -130,5 +139,42 @@ export function checkTenantRateLimit(
     isAllowed: true,
     remaining,
     resetTime: now + windowMs,
+    source: 'local_memory',
   }
 }
+
+/**
+ * Distributed rate limiter adapter interface for multi-region serverless deployment
+ */
+export interface RateLimitAdapter {
+  checkLimit(key: string, limit: number, windowMs: number): Promise<RateLimitResult>
+}
+
+/**
+ * Async rate limiter with distributed store support (e.g. Upstash Redis / Vercel KV)
+ * Falls back seamlessly to local in-memory sliding window when no external store is configured.
+ */
+export async function checkDistributedRateLimit(
+  companyId: string,
+  endpoint: string,
+  maxRequestsPerMinute = 120,
+  adapter?: RateLimitAdapter
+): Promise<RateLimitResult> {
+  const key = `ratelimit:${companyId}:${endpoint}`
+  const windowMs = 60 * 1000
+
+  if (adapter) {
+    try {
+      return await adapter.checkLimit(key, maxRequestsPerMinute, windowMs)
+    } catch {
+      // Graceful degradation to local memory if external distributed store is unreachable
+    }
+  }
+
+  const localRes = checkTenantRateLimit(companyId, endpoint, maxRequestsPerMinute)
+  return {
+    ...localRes,
+    source: 'local_memory',
+  }
+}
+

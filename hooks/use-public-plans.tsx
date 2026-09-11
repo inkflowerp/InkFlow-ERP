@@ -97,9 +97,11 @@ export function PublicPlansProvider({
   children: React.ReactNode
 }) {
   const seed = getInitialPublicSeed(initialData)
-  if (initialData) {
-    cachedPlansData = initialData
-  }
+  useEffect(() => {
+    if (initialData) {
+      cachedPlansData = initialData
+    }
+  }, [initialData])
 
   const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => seed.plans)
   const [trialPlan, setTrialPlan] = useState<SubscriptionPlanRecord>(() => seed.trialPlan)

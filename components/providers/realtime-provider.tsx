@@ -25,7 +25,8 @@ const RealtimeContext = createContext<RealtimeContextValue>({
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const { company } = useTenant()
-  const syncState = useRealtimeSync(company?.id)
+  const companyId = company?.id
+  const syncState = useRealtimeSync(companyId)
 
   const value = useMemo(
     () => ({
@@ -36,12 +37,12 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         record: any
         oldRecord?: any
       }) => {
-        if (company?.id) {
-          realtimeManager.broadcastSyncEvent(company.id, event)
+        if (companyId) {
+          realtimeManager.broadcastSyncEvent(companyId, event)
         }
       },
     }),
-    [syncState, company?.id]
+    [syncState, companyId]
   )
 
   return (

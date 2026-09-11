@@ -197,6 +197,12 @@ export function PlatformSidebar() {
     }
   }, [])
 
+  // Auto-close on route change
+  useEffect(() => {
+    setMobileOpen(false)
+    setSearchQuery('')
+  }, [pathname])
+
   // Filter sections by search query
   const filteredSections = useMemo(() => {
     if (!searchQuery.trim()) return SIDEBAR_SECTIONS

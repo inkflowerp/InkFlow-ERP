@@ -9,9 +9,10 @@ interface SheetProps {
   onOpenChange: (open: boolean) => void
   children: React.ReactNode
   side?: 'left' | 'right'
+  className?: string
 }
 
-export function Sheet({ open, onOpenChange, children, side = 'right' }: SheetProps) {
+export function Sheet({ open, onOpenChange, children, side = 'right', className }: SheetProps) {
   React.useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden'
@@ -29,14 +30,16 @@ export function Sheet({ open, onOpenChange, children, side = 'right' }: SheetPro
     <div className="fixed inset-0 z-50 flex">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs transition-opacity animate-in fade-in-0"
+        className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in-0 duration-200"
         onClick={() => onOpenChange(false)}
+        aria-hidden="true"
       />
       {/* Sheet panel */}
       <div
         className={cn(
-          'fixed inset-y-0 z-50 flex h-full w-3/4 max-w-sm flex-col border-slate-200 bg-white shadow-2xl transition-transform animate-in duration-300 dark:border-slate-800 dark:bg-slate-900',
-          side === 'left' ? 'left-0 border-r slide-in-from-left' : 'right-0 border-l slide-in-from-right'
+          'fixed inset-y-0 z-50 flex h-full w-[88vw] sm:w-80 max-w-sm flex-col border-slate-200 bg-white shadow-2xl transition-transform animate-in duration-300 dark:border-slate-800 dark:bg-slate-900',
+          side === 'left' ? 'left-0 border-r slide-in-from-left' : 'right-0 border-l slide-in-from-right',
+          className
         )}
       >
         {children}
@@ -53,17 +56,18 @@ export function SheetHeader({
 }: React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }) {
   return (
     <div
-      className={cn('flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800', className)}
+      className={cn('flex items-center justify-between border-b border-slate-100 p-3.5 sm:p-4 dark:border-slate-800 shrink-0', className)}
       {...props}
     >
-      <div className="flex flex-col space-y-1">{children}</div>
+      <div className="flex-1 min-w-0">{children}</div>
       {onClose && (
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="ml-2 rounded-xl p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center shrink-0 active:scale-95 transition-all"
+          aria-label="Close menu"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </button>
       )}
     </div>
@@ -71,9 +75,9 @@ export function SheetHeader({
 }
 
 export function SheetContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex-1 overflow-y-auto p-4', className)} {...props} />
+  return <div className={cn('flex-1 overflow-y-auto overscroll-contain p-3.5 sm:p-4 scrollbar-thin', className)} {...props} />
 }
 
 export function SheetFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('border-t border-slate-100 p-4 dark:border-slate-800', className)} {...props} />
+  return <div className={cn('border-t border-slate-100 p-3.5 sm:p-4 dark:border-slate-800 shrink-0', className)} {...props} />
 }

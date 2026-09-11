@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   Printer,
   Menu,
@@ -23,11 +23,16 @@ interface MarketingNavbarProps {
 export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
   const { locale, setLocale, tBilingual } = useI18n()
   const { trialDays } = usePublicSubscriptionPlans()
   const router = useRouter()
 
   const trialDaysBn = toBengaliDigits(trialDays)
+
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [pathname])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -185,9 +190,18 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
         </div>
       </div>
 
+      {/* Backdrop for mobile menu */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 top-16 sm:top-20 z-40 bg-slate-950/60 backdrop-blur-xs lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-slate-950/98 border-b border-slate-800 px-4 pt-3 pb-6 space-y-3 backdrop-blur-2xl animate-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-5rem)] overflow-y-auto shadow-2xl">
+        <div className="relative z-50 lg:hidden bg-slate-950/98 border-b border-slate-800 px-4 pt-3 pb-6 space-y-3 backdrop-blur-2xl animate-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-5rem)] overflow-y-auto shadow-2xl">
           <div className="flex flex-col space-y-1">
             {MARKETING_NAV_ITEMS.map((item) => (
               <a

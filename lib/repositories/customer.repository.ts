@@ -1,20 +1,77 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CustomerRecord, CustomerCommunication } from '@/types/crm.types'
+import { measureAsync } from '@/lib/performance/logger'
+import { buildPaginatedResponse, PaginatedResult } from '@/lib/api/pagination-helper'
 
 export class CustomerRepository {
   static async getCustomers(companyId: string): Promise<CustomerRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('customers')
-      .select('*')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+    return measureAsync(`CustomerRepository.getCustomers(${companyId})`, async () => {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('customers')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch customers: ${error.message}`)
-    }
-    return (data || []) as unknown as CustomerRecord[]
+      if (error) {
+        throw new Error(`Failed to fetch customers: ${error.message}`)
+      }
+      return (data || []) as unknown as CustomerRecord[]
+    })
+  }
+
+  static async getPaginatedCustomers(
+    companyId: string,
+    options: {
+      page?: number
+      pageSize?: number
+      search?: string
+      customerType?: string
+      hasDueOnly?: boolean
+    } = {}
+  ): Promise<PaginatedResult<CustomerRecord>> {
+    return measureAsync(`CustomerRepository.getPaginatedCustomers(${companyId})`, async () => {
+      const page = Math.max(1, options.page || 1)
+      const pageSize = Math.min(100, Math.max(1, options.pageSize || 25))
+      const offset = (page - 1) * pageSize
+
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('customers')
+        .select('*', { count: 'exact' })
+        .eq('company_id', companyId)
+
+      if (options.search?.trim()) {
+        const term = `%${options.search.trim()}%`
+        query = query.or(`name.ilike.${term},name_bn.ilike.${term},mobile.ilike.${term},area.ilike.${term}`)
+      }
+
+      if (options.customerType && options.customerType !== 'all') {
+        query = query.eq('customer_type', options.customerType)
+      }
+
+      if (options.hasDueOnly) {
+        query = query.gt('total_due_balance', 0)
+      }
+
+      query = query
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
+
+      const { data, count, error } = await query
+
+      if (error) {
+        throw new Error(`Failed to fetch paginated customers: ${error.message}`)
+      }
+
+      return buildPaginatedResponse(
+        (data || []) as unknown as CustomerRecord[],
+        count || 0,
+        page,
+        pageSize
+      )
+    })
   }
 
   static async getCustomerById(id: string, companyId: string): Promise<CustomerRecord | null> {

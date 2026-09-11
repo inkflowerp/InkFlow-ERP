@@ -6,20 +6,77 @@ import {
   OrderTimelineEventRecord,
 } from '@/types/order.types'
 import { BillingRepository } from './billing.repository'
+import { measureAsync } from '@/lib/performance/logger'
+import { buildPaginatedResponse, PaginatedResult } from '@/lib/api/pagination-helper'
 
 export class OrderRepository {
   static async getOrders(companyId: string): Promise<SalesOrderRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('sales_orders')
-      .select('*, items:sales_order_items(*)')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+    return measureAsync(`OrderRepository.getOrders(${companyId})`, async () => {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('sales_orders')
+        .select('*, items:sales_order_items(*)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch orders: ${error.message}`)
-    }
-    return (data || []) as unknown as SalesOrderRecord[]
+      if (error) {
+        throw new Error(`Failed to fetch orders: ${error.message}`)
+      }
+      return (data || []) as unknown as SalesOrderRecord[]
+    })
+  }
+
+  static async getPaginatedOrders(
+    companyId: string,
+    options: {
+      page?: number
+      pageSize?: number
+      status?: string
+      branchId?: string
+      search?: string
+    } = {}
+  ): Promise<PaginatedResult<SalesOrderRecord>> {
+    return measureAsync(`OrderRepository.getPaginatedOrders(${companyId})`, async () => {
+      const page = Math.max(1, options.page || 1)
+      const pageSize = Math.min(100, Math.max(1, options.pageSize || 25))
+      const offset = (page - 1) * pageSize
+
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('sales_orders')
+        .select('*, items:sales_order_items(*)', { count: 'exact' })
+        .eq('company_id', companyId)
+
+      if (options.status && options.status !== 'all') {
+        query = query.eq('status', options.status)
+      }
+
+      if (options.branchId) {
+        query = query.eq('branch_id', options.branchId)
+      }
+
+      if (options.search?.trim()) {
+        const term = `%${options.search.trim()}%`
+        query = query.or(`order_number.ilike.${term},customer_name.ilike.${term},customer_phone.ilike.${term}`)
+      }
+
+      query = query
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
+
+      const { data, count, error } = await query
+
+      if (error) {
+        throw new Error(`Failed to fetch paginated orders: ${error.message}`)
+      }
+
+      return buildPaginatedResponse(
+        (data || []) as unknown as SalesOrderRecord[],
+        count || 0,
+        page,
+        pageSize
+      )
+    })
   }
 
   static async getOrderById(id: string, companyId: string): Promise<SalesOrderRecord | null> {

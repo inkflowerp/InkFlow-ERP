@@ -69,41 +69,45 @@ export function PaginationControls({
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-9 w-9 min-h-[36px] cursor-pointer"
           onClick={() => onPageChange(0)}
           disabled={pageIndex === 0}
+          aria-label="First page"
         >
           <ChevronsLeft className="h-4 w-4" />
         </Button>
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-9 w-9 min-h-[36px] cursor-pointer"
           onClick={() => onPageChange(pageIndex - 1)}
           disabled={pageIndex === 0}
+          aria-label="Previous page"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        <span className="px-3 text-xs font-medium">
+        <span className="px-3 text-xs font-semibold select-none">
           {num(pageIndex + 1)} / {num(totalPages)}
         </span>
 
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-9 w-9 min-h-[36px] cursor-pointer"
           onClick={() => onPageChange(pageIndex + 1)}
           disabled={pageIndex >= totalPages - 1}
+          aria-label="Next page"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-9 w-9 min-h-[36px] cursor-pointer"
           onClick={() => onPageChange(totalPages - 1)}
           disabled={pageIndex >= totalPages - 1}
+          aria-label="Last page"
         >
           <ChevronsRight className="h-4 w-4" />
         </Button>
