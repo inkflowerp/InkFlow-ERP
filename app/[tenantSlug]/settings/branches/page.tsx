@@ -37,35 +37,15 @@ interface BranchItem {
   isActive: boolean
 }
 
-const INITIAL_BRANCHES: BranchItem[] = [
+const DEFAULT_MAIN_BRANCH: BranchItem[] = [
   {
     id: 'b-01',
-    code: 'HQ-MTJ',
-    name: 'Head Office & Commercial Counter',
-    nameBn: 'মতিঝিল প্রধান কার্যালয় ও সেলস কাউন্টার',
-    phone: '+880 1711-234567',
-    address: '14/B Motijheel C/A, Dhaka-1000',
+    code: 'HQ-MAIN',
+    name: 'Head Office & Main Facility',
+    nameBn: 'প্রধান কার্যালয় ও কেন্দ্রীয় শাখা',
+    phone: '+880 1700-000000',
+    address: 'Dhaka, Bangladesh',
     isMain: true,
-    isActive: true,
-  },
-  {
-    id: 'b-02',
-    code: 'PLT-FKP',
-    name: 'Fakirapool Heavy Offset Plant',
-    nameBn: 'ফকিরারপুল হেভি অফসেট কারখানা',
-    phone: '+880 1711-889900',
-    address: '88/1 Fakirapool Press Lane, Dhaka-1000',
-    isMain: false,
-    isActive: true,
-  },
-  {
-    id: 'b-03',
-    code: 'CTG-HUB',
-    name: 'Chattogram Port Commercial Signage Hub',
-    nameBn: 'চট্টগ্রাম কমার্শিয়াল সাইন হাব',
-    phone: '+880 1819-334455',
-    address: '112 Anderkilla, Kotwali, Chattogram-4000',
-    isMain: false,
     isActive: true,
   },
 ]
@@ -76,7 +56,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 export default function BranchesSettingsPage() {
   const { locale, tBilingual } = useI18n()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
-  const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, INITIAL_BRANCHES)
+  const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, DEFAULT_MAIN_BRANCH)
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
 

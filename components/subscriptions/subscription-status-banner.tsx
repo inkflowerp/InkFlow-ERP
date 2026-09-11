@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 export function SubscriptionStatusBanner() {
   const {
     subscription,
+    isLoading,
     isSuspended,
     isPastDue,
     isTrial,
@@ -33,6 +34,10 @@ export function SubscriptionStatusBanner() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'app'
+
+  if (isLoading) {
+    return null
+  }
 
   if (subscription.status === 'active' && !isTrial) {
     return null

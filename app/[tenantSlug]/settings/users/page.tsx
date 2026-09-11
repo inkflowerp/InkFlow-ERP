@@ -41,16 +41,57 @@ import { PageHeader } from '@/components/shared/page-header'
 import { UserPermissionsDrawer } from '@/components/users/user-permissions-drawer'
 import { cn } from '@/lib/utils'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function UsersManagementPage() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, isTrial, refreshUsage } = useSubscription()
-  const [users, setUsers] = useState<CompanyUserWithProfile[]>([])
-  const [roles, setRoles] = useState<RoleRow[]>([])
-  const [branches, setBranches] = useState<BranchRow[]>([])
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, isTrial, refreshUsage, usage } = useSubscription()
+  const [users, setUsers] = useState<CompanyUserWithProfile[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS)
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          return stored
+        }
+      } catch {}
+    }
+    return []
+  })
+  const [roles, setRoles] = useState<RoleRow[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = PrintERPDataStore.get<RoleRow[]>(STORAGE_KEYS.ROLES)
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          return stored
+        }
+      } catch {}
+    }
+    return []
+  })
+  const [branches, setBranches] = useState<BranchRow[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = PrintERPDataStore.get<BranchRow[]>(STORAGE_KEYS.BRANCHES)
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          return stored
+        }
+      } catch {}
+    }
+    return []
+  })
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS)
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          return false
+        }
+      } catch {}
+    }
+    return true
+  })
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [branchFilter, setBranchFilter] = useState<string>('all')
@@ -117,9 +158,30 @@ export default function UsersManagementPage() {
         listBranchesAction(company.id),
       ])
 
-      if (uRes.data) setUsers(uRes.data)
-      setRoles(rRes)
-      setBranches(bRes)
+      if (uRes.data) {
+        setUsers(uRes.data)
+        if (typeof window !== 'undefined') {
+          try {
+            PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, uRes.data)
+          } catch {}
+        }
+      }
+      if (rRes && rRes.length > 0) {
+        setRoles(rRes)
+        if (typeof window !== 'undefined') {
+          try {
+            PrintERPDataStore.set(STORAGE_KEYS.ROLES, rRes)
+          } catch {}
+        }
+      }
+      if (bRes && bRes.length > 0) {
+        setBranches(bRes)
+        if (typeof window !== 'undefined') {
+          try {
+            PrintERPDataStore.set(STORAGE_KEYS.BRANCHES, bRes)
+          } catch {}
+        }
+      }
       if (rRes.length > 0) {
         setInviteRoleId((prev) => prev || rRes[0].id)
         setAddRoleId((prev) => prev || rRes[0].id)
@@ -321,20 +383,28 @@ export default function UsersManagementPage() {
           </div>
           <div>
             <div className="font-bold text-slate-900 dark:text-white bangla-text">
-              {userCheck.exceeded
-                ? tBilingual(
-                    `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_users} Users quota (currently at ${users.length}). Please upgrade your subscription to continue.`,
-                    `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.max_users)} ইউজার কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(users.length)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
-                  )
-                : tBilingual(
-                    `Plan User Limit: ${users.length} of ${currentPlan.max_users} seats active`,
-                    `ইউজার সীমা: ${toBengaliDigits(currentPlan.max_users)} জনের মধ্যে ${toBengaliDigits(users.length)} জন সক্রিয়`
-                  )}
+              {isLoading && users.length === 0 ? (
+                <div className="h-4 w-44 bg-slate-200 dark:bg-slate-700 animate-pulse rounded my-0.5" />
+              ) : userCheck.exceeded ? (
+                tBilingual(
+                  `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_users} Users quota (currently at ${users.length}). Please upgrade your subscription to continue.`,
+                  `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.max_users)} ইউজার কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(users.length)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
+                )
+              ) : (
+                tBilingual(
+                  `Plan User Limit: ${users.length} of ${currentPlan.max_users} seats active`,
+                  `ইউজার সীমা: ${toBengaliDigits(currentPlan.max_users)} জনের মধ্যে ${toBengaliDigits(users.length)} জন সক্রিয়`
+                )
+              )}
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
-              {userCheck.exceeded
-                ? tBilingual('User limit reached. Upgrade plan to add more team members.', 'ইউজার সীমা পূর্ণ হয়েছে। নতুন মেম্বার যোগ করতে প্ল্যান আপগ্রেড করুন।')
-                : tBilingual(`Active on ${currentPlan.name}.`, `${currentPlan.name_bn}-এ পরিচালিত।`)}
+              {isLoading && users.length === 0 ? (
+                <span className="text-slate-400">Loading user quota...</span>
+              ) : userCheck.exceeded ? (
+                tBilingual('User limit reached. Upgrade plan to add more team members.', 'ইউজার সীমা পূর্ণ হয়েছে। নতুন মেম্বার যোগ করতে প্ল্যান আপগ্রেড করুন।')
+              ) : (
+                tBilingual(`Active on ${currentPlan.name}.`, `${currentPlan.name_bn}-এ পরিচালিত।`)
+              )}
             </p>
           </div>
         </div>
@@ -396,9 +466,42 @@ export default function UsersManagementPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filteredUsers.map((user) => {
-                const profile = user.profile
-                const primaryRole = user.roles?.[0]
+              {isLoading && users.length === 0 ? (
+                [1, 2, 3].map((n) => (
+                  <tr key={n} className="animate-pulse">
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
+                        <div className="space-y-1.5">
+                          <div className="h-3.5 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
+                          <div className="h-2.5 w-44 bg-slate-100 dark:bg-slate-800 rounded" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-5 w-20 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-3.5 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="inline-block h-7 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
+                    </td>
+                  </tr>
+                ))
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
+                    {searchQuery ? 'No members found matching your search.' : 'No members found in this workspace.'}
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((user) => {
+                  const profile = user.profile
+                  const primaryRole = user.roles?.[0]
                 const isOwner = primaryRole?.slug === 'owner'
                 const isUserActive = user.status === 'active'
                 const isUserDisabled = user.status === 'disabled'
@@ -562,7 +665,7 @@ export default function UsersManagementPage() {
                     </td>
                   </tr>
                 )
-              })}
+              }))}
             </tbody>
           </table>
         </CardContent>

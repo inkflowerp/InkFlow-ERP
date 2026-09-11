@@ -6,13 +6,26 @@ import {
   PayrollItemRecord,
   DailyLaborLogRecord,
 } from '@/types/hr.types'
-
-
-
+import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export class HrService {
   static async getEmployees(companyId: string = 'c-01'): Promise<EmployeeRecord[]> {
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
+        .from('employees')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
+
+      if (!error && data && data.length > 0) {
+        return data as EmployeeRecord[]
+      }
+    } catch (e) {
+      console.warn('[HrService.getEmployees] DB query fallback to store:', e)
+    }
+
     const employees = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []
     return employees.filter((e) => !e.company_id || e.company_id === companyId)
   }
@@ -46,45 +59,84 @@ export class HrService {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
+
+    try {
+      const admin = createAdminClient()
+      await (admin as any).from('employees').insert(newEmp)
+    } catch (e) {
+      console.warn('[HrService.createEmployee] DB write fallback:', e)
+    }
+
     PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, newEmp)
     return newEmp
   }
 
   static async updateEmployee(id: string, data: Partial<EmployeeRecord>): Promise<EmployeeRecord | null> {
+    try {
+      const admin = createAdminClient()
+      await (admin as any).from('employees').update(data).eq('id', id)
+    } catch (e) {
+      console.warn('[HrService.updateEmployee] DB update fallback:', e)
+    }
     return PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, data)
   }
 
   static async deleteEmployee(id: string): Promise<boolean> {
+    try {
+      const admin = createAdminClient()
+      await (admin as any).from('employees').delete().eq('id', id)
+    } catch (e) {
+      console.warn('[HrService.deleteEmployee] DB delete fallback:', e)
+    }
     return PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id)
   }
 
-  static async getAttendance(date?: string): Promise<AttendanceRecord[]> {
-    const att = PrintERPDataStore.get<AttendanceRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
-    if (date) return att.filter((a) => a.attendance_date === date)
-    return att
-  }
+  static async getAttendance(companyId: string = 'c-01', date?: string): Promise<AttendanceRecord[]> {
+    try {
+      const admin = createAdminClient()
+      let query = (admin as any)
+        .from('attendance_records')
+        .select('*, employees(name, role)')
+        .eq('company_id', companyId)
+        .order('checked_at', { ascending: false })
 
-  static async markAttendance(record: Partial<AttendanceRecord>): Promise<AttendanceRecord> {
-    const id = record.id || `att-${Date.now()}`
-    const newAtt: AttendanceRecord = {
-      id,
-      company_id: record.company_id || 'c-01',
-      employee_id: record.employee_id || '',
-      employee_name: record.employee_name || '',
-      attendance_date: record.attendance_date || new Date().toISOString().split('T')[0],
-      status: record.status || 'present',
-      check_in_time: record.check_in_time || '09:00 AM',
-      late_minutes: record.late_minutes || 0,
-      overtime_hours: record.overtime_hours || 0,
-      notes: record.notes || '',
-      created_at: new Date().toISOString(),
+      if (date) {
+        query = query.eq('attendance_date', date)
+      }
+
+      const { data, error } = await query
+      if (!error && data && data.length > 0) {
+        return data.map((r: any) => ({
+          id: r.id,
+          company_id: r.company_id,
+          employee_id: r.employee_id,
+          employee_name: r.employees?.name || 'Staff',
+          attendance_date: r.attendance_date,
+          status: 'present',
+          check_in_time: new Date(r.checked_at).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }),
+          late_minutes: 0,
+          overtime_hours: 0,
+          latitude: Number(r.latitude),
+          longitude: Number(r.longitude),
+          gps_accuracy_meters: Number(r.gps_accuracy_meters),
+          distance_from_location_meters: Number(r.distance_from_location_meters),
+          verification_status: r.verification_status,
+          notes: r.notes,
+          created_at: r.created_at,
+        })) as AttendanceRecord[]
+      }
+    } catch (e) {
+      console.warn('[HrService.getAttendance] DB query error:', e)
     }
-    PrintERPDataStore.addItem(STORAGE_KEYS.ATTENDANCE, newAtt)
-    return newAtt
+
+    return []
   }
 
   static async getPayroll(): Promise<PayrollPeriodRecord[]> {
     return PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL) || []
   }
 }
-

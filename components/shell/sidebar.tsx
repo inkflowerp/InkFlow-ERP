@@ -30,6 +30,9 @@ import {
   Sparkles,
   Smartphone,
   Workflow,
+  UserCheck,
+  QrCode,
+  MapPin,
 } from 'lucide-react'
 import { getNavigationConfig } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
@@ -63,6 +66,9 @@ const iconMap: Record<string, React.ElementType> = {
   Crown,
   Smartphone,
   Workflow,
+  UserCheck,
+  QrCode,
+  MapPin,
 }
 
 export function Sidebar() {
@@ -79,7 +85,7 @@ export function Sidebar() {
 
   const isNavItemAllowed = (href: string): boolean => {
     if (isOwner) return true
-    if (href.endsWith('/dashboard') || href.endsWith('/mobile')) return true
+    if (href.endsWith('/dashboard') || href.endsWith('/mobile') || href.includes('/attendance')) return true
 
     if (href.includes('/customers')) return can('view', 'customers')
     if (href.includes('/quotations')) return can('view', 'quotations')

@@ -159,6 +159,12 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
       titleBn: 'সেটিংস ও অ্যাডমিন',
       items: [
         {
+          title: 'Smart Attendance',
+          titleBn: 'ডিজিটাল হাজিরা',
+          href: `/${tenantSlug}/attendance`,
+          icon: 'UserCheck',
+        },
+        {
           title: 'HR & Payroll',
           titleBn: 'এইচআর ও বেতন',
           href: `/${tenantSlug}/hr`,

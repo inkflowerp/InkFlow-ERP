@@ -637,54 +637,71 @@ export default function DeliveryLogisticsPage() {
 
           {/* Agenda Days */}
           <div className="space-y-4">
-            {['2024-08-30', '2024-09-02', '2024-09-03', '2024-09-05'].map((dateStr) => {
-              const dayChallans = challans.filter((ch: DeliveryChallanRecord) => ch.scheduled_date === dateStr)
-              const dayInstallations = installations.filter((ins: InstallationRecord) => ins.installation_date === dateStr)
+            {(() => {
+              const dates = Array.from(
+                new Set([
+                  ...challans.map((ch: DeliveryChallanRecord) => ch.scheduled_date).filter(Boolean),
+                  ...installations.map((ins: InstallationRecord) => ins.installation_date).filter(Boolean),
+                ])
+              ).sort()
 
-              return (
-                <div key={dateStr} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2.5">
-                  <div className="flex items-center justify-between font-mono text-xs">
-                    <span className="font-black text-sm text-slate-900 dark:text-white">
-                      📅 {dateStr}
-                    </span>
-                    <span className="text-slate-400">
-                      {dayChallans.length} Deliveries • {dayInstallations.length} Installations
-                    </span>
+              if (dates.length === 0) {
+                return (
+                  <div className="p-10 text-center text-slate-500 text-xs">
+                    No scheduled deliveries or installations found in this period.
                   </div>
+                )
+              }
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Deliveries */}
-                    {dayChallans.map((ch: DeliveryChallanRecord) => (
-                      <div key={ch.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-blue-200 dark:border-blue-900 space-y-1 text-xs">
-                        <div className="flex justify-between font-bold">
-                          <span className="text-blue-600 font-mono">{ch.challan_number}</span>
-                          <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-800">
-                            {ch.status.replace('_', ' ')}
-                          </span>
-                        </div>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">{ch.customer_name}</div>
-                        <div className="text-[11px] text-slate-500 truncate">{ch.delivery_address}</div>
-                      </div>
-                    ))}
+              return dates.map((dateStr) => {
+                const dayChallans = challans.filter((ch: DeliveryChallanRecord) => ch.scheduled_date === dateStr)
+                const dayInstallations = installations.filter((ins: InstallationRecord) => ins.installation_date === dateStr)
 
-                    {/* Installations */}
-                    {dayInstallations.map((ins: InstallationRecord) => (
-                      <div key={ins.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-900 space-y-1 text-xs">
-                        <div className="flex justify-between font-bold">
-                          <span className="text-purple-600 font-mono">{ins.installation_number}</span>
-                          <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-800">
-                            {ins.status.replace('_', ' ')}
-                          </span>
+                return (
+                  <div key={dateStr} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2.5">
+                    <div className="flex items-center justify-between font-mono text-xs">
+                      <span className="font-black text-sm text-slate-900 dark:text-white">
+                        📅 {dateStr}
+                      </span>
+                      <span className="text-slate-400">
+                        {dayChallans.length} Deliveries • {dayInstallations.length} Installations
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Deliveries */}
+                      {dayChallans.map((ch: DeliveryChallanRecord) => (
+                        <div key={ch.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-blue-200 dark:border-blue-900 space-y-1 text-xs">
+                          <div className="flex justify-between font-bold">
+                            <span className="text-blue-600 font-mono">{ch.challan_number}</span>
+                            <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-800">
+                              {ch.status.replace('_', ' ')}
+                            </span>
+                          </div>
+                          <div className="font-semibold text-slate-800 dark:text-slate-200">{ch.customer_name}</div>
+                          <div className="text-[11px] text-slate-500 truncate">{ch.delivery_address}</div>
                         </div>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">{ins.customer_name}</div>
-                        <div className="text-[11px] text-slate-500 truncate">📍 {ins.site_location}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">Lead: {ins.installer_lead_name}</div>
-                      </div>
-                    ))}
+                      ))}
+
+                      {/* Installations */}
+                      {dayInstallations.map((ins: InstallationRecord) => (
+                        <div key={ins.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-900 space-y-1 text-xs">
+                          <div className="flex justify-between font-bold">
+                            <span className="text-purple-600 font-mono">{ins.installation_number}</span>
+                            <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-800">
+                              {ins.status.replace('_', ' ')}
+                            </span>
+                          </div>
+                          <div className="font-semibold text-slate-800 dark:text-slate-200">{ins.customer_name}</div>
+                          <div className="text-[11px] text-slate-500 truncate">📍 {ins.site_location}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">Lead: {ins.installer_lead_name}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })
+            })()}
           </div>
         </Card>
       )}

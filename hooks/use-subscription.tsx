@@ -186,6 +186,7 @@ interface SubscriptionContextType {
   accountTypeMeta: TenantAccountTypeMeta
   allPlans: SubscriptionPlanRecord[]
   usage: TenantResourceUsage
+  isLoading: boolean
   isSuspended: boolean
   isPastDue: boolean
   isTrial: boolean
@@ -237,6 +238,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() =>
     getInitialSubscription(companyId, companySlug, getInitialPlans())
   )
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (memoryCachedSubscriptions[companyId] || (companySlug && memoryCachedSubscriptions[companySlug])) return false
+    if (typeof window !== 'undefined') {
+      try {
+        const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
+        if (storedSubs && (storedSubs[companyId] || (companySlug && storedSubs[companySlug]))) {
+          return false
+        }
+      } catch {}
+    }
+    return true
+  })
 
   const refreshSubscription = useCallback(async () => {
     try {
@@ -247,15 +260,22 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       if (subRes.success && subRes.data) {
         setSubscription(subRes.data)
         memoryCachedSubscriptions[companyId] = subRes.data
+        if (companySlug) {
+          memoryCachedSubscriptions[companySlug] = subRes.data
+        }
         if (typeof window !== 'undefined') {
           try {
             const currentSubs =
               PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
             currentSubs[companyId] = subRes.data
+            if (companySlug) {
+              currentSubs[companySlug] = subRes.data
+            }
             PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs)
           } catch {}
         }
       }
+
       if (plansRes.success && plansRes.data?.plans && plansRes.data.plans.length > 0) {
         setPlans(plansRes.data.plans)
         memoryCachedPlans = plansRes.data.plans
@@ -265,7 +285,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           } catch {}
         }
       }
-    } catch {}
+    } catch {} finally {
+      setIsLoading(false)
+    }
   }, [companyId, companySlug])
 
   useEffect(() => {
@@ -664,6 +686,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   return (
     <SubscriptionContext.Provider
       value={{
+        isLoading,
         subscription,
         currentPlan,
         currentPlanCode,
@@ -719,6 +742,7 @@ export function useSubscription() {
     const trialEndsAt = new Date(Date.now() + trialDays * 86400000).toISOString()
     const timeRemaining = getSubscriptionTimeRemaining(trialEndsAt)
     return {
+      isLoading: false,
       subscription: {
         id: 'sub-standalone',
         company_id: 'default',

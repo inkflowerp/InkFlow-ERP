@@ -23,6 +23,7 @@ const SNOOZE_STORAGE_KEY = 'printerp_trial_popup_snooze'
 
 export function TrialNotificationPopup() {
   const {
+    isLoading,
     isTrial,
     isTrialExpired,
     daysRemainingInTrial,
@@ -39,7 +40,7 @@ export function TrialNotificationPopup() {
 
   // Determine if snooze has passed
   useEffect(() => {
-    if (!isTrial) {
+    if (isLoading || !isTrial) {
       setIsDismissed(true)
       return
     }
@@ -63,7 +64,7 @@ export function TrialNotificationPopup() {
       }, 1200)
       return () => clearTimeout(timer)
     }
-  }, [isTrial, isTrialExpired, daysRemainingInTrial])
+  }, [isLoading, isTrial, isTrialExpired, daysRemainingInTrial])
 
   const handleDismiss = (durationHours: number = 2) => {
     setIsDismissed(true)
@@ -73,7 +74,7 @@ export function TrialNotificationPopup() {
     } catch {}
   }
 
-  if (!isTrial || isDismissed) {
+  if (isLoading || !isTrial || isDismissed) {
     return null
   }
 

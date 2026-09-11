@@ -14,6 +14,7 @@ import {
   Mail,
   Users,
   ShieldCheck,
+  QrCode,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -61,6 +62,12 @@ export function SettingsNav() {
       titleBn: 'শাখা ও কারখানা',
       href: `/${slug}/settings/branches`,
       icon: GitBranch,
+    },
+    {
+      title: 'Attendance & QR',
+      titleBn: 'হাজিরা ও কিউআর',
+      href: `/${slug}/settings/attendance`,
+      icon: QrCode,
     },
     {
       title: 'Notifications & SMS',

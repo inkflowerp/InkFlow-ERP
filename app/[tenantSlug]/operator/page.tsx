@@ -31,44 +31,7 @@ interface OperatorJob {
   materialLoggedSft: number
 }
 
-const INITIAL_OPERATOR_JOBS: OperatorJob[] = [
-  {
-    id: 'op-01',
-    orderNo: 'JOB-2024-001',
-    title: 'Beximco Outdoor Star Flex Banner',
-    media: 'Star Flex Gloss 320gsm',
-    widthFt: 20,
-    heightFt: 4,
-    qty: 2,
-    status: 'printing',
-    finishingNotes: 'Eyelets every 2 feet, double-stitched hem',
-    materialLoggedSft: 160,
-  },
-  {
-    id: 'op-02',
-    orderNo: 'JOB-2024-003',
-    title: 'PRAN Frosted Vinyl Glass Sticker',
-    media: 'Frosted Glass Vinyl 100mic',
-    widthFt: 8,
-    heightFt: 6,
-    qty: 4,
-    status: 'pending',
-    finishingNotes: 'Plotter kiss-cut logo cutout, application tape transferred',
-    materialLoggedSft: 0,
-  },
-  {
-    id: 'op-03',
-    orderNo: 'JOB-2024-005',
-    title: 'Square Pharmaceuticals Shop Signboard',
-    media: 'Panaflex Heavy 440gsm',
-    widthFt: 15,
-    heightFt: 3.5,
-    qty: 1,
-    status: 'pending',
-    finishingNotes: 'No eyelets, MS frame wrapping margin 3-inches all sides',
-    materialLoggedSft: 0,
-  },
-]
+const INITIAL_OPERATOR_JOBS: OperatorJob[] = []
 
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
@@ -135,7 +98,23 @@ export default function OperatorPanelPage() {
 
       {/* Active Jobs Cards */}
       <div className="space-y-4">
-        {jobs.map((job: OperatorJob) => {
+        {jobs.length === 0 ? (
+          <Card className="p-12 text-center space-y-3 border-dashed border-slate-200 dark:border-slate-800">
+            <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+              <Printer className="h-6 w-6" />
+            </div>
+            <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 bangla-text">
+              {tBilingual('No active printing jobs in queue', 'কোন সক্রিয় প্রিন্টিং জব নেই')}
+            </div>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto bangla-text">
+              {tBilingual(
+                'Jobs sent to production from the sales orders panel will appear here for machine operators to start printing.',
+                'সেলস অর্ডার প্যানেল থেকে প্রডাকশনে পাঠানো নতুন কাজগুলো এখানে প্রদর্শিত হবে।'
+              )}
+            </p>
+          </Card>
+        ) : (
+          jobs.map((job: OperatorJob) => {
           const totalAreaSft = job.widthFt * job.heightFt * job.qty
           return (
             <Card
@@ -237,8 +216,9 @@ export default function OperatorPanelPage() {
               </CardContent>
             </Card>
           )
-        })}
-      </div>
+        })
+      )}
+    </div>
 
       {/* MODAL: LOG MATERIAL USAGE */}
       <ModalDialog

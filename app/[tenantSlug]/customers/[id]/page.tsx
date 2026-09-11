@@ -57,6 +57,46 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
   const allComms = Array.isArray(commList) ? commList : []
   const communications = customer ? allComms.filter((c) => c.customer_id === customer.id) : []
 
+  const { data: orderList } = useDataStore<any[]>(STORAGE_KEYS.ORDERS)
+  const allOrders = Array.isArray(orderList) ? orderList : []
+  const customerOrders = customer
+    ? allOrders.filter(
+        (o) => o.customer_id === customer.id || (o.customer_name && o.customer_name === customer.name)
+      )
+    : []
+
+  const { data: quoteList } = useDataStore<any[]>(STORAGE_KEYS.QUOTATIONS)
+  const allQuotes = Array.isArray(quoteList) ? quoteList : []
+  const customerQuotes = customer
+    ? allQuotes.filter(
+        (q) => q.customer_id === customer.id || (q.customer_name && q.customer_name === customer.name)
+      )
+    : []
+
+  const { data: invList } = useDataStore<any[]>(STORAGE_KEYS.INVOICES)
+  const allInvoices = Array.isArray(invList) ? invList : []
+  const customerInvoices = customer
+    ? allInvoices.filter(
+        (inv) => inv.customer_id === customer.id || (inv.customer_name && inv.customer_name === customer.name)
+      )
+    : []
+
+  const { data: payList } = useDataStore<any[]>(STORAGE_KEYS.PAYMENTS)
+  const allPayments = Array.isArray(payList) ? payList : []
+  const customerPayments = customer
+    ? allPayments.filter(
+        (p) => p.customer_id === customer.id || (p.customer_name && p.customer_name === customer.name)
+      )
+    : []
+
+  const { data: challanList } = useDataStore<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS)
+  const allChallans = Array.isArray(challanList) ? challanList : []
+  const customerChallans = customer
+    ? allChallans.filter(
+        (ch) => ch.customer_id === customer.id || (ch.customer_name && ch.customer_name === customer.name)
+      )
+    : []
+
   const [activeTab, setActiveTab] = useState<
     'overview' | 'orders' | 'quotations' | 'invoices' | 'payments' | 'deliveries' | 'comms' | 'notes'
   >('overview')
@@ -454,11 +494,13 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-bold">Job Orders History</CardTitle>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs">
-                <Plus className="h-3.5 w-3.5 mr-1" />
-                Book New Job
-              </Button>
+              <CardTitle className="text-base font-bold">Job Orders History ({customerOrders.length})</CardTitle>
+              <Link href={`/${slug}/sales`}>
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs">
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Book New Job
+                </Button>
+              </Link>
             </div>
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
@@ -473,21 +515,35 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {[
-                  { code: 'ORD-000101', item: '3D Acrylic Channel Letters (20ft × 4ft)', amount: 145000, date: '02/09/2024', status: 'In Production' },
-                  { code: 'ORD-000088', item: 'Star Flex Promo Banners (15 Pcs)', amount: 45000, date: '18/08/2024', status: 'Delivered' },
-                  { code: 'ORD-000072', item: 'Rollup Banners Aluminum Stand (10 Pcs)', amount: 28000, date: '04/08/2024', status: 'Delivered' },
-                ].map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                    <td className="py-3 px-4 font-mono font-bold text-blue-600">{row.code}</td>
-                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">{row.item}</td>
-                    <td className="py-3 px-4 font-bold"><CurrencyDisplay amount={row.amount} /></td>
-                    <td className="py-3 px-4 text-slate-500">{row.date}</td>
-                    <td className="py-3 px-4">
-                      <Badge variant="outline" className="text-[10px]">{row.status}</Badge>
+                {customerOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
+                      No job orders recorded for this customer yet.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  customerOrders.map((ord: any, idx: number) => (
+                    <tr key={ord.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                        {ord.order_number || ord.order_code || ord.code || `ORD-${ord.id?.slice(0, 6)}`}
+                      </td>
+                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                        {ord.title || ord.product_name || (Array.isArray(ord.items) && ord.items[0]?.title) || 'Print Job'}
+                      </td>
+                      <td className="py-3 px-4 font-bold">
+                        <CurrencyDisplay amount={ord.total_amount || ord.grand_total || 0} />
+                      </td>
+                      <td className="py-3 px-4 text-slate-500">
+                        {ord.created_at ? new Date(ord.created_at).toLocaleDateString() : '—'}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="text-[10px] capitalize">
+                          {ord.status || 'Active'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </CardContent>
@@ -498,7 +554,7 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
       {activeTab === 'quotations' && (
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-base font-bold">Estimated Quotations</CardTitle>
+            <CardTitle className="text-base font-bold">Estimated Quotations ({customerQuotes.length})</CardTitle>
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -512,13 +568,35 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr>
-                  <td className="py-3 px-4 font-mono font-bold text-blue-600">QUO-000042</td>
-                  <td className="py-3 px-4">Panaflex Backlit Signage Board (80 sft)</td>
-                  <td className="py-3 px-4">৳ 220 / sft</td>
-                  <td className="py-3 px-4 font-bold"><CurrencyDisplay amount={17600} /></td>
-                  <td className="py-3 px-4"><Badge variant="outline">Client Reviewing</Badge></td>
-                </tr>
+                {customerQuotes.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
+                      No price quotations estimated for this customer yet.
+                    </td>
+                  </tr>
+                ) : (
+                  customerQuotes.map((q: any, idx: number) => (
+                    <tr key={q.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                        {q.quotation_number || q.quote_number || q.code || `QUO-${q.id?.slice(0, 6)}`}
+                      </td>
+                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                        {q.title || q.specifications || (Array.isArray(q.items) && q.items[0]?.item_name) || 'Custom Print Quotation'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-500 font-mono">
+                        {q.rate ? `৳ ${q.rate}` : '—'}
+                      </td>
+                      <td className="py-3 px-4 font-bold">
+                        <CurrencyDisplay amount={q.grand_total || q.total_amount || 0} />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="text-[10px] capitalize">
+                          {q.status || 'Draft'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </CardContent>
@@ -529,7 +607,7 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
       {activeTab === 'invoices' && (
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-base font-bold">Commercial Tax Invoices (Mushak 6.3)</CardTitle>
+            <CardTitle className="text-base font-bold">Commercial Tax Invoices (Mushak 6.3) ({customerInvoices.length})</CardTitle>
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -544,14 +622,38 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr>
-                  <td className="py-3 px-4 font-mono font-bold text-blue-600">INV-000142</td>
-                  <td className="py-3 px-4 font-mono text-slate-500">MUSHAK-6.3-2024-089</td>
-                  <td className="py-3 px-4 font-bold"><CurrencyDisplay amount={145000} /></td>
-                  <td className="py-3 px-4 text-emerald-600 font-semibold"><CurrencyDisplay amount={100000} /></td>
-                  <td className="py-3 px-4 text-red-600 font-bold"><CurrencyDisplay amount={45000} /></td>
-                  <td className="py-3 px-4"><Badge variant="outline" className="bg-amber-50 text-amber-800">Partial</Badge></td>
-                </tr>
+                {customerInvoices.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-500 text-xs">
+                      No commercial tax invoices issued for this customer yet.
+                    </td>
+                  </tr>
+                ) : (
+                  customerInvoices.map((inv: any, idx: number) => (
+                    <tr key={inv.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                        {inv.invoice_number || `INV-${inv.id?.slice(0, 6)}`}
+                      </td>
+                      <td className="py-3 px-4 font-mono text-slate-500">
+                        {inv.mushak_number || inv.mushak_ref || '—'}
+                      </td>
+                      <td className="py-3 px-4 font-bold">
+                        <CurrencyDisplay amount={inv.grand_total || inv.total_amount || 0} />
+                      </td>
+                      <td className="py-3 px-4 text-emerald-600 font-semibold">
+                        <CurrencyDisplay amount={inv.paid_amount || 0} />
+                      </td>
+                      <td className="py-3 px-4 text-red-600 font-bold">
+                        <CurrencyDisplay amount={inv.balance_due ?? (inv.grand_total ? inv.grand_total - (inv.paid_amount || 0) : 0)} />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="capitalize text-[10px]">
+                          {inv.status || 'Issued'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </CardContent>
@@ -562,7 +664,7 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
       {activeTab === 'payments' && (
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-base font-bold">Money Receipts & Payment Ledger</CardTitle>
+            <CardTitle className="text-base font-bold">Money Receipts & Payment Ledger ({customerPayments.length})</CardTitle>
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -576,13 +678,33 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr>
-                  <td className="py-3 px-4 font-mono font-bold text-blue-600">PAY-000095</td>
-                  <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">Bank Transfer (City Bank)</td>
-                  <td className="py-3 px-4 font-bold text-emerald-600"><CurrencyDisplay amount={100000} /></td>
-                  <td className="py-3 px-4 text-slate-500">01/09/2024</td>
-                  <td className="py-3 px-4">Accounts Cash Counter</td>
-                </tr>
+                {customerPayments.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
+                      No payment transactions recorded for this customer yet.
+                    </td>
+                  </tr>
+                ) : (
+                  customerPayments.map((p: any, idx: number) => (
+                    <tr key={p.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                        {p.receipt_number || p.payment_number || `PAY-${p.id?.slice(0, 6)}`}
+                      </td>
+                      <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200 capitalize">
+                        {p.payment_method || p.method || 'Cash'}
+                      </td>
+                      <td className="py-3 px-4 font-bold text-emerald-600">
+                        <CurrencyDisplay amount={p.amount || 0} />
+                      </td>
+                      <td className="py-3 px-4 text-slate-500">
+                        {p.payment_date || (p.created_at ? new Date(p.created_at).toLocaleDateString() : '—')}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                        {p.collected_by || p.issued_by || 'Accounts'}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </CardContent>
@@ -593,7 +715,7 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
       {activeTab === 'deliveries' && (
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-base font-bold">Delivery Challans & Gate Passes</CardTitle>
+            <CardTitle className="text-base font-bold">Delivery Challans & Gate Passes ({customerChallans.length})</CardTitle>
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -607,13 +729,33 @@ export default function CustomerProfilePage({ params }: CustomerProfilePageProps
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr>
-                  <td className="py-3 px-4 font-mono font-bold text-blue-600">CHL-000082</td>
-                  <td className="py-3 px-4">Panaflex Banners (15 pcs in rolls)</td>
-                  <td className="py-3 px-4">Beximco Tejgaon Plant Facade</td>
-                  <td className="py-3 px-4">Pickup Van (Dhaka Metro-Tha-11)</td>
-                  <td className="py-3 px-4 text-emerald-600 font-semibold">Signed & Received</td>
-                </tr>
+                {customerChallans.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-slate-500 text-xs">
+                      No delivery challans issued for this customer yet.
+                    </td>
+                  </tr>
+                ) : (
+                  customerChallans.map((ch: any, idx: number) => (
+                    <tr key={ch.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                      <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                        {ch.challan_number || `CHL-${ch.id?.slice(0, 6)}`}
+                      </td>
+                      <td className="py-3 px-4">
+                        {ch.items_summary || ch.items || 'Print materials and finished goods'}
+                      </td>
+                      <td className="py-3 px-4">
+                        {ch.destination_site || ch.delivery_address || customer.address || 'Customer Site'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-500">
+                        {ch.vehicle_number || ch.driver_name || 'Assigned Courier/Van'}
+                      </td>
+                      <td className="py-3 px-4 text-emerald-600 font-semibold capitalize">
+                        {ch.status === 'delivered' ? 'Signed & Received' : ch.status || 'In Transit'}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </CardContent>

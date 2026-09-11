@@ -59,6 +59,12 @@ export interface AttendanceRecord {
   check_out_time?: string | null
   late_minutes: number
   overtime_hours: number
+  latitude?: number | null
+  longitude?: number | null
+  gps_accuracy_meters?: number | null
+  distance_from_location_meters?: number | null
+  location_name?: string | null
+  verification_status?: string | null
   notes?: string | null
   created_at: string
 }

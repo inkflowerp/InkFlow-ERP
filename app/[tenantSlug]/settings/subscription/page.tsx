@@ -85,8 +85,8 @@ export default function TenantSubscriptionPage() {
 
   const [events, setEvents] = useState<SubscriptionEventRecord[]>([])
   const [invoices, setInvoices] = useState<SubscriptionInvoiceRecord[]>([])
-  const [loadingEvents, setLoadingEvents] = useState(false)
-  const [loadingInvoices, setLoadingInvoices] = useState(false)
+  const [loadingEvents, setLoadingEvents] = useState(true)
+  const [loadingInvoices, setLoadingInvoices] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false)
   const [isDowngradeConfirmOpen, setIsDowngradeConfirmOpen] = useState(false)

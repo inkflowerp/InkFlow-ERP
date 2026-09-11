@@ -8,7 +8,15 @@
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { createClient } from '../supabase/client.ts'
 import { PrintERPDataStore, STORAGE_KEYS, type StorageKey } from '../db/data-store.ts'
-import { triggerPopupNotification, type RealtimePopupNotification } from '@/components/shell/realtime-notification-popup'
+
+function triggerPopupNotification(notification: any) {
+  if (typeof window === 'undefined') return
+  const id = notification.id || `popup-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
+  const event = new CustomEvent('printerp_popup_notification', {
+    detail: { ...notification, id },
+  })
+  window.dispatchEvent(event)
+}
 
 export type RealtimeTopic =
   | 'orders'
@@ -29,6 +37,16 @@ export type RealtimeConnectionStatus =
   | 'reconnecting'
   | 'disconnected'
   | 'error'
+
+export interface RealtimePopupNotification {
+  id: string
+  type: string
+  title: string
+  titleBn?: string
+  message: string
+  messageBn?: string
+  actionUrl?: string
+}
 
 export interface PostgresChangeEvent<T = any> {
   eventType: 'INSERT' | 'UPDATE' | 'DELETE'

@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils'
 
 export function TrialDashboardCard() {
   const {
+    isLoading,
     isTrial,
     isTrialExpired,
     daysRemainingInTrial,
@@ -39,7 +40,7 @@ export function TrialDashboardCard() {
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'app'
 
-  if (!isTrial) return null
+  if (isLoading || !isTrial) return null
 
   const trialDaysTotal = currentPlan?.trial_days || 14
   const trialDaysBn = toBengaliDigits(trialDaysTotal)

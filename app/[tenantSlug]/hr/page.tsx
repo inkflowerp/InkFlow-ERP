@@ -23,6 +23,7 @@ import {
   Phone,
   Sparkles,
   QrCode,
+  MapPin,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
@@ -35,6 +36,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
 import {
   EmployeeRecord,
   AttendanceRecord,
@@ -452,12 +454,19 @@ export default function HumanResourcesPage() {
                   Real-time factory floor presence, late check-in minutes, and overtime tracking.
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={`/${slug}/settings/attendance`}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-indigo-400 hover:border-indigo-500/40 transition-colors"
+                >
+                  <MapPin className="h-3.5 w-3.5 text-indigo-400" />
+                  <span>Locations & Posters</span>
+                </Link>
                 <Button
                   type="button"
                   size="sm"
                   onClick={() => setIsMobilePunchOpen(true)}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs h-10 px-3.5 rounded-xl shadow-md cursor-pointer flex items-center gap-2"
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs h-9 px-3.5 rounded-xl shadow-md cursor-pointer flex items-center gap-2"
                 >
                   <QrCode className="h-4 w-4" />
                   <span>Mobile Punch (QR / GPS)</span>
@@ -649,11 +658,7 @@ export default function HumanResourcesPage() {
         open={isMobilePunchOpen}
         onClose={() => setIsMobilePunchOpen(false)}
         tenantSlug={slug}
-        onAttendanceRecorded={(rec: AttendanceRecord) => {
-          setAttendances((prev: AttendanceRecord[]) => [
-            ...prev.filter((a: AttendanceRecord) => a.employee_id !== rec.employee_id),
-            rec,
-          ])
+        onAttendanceRecorded={(rec: any) => {
           showNotification('Mobile attendance punch successfully recorded!')
         }}
       />
@@ -1147,96 +1152,5 @@ export default function HumanResourcesPage() {
       </ModalDialog>
     </div>
   </FeatureGate>
-  )
-}
-
-function AttendancePunchModal({
-  open,
-  onClose,
-  tenantSlug,
-  onAttendanceRecorded,
-}: {
-  open: boolean
-  onClose: () => void
-  tenantSlug: string
-  onAttendanceRecorded: (rec: AttendanceRecord) => void
-}) {
-  const [employees] = useDataStore<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, [])
-  const [selectedEmp, setSelectedEmp] = useState(employees[0]?.id || '')
-  const [status, setStatus] = useState<AttendanceStatus>('present')
-
-  const handlePunch = (e: React.FormEvent) => {
-    e.preventDefault()
-    const emp = employees.find((x) => x.id === selectedEmp) || employees[0]
-    if (!emp) return
-    const now = new Date()
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    const rec: AttendanceRecord = {
-      id: `att-${Date.now()}`,
-      company_id: emp.company_id || 'c-01',
-      employee_id: emp.id,
-      employee_name: emp.name,
-      attendance_date: now.toISOString().split('T')[0],
-      status,
-      check_in_time: timeStr,
-      late_minutes: 0,
-      overtime_hours: 0,
-      created_at: now.toISOString(),
-    }
-    PrintERPDataStore.addItem(STORAGE_KEYS.ATTENDANCE, rec)
-    onAttendanceRecorded(rec)
-    onClose()
-  }
-
-  return (
-    <ModalDialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) onClose()
-      }}
-      title="Mobile / QR Attendance Punch"
-      description="Quickly record on-site attendance or biometric punch."
-    >
-      <form onSubmit={handlePunch} className="space-y-4 pt-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="punchEmp">Employee</Label>
-          <select
-            id="punchEmp"
-            value={selectedEmp}
-            onChange={(e) => setSelectedEmp(e.target.value)}
-            className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-          >
-            <option value="">Select Employee...</option>
-            {employees.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name} ({e.role})
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="punchStatus">Status</Label>
-          <select
-            id="punchStatus"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as AttendanceStatus)}
-            className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-          >
-            <option value="present">Present (উপস্থিত)</option>
-            <option value="late">Late (বিলম্বে আগমন)</option>
-            <option value="half_day">Half Day (অর্ধ দিবস)</option>
-            <option value="leave">On Leave (ছুটি)</option>
-          </select>
-        </div>
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" size="sm" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
-            Confirm Punch
-          </Button>
-        </div>
-      </form>
-    </ModalDialog>
   )
 }
