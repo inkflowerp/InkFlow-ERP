@@ -112,25 +112,6 @@ export async function getCurrentTenant(requestedSlugOrId?: string): Promise<Tena
     const resolvedUserId = user?.id || sessionData?.userId
 
     if (!resolvedUserId && !sessionData) {
-      if (requestedSlugOrId && requestedSlugOrId !== 'login' && requestedSlugOrId !== 'platform') {
-        return {
-          userId: 'usr-owner',
-          userEmail: `owner@${requestedSlugOrId}.com`,
-          fullName: 'Business Owner',
-          fullNameBn: 'প্রতিষ্ঠান প্রধান',
-          phone: null,
-          companyId: `co-${requestedSlugOrId}`,
-          companySlug: requestedSlugOrId,
-          companyName: requestedSlugOrId,
-          companyNameBn: requestedSlugOrId,
-          companyRole: 'business_owner',
-          primaryRole: 'business_owner',
-          branchId: undefined,
-          branchName: 'Main Branch',
-          responsibilities: ['business_owner'],
-          permissions: ['*'],
-        }
-      }
       return null
     }
 

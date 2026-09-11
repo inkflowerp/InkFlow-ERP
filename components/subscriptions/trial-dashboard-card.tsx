@@ -25,6 +25,11 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 export function TrialDashboardCard() {
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const {
     isLoading,
     isTrial,
@@ -40,7 +45,7 @@ export function TrialDashboardCard() {
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'app'
 
-  if (isLoading || !isTrial) return null
+  if (!mounted || isLoading || !isTrial) return null
 
   const trialDaysTotal = currentPlan?.trial_days || 14
   const trialDaysBn = toBengaliDigits(trialDaysTotal)

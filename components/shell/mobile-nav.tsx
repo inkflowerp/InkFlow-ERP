@@ -275,7 +275,7 @@ export function MobileNav() {
                   </span>
                 </div>
                 {isTrial ? (
-                  <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[9px] font-bold border-amber-300 shrink-0">
+                  <Badge suppressHydrationWarning className="bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[9px] font-bold border-amber-300 shrink-0">
                     {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d trial`}
                   </Badge>
                 ) : (
@@ -409,7 +409,7 @@ export function MobileNav() {
                     <Crown className="h-4 w-4 text-amber-500" />
                     <span>{tBilingual('Free Trial Active', 'ফ্রি ট্রায়াল চলছে')}</span>
                   </span>
-                  <Badge className="text-[9px] bg-amber-500 text-white font-bold px-1.5 py-0 h-4">
+                  <Badge suppressHydrationWarning className="text-[9px] bg-amber-500 text-white font-bold px-1.5 py-0 h-4">
                     {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d left`}
                   </Badge>
                 </div>

@@ -136,19 +136,26 @@ function LoginForm() {
           return
         }
 
-        const targetSlug = res.data.session.companySlug
+        const targetSlug = res.data.session.companySlug || 'my-company'
         const paramRedirect = searchParams.get('redirectTo')
 
-        // Only preserve redirectTo if it belongs to the authenticated company or is a tenant-safe route
+        // Preserve redirectTo and map to the authenticated tenant's route
         let destination = `/${targetSlug}/dashboard`
-        if (paramRedirect) {
-          if (paramRedirect.startsWith(`/${targetSlug}`)) {
-            destination = paramRedirect
-          } else if (
-            paramRedirect.startsWith('/settings') ||
-            paramRedirect.startsWith('/profile') ||
-            paramRedirect.startsWith('/notifications')
-          ) {
+        if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
+          const cleanPath = paramRedirect.split('?')[0]
+          const queryPart = paramRedirect.includes('?') ? `?${paramRedirect.split('?')[1]}` : ''
+          const parts = cleanPath.split('/').filter(Boolean)
+
+          if (parts.length > 1) {
+            const subPath = parts.slice(1).join('/')
+            destination = `/${targetSlug}/${subPath}${queryPart}`
+          } else if (parts.length === 1) {
+            if (parts[0] === targetSlug || parts[0] === 'dashboard') {
+              destination = `/${targetSlug}/dashboard${queryPart}`
+            } else {
+              destination = `/${targetSlug}/${parts[0]}${queryPart}`
+            }
+          } else {
             destination = paramRedirect
           }
         }

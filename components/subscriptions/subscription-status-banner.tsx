@@ -19,6 +19,11 @@ import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { Button } from '@/components/ui/button'
 
 export function SubscriptionStatusBanner() {
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const {
     subscription,
     isLoading,
@@ -35,7 +40,7 @@ export function SubscriptionStatusBanner() {
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'app'
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return null
   }
 

@@ -46,6 +46,7 @@ export function CompanySelector() {
               {company?.business_type?.replace('_', ' ') || 'Printing & Signage'}
             </span>
             <span
+              suppressHydrationWarning
               className={cn(
                 'text-[8px] xs:text-[9px] px-1 xs:px-1.5 py-0.2 rounded font-bold uppercase tracking-wider border shrink-0',
                 accountTypeMeta.badgeClass

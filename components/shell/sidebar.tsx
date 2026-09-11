@@ -185,7 +185,7 @@ export function Sidebar() {
                       href={item.href}
                       title={collapsed ? itemTitle : undefined}
                       className={cn(
-                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-all',
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-all cursor-pointer',
                         isActive
                           ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
                           : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
@@ -235,7 +235,7 @@ export function Sidebar() {
                     {tBilingual('Free Trial', 'ফ্রি ট্রায়াল')}
                   </span>
                 </div>
-                <Badge className="text-[9px] bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1 py-0 h-4">
+                <Badge suppressHydrationWarning className="text-[9px] bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1 py-0 h-4">
                   {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d left`}
                 </Badge>
               </div>

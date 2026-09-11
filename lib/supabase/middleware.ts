@@ -121,9 +121,20 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user: any = null
+  const allCookies = request.cookies.getAll()
+  const hasSupabaseAuthCookies = allCookies.some((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token'))
+
+  if (hasSupabaseAuthCookies) {
+    try {
+      const {
+        data,
+      } = await supabase.auth.getUser()
+      user = data?.user
+    } catch {
+      user = null
+    }
+  }
 
   // Helper to apply strict anti-cache headers to prevent bfcache retention of sensitive pages
   const applyNoCacheHeaders = (response: NextResponse) => {
@@ -170,32 +181,22 @@ export async function updateSession(request: NextRequest) {
   }
 
   // 2. Tenant Protected Page Guard: Unauthenticated users trying to access tenant app -> Redirect to /login
-  // All tenant routes e.g. /[tenantSlug]/* are verified authoritatively by `requireTenantUser` in `app/[tenantSlug]/layout.tsx`.
   const pathParts = pathname.split('/').filter(Boolean)
   const firstSegment = pathParts[0] || ''
   const isTenantRoute =
     firstSegment !== '' &&
-    firstSegment !== 'platform' &&
-    firstSegment !== 'login' &&
-    firstSegment !== 'register' &&
-    firstSegment !== 'forgot-password' &&
-    firstSegment !== 'reset-password' &&
-    firstSegment !== 'onboarding' &&
-    firstSegment !== '403' &&
-    firstSegment !== 'api'
-
-  const isTenantAuthenticated = Boolean(user) || hasValidTenantCookie
-  if (
-    !isTenantAuthenticated &&
-    !isTenantRoute &&
     !isTenantAuthPage &&
     !isPublicMarketingPage &&
     !isPlatformAuthPage &&
     !isPlatformProtectedPage
-  ) {
+
+  const isTenantAuthenticated = Boolean(user) || hasValidTenantCookie
+  if (isTenantRoute && !isTenantAuthenticated) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('redirectTo', pathname)
+    const fullPath = request.nextUrl.search ? `${pathname}${request.nextUrl.search}` : pathname
+    url.search = ''
+    url.searchParams.set('redirectTo', fullPath)
     return applyNoCacheHeaders(NextResponse.redirect(url))
   }
 
@@ -207,12 +208,31 @@ export async function updateSession(request: NextRequest) {
     
     if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError) {
       const redirectTo = request.nextUrl.searchParams.get('redirectTo')
+      const targetSlug = tenantSessionData.companySlug
+      let destination = `/${targetSlug}/dashboard`
+
+      if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')) {
+        const cleanPath = redirectTo.split('?')[0]
+        const queryPart = redirectTo.includes('?') ? `?${redirectTo.split('?')[1]}` : ''
+        const parts = cleanPath.split('/').filter(Boolean)
+
+        if (parts.length > 1) {
+          const subPath = parts.slice(1).join('/')
+          destination = `/${targetSlug}/${subPath}${queryPart}`
+        } else if (parts.length === 1) {
+          if (parts[0] === targetSlug || parts[0] === 'dashboard') {
+            destination = `/${targetSlug}/dashboard${queryPart}`
+          } else {
+            destination = `/${targetSlug}/${parts[0]}${queryPart}`
+          }
+        } else {
+          destination = redirectTo
+        }
+      }
+
       const url = request.nextUrl.clone()
-      url.pathname =
-        redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
-          ? redirectTo
-          : `/${tenantSessionData.companySlug}/dashboard`
-      url.searchParams.delete('redirectTo')
+      url.pathname = destination.split('?')[0]
+      url.search = destination.includes('?') ? destination.split('?')[1] : ''
       return applyNoCacheHeaders(NextResponse.redirect(url))
     } else if (hasAuthError && hasValidTenantCookie) {
       // Explicit error or logged out parameter: purge cookie
