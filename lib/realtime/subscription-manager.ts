@@ -6,7 +6,7 @@
 // ==============================================================================
 
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { createClient } from '../supabase/client.ts'
+import { createClient, isSupabaseConfigured } from '../supabase/client.ts'
 import { PrintERPDataStore, STORAGE_KEYS, type StorageKey, CLIENT_TAB_ID } from '../db/data-store.ts'
 
 function triggerPopupNotification(notification: any) {
@@ -246,7 +246,7 @@ class RealtimeSubscriptionManager {
     event: string,
     callback: (payload: T) => void
   ): () => void {
-    if (!companyId) return () => {}
+    if (!companyId || !isSupabaseConfigured()) return () => {}
 
     const channelName = `company:${companyId}:${topic}`
     let channelRef = this.activeChannels.get(channelName)
@@ -418,7 +418,7 @@ class RealtimeSubscriptionManager {
     companyId: string,
     onSyncEvent?: (event: { topic: string; eventType: string; record: any }) => void
   ): () => void {
-    if (!companyId) return () => {}
+    if (!companyId || !isSupabaseConfigured()) return () => {}
 
     this.currentTenantCompanyId = companyId
     const channelName = `company:${companyId}:realtime`
@@ -565,7 +565,7 @@ class RealtimeSubscriptionManager {
   subscribeToPlatformNotifications(
     onEvent?: (event: PostgresChangeEvent<any>) => void
   ): () => void {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || !isSupabaseConfigured()) {
       return () => {}
     }
 
