@@ -36,7 +36,9 @@ export type GroupedSearchResults = {
 export interface QuickCommand {
   id: string
   title: string
+  titleBn?: string
   subtitle: string
+  subtitleBn?: string
   icon: string
   href: string
   shortcut?: string

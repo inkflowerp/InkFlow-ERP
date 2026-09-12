@@ -25,7 +25,9 @@ export const QUICK_COMMANDS: QuickCommand[] = [
   {
     id: 'cmd-create-customer',
     title: 'Create Customer',
-    subtitle: 'Add new client profile, credit limit, and VAT BIN',
+    titleBn: 'নতুন কাস্টমার তৈরি',
+    subtitle: 'Add new client profile, credit limit, and address',
+    subtitleBn: 'কাস্টমার প্রোফাইল, ক্রেডিট লিমিট ও ঠিকানা যুক্ত করুন',
     icon: 'UserPlus',
     href: '/customers?action=new',
     shortcut: 'C',
@@ -34,7 +36,9 @@ export const QUICK_COMMANDS: QuickCommand[] = [
   {
     id: 'cmd-create-quotation',
     title: 'Create Quotation',
+    titleBn: 'কোটেশন তৈরি করুন',
     subtitle: 'Calculate dimensional square-foot estimate & discount',
+    subtitleBn: 'স্কয়ার-ফিট সাইজ ও আইটেম রেট অনুযায়ী কোটেশন তৈরি',
     icon: 'FileSpreadsheet',
     href: '/quotations?action=new',
     shortcut: 'Q',
@@ -43,7 +47,9 @@ export const QUICK_COMMANDS: QuickCommand[] = [
   {
     id: 'cmd-create-order',
     title: 'Create Order',
+    titleBn: 'নতুন জব অর্ডার',
     subtitle: 'Book job ticket with media specs and artwork proof',
+    subtitleBn: 'মিডিয়া স্পেসিফিকেশন ও আর্টওয়ার্ক সহ কাজের অর্ডার',
     icon: 'ShoppingBag',
     href: '/orders?action=new',
     shortcut: 'O',
@@ -52,7 +58,9 @@ export const QUICK_COMMANDS: QuickCommand[] = [
   {
     id: 'cmd-record-payment',
     title: 'Record Payment',
+    titleBn: 'পেমেন্ট রিসিট (MR)',
     subtitle: 'Collect cash, bKash, Nagad, or bank money receipt',
+    subtitleBn: 'ক্যাশ, বিকাশ, নগদ বা ব্যাংক মানি রিসিট এন্ট্রি',
     icon: 'CreditCard',
     href: '/billing?action=record-payment',
     shortcut: 'P',
@@ -61,7 +69,9 @@ export const QUICK_COMMANDS: QuickCommand[] = [
   {
     id: 'cmd-create-purchase',
     title: 'Create Purchase',
+    titleBn: 'কাঁচামাল ক্রয় অর্ডার',
     subtitle: 'Order raw materials (flex rolls, vinyl, inks) from vendor',
+    subtitleBn: 'ফ্লেক্স রোল, ভিনাইল ও কালির সাপ্লায়ার পারচেজ অর্ডার',
     icon: 'Truck',
     href: '/purchases?action=new',
     shortcut: 'B',
@@ -70,7 +80,9 @@ export const QUICK_COMMANDS: QuickCommand[] = [
   {
     id: 'cmd-add-expense',
     title: 'Add Expense',
+    titleBn: 'খরচ ভাউচার যোগ',
     subtitle: 'Record workshop utility, machine parts, or transport voucher',
+    subtitleBn: 'কারখানা বিল, যন্ত্রাংশ বা অফিস যাতায়াত খরচ রেকর্ড',
     icon: 'Receipt',
     href: '/accounting?action=add-expense',
     shortcut: 'E',
