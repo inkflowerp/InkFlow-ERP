@@ -264,6 +264,7 @@ export function AttendancePunchModal({
                 Timestamp:{' '}
                 <strong className="text-slate-900 dark:text-white font-mono">
                   {new Date(successRecord.checked_at).toLocaleTimeString('en-US', {
+                    timeZone: 'Asia/Dhaka',
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: true,

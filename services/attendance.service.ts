@@ -23,6 +23,8 @@ import {
   evaluateGeofence,
   validateAttendanceTransition,
   validateCoordinates,
+  getAttendanceLocalDate,
+  formatAttendanceTime,
 } from '@/lib/attendance/geofence-utils'
 
 export {
@@ -32,6 +34,8 @@ export {
   evaluateGeofence,
   validateAttendanceTransition,
   validateCoordinates,
+  getAttendanceLocalDate,
+  formatAttendanceTime,
 }
 
 export class AttendanceService {
@@ -442,7 +446,7 @@ export class AttendanceService {
     }
 
     // 8. Idempotency & Duplicate Prevention
-    const todayStr = new Date().toISOString().split('T')[0]
+    const todayStr = getAttendanceLocalDate(new Date(), 'Asia/Dhaka')
     const todayRecords = await AttendanceRepository.getTodayAttendanceForEmployee(
       employeeId,
       companyId,
@@ -469,9 +473,8 @@ export class AttendanceService {
 
     if (attendanceType === 'CHECK_IN') {
       if (hasCheckedIn && !hasCheckedOut) {
-        const checkInTime = new Date(
-          todayRecords.find((r) => r.attendance_type === 'CHECK_IN')!.checked_at
-        ).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+        const checkInPunch = todayRecords.find((r) => r.attendance_type === 'CHECK_IN')!
+        const checkInTime = formatAttendanceTime(checkInPunch.checked_at)
 
         return {
           success: false,
@@ -541,11 +544,7 @@ export class AttendanceService {
 
     // 11. Dispatch in-app notification to business owners / managers
     try {
-      const punchTime = new Date(nowIso).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      })
+      const punchTime = formatAttendanceTime(nowIso, 'Asia/Dhaka')
 
       await CommunicationService.createInAppNotification(companyId, {
         user_id: userId || '',
@@ -570,11 +569,7 @@ export class AttendanceService {
         distanceMeters: Math.round(distanceMeters),
         allowedRadiusMeters: allowedRadius,
         accuracyMeters: Math.round(accuracy),
-        checkedAt: new Date(nowIso).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        }),
+        checkedAt: formatAttendanceTime(nowIso, 'Asia/Dhaka'),
         attendanceType,
       },
     }

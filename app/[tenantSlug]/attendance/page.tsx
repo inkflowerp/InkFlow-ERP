@@ -517,6 +517,7 @@ export default function EmployeeAttendancePage() {
                     <span className="text-xs font-bold text-slate-900 dark:text-white">{rec.attendance_date}</span>
                     <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                       {new Date(rec.checked_at).toLocaleTimeString('en-US', {
+                        timeZone: 'Asia/Dhaka',
                         hour: '2-digit',
                         minute: '2-digit',
                         hour12: true,

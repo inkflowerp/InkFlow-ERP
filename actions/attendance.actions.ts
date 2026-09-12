@@ -15,7 +15,8 @@ import {
   AttendanceAuditLogRecord,
 } from '@/types/attendance.types'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { resolveCompanyUuid } from '@/lib/repositories/attendance.repository'
+import { AttendanceRepository, resolveCompanyUuid } from '@/lib/repositories/attendance.repository'
+import { getAttendanceLocalDate, formatAttendanceTime } from '@/lib/attendance/geofence-utils'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -349,33 +350,81 @@ export async function getEmployeeTodayStatusAction(
       }
     }
 
-    const todayStr = new Date().toISOString().split('T')[0]
-    const records = await AttendanceService.getLiveAttendanceFeed(tenant.companyId, todayStr)
-    const employeeRecords = records.filter((r) => r.employee_id === employee.id)
+    const todayStr = getAttendanceLocalDate(new Date(), 'Asia/Dhaka')
+    let records = await AttendanceRepository.getTodayAttendanceForEmployee(
+      employee.id,
+      tenant.companyId,
+      todayStr
+    )
 
-    const checkInRecord = employeeRecords.find((r) => r.attendance_type === 'CHECK_IN')
-    const checkOutRecord = employeeRecords.find((r) => r.attendance_type === 'CHECK_OUT')
+    // Fallback: Check UTC today string if different from local date
+    if (records.length === 0) {
+      const utcTodayStr = new Date().toISOString().split('T')[0]
+      if (utcTodayStr !== todayStr) {
+        records = await AttendanceRepository.getTodayAttendanceForEmployee(
+          employee.id,
+          tenant.companyId,
+          utcTodayStr
+        )
+      }
+    }
+
+    // Sort check-ins ascending (earliest first) and check-outs descending (latest first)
+    const checkIns = records
+      .filter((r) => r.attendance_type === 'CHECK_IN')
+      .sort((a, b) => new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime())
+
+    const checkOuts = records
+      .filter((r) => r.attendance_type === 'CHECK_OUT')
+      .sort((a, b) => new Date(b.checked_at).getTime() - new Date(a.checked_at).getTime())
+
+    const earliestCheckIn = checkIns[0]
+    const latestCheckOut = checkOuts[0]
+
+    let checkInTime = earliestCheckIn
+      ? formatAttendanceTime(earliestCheckIn.checked_at, 'Asia/Dhaka')
+      : undefined
+
+    let checkOutTime = latestCheckOut
+      ? formatAttendanceTime(latestCheckOut.checked_at, 'Asia/Dhaka')
+      : undefined
+
+    let hasCheckedIn = !!earliestCheckIn
+    let hasCheckedOut = !!latestCheckOut
+
+    // Fallback check on public.attendances table if no punch records found in attendance_records
+    if (!hasCheckedIn && !hasCheckedOut) {
+      try {
+        const { data: dailyAtt } = await (admin as any)
+          .from('attendances')
+          .select('check_in_time, check_out_time, status')
+          .eq('employee_id', employee.id)
+          .eq('attendance_date', todayStr)
+          .maybeSingle()
+
+        if (dailyAtt) {
+          if (dailyAtt.check_in_time) {
+            hasCheckedIn = true
+            checkInTime = dailyAtt.check_in_time
+          }
+          if (dailyAtt.check_out_time) {
+            hasCheckedOut = true
+            checkOutTime = dailyAtt.check_out_time
+          }
+        }
+      } catch (attErr) {
+        console.warn('[getEmployeeTodayStatusAction] Daily attendances fallback query skipped:', attErr)
+      }
+    }
 
     return {
       success: true,
       data: {
-        hasCheckedIn: !!checkInRecord,
-        hasCheckedOut: !!checkOutRecord,
-        checkInTime: checkInRecord
-          ? new Date(checkInRecord.checked_at).toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true,
-            })
-          : undefined,
-        checkOutTime: checkOutRecord
-          ? new Date(checkOutRecord.checked_at).toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true,
-            })
-          : undefined,
-        todayRecords: employeeRecords,
+        hasCheckedIn,
+        hasCheckedOut,
+        checkInTime,
+        checkOutTime,
+        todayRecords: records,
         employeeName: employee.name || userFullName,
       },
     }
@@ -408,8 +457,11 @@ export async function getEmployeeHistoryAction(
 
     if (!employee) return { success: true, data: [] }
 
-    const history = await AttendanceService.getLiveAttendanceFeed(tenant.companyId)
-    const userHistory = history.filter((h) => h.employee_id === employee.id)
+    const userHistory = await AttendanceRepository.getEmployeeAttendanceHistory(
+      employee.id,
+      tenant.companyId,
+      50
+    )
 
     return { success: true, data: userHistory }
   } catch (error: any) {

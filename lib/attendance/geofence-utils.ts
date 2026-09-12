@@ -192,3 +192,43 @@ export function validateAttendanceTransition(
 
   return { allowed: true }
 }
+
+/**
+ * Resolves local calendar date (YYYY-MM-DD) in Bangladesh Standard Time (Asia/Dhaka) or custom timezone.
+ */
+export function getAttendanceLocalDate(date = new Date(), timeZone = 'Asia/Dhaka'): string {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    return formatter.format(date)
+  } catch {
+    return date.toISOString().split('T')[0]
+  }
+}
+
+/**
+ * Formats timestamp into 12-hour local time (e.g. "09:30 AM") in Bangladesh Standard Time.
+ */
+export function formatAttendanceTime(dateInput?: string | Date | null, timeZone = 'Asia/Dhaka'): string {
+  if (!dateInput) return ''
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
+  if (isNaN(d.getTime())) return String(dateInput)
+  try {
+    return d.toLocaleTimeString('en-US', {
+      timeZone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+  } catch {
+    return d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+  }
+}

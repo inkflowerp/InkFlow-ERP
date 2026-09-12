@@ -15,6 +15,10 @@ import {
   CreateAttendanceLocationInput,
   UpdateAttendanceLocationInput,
 } from '@/types/attendance.types'
+import {
+  getAttendanceLocalDate,
+  formatAttendanceTime,
+} from '@/lib/attendance/geofence-utils'
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -646,11 +650,7 @@ export class AttendanceRepository {
 
     // Also update or insert daily summary row into public.attendances for backward compatibility with payroll/HR
     try {
-      const punchTimeStr = new Date(record.checked_at).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      })
+      const punchTimeStr = formatAttendanceTime(record.checked_at, 'Asia/Dhaka')
 
       const { data: existingAtt } = await (admin as any)
         .from('attendances')
@@ -724,7 +724,7 @@ export class AttendanceRepository {
   ): Promise<AttendanceRecord[]> {
     const admin = createAdminClient()
     const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
-    const targetDate = dateStr || new Date().toISOString().split('T')[0]
+    const targetDate = dateStr || getAttendanceLocalDate(new Date(), 'Asia/Dhaka')
 
     const { data, error } = await (admin as any)
       .from('attendance_records')
@@ -817,7 +817,7 @@ export class AttendanceRepository {
   ): Promise<AttendanceRecord[]> {
     const admin = createAdminClient()
     const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
-    const targetDate = dateStr || new Date().toISOString().split('T')[0]
+    const targetDate = dateStr || getAttendanceLocalDate(new Date(), 'Asia/Dhaka')
 
     const { data, error } = await (admin as any)
       .from('attendance_records')
