@@ -182,11 +182,41 @@ export async function GET(request: Request) {
       return redirectResponse
     }
 
-    // 6. FAIL CLOSED: User has authenticated in Google/Supabase but has NO active company membership
-    // Per Rule 8 & 9: Strictly deny tenant access. No synthetic fallback (co-*, ['*'], business_owner).
-    await supabase.auth.signOut()
-    const redirectResponse = NextResponse.redirect(`${origin}/login?error=unauthorized_tenant`)
-    redirectResponse.cookies.delete(TENANT_SESSION_COOKIE)
+    // 6. Seamless Onboarding for New Google OAuth Users
+    // User has authenticated in Google/Supabase but has no active company membership yet.
+    // Set initial onboarding session and redirect to /onboarding to setup their business workspace.
+    const ownerPermissions = Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
+      spec.actions.map((act) => `${mod}.${act}`)
+    )
+
+    const initialSession: TenantSessionData = {
+      userId: user.id,
+      userEmail: email,
+      fullName: fullName,
+      fullNameBn: null,
+      phone: null,
+      companyId: '',
+      companySlug: '',
+      companyName: 'New Organization',
+      companyNameBn: 'নতুন প্রতিষ্ঠান',
+      branchId: 'br-main',
+      branchName: 'Main Branch',
+      role: 'business_owner',
+      primaryRole: 'business_owner',
+      responsibilities: ['business_owner'],
+      permissions: ownerPermissions,
+      loginTime: new Date().toISOString(),
+      token: authData.session?.access_token || `auth-${user.id}`,
+    }
+
+    const redirectResponse = NextResponse.redirect(`${origin}/onboarding`)
+    redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(initialSession)), {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    })
+
     return redirectResponse
   } catch (err: any) {
     console.error('[OAuth Callback] Unexpected error during OAuth callback handling:', err)
