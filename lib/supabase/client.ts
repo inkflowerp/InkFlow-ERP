@@ -27,31 +27,7 @@ export function createClient() {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be configured in environment.')
   }
 
-  const client = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        if (typeof document === 'undefined') return []
-        return document.cookie
-          .split('; ')
-          .filter(Boolean)
-          .map((cookie) => {
-            const [name, ...rest] = cookie.split('=')
-            return { name, value: decodeURIComponent(rest.join('=')) }
-          })
-      },
-      setAll(cookiesToSet) {
-        if (typeof document === 'undefined') return
-        cookiesToSet.forEach(({ name, value, options }) => {
-          let cookieStr = `${name}=${encodeURIComponent(value)}`
-          if (options?.maxAge) cookieStr += `; max-age=${options.maxAge}`
-          if (options?.path) cookieStr += `; path=${options.path || '/'}`
-          if (options?.sameSite) cookieStr += `; sameSite=${options.sameSite}`
-          if (options?.secure) cookieStr += `; secure`
-          document.cookie = cookieStr
-        })
-      },
-    },
-  })
+  const client = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
 
   if (typeof window !== 'undefined') {
     cachedBrowserClient = client
@@ -59,3 +35,4 @@ export function createClient() {
 
   return client
 }
+

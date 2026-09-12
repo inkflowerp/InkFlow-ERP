@@ -84,9 +84,10 @@ function LoginForm() {
     } else if (errParam === 'unauthorized' || errParam === 'unauthorized_tenant') {
       setError(
         locale === 'bn'
-          ? 'এই গুগল অ্যাকাউন্টটির জন্য কোনো অনুমোদিত ব্যবসায়িক প্রতিষ্ঠান পাওয়া যায়নি।'
-          : 'This Google account is not authorized for this business.'
+          ? 'এই গুগল অ্যাকাউন্টটির সাথে কোনো অনুমোদিত প্রতিষ্ঠানের সংযোগ নেই। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন অথবা নতুন প্রতিষ্ঠান নিবন্ধন করুন।'
+          : 'This Google account is not associated with an authorized business. Please contact your administrator or create a new company account.'
       )
+
     } else if (errParam === 'cancelled') {
       setError(
         locale === 'bn'

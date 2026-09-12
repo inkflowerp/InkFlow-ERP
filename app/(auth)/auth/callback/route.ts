@@ -31,6 +31,7 @@ export async function GET(request: Request) {
     const { data: authData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
     if (exchangeError || !authData?.user) {
+      console.error('[OAuth Callback] Code exchange error:', exchangeError)
       return NextResponse.redirect(`${origin}/login?error=oauth_failure`)
     }
 
@@ -59,6 +60,19 @@ export async function GET(request: Request) {
       )
     } catch {
       // Non-blocking sync
+    }
+
+    // 3b. Reconcile invited or pre-created company memberships matching user's verified Google email
+    if (email) {
+      try {
+        const admin = createAdminClient()
+        await (admin as any)
+          .from('company_users')
+          .update({ user_id: user.id, status: 'active', updated_at: new Date().toISOString() })
+          .ilike('invited_email', email)
+      } catch {
+        // Non-blocking
+      }
     }
 
     // 4. Hard Security Boundary: Platform Administrator Accounts
@@ -166,7 +180,9 @@ export async function GET(request: Request) {
     const redirectResponse = NextResponse.redirect(`${origin}/login?error=unauthorized_tenant`)
     redirectResponse.cookies.delete(TENANT_SESSION_COOKIE)
     return redirectResponse
-  } catch {
+  } catch (err) {
+    console.error('[OAuth Callback] Unexpected error during OAuth callback handling:', err)
     return NextResponse.redirect(`${origin}/login?error=oauth_failure`)
   }
 }
+
