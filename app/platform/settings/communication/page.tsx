@@ -153,6 +153,14 @@ export default function PlatformEmailGatewayPage() {
         showNotification('Platform Gmail account connected and verified for system delivery!', 'success')
         url.searchParams.delete('gmail')
         window.history.replaceState({}, document.title, url.toString())
+      } else if (url.searchParams.get('error') === 'google_client_id_missing') {
+        showNotification('Google OAuth credentials not configured. Please add GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET to .env.local', 'error')
+        url.searchParams.delete('error')
+        window.history.replaceState({}, document.title, url.toString())
+      } else if (url.searchParams.get('error')) {
+        showNotification(`Google OAuth failed: ${url.searchParams.get('error')}`, 'error')
+        url.searchParams.delete('error')
+        window.history.replaceState({}, document.title, url.toString())
       }
     }
   }, [])
