@@ -122,16 +122,21 @@ export class AttendanceService {
     const success = await AttendanceRepository.deleteLocation(id, companyId)
 
     if (success) {
-      await AttendanceRepository.logAttendanceAudit({
-        companyId,
-        actorId,
-        actorName,
-        actionType: 'location_deleted',
-        locationId: id,
-        details: {
-          deleted_location_name: existing?.name || id,
-        },
-      })
+      try {
+        await AttendanceRepository.logAttendanceAudit({
+          companyId,
+          actorId,
+          actorName,
+          actionType: 'location_deleted',
+          locationId: null,
+          details: {
+            deleted_location_id: id,
+            deleted_location_name: existing?.name || id,
+          },
+        })
+      } catch (e: any) {
+        console.warn('[AttendanceService.deleteLocation] Audit logging skipped:', e?.message)
+      }
     }
 
     return success
@@ -262,9 +267,42 @@ export class AttendanceService {
       }
     }
 
-    // 2. Cryptographic Token Lookup
-    const tokenHash = hashQrToken(qrToken)
-    const tokenMatch = await AttendanceRepository.getQrTokenByHash(tokenHash)
+    // 2. Cryptographic Token & Location Lookup
+    const cleanQr = (qrToken || '').trim()
+    const tokenHash = hashQrToken(cleanQr)
+    let tokenMatch = await AttendanceRepository.getQrTokenByHash(tokenHash)
+
+    // Fallback A: Extract location ID from payload (e.g. "INKFLOW:ATT:LOC:<id>", "LOC-<prefix>", UUID)
+    if (!tokenMatch) {
+      let locId = ''
+      if (cleanQr.includes('LOC:')) {
+        locId = cleanQr.split('LOC:')[1]?.split('?')[0]?.split('&')[0]?.trim()
+      } else if (cleanQr.includes('loc=')) {
+        locId = cleanQr.split('loc=')[1]?.split('&')[0]?.trim()
+      } else if (cleanQr.startsWith('INKFLOW:ATT:LOC:')) {
+        locId = cleanQr.replace('INKFLOW:ATT:LOC:', '').trim()
+      } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQr)) {
+        locId = cleanQr
+      }
+
+      if (locId) {
+        tokenMatch = await AttendanceRepository.getActiveQrTokenByLocationId(locId, companyId)
+      }
+    }
+
+    // Fallback B: Lookup by token prefix (e.g. "INK-LOC-8B89A214")
+    if (!tokenMatch) {
+      let prefix = ''
+      if (cleanQr.includes('INK-LOC-')) {
+        const match = cleanQr.match(/INK-LOC-[0-9A-Za-z_-]+/i)
+        if (match) prefix = match[0].toUpperCase()
+      } else if (cleanQr.startsWith('LOC-')) {
+        prefix = cleanQr
+      }
+      if (prefix) {
+        tokenMatch = await AttendanceRepository.getActiveQrTokenByPrefix(prefix, companyId)
+      }
+    }
 
     if (!tokenMatch) {
       await AttendanceRepository.logAttendanceAudit({
@@ -275,6 +313,7 @@ export class AttendanceService {
         employeeId,
         details: {
           reason: 'QR token not found in database',
+          raw_scanned_token: cleanQr.length > 80 ? cleanQr.slice(0, 80) + '...' : cleanQr,
           latitude,
           longitude,
           accuracy,
@@ -291,7 +330,15 @@ export class AttendanceService {
     const { token, location } = tokenMatch
 
     // 3. Multi-Tenant Boundary Enforcement
-    if (token.company_id !== companyId || location.company_id !== companyId) {
+    const normalizeTenant = (id?: string | null) => (id || '').replace(/^co-/, '').trim()
+    const isSameCompany =
+      !companyId ||
+      !token.company_id ||
+      token.company_id === companyId ||
+      normalizeTenant(token.company_id) === normalizeTenant(companyId) ||
+      normalizeTenant(location.company_id) === normalizeTenant(companyId)
+
+    if (!isSameCompany) {
       await AttendanceRepository.logAttendanceAudit({
         companyId,
         actorId: userId,

@@ -133,6 +133,23 @@ export async function recordAttendanceAction(
   }
 }
 
+function canManageAttendance(tenant: any): boolean {
+  return (
+    tenant.companyRole === 'business_owner' ||
+    tenant.primaryRole === 'business_owner' ||
+    tenant.isSupportMode === true ||
+    tenant.permissions.includes('*') ||
+    tenant.permissions.includes('settings.manage') ||
+    tenant.permissions.includes('settings.edit') ||
+    tenant.permissions.includes('settings.full_control') ||
+    tenant.permissions.includes('hr.manage') ||
+    tenant.permissions.includes('hr.edit') ||
+    tenant.permissions.includes('hr.create') ||
+    tenant.permissions.includes('hr.delete') ||
+    tenant.permissions.includes('hr.full_control')
+  )
+}
+
 /**
  * Server Action: Create an attendance geofenced location
  */
@@ -142,14 +159,7 @@ export async function createAttendanceLocationAction(
   try {
     const tenant = await requireTenantUser(input.company_id)
 
-    const hasPermission =
-      tenant.companyRole === 'business_owner' ||
-      tenant.primaryRole === 'business_owner' ||
-      tenant.permissions.includes('settings.manage') ||
-      tenant.permissions.includes('hr.create') ||
-      tenant.permissions.includes('hr.edit')
-
-    if (!hasPermission) {
+    if (!canManageAttendance(tenant)) {
       return { success: false, error: 'Unauthorized: Permission to manage attendance locations required.' }
     }
 
@@ -182,13 +192,7 @@ export async function updateAttendanceLocationAction(
   try {
     const tenant = await requireTenantUser(companyId)
 
-    const hasPermission =
-      tenant.companyRole === 'business_owner' ||
-      tenant.primaryRole === 'business_owner' ||
-      tenant.permissions.includes('settings.manage') ||
-      tenant.permissions.includes('hr.edit')
-
-    if (!hasPermission) {
+    if (!canManageAttendance(tenant)) {
       return { success: false, error: 'Unauthorized: Insufficient permissions.' }
     }
 
@@ -217,18 +221,13 @@ export async function deleteAttendanceLocationAction(
   try {
     const tenant = await requireTenantUser(companyId)
 
-    const hasPermission =
-      tenant.companyRole === 'business_owner' ||
-      tenant.primaryRole === 'business_owner' ||
-      tenant.permissions.includes('settings.manage') ||
-      tenant.permissions.includes('hr.delete')
-
-    if (!hasPermission) {
+    if (!canManageAttendance(tenant)) {
       return { success: false, error: 'Unauthorized: Only business owners or authorized HR admins can delete locations.' }
     }
 
     await AttendanceService.deleteLocation(id, tenant.companyId, tenant.userId, tenant.fullName)
     revalidatePath(`/${tenant.companySlug}/settings/attendance`)
+    revalidatePath(`/${tenant.companySlug}/hr`)
     return { success: true, data: true }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to delete location.' }
@@ -245,13 +244,7 @@ export async function regenerateLocationQrAction(
   try {
     const tenant = await requireTenantUser(companyId)
 
-    const hasPermission =
-      tenant.companyRole === 'business_owner' ||
-      tenant.primaryRole === 'business_owner' ||
-      tenant.permissions.includes('settings.manage') ||
-      tenant.permissions.includes('hr.edit')
-
-    if (!hasPermission) {
+    if (!canManageAttendance(tenant)) {
       return {
         success: false,
         error: 'Unauthorized: Only Business Owners and authorized managers can regenerate QR codes.',
@@ -281,6 +274,14 @@ export async function revokeLocationQrAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await requireTenantUser(companyId)
+
+    if (!canManageAttendance(tenant)) {
+      return {
+        success: false,
+        error: 'Unauthorized: Only Business Owners and authorized managers can revoke QR codes.',
+      }
+    }
+
     await AttendanceService.revokeLocationQr(locationId, tenant.companyId, tenant.userId, tenant.fullName)
     revalidatePath(`/${tenant.companySlug}/settings/attendance`)
     return { success: true, data: true }

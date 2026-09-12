@@ -78,6 +78,8 @@ export default function AttendanceSettingsPage() {
   const [isPrintPosterOpen, setIsPrintPosterOpen] = useState(false)
   const [isRegenerateConfirmOpen, setIsRegenerateConfirmOpen] = useState(false)
   const [isRevokeConfirmOpen, setIsRevokeConfirmOpen] = useState(false)
+  const [isDeleteLocationConfirmOpen, setIsDeleteLocationConfirmOpen] = useState(false)
+  const [locationToDelete, setLocationToDelete] = useState<AttendanceLocationRecord | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
@@ -240,21 +242,31 @@ export default function AttendanceSettingsPage() {
     }
   }
 
-  // Handle Delete Location
-  const handleDeleteLocation = async (loc: AttendanceLocationRecord) => {
-    if (!company) return
-    if (!confirm(`Are you sure you want to delete "${loc.name}"? This cannot be undone.`)) return
+  // Handle Delete Location Confirmation
+  const openDeleteConfirm = (loc: AttendanceLocationRecord) => {
+    setLocationToDelete(loc)
+    setIsDeleteLocationConfirmOpen(true)
+  }
 
+  const handleConfirmDeleteLocation = async () => {
+    if (!locationToDelete || !company) return
+
+    setIsSubmitting(true)
     try {
-      const res = await deleteAttendanceLocationAction(loc.id, company.id)
+      const res = await deleteAttendanceLocationAction(locationToDelete.id, company.id)
       if (res.success) {
-        showNotification('success', `Location "${loc.name}" deleted.`)
+        showNotification('success', `Location "${locationToDelete.name}" and QR terminal deleted.`)
+        setIsDeleteLocationConfirmOpen(false)
+        setLocationToDelete(null)
+        setIsQrDetailOpen(false)
         loadAllData()
       } else {
         showNotification('error', res.error || 'Failed to delete location.')
       }
     } catch (err: any) {
       showNotification('error', err.message)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -677,9 +689,9 @@ export default function AttendanceSettingsPage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteLocation(loc)}
-                            className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800"
-                            title="Delete Location"
+                            onClick={() => openDeleteConfirm(loc)}
+                            className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition-colors"
+                            title="Delete Location & QR Terminal"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -861,6 +873,16 @@ export default function AttendanceSettingsPage() {
                     >
                       <Ban className="h-3.5 w-3.5 mr-1 text-rose-400" />
                       Revoke
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openDeleteConfirm(loc)}
+                      className="border-rose-500/30 bg-slate-900 text-rose-400 hover:bg-rose-950/40 text-xs h-8 rounded-lg font-bold"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1 text-rose-400" />
+                      Delete
                     </Button>
                   </div>
                 </div>
@@ -1371,7 +1393,7 @@ export default function AttendanceSettingsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2">
               <Button
                 type="button"
                 size="sm"
@@ -1422,6 +1444,20 @@ export default function AttendanceSettingsPage() {
               >
                 <Ban className="h-3.5 w-3.5 mr-1" />
                 Revoke
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsQrDetailOpen(false)
+                  openDeleteConfirm(selectedLocation)
+                }}
+                className="border-rose-500/40 bg-slate-900 text-rose-400 hover:bg-rose-950/50 text-xs font-bold"
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1" />
+                Delete
               </Button>
             </div>
           </div>
@@ -1509,6 +1545,57 @@ export default function AttendanceSettingsPage() {
               className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs"
             >
               Confirm Revocation
+            </Button>
+          </div>
+        </div>
+      </ModalDialog>
+
+      {/* DELETE LOCATION & QR CONFIRMATION MODAL */}
+      <ModalDialog
+        open={isDeleteLocationConfirmOpen}
+        onOpenChange={(v) => !v && setIsDeleteLocationConfirmOpen(false)}
+        title={tBilingual('Delete Location & QR Terminal?', 'লোকেশন ও কিউআর টার্মিনাল মুছবেন?')}
+        description={tBilingual(
+          'Permanent deletion of physical location and cryptographic QR token',
+          'লোকেশন এবং সংশ্লিষ্ট সকল কিউআর টোকেন স্থায়ীভাবে মুছে ফেলা হবে'
+        )}
+      >
+        <div className="space-y-4 pt-2">
+          <div className="p-4 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h4 className="font-bold text-white">Permanent Deletion Warning (স্থায়ীভাবে মুছে ফেলা)</h4>
+              <p>
+                Deleting <strong>&ldquo;{locationToDelete?.name}&rdquo;</strong> will permanently remove this location and immediately deactivate all associated QR codes. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-3 bg-slate-900 rounded-lg text-xs text-slate-400 font-mono">
+            Target Location: <strong className="text-white">{locationToDelete?.name}</strong> • Prefix:{' '}
+            <strong className="text-indigo-300">
+              {locationToDelete?.active_qr_token?.token_prefix || 'ACTIVE'}
+            </strong>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDeleteLocationConfirmOpen(false)}
+              className="border-slate-700 text-slate-300 text-xs"
+            >
+              Cancel (বাতিল)
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              isLoading={isSubmitting}
+              onClick={handleConfirmDeleteLocation}
+              className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs"
+            >
+              Confirm Delete (মুছে ফেলুন)
             </Button>
           </div>
         </div>

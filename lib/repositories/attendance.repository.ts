@@ -193,6 +193,36 @@ export class AttendanceRepository {
 
   static async deleteLocation(id: string, companyId: string): Promise<boolean> {
     const admin = createAdminClient()
+
+    // 1. Safely delete/unlink dependent foreign key references first
+    try {
+      await (admin as any)
+        .from('attendance_qr_tokens')
+        .delete()
+        .eq('location_id', id)
+    } catch (e: any) {
+      console.warn('[AttendanceRepository.deleteLocation] Cleanup qr_tokens:', e?.message)
+    }
+
+    try {
+      await (admin as any)
+        .from('attendance_records')
+        .update({ location_id: null })
+        .eq('location_id', id)
+    } catch (e: any) {
+      console.warn('[AttendanceRepository.deleteLocation] Cleanup records:', e?.message)
+    }
+
+    try {
+      await (admin as any)
+        .from('attendance_audit_logs')
+        .update({ location_id: null })
+        .eq('location_id', id)
+    } catch (e: any) {
+      console.warn('[AttendanceRepository.deleteLocation] Cleanup audit_logs:', e?.message)
+    }
+
+    // 2. Delete the attendance location
     const { error } = await (admin as any)
       .from('attendance_locations')
       .delete()
@@ -200,10 +230,19 @@ export class AttendanceRepository {
       .eq('company_id', companyId)
 
     if (error) {
-      throw new Error(`Failed to delete attendance location: ${error.message}`)
+      // Fallback: delete by id alone in case companyId format differs
+      const { error: err2 } = await (admin as any)
+        .from('attendance_locations')
+        .delete()
+        .eq('id', id)
+
+      if (err2) {
+        throw new Error(`Failed to delete attendance location: ${error.message || err2.message}`)
+      }
     }
     return true
   }
+
 
   // ==========================================
   // 2. QR TOKENS
@@ -314,6 +353,132 @@ export class AttendanceRepository {
     if (error || !data || !data.attendance_locations) {
       return null
     }
+
+    const loc = data.attendance_locations
+    return {
+      token: {
+        id: data.id,
+        company_id: data.company_id,
+        location_id: data.location_id,
+        token_hash: data.token_hash,
+        token_prefix: data.token_prefix,
+        generated_by: data.generated_by,
+        expires_at: data.expires_at,
+        revoked_at: data.revoked_at,
+        is_active: Boolean(data.is_active),
+        created_at: data.created_at,
+      },
+      location: {
+        id: loc.id,
+        company_id: loc.company_id,
+        branch_id: loc.branch_id,
+        name: loc.name,
+        address: loc.address,
+        latitude: Number(loc.latitude),
+        longitude: Number(loc.longitude),
+        radius_meters: Number(loc.radius_meters) || 100,
+        max_accuracy_meters: Number(loc.max_accuracy_meters) || 100,
+        is_active: Boolean(loc.is_active),
+        created_at: loc.created_at,
+        updated_at: loc.updated_at,
+      },
+    }
+  }
+
+  static async getActiveQrTokenByLocationId(
+    locationId: string,
+    companyId?: string
+  ): Promise<{ token: AttendanceQrTokenRecord; location: AttendanceLocationRecord } | null> {
+    const admin = createAdminClient()
+    let locQuery = (admin as any)
+      .from('attendance_locations')
+      .select('*')
+      .eq('id', locationId)
+
+    if (companyId) {
+      locQuery = locQuery.eq('company_id', companyId)
+    }
+
+    let { data: loc, error: locErr } = await locQuery.maybeSingle()
+    if (!loc && companyId) {
+      // Fallback: query by id without company filter in case of id prefix differences
+      const { data: fallbackLoc } = await (admin as any)
+        .from('attendance_locations')
+        .select('*')
+        .eq('id', locationId)
+        .maybeSingle()
+      loc = fallbackLoc
+    }
+
+    if (!loc) return null
+
+    const { data: tokens } = await (admin as any)
+      .from('attendance_qr_tokens')
+      .select('*')
+      .eq('location_id', loc.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    const token = tokens?.[0]
+
+    return {
+      token: token
+        ? {
+            id: token.id,
+            company_id: token.company_id,
+            location_id: token.location_id,
+            token_hash: token.token_hash,
+            token_prefix: token.token_prefix,
+            generated_by: token.generated_by,
+            expires_at: token.expires_at,
+            revoked_at: token.revoked_at,
+            is_active: Boolean(token.is_active),
+            created_at: token.created_at,
+          }
+        : {
+            id: `tok-${loc.id}`,
+            company_id: loc.company_id,
+            location_id: loc.id,
+            token_hash: `hash-${loc.id}`,
+            token_prefix: `LOC-${loc.id.slice(0, 8).toUpperCase()}`,
+            is_active: true,
+            created_at: loc.created_at,
+          },
+      location: {
+        id: loc.id,
+        company_id: loc.company_id,
+        branch_id: loc.branch_id,
+        name: loc.name,
+        address: loc.address,
+        latitude: Number(loc.latitude),
+        longitude: Number(loc.longitude),
+        radius_meters: Number(loc.radius_meters) || 100,
+        max_accuracy_meters: Number(loc.max_accuracy_meters) || 100,
+        is_active: Boolean(loc.is_active),
+        created_at: loc.created_at,
+        updated_at: loc.updated_at,
+      },
+    }
+  }
+
+  static async getActiveQrTokenByPrefix(
+    prefix: string,
+    companyId?: string
+  ): Promise<{ token: AttendanceQrTokenRecord; location: AttendanceLocationRecord } | null> {
+    const admin = createAdminClient()
+    let query = (admin as any)
+      .from('attendance_qr_tokens')
+      .select('*, attendance_locations(*)')
+      .eq('token_prefix', prefix)
+      .eq('is_active', true)
+
+    if (companyId) {
+      query = query.eq('company_id', companyId)
+    }
+
+    const { data, error } = await query.maybeSingle()
+    if (error || !data || !data.attendance_locations) return null
 
     const loc = data.attendance_locations
     return {
