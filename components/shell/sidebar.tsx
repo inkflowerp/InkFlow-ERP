@@ -112,12 +112,12 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'relative hidden lg:flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-900 select-none z-30',
+        'relative hidden lg:flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-900 select-none z-30 h-full max-h-full shrink-0 overflow-hidden',
         collapsed ? 'w-18' : 'w-64'
       )}
     >
       {/* Brand Header with CMYK Color Bars */}
-      <div className="flex h-16 items-center justify-between border-b border-slate-100 px-4 dark:border-slate-800">
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 px-4 dark:border-slate-800">
         {!collapsed ? (
           <div className="flex items-center gap-2.5">
             {/* CMYK Symbol: 4 dots representing Cyan, Magenta, Yellow, Key */}
@@ -156,7 +156,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation Sections */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-6 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700">
         {navSections
           .map((section) => {
             const filteredItems = section.items.filter((item) => isNavItemAllowed(item.href))
@@ -224,7 +224,7 @@ export function Sidebar() {
 
       {/* Footer / Bengali Hotline Support & Trial Upgrade Widget */}
       {!collapsed && (
-        <div className="border-t border-slate-100 p-3 dark:border-slate-800 space-y-2.5">
+        <div className="shrink-0 border-t border-slate-100 p-3 dark:border-slate-800 space-y-2.5">
           {/* Trial / Plan Upgrade Box */}
           {isTrial ? (
             <div className="rounded-xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-blue-500/10 p-3 border border-indigo-200/80 dark:border-indigo-800/60 space-y-2">
