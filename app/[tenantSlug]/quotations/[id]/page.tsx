@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   FileSpreadsheet,
   ArrowLeft,
@@ -50,16 +51,12 @@ import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface QuotationDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function QuotationDetailPage({ params }: QuotationDetailPageProps) {
-  const resolvedParams = use(params)
-  const quoteId = resolvedParams.id
+export default function QuotationDetailPage() {
+  const params = useParams()
+  const quoteId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [quotations, setQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
   const [allActivities, setAllActivities] = useDataStore<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])

@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Palette,
   ArrowLeft,
@@ -46,16 +47,12 @@ import {
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface DesignDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function DesignDetailPage({ params }: DesignDetailPageProps) {
-  const resolvedParams = use(params)
-  const jobId = resolvedParams.id
+export default function DesignDetailPage() {
+  const params = useParams()
+  const jobId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [jobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [])
   const job = jobs.find((j: DesignJobRecord) => j.id === jobId || j.design_number === jobId)

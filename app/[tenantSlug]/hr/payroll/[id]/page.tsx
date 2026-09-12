@@ -1,7 +1,8 @@
 'use client'
 
-import React, { use } from 'react'
+import React from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   ArrowLeft,
   Printer,
@@ -16,16 +17,12 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { formatBDT, numberToWordsBDT } from '@/lib/formatters'
 import { PayrollPeriodRecord } from '@/types/hr.types'
 
-interface PayrollDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function PayrollDetailPage({ params }: PayrollDetailPageProps) {
-  const resolvedParams = use(params)
-  const periodId = resolvedParams.id
+export default function PayrollDetailPage() {
+  const params = useParams()
+  const periodId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [payrollPeriods] = useDataStore<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, [])
   const period = payrollPeriods.find(

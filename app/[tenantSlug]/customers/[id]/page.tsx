@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Users,
   ArrowLeft,
@@ -21,6 +22,7 @@ import {
   Clock,
   CreditCard,
   Building,
+  Edit3,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -34,20 +36,14 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { CustomerRecord, CustomerCommunication } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
-import { Edit3 } from 'lucide-react'
-
 import { updateCustomerAction } from '@/actions/customer.actions'
 
-interface CustomerProfilePageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function CustomerProfilePage({ params }: CustomerProfilePageProps) {
-  const resolvedParams = use(params)
-  const customerId = resolvedParams.id
+export default function CustomerProfilePage() {
+  const params = useParams()
+  const customerId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const { data: customerList, updateItem: updateCustomerItem } = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS)
   const customers = Array.isArray(customerList) ? customerList : []

@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   History,
   ArrowLeft,
@@ -26,15 +27,11 @@ import { StockLedgerRecord, InventoryTransactionType } from '@/types/inventory.t
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface StockLedgerPageProps {
-  params: Promise<{ tenantSlug: string }>
-}
-
-export default function StockLedgerPage({ params }: StockLedgerPageProps) {
-  const resolvedParams = use(params)
+export default function StockLedgerPage() {
+  const params = useParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const [ledger] = useDataStore<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER, [])
   const [search, setSearch] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')

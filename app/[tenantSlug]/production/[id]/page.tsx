@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Printer,
   ArrowLeft,
@@ -28,10 +29,6 @@ import { ProductionJobRecord, FinishingTask, FabricationTask } from '@/types/pro
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface ProductionDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
 const ALL_FINISHING_TASKS: FinishingTask[] = [
   'lamination',
   'cutting',
@@ -50,12 +47,12 @@ const ALL_FABRICATION_TASKS: FabricationTask[] = [
   'led_installation',
 ]
 
-export default function ProductionJobDetailPage({ params }: ProductionDetailPageProps) {
-  const resolvedParams = use(params)
-  const jobId = resolvedParams.id
+export default function ProductionJobDetailPage() {
+  const params = useParams()
+  const jobId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [jobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
   const job = jobs.find((j) => j.id === jobId || j.production_job_number === jobId)

@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Calculator,
   ArrowLeft,
@@ -33,16 +34,12 @@ import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface CostingDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function JobCostingDetailPage({ params }: CostingDetailPageProps) {
-  const resolvedParams = use(params)
-  const cstId = resolvedParams.id
+export default function JobCostingDetailPage() {
+  const params = useParams()
+  const cstId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [isSalesRoleShielded, setIsSalesRoleShielded] = useState<boolean>(false)
   const [costings] = useDataStore<JobCostingRecord[]>(STORAGE_KEYS.JOB_COSTINGS, [])

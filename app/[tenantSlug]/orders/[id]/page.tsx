@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Briefcase,
   ArrowLeft,
@@ -44,10 +45,6 @@ import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface OrderDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
 const LIFECYCLE_STAGES = [
   { id: 'quotation', label: 'Quotation' },
   { id: 'approval', label: 'Approval' },
@@ -60,12 +57,12 @@ const LIFECYCLE_STAGES = [
   { id: 'completion', label: 'Completion' },
 ]
 
-export default function OrderDetailPage({ params }: OrderDetailPageProps) {
-  const resolvedParams = use(params)
-  const orderId = resolvedParams.id
+export default function OrderDetailPage() {
+  const params = useParams()
+  const orderId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
   const [allJobs] = useDataStore<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, [])

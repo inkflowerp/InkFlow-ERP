@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Disc,
   ArrowLeft,
@@ -28,15 +29,11 @@ import { InventoryRollRecord, StockLedgerRecord, MaterialRecord } from '@/types/
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface MountedRollsPageProps {
-  params: Promise<{ tenantSlug: string }>
-}
-
-export default function MountedRollsPage({ params }: MountedRollsPageProps) {
-  const resolvedParams = use(params)
+export default function MountedRollsPage() {
+  const params = useParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [rolls, setRolls] = useDataStore<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, [])
   const [selectedRollForCut, setSelectedRollForCut] = useState<InventoryRollRecord | null>(null)

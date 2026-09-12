@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Truck,
   ArrowLeft,
@@ -33,16 +34,12 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { CashBookEntryRecord } from '@/types/accounting.types'
 
-interface SupplierProfilePageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function SupplierProfilePage({ params }: SupplierProfilePageProps) {
-  const resolvedParams = use(params)
-  const supplierId = resolvedParams.id
+export default function SupplierProfilePage() {
+  const params = useParams()
+  const supplierId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const [suppliers] = useDataStore<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS, [])
   const [allPrices, setAllPrices] = useDataStore<SupplierMaterialPrice[]>(STORAGE_KEYS.SUPPLIER_PRICES, [])
 

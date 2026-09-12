@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Truck,
   ArrowLeft,
@@ -28,16 +29,12 @@ import { DeliveryChallanRecord, DeliveryStatus } from '@/types/logistics.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface DeliveryDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function DeliveryChallanDetailPage({ params }: DeliveryDetailPageProps) {
-  const resolvedParams = use(params)
-  const chId = resolvedParams.id
+export default function DeliveryChallanDetailPage() {
+  const params = useParams()
+  const chId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [challans] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
   const challan = challans.find((c: DeliveryChallanRecord) => c.id === chId || c.challan_number === chId)

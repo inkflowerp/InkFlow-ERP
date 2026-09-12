@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   TrendingUp,
   ArrowLeft,
@@ -26,15 +27,11 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { SupplierPriceHistoryRecord } from '@/types/purchase.types'
 import { formatBDT } from '@/lib/formatters'
 
-interface PriceHistoryPageProps {
-  params: Promise<{ tenantSlug: string }>
-}
-
-export default function SupplierPriceHistoryPage({ params }: PriceHistoryPageProps) {
-  const resolvedParams = use(params)
+export default function SupplierPriceHistoryPage() {
+  const params = useParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [history] = useDataStore<SupplierPriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY, [])
   const [search, setSearch] = useState('')

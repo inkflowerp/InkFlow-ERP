@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Package,
   ArrowLeft,
@@ -27,16 +28,12 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { ProductRecord, PriceHistoryRecord } from '@/types/product.types'
 
-interface ProductDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const resolvedParams = use(params)
-  const productId = resolvedParams.id
+export default function ProductDetailPage() {
+  const params = useParams()
+  const productId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [products] = useDataStore<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, [])
   const [allHistory] = useDataStore<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY, [])

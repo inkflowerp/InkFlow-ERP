@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, use } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Receipt,
   ArrowLeft,
@@ -34,16 +35,12 @@ import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
-interface BillingDetailPageProps {
-  params: Promise<{ tenantSlug: string; id: string }>
-}
-
-export default function InvoiceCockpitPage({ params }: BillingDetailPageProps) {
-  const resolvedParams = use(params)
-  const invId = resolvedParams.id
+export default function InvoiceCockpitPage() {
+  const params = useParams()
+  const invId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
   const invoice = invoices.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)

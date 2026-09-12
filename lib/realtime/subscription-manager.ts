@@ -7,7 +7,7 @@
 
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { createClient } from '../supabase/client.ts'
-import { PrintERPDataStore, STORAGE_KEYS, type StorageKey } from '../db/data-store.ts'
+import { PrintERPDataStore, STORAGE_KEYS, type StorageKey, CLIENT_TAB_ID } from '../db/data-store.ts'
 
 function triggerPopupNotification(notification: any) {
   if (typeof window === 'undefined') return
@@ -157,17 +157,21 @@ class RealtimeSubscriptionManager {
         this.localBroadcastChannel.onmessage = (event) => {
           const msg = event.data
           if (!msg || typeof msg !== 'object') return
+          if (msg.senderId && msg.senderId === CLIENT_TAB_ID) {
+            // Ignore messages dispatched by this exact same tab
+            return
+          }
 
           if (msg.type === 'LOCAL_STORE_MUTATION' && msg.storageKey) {
             // Reconcile into DataStore without re-emitting cross-tab message to avoid infinite loop
             if (msg.mutationType === 'DELETE') {
-              PrintERPDataStore.removeItem(msg.storageKey, msg.id, msg.tenantSlug)
+              PrintERPDataStore.removeItem(msg.storageKey, msg.id, msg.tenantSlug, false)
             } else if (msg.mutationType === 'ADD') {
-              PrintERPDataStore.addItem(msg.storageKey, msg.record, msg.tenantSlug)
+              PrintERPDataStore.addItem(msg.storageKey, msg.record, msg.tenantSlug, false)
             } else if (msg.mutationType === 'UPDATE') {
-              PrintERPDataStore.updateItem(msg.storageKey, msg.id, msg.record, msg.tenantSlug)
+              PrintERPDataStore.updateItem(msg.storageKey, msg.id, msg.record, msg.tenantSlug, false)
             } else if (msg.mutationType === 'SET') {
-              PrintERPDataStore.set(msg.storageKey, msg.data, true, msg.tenantSlug)
+              PrintERPDataStore.set(msg.storageKey, msg.data, true, msg.tenantSlug, false)
             }
           } else if (msg.type === 'POPUP_NOTIFICATION' && msg.payload) {
             triggerPopupNotification(msg.payload)
@@ -194,6 +198,7 @@ class RealtimeSubscriptionManager {
           storageKey,
           mutationType,
           ...payload,
+          senderId: CLIENT_TAB_ID,
           timestamp: Date.now(),
         })
       } catch (err) {

@@ -416,6 +416,11 @@ export function getInitialSeedData(key: StorageKey, tenantSlug?: string): any {
 // In-memory cache for server-side & fallback execution
 const inMemoryStore: Record<string, any> = {}
 
+export const CLIENT_TAB_ID =
+  typeof window !== 'undefined'
+    ? `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+    : 'server'
+
 export class PrintERPDataStore {
   /**
    * Resolves the current active tenant slug from location pathname or session cookie
@@ -495,7 +500,13 @@ export class PrintERPDataStore {
   /**
    * Sets data for a collection key and emits reactive events across window & storage & BroadcastChannel
    */
-  static set<T = any>(key: StorageKey, data: T, emitEvent = true, tenantSlug?: string): T {
+  static set<T = any>(
+    key: StorageKey,
+    data: T,
+    emitEvent = true,
+    tenantSlug?: string,
+    broadcastCrossTab = true
+  ): T {
     const effectiveKey = this.getEffectiveKey(key, tenantSlug)
     inMemoryStore[effectiveKey] = data
     if (typeof window !== 'undefined') {
@@ -510,8 +521,8 @@ export class PrintERPDataStore {
           window.dispatchEvent(new Event(`${key}_updated`))
           window.dispatchEvent(new Event(`${effectiveKey}_updated`))
 
-          // Instant cross-tab broadcast
-          if ('BroadcastChannel' in window) {
+          // Instant cross-tab broadcast (only when broadcastCrossTab is enabled)
+          if (broadcastCrossTab && 'BroadcastChannel' in window) {
             try {
               const channel = new BroadcastChannel('printerp_realtime_bus')
               channel.postMessage({
@@ -521,6 +532,7 @@ export class PrintERPDataStore {
                 effectiveKey,
                 data,
                 tenantSlug,
+                senderId: CLIENT_TAB_ID,
                 timestamp: Date.now(),
               })
               channel.close()
@@ -537,7 +549,12 @@ export class PrintERPDataStore {
   /**
    * Appends an item to an array collection or creates it if not present
    */
-  static addItem<T extends { id?: string }>(key: StorageKey, item: T, tenantSlug?: string): T[] {
+  static addItem<T extends { id?: string }>(
+    key: StorageKey,
+    item: T,
+    tenantSlug?: string,
+    broadcastCrossTab = true
+  ): T[] {
     const list = this.get<T[]>(key, tenantSlug)
     const array = Array.isArray(list) ? list : []
     const existsIndex = item.id ? array.findIndex((x) => x.id === item.id) : -1
@@ -548,7 +565,7 @@ export class PrintERPDataStore {
     } else {
       updated = [item, ...array]
     }
-    this.set(key, updated, true, tenantSlug)
+    this.set(key, updated, true, tenantSlug, broadcastCrossTab)
     return updated
   }
 
@@ -559,7 +576,8 @@ export class PrintERPDataStore {
     key: StorageKey,
     idOrPredicate: string | ((item: T) => boolean),
     updates: Partial<T>,
-    tenantSlug?: string
+    tenantSlug?: string,
+    broadcastCrossTab = true
   ): T | null {
     const list = this.get<T[]>(key, tenantSlug)
     const array = Array.isArray(list) ? list : []
@@ -572,7 +590,7 @@ export class PrintERPDataStore {
     const updatedItem = { ...array[index], ...updates, updated_at: new Date().toISOString() }
     const updatedArray = [...array]
     updatedArray[index] = updatedItem
-    this.set(key, updatedArray, true, tenantSlug)
+    this.set(key, updatedArray, true, tenantSlug, broadcastCrossTab)
     return updatedItem
   }
 
@@ -582,7 +600,8 @@ export class PrintERPDataStore {
   static removeItem<T extends { id?: string }>(
     key: StorageKey,
     idOrPredicate: string | ((item: T) => boolean),
-    tenantSlug?: string
+    tenantSlug?: string,
+    broadcastCrossTab = true
   ): boolean {
     const list = this.get<T[]>(key, tenantSlug)
     const array = Array.isArray(list) ? list : []
@@ -592,7 +611,7 @@ export class PrintERPDataStore {
         : array.filter((x) => !idOrPredicate(x))
 
     if (filtered.length !== array.length) {
-      this.set(key, filtered, true, tenantSlug)
+      this.set(key, filtered, true, tenantSlug, broadcastCrossTab)
       return true
     }
     return false
