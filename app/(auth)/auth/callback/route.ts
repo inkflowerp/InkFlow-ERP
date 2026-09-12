@@ -74,12 +74,29 @@ export async function GET(request: Request) {
     if (email) {
       try {
         const admin = createAdminClient()
+        
+        // Match by invited_email in company_users
         await (admin as any)
           .from('company_users')
           .update({ user_id: user.id, status: 'active', updated_at: new Date().toISOString() })
           .ilike('invited_email', email)
-      } catch {
-        // Non-blocking
+
+        // Match by contact email in companies table
+        const { data: matchedCompanies } = await (admin as any)
+          .from('companies')
+          .select('id')
+          .ilike('email', email)
+
+        if (matchedCompanies && matchedCompanies.length > 0) {
+          for (const comp of matchedCompanies) {
+            await (admin as any)
+              .from('company_users')
+              .update({ user_id: user.id, status: 'active', updated_at: new Date().toISOString() })
+              .eq('company_id', comp.id)
+          }
+        }
+      } catch (e) {
+        console.error('[OAuth Callback] Reconcile error:', e)
       }
     }
 
