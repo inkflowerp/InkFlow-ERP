@@ -24,6 +24,15 @@ export async function GET(request: NextRequest) {
   // 1. Handle user cancellation / Google error
   if (oauthError) {
     console.warn('[GoogleOAuthCallback] Google returned error:', oauthError)
+    const statePayload = verifyGoogleOAuthState(state)
+    if (statePayload) {
+      const returnBase = statePayload.scopeType === 'PLATFORM'
+        ? '/platform/settings/communication'
+        : `/${statePayload.tenantId || 'tenant'}/settings/email`
+      const errUrl = new URL(statePayload.returnUrl || returnBase, origin)
+      errUrl.searchParams.set('error', oauthError)
+      return NextResponse.redirect(errUrl)
+    }
     return NextResponse.redirect(`${origin}/?oauth_error=${encodeURIComponent(oauthError)}`)
   }
 
