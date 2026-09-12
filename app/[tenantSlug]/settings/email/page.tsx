@@ -1026,24 +1026,25 @@ export default function TenantEmailSettingsPage() {
           onOpenChange={(open) => setIsTestModalOpen(open)}
           title="Send Real Test Email"
           description="Verify live dispatch and delivery using your active email provider."
+          hideFooter={true}
         >
           <div className="space-y-4 pt-2">
-            <div className="space-y-1">
-              <Label className="text-xs">Recipient Email Address</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Recipient Email Address</Label>
               <Input
                 type="email"
                 value={testRecipient}
                 onChange={(e) => setTestRecipient(e.target.value)}
                 placeholder="your.email@example.com"
-                className="h-9 text-xs font-mono min-h-[38px]"
+                className="h-10 text-xs font-mono text-slate-900 bg-white border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-white min-h-[40px]"
               />
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border text-xs text-slate-500">
+            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
               Provider: <strong className="text-slate-900 dark:text-white capitalize">{gateway?.provider || 'Active Provider'}</strong>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button size="sm" variant="outline" onClick={() => setIsTestModalOpen(false)}>
                 Cancel
               </Button>
@@ -1051,7 +1052,7 @@ export default function TenantEmailSettingsPage() {
                 size="sm"
                 disabled={sendingTestEmail || !testRecipient}
                 onClick={handleSendTestEmail}
-                className="bg-blue-600 hover:bg-blue-700 text-white min-h-[38px]"
+                className="bg-blue-600 hover:bg-blue-700 text-white min-h-[38px] font-medium"
               >
                 <Send className="mr-1.5 h-3.5 w-3.5" />
                 {sendingTestEmail ? 'Dispatching...' : 'Send Test'}

@@ -934,24 +934,25 @@ export default function PlatformEmailGatewayPage() {
           onOpenChange={(open) => setIsTestModalOpen(open)}
           title="Send Platform Test Email"
           description="Send a verification test message using the configured platform gateway."
+          hideFooter={true}
         >
           <div className="space-y-4 pt-2">
-            <div className="space-y-1">
-              <Label className="text-xs">Recipient Email</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Recipient Email</Label>
               <Input
                 type="email"
                 value={testRecipient}
                 onChange={(e) => setTestRecipient(e.target.value)}
                 placeholder="admin@printerp.com"
-                className="h-9 text-xs font-mono"
+                className="h-10 text-xs font-mono text-slate-900 bg-white border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
               />
             </div>
 
-            <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-lg border text-xs text-slate-500">
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
               Provider: <strong className="text-slate-900 dark:text-white capitalize">{gateway?.provider || 'Platform Provider'}</strong>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button size="sm" variant="outline" onClick={() => setIsTestModalOpen(false)}>
                 Cancel
               </Button>
@@ -959,7 +960,7 @@ export default function PlatformEmailGatewayPage() {
                 size="sm"
                 disabled={sendingTestEmail || !testRecipient}
                 onClick={handleSendTestEmail}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-xs"
               >
                 <Send className="mr-1.5 h-3.5 w-3.5" />
                 {sendingTestEmail ? 'Sending...' : 'Send Test'}
