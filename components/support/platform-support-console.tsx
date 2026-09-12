@@ -22,6 +22,8 @@ import {
   Building2,
   ChevronRight,
   Sparkles,
+  X,
+  SlidersHorizontal,
 } from 'lucide-react'
 import {
   SupportConversationRecord,
@@ -123,89 +125,179 @@ export function PlatformSupportConsole({
     })
   }, [conversations, activeQueueTab, priorityFilter, categoryFilter, searchQuery, currentAdminId])
 
+  const resetFilters = () => {
+    setActiveQueueTab('all')
+    setPriorityFilter('all')
+    setCategoryFilter('all')
+    setSearchQuery('')
+  }
+
   return (
-    <div className="flex flex-col h-full space-y-4 font-sans">
-      {/* 1. Metric Overview Header Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 shrink-0">
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+    <div className="flex flex-col h-full space-y-3 font-sans overflow-hidden">
+      {/* 1. Metric Overview Header Cards (Clickable Quick Filters) */}
+      <div
+        className={cn(
+          'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 shrink-0 transition-all',
+          selectedConversationId && 'hidden lg:grid'
+        )}
+      >
+        {/* Total Tickets */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveQueueTab('all')
+            setPriorityFilter('all')
+          }}
+          className={cn(
+            'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
+            activeQueueTab === 'all' && priorityFilter === 'all'
+              ? 'bg-slate-800/90 border-indigo-500/80 shadow-md shadow-indigo-500/10'
+              : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+          )}
+        >
           <div>
-            <div className="text-[11px] text-slate-400 font-medium">Total Tickets</div>
-            <div className="text-xl font-bold text-slate-100 mt-0.5">{stats?.totalCount || 0}</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+              Total Tickets
+            </div>
+            <div className="text-lg sm:text-xl font-black text-slate-100 mt-0.5">{stats?.totalCount || 0}</div>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center">
-            <Inbox className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center shrink-0">
+            <Inbox className="w-3.5 h-3.5" />
           </div>
-        </div>
+        </button>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+        {/* Open / Unassigned */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveQueueTab('unassigned')
+            setPriorityFilter('all')
+          }}
+          className={cn(
+            'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
+            activeQueueTab === 'unassigned'
+              ? 'bg-emerald-950/40 border-emerald-500/80 shadow-md shadow-emerald-500/10'
+              : 'bg-slate-900/80 border-slate-800 hover:border-emerald-800/60'
+          )}
+        >
           <div>
-            <div className="text-[11px] text-emerald-400 font-medium">Open / Unassigned</div>
-            <div className="text-xl font-bold text-emerald-400 mt-0.5">{stats?.unassignedCount || 0}</div>
+            <div className="text-[10px] sm:text-[11px] text-emerald-400 font-semibold uppercase tracking-wider">
+              Unassigned
+            </div>
+            <div className="text-lg sm:text-xl font-black text-emerald-400 mt-0.5">{stats?.unassignedCount || 0}</div>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-emerald-950/60 border border-emerald-800/80 text-emerald-400 flex items-center justify-center">
-            <AlertCircle className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-xl bg-emerald-950/70 border border-emerald-800 text-emerald-400 flex items-center justify-center shrink-0">
+            <AlertCircle className="w-3.5 h-3.5" />
           </div>
-        </div>
+        </button>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+        {/* Assigned to Me */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveQueueTab('mine')
+            setPriorityFilter('all')
+          }}
+          className={cn(
+            'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
+            activeQueueTab === 'mine'
+              ? 'bg-indigo-950/40 border-indigo-500/80 shadow-md shadow-indigo-500/10'
+              : 'bg-slate-900/80 border-slate-800 hover:border-indigo-800/60'
+          )}
+        >
           <div>
-            <div className="text-[11px] text-indigo-400 font-medium">Assigned to Me</div>
-            <div className="text-xl font-bold text-indigo-400 mt-0.5">{stats?.assignedToMeCount || 0}</div>
+            <div className="text-[10px] sm:text-[11px] text-indigo-400 font-semibold uppercase tracking-wider">
+              My Tickets
+            </div>
+            <div className="text-lg sm:text-xl font-black text-indigo-400 mt-0.5">{stats?.assignedToMeCount || 0}</div>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-indigo-950/60 border border-indigo-800/80 text-indigo-400 flex items-center justify-center">
-            <UserCheck className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-xl bg-indigo-950/70 border border-indigo-800 text-indigo-400 flex items-center justify-center shrink-0">
+            <UserCheck className="w-3.5 h-3.5" />
           </div>
-        </div>
+        </button>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+        {/* Waiting Customer */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveQueueTab('waiting_customer')
+            setPriorityFilter('all')
+          }}
+          className={cn(
+            'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
+            activeQueueTab === 'waiting_customer'
+              ? 'bg-amber-950/40 border-amber-500/80 shadow-md shadow-amber-500/10'
+              : 'bg-slate-900/80 border-slate-800 hover:border-amber-800/60'
+          )}
+        >
           <div>
-            <div className="text-[11px] text-amber-400 font-medium">Waiting Customer</div>
-            <div className="text-xl font-bold text-amber-400 mt-0.5">{stats?.waitingCustomerCount || 0}</div>
+            <div className="text-[10px] sm:text-[11px] text-amber-400 font-semibold uppercase tracking-wider">
+              Waiting
+            </div>
+            <div className="text-lg sm:text-xl font-black text-amber-400 mt-0.5">{stats?.waitingCustomerCount || 0}</div>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-amber-950/60 border border-amber-800/80 text-amber-400 flex items-center justify-center">
-            <Clock className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-xl bg-amber-950/70 border border-amber-800 text-amber-400 flex items-center justify-center shrink-0">
+            <Clock className="w-3.5 h-3.5" />
           </div>
-        </div>
+        </button>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+        {/* Urgent Priority */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveQueueTab('urgent')
+            setPriorityFilter('all')
+          }}
+          className={cn(
+            'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
+            activeQueueTab === 'urgent'
+              ? 'bg-rose-950/40 border-rose-500/80 shadow-md shadow-rose-500/10'
+              : 'bg-slate-900/80 border-slate-800 hover:border-rose-800/60'
+          )}
+        >
           <div>
-            <div className="text-[11px] text-red-400 font-medium">Urgent Priority</div>
-            <div className="text-xl font-bold text-red-400 mt-0.5">{stats?.urgentCount || 0}</div>
+            <div className="text-[10px] sm:text-[11px] text-rose-400 font-semibold uppercase tracking-wider">
+              Urgent SLA
+            </div>
+            <div className="text-lg sm:text-xl font-black text-rose-400 mt-0.5">{stats?.urgentCount || 0}</div>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-red-950/60 border border-red-800/80 text-red-400 flex items-center justify-center">
-            <Zap className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-xl bg-rose-950/70 border border-rose-800 text-rose-400 flex items-center justify-center shrink-0">
+            <Zap className="w-3.5 h-3.5" />
           </div>
-        </div>
+        </button>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+        {/* Avg First Response */}
+        <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
           <div>
-            <div className="text-[11px] text-purple-400 font-medium">Avg First Response</div>
-            <div className="text-xl font-bold text-purple-400 mt-0.5">
+            <div className="text-[10px] sm:text-[11px] text-purple-400 font-semibold uppercase tracking-wider">
+              Avg SLA
+            </div>
+            <div className="text-lg sm:text-xl font-black text-purple-400 mt-0.5">
               {stats?.averageFirstResponseMinutes || 15}m
             </div>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-purple-950/60 border border-purple-800/80 text-purple-400 flex items-center justify-center">
-            <Timer className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-xl bg-purple-950/70 border border-purple-800 text-purple-400 flex items-center justify-center shrink-0">
+            <Timer className="w-3.5 h-3.5" />
           </div>
         </div>
       </div>
 
       {/* 2. Main 3-Pane Workstation Container */}
-      <div className="flex-1 min-h-0 bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden flex shadow-xl">
+      <div className="flex-1 min-h-0 bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden flex shadow-2xl relative">
         {/* Left Pane: Conversation Queue */}
         <div
           className={cn(
-            'w-full lg:w-80 shrink-0 h-full flex flex-col border-r border-slate-800 bg-slate-900/90',
+            'w-full lg:w-80 shrink-0 h-full flex flex-col border-r border-slate-800 bg-slate-900/90 min-w-0',
             selectedConversationId && 'hidden lg:flex'
           )}
         >
           {/* Queue Filter Bar */}
-          <div className="p-3.5 border-b border-slate-800 space-y-3">
+          <div className="p-3 border-b border-slate-800 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-indigo-400" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                  Triage Queue
+                  Triage Queue ({filteredQueue.length})
                 </h3>
               </div>
               <button
@@ -213,7 +305,7 @@ export function PlatformSupportConsole({
                   loadConversations()
                   refreshStats()
                 }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
                 title="Refresh Queue"
               >
                 <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
@@ -230,10 +322,18 @@ export function PlatformSupportConsole({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-500"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
             </div>
 
             {/* Queue Filter Tabs */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-0.5 text-xs">
+            <div className="flex items-center gap-1 overflow-x-auto pb-0.5 text-xs scrollbar-none">
               {(
                 [
                   { key: 'all', label: 'All' },
@@ -247,9 +347,9 @@ export function PlatformSupportConsole({
                   key={tab.key}
                   onClick={() => setActiveQueueTab(tab.key)}
                   className={cn(
-                    'px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap transition-colors',
+                    'px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer',
                     activeQueueTab === tab.key
-                      ? 'bg-indigo-600 text-white font-semibold'
+                      ? 'bg-indigo-600 text-white shadow-xs'
                       : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                   )}
                 >
@@ -260,7 +360,7 @@ export function PlatformSupportConsole({
           </div>
 
           {/* Queue List */}
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60">
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60 scrollbar-thin scrollbar-thumb-slate-800">
             {loading && conversations.length === 0 ? (
               <div className="p-4 space-y-3">
                 {[1, 2, 3].map((n) => (
@@ -271,8 +371,14 @@ export function PlatformSupportConsole({
                 ))}
               </div>
             ) : filteredQueue.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 text-xs">
-                No tickets matching current filters.
+              <div className="p-8 text-center text-slate-500 text-xs space-y-2">
+                <p>No tickets matching current filters.</p>
+                <button
+                  onClick={resetFilters}
+                  className="px-3 py-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 bg-slate-950 border border-slate-800 rounded-lg"
+                >
+                  Reset Filters
+                </button>
               </div>
             ) : (
               filteredQueue.map((conv) => {
@@ -288,23 +394,32 @@ export function PlatformSupportConsole({
                       setShowDetailsPane(true)
                     }}
                     className={cn(
-                      'w-full text-left p-3.5 transition-all flex flex-col gap-1 cursor-pointer relative',
+                      'w-full text-left p-3.5 transition-all flex flex-col gap-1.5 cursor-pointer relative',
                       isSelected
-                        ? 'bg-slate-800/90 border-l-4 border-indigo-500 text-white'
+                        ? 'bg-slate-800/95 border-l-4 border-indigo-500 text-white shadow-inner'
                         : 'hover:bg-slate-800/40 text-slate-300'
                     )}
                   >
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="font-mono font-bold text-indigo-400">{conv.ticket_number}</span>
-                      <span className={cn('px-1.5 py-0.2 rounded text-[10px] border font-medium', statusConfig.badgeClass)}>
-                        {statusConfig.labelEn}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        {conv.priority === 'urgent' && (
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                            URGENT
+                          </span>
+                        )}
+                        <span className={cn('px-1.5 py-0.2 rounded text-[10px] border font-medium', statusConfig.badgeClass)}>
+                          {statusConfig.labelEn}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="font-semibold text-xs text-slate-100 truncate">{conv.subject}</div>
+                    <div className="font-bold text-xs text-slate-100 truncate">{conv.subject}</div>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 mt-0.5">
-                      <span className="truncate max-w-[150px]">{conv.company_name || 'Tenant'}</span>
+                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                      <span className="truncate max-w-[140px] text-slate-300 font-medium">
+                        {conv.company_name || 'Tenant'}
+                      </span>
                       <span>{formatTime(conv.last_message_at)}</span>
                     </div>
                   </button>
@@ -333,7 +448,7 @@ export function PlatformSupportConsole({
           />
         </div>
 
-        {/* Right Pane: Context & Tenant Info */}
+        {/* Right Pane: Context & Tenant Info (Desktop xl view) */}
         {selectedConversation && showDetailsPane && (
           <div className="hidden xl:block h-full">
             <PlatformTicketInfo
@@ -341,6 +456,23 @@ export function PlatformSupportConsole({
               onOpenImpersonationModal={onOpenImpersonationModal}
               onClose={() => setShowDetailsPane(false)}
             />
+          </div>
+        )}
+
+        {/* Slide-over Drawer for Tablet / Mobile (< xl) */}
+        {selectedConversation && showDetailsPane && (
+          <div className="xl:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex justify-end">
+            <div className="h-full bg-slate-900 shadow-2xl animate-in slide-in-from-right duration-200">
+              <PlatformTicketInfo
+                conversation={selectedConversation}
+                onOpenImpersonationModal={(cId, cName) => {
+                  setShowDetailsPane(false)
+                  if (onOpenImpersonationModal) onOpenImpersonationModal(cId, cName)
+                }}
+                onClose={() => setShowDetailsPane(false)}
+                isDrawer
+              />
+            </div>
           </div>
         )}
       </div>

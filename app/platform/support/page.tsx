@@ -368,7 +368,14 @@ export default function PlatformSupportPage() {
   }
 
   return (
-    <div className={cn('mx-auto transition-all', supportView === 'chat' ? 'w-full max-w-[1700px] h-[calc(100vh-6.5rem)] flex flex-col space-y-3' : 'max-w-7xl space-y-6 pb-12')}>
+    <div
+      className={cn(
+        'mx-auto transition-all',
+        supportView === 'chat'
+          ? 'w-full max-w-[1700px] h-[calc(100vh-6.5rem)] sm:h-[calc(100vh-7.5rem)] lg:h-[calc(100vh-8.5rem)] flex flex-col space-y-2.5 overflow-hidden'
+          : 'max-w-7xl space-y-6 pb-12'
+      )}
+    >
       {/* Toast Notification */}
       {notification && (
         <div
@@ -388,13 +395,13 @@ export default function PlatformSupportPage() {
       )}
 
       {/* Top Navigation Subtabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-2.5 shrink-0">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
-            <ShieldCheck className="h-4 w-4 text-indigo-400" />
+          <div className="flex items-center gap-2 text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-0.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
             Support Operations &amp; Live Triage
           </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
             <ShieldAlert className="h-6 w-6 sm:h-7 sm:w-7 text-indigo-400" />
             Platform Support Center
           </h1>
@@ -406,9 +413,9 @@ export default function PlatformSupportPage() {
             type="button"
             onClick={() => setSupportView('chat')}
             className={cn(
-              'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer',
+              'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
               supportView === 'chat'
-                ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
             )}
           >
@@ -419,9 +426,9 @@ export default function PlatformSupportPage() {
             type="button"
             onClick={() => setSupportView('sessions')}
             className={cn(
-              'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer',
+              'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
               supportView === 'sessions'
-                ? 'bg-amber-600 text-white shadow-sm shadow-amber-600/30'
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
             )}
           >
