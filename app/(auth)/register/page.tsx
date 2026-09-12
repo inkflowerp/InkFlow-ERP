@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { User, Mail, Phone, Lock, ArrowRight } from 'lucide-react'
 import { registerSchema, RegisterFormData } from '@/features/auth/auth.schemas'
-import { signUpAction } from '@/actions/auth.actions'
+import { signUpAction, signInWithGoogleAction } from '@/actions/auth.actions'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -17,10 +17,11 @@ import { useI18n } from '@/i18n/context'
 function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const planParam = searchParams.get('plan') || ''
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
 
   const {
     register,
@@ -53,6 +54,30 @@ function RegisterForm() {
     } else {
       setError(res.error || 'Registration failed. Please check your credentials.')
       setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignUp = async () => {
+    if (isGoogleLoading || isLoading) return
+    setIsGoogleLoading(true)
+    setError(null)
+    try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      const callbackUrl = planParam
+        ? `${origin}/auth/callback?plan=${encodeURIComponent(planParam)}`
+        : `${origin}/auth/callback`
+
+      const res = await signInWithGoogleAction(callbackUrl)
+      if (res.success && res.url) {
+        window.location.href = res.url
+        return
+      }
+
+      setError(res.error || 'Failed to initialize Google Sign Up. Please try again.')
+    } catch (e: any) {
+      setError(e?.message || 'Failed to initialize Google Sign Up')
+    } finally {
+      setIsGoogleLoading(false)
     }
   }
 
@@ -135,7 +160,7 @@ function RegisterForm() {
             </div>
             <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
               <span className="bg-white px-2.5 text-slate-400 dark:bg-slate-900">
-                {t('auth.or') || 'Or'}
+                {locale === 'bn' ? 'অথবা' : 'Or'}
               </span>
             </div>
           </div>
@@ -144,17 +169,9 @@ function RegisterForm() {
           <Button
             type="button"
             variant="outline"
-            onClick={async () => {
-              try {
-                const { signInWithGoogleAction } = await import('@/actions/auth.actions')
-                const res = await signInWithGoogleAction()
-                if (res.success && res.url) {
-                  window.location.href = res.url
-                }
-              } catch (e: any) {
-                setError(e?.message || 'Failed to initialize Google Sign Up')
-              }
-            }}
+            onClick={handleGoogleSignUp}
+            isLoading={isGoogleLoading}
+            disabled={isGoogleLoading || isLoading}
             className="w-full text-xs font-semibold cursor-pointer h-10 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <svg className="mr-2 h-4 w-4 shrink-0" viewBox="0 0 24 24">
@@ -175,7 +192,15 @@ function RegisterForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>Sign up with Google</span>
+            <span>
+              {isGoogleLoading
+                ? locale === 'bn'
+                  ? 'গুগলে পাঠানো হচ্ছে...'
+                  : 'Connecting to Google...'
+                : locale === 'bn'
+                  ? 'গুগল দিয়ে সাইন আপ করুন'
+                  : 'Sign up with Google'}
+            </span>
           </Button>
 
           <p className="text-center text-xs text-slate-500 dark:text-slate-400 pt-1">
