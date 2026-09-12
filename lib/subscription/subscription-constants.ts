@@ -467,9 +467,17 @@ export function getTenantResourceUsage(
   if (!activePlan) {
     if (typeof window !== 'undefined') {
       try {
-        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-          activePlan = stored.find((p) => p.code === 'trial') || stored[0]
+        const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
+        const compSub = storedSubs?.[companyId]
+
+        if (compSub && storedPlans.length > 0) {
+          activePlan =
+            storedPlans.find((p) => p.id === compSub.plan_id || p.code === compSub.plan_code) ||
+            storedPlans.find((p) => p.code === 'trial') ||
+            storedPlans[0]
+        } else if (storedPlans && storedPlans.length > 0) {
+          activePlan = storedPlans.find((p) => p.code === 'trial') || storedPlans[0]
         }
       } catch {}
     }

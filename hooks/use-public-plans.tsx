@@ -295,9 +295,7 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
   }, [applyPlansData])
 
   useEffect(() => {
-    if (!cachedPlansData && !initialData) {
-      fetchPlans()
-    }
+    fetchPlans()
 
     const handlePlansSync = () => {
       fetchPlans()
@@ -307,7 +305,7 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
       const customEvent = e as CustomEvent
       const key = customEvent.detail?.key
       if (key === STORAGE_KEYS.PLATFORM_PLANS && customEvent.detail?.data) {
-        if (Array.isArray(customEvent.detail.data)) {
+        if (Array.isArray(customEvent.detail.data) && customEvent.detail.data.length > 0) {
           setPlans(customEvent.detail.data)
         }
       }
@@ -316,11 +314,32 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
     window.addEventListener('printerp_plans_sync', handlePlansSync)
     window.addEventListener('printerp_data_sync', handleDataSync)
 
+    let channel: any = null
+    try {
+      const supabase = createClient()
+      channel = supabase
+        .channel('public_standalone_plans_sync')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'subscription_plans' },
+          () => {
+            fetchPlans()
+          }
+        )
+        .subscribe()
+    } catch {}
+
     return () => {
       window.removeEventListener('printerp_plans_sync', handlePlansSync)
       window.removeEventListener('printerp_data_sync', handleDataSync)
+      if (channel) {
+        try {
+          const supabase = createClient()
+          supabase.removeChannel(channel)
+        } catch {}
+      }
     }
-  }, [fetchPlans, initialData])
+  }, [fetchPlans])
 
   const starterPlan = useMemo(
     () => paidPlans.find((p) => p.code === 'starter') || paidPlans[0] || DEFAULT_PLANS[1],

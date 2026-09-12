@@ -48,14 +48,12 @@ import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { triggerPopupNotification } from '@/components/shell/realtime-notification-popup'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { PlatformTenantCompany } from '@/types/platform.types'
+import { createClient } from '@/lib/supabase/client'
 
 let memoryCachedPlans: SubscriptionPlanRecord[] | null = null
 const memoryCachedSubscriptions: Record<string, CompanySubscriptionRecord> = {}
 
 function getInitialPlans(): SubscriptionPlanRecord[] {
-  if (memoryCachedPlans && memoryCachedPlans.length > 0) {
-    return memoryCachedPlans
-  }
   if (typeof window !== 'undefined') {
     try {
       const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
@@ -65,6 +63,9 @@ function getInitialPlans(): SubscriptionPlanRecord[] {
       }
     } catch {}
   }
+  if (memoryCachedPlans && memoryCachedPlans.length > 0) {
+    return memoryCachedPlans
+  }
   return DEFAULT_PLANS
 }
 
@@ -73,11 +74,23 @@ function getInitialSubscription(
   companySlug: string,
   initialPlans: SubscriptionPlanRecord[]
 ): CompanySubscriptionRecord {
+  if (typeof window !== 'undefined') {
+    try {
+      const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
+      if (storedSubs) {
+        const matched = storedSubs[companyId] || (companySlug ? storedSubs[companySlug] : null)
+        if (matched) {
+          memoryCachedSubscriptions[companyId] = matched
+          if (companySlug) memoryCachedSubscriptions[companySlug] = matched
+          return matched
+        }
+      }
+    } catch {}
+  }
+
   if (memoryCachedSubscriptions[companyId]) {
     return memoryCachedSubscriptions[companyId]
   }
-
-
 
   const trialPlan = initialPlans.find((p) => p.code === 'trial') || (initialPlans.length > 0 ? initialPlans[0] : DEFAULT_TRIAL_PLAN)
   const trialDays = trialPlan.trial_days || 14
@@ -99,6 +112,7 @@ function getInitialSubscription(
     custom_limits_override: null,
   }
   memoryCachedSubscriptions[companyId] = liveSub
+  if (companySlug) memoryCachedSubscriptions[companySlug] = liveSub
   return liveSub
 }
 
@@ -193,13 +207,21 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return
     }
     try {
-      const promises: [Promise<any>, Promise<any>?] = [
+      const [subRes, plansRes] = await Promise.all([
         getTenantSubscriptionAction(companyId, companySlug),
-      ]
-      if (!memoryCachedPlans || memoryCachedPlans.length === 0) {
-        promises.push(getPublicSubscriptionPlansAction())
+        getPublicSubscriptionPlansAction(),
+      ])
+
+      if (plansRes && plansRes.success && plansRes.data?.plans && plansRes.data.plans.length > 0) {
+        setPlans(plansRes.data.plans)
+        memoryCachedPlans = plansRes.data.plans
+        if (typeof window !== 'undefined') {
+          try {
+            PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, plansRes.data.plans, false)
+          } catch {}
+        }
       }
-      const [subRes, plansRes] = await Promise.all(promises)
+
       if (subRes && subRes.success && subRes.data) {
         setSubscription(subRes.data)
         memoryCachedSubscriptions[companyId] = subRes.data
@@ -215,16 +237,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
               currentSubs[companySlug] = subRes.data
             }
             PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, false)
-          } catch {}
-        }
-      }
-
-      if (plansRes && plansRes.success && plansRes.data?.plans && plansRes.data.plans.length > 0) {
-        setPlans(plansRes.data.plans)
-        memoryCachedPlans = plansRes.data.plans
-        if (typeof window !== 'undefined') {
-          try {
-            PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, plansRes.data.plans, false)
           } catch {}
         }
       }
@@ -247,19 +259,58 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         const updated = stored[companyId] || (companySlug ? stored[companySlug] : null)
         if (updated) {
           setSubscription(updated)
+          memoryCachedSubscriptions[companyId] = updated
+          if (companySlug) memoryCachedSubscriptions[companySlug] = updated
         }
       } else if (key === STORAGE_KEYS.PLATFORM_PLANS && customEvent.detail?.data) {
-        if (Array.isArray(customEvent.detail.data)) {
+        if (Array.isArray(customEvent.detail.data) && customEvent.detail.data.length > 0) {
           setPlans(customEvent.detail.data)
+          memoryCachedPlans = customEvent.detail.data
         }
       }
     }
 
     window.addEventListener('printerp_plans_sync', handlePlansSync)
     window.addEventListener('printerp_data_sync', handleDataSync)
+
+    let channel: any = null
+    try {
+      const supabase = createClient()
+      channel = supabase
+        .channel(`tenant_sub_realtime:${companyId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'subscription_plans' },
+          () => {
+            refreshSubscription()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'company_subscriptions' },
+          () => {
+            refreshSubscription()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'companies' },
+          () => {
+            refreshSubscription()
+          }
+        )
+        .subscribe()
+    } catch {}
+
     return () => {
       window.removeEventListener('printerp_plans_sync', handlePlansSync)
       window.removeEventListener('printerp_data_sync', handleDataSync)
+      if (channel) {
+        try {
+          const supabase = createClient()
+          supabase.removeChannel(channel)
+        } catch {}
+      }
     }
   }, [refreshSubscription, companyId, companySlug])
 

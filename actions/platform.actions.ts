@@ -130,6 +130,7 @@ export async function changeCompanyPlanAction(
 
     const result = await PlatformService.changeCompanyPlan(companyId, newPlan, reason, platformUser.id)
     if (result.success) {
+      revalidatePath('/', 'layout')
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
       revalidatePath('/platform/tenants')
@@ -178,6 +179,7 @@ export async function updateCompanySubscriptionAction(input: {
       callerAdminId: platformUser.id,
     })
     if (result.success) {
+      revalidatePath('/', 'layout')
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/companies')
@@ -223,6 +225,7 @@ export async function extendSubscriptionTrialAction(
       platformUser.id
     )
     if (result.success) {
+      revalidatePath('/', 'layout')
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/companies')
@@ -270,6 +273,7 @@ export async function recordManualSubscriptionPaymentAction(
       platformUser.id
     )
     if (result.success) {
+      revalidatePath('/', 'layout')
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/companies')
@@ -313,6 +317,7 @@ export async function overrideSubscriptionLimitsAction(
       callerAdminId: platformUser.id,
     })
     if (result.success) {
+      revalidatePath('/', 'layout')
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/subscriptions')
       revalidatePath('/platform/companies')

@@ -1855,6 +1855,30 @@ export class PlatformService {
         reason || `Platform updated subscription for ${comp.name}`
       )
 
+      // Sync local storage store
+      try {
+        const currentSubs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+        const subObj = {
+          id: existingSub?.id || `sub-${companyId}`,
+          company_id: companyId,
+          plan_id: resolvedPlan?.id || existingSub?.plan_id,
+          plan_code: resolvedPlan?.code || existingSub?.plan_code || (status === 'trial' ? 'trial' : 'starter'),
+          status: status || existingSub?.status || 'trial',
+          billing_interval: billingInterval || existingSub?.billing_interval || 'monthly',
+          current_period_start: currentPeriodStart || existingSub?.current_period_start || nowIso,
+          current_period_end: currentPeriodEnd || existingSub?.current_period_end || new Date(Date.now() + 30 * 86400000).toISOString(),
+          trial_ends_at: trialEndsAt !== undefined ? trialEndsAt : existingSub?.trial_ends_at,
+          payment_method_type: paymentMethodType !== undefined ? paymentMethodType : existingSub?.payment_method_type,
+          last_payment_reference: lastPaymentReference !== undefined ? lastPaymentReference : existingSub?.last_payment_reference,
+          custom_limits_override: customLimitsOverride !== undefined ? customLimitsOverride : existingSub?.custom_limits_override,
+        }
+        currentSubs[companyId] = subObj
+        if (comp.slug) {
+          currentSubs[comp.slug] = subObj
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, false)
+      } catch {}
+
       return { success: true, data: { companyId, updated: true } }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to update subscription' }
@@ -2649,6 +2673,18 @@ export class PlatformService {
         ...planPayload,
       }) as SubscriptionPlanRecord
 
+      try {
+        const currentStored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const idx = currentStored.findIndex((p) => p.id === finalRecord.id || p.code === finalRecord.code)
+        let nextStored = [...currentStored]
+        if (idx >= 0) {
+          nextStored[idx] = finalRecord
+        } else {
+          nextStored.push(finalRecord)
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, nextStored, false)
+      } catch {}
+
       await this.recordAuditLog(
         existingRecord?.id ? 'plan.update' : 'plan.create',
         'subscription_plan',
@@ -2682,6 +2718,12 @@ export class PlatformService {
 
       if (error) return { success: false, error: error.message }
 
+      try {
+        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const updated = stored.map((p) => (p.id === planId ? { ...p, is_active: false } : p))
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
+      } catch {}
+
       await this.recordAuditLog(
         'plan.archive',
         'subscription_plan',
@@ -2714,6 +2756,12 @@ export class PlatformService {
         .single()
 
       if (error) return { success: false, error: error.message }
+
+      try {
+        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const updated = stored.map((p) => (p.id === planId ? { ...p, is_active: true } : p))
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
+      } catch {}
 
       await this.recordAuditLog(
         'plan.reactivate',
@@ -2778,6 +2826,12 @@ export class PlatformService {
       if (delErr) {
         return { success: false, error: delErr.message }
       }
+
+      try {
+        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
+        const updated = stored.filter((p) => p.id !== planId)
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updated, false)
+      } catch {}
 
       await this.recordAuditLog(
         'plan.delete',

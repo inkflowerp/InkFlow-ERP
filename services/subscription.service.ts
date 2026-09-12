@@ -483,25 +483,84 @@ export class SubscriptionService {
     companySlug?: string
   ): Promise<CompanySubscriptionRecord> {
     const normId = companyId || 'default'
+    let resolvedCompanyId = normId
+    let resolvedSlug = companySlug || ''
+    let companyCreatedAt = new Date().toISOString()
 
+    // 1. Resolve company by ID or Slug from PostgreSQL
     try {
       const admin = createAdminClient()
+      const orFilter = companySlug
+        ? `id.eq.${normId},slug.eq.${normId},slug.eq.${companySlug}`
+        : `id.eq.${normId},slug.eq.${normId}`
+
+      const { data: comp } = await (admin as any)
+        .from('companies')
+        .select('id, slug, created_at')
+        .or(orFilter)
+        .maybeSingle()
+
+      if (comp) {
+        resolvedCompanyId = comp.id || resolvedCompanyId
+        if (comp.slug) resolvedSlug = comp.slug
+        if (comp.created_at) companyCreatedAt = comp.created_at
+      }
+    } catch {}
+
+    // Also check local store for company created_at and slug
+    try {
+      const storedCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
+      const matchedComp = storedCompanies?.find(
+        (c) => c.id === normId || c.slug === normId || (companySlug && c.slug === companySlug)
+      )
+      if (matchedComp) {
+        resolvedCompanyId = matchedComp.id || resolvedCompanyId
+        if (matchedComp.slug) resolvedSlug = matchedComp.slug
+        if (matchedComp.created_at) companyCreatedAt = matchedComp.created_at
+      }
+    } catch {}
+
+    // 2. Query company_subscriptions in database by resolvedCompanyId, normId, or resolvedSlug
+    try {
+      const admin = createAdminClient()
+      const subOrFilter = resolvedSlug && resolvedSlug !== resolvedCompanyId
+        ? `company_id.eq.${resolvedCompanyId},company_id.eq.${normId},company_id.eq.${resolvedSlug}`
+        : `company_id.eq.${resolvedCompanyId},company_id.eq.${normId}`
+
       const { data: sub, error } = await (admin as any)
         .from('company_subscriptions')
         .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
-        .eq('company_id', normId)
+        .or(subOrFilter)
         .maybeSingle()
 
       if (!error && sub) {
-        let planCode = sub.subscription_plans?.code || (sub.status === 'trial' ? 'trial' : 'starter')
+        let planRecord = sub.subscription_plans
+        if (!planRecord && sub.plan_id) {
+          const { data: directPlan } = await (admin as any)
+            .from('subscription_plans')
+            .select('*')
+            .eq('id', sub.plan_id)
+            .maybeSingle()
+          if (directPlan) planRecord = directPlan
+        }
+        if (!planRecord && sub.plan_code) {
+          const { data: codePlan } = await (admin as any)
+            .from('subscription_plans')
+            .select('*')
+            .eq('code', sub.plan_code)
+            .maybeSingle()
+          if (codePlan) planRecord = codePlan
+        }
+
+        const planCode = planRecord?.code || sub.plan_code || (sub.status === 'trial' ? 'trial' : 'starter')
         return {
           id: sub.id,
-          company_id: sub.company_id,
-          plan_id: sub.plan_id,
+          company_id: sub.company_id || resolvedCompanyId,
+          plan_id: sub.plan_id || planRecord?.id || `sp-${planCode}`,
           plan_code: planCode,
           status: sub.status,
           billing_interval: sub.billing_interval || 'monthly',
-          current_period_start: sub.current_period_start,
+          current_period_start: sub.current_period_start || companyCreatedAt,
           current_period_end: sub.current_period_end,
           trial_ends_at: sub.trial_ends_at,
           cancelled_at: sub.cancelled_at,
@@ -517,53 +576,54 @@ export class SubscriptionService {
       }
     } catch {}
 
+    // 3. Check PrintERPDataStore fallback for stored company subscription
+    try {
+      const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(
+        STORAGE_KEYS.COMPANY_SUBSCRIPTIONS
+      )
+      if (storedSubs) {
+        const matched =
+          storedSubs[resolvedCompanyId] ||
+          storedSubs[normId] ||
+          (resolvedSlug ? storedSubs[resolvedSlug] : null)
+        if (matched) {
+          return matched
+        }
+      }
+    } catch {}
+
+    // 4. Fallback default trial: dynamically fetch trial plan duration and settings
     let defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
     let trialPlanId = DEFAULT_TRIAL_PLAN.id
-    let companyCreatedAt = new Date().toISOString()
 
     try {
       const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
       const foundTrial = storedPlans?.find((p) => p.code === 'trial')
       if (foundTrial) {
-        if (foundTrial.trial_days) defaultTrialDays = Number(foundTrial.trial_days)
+        if (foundTrial.trial_days !== undefined) defaultTrialDays = Number(foundTrial.trial_days)
         if (foundTrial.id) trialPlanId = foundTrial.id
-      }
-      const storedCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
-      const matchedCompany = storedCompanies?.find((c) => c.id === normId || (companySlug && c.slug === companySlug))
-      if (matchedCompany?.created_at) {
-        companyCreatedAt = matchedCompany.created_at
       }
     } catch {}
 
     try {
       const admin = createAdminClient()
-      const [{ data: trialPlan }, { data: comp }] = await Promise.all([
-        (admin as any)
-          .from('subscription_plans')
-          .select('id, trial_days')
-          .eq('code', 'trial')
-          .maybeSingle(),
-        (admin as any)
-          .from('companies')
-          .select('created_at')
-          .eq('id', normId)
-          .maybeSingle(),
-      ])
+      const { data: trialPlan } = await (admin as any)
+        .from('subscription_plans')
+        .select('id, trial_days')
+        .eq('code', 'trial')
+        .maybeSingle()
 
       if (trialPlan) {
-        if (trialPlan.trial_days) defaultTrialDays = Number(trialPlan.trial_days)
+        if (trialPlan.trial_days !== undefined) defaultTrialDays = Number(trialPlan.trial_days)
         if (trialPlan.id) trialPlanId = trialPlan.id
-      }
-      if (comp?.created_at) {
-        companyCreatedAt = comp.created_at
       }
     } catch {}
 
     const trialEndsAt = new Date(new Date(companyCreatedAt).getTime() + defaultTrialDays * 86400000).toISOString()
 
     return {
-      id: `sub-${normId}`,
-      company_id: normId,
+      id: `sub-${resolvedCompanyId}`,
+      company_id: resolvedCompanyId,
       plan_id: trialPlanId,
       plan_code: 'trial',
       status: 'trial',
