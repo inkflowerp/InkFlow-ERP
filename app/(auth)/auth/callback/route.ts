@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { AuditService } from '@/services/audit.service'
 import { TENANT_SESSION_COOKIE, TenantSessionData, TenantRole } from '@/lib/auth/types'
-import { PrimaryRole } from '@/types/rbac.types'
+import { PrimaryRole, MODULE_ACTION_SPECS } from '@/types/rbac.types'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
