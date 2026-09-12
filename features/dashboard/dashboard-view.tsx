@@ -53,6 +53,7 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { DateDisplay } from '@/components/shared/date-display'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
+import { KpiCard, KpiGrid, KpiColorVariant } from '@/components/shared/kpi-card'
 import { TrialDashboardCard } from '@/components/subscriptions/trial-dashboard-card'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -676,69 +677,39 @@ export function DashboardView() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <KpiGrid columns={4}>
           {metrics.map((m) => {
             const Icon = ICON_MAP[m.icon] || Sparkles
             return (
-              <Card
+              <KpiCard
                 key={m.id}
-                className={cn(
-                  'p-4 border-slate-200/80 shadow-xs dark:border-slate-800 transition-all hover:shadow-md',
-                  m.colorVariant === 'danger' && 'border-l-4 border-l-red-500',
-                  m.colorVariant === 'success' && 'border-l-4 border-l-emerald-500',
-                  m.colorVariant === 'warning' && 'border-l-4 border-l-amber-500',
-                  m.colorVariant === 'info' && 'border-l-4 border-l-blue-500',
-                  m.colorVariant === 'purple' && 'border-l-4 border-l-purple-500'
-                )}
-              >
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-                  <span className="bangla-text truncate">{tBilingual(m.labelEn, m.labelBn)}</span>
-                  <Icon className="h-4 w-4 text-slate-400 shrink-0" />
-                </div>
-
-                <div className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white mt-1.5 flex items-baseline gap-1" suppressHydrationWarning>
-                  {typeof m.value === 'number' ? (
-                    m.unitEn === 'BDT' ? (
-                      <CurrencyDisplay amount={m.value} />
-                    ) : (
-                      <span suppressHydrationWarning>{num(m.value)}</span>
-                    )
-                  ) : (
-                    <span suppressHydrationWarning>{num(m.value)}</span>
-                  )}
-                  {m.unitEn && m.unitEn !== 'BDT' && (
-                    <span className="text-xs font-semibold text-slate-400 bangla-text" suppressHydrationWarning>
-                      {tBilingual(m.unitEn, m.unitBn || m.unitEn)}
-                    </span>
-                  )}
-                </div>
-
-                {(m.changeTextEn || m.subtitleEn) && (
-                  <div
-                    className={cn(
-                      'text-[11px] mt-1 font-medium bangla-text truncate',
-                      m.changeType === 'positive'
-                        ? 'text-emerald-600'
-                        : m.changeType === 'negative'
-                        ? 'text-red-600'
-                        : 'text-slate-400'
-                    )}
-                  >
-                    {m.changeTextEn && (
-                      <span className="inline-flex items-center gap-0.5">
-                        <ArrowUpRight className="h-3 w-3" />
-                        {tBilingual(m.changeTextEn, m.changeTextBn || m.changeTextEn)}
-                      </span>
-                    )}
-                    {!m.changeTextEn && m.subtitleEn && (
-                      <span>{tBilingual(m.subtitleEn, m.subtitleBn || m.subtitleEn)}</span>
-                    )}
-                  </div>
-                )}
-              </Card>
+                titleEn={m.labelEn}
+                titleBn={m.labelBn}
+                value={m.value}
+                unitEn={m.unitEn}
+                unitBn={m.unitBn}
+                isCurrency={m.unitEn === 'BDT'}
+                icon={Icon}
+                colorVariant={(m.colorVariant as KpiColorVariant) || 'primary'}
+                trend={
+                  m.changeTextEn
+                    ? {
+                        value: m.changeTextEn,
+                        direction:
+                          m.changeType === 'positive'
+                            ? 'up'
+                            : m.changeType === 'negative'
+                            ? 'down'
+                            : 'neutral',
+                      }
+                    : undefined
+                }
+                subtitleEn={!m.changeTextEn ? m.subtitleEn : undefined}
+                subtitleBn={!m.changeTextEn ? m.subtitleBn : undefined}
+              />
             )
           })}
-        </div>
+        </KpiGrid>
       </div>
 
       {/* 5. MY WORK / TODAY'S ACTIVE WORK (Operators, Designers, Delivery Field Workers) */}
