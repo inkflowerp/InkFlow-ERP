@@ -270,11 +270,23 @@ export class GmailProviderAdapter implements IEmailProvider {
       const data = await response.json()
 
       if (!response.ok) {
+        let errorMsg = data.error?.message || `Gmail API error (${response.status})`
+
+        if (response.status === 403) {
+          if (errorMsg.includes('has not been used') || errorMsg.includes('disabled')) {
+            errorMsg = 'Gmail API is disabled in your Google Cloud Project. Please enable the Gmail API in Google Cloud Console (APIs & Services -> Enable APIs -> Gmail API).'
+          } else if (errorMsg.includes('Insufficient Permission') || errorMsg.includes('insufficient')) {
+            errorMsg = 'Gmail authorization error: The required scope (https://www.googleapis.com/auth/gmail.send) was not granted. Please reconnect Gmail.'
+          }
+        } else if (response.status === 400 && errorMsg.includes('Invalid to header')) {
+          errorMsg = `Invalid recipient email address: ${payload.to}`
+        }
+
         return {
           success: false,
           provider: 'gmail',
           timestamp: new Date().toISOString(),
-          error: data.error?.message || `Gmail API error (${response.status})`,
+          error: errorMsg,
           rawResponse: data,
         }
       }
@@ -334,12 +346,17 @@ export class GmailProviderAdapter implements IEmailProvider {
       const data = await response.json()
 
       if (!response.ok) {
+        let errorMsg = data.error?.message || 'Failed to authenticate with Gmail API'
+        if (response.status === 403 && (errorMsg.includes('has not been used') || errorMsg.includes('disabled'))) {
+          errorMsg = 'Gmail API is disabled in your Google Cloud Project. Please enable the Gmail API in Google Cloud Console.'
+        }
+
         return {
           success: false,
           provider: 'gmail',
           latencyMs,
-          message: data.error?.message || 'Failed to authenticate with Gmail API',
-          error: data.error?.message,
+          message: errorMsg,
+          error: errorMsg,
         }
       }
 

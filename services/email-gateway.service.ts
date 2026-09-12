@@ -467,8 +467,11 @@ export class EmailGatewayService {
       const provider = createEmailProvider(decryptedConfig)
 
       const fromAddress = {
-        name: gateway.sender_name,
-        address: gateway.sender_email,
+        name: gateway.sender_name || gateway.gmail_display_name || 'PrintERP Notifications',
+        address:
+          gateway.provider === 'gmail' && gateway.gmail_account_email
+            ? gateway.gmail_account_email
+            : (gateway.sender_email || gateway.gmail_account_email || 'notifications@printerp.com'),
       }
 
       const sendResult = await provider.sendEmail({
