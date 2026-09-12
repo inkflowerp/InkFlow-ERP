@@ -5,7 +5,13 @@ const DEFAULT_SUPABASE_URL = 'https://liqhihsqcblddqfjmmse.supabase.co'
 const DEFAULT_SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcWhpaHNxY2JsZGRxZmptbXNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MTEyMjUsImV4cCI6MjEwNDM4NzIyNX0.JMDMwnk3vIDg8V7Hn7qKPhqzP7yLA4HYYf2JSYW3Sv0'
 
+let cachedBrowserClient: ReturnType<typeof createBrowserClient<Database>> | null = null
+
 export function createClient() {
+  if (typeof window !== 'undefined' && cachedBrowserClient) {
+    return cachedBrowserClient
+  }
+
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.SUPABASE_URL ||
@@ -17,7 +23,7 @@ export function createClient() {
     process.env.SUPABASE_PUBLISHABLE_KEY ||
     DEFAULT_SUPABASE_ANON_KEY
 
-  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
+  const client = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         if (typeof document === 'undefined') return []
@@ -42,4 +48,10 @@ export function createClient() {
       },
     },
   })
+
+  if (typeof window !== 'undefined') {
+    cachedBrowserClient = client
+  }
+
+  return client
 }

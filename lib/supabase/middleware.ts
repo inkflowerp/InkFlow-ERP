@@ -42,6 +42,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/faq') ||
     pathname.startsWith('/terms') ||
     pathname.startsWith('/privacy') ||
+    pathname === '/logout' ||
     pathname.startsWith('/auth/callback') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/403') ||
@@ -206,7 +207,7 @@ export async function updateSession(request: NextRequest) {
   if (pathname === '/login') {
     const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
     
-    if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError) {
+    if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
       const redirectTo = request.nextUrl.searchParams.get('redirectTo')
       const targetSlug = tenantSessionData.companySlug
       let destination = `/${targetSlug}/dashboard`
@@ -230,12 +231,18 @@ export async function updateSession(request: NextRequest) {
         }
       }
 
-      const url = request.nextUrl.clone()
-      url.pathname = destination.split('?')[0]
-      url.search = destination.includes('?') ? destination.split('?')[1] : ''
-      return applyNoCacheHeaders(NextResponse.redirect(url))
+      // Prevent redirecting to the same URL or looping
+      if (destination !== '/login') {
+        const url = request.nextUrl.clone()
+        url.pathname = destination.split('?')[0]
+        url.search = destination.includes('?') ? destination.split('?')[1] : ''
+        return applyNoCacheHeaders(NextResponse.redirect(url))
+      }
     } else if (hasAuthError && hasValidTenantCookie) {
       // Explicit error or logged out parameter: purge cookie
+      supabaseResponse.cookies.delete(TENANT_SESSION_COOKIE)
+    } else if (hasValidPlatformCookie && hasValidTenantCookie) {
+      // Cross-portal conflict: purge stale tenant cookie on login
       supabaseResponse.cookies.delete(TENANT_SESSION_COOKIE)
     }
   }

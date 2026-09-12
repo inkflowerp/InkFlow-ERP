@@ -91,7 +91,7 @@ export function TopNav() {
 
       <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         {/* Realtime Live Sync Health Indicator */}
-        <div className="hidden lg:flex items-center mr-1">
+        <div className="hidden lg:flex items-center mr-1" suppressHydrationWarning>
           {isLive ? (
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/80"

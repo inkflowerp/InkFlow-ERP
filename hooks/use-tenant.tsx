@@ -180,14 +180,8 @@ export function TenantProvider({
   })
 
   const [availableCompanies, setAvailableCompanies] = useState<CompanyRow[]>(() => {
-    const platformCompanies =
-      PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-    const converted = platformCompanies.map(platformCompanyToRow)
     const activeCo = company || resolveCompanyBySlug(initialSlug || initialTenantContext?.companySlug || 'my-company')
-    if (activeCo && !converted.some((c) => c.slug === activeCo.slug)) {
-      return [activeCo, ...converted]
-    }
-    return converted.length > 0 ? converted : activeCo ? [activeCo] : []
+    return activeCo ? [activeCo] : []
   })
 
   const [session, setSession] = useState<TenantSessionData | null>(() => {
@@ -257,18 +251,12 @@ export function TenantProvider({
       : (session.role as TenantRole) || 'owner'
     : 'owner'
 
+  const [syncedUser, setSyncedUser] = useState<CompanyUserWithProfile | null>(null)
+
   // Resolve current user details deterministically
   const currentUser: CompanyUserWithProfile | null = useMemo(() => {
     if (!session) return null
-    const users =
-      PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS) || []
-
-    const matched = users.find(
-      (u) =>
-        u.user_id === session.userId ||
-        u.profile?.email.toLowerCase() === session.userEmail.toLowerCase()
-    )
-    if (matched) return matched
+    if (syncedUser) return syncedUser
 
     return {
       id: session.userId,
@@ -281,8 +269,8 @@ export function TenantProvider({
       overrides: {},
       data_scopes: {},
       invited_email: null,
-      created_at: session.loginTime || new Date().toISOString(),
-      updated_at: session.loginTime || new Date().toISOString(),
+      created_at: session.loginTime || '2026-01-01T00:00:00.000Z',
+      updated_at: session.loginTime || '2026-01-01T00:00:00.000Z',
       profile: {
         id: session.userId,
         email: session.userEmail,
@@ -292,13 +280,13 @@ export function TenantProvider({
         avatar_url: null,
         preferred_locale: 'bn',
         is_active: true,
-        created_at: session.loginTime || new Date().toISOString(),
-        updated_at: session.loginTime || new Date().toISOString(),
+        created_at: session.loginTime || '2026-01-01T00:00:00.000Z',
+        updated_at: session.loginTime || '2026-01-01T00:00:00.000Z',
       },
       roles: [],
       branch: branches.find((b) => b.id === session.branchId) || branches[0],
     }
-  }, [session, branches])
+  }, [session, branches, syncedUser])
 
   const currentBranch = session?.branchId
     ? branches.find((b) => b.id === session.branchId) || branches[0]
@@ -311,6 +299,14 @@ export function TenantProvider({
     const activeSession = getSessionFromCookie()
     if (activeSession) {
       setSession(activeSession)
+      const users =
+        PrintERPDataStore.get<CompanyUserWithProfile[]>(STORAGE_KEYS.COMPANY_USERS) || []
+      const matched = users.find(
+        (u) =>
+          u.user_id === activeSession.userId ||
+          u.profile?.email.toLowerCase() === activeSession.userEmail.toLowerCase()
+      )
+      setSyncedUser(matched || null)
     }
 
     const targetSlug =

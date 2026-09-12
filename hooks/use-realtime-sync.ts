@@ -13,13 +13,14 @@ export interface RealtimeSyncState {
 }
 
 export function useRealtimeSync(companyId?: string) {
-  const [status, setStatus] = useState<RealtimeConnectionStatus>(() =>
-    realtimeManager.getConnectionStatus()
-  )
+  const [status, setStatus] = useState<RealtimeConnectionStatus>('disconnected')
   const [lastEventTime, setLastEventTime] = useState<number | null>(null)
   const unsubRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
+    // Sync current status on client mount
+    setStatus(realtimeManager.getConnectionStatus())
+
     // 1. Subscribe to status changes
     const unsubStatus = realtimeManager.onConnectionStatusChange((newStatus) => {
       setStatus(newStatus)

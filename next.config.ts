@@ -4,8 +4,27 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['nodemailer', 'pg'],
   compress: true,
   poweredByHeader: false,
+  reactStrictMode: false,
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts'],
+    optimizePackageImports: [
+      'lucide-react',
+      'recharts',
+      'date-fns',
+      'clsx',
+      'tailwind-merge',
+      'zod',
+      'react-hook-form',
+      'class-variance-authority',
+      '@hookform/resolvers',
+    ],
+    turbopackFileSystemCacheForDev: true,
+    turbopackMemoryEviction: 'auto',
+    serverComponentsHmrCache: true,
+  },
+  logging: {
+    fetches: {
+      fullUrl: false,
+    },
   },
   async redirects() {
     return [

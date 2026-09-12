@@ -117,7 +117,7 @@ export function PublicPlansProvider({
     cachedPlansData = data
     if (typeof window !== 'undefined') {
       try {
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, data.plans)
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, data.plans, false)
       } catch {}
     }
     setPlans(data.plans)
@@ -155,12 +155,11 @@ export function PublicPlansProvider({
 
     const handleDataSync = (e: Event) => {
       const customEvent = e as CustomEvent
-      if (
-        !customEvent.detail?.key ||
-        customEvent.detail?.key.includes('plan') ||
-        customEvent.detail?.key.includes('subscription')
-      ) {
-        fetchPlans()
+      const key = customEvent.detail?.key
+      if (key === STORAGE_KEYS.PLATFORM_PLANS && customEvent.detail?.data) {
+        if (Array.isArray(customEvent.detail.data)) {
+          setPlans(customEvent.detail.data)
+        }
       }
     }
 
@@ -260,7 +259,7 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
   }
 
   // Fallback standalone hook if used outside PublicPlansProvider
-  const seed = getInitialPublicSeed(initialData)
+  const seed = useMemo(() => getInitialPublicSeed(initialData), [initialData])
   const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => seed.plans)
   const [trialPlan, setTrialPlan] = useState<SubscriptionPlanRecord>(() => seed.trialPlan)
   const [trialDays, setTrialDays] = useState<number>(() => seed.trialDays)
@@ -296,7 +295,7 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
   }, [applyPlansData])
 
   useEffect(() => {
-    if (!seed) {
+    if (!cachedPlansData && !initialData) {
       fetchPlans()
     }
 
@@ -306,51 +305,22 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
 
     const handleDataSync = (e: Event) => {
       const customEvent = e as CustomEvent
-      if (
-        !customEvent.detail?.key ||
-        customEvent.detail?.key.includes('plan') ||
-        customEvent.detail?.key.includes('subscription')
-      ) {
-        fetchPlans()
+      const key = customEvent.detail?.key
+      if (key === STORAGE_KEYS.PLATFORM_PLANS && customEvent.detail?.data) {
+        if (Array.isArray(customEvent.detail.data)) {
+          setPlans(customEvent.detail.data)
+        }
       }
     }
 
     window.addEventListener('printerp_plans_sync', handlePlansSync)
     window.addEventListener('printerp_data_sync', handleDataSync)
 
-    let channel: any = null
-    try {
-      const supabase = createClient()
-      channel = supabase
-        .channel('public:marketing_subscription_plans_standalone')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'subscription_plans' },
-          () => {
-            fetchPlans()
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'platform_system_settings' },
-          () => {
-            fetchPlans()
-          }
-        )
-        .subscribe()
-    } catch {}
-
     return () => {
       window.removeEventListener('printerp_plans_sync', handlePlansSync)
       window.removeEventListener('printerp_data_sync', handleDataSync)
-      if (channel) {
-        try {
-          const supabase = createClient()
-          supabase.removeChannel(channel)
-        } catch {}
-      }
     }
-  }, [fetchPlans, seed])
+  }, [fetchPlans, initialData])
 
   const starterPlan = useMemo(
     () => paidPlans.find((p) => p.code === 'starter') || paidPlans[0] || DEFAULT_PLANS[1],
@@ -385,3 +355,4 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
     toBengaliDigits,
   }
 }
+

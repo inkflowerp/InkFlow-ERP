@@ -6,6 +6,7 @@
 // ==============================================================================
 
 import { redirect } from 'next/navigation'
+import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -185,8 +186,9 @@ export function resolveEffectivePlatformPermissions(
  * Canonical Server-Side Platform Context Resolver.
  * Single Source of Truth: Supabase Auth -> Authenticated auth.uid() -> platform_admins -> Active check.
  * Strictly FAILS CLOSED on any error or missing record. No fallback to unverified cookies.
+ * Wrapped in React cache() for request-level memoization.
  */
-export async function getAuthenticatedPlatformContext(): Promise<AuthenticatedPlatformContext | null> {
+export const getAuthenticatedPlatformContext = cache(async function getAuthenticatedPlatformContext(): Promise<AuthenticatedPlatformContext | null> {
   try {
     const adminClient = createAdminClient()
 
@@ -284,7 +286,7 @@ export async function getAuthenticatedPlatformContext(): Promise<AuthenticatedPl
   } catch {
     return null // FAIL CLOSED
   }
-}
+})
 
 /**
  * Authoritative DB lookup for a specific user ID or admin ID.
@@ -348,8 +350,9 @@ export async function isLastPlatformOwner(adminId: string): Promise<boolean> {
 /**
  * Retrieves the current authenticated platform user from Supabase auth and platform_admins.
  * Server-side validated: client cookies alone cannot grant platform access.
+ * Wrapped in React cache() for request-scoped deduplication.
  */
-export async function getCurrentPlatformUser(): Promise<PlatformUserRecord | null> {
+export const getCurrentPlatformUser = cache(async function getCurrentPlatformUser(): Promise<PlatformUserRecord | null> {
   const context = await getAuthenticatedPlatformContext()
   if (context && context.isActive) {
     return {
@@ -368,7 +371,7 @@ export async function getCurrentPlatformUser(): Promise<PlatformUserRecord | nul
     }
   }
   return null
-}
+})
 
 /**
  * Strict server-side platform guard.

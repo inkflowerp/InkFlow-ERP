@@ -11,32 +11,39 @@ export function useOutsideClick<T extends HTMLElement = HTMLElement>(
   enabled: boolean = true
 ) {
   const ref = useRef<T | null>(null)
+  const savedCallback = useRef(callback)
+
+  useEffect(() => {
+    savedCallback.current = callback
+  }, [callback])
 
   useEffect(() => {
     if (!enabled) return
 
-    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
-        callback()
+        savedCallback.current()
       }
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        callback()
+        savedCallback.current()
       }
     }
 
-    document.addEventListener('mousedown', handlePointerDown)
-    document.addEventListener('touchstart', handlePointerDown)
+    // Use 'click' instead of 'mousedown' so interactive elements (links, buttons, tabs)
+    // receive their native click dispatch before the container unmounts
+    document.addEventListener('click', handleClickOutside)
+    document.addEventListener('touchend', handleClickOutside)
     document.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      document.removeEventListener('mousedown', handlePointerDown)
-      document.removeEventListener('touchstart', handlePointerDown)
+      document.removeEventListener('click', handleClickOutside)
+      document.removeEventListener('touchend', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [callback, enabled])
+  }, [enabled])
 
   return ref
 }

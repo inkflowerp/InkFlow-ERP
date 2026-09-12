@@ -6,6 +6,7 @@
 
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { TenantContext, TenantRole, TenantSessionData, TENANT_SESSION_COOKIE } from './types'
@@ -17,8 +18,11 @@ const SUPPORT_COOKIE_NAME = 'printerp_support_tenant'
 
 /**
  * Resolves verified tenant context for the currently authenticated user from Supabase.
+ * Wrapped in React cache() for request-scoped deduplication across server layouts and components.
  */
-export async function getCurrentTenant(requestedSlugOrId?: string): Promise<TenantContext | null> {
+export const getCurrentTenant = cache(async function getCurrentTenant(
+  requestedSlugOrId?: string
+): Promise<TenantContext | null> {
   try {
     const cookieStore = await cookies()
 
@@ -224,7 +228,7 @@ export async function getCurrentTenant(requestedSlugOrId?: string): Promise<Tena
   } catch {
     return null
   }
-}
+})
 
 /**
  * Strict server-side guard for tenant routes (e.g. /app/* or /[tenantSlug]/*).
@@ -234,7 +238,19 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
   const tenantContext = await getCurrentTenant(requestedSlugOrId)
 
   if (!tenantContext) {
-    redirect(`/login${requestedSlugOrId ? `?redirectTo=/${requestedSlugOrId}/dashboard` : ''}`)
+    try {
+      const cookieStore = await cookies()
+      const hasPlatformCookie = Boolean(cookieStore.get('printerp_platform_session')?.value)
+      if (hasPlatformCookie) {
+        redirect('/platform')
+      }
+    } catch (e: any) {
+      if (e?.digest?.includes('NEXT_REDIRECT') || e?.message?.includes('NEXT_REDIRECT')) {
+        throw e
+      }
+    }
+
+    redirect(`/login${requestedSlugOrId ? `?error=unauthorized&redirectTo=/${requestedSlugOrId}/dashboard` : '?error=unauthorized'}`)
   }
 
   return tenantContext

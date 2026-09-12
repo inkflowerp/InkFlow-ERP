@@ -188,12 +188,19 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   })
 
   const refreshSubscription = useCallback(async () => {
+    if (!companyId || companyId === 'default') {
+      setIsLoading(false)
+      return
+    }
     try {
-      const [subRes, plansRes] = await Promise.all([
+      const promises: [Promise<any>, Promise<any>?] = [
         getTenantSubscriptionAction(companyId, companySlug),
-        getPublicSubscriptionPlansAction(),
-      ])
-      if (subRes.success && subRes.data) {
+      ]
+      if (!memoryCachedPlans || memoryCachedPlans.length === 0) {
+        promises.push(getPublicSubscriptionPlansAction())
+      }
+      const [subRes, plansRes] = await Promise.all(promises)
+      if (subRes && subRes.success && subRes.data) {
         setSubscription(subRes.data)
         memoryCachedSubscriptions[companyId] = subRes.data
         if (companySlug) {
@@ -207,17 +214,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
             if (companySlug) {
               currentSubs[companySlug] = subRes.data
             }
-            PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs)
+            PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, false)
           } catch {}
         }
       }
 
-      if (plansRes.success && plansRes.data?.plans && plansRes.data.plans.length > 0) {
+      if (plansRes && plansRes.success && plansRes.data?.plans && plansRes.data.plans.length > 0) {
         setPlans(plansRes.data.plans)
         memoryCachedPlans = plansRes.data.plans
         if (typeof window !== 'undefined') {
           try {
-            PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, plansRes.data.plans)
+            PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, plansRes.data.plans, false)
           } catch {}
         }
       }
@@ -234,13 +241,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     }
     const handleDataSync = (e: Event) => {
       const customEvent = e as CustomEvent
-      if (
-        !customEvent.detail?.key ||
-        customEvent.detail?.key.includes('plan') ||
-        customEvent.detail?.key.includes('subscription') ||
-        customEvent.detail?.key.includes('company')
-      ) {
-        refreshSubscription()
+      const key = customEvent.detail?.key
+      if (key === STORAGE_KEYS.COMPANY_SUBSCRIPTIONS && customEvent.detail?.data) {
+        const stored = customEvent.detail.data as Record<string, CompanySubscriptionRecord>
+        const updated = stored[companyId] || (companySlug ? stored[companySlug] : null)
+        if (updated) {
+          setSubscription(updated)
+        }
+      } else if (key === STORAGE_KEYS.PLATFORM_PLANS && customEvent.detail?.data) {
+        if (Array.isArray(customEvent.detail.data)) {
+          setPlans(customEvent.detail.data)
+        }
       }
     }
 
@@ -250,7 +261,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       window.removeEventListener('printerp_plans_sync', handlePlansSync)
       window.removeEventListener('printerp_data_sync', handleDataSync)
     }
-  }, [refreshSubscription])
+  }, [refreshSubscription, companyId, companySlug])
 
   // Compute resource usage dynamically
   const [usageTick, setUsageTick] = useState(0)
@@ -411,12 +422,16 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const totalTrialDays = currentPlan?.trial_days || 14
 
-  const [nowTick, setNowTick] = useState(() => Date.now())
+  const [isMounted, setIsMounted] = useState(false)
+  const [nowTick, setNowTick] = useState(0)
 
   useEffect(() => {
+    setIsMounted(true)
+    setNowTick(Date.now())
+    // 60-second background tick instead of aggressive 10s tick to prevent unnecessary re-render cycles
     const timer = setInterval(() => {
       setNowTick(Date.now())
-    }, 10000)
+    }, 60000)
     return () => clearInterval(timer)
   }, [])
 
@@ -436,20 +451,52 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [isTrial, trialExpiresAt, subscription.current_period_end])
 
   const daysRemainingInTrial = useMemo(() => {
-    return isTrial ? getTrialDaysRemaining(trialExpiresAt) : 0
-  }, [trialExpiresAt, isTrial, nowTick])
+    if (!isTrial) return 0
+    if (!isMounted || !nowTick) return totalTrialDays
+    return getTrialDaysRemaining(trialExpiresAt)
+  }, [trialExpiresAt, isTrial, nowTick, isMounted, totalTrialDays])
 
   const timeRemainingInTrial = useMemo(() => {
-    return isTrial ? getSubscriptionTimeRemaining(trialExpiresAt) : getSubscriptionTimeRemaining(null)
-  }, [trialExpiresAt, isTrial, nowTick])
+    if (!isTrial) return getSubscriptionTimeRemaining(null)
+    if (!isMounted || !nowTick) {
+      return {
+        totalMs: totalTrialDays * 86400000,
+        days: totalTrialDays,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        isExpired: false,
+        formattedEn: `${totalTrialDays}d left`,
+        formattedBn: `${toBengaliDigits(totalTrialDays)} দিন বাকি`,
+        statusBadgeEn: `${totalTrialDays}d left`,
+        statusBadgeBn: `${toBengaliDigits(totalTrialDays)} দিন বাকি`,
+      }
+    }
+    return getSubscriptionTimeRemaining(trialExpiresAt)
+  }, [trialExpiresAt, isTrial, nowTick, isMounted, totalTrialDays])
 
   const daysRemainingInPlan = useMemo(() => {
+    if (!isMounted || !nowTick) return 30
     return getTrialDaysRemaining(planExpiresAt)
-  }, [planExpiresAt, nowTick])
+  }, [planExpiresAt, nowTick, isMounted])
 
   const timeRemainingInPlan = useMemo(() => {
+    if (!isMounted || !nowTick) {
+      return {
+        totalMs: 30 * 86400000,
+        days: 30,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        isExpired: false,
+        formattedEn: '30d left',
+        formattedBn: '৩০ দিন বাকি',
+        statusBadgeEn: '30d left',
+        statusBadgeBn: '৩০ দিন বাকি',
+      }
+    }
     return getSubscriptionTimeRemaining(planExpiresAt)
-  }, [planExpiresAt, nowTick])
+  }, [planExpiresAt, nowTick, isMounted])
 
   const isTrialExpired = useMemo(() => {
     return isTrial && (timeRemainingInTrial.isExpired || subscription.status === 'expired')
@@ -460,13 +507,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [isTrial, timeRemainingInPlan.isExpired, subscription.status])
 
   const trialProgressPercent = useMemo(() => {
-    if (!isTrial || !trialExpiresAt) return 0
+    if (!isTrial || !trialExpiresAt || !isMounted || !nowTick) return 0
     const end = new Date(trialExpiresAt).getTime()
     const start = new Date(subscription.current_period_start || (end - totalTrialDays * 86400000)).getTime()
     const totalDuration = Math.max(1, end - start)
-    const elapsed = Math.max(0, Date.now() - start)
+    const elapsed = Math.max(0, (nowTick || Date.now()) - start)
     return Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)))
-  }, [isTrial, trialExpiresAt, subscription.current_period_start, totalTrialDays, nowTick])
+  }, [isTrial, trialExpiresAt, subscription.current_period_start, totalTrialDays, nowTick, isMounted])
 
   const hasFeature = useCallback(
     (feature: FeatureCode) => {
