@@ -543,27 +543,75 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
     updated_at: new Date().toISOString(),
   },
 
-  // 13. Password Reset
+  // 13. Registration Email Verification (OTP & Secure Link)
+  {
+    id: 'tpl-email-verification',
+    tenant_id: null,
+    event_type: 'email_verification',
+    name: 'Account Email Verification (ইমেইল যাচাইকরণ)',
+    name_bn: 'ইমেইল যাচাইকরণ',
+    subject_template: 'Verify your InkFlow account - Code: {{otp_code}}',
+    subject_template_bn: 'আপনার InkFlow একাউন্ট যাচাই করুন - কোড: {{otp_code}}',
+    body_template: `
+      <p>Hello <strong>{{user_name}}</strong>,</p>
+      <p>Thank you for registering with <strong>InkFlow</strong>. Please use the 6-digit verification code below to activate your account:</p>
+      <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">{{otp_code}}</span>
+      </div>
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="{{verification_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">Verify Email Address</a>
+      </p>
+      <p style="font-size: 13px; color: #64748b;">This verification code and link will expire in <strong>{{expires_minutes}} minutes</strong>. If you did not create an account on InkFlow, you can safely ignore this email.</p>
+    `,
+    body_template_bn: `
+      <p>প্রিয় <strong>{{user_name}}</strong>,</p>
+      <p>InkFlow-এ নিবন্ধন করার জন্য ধন্যবাদ। আপনার একাউন্ট সক্রিয় করতে নিচের ৬-সংখ্যার যাচাইকরণ কোডটি ব্যবহার করুন:</p>
+      <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">{{otp_code}}</span>
+      </div>
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="{{verification_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">ইমেইল যাচাই করুন</a>
+      </p>
+      <p style="font-size: 13px; color: #64748b;">এই কোড ও লিংকটি <strong>{{expires_minutes}} মিনিট</strong> পর নিষ্ক্রিয় হয়ে যাবে। আপনি যদি এই একাউন্ট তৈরি না করে থাকেন, তবে এই ইমেইলটি উপেক্ষা করুন।</p>
+    `,
+    variables: ['user_name', 'email', 'otp_code', 'verification_link', 'expires_minutes'],
+    status: 'active',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+
+  // 14. Password Reset (OTP & Secure Link)
   {
     id: 'tpl-password-reset',
     tenant_id: null,
     event_type: 'password_reset',
     name: 'Password Reset Request (পাসওয়ার্ড রিসেট)',
     name_bn: 'পাসওয়ার্ড রিসেট',
-    subject_template: 'Reset your PrintERP password',
-    subject_template_bn: 'আপনার PrintERP পাসওয়ার্ড রিসেট করুন',
+    subject_template: 'Reset your InkFlow password - Code: {{otp_code}}',
+    subject_template_bn: 'আপনার InkFlow পাসওয়ার্ড রিসেট করুন - কোড: {{otp_code}}',
     body_template: `
       <p>Hello <strong>{{user_name}}</strong>,</p>
-      <p>We received a request to reset the password for your PrintERP account associated with <strong>{{email}}</strong>.</p>
-      <p><a href="{{reset_link}}" class="btn">Reset My Password</a></p>
-      <p>If you did not make this request, you can safely ignore this email. The link will expire in {{expiry_minutes}} minutes.</p>
+      <p>We received a request to reset the password for your InkFlow account (<strong>{{email}}</strong>).</p>
+      <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">{{otp_code}}</span>
+      </div>
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="{{reset_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">Reset My Password</a>
+      </p>
+      <p style="font-size: 13px; color: #64748b;">This code and reset link will expire in <strong>{{expires_minutes}} minutes</strong>. If you did not request a password reset, please change your password immediately or contact support.</p>
     `,
     body_template_bn: `
       <p>প্রিয় <strong>{{user_name}}</strong>,</p>
-      <p>আপনার একাউন্টের পাসওয়ার্ড রিসেট করার জন্য একটি অনুরোধ পাওয়া গেছে।</p>
-      <p><a href="{{reset_link}}" class="btn">পাসওয়ার্ড পরিবর্তন করুন</a></p>
+      <p>আপনার InkFlow একাউন্টের (<strong>{{email}}</strong>) পাসওয়ার্ড রিসেট করার জন্য একটি অনুরোধ পাওয়া গেছে।</p>
+      <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">{{otp_code}}</span>
+      </div>
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="{{reset_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">পাসওয়ার্ড পরিবর্তন করুন</a>
+      </p>
+      <p style="font-size: 13px; color: #64748b;">এই কোড ও লিংকটি <strong>{{expires_minutes}} মিনিট</strong> কার্যকর থাকবে। আপনি যদি এই অনুরোধ না করে থাকেন, তবে দ্রুত পাসওয়ার্ড পরিবর্তন করুন।</p>
     `,
-    variables: ['user_name', 'email', 'reset_link', 'expiry_minutes'],
+    variables: ['user_name', 'email', 'otp_code', 'reset_link', 'expires_minutes'],
     status: 'active',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),

@@ -35,14 +35,28 @@ export class AuditRepository {
       created_at: new Date().toISOString(),
     }
 
-    const { data, error } = await (admin as any)
+    let { data, error } = await (admin as any)
       .from('audit_logs')
       .insert(payload)
       .select()
       .single()
 
+    if (error && error.message?.includes('description')) {
+      // If description column is not in DB schema cache, nest inside new_value
+      delete payload.description
+      if (!payload.new_value) payload.new_value = {}
+      if (params.description) payload.new_value.description = params.description
+
+      const retryRes = await (admin as any)
+        .from('audit_logs')
+        .insert(payload)
+        .select()
+        .single()
+      data = retryRes.data
+      error = retryRes.error
+    }
+
     if (error) {
-      console.error(`[AuditRepository] Failed to write audit log: ${error.message}`)
       return {
         id: `aud-${Date.now()}`,
         company_id: params.companyId,

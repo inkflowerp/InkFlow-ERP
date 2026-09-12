@@ -1,16 +1,16 @@
 // ==============================================================================
-// PrintERP / InkFlow SaaS - Unit Tests: Authentication Email & OTP Security
+// PrintERP / InkFlow SaaS - Unit Tests: Email Verification & OTP Security
 // Tests 6-digit OTP generation, single-use tokens, SHA-256 hashing, timing-safe
 // comparison, 10-minute expiry, 5-attempt brute-force protection, 60s cooldowns,
-// and strict purpose isolation.
+// purpose isolation, and email dispatch.
 // ==============================================================================
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { AuthEmailService } from '../../services/auth-email.service.ts'
-import { EmailDataStore } from '../../services/email-gateway.service.ts'
+import { AuthService } from '../../services/auth.service.ts'
 
-describe('Auth Email & OTP Security Unit Tests', () => {
+describe('Email Verification & OTP Security Unit Tests', () => {
   it('1. Generates 6-digit numeric OTP', () => {
     const otp = AuthEmailService.generateSecureOtp()
     assert.strictEqual(otp.length, 6)
@@ -23,7 +23,7 @@ describe('Auth Email & OTP Security Unit Tests', () => {
     assert.ok(/^[0-9a-f]{64}$/.test(token), 'Token must be valid 64-char hex string')
   })
 
-  it('3. Hashes secret and performs timing-safe comparison', () => {
+  it('3. Hashes secret with SHA-256 and performs timing-safe comparison', () => {
     const secret = '123456'
     const hash = AuthEmailService.hashSecret(secret)
     assert.notStrictEqual(secret, hash, 'Hash must not equal plaintext')
@@ -37,7 +37,7 @@ describe('Auth Email & OTP Security Unit Tests', () => {
   })
 
   it('4. Creates and verifies valid 6-digit OTP successfully for registration', async () => {
-    const email = 'user-test@example.com'
+    const email = 'user-reg-test@example.com'
     const res = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',
@@ -47,30 +47,11 @@ describe('Auth Email & OTP Security Unit Tests', () => {
 
     const verifyRes = await AuthEmailService.verifyOtp(email, res.otp, 'registration')
     assert.strictEqual(verifyRes.success, true)
+    assert.strictEqual(verifyRes.email, email)
   })
 
   it('5. Prevents OTP reuse (single-use enforcement)', async () => {
-    const email = 'single-use-test@example.com'
-    const res = await AuthEmailService.createVerificationRecord({
-      email,
-      purpose: 'password_reset',
-      ttlSeconds: 600,
-    })
-    assert.ok(!('error' in res))
-
-    // First verification passes
-    const firstVerify = await AuthEmailService.verifyOtp(email, res.otp, 'password_reset')
-    assert.strictEqual(firstVerify.success, true)
-    assert.ok(firstVerify.resetToken, 'Password reset verification must issue resetToken')
-
-    // Second verification must fail
-    const secondVerify = await AuthEmailService.verifyOtp(email, res.otp, 'password_reset')
-    assert.strictEqual(secondVerify.success, false)
-    assert.ok(secondVerify.error?.includes('No active verification code') || secondVerify.error?.includes('already been used'))
-  })
-
-  it('6. Limits incorrect attempts to 5 and invalidates code after 5 failures', async () => {
-    const email = 'bruteforce-test@example.com'
+    const email = 'single-use-reg@example.com'
     const res = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',
@@ -78,26 +59,51 @@ describe('Auth Email & OTP Security Unit Tests', () => {
     })
     assert.ok(!('error' in res))
 
-    // Attempts 1 to 4: wrong
+    // First verification passes
+    const firstVerify = await AuthEmailService.verifyOtp(email, res.otp, 'registration')
+    assert.strictEqual(firstVerify.success, true)
+
+    // Second verification must fail (single-use)
+    const secondVerify = await AuthEmailService.verifyOtp(email, res.otp, 'registration')
+    assert.strictEqual(secondVerify.success, false)
+    assert.ok(
+      secondVerify.error?.includes('No active verification code') ||
+      secondVerify.error?.includes('already been used')
+    )
+  })
+
+  it('6. Limits incorrect attempts to 5 and locks out after 5 failures', async () => {
+    const email = 'lockout-test@example.com'
+    const res = await AuthEmailService.createVerificationRecord({
+      email,
+      purpose: 'registration',
+      ttlSeconds: 600,
+    })
+    assert.ok(!('error' in res))
+
+    // Attempts 1 to 4: wrong OTP
     for (let i = 1; i <= 4; i++) {
       const att = await AuthEmailService.verifyOtp(email, '000000', 'registration')
       assert.strictEqual(att.success, false)
       assert.ok(att.error?.includes('attempt(s) remaining'))
     }
 
-    // Attempt 5: wrong -> permanently invalidated
+    // Attempt 5: wrong OTP -> locked out
     const att5 = await AuthEmailService.verifyOtp(email, '000000', 'registration')
     assert.strictEqual(att5.success, false)
     assert.ok(att5.error?.includes('Too many incorrect attempts'))
 
-    // Even if right code is provided now, it must fail
+    // Attempt 6 with genuine OTP must now fail due to lockout
     const att6 = await AuthEmailService.verifyOtp(email, res.otp, 'registration')
     assert.strictEqual(att6.success, false)
-    assert.ok(att6.error?.includes('No active verification code') || att6.error?.includes('Too many incorrect attempts'))
+    assert.ok(
+      att6.error?.includes('No active verification code') ||
+      att6.error?.includes('Too many incorrect attempts')
+    )
   })
 
   it('7. Enforces 60-second resend cooldown', async () => {
-    const email = 'cooldown-test@example.com'
+    const email = 'resend-cooldown@example.com'
     const res1 = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',
@@ -116,7 +122,7 @@ describe('Auth Email & OTP Security Unit Tests', () => {
   })
 
   it('8. Enforces strict purpose isolation (registration OTP cannot verify password_reset)', async () => {
-    const email = 'purpose-isolation@example.com'
+    const email = 'purpose-isolation-check@example.com'
     const regRes = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',
@@ -135,7 +141,7 @@ describe('Auth Email & OTP Security Unit Tests', () => {
   })
 
   it('9. Verifies secure URL token with single-use guarantee', async () => {
-    const email = 'token-verify@example.com'
+    const email = 'url-token-test@example.com'
     const res = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'registration',
@@ -143,19 +149,19 @@ describe('Auth Email & OTP Security Unit Tests', () => {
     })
     assert.ok(!('error' in res))
 
-    // Verify token
+    // First token verification passes
     const tokenVerify1 = await AuthEmailService.verifyToken(res.token, email, 'registration')
     assert.strictEqual(tokenVerify1.success, true)
 
-    // Replay token must fail
+    // Token replay must fail
     const tokenVerify2 = await AuthEmailService.verifyToken(res.token, email, 'registration')
     assert.strictEqual(tokenVerify2.success, false)
   })
 
   it('10. Dispatches Registration Verification Email with 6-digit OTP and link', async () => {
     const sendRes = await AuthEmailService.sendRegistrationVerificationEmail({
-      email: 'newowner@inkflow.com',
-      fullName: 'Kamrul Hassan',
+      email: 'newuser@inkflow.com',
+      fullName: 'Kamrul Islam',
     })
 
     assert.strictEqual(sendRes.success, true)
@@ -166,8 +172,8 @@ describe('Auth Email & OTP Security Unit Tests', () => {
 
   it('11. Dispatches Password Reset Email with 6-digit OTP and link', async () => {
     const sendRes = await AuthEmailService.sendPasswordResetEmail({
-      email: 'owner@printerp.com',
-      userName: 'Platform Owner',
+      email: 'resetuser@inkflow.com',
+      userName: 'Reset User',
       scopeType: 'PLATFORM',
     })
 
@@ -178,7 +184,7 @@ describe('Auth Email & OTP Security Unit Tests', () => {
   })
 
   it('12. Validates password reset authorization token lifecycle', async () => {
-    const email = 'reset-lifecycle@example.com'
+    const email = 'reset-lifecycle-test@example.com'
     const res = await AuthEmailService.createVerificationRecord({
       email,
       purpose: 'password_reset',
@@ -198,5 +204,20 @@ describe('Auth Email & OTP Security Unit Tests', () => {
     // Replaying reset authorization token must fail (single-use)
     const authVal2 = await AuthEmailService.validateResetAuthorization(email, verifyRes.resetToken!)
     assert.strictEqual(authVal2.success, false)
+  })
+
+  it('13. Finalizes registration verification and activates user profile', async () => {
+    const email = 'activation-flow@inkflow.com'
+    const regRes = await AuthEmailService.createVerificationRecord({
+      email,
+      purpose: 'registration',
+      ttlSeconds: 600,
+    })
+    assert.ok(!('error' in regRes))
+
+    const authRes = await AuthService.verifyRegistrationOtp(email, regRes.otp)
+    assert.strictEqual(authRes.success, true)
+    assert.ok(authRes.data?.session)
+    assert.strictEqual(authRes.data?.requiresOnboarding, true)
   })
 })

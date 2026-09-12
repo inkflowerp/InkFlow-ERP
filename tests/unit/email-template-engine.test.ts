@@ -61,8 +61,8 @@ describe('Email Template Engine & Pre-Seeded Templates Unit Tests', () => {
     assert.ok(html.includes('#2563eb'))
   })
 
-  it('5. Verifies all 15 pre-seeded system templates exist with valid metadata', () => {
-    assert.strictEqual(DEFAULT_EMAIL_TEMPLATES.length, 15)
+  it('5. Verifies all pre-seeded system templates exist with valid metadata', () => {
+    assert.strictEqual(DEFAULT_EMAIL_TEMPLATES.length, 16)
 
     const expectedEvents = [
       'quotation_sent',
@@ -77,6 +77,7 @@ describe('Email Template Engine & Pre-Seeded Templates Unit Tests', () => {
       'delivery_scheduled',
       'delivery_completed',
       'user_invitation',
+      'email_verification',
       'password_reset',
       'security_alert',
       'test_email',

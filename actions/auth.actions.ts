@@ -6,15 +6,13 @@ import { cookies } from 'next/headers'
 import { AuthService } from '@/services/auth.service'
 import { AuditService } from '@/services/audit.service'
 import { checkRateLimit } from '@/lib/security/rate-limiter'
-import { TENANT_SESSION_COOKIE, TenantSessionData } from '@/lib/auth/types'
+import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { MODULE_ACTION_SPECS } from '@/types/rbac.types'
-
 import { createClient } from '@/lib/supabase/server'
 
 export async function loginAction(formData: FormData) {
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
+  const email = (formData.get('email') as string) || ''
+  const password = (formData.get('password') as string) || ''
   const redirectTo = (formData.get('redirectTo') as string) || ''
 
   if (!email || !password) {
@@ -117,12 +115,23 @@ export async function signUpAction(data: {
 }): Promise<{
   success: boolean
   error?: string
-  data?: {
-    userId: string
-    session: TenantSessionData
-    requiresOnboarding: boolean
-  }
+  requiresVerification?: boolean
+  email?: string
+  userId?: string
+  message?: string
 }> {
+  if (!data.email || !data.fullName) {
+    return { success: false, error: 'Full name and email address are required.' }
+  }
+
+  const rateLimit = checkRateLimit(data.email.toLowerCase(), 'auth')
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: `Too many registration attempts. Please wait ${rateLimit.resetSeconds} seconds before trying again.`,
+    }
+  }
+
   const result = await AuthService.signUp(
     data.email,
     data.password || 'TemporaryPass123!',
@@ -137,60 +146,157 @@ export async function signUpAction(data: {
     }
   }
 
-  const ownerPermissions = Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
-    spec.actions.map((act) => `${mod}.${act}`)
-  )
+  // Clear any previous active tenant session cookie until email is verified
+  const cookieStore = await cookies()
+  cookieStore.delete(TENANT_SESSION_COOKIE)
 
-  const initialSession: TenantSessionData = {
+  return {
+    success: true,
+    requiresVerification: true,
+    email: result.data.email,
     userId: result.data.userId,
-    userEmail: data.email.trim().toLowerCase(),
-    fullName: data.fullName,
-    fullNameBn: null,
-    phone: data.phone || null,
-    companyId: '',
-    companySlug: '',
-    companyName: data.companyName || 'New Organization',
-    companyNameBn: 'নতুন প্রতিষ্ঠান',
-    branchId: 'br-main',
-    branchName: 'Main Branch',
-    role: 'business_owner',
-    primaryRole: 'business_owner',
-    responsibilities: ['business_owner'],
-    permissions: ownerPermissions,
-    loginTime: new Date().toISOString(),
-    token: `auth-${result.data.userId}`,
+    message: result.message || 'A 6-digit verification code has been sent to your email address.',
+  }
+}
+
+export async function verifyRegistrationOtpAction(email: string, otp: string) {
+  if (!email || !otp) {
+    return { success: false, error: 'Email and verification code are required' }
   }
 
+  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: `Too many verification attempts. Please wait ${rateLimit.resetSeconds} seconds before trying again.`,
+    }
+  }
+
+  const result = await AuthService.verifyRegistrationOtp(email, otp)
+  if (!result.success || !result.data) {
+    return result
+  }
+
+  const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(initialSession), {
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
     path: '/',
     maxAge: 60 * 60 * 24 * 7,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
   })
 
-  try {
-    const supabase = await createClient()
-    await supabase.auth.signInWithPassword({
-      email: data.email.trim().toLowerCase(),
-      password: data.password || 'TemporaryPass123!',
-    })
-  } catch {
-    // Non-blocking
+  revalidatePath('/', 'layout')
+  return result
+}
+
+export async function verifyRegistrationTokenAction(token: string, email?: string | null) {
+  if (!token) {
+    return { success: false, error: 'Verification token is required' }
   }
 
-  return {
-    success: true,
-    data: {
-      userId: result.data.userId,
-      session: initialSession,
-      requiresOnboarding: true,
-    },
+  const result = await AuthService.verifyRegistrationToken(token, email)
+  if (!result.success || !result.data) {
+    return result
   }
+
+  const session = result.data.session
+  const cookieStore = await cookies()
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  })
+
+  revalidatePath('/', 'layout')
+  return result
+}
+
+export async function resendVerificationOtpAction(
+  email: string,
+  purpose: 'registration' | 'password_reset' = 'registration'
+) {
+  if (!email) {
+    return { success: false, error: 'Email address is required' }
+  }
+
+  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: `Please wait ${rateLimit.resetSeconds} seconds before requesting a new code.`,
+    }
+  }
+
+  return await AuthService.resendVerification(email, purpose)
 }
 
 export async function forgotPasswordAction(email: string) {
+  if (!email) {
+    return { success: false, error: 'Email address is required' }
+  }
+
+  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: `Too many password reset requests. Please wait ${rateLimit.resetSeconds} seconds.`,
+    }
+  }
+
   return await AuthService.forgotPassword(email)
+}
+
+export async function verifyPasswordResetOtpAction(email: string, otp: string) {
+  if (!email || !otp) {
+    return { success: false, error: 'Email and verification code are required' }
+  }
+
+  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: `Too many attempts. Please wait ${rateLimit.resetSeconds} seconds before trying again.`,
+    }
+  }
+
+  return await AuthService.verifyPasswordResetOtp(email, otp)
+}
+
+export async function verifyPasswordResetTokenAction(token: string, email?: string | null) {
+  if (!token) {
+    return { success: false, error: 'Reset token is required' }
+  }
+
+  return await AuthService.verifyPasswordResetToken(token, email)
+}
+
+export async function confirmPasswordResetAction(
+  email: string,
+  resetToken: string,
+  newPassword: string
+) {
+  if (!email || !resetToken || !newPassword) {
+    return { success: false, error: 'Email, reset authorization token, and new password are required' }
+  }
+
+  const rateLimit = checkRateLimit(email.toLowerCase(), 'auth')
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: `Too many attempts. Please wait ${rateLimit.resetSeconds} seconds before trying again.`,
+    }
+  }
+
+  const result = await AuthService.confirmPasswordReset(email, resetToken, newPassword)
+
+  if (result.success) {
+    const cookieStore = await cookies()
+    cookieStore.delete(TENANT_SESSION_COOKIE)
+  }
+
+  return result
 }
 
 export async function resetPasswordAction(newPassword: string) {
@@ -242,5 +348,3 @@ export async function signInWithGoogleAction(redirectTo?: string) {
     return { success: false, error: err?.message || 'Failed to initialize Google OAuth' }
   }
 }
-
-

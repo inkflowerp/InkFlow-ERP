@@ -21,6 +21,13 @@ export const AUDIT_ACTIONS = {
   PAYROLL_APPROVE: 'payroll.approve',
   SETTINGS_CHANGE: 'settings.change',
   SUBSCRIPTION_CHANGE: 'subscription.change',
+  AUTH_VERIFY_REQUEST: 'auth.verify_request',
+  AUTH_VERIFY_SUCCESS: 'auth.verify_success',
+  AUTH_VERIFY_FAILURE: 'auth.verify_failure',
+  AUTH_PASSWORD_RESET_REQUEST: 'auth.password_reset_request',
+  AUTH_PASSWORD_RESET_SUCCESS: 'auth.password_reset_success',
+  AUTH_PASSWORD_CHANGE: 'auth.password_change',
+  AUTH_LOCKOUT: 'auth.lockout',
 } as const
 
 export type AuditActionCode = typeof AUDIT_ACTIONS[keyof typeof AUDIT_ACTIONS]

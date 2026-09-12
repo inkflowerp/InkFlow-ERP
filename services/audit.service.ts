@@ -379,6 +379,141 @@ export class AuditService {
     )
   }
 
+  // 16. Auth: Registration Initiated & Verification Email Sent
+  static async trackAuthVerificationSent(
+    email: string,
+    purpose: string,
+    userId?: string | null,
+    companyId: string = 'platform'
+  ) {
+    return this.logEvent(
+      companyId,
+      userId || null,
+      email,
+      AUDIT_ACTIONS.AUTH_VERIFY_REQUEST,
+      'auth',
+      userId || null,
+      null,
+      { purpose },
+      `Verification email dispatched for ${email} (${purpose})`
+    )
+  }
+
+  // 17. Auth: Verification Success
+  static async trackAuthVerificationSuccess(
+    email: string,
+    purpose: string,
+    userId?: string | null,
+    companyId: string = 'platform'
+  ) {
+    return this.logEvent(
+      companyId,
+      userId || null,
+      email,
+      AUDIT_ACTIONS.AUTH_VERIFY_SUCCESS,
+      'auth',
+      userId || null,
+      { status: 'unverified' },
+      { status: 'verified', purpose },
+      `Successfully verified ${purpose} for ${email}`
+    )
+  }
+
+  // 18. Auth: Verification Failure / Lockout
+  static async trackAuthVerificationFailure(
+    email: string,
+    purpose: string,
+    reason: string,
+    companyId: string = 'platform'
+  ) {
+    return this.logEvent(
+      companyId,
+      null,
+      email,
+      AUDIT_ACTIONS.AUTH_VERIFY_FAILURE,
+      'auth',
+      null,
+      null,
+      { purpose, reason },
+      `Failed verification for ${email} (${purpose}): ${reason}`
+    )
+  }
+
+  // 19. Auth: Password Reset Requested
+  static async trackPasswordResetRequested(
+    email: string,
+    companyId: string = 'platform'
+  ) {
+    return this.logEvent(
+      companyId,
+      null,
+      email,
+      AUDIT_ACTIONS.AUTH_PASSWORD_RESET_REQUEST,
+      'auth',
+      null,
+      null,
+      { event: 'password_reset_requested' },
+      `Password reset instructions requested for ${email}`
+    )
+  }
+
+  // 20. Auth: Password Reset Verified
+  static async trackPasswordResetVerified(
+    email: string,
+    userId?: string | null,
+    companyId: string = 'platform'
+  ) {
+    return this.logEvent(
+      companyId,
+      userId || null,
+      email,
+      AUDIT_ACTIONS.AUTH_PASSWORD_RESET_SUCCESS,
+      'auth',
+      userId || null,
+      null,
+      { event: 'password_reset_token_issued' },
+      `Password reset authorization issued for ${email}`
+    )
+  }
+
+  // 21. Auth: Password Changed
+  static async trackPasswordChanged(
+    email: string,
+    userId?: string | null,
+    companyId: string = 'platform'
+  ) {
+    return this.logEvent(
+      companyId,
+      userId || null,
+      email,
+      AUDIT_ACTIONS.AUTH_PASSWORD_CHANGE,
+      'auth',
+      userId || null,
+      null,
+      { status: 'password_updated' },
+      `Password successfully changed for ${email}`
+    )
+  }
+
+  // 22. Auth: Excessive Failed Attempts Lockout
+  static async trackAuthLockout(
+    email: string,
+    purpose: string,
+    companyId: string = 'platform'
+  ) {
+    return this.logEvent(
+      companyId,
+      null,
+      email,
+      AUDIT_ACTIONS.AUTH_LOCKOUT,
+      'auth',
+      null,
+      null,
+      { purpose, status: 'locked_out' },
+      `Account verification locked out due to excessive failed attempts for ${email} (${purpose})`
+    )
+  }
+
   /**
    * Fetch audit logs for a company from Supabase
    */

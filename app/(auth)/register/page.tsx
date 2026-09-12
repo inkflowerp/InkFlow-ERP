@@ -49,7 +49,8 @@ function RegisterForm() {
     })
 
     if (res.success) {
-      const targetUrl = planParam ? `/onboarding?plan=${encodeURIComponent(planParam)}` : '/onboarding'
+      const planSuffix = planParam ? `&plan=${encodeURIComponent(planParam)}` : ''
+      const targetUrl = `/verify?email=${encodeURIComponent(data.email.trim().toLowerCase())}&purpose=registration${planSuffix}`
       window.location.href = targetUrl
     } else {
       setError(res.error || 'Registration failed. Please check your credentials.')
