@@ -18,12 +18,17 @@ export async function GET(request: Request) {
     if (errorParam === 'access_denied' || errorDesc?.toLowerCase().includes('cancel')) {
       return NextResponse.redirect(`${origin}/login?error=cancelled`)
     }
-    return NextResponse.redirect(`${origin}/login?error=oauth_error`)
+    const descParam = errorDesc
+      ? `&error_description=${encodeURIComponent(errorDesc)}`
+      : `&error_description=${encodeURIComponent(errorParam)}`
+    return NextResponse.redirect(`${origin}/login?error=oauth_error${descParam}`)
   }
 
   // 2. Validate Authorization Code
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=oauth_failure`)
+    return NextResponse.redirect(
+      `${origin}/login?error=oauth_failure&error_description=${encodeURIComponent('No authorization code returned from OAuth provider')}`
+    )
   }
 
   try {
@@ -32,7 +37,10 @@ export async function GET(request: Request) {
 
     if (exchangeError || !authData?.user) {
       console.error('[OAuth Callback] Code exchange error:', exchangeError)
-      return NextResponse.redirect(`${origin}/login?error=oauth_failure`)
+      const desc = exchangeError?.message || 'Code exchange failed'
+      return NextResponse.redirect(
+        `${origin}/login?error=oauth_failure&error_description=${encodeURIComponent(desc)}`
+      )
     }
 
     const user = authData.user
@@ -180,9 +188,12 @@ export async function GET(request: Request) {
     const redirectResponse = NextResponse.redirect(`${origin}/login?error=unauthorized_tenant`)
     redirectResponse.cookies.delete(TENANT_SESSION_COOKIE)
     return redirectResponse
-  } catch (err) {
+  } catch (err: any) {
     console.error('[OAuth Callback] Unexpected error during OAuth callback handling:', err)
-    return NextResponse.redirect(`${origin}/login?error=oauth_failure`)
+    const desc = err?.message || 'Unexpected OAuth callback error'
+    return NextResponse.redirect(
+      `${origin}/login?error=oauth_failure&error_description=${encodeURIComponent(desc)}`
+    )
   }
 }
 

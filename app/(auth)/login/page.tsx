@@ -73,6 +73,7 @@ function LoginForm() {
     }
 
     const errParam = searchParams.get('error')
+    const errDescParam = searchParams.get('error_description')
     const loggedOutParam = searchParams.get('logged_out')
 
     if (errParam === 'disabled') {
@@ -87,7 +88,6 @@ function LoginForm() {
           ? 'এই গুগল অ্যাকাউন্টটির সাথে কোনো অনুমোদিত প্রতিষ্ঠানের সংযোগ নেই। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন অথবা নতুন প্রতিষ্ঠান নিবন্ধন করুন।'
           : 'This Google account is not associated with an authorized business. Please contact your administrator or create a new company account.'
       )
-
     } else if (errParam === 'cancelled') {
       setError(
         locale === 'bn'
@@ -95,11 +95,11 @@ function LoginForm() {
           : 'Google sign-in was cancelled.'
       )
     } else if (errParam === 'oauth_error' || errParam === 'oauth_failure' || errParam === 'auth-code-error') {
-      setError(
+      const baseMsg =
         locale === 'bn'
           ? 'গুগল সাইন ইন সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।'
           : "We couldn't complete Google sign-in. Please try again."
-      )
+      setError(errDescParam ? `${baseMsg} (${errDescParam})` : baseMsg)
     } else if (errParam === 'provider_unavailable') {
       setError(
         locale === 'bn'
@@ -120,6 +120,8 @@ function LoginForm() {
       )
     } else if (errParam === 'platform_user_on_tenant_portal') {
       setIsPlatformAdminError(true)
+    } else if (errParam) {
+      setError(errDescParam || errParam)
     }
 
     if (loggedOutParam === 'true') {
@@ -262,19 +264,21 @@ function LoginForm() {
               : 'Network connection failure. Unable to communicate with the authentication server.'
           )
         } else {
+          const detail = errorMsg ? `: ${errorMsg}` : ''
           setError(
             locale === 'bn'
-              ? 'গুগল সাইন ইন সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।'
-              : "We couldn't complete Google sign-in. Please try again."
+              ? `গুগল সাইন ইন সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।${detail}`
+              : `We couldn't complete Google sign-in. Please try again.${detail}`
           )
         }
         setIsGoogleLoading(false)
       }
     } catch (err: any) {
+      const detail = err?.message ? `: ${err.message}` : ''
       setError(
         locale === 'bn'
-          ? 'গুগল সাইন ইন সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।'
-          : "We couldn't complete Google sign-in. Please try again."
+          ? `গুগল সাইন ইন সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।${detail}`
+          : `We couldn't complete Google sign-in. Please try again.${detail}`
       )
       setIsGoogleLoading(false)
     }
