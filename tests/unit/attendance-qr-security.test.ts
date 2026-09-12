@@ -52,4 +52,17 @@ describe('Attendance QR Cryptographic Security & Rotation Tests', () => {
     assert.equal(typeof hashA, 'string')
     assert.equal(typeof hashB, 'string')
   })
+
+  it('4. Generates valid standard QR code matrix for attendance token', async () => {
+    const QRCode = (await import('qrcode')).default
+    const testToken = 'INKFLOW:ATT:v1:a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0'
+    const qr = QRCode.create(testToken, { errorCorrectionLevel: 'M' })
+
+    assert.ok(qr.modules.size >= 21)
+    assert.equal(typeof qr.modules.get(0, 0), 'number') // dark = 1
+    assert.equal(qr.modules.get(0, 0), 1) // top-left finder pattern corner
+    assert.equal(qr.modules.get(0, qr.modules.size - 1), 1) // top-right finder pattern corner
+    assert.equal(qr.modules.get(qr.modules.size - 1, 0), 1) // bottom-left finder pattern corner
+  })
 })
+
