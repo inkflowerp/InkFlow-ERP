@@ -52,6 +52,7 @@ import {
   getTenantEmailTemplatesAction,
   saveTenantEmailTemplateAction,
   getTenantEmailLogsAction,
+  getGoogleOAuthStatusAction,
 } from '@/actions/email-gateway.actions'
 import type {
   EmailGatewayRecord,
@@ -102,6 +103,14 @@ export default function TenantEmailSettingsPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateRecord | null>(null)
   const [templateLang, setTemplateLang] = useState<'en' | 'bn'>('bn')
   const [logSearch, setLogSearch] = useState('')
+  const [googleOAuthStatus, setGoogleOAuthStatus] = useState<{
+    isConfigured: boolean
+    hasClientId: boolean
+    hasClientSecret: boolean
+    hasRedirectUri: boolean
+    redirectUri: string
+    issues: string[]
+  } | null>(null)
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ message, type })
@@ -112,11 +121,23 @@ export default function TenantEmailSettingsPage() {
     if (!companyId) return
     setLoading(true)
     try {
-      const [gwRes, tplRes, logsRes] = await Promise.all([
+      const [gwRes, tplRes, logsRes, oauthStatusRes] = await Promise.all([
         getTenantEmailGatewayAction(companyId),
         getTenantEmailTemplatesAction(companyId),
         getTenantEmailLogsAction(companyId),
+        getGoogleOAuthStatusAction(),
       ])
+
+      if (oauthStatusRes.success) {
+        setGoogleOAuthStatus({
+          isConfigured: oauthStatusRes.isConfigured,
+          hasClientId: oauthStatusRes.hasClientId,
+          hasClientSecret: oauthStatusRes.hasClientSecret,
+          hasRedirectUri: oauthStatusRes.hasRedirectUri,
+          redirectUri: oauthStatusRes.redirectUri,
+          issues: oauthStatusRes.issues,
+        })
+      }
 
       if (gwRes.success && gwRes.customGateway) {
         setGateway(gwRes.customGateway)
@@ -559,6 +580,49 @@ export default function TenantEmailSettingsPage() {
                       <Globe className="mr-2 h-4 w-4" />
                       Sign in with Google / Connect Gmail
                     </Button>
+
+                    {googleOAuthStatus && !googleOAuthStatus.isConfigured && (
+                      <div className="max-w-xl mx-auto text-left p-4 rounded-xl border border-amber-200 bg-amber-50/70 dark:bg-amber-950/30 dark:border-amber-800 text-xs space-y-2 mt-4">
+                        <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+                          <AlertTriangle className="h-4 w-4 shrink-0" />
+                          <span>Google Cloud OAuth Setup Note</span>
+                        </div>
+                        <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">
+                          To enable 1-click Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
+                        </p>
+                        <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60 font-mono text-[11px] text-slate-700 dark:text-slate-300 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span>GOOGLE_CLIENT_ID</span>
+                            <span className={googleOAuthStatus.hasClientId ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'}>
+                              {googleOAuthStatus.hasClientId ? '✓ Configured' : '✗ Missing'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>GOOGLE_CLIENT_SECRET</span>
+                            <span className={googleOAuthStatus.hasClientSecret ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'}>
+                              {googleOAuthStatus.hasClientSecret ? '✓ Configured' : '✗ Missing'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>GOOGLE_GMAIL_REDIRECT_URI</span>
+                            <span className={googleOAuthStatus.hasRedirectUri ? 'text-emerald-600 font-bold' : 'text-slate-400'}>
+                              {googleOAuthStatus.hasRedirectUri ? '✓ Configured' : '(Auto-resolved)'}
+                            </span>
+                          </div>
+                        </div>
+                        {googleOAuthStatus.redirectUri && (
+                          <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                            <strong>Google Cloud Authorized Redirect URI:</strong>
+                            <code className="block mt-1 p-2 bg-slate-100 dark:bg-slate-900 rounded font-mono text-[10px] break-all select-all">
+                              {googleOAuthStatus.redirectUri}
+                            </code>
+                          </div>
+                        )}
+                        <p className="text-[10px] text-slate-500 pt-1">
+                          Tip: You can use standard <strong>Custom SMTP</strong> immediately below without any Google Cloud project setup.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

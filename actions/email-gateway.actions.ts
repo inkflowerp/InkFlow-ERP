@@ -24,7 +24,7 @@ import {
 } from '../lib/security/encryption.ts'
 import { EmailGatewayService, DEFAULT_PLATFORM_GATEWAY, EmailDataStore } from '../services/email-gateway.service.ts'
 import { DEFAULT_EMAIL_TEMPLATES } from '../services/email-template.service.ts'
-import { revokeGoogleToken } from '../lib/email/oauth/google-oauth.ts'
+import { revokeGoogleToken, getGoogleOAuthDiagnostics } from '../lib/email/oauth/google-oauth.ts'
 import { AuditService } from '../services/audit.service.ts'
 
 // -----------------------------------------------------------------------------
@@ -975,6 +975,42 @@ export async function dispatchWorkflowEmailAction(
       success: false,
       status: 'failed',
       error: err?.message || 'Failed to dispatch workflow email',
+    }
+  }
+}
+
+/**
+ * Safe server-side diagnostic: checks whether Google OAuth credentials exist without exposing secrets
+ */
+export async function getGoogleOAuthStatusAction(): Promise<{
+  success: boolean
+  isConfigured: boolean
+  hasClientId: boolean
+  hasClientSecret: boolean
+  hasRedirectUri: boolean
+  redirectUri: string
+  issues: string[]
+}> {
+  try {
+    const diag = getGoogleOAuthDiagnostics()
+    return {
+      success: true,
+      isConfigured: diag.isConfigured,
+      hasClientId: diag.hasClientId,
+      hasClientSecret: diag.hasClientSecret,
+      hasRedirectUri: diag.hasRedirectUri,
+      redirectUri: diag.redirectUri,
+      issues: diag.issues,
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      isConfigured: false,
+      hasClientId: false,
+      hasClientSecret: false,
+      hasRedirectUri: false,
+      redirectUri: '',
+      issues: [err?.message || 'Failed to check Google OAuth configuration status'],
     }
   }
 }

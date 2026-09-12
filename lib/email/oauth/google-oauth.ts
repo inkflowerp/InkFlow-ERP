@@ -39,6 +39,15 @@ const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/userinfo.profile',
 ]
 
+export interface GoogleOAuthDiagnostics {
+  isConfigured: boolean
+  hasClientId: boolean
+  hasClientSecret: boolean
+  hasRedirectUri: boolean
+  redirectUri: string
+  issues: string[]
+}
+
 /**
  * Returns Google OAuth Client configuration from environment
  */
@@ -46,17 +55,66 @@ export function getGoogleOAuthConfig() {
   const clientId =
     process.env.GOOGLE_CLIENT_ID ||
     process.env.GOOGLE_OAUTH_CLIENT_ID ||
-    'mock-google-client-id.apps.googleusercontent.com'
+    ''
   const clientSecret =
     process.env.GOOGLE_CLIENT_SECRET ||
     process.env.GOOGLE_OAUTH_CLIENT_SECRET ||
-    'mock-google-client-secret'
-  const redirectUri =
+    ''
+  
+  // Canonical Redirect URI resolution
+  let redirectUri =
     process.env.GOOGLE_GMAIL_REDIRECT_URI ||
     process.env.GOOGLE_OAUTH_REDIRECT_URI ||
-    'http://localhost:3000/api/email/oauth/google/callback'
+    ''
+
+  if (!redirectUri) {
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+      redirectUri = `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
+    } else if (process.env.VERCEL_URL) {
+      redirectUri = `https://${process.env.VERCEL_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
+    } else {
+      redirectUri = 'http://localhost:3000/api/email/oauth/google/callback'
+    }
+  }
 
   return { clientId, clientSecret, redirectUri }
+}
+
+/**
+ * Returns safe server-side diagnostics without leaking secrets
+ */
+export function getGoogleOAuthDiagnostics(): GoogleOAuthDiagnostics {
+  const { clientId, clientSecret, redirectUri } = getGoogleOAuthConfig()
+  const issues: string[] = []
+
+  const isMockOrEmptyId =
+    !clientId ||
+    clientId.startsWith('mock-') ||
+    clientId.includes('mock-google-client-id')
+
+  const isMockOrEmptySecret =
+    !clientSecret ||
+    clientSecret.startsWith('mock-') ||
+    clientSecret === 'mock-google-client-secret'
+
+  if (isMockOrEmptyId) {
+    issues.push('GOOGLE_CLIENT_ID is missing or set to placeholder.')
+  }
+  if (isMockOrEmptySecret) {
+    issues.push('GOOGLE_CLIENT_SECRET is missing or set to placeholder.')
+  }
+  if (!redirectUri) {
+    issues.push('GOOGLE_GMAIL_REDIRECT_URI is not configured.')
+  }
+
+  return {
+    isConfigured: !isMockOrEmptyId && !isMockOrEmptySecret && Boolean(redirectUri),
+    hasClientId: !isMockOrEmptyId,
+    hasClientSecret: !isMockOrEmptySecret,
+    hasRedirectUri: Boolean(redirectUri),
+    redirectUri,
+    issues,
+  }
 }
 
 /**
@@ -134,9 +192,6 @@ export function verifyGoogleOAuthState(stateString?: string | null): GoogleOAuth
   }
 }
 
-/**
- * Builds the Google OAuth 2.0 Authorization URL
- */
 export function generateGoogleAuthUrl(params: {
   scopeType: 'PLATFORM' | 'TENANT'
   tenantId: string | null
@@ -144,7 +199,15 @@ export function generateGoogleAuthUrl(params: {
   returnUrl?: string
   loginHint?: string
 }): string {
+  const diag = getGoogleOAuthDiagnostics()
+  if (!diag.isConfigured && process.env.NODE_ENV !== 'test') {
+    throw new Error(`Google OAuth is not configured: ${diag.issues.join(' ')}`)
+  }
+
   const { clientId, redirectUri } = getGoogleOAuthConfig()
+  const effectiveClientId = clientId || (process.env.NODE_ENV === 'test' ? 'mock-google-client-id.apps.googleusercontent.com' : '')
+  const effectiveRedirectUri = redirectUri || 'http://localhost:3000/api/email/oauth/google/callback'
+
   const state = generateGoogleOAuthState({
     scopeType: params.scopeType,
     tenantId: params.tenantId,
@@ -153,8 +216,8 @@ export function generateGoogleAuthUrl(params: {
   })
 
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
-  url.searchParams.set('client_id', clientId)
-  url.searchParams.set('redirect_uri', redirectUri)
+  url.searchParams.set('client_id', effectiveClientId)
+  url.searchParams.set('redirect_uri', effectiveRedirectUri)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', GMAIL_SCOPES.join(' '))
   url.searchParams.set('access_type', 'offline')
@@ -303,3 +366,33 @@ export async function revokeGoogleToken(token: string): Promise<boolean> {
     return false
   }
 }
+
+/**
+ * Returns safe user-facing error messages for Google OAuth error codes
+ */
+export function getGoogleOAuthErrorMessage(errorCode?: string | null): string {
+  if (!errorCode) return 'Google Gmail connection failed. Please try again.'
+  switch (errorCode.toLowerCase()) {
+    case 'invalid_client':
+      return 'Google Gmail connection is not configured correctly. Please verify the Google OAuth Client ID, Client Secret, and authorized redirect URI.'
+    case 'redirect_uri_mismatch':
+      return 'Google Gmail OAuth redirect URI does not match the configured Google Cloud OAuth client.'
+    case 'google_client_id_missing':
+    case 'missing_client_config':
+      return 'Google Gmail OAuth is not configured for this environment. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.'
+    case 'access_denied':
+    case 'consent_declined':
+      return 'Google Gmail authorization was cancelled.'
+    case 'invalid_state':
+    case 'state_expired':
+      return 'Google Gmail authorization session expired or is invalid. Please try again.'
+    default:
+      return `Google Gmail connection failed: ${errorCode}`
+  }
+}
+
+// Aliases for convenience & test parity
+export const generateOAuthState = generateGoogleOAuthState
+export const verifyOAuthState = verifyGoogleOAuthState
+export const getOAuthErrorMessage = getGoogleOAuthErrorMessage
+

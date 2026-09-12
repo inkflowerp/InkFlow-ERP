@@ -51,6 +51,7 @@ import {
   savePlatformEmailTemplateAction,
   getPlatformEmailLogsAction,
   processEmailQueueAction,
+  getGoogleOAuthStatusAction,
 } from '@/actions/email-gateway.actions'
 import type {
   EmailGatewayRecord,
@@ -72,6 +73,14 @@ export default function PlatformEmailGatewayPage() {
   const [disconnecting, setDisconnecting] = useState(false)
   const [processingQueue, setProcessingQueue] = useState(false)
   const [showSecret, setShowSecret] = useState(false)
+  const [googleOAuthStatus, setGoogleOAuthStatus] = useState<{
+    isConfigured: boolean
+    hasClientId: boolean
+    hasClientSecret: boolean
+    hasRedirectUri: boolean
+    redirectUri: string
+    issues: string[]
+  } | null>(null)
 
   // Selected Provider Mode: 'gmail' or 'smtp'
   const [providerMode, setProviderMode] = useState<'gmail' | 'smtp'>('gmail')
@@ -107,11 +116,23 @@ export default function PlatformEmailGatewayPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [gwRes, tplRes, logsRes] = await Promise.all([
+      const [gwRes, tplRes, logsRes, oauthStatusRes] = await Promise.all([
         getPlatformEmailGatewayAction(),
         getPlatformEmailTemplatesAction(),
         getPlatformEmailLogsAction(),
+        getGoogleOAuthStatusAction(),
       ])
+
+      if (oauthStatusRes.success) {
+        setGoogleOAuthStatus({
+          isConfigured: oauthStatusRes.isConfigured,
+          hasClientId: oauthStatusRes.hasClientId,
+          hasClientSecret: oauthStatusRes.hasClientSecret,
+          hasRedirectUri: oauthStatusRes.hasRedirectUri,
+          redirectUri: oauthStatusRes.redirectUri,
+          issues: oauthStatusRes.issues,
+        })
+      }
 
       if (gwRes.success && gwRes.data) {
         setGateway(gwRes.data)
@@ -529,6 +550,49 @@ export default function PlatformEmailGatewayPage() {
                       <Globe className="mr-2 h-4 w-4" />
                       Connect Platform Gmail
                     </Button>
+
+                    {googleOAuthStatus && !googleOAuthStatus.isConfigured && (
+                      <div className="max-w-xl mx-auto text-left p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 text-xs space-y-2 mt-4">
+                        <div className="flex items-center gap-2 font-bold text-amber-300">
+                          <AlertTriangle className="h-4 w-4 shrink-0" />
+                          <span>Google Cloud OAuth Setup Note</span>
+                        </div>
+                        <p className="text-[11px] text-amber-400/90 leading-relaxed">
+                          To enable Platform Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
+                        </p>
+                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-300 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span>GOOGLE_CLIENT_ID</span>
+                            <span className={googleOAuthStatus.hasClientId ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                              {googleOAuthStatus.hasClientId ? '✓ Configured' : '✗ Missing'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>GOOGLE_CLIENT_SECRET</span>
+                            <span className={googleOAuthStatus.hasClientSecret ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                              {googleOAuthStatus.hasClientSecret ? '✓ Configured' : '✗ Missing'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>GOOGLE_GMAIL_REDIRECT_URI</span>
+                            <span className={googleOAuthStatus.hasRedirectUri ? 'text-emerald-400 font-bold' : 'text-slate-500'}>
+                              {googleOAuthStatus.hasRedirectUri ? '✓ Configured' : '(Auto-resolved)'}
+                            </span>
+                          </div>
+                        </div>
+                        {googleOAuthStatus.redirectUri && (
+                          <div className="text-[11px] text-slate-400">
+                            <strong className="text-slate-300">Google Cloud Authorized Redirect URI:</strong>
+                            <code className="block mt-1 p-2 bg-slate-950 rounded font-mono text-[10px] break-all select-all text-slate-300 border border-slate-800">
+                              {googleOAuthStatus.redirectUri}
+                            </code>
+                          </div>
+                        )}
+                        <p className="text-[10px] text-slate-400 pt-1">
+                          Tip: The platform can use <strong>Platform Dedicated SMTP</strong> immediately below without any Google Cloud project setup.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
