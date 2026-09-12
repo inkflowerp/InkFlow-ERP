@@ -1795,6 +1795,7 @@ export function getSubscriptionTimeRemaining(expiryDateIso?: string | null) {
   const hours = Math.floor((totalSeconds % 86400) / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
+  const totalDays = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 
   return {
     totalMs: diff,
@@ -1805,8 +1806,8 @@ export function getSubscriptionTimeRemaining(expiryDateIso?: string | null) {
     isExpired: false,
     formattedEn: days > 0 ? `${days}d ${hours}h left` : hours > 0 ? `${hours}h ${minutes}m left` : `${minutes}m ${seconds}s left`,
     formattedBn: days > 0 ? `${days} দিন ${hours} ঘণ্টা বাকি` : hours > 0 ? `${hours} ঘণ্টা ${minutes} মিনিট বাকি` : `${minutes} মিনিট ${seconds} সেকেন্ড বাকি`,
-    statusBadgeEn: days > 0 ? `${days}d left` : `${hours}h ${minutes}m left`,
-    statusBadgeBn: days > 0 ? `${days} দিন বাকি` : `${hours} ঘণ্টা বাকি`,
+    statusBadgeEn: days > 0 ? `${totalDays}d left` : hours > 0 ? `${hours}h ${minutes}m left` : `${minutes}m ${seconds}s left`,
+    statusBadgeBn: days > 0 ? `${totalDays} দিন বাকি` : hours > 0 ? `${hours} ঘণ্টা ${minutes} মি. বাকি` : `${minutes} মি. বাকি`,
   }
 }
 

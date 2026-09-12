@@ -624,6 +624,7 @@ export function getSubscriptionTimeRemaining(expiryDateIso?: string | null): Sub
   const hours = Math.floor((totalSeconds % 86400) / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
+  const totalDays = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 
   let formattedEn = ''
   let formattedBn = ''
@@ -648,8 +649,8 @@ export function getSubscriptionTimeRemaining(expiryDateIso?: string | null): Sub
     isExpired: false,
     formattedEn,
     formattedBn,
-    statusBadgeEn: days > 0 ? `${days}d left` : `${hours}h ${minutes}m left`,
-    statusBadgeBn: days > 0 ? `${toBengaliDigits(days)} দিন বাকি` : `${toBengaliDigits(hours)} ঘণ্টা বাকি`,
+    statusBadgeEn: days > 0 ? `${totalDays}d left` : hours > 0 ? `${hours}h ${minutes}m left` : `${minutes}m ${seconds}s left`,
+    statusBadgeBn: days > 0 ? `${toBengaliDigits(totalDays)} দিন বাকি` : hours > 0 ? `${toBengaliDigits(hours)} ঘণ্টা ${toBengaliDigits(minutes)} মি. বাকি` : `${toBengaliDigits(minutes)} মি. বাকি`,
   }
 }
 
