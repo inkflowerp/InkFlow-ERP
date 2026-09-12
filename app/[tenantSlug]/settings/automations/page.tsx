@@ -27,6 +27,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
 import {
   WorkflowRule,
   WorkflowExecutionLog,
@@ -428,9 +429,9 @@ export default function WorkflowAutomationsPage() {
                     logs.map((log) => (
                       <tr key={log.id} className="hover:bg-slate-850/50 transition-colors">
                         <td className="py-3 px-4 font-mono text-slate-400 whitespace-nowrap">
-                          {new Date(log.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          {formatTime(log.executed_at, 'en', { second: '2-digit' })}
                           <div className="text-[10px] text-slate-500">
-                            {new Date(log.executed_at).toLocaleDateString()}
+                            {formatDate(log.executed_at)}
                           </div>
                         </td>
                         <td className="py-3 px-4 font-bold text-white">
@@ -482,8 +483,7 @@ export default function WorkflowAutomationsPage() {
                       <div>
                         <div className="text-sm font-bold text-white">{log.rule_name}</div>
                         <div className="text-[11px] font-mono text-slate-400 mt-0.5">
-                          {new Date(log.executed_at).toLocaleDateString()} at{' '}
-                          {new Date(log.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          {formatDateTime(log.executed_at, 'en', { second: '2-digit' })}
                         </div>
                       </div>
                       <span

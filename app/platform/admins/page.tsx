@@ -43,6 +43,7 @@ import {
   createPlatformAdminAction,
   deletePlatformAdminAction,
 } from '@/actions/platform.actions'
+import { formatDate, formatDateTime } from '@/lib/formatters'
 
 const ROLE_DESCRIPTIONS: Record<PlatformUserRole, { label: string; desc: string; color: string; badge: string }> = {
   platform_owner: {
@@ -639,9 +640,7 @@ export default function PlatformAdminsPage() {
                     <Clock className="h-3 w-3" />
                     <span>
                       {adm.last_login_at
-                        ? `Last active ${new Date(adm.last_login_at).toLocaleDateString()} at ${new Date(
-                            adm.last_login_at
-                          ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                        ? `Last active ${formatDateTime(adm.last_login_at)}`
                         : 'No recorded login events yet'}
                     </span>
                   </div>
@@ -777,7 +776,7 @@ export default function PlatformAdminsPage() {
 
                       <td className="py-3.5 px-4 font-mono text-slate-400 text-[11px]">
                         {adm.last_login_at
-                          ? new Date(adm.last_login_at).toLocaleDateString()
+                          ? formatDate(adm.last_login_at)
                           : 'Never'}
                       </td>
 

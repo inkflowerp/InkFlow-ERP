@@ -44,6 +44,7 @@ import {
   retryFailedJobAction,
   resolveHealthEventAction,
 } from '@/actions/platform.actions'
+import { formatTime } from '@/lib/formatters'
 
 export default function PlatformHealthPage() {
   const [summary, setSummary] = useState<SystemHealthSummary | null>(null)
@@ -71,7 +72,7 @@ export default function PlatformHealthPage() {
       if (res.success && res.data) {
         setSummary(res.data.summary)
         setEvents(res.data.events)
-        setLastPingTime(new Date().toLocaleTimeString())
+        setLastPingTime(formatTime(new Date()))
         if (isManualPing) {
           showToast('Live telemetry ping completed. Subsystems operational.')
         }

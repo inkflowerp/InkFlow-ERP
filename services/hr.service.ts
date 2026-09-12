@@ -8,6 +8,7 @@ import {
 } from '@/types/hr.types'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { formatTime } from '@/lib/formatters'
 
 export class HrService {
   static async getEmployees(companyId: string = 'c-01'): Promise<EmployeeRecord[]> {
@@ -113,11 +114,7 @@ export class HrService {
           employee_name: r.employees?.name || 'Staff',
           attendance_date: r.attendance_date,
           status: 'present',
-          check_in_time: new Date(r.checked_at).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          }),
+          check_in_time: formatTime(r.checked_at),
           late_minutes: 0,
           overtime_hours: 0,
           latitude: Number(r.latitude),

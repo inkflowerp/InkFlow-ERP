@@ -33,6 +33,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { formatDate } from '@/lib/formatters'
 import { CustomerRecord, CustomerCommunication } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
@@ -531,7 +532,7 @@ export default function CustomerProfilePage() {
                             <CurrencyDisplay amount={ord.total_amount || ord.grand_total || 0} />
                           </td>
                           <td className="py-3 px-4 text-slate-500">
-                            {ord.created_at ? new Date(ord.created_at).toLocaleDateString() : '—'}
+                            {formatDate(ord.created_at, locale)}
                           </td>
                           <td className="py-3 px-4">
                             <Badge variant="outline" className="text-[10px] capitalize">
@@ -561,7 +562,7 @@ export default function CustomerProfilePage() {
                       </div>
                       <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800 font-mono">
                         <span className="text-slate-400">
-                          {ord.created_at ? new Date(ord.created_at).toLocaleDateString() : '—'}
+                          {formatDate(ord.created_at, locale)}
                         </span>
                         <span className="font-bold text-slate-900 dark:text-white">
                           <CurrencyDisplay amount={ord.total_amount || ord.grand_total || 0} />
@@ -788,7 +789,7 @@ export default function CustomerProfilePage() {
                             <CurrencyDisplay amount={p.amount || 0} />
                           </td>
                           <td className="py-3 px-4 text-slate-500">
-                            {p.payment_date || (p.created_at ? new Date(p.created_at).toLocaleDateString() : '—')}
+                            {p.payment_date || (p.created_at ? formatDate(p.created_at, locale) : '—')}
                           </td>
                           <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
                             {p.collected_by || p.issued_by || 'Accounts'}
@@ -813,7 +814,7 @@ export default function CustomerProfilePage() {
                       </div>
                       <div className="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800 font-mono">
                         <span className="text-slate-400">
-                          {p.payment_date || (p.created_at ? new Date(p.created_at).toLocaleDateString() : '—')}
+                          {p.payment_date || (p.created_at ? formatDate(p.created_at, locale) : '—')}
                         </span>
                         <span className="font-bold text-emerald-600 text-sm">
                           <CurrencyDisplay amount={p.amount || 0} />

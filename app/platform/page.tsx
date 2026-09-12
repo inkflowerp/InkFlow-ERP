@@ -29,6 +29,8 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { formatTime } from '@/lib/formatters'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { getPlatformDashboardOverviewAction } from '@/actions/platform-data.actions'
 import { PlatformDashboardMetrics, NeedsAttentionItem } from '@/types/platform.types'
@@ -530,7 +532,7 @@ export default function PlatformDashboardPage() {
 
                 <div className="text-right shrink-0">
                   <div className="font-mono text-[11px] text-slate-400">
-                    {new Date(act.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                    {formatTime(act.created_at)}
                   </div>
                   <div className="text-[10px] text-slate-500">{act.actor_email}</div>
                 </div>

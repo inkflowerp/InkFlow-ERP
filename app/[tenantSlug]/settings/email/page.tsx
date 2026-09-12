@@ -33,6 +33,7 @@ import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatDate } from '@/lib/formatters'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { SettingsNav } from '@/components/settings/settings-nav'
@@ -813,7 +814,7 @@ export default function TenantEmailSettingsPage() {
                         <tr key={log.id} className="hover:bg-slate-50/50">
                           <td className="py-2.5 px-3">
                             <span className="font-mono text-blue-600 font-semibold">{log.event_type}</span>
-                            <span className="text-[10px] text-slate-400 block">{new Date(log.created_at).toLocaleDateString()}</span>
+                            <span className="text-[10px] text-slate-400 block">{formatDate(log.created_at, locale)}</span>
                           </td>
                           <td className="py-2.5 px-3 font-mono">{log.recipient}</td>
                           <td className="py-2.5 px-3 max-w-xs truncate text-slate-700 dark:text-slate-300">{log.subject}</td>
@@ -872,7 +873,7 @@ export default function TenantEmailSettingsPage() {
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
                         <span>To: {log.recipient}</span>
-                        <span>{new Date(log.created_at).toLocaleDateString()}</span>
+                        <span>{formatDate(log.created_at, locale)}</span>
                       </div>
                     </div>
                   ))

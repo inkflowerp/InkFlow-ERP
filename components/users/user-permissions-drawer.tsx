@@ -41,6 +41,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { formatDateTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 const ALL_RESPONSIBILITIES: { slug: ResponsibilitySlug; name: string; nameBn: string; desc: string }[] = [
@@ -750,7 +751,7 @@ export function UserPermissionsDrawer({
               >
                 <div className="flex items-center justify-between text-slate-500 text-[11px]">
                   <span>Changed by: <strong className="text-slate-700 dark:text-slate-300">{log.actorName}</strong></span>
-                  <span>{new Date(log.createdAt).toLocaleString('en-BD')}</span>
+                  <span>{formatDateTime(log.createdAt)}</span>
                 </div>
                 <div className="font-semibold text-slate-900 dark:text-white capitalize">
                   {log.actionType.replace(/_/g, ' ')}

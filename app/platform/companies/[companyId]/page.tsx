@@ -36,6 +36,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { formatDate } from '@/lib/formatters'
 import { getPlatformCompany360Action } from '@/actions/platform-data.actions'
 import { Company360Data, PlatformPlanCode, PlatformCompanyStatus } from '@/types/platform.types'
 import {
@@ -397,7 +398,7 @@ export default function Company360Page() {
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Account Created:</span>
-                <span className="font-mono text-slate-300">{new Date(company.created_at).toLocaleDateString()}</span>
+                <span className="font-mono text-slate-300">{formatDate(company.created_at)}</span>
               </div>
             </CardContent>
           </Card>
@@ -561,7 +562,7 @@ export default function Company360Page() {
               </div>
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                 <div className="text-slate-500">Renewal Date:</div>
-                <div className="font-mono text-white font-bold">{new Date(subscription.current_period_end).toLocaleDateString()}</div>
+                <div className="font-mono text-white font-bold">{formatDate(subscription.current_period_end)}</div>
               </div>
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                 <div className="text-slate-500">Payment Method:</div>
@@ -663,7 +664,7 @@ export default function Company360Page() {
                   <div className="text-[11px] text-slate-400">Officer: {s.platform_user_email}</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono text-slate-300">{new Date(s.started_at).toLocaleDateString()}</div>
+                  <div className="font-mono text-slate-300">{formatDate(s.started_at)}</div>
                   <div className="text-[10px] text-slate-500">{s.duration_minutes} mins duration</div>
                 </div>
               </div>

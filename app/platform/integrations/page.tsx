@@ -55,6 +55,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { formatTime, formatDateTime } from '@/lib/formatters'
 import {
   getPlatformGatewaysAction,
   savePlatformGatewayAction,
@@ -722,7 +723,7 @@ export default function PlatformIntegrationsPage() {
       recipient: defaultRecipient,
       recipientName: 'PrintERP Administrator',
       subject: `PrintERP ${meta.name} Live Test`,
-      message: `PrintERP Live Integration Test Dispatched at ${new Date().toLocaleTimeString()} (BDT).`,
+      message: `PrintERP Live Integration Test Dispatched at ${formatTime(new Date())} (BDT).`,
     })
 
     setTestResultFeedback(null)
@@ -1249,7 +1250,7 @@ export default function PlatformIntegrationsPage() {
                           </Badge>
                         </td>
                         <td className="p-3 text-[10px] text-slate-500">{log.provider_message_id || '—'}</td>
-                        <td className="p-3 text-[10px] text-slate-500">{new Date(log.created_at).toLocaleString()}</td>
+                        <td className="p-3 text-[10px] text-slate-500">{formatDateTime(log.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1320,7 +1321,7 @@ export default function PlatformIntegrationsPage() {
                             {tx.payment_status}
                           </Badge>
                         </td>
-                        <td className="p-3 text-[10px] text-slate-500">{new Date(tx.created_at).toLocaleString()}</td>
+                        <td className="p-3 text-[10px] text-slate-500">{formatDateTime(tx.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1382,7 +1383,7 @@ export default function PlatformIntegrationsPage() {
                           </Badge>
                         </td>
                         <td className="p-3 text-[10px] text-slate-500">{wh.provider_event_id || '—'}</td>
-                        <td className="p-3 text-[10px] text-slate-500">{new Date(wh.created_at).toLocaleString()}</td>
+                        <td className="p-3 text-[10px] text-slate-500">{formatDateTime(wh.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1428,7 +1429,7 @@ export default function PlatformIntegrationsPage() {
                         <td className="p-3 text-[11px] text-slate-600 dark:text-slate-400">
                           {JSON.stringify(log.details)}
                         </td>
-                        <td className="p-3 text-[10px] text-slate-500">{new Date(log.created_at).toLocaleString()}</td>
+                        <td className="p-3 text-[10px] text-slate-500">{formatDateTime(log.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -52,7 +52,7 @@ export class AccountingService {
       description: `Voucher ${newExpense.expense_number}: ${newExpense.description}`,
       reference_id: newExpense.expense_number,
       performed_by_name: newExpense.recorded_by_name,
-      created_at: new Date().toLocaleString(),
+      created_at: new Date().toISOString(),
     }
     PrintERPDataStore.addItem(STORAGE_KEYS.CASH_BOOK, cashEntry)
 
@@ -89,7 +89,7 @@ export class AccountingService {
       description: entry.description || '',
       reference_id: entry.reference_id,
       performed_by_name: entry.performed_by_name || 'Cashier',
-      created_at: new Date().toLocaleString(),
+      created_at: new Date().toISOString(),
     }
     PrintERPDataStore.addItem(STORAGE_KEYS.CASH_BOOK, newEntry)
     return newEntry

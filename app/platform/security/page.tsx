@@ -38,6 +38,7 @@ import { Button } from '@/components/ui/button'
 import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
 import { getPlatformSecurityOverviewAction } from '@/actions/platform-data.actions'
 import { PlatformSecurityOverview, PlatformActiveSession, PlatformLoginHistoryItem } from '@/types/platform.types'
+import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
 import {
   changePlatformOwnerPasswordAction,
   togglePlatformOwnerMFAAction,
@@ -780,13 +781,10 @@ export default function PlatformSecurityPage() {
                       ) : (
                         <div>
                           <div className="text-slate-300">
-                            {new Date(sess.last_seen_at).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                            {formatTime(sess.last_seen_at)}
                           </div>
                           <div className="text-[10px] text-slate-500">
-                            Created {new Date(sess.created_at).toLocaleDateString()}
+                            Created {formatDate(sess.created_at)}
                           </div>
                         </div>
                       )}
@@ -889,18 +887,10 @@ export default function PlatformSecurityPage() {
                   <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 px-4 font-mono text-slate-300">
                       <div>
-                        {new Date(item.timestamp).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
+                        {formatDate(item.timestamp)}
                       </div>
                       <div className="text-[10px] text-slate-500">
-                        {new Date(item.timestamp).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
-                        })}
+                        {formatTime(item.timestamp, 'en', { second: '2-digit' })}
                       </div>
                     </td>
 
@@ -983,11 +973,7 @@ export default function PlatformSecurityPage() {
 
                 <div className="sm:text-right">
                   <div className="font-mono text-slate-300 text-xs">
-                    {new Date(act.created_at).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit',
-                    })}
+                    {formatTime(act.created_at, 'en', { second: '2-digit' })}
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono">{act.actor_email}</div>
                 </div>

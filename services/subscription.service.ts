@@ -25,6 +25,7 @@ import { createAdminClient } from '../lib/supabase/admin.ts'
 import { GatewayService } from './gateway.service.ts'
 import { createPaymentProvider } from '../lib/payments/provider.factory.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import { formatDate } from '../lib/formatters.ts'
 
 const isValidUuid = (str?: string | null): boolean => {
   return Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
@@ -1073,10 +1074,10 @@ export class SubscriptionService {
               invoice_number: tx.invoice_id,
               amount: String(tx.amount),
               plan_name: targetPlan.name,
-              period_end: new Date(currentPeriodEnd).toLocaleDateString(),
+              period_end: formatDate(currentPeriodEnd),
             },
             channels: ['email', 'sms', 'whatsapp', 'in_app'],
-            customMessage: `Payment of ৳${tx.amount} BDT confirmed. Your ${targetPlan.name} is active until ${new Date(currentPeriodEnd).toLocaleDateString()}.`,
+            customMessage: `Payment of ৳${tx.amount} BDT confirmed. Your ${targetPlan.name} is active until ${formatDate(currentPeriodEnd)}.`,
           })
         } catch (commErr) {
           console.warn('[SubscriptionService] Notification dispatch notice:', commErr)
@@ -1138,7 +1139,7 @@ export class SubscriptionService {
           previous_status: currentSub.status,
           new_status: currentSub.status,
           event_type: 'PLAN_DOWNGRADED',
-          reason: `Downgrade scheduled for end of cycle: ${new Date(effectiveAt).toLocaleDateString()}`,
+          reason: `Downgrade scheduled for end of cycle: ${formatDate(effectiveAt)}`,
           performed_by: userId,
         })
 
@@ -1151,10 +1152,10 @@ export class SubscriptionService {
             recipientName: 'Tenant Administrator',
             variables: {
               plan_name: nextPlan.name,
-              effective_date: new Date(effectiveAt).toLocaleDateString(),
+              effective_date: formatDate(effectiveAt),
             },
             channels: ['email', 'in_app'],
-            customMessage: `Your plan will switch to ${nextPlan.name} on ${new Date(effectiveAt).toLocaleDateString()} at the end of your current cycle.`,
+            customMessage: `Your plan will switch to ${nextPlan.name} on ${formatDate(effectiveAt)} at the end of your current cycle.`,
           })
         } catch (commErr) {
           console.warn('[SubscriptionService] Downgrade notification notice:', commErr)
@@ -1220,13 +1221,13 @@ export class SubscriptionService {
             eventType: 'subscription_cancelled',
             recipientName: 'Tenant Administrator',
             variables: {
-              period_end: new Date(currentSub.current_period_end).toLocaleDateString(),
+              period_end: formatDate(currentSub.current_period_end),
               reason: reason || 'Cancellation requested',
             },
             channels: ['email', 'in_app'],
             customMessage: immediately
               ? 'Your subscription has been cancelled immediately.'
-              : `Your subscription is scheduled to cancel at period end on ${new Date(currentSub.current_period_end).toLocaleDateString()}. Your data will remain preserved.`,
+              : `Your subscription is scheduled to cancel at period end on ${formatDate(currentSub.current_period_end)}. Your data will remain preserved.`,
           })
         } catch (commErr) {
           console.warn('[SubscriptionService] Cancellation notification notice:', commErr)
@@ -1283,10 +1284,10 @@ export class SubscriptionService {
             recipientName: 'Tenant Administrator',
             variables: {
               plan_name: currentSub.plan_code.toUpperCase(),
-              period_end: new Date(currentSub.current_period_end).toLocaleDateString(),
+              period_end: formatDate(currentSub.current_period_end),
             },
             channels: ['email', 'in_app'],
-            customMessage: `Your subscription has been reactivated. Next renewal will occur on ${new Date(currentSub.current_period_end).toLocaleDateString()}.`,
+            customMessage: `Your subscription has been reactivated. Next renewal will occur on ${formatDate(currentSub.current_period_end)}.`,
           })
         } catch (commErr) {
           console.warn('[SubscriptionService] Reactivation notification notice:', commErr)

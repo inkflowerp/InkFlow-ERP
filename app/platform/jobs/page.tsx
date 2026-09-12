@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { getPlatformBackgroundJobsAction } from '@/actions/platform-data.actions'
 import { PlatformBackgroundJobItem } from '@/types/platform.types'
 import { retryBackgroundJobAction } from '@/actions/platform.actions'
+import { formatTime } from '@/lib/formatters'
 
 export default function PlatformJobsPage() {
   const [jobs, setJobs] = useState<PlatformBackgroundJobItem[]>([])
@@ -159,7 +160,7 @@ export default function PlatformJobsPage() {
                     </td>
 
                     <td className="py-3.5 px-4 font-mono text-slate-400 text-[11px]">
-                      {new Date(j.scheduled_for).toLocaleTimeString()}
+                      {formatTime(j.scheduled_for)}
                     </td>
 
                     <td className="py-3.5 px-4 text-right space-x-2">

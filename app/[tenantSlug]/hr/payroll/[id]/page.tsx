@@ -14,7 +14,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
-import { formatBDT, numberToWordsBDT } from '@/lib/formatters'
+import { formatBDT, numberToWordsBDT, formatDate } from '@/lib/formatters'
 import { PayrollPeriodRecord } from '@/types/hr.types'
 
 export default function PayrollDetailPage() {
@@ -204,7 +204,7 @@ export default function PayrollDetailPage() {
         {/* Dual Signatures */}
         <div className="pt-12 flex justify-between items-end text-xs">
           <div className="text-center space-y-2">
-            <div className="font-mono text-slate-400">Date: {new Date().toLocaleDateString()}</div>
+            <div className="font-mono text-slate-400">Date: {formatDate(new Date())}</div>
             <div className="border-t border-slate-400 w-52 pt-1 font-bold">
               কর্মচারীর স্বাক্ষর (Employee Signature)
             </div>

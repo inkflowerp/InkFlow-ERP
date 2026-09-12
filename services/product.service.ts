@@ -81,7 +81,7 @@ export class ProductService {
       new_price: newPrice,
       reason,
       changed_by_name: changedByName,
-      created_at: new Date().toLocaleString(),
+      created_at: new Date().toISOString(),
     }
     PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, historyEntry)
 

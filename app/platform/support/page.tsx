@@ -39,6 +39,7 @@ import {
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
 import {
   getPlatformCompaniesAction,
   getPlatformSupportSessionsAction,
@@ -573,7 +574,7 @@ export default function PlatformSupportPage() {
                     <div className="flex items-center gap-4 text-[11px] text-slate-400 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3 text-amber-400" />
-                        Expires: {new Date(sess.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(sess.expires_at).toLocaleDateString()})
+                        Expires: {formatTime(sess.expires_at)} ({formatDate(sess.expires_at)})
                       </span>
                       <span className="flex items-center gap-1">
                         <UserCheck className="h-3 w-3 text-indigo-400" />
@@ -890,9 +891,9 @@ export default function PlatformSupportPage() {
                       </td>
 
                       <td className="py-3 px-3.5 text-slate-400">
-                        <div>{new Date(sess.created_at).toLocaleDateString()}</div>
+                        <div>{formatDate(sess.created_at)}</div>
                         <div className="text-[10px] text-slate-500">
-                          {new Date(sess.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {formatTime(sess.created_at)}
                         </div>
                       </td>
 

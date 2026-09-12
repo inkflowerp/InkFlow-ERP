@@ -48,6 +48,7 @@ import {
   PlatformAuditFilters,
   PlatformTenantCompany,
 } from '@/types/platform.types'
+import { formatDate as fmtDate, formatTime as fmtTime, formatDateTime } from '@/lib/formatters'
 
 export default function PlatformAuditPage() {
   const [logs, setLogs] = useState<PlatformAuditLogItem[]>([])
@@ -227,30 +228,11 @@ export default function PlatformAuditPage() {
   }
 
   const formatDate = (isoString: string) => {
-    try {
-      const d = new Date(isoString)
-      return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    } catch {
-      return isoString
-    }
+    return fmtDate(isoString)
   }
 
   const formatTime = (isoString: string) => {
-    try {
-      const d = new Date(isoString)
-      return d.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      })
-    } catch {
-      return ''
-    }
+    return fmtTime(isoString)
   }
 
   // Relative Time Formatter
@@ -1187,9 +1169,9 @@ export default function PlatformAuditPage() {
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-medium">Timestamp (UTC):</span>
+                  <span className="text-slate-500 font-medium">Timestamp (BDT):</span>
                   <div className="font-mono text-slate-300 mt-0.5 text-[11px]">
-                    {new Date(selectedLog.created_at).toLocaleString()}
+                    {formatDateTime(selectedLog.created_at)}
                   </div>
                 </div>
 

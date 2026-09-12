@@ -40,6 +40,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
 import { getPlatformBackupStatusAction, getPlatformSettingsAction } from '@/actions/platform-data.actions'
 import { PlatformBackupStatus, PlatformSystemSettings } from '@/types/platform.types'
+import { formatTime } from '@/lib/formatters'
 import {
   updatePlatformSettingsAction,
   triggerPlatformBackupAction,
@@ -481,7 +482,7 @@ export default function PlatformSettingsPage() {
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-emerald-400" />
-                {backup ? new Date(backup.last_backup_time).toLocaleTimeString() : 'Recent'}
+                {backup ? formatTime(backup.last_backup_time) : 'Recent'}
               </div>
               <span className="text-[10px] text-slate-500 mt-1 block">
                 Age: {backup?.backup_age_hours || 0.5} hours ago

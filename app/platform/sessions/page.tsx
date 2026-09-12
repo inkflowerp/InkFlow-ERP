@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { getPlatformSecurityOverviewAction } from '@/actions/platform-data.actions'
 import { PlatformActiveSession, PlatformLoginHistoryItem } from '@/types/platform.types'
 import { revokePlatformSessionAction, revokeAllOtherPlatformSessionsAction } from '@/actions/platform.actions'
+import { formatDate, formatDateTime } from '@/lib/formatters'
 
 export default function PlatformSessionsPage() {
   const [sessions, setSessions] = useState<PlatformActiveSession[]>([])
@@ -195,10 +196,10 @@ export default function PlatformSessionsPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3 text-slate-500" />
-                        Last active: {new Date(sess.last_seen_at).toLocaleString()}
+                        Last active: {formatDateTime(sess.last_seen_at)}
                       </span>
                       <span className="text-slate-500">
-                        Created: {new Date(sess.created_at).toLocaleDateString()}
+                        Created: {formatDate(sess.created_at)}
                       </span>
                     </div>
                   </div>
@@ -272,7 +273,7 @@ export default function PlatformSessionsPage() {
                     <td className="py-2.5 px-3 text-slate-300">{item.device_browser}</td>
                     <td className="py-2.5 px-3 text-slate-400">{item.location}</td>
                     <td className="py-2.5 px-3 text-right text-slate-400">
-                      {new Date(item.timestamp).toLocaleString()}
+                      {formatDateTime(item.timestamp)}
                     </td>
                   </tr>
                 ))

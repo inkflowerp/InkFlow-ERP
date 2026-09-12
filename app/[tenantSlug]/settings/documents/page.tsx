@@ -23,6 +23,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { formatDate } from '@/lib/formatters'
 import {
   DEMO_DOCUMENT_TEMPLATES,
   DEFAULT_TAX_SETTINGS,
@@ -288,7 +289,7 @@ export default function DocumentDesignerPage() {
 
               <div className="space-y-1 sm:text-right font-mono">
                 <div>Document No: <strong className="text-blue-600 font-black">DOC-00001</strong></div>
-                <div>Date: <strong>{new Date().toLocaleDateString()}</strong></div>
+                <div>Date: <strong>{formatDate(new Date(), locale)}</strong></div>
                 <div>Payment Terms: <strong>Agreed Terms</strong></div>
                 <div>Pricing Mode: <strong className="uppercase">{taxSettings.pricing_mode}</strong></div>
               </div>

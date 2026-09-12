@@ -182,7 +182,7 @@ export default function DesignDetailPage() {
       status: 'approved' as const,
       approved_version: activeVersionNumber,
       approved_by: approverName,
-      approval_timestamp: new Date().toLocaleString(),
+      approval_timestamp: new Date().toISOString(),
       approval_note: approvalNote,
       is_locked: true, // LOCK ARTWORK FROM ACCIDENTAL REPLACEMENT
       versions: updatedVersions,

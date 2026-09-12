@@ -29,7 +29,7 @@ import { OfflineSyncManager } from '@/lib/offline/sync-queue'
 import { useTenant } from '@/hooks/use-tenant'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
-import { formatBDT } from '@/lib/formatters'
+import { formatBDT, formatDate } from '@/lib/formatters'
 import { ProductionJobRecord } from '@/types/production.types'
 import { SalesOrderRecord } from '@/types/order.types'
 import { CustomerRecord } from '@/types/crm.types'
@@ -271,7 +271,7 @@ export default function MobileSuitePage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Today&apos;s Sales &amp; Collections</span>
                 <span className="text-[10px] text-slate-500 font-mono">
-                  {new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  {formatDate(new Date())}
                 </span>
               </div>
               <div className="text-3xl font-black text-white mt-1">

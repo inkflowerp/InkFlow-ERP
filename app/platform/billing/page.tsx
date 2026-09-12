@@ -35,6 +35,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { formatDate } from '@/lib/formatters'
 import { getPlatformBillingReconciliationAction } from '@/actions/platform-data.actions'
 import { getPlatformReconciliationAction } from '@/actions/subscription.actions'
 import {
@@ -438,11 +439,7 @@ export default function PlatformBillingPage() {
                     Current Cycle Ends:{' '}
                     <strong className="text-white">
                       {platformSub?.current_period_end
-                        ? new Date(platformSub.current_period_end).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })
+                        ? formatDate(platformSub.current_period_end)
                         : 'September 2027'}
                     </strong>{' '}
                     ({entitlements?.days_remaining ?? 335} days remaining)
@@ -668,7 +665,7 @@ export default function PlatformBillingPage() {
                         </Badge>
                       </td>
                       <td className="p-3 text-slate-400">
-                        {new Date(tx.created_at).toLocaleDateString()}
+                        {formatDate(tx.created_at)}
                       </td>
                       <td className="p-3 text-right">
                         <Button
@@ -859,7 +856,7 @@ export default function PlatformBillingPage() {
                         )}
                       </td>
                       <td className="p-3 text-slate-400">
-                        {new Date(r.created_at).toLocaleDateString()}
+                        {formatDate(r.created_at)}
                       </td>
                     </tr>
                   ))

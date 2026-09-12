@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { formatDate } from '@/lib/formatters'
 import {
   DEMO_CHANNEL_CONFIGS,
   DEMO_MESSAGE_TEMPLATES,
@@ -132,7 +133,7 @@ export default function CommunicationsHubPage() {
         invoice_number: 'INV-000001',
         amount: '0',
         due_amount: '0',
-        delivery_date: new Date().toLocaleDateString(),
+        delivery_date: formatDate(new Date()),
       }
     )
 

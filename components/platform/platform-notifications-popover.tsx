@@ -20,6 +20,7 @@ import {
   markAllNotificationsReadAction,
 } from '@/actions/platform.actions'
 import { PlatformNotificationItem } from '@/types/platform.types'
+import { formatTime } from '@/lib/formatters'
 
 export function PlatformNotificationsPopover() {
   const [open, setOpen] = useState(false)
@@ -152,7 +153,7 @@ export function PlatformNotificationsPopover() {
                           </Link>
                           <p className="text-[11px] text-slate-400 line-clamp-2">{notif.message}</p>
                           <div className="flex items-center gap-2 text-[10px] text-slate-500 pt-0.5">
-                            <span>{new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span>{formatTime(notif.created_at)}</span>
                             {notif.company_name && (
                               <span className="text-indigo-400 font-medium truncate">
                                 • {notif.company_name}

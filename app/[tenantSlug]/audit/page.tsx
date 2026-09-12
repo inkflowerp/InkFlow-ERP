@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getAuditLogsAction } from '@/actions/audit.actions'
 import { AuditLogEntry, AUDIT_ACTIONS } from '@/types/audit.types'
+import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
 
 const CATEGORY_GROUPS: Record<string, { label: string; actions: string[] }> = {
   all: { label: 'All Event Categories', actions: [] },
@@ -223,9 +224,9 @@ export default function TenantAuditLogsPage() {
                       {/* Timestamp */}
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-white">
-                          {new Date(log.timestamp).toLocaleDateString()}
+                          {formatDate(log.timestamp)}
                           <span className="text-slate-400 font-mono ml-1">
-                            {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {formatTime(log.timestamp)}
                           </span>
                         </div>
                         <div className="text-[10px] font-mono text-slate-500 flex items-center gap-1 mt-0.5">
@@ -325,8 +326,7 @@ export default function TenantAuditLogsPage() {
                       {log.action}
                     </span>
                     <span className="text-[11px] font-mono text-slate-400">
-                      {new Date(log.timestamp).toLocaleDateString()}{' '}
-                      {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formatDateTime(log.timestamp)}
                     </span>
                   </div>
 
@@ -417,7 +417,7 @@ export default function TenantAuditLogsPage() {
               <div>
                 <span className="text-slate-500 text-[10px] block">Timestamp:</span>
                 <div className="font-medium text-slate-300 mt-0.5">
-                  {new Date(selectedLog.timestamp).toLocaleTimeString()}
+                  {formatDateTime(selectedLog.timestamp)}
                 </div>
               </div>
             </div>

@@ -37,6 +37,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
+import { formatTime } from '@/lib/formatters'
 import {
   getPlatformEmailGatewayAction,
   savePlatformEmailGatewayAction,
@@ -402,7 +403,7 @@ export default function PlatformEmailGatewayPage() {
                 {gateway?.last_test_status?.toUpperCase() || 'HEALTHY'}
               </div>
               <span className="text-[10px] text-slate-500 mt-1 block">
-                Last Tested: {gateway?.last_tested_at ? new Date(gateway.last_tested_at).toLocaleTimeString() : 'Ready'}
+                Last Tested: {gateway?.last_tested_at ? formatTime(gateway.last_tested_at) : 'Ready'}
               </span>
             </Card>
 

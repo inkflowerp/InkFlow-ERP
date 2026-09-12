@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { QRCodeSVG } from './qr-code-svg'
 import { AttendanceLocationRecord } from '@/types/attendance.types'
 import { useI18n } from '@/i18n/context'
+import { formatDate } from '@/lib/formatters'
 
 interface PrintableQrPosterProps {
   location: AttendanceLocationRecord
@@ -30,13 +31,11 @@ export function PrintableQrPoster({
     ? `INKFLOW:ATT:v1:${activeToken.raw_token}`
     : `INKFLOW:ATT:LOC:${location.id}`
 
-  const generatedDate = activeToken?.created_at
-    ? new Date(activeToken.created_at).toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      })
-    : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  const generatedDate = formatDate(
+    activeToken?.created_at || new Date(),
+    'en',
+    { day: '2-digit', month: 'short', year: 'numeric' }
+  )
 
   const handlePrint = () => {
     window.print()

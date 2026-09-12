@@ -35,6 +35,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { formatDate } from '@/lib/formatters'
 import {
   DEFAULT_PLANS,
   FEATURE_METADATA,
@@ -130,7 +131,7 @@ export default function TenantSubscriptionPage() {
     setIsDowngradeConfirmOpen(false)
 
     if (res.success) {
-      const effStr = ('effectiveAt' in res && res.effectiveAt) ? ` (${new Date(res.effectiveAt).toLocaleDateString()})` : ''
+      const effStr = ('effectiveAt' in res && res.effectiveAt) ? ` (${formatDate(res.effectiveAt)})` : ''
       showNotification(`Downgrade scheduled for end of billing cycle${effStr}.`)
     } else {
       showNotification(`Failed: ${res.error}`)
@@ -210,7 +211,7 @@ export default function TenantSubscriptionPage() {
             <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
             <div className="text-xs text-amber-900 dark:text-amber-200">
               <strong>Cancellation Pending:</strong> Your subscription will remain active until{' '}
-              <span className="font-mono font-bold">{new Date(subscription.current_period_end).toLocaleDateString()}</span>, after which it will not renew.
+              <span className="font-mono font-bold">{formatDate(subscription.current_period_end, locale)}</span>, after which it will not renew.
             </div>
           </div>
           <Button
@@ -232,7 +233,7 @@ export default function TenantSubscriptionPage() {
               <strong>Scheduled Downgrade:</strong> Your plan will switch to{' '}
               <strong>{nextPlanRecord.name}</strong> on{' '}
               <span className="font-mono font-bold">
-                {new Date(subscription.change_effective_at || subscription.current_period_end).toLocaleDateString()}
+                {formatDate(subscription.change_effective_at || subscription.current_period_end, locale)}
               </span>.
             </div>
           </div>
@@ -302,9 +303,7 @@ export default function TenantSubscriptionPage() {
               <span>
                 {isTrial ? 'Trial Ends:' : 'Period Ends:'}{' '}
                 <strong className="text-white font-mono">
-                  {trialExpiresAt || planExpiresAt
-                    ? new Date(trialExpiresAt || planExpiresAt!).toLocaleDateString()
-                    : new Date(subscription.current_period_end).toLocaleDateString()}
+                  {formatDate(trialExpiresAt || planExpiresAt || subscription.current_period_end, locale)}
                 </strong>{' '}
                 <span className="text-amber-300 font-mono text-[10px]">
                   ({isTrial
@@ -626,7 +625,7 @@ export default function TenantSubscriptionPage() {
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
                     <span>{ev.reason || 'Lifecycle action'}</span>
-                    <span>{new Date(ev.created_at).toLocaleDateString()}</span>
+                    <span>{formatDate(ev.created_at, locale)}</span>
                   </div>
                 </div>
               ))
@@ -699,7 +698,7 @@ export default function TenantSubscriptionPage() {
                         </span>
                       </td>
                       <td className="py-3 px-4 font-mono text-slate-500">
-                        {new Date(inv.billing_date).toLocaleDateString()}
+                        {formatDate(inv.billing_date, locale)}
                       </td>
                     </tr>
                   ))
@@ -741,7 +740,7 @@ export default function TenantSubscriptionPage() {
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
                     <span>{inv.payment_method?.toUpperCase()} • {inv.transaction_ref}</span>
-                    <span>{new Date(inv.billing_date).toLocaleDateString()}</span>
+                    <span>{formatDate(inv.billing_date, locale)}</span>
                   </div>
                 </div>
               ))
@@ -762,7 +761,7 @@ export default function TenantSubscriptionPage() {
               You are about to downgrade your plan to <strong className="text-slate-900 dark:text-white uppercase">{downgradeTargetPlan}</strong>.
             </p>
             <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
-              Your downgrade will safely take effect at the end of your current billing period (<strong>{new Date(subscription.current_period_end).toLocaleDateString()}</strong>). You will retain full access to your current features until that date.
+              Your downgrade will safely take effect at the end of your current billing period (<strong>{formatDate(subscription.current_period_end)}</strong>). You will retain full access to your current features until that date.
             </div>
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
@@ -799,7 +798,7 @@ export default function TenantSubscriptionPage() {
               Are you sure you want to cancel your PrintERP subscription?
             </p>
             <div className="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 text-red-900 dark:text-red-200">
-              Your subscription will remain active until <strong>{new Date(subscription.current_period_end).toLocaleDateString()}</strong> and will not renew. Your company data and invoices will remain intact.
+              Your subscription will remain active until <strong>{formatDate(subscription.current_period_end)}</strong> and will not renew. Your company data and invoices will remain intact.
             </div>
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button

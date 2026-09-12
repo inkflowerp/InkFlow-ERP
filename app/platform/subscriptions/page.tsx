@@ -32,6 +32,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { formatDate } from '@/lib/formatters'
 import {
   getPlatformSubscriptionsAction,
   getPlatformPlansAction,
@@ -890,8 +891,8 @@ export default function PlatformSubscriptionsPage() {
                           <Calendar className="h-3 w-3" />
                           <span>
                             {s.is_trial && s.trial_ends_at
-                              ? `Trial: ${new Date(s.trial_ends_at).toLocaleDateString()}`
-                              : `Period End: ${new Date(s.current_period_end).toLocaleDateString()}`}
+                              ? `Trial: ${formatDate(s.trial_ends_at)}`
+                              : `Period End: ${formatDate(s.current_period_end)}`}
                           </span>
                         </div>
                       </td>

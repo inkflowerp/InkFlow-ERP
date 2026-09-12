@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useOfflineQueue } from '@/hooks/use-offline-queue'
 import { useNetworkStatus } from '@/hooks/use-network-status'
+import { formatTime } from '@/lib/formatters'
 
 interface OfflineSyncDrawerProps {
   open: boolean
@@ -132,7 +133,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                       <div>
                         <div className="font-bold text-white text-xs">{item.title}</div>
                         <div className="text-[10px] font-mono text-slate-400 mt-0.5">
-                          {item.actionType} • {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {item.actionType} • {formatTime(item.timestamp)}
                         </div>
                       </div>
 
@@ -223,7 +224,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                         <span>{draft.title}</span>
                       </div>
                       <div className="text-[10px] text-slate-500 font-mono">
-                        Type: {draft.formType} • Saved {new Date(draft.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        Type: {draft.formType} • Saved {formatTime(draft.updatedAt)}
                       </div>
                     </div>
 

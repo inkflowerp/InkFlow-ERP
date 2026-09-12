@@ -31,6 +31,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatDate } from '@/lib/formatters'
 import { Badge } from '@/components/ui/badge'
 import { getPlatformTenantUsersAction, getPlatformCompaniesAction } from '@/actions/platform-data.actions'
 import {
@@ -463,11 +464,7 @@ export default function PlatformTenantUsersPage() {
 
                     {/* Created */}
                     <td className="py-3 px-4 text-slate-400 text-[11px]">
-                      {new Date(u.created_at).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {formatDate(u.created_at)}
                     </td>
 
                     {/* Actions */}

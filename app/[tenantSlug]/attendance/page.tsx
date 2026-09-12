@@ -101,6 +101,7 @@ export default function EmployeeAttendancePage() {
       const now = new Date()
       setCurrentTime(
         now.toLocaleTimeString('en-US', {
+          timeZone: 'Asia/Dhaka',
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
@@ -108,7 +109,8 @@ export default function EmployeeAttendancePage() {
         })
       )
       setCurrentDate(
-        now.toLocaleDateString('en-US', {
+        now.toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-US', {
+          timeZone: 'Asia/Dhaka',
           weekday: 'long',
           month: 'short',
           day: 'numeric',

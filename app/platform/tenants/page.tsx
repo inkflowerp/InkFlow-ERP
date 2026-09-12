@@ -46,6 +46,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { formatDate } from '@/lib/formatters'
 import { getPlatformCompaniesAction, getPlatformPlansAction } from '@/actions/platform-data.actions'
 import {
   PlatformTenantCompany,
@@ -725,11 +726,7 @@ export default function PlatformTenantsPage() {
 
                       {/* Created */}
                       <td className="py-3.5 px-3 text-[11px] text-slate-400 whitespace-nowrap">
-                        {new Date(c.created_at || Date.now()).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
+                        {formatDate(c.created_at || Date.now())}
                       </td>
 
                       {/* Actions */}

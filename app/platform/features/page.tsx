@@ -56,6 +56,7 @@ import {
   CreateFeatureFlagInput,
   UpdateFeatureFlagInput,
 } from '@/types/platform.types'
+import { formatDate } from '@/lib/formatters'
 
 const CATEGORY_META: Record<
   string,
@@ -937,7 +938,7 @@ export default function PlatformFeaturesPage() {
 
                         {override?.notes && (
                           <div className="text-[11px] text-cyan-300 font-mono mt-1 bg-cyan-950/40 p-1.5 rounded-lg border border-cyan-800/40 inline-block">
-                            Override Note: {override.notes} • Updated {new Date(override.updated_at).toLocaleDateString()}
+                            Override Note: {override.notes} • Updated {formatDate(override.updated_at)}
                           </div>
                         )}
                       </div>

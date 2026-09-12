@@ -504,6 +504,7 @@ export function DashboardView() {
           </div>
           <span className="text-[11px] text-slate-300 font-medium" suppressHydrationWarning>
             {new Date().toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-US', {
+              timeZone: 'Asia/Dhaka',
               weekday: 'short',
               month: 'short',
               day: 'numeric',

@@ -62,17 +62,23 @@ export function formatBDT(
   return `${symbol}\u00A0${formattedNumber}`
 }
 
+export const APP_TIMEZONE = 'Asia/Dhaka'
+
 /**
- * Formats a date localized to Bangladesh (English or Bengali)
+ * Formats a date localized to Bangladesh (English or Bengali) in Asia/Dhaka timezone
  */
 export function formatDate(
-  date: string | Date,
+  date: string | number | Date | null | undefined,
   locale: 'en' | 'bn' = 'en',
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
+  timeZone: string = APP_TIMEZONE
 ): string {
-  const d = typeof date === 'string' ? new Date(date) : date
+  if (date === null || date === undefined || date === '') return '—'
+  const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  if (isNaN(d.getTime())) return '—'
 
   const defaultOptions: Intl.DateTimeFormatOptions = {
+    timeZone,
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -84,6 +90,85 @@ export function formatDate(
   }
 
   return new Intl.DateTimeFormat('en-GB', defaultOptions).format(d)
+}
+
+/**
+ * Formats a time localized to Bangladesh (12-hour AM/PM format) in Asia/Dhaka timezone
+ */
+export function formatTime(
+  date: string | number | Date | null | undefined,
+  locale: 'en' | 'bn' = 'en',
+  options?: Intl.DateTimeFormatOptions,
+  timeZone: string = APP_TIMEZONE
+): string {
+  if (date === null || date === undefined || date === '') return '—'
+  const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  if (isNaN(d.getTime())) return '—'
+
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    ...options,
+  }
+
+  if (locale === 'bn') {
+    return new Intl.DateTimeFormat('bn-BD', defaultOptions).format(d)
+  }
+
+  return new Intl.DateTimeFormat('en-US', defaultOptions).format(d)
+}
+
+/**
+ * Formats full date and time localized to Bangladesh in Asia/Dhaka timezone
+ */
+export function formatDateTime(
+  date: string | number | Date | null | undefined,
+  locale: 'en' | 'bn' = 'en',
+  options?: Intl.DateTimeFormatOptions,
+  timeZone: string = APP_TIMEZONE
+): string {
+  if (date === null || date === undefined || date === '') return '—'
+  const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  if (isNaN(d.getTime())) return '—'
+
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    timeZone,
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    ...options,
+  }
+
+  if (locale === 'bn') {
+    return new Intl.DateTimeFormat('bn-BD', defaultOptions).format(d)
+  }
+
+  return new Intl.DateTimeFormat('en-GB', defaultOptions).format(d)
+}
+
+/**
+ * Resolves local calendar date (YYYY-MM-DD) in Bangladesh Standard Time (Asia/Dhaka) or custom timezone.
+ */
+export function getLocalDate(date: Date | string | number = new Date(), timeZone: string = APP_TIMEZONE): string {
+  const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    return formatter.format(d)
+  } catch {
+    const offset = 6 * 60 * 60 * 1000 // UTC+6 for Bangladesh
+    const bst = new Date(d.getTime() + offset)
+    return bst.toISOString().split('T')[0]
+  }
 }
 
 /**

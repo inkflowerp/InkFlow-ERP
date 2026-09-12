@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button'
 import { PlatformAdminUser } from '@/types/platform.types'
 import { updatePlatformOwnerProfileAction } from '@/actions/platform.actions'
 import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
+import { formatDate, formatDateTime } from '@/lib/formatters'
 
 export default function PlatformOwnerProfilePage() {
   const [profile, setProfile] = useState<PlatformAdminUser | null>(null)
@@ -247,7 +248,7 @@ export default function PlatformOwnerProfilePage() {
                   Created Date
                 </span>
                 <span className="text-slate-200 font-mono">
-                  {new Date(profile.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  {formatDate(profile.created_at)}
                 </span>
               </div>
 
@@ -258,7 +259,7 @@ export default function PlatformOwnerProfilePage() {
                 </span>
                 <span className="text-slate-200 font-mono">
                   {profile.last_login_at
-                    ? new Date(profile.last_login_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                    ? formatDateTime(profile.last_login_at)
                     : 'Recent'}
                 </span>
               </div>
@@ -306,7 +307,7 @@ export default function PlatformOwnerProfilePage() {
                   <div className="font-semibold text-white">Password Status</div>
                   <div className="text-[11px] text-slate-400">
                     {profile.password_last_changed_at
-                      ? `Last changed ${new Date(profile.password_last_changed_at).toLocaleDateString()}`
+                      ? `Last changed ${formatDate(profile.password_last_changed_at)}`
                       : 'Compliant'}
                   </div>
                 </div>
