@@ -552,6 +552,13 @@ export class SubscriptionService {
           if (codePlan) planRecord = codePlan
         }
 
+        if (!planRecord) {
+          const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+          if (storedPlans) {
+            planRecord = storedPlans.find((p) => p.id === sub.plan_id || p.code === sub.plan_code) || null
+          }
+        }
+
         const planCode = planRecord?.code || sub.plan_code || (sub.status === 'trial' ? 'trial' : 'starter')
         return {
           id: sub.id,
@@ -1784,6 +1791,12 @@ export function getMinimumPlanForFeature(
   feature: FeatureCode,
   plans: SubscriptionPlanRecord[] = DEFAULT_PLANS
 ): SubscriptionPlanRecord {
+  const matchingPlan = [...plans]
+    .filter((p) => p.code !== 'trial' && p.is_active !== false && Array.isArray(p.features) && p.features.includes(feature))
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)[0]
+
+  if (matchingPlan) return matchingPlan
+
   const meta = FEATURE_METADATA[feature]
   const targetCode = meta ? meta.minPlan : 'enterprise'
   return plans.find((p) => p.code === targetCode) || plans.find((p) => p.code === 'business') || DEFAULT_PLANS[1]

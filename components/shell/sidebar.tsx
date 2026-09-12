@@ -232,7 +232,7 @@ export function Sidebar() {
                 <div className="flex items-center gap-1.5">
                   <Crown className="h-3.5 w-3.5 text-amber-500" />
                   <span className="text-[11px] font-bold text-slate-900 dark:text-white">
-                    {tBilingual('Free Trial', 'ফ্রি ট্রায়াল')}
+                    {tBilingual(currentPlan?.name || 'Free Trial', currentPlan?.name_bn || 'ফ্রি ট্রায়াল')}
                   </span>
                 </div>
                 <Badge suppressHydrationWarning className="text-[9px] bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1 py-0 h-4">

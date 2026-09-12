@@ -75,9 +75,9 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 function syncPlansLocally(updatedPlans: SubscriptionPlanRecord[]) {
   if (typeof window !== 'undefined') {
     try {
-      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updatedPlans)
+      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updatedPlans, true)
       window.dispatchEvent(new CustomEvent('printerp_plans_sync', { detail: { plans: updatedPlans } }))
-      window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: 'plans' } }))
+      window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: STORAGE_KEYS.PLATFORM_PLANS, data: updatedPlans } }))
     } catch {}
   }
 }

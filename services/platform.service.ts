@@ -1876,7 +1876,7 @@ export class PlatformService {
         if (comp.slug) {
           currentSubs[comp.slug] = subObj
         }
-        PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, false)
+        PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, true)
       } catch {}
 
       return { success: true, data: { companyId, updated: true } }
@@ -2682,7 +2682,7 @@ export class PlatformService {
         } else {
           nextStored.push(finalRecord)
         }
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, nextStored, false)
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, nextStored, true)
       } catch {}
 
       await this.recordAuditLog(

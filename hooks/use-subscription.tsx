@@ -254,24 +254,51 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     const handleDataSync = (e: Event) => {
       const customEvent = e as CustomEvent
       const key = customEvent.detail?.key
-      if (key === STORAGE_KEYS.COMPANY_SUBSCRIPTIONS && customEvent.detail?.data) {
-        const stored = customEvent.detail.data as Record<string, CompanySubscriptionRecord>
-        const updated = stored[companyId] || (companySlug ? stored[companySlug] : null)
-        if (updated) {
-          setSubscription(updated)
-          memoryCachedSubscriptions[companyId] = updated
-          if (companySlug) memoryCachedSubscriptions[companySlug] = updated
-        }
-      } else if (key === STORAGE_KEYS.PLATFORM_PLANS && customEvent.detail?.data) {
-        if (Array.isArray(customEvent.detail.data) && customEvent.detail.data.length > 0) {
-          setPlans(customEvent.detail.data)
-          memoryCachedPlans = customEvent.detail.data
-        }
+      if (
+        key === STORAGE_KEYS.COMPANY_SUBSCRIPTIONS ||
+        key === STORAGE_KEYS.PLATFORM_PLANS ||
+        key === 'printerp_company_subscriptions' ||
+        key === 'printerp_platform_plans' ||
+        key === 'plans'
+      ) {
+        refreshSubscription()
+      }
+    }
+
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (
+        e.key === STORAGE_KEYS.COMPANY_SUBSCRIPTIONS ||
+        e.key === STORAGE_KEYS.PLATFORM_PLANS ||
+        e.key?.includes('subscription') ||
+        e.key?.includes('plan')
+      ) {
+        refreshSubscription()
       }
     }
 
     window.addEventListener('printerp_plans_sync', handlePlansSync)
     window.addEventListener('printerp_data_sync', handleDataSync)
+    window.addEventListener('storage', handleStorageEvent)
+    window.addEventListener('printerp_company_subscriptions_updated', handlePlansSync)
+    window.addEventListener('printerp_platform_plans_updated', handlePlansSync)
+
+    let busChannel: BroadcastChannel | null = null
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        busChannel = new BroadcastChannel('printerp_realtime_bus')
+        busChannel.onmessage = (event) => {
+          if (
+            event.data?.storageKey === STORAGE_KEYS.PLATFORM_PLANS ||
+            event.data?.storageKey === STORAGE_KEYS.COMPANY_SUBSCRIPTIONS ||
+            event.data?.type === 'LOCAL_STORE_MUTATION' ||
+            event.data?.type === 'SUBSCRIPTION_UPDATE' ||
+            event.data?.type === 'PLAN_UPDATE'
+          ) {
+            refreshSubscription()
+          }
+        }
+      }
+    } catch {}
 
     let channel: any = null
     try {
@@ -305,6 +332,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return () => {
       window.removeEventListener('printerp_plans_sync', handlePlansSync)
       window.removeEventListener('printerp_data_sync', handleDataSync)
+      window.removeEventListener('storage', handleStorageEvent)
+      window.removeEventListener('printerp_company_subscriptions_updated', handlePlansSync)
+      window.removeEventListener('printerp_platform_plans_updated', handlePlansSync)
+      if (busChannel) {
+        try {
+          busChannel.close()
+        } catch {}
+      }
       if (channel) {
         try {
           const supabase = createClient()

@@ -55,13 +55,16 @@ export function resolveSubscriptionPlan(
     plan_code?: PlanCode
     plan_name?: string
     plan_name_bn?: string
-  } | null
+    plan_id?: string
+  } | null,
+  plans?: SubscriptionPlanRecord[]
 ): ResolvedSubscriptionState {
   if (!subscription) {
+    const trialPlan = plans?.find((p) => p.code === 'trial')
     return {
       planCode: 'trial',
-      planName: 'Free Trial',
-      planNameBn: 'ফ্রি ট্রায়াল',
+      planName: trialPlan?.name || 'Free Trial',
+      planNameBn: trialPlan?.name_bn || 'ফ্রি ট্রায়াল',
       status: 'trial',
       badgeTextEn: 'Trial',
       badgeTextBn: 'ফ্রি ট্রায়াল',
@@ -76,10 +79,11 @@ export function resolveSubscriptionPlan(
   const isPastDue = subscription.status === 'past_due'
 
   if (isTrial) {
+    const trialPlan = plans?.find((p) => p.code === 'trial' || p.id === subscription.plan_id)
     return {
       planCode: 'trial',
-      planName: subscription.plan_name || 'Free Trial',
-      planNameBn: subscription.plan_name_bn || 'ফ্রি ট্রায়াল',
+      planName: subscription.plan_name || trialPlan?.name || 'Free Trial',
+      planNameBn: subscription.plan_name_bn || trialPlan?.name_bn || 'ফ্রি ট্রায়াল',
       status: subscription.status || 'trial',
       badgeTextEn: 'Trial',
       badgeTextBn: 'ফ্রি ট্রায়াল',
@@ -96,6 +100,8 @@ export function resolveSubscriptionPlan(
       ? 'business'
       : 'starter'
 
+  const matchedPlan = plans?.find((p) => p.code === code || p.id === subscription.plan_id)
+
   const names: Record<PlanCode, { en: string; bn: string }> = {
     trial: { en: 'Free Trial', bn: 'ফ্রি ট্রায়াল' },
     starter: { en: 'Starter Plan', bn: 'স্টার্টার প্ল্যান' },
@@ -105,11 +111,11 @@ export function resolveSubscriptionPlan(
 
   return {
     planCode: code,
-    planName: subscription.plan_name || names[code].en,
-    planNameBn: subscription.plan_name_bn || names[code].bn,
+    planName: subscription.plan_name || matchedPlan?.name || names[code].en,
+    planNameBn: subscription.plan_name_bn || matchedPlan?.name_bn || names[code].bn,
     status: subscription.status || 'active',
-    badgeTextEn: code.charAt(0).toUpperCase() + code.slice(1),
-    badgeTextBn: subscription.plan_name_bn || names[code].bn,
+    badgeTextEn: matchedPlan?.name ? matchedPlan.name.replace(/ Plan$/i, '') : (code.charAt(0).toUpperCase() + code.slice(1)),
+    badgeTextBn: subscription.plan_name_bn || matchedPlan?.name_bn || names[code].bn,
     isTrial: false,
     isSuspended,
     isPastDue,

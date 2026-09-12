@@ -88,7 +88,7 @@ export function TrialDashboardCard() {
               )}
             >
               <Crown className="h-3 w-3 mr-1" />
-              {tBilingual('PrintERP Free Trial', 'প্রিন্টইআরপি ফ্রি ট্রায়াল')}
+              {tBilingual(currentPlan?.name || 'PrintERP Free Trial', currentPlan?.name_bn || 'প্রিন্টইআরপি ফ্রি ট্রায়াল')}
             </Badge>
 
             <span className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
