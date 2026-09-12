@@ -84,12 +84,41 @@ export async function GET(
     return NextResponse.json({ error: 'WhatsApp Webhook verification token mismatch' }, { status: 403 })
   }
 
-  // 2. SSLCommerz or bKash browser redirect callbacks
+  // 2. SSLCommerz, bKash, or UddoktaPay browser redirect callbacks
   if (provider === 'sslcommerz' || provider === 'bkash' || provider === 'uddoktapay') {
     const status = searchParams.get('status') || 'unknown'
     const tranId = searchParams.get('tran_id') || searchParams.get('trx') || searchParams.get('paymentID') || searchParams.get('invoice_id')
 
     let isPlatform = false
+    let resolvedTenantSlug: string | null = null
+
+    if (tranId) {
+      const admin = createAdminClient()
+      try {
+        const { data: tx } = await (admin as any)
+          .from('gateway_transactions')
+          .select('id, tenant_id, metadata, billing_context')
+          .or(`internal_trx_id.eq.${tranId},provider_trx_id.eq.${tranId}`)
+          .maybeSingle()
+
+        if (tx) {
+          if (tx.billing_context === 'PLATFORM' || tranId.startsWith('PLT-TX-')) {
+            isPlatform = true
+          } else if (tx.tenant_id) {
+            const { data: comp } = await (admin as any)
+              .from('companies')
+              .select('slug')
+              .eq('id', tx.tenant_id)
+              .maybeSingle()
+
+            if (comp?.slug) {
+              resolvedTenantSlug = comp.slug
+            }
+          }
+        }
+      } catch {}
+    }
+
     if (tranId && (status === 'success' || status === 'Successful' || status === 'COMPLETED' || status === 'paid')) {
       // Execute server-side verification before redirecting
       const dispatchRes = await dispatchPaymentVerification({
@@ -98,12 +127,17 @@ export async function GET(
         gatewayReference: tranId,
         provider,
       })
-      isPlatform = dispatchRes.isPlatform
+      isPlatform = isPlatform || dispatchRes.isPlatform
     }
 
-    const redirectPath = isPlatform
-      ? `/platform/billing?gateway=${provider}&status=${status}&tran_id=${tranId || ''}`
-      : `/[tenantSlug]/settings/subscription?gateway=${provider}&status=${status}&tran_id=${tranId || ''}`
+    let redirectPath = '/login'
+    if (isPlatform) {
+      redirectPath = `/platform/billing?gateway=${provider}&status=${status}&tran_id=${tranId || ''}`
+    } else if (resolvedTenantSlug) {
+      redirectPath = `/${resolvedTenantSlug}/settings/subscription?gateway=${provider}&status=${status}&tran_id=${tranId || ''}`
+    } else {
+      redirectPath = `/login?gateway=${provider}&status=${status}&tran_id=${tranId || ''}`
+    }
 
     return NextResponse.redirect(new URL(redirectPath, request.url))
   }
@@ -149,6 +183,39 @@ export async function POST(
   let isPlatformContext = false
   let eventType = 'notification'
   let providerEventId: string | null = null
+
+  // Idempotency & Replay Protection: Check if event already processed
+  const candidateEventId =
+    payload?.id ||
+    payload?.val_id ||
+    payload?.paymentID ||
+    payload?.invoice_id ||
+    payload?.tran_id ||
+    payload?.data?.object?.id ||
+    (payload?.update_id ? String(payload.update_id) : null)
+
+  if (candidateEventId) {
+    try {
+      const { data: existingWebhook } = await (admin as any)
+        .from('gateway_webhooks')
+        .select('id, is_verified, status')
+        .eq('provider', provider)
+        .eq('provider_event_id', candidateEventId)
+        .eq('status', 'processed')
+        .maybeSingle()
+
+      if (existingWebhook) {
+        return NextResponse.json({
+          received: true,
+          provider,
+          is_verified: true,
+          status: 'already_processed',
+          message: 'Idempotency check: Event already processed.',
+          timestamp: now,
+        })
+      }
+    } catch {}
+  }
 
   // 1. WhatsApp Delivery Status Ingestion
   if (provider === 'whatsapp' || provider === 'meta_whatsapp') {

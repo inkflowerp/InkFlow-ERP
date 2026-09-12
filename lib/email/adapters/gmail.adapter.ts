@@ -13,6 +13,7 @@ import type {
   EmailAttachment,
 } from '../types.ts'
 import { refreshGoogleAccessToken } from '../oauth/google-oauth.ts'
+import { isTestEnvironment } from '../../security/runtime-env.ts'
 
 export class GmailProviderAdapter implements IEmailProvider {
   readonly providerName = 'gmail' as const
@@ -303,7 +304,7 @@ export class GmailProviderAdapter implements IEmailProvider {
   async verifyConnection(): Promise<ProviderConnectionResult> {
     const startTime = Date.now()
 
-    if (process.env.NODE_ENV === 'test' || this.accessToken.startsWith('mock-')) {
+    if (isTestEnvironment() || this.accessToken.startsWith('mock-')) {
       return {
         success: true,
         provider: 'gmail',

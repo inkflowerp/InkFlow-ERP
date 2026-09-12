@@ -3,7 +3,7 @@ import { createClient as createServerSupabaseClient } from '@/lib/supabase/serve
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ApiResponse } from '@/types/common.types'
 import { TenantSessionData, TENANT_SESSION_COOKIE, TenantRole } from '@/lib/auth/types'
-import { PrimaryRole } from '@/types/rbac.types'
+import { PrimaryRole, MODULE_ACTION_SPECS } from '@/types/rbac.types'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 
 export interface SignInResultData {
@@ -90,6 +90,10 @@ export class AuthService {
           .eq('id', user.id)
           .maybeSingle()
 
+        const ownerPermissions = Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
+          spec.actions.map((act) => `${mod}.${act}`)
+        )
+
         const sessionData: TenantSessionData = {
           userId: user.id,
           userEmail: user.email || normalizedEmail,
@@ -105,7 +109,7 @@ export class AuthService {
           role: 'business_owner',
           primaryRole: 'business_owner',
           responsibilities: ['business_owner'],
-          permissions: ['*'],
+          permissions: ownerPermissions,
           loginTime: new Date().toISOString(),
           token: authData.session?.access_token || `auth-${user.id}`,
         }

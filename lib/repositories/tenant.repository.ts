@@ -1,14 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import {
+import { createClient } from '../supabase/server.ts'
+import { createAdminClient } from '../supabase/admin.ts'
+import type {
   CompanyRow,
   CompanySettingsRow,
   CompanyUserWithProfile,
   BranchRow,
   RoleRow,
-} from '@/types/tenant.types'
-import { MODULE_ACTION_SPECS, DataScope } from '@/types/rbac.types'
-import { checkPermission } from '@/lib/auth/rbac.client'
+} from '../../types/tenant.types.ts'
+import type { DataScope } from '../../types/rbac.types.ts'
+import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
+import { checkPermission } from '../auth/rbac.client.ts'
 
 export class TenantRepository {
   static async createCompany(
@@ -210,31 +211,39 @@ export class TenantRepository {
   }
 
   static async getCompanyBySlug(slug: string): Promise<CompanyRow | null> {
-    const admin = createAdminClient()
-    const { data, error } = await admin
-      .from('companies')
-      .select('*')
-      .ilike('slug', slug.toLowerCase().trim())
-      .maybeSingle()
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await admin
+        .from('companies')
+        .select('*')
+        .ilike('slug', slug.toLowerCase().trim())
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch company by slug ${slug}: ${error.message}`)
+      if (error) {
+        return null
+      }
+      return (data as CompanyRow) || null
+    } catch {
+      return null
     }
-    return (data as CompanyRow) || null
   }
 
   static async getCompanyById(id: string): Promise<CompanyRow | null> {
-    const admin = createAdminClient()
-    const { data, error } = await admin
-      .from('companies')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle()
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await admin
+        .from('companies')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch company by ID ${id}: ${error.message}`)
+      if (error) {
+        return null
+      }
+      return (data as CompanyRow) || null
+    } catch {
+      return null
     }
-    return (data as CompanyRow) || null
   }
 
   static async getAllCompanies(): Promise<CompanyRow[]> {
@@ -565,9 +574,7 @@ export class TenantRepository {
     const responsibilities = roles.map((r: any) => r.slug || r.name)
     const isOwner =
       responsibilities.includes('owner') ||
-      responsibilities.includes('business_owner') ||
-      cu.department === 'Management' ||
-      roles.length === 0
+      responsibilities.includes('business_owner')
     const primaryRole = isOwner ? 'business_owner' : responsibilities[0] || 'general_staff'
 
     // Compute effective permissions across all responsibilities & overrides
@@ -623,7 +630,7 @@ export class TenantRepository {
       branch_id: cu.branch_id,
       status: cu.status,
       department: cu.department || 'Operations',
-      responsibilities: responsibilities.length > 0 ? responsibilities : ['business_owner'],
+      responsibilities: responsibilities.length > 0 ? responsibilities : ['general_staff'],
       overrides,
       data_scopes: {
         customers: 'company',

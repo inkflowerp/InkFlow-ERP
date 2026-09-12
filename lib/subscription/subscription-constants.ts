@@ -434,15 +434,8 @@ export function getTenantResourceUsage(
 
   const isCoMatch = (item: any) => {
     if (!item) return false
-    if (!item.company_id) return true
-    if (item.company_id === companyId) return true
-    const normCo = companyId ? companyId.replace(/^co-/, '') : ''
-    const normItem = item.company_id ? String(item.company_id).replace(/^co-/, '') : ''
-    if (normCo && normItem && normCo === normItem) return true
-    if (companyId === 'default' || companyId === 'co-main') {
-      return item.company_id === 'default' || item.company_id === 'co-main' || item.company_id === 'c-01'
-    }
-    return false
+    if (!companyId) return true
+    return item.company_id === companyId
   }
 
   const matchingUsers = users.filter(isCoMatch)
@@ -472,11 +465,8 @@ export function getTenantResourceUsage(
       try {
         const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
         const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
-        const normNoCo = companyId ? companyId.replace(/^co-/, '') : ''
         const compSub =
           storedSubs?.[companyId] ||
-          (normNoCo ? storedSubs?.[normNoCo] : null) ||
-          (normNoCo ? storedSubs?.[`co-${normNoCo}`] : null) ||
           storedSubs?.['default']
 
         if (compSub && storedPlans.length > 0) {

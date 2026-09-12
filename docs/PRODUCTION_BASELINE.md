@@ -4,12 +4,13 @@
 
 InkFlow / PrintERP is officially:
 
-**CERTIFIED FOR PRODUCTION**
+**CERTIFIED FOR PRODUCTION (SECURITY & TENANT ISOLATION HARDENED)**
 
-* **Automated Tests:** 517 / 517 passed (149 test suites)
-* **TypeScript:** 0 errors
-* **ESLint:** 0 errors
-* **Next.js Production Build:** 100% Passing (Turbopack, 98 compiled routes)
+* **Automated Tests:** 601 / 601 passed (165 test suites)
+* **TypeScript:** 0 errors (`npm run typecheck` passes cleanly)
+* **ESLint:** 0 errors (`npm run lint` passes cleanly)
+* **Next.js Production Build:** 100% Passing (Turbopack, 101 compiled routes)
+* **Security & RLS Hardening:** Authoritative Identity Chain, Zero Synthetic Fallbacks, Search Path Hardening, Payment Idempotency, Gateway Credential Sanitization.
 
 This document defines the mandatory architectural baseline for all future development.
 Before implementing any feature, modification, optimization, migration, integration, or refactor, inspect and preserve this baseline.

@@ -5,20 +5,29 @@
 
 import crypto from 'crypto'
 
+import { isTestEnvironment } from './runtime-env.ts'
+
 const ALGORITHM = 'aes-256-gcm'
 const IV_LENGTH = 12 // 96 bits recommended for GCM
 const AUTH_TAG_LENGTH = 16 // 128 bits
 const DEFAULT_SALT = 'printerp-saas-master-key-salt-2026'
 
 /**
- * Derives a 32-byte key from environment or fallback secret
+ * Derives a 32-byte key from server environment secrets. Fails closed if missing.
  */
 function getMasterKey(): Buffer {
   const secret =
     process.env.ENCRYPTION_SECRET ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SECRET_KEY ||
-    process.env.APP_SECRET ||
-    'printerp_enterprise_communication_gateway_secret_key_32b!'
+    process.env.APP_SECRET
+
+  if (!secret) {
+    if (isTestEnvironment()) {
+      return crypto.scryptSync('test_encryption_secret_key_32_chars_ok!', DEFAULT_SALT, 32)
+    }
+    throw new Error('FAIL CLOSED: ENCRYPTION_SECRET or server secret key is required for credential encryption.')
+  }
 
   return crypto.scryptSync(secret, DEFAULT_SALT, 32)
 }
@@ -47,7 +56,10 @@ export function encryptSecret(plainText: string): string {
     const authTag = cipher.getAuthTag()
 
     return `v1:${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.message?.includes('FAIL CLOSED')) {
+      throw error
+    }
     console.error('Encryption failed:', error)
     throw new Error('Failed to encrypt secret credentials')
   }
@@ -82,7 +94,10 @@ export function decryptSecret(encryptedString: string): string {
     decrypted += decipher.final('utf8')
 
     return decrypted
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.message?.includes('FAIL CLOSED')) {
+      throw error
+    }
     console.error('Decryption failed:', error)
     throw new Error('Failed to decrypt secret credentials')
   }

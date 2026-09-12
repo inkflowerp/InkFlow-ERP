@@ -140,7 +140,6 @@ function canManageAttendance(tenant: any): boolean {
     tenant.companyRole === 'business_owner' ||
     tenant.primaryRole === 'business_owner' ||
     tenant.isSupportMode === true ||
-    tenant.permissions.includes('*') ||
     tenant.permissions.includes('settings.manage') ||
     tenant.permissions.includes('settings.edit') ||
     tenant.permissions.includes('settings.full_control') ||

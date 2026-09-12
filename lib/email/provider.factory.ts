@@ -11,6 +11,8 @@ import { SendGridProviderAdapter } from './adapters/sendgrid.adapter.ts'
 import { SesProviderAdapter } from './adapters/ses.adapter.ts'
 import { MockProviderAdapter } from './adapters/mock.adapter.ts'
 
+import { isTestEnvironment } from '../security/runtime-env.ts'
+
 export function createEmailProvider(config: DecryptedGatewayConfig): IEmailProvider {
   switch (config.provider) {
     case 'gmail':
@@ -27,7 +29,7 @@ export function createEmailProvider(config: DecryptedGatewayConfig): IEmailProvi
     case 'mock':
     default:
       // If in test environment or mock provider requested
-      if (config.provider === 'mock' || process.env.NODE_ENV === 'test') {
+      if (config.provider === 'mock' || isTestEnvironment()) {
         return new MockProviderAdapter(config)
       }
       return new SmtpProviderAdapter(config)

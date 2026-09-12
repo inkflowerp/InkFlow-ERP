@@ -34,7 +34,12 @@ export async function GET(request: NextRequest) {
       userId = platformUser.userId
     } else {
       const tenantUser = await getCurrentTenant(tenantIdParam || undefined)
-      if (!tenantUser || (!tenantUser.permissions.includes('*') && !tenantUser.permissions.includes('settings.edit'))) {
+      if (
+        !tenantUser ||
+        (tenantUser.companyRole !== 'business_owner' &&
+          !tenantUser.permissions.includes('settings.edit') &&
+          !tenantUser.permissions.includes('settings.manage'))
+      ) {
         return NextResponse.json(
           { error: 'Unauthorized: Tenant admin settings.edit permission required' },
           { status: 401 }

@@ -119,7 +119,7 @@ export default function OrdersPage() {
 
     const newOrder: SalesOrderRecord = {
       id: `ord-${Date.now()}`,
-      company_id: company?.id || 'co-main',
+      company_id: company?.id || '',
       order_number: orderNum,
       customer_id: customer.id,
       customer_name: customer.name,

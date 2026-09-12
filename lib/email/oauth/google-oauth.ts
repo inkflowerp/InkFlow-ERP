@@ -4,6 +4,7 @@
 // ==============================================================================
 
 import crypto from 'crypto'
+import { isTestEnvironment } from '../../security/runtime-env.ts'
 
 export interface GoogleOAuthStatePayload {
   scopeType: 'PLATFORM' | 'TENANT'
@@ -202,12 +203,12 @@ export function generateGoogleAuthUrl(params: {
   loginHint?: string
 }): string {
   const diag = getGoogleOAuthDiagnostics()
-  if (!diag.isConfigured && process.env.NODE_ENV !== 'test') {
+  if (!diag.isConfigured && !isTestEnvironment()) {
     throw new Error(`Google OAuth is not configured: ${diag.issues.join(' ')}`)
   }
 
   const { clientId, redirectUri } = getGoogleOAuthConfig()
-  const effectiveClientId = clientId || (process.env.NODE_ENV === 'test' ? 'mock-google-client-id.apps.googleusercontent.com' : '')
+  const effectiveClientId = clientId || (isTestEnvironment() ? 'mock-google-client-id.apps.googleusercontent.com' : '')
   const effectiveRedirectUri = redirectUri || 'http://localhost:3000/api/email/oauth/google/callback'
 
   const state = generateGoogleOAuthState({
@@ -241,7 +242,7 @@ export async function exchangeGoogleAuthCode(code: string): Promise<GoogleTokenR
   const { clientId, clientSecret, redirectUri } = getGoogleOAuthConfig()
 
   // In test environment with mock code
-  if (process.env.NODE_ENV === 'test' || code.startsWith('mock-')) {
+  if (isTestEnvironment() || code.startsWith('mock-')) {
     return {
       access_token: `mock-access-token-${Date.now()}`,
       refresh_token: `mock-refresh-token-${Date.now()}`,
@@ -282,7 +283,7 @@ export async function refreshGoogleAccessToken(refreshToken: string): Promise<{
 }> {
   const { clientId, clientSecret } = getGoogleOAuthConfig()
 
-  if (process.env.NODE_ENV === 'test' || refreshToken.startsWith('mock-')) {
+  if (isTestEnvironment() || refreshToken.startsWith('mock-')) {
     const expires_in = 3600
     const expires_at = new Date(Date.now() + expires_in * 1000).toISOString()
     return {
@@ -323,7 +324,7 @@ export async function refreshGoogleAccessToken(refreshToken: string): Promise<{
  * Fetches authenticated Google User identity profile (email and display name)
  */
 export async function fetchGoogleUserProfile(accessToken: string): Promise<GoogleUserProfile> {
-  if (process.env.NODE_ENV === 'test' || accessToken.startsWith('mock-')) {
+  if (isTestEnvironment() || accessToken.startsWith('mock-')) {
     return {
       id: 'mock-google-user-id',
       email: 'test-user@gmail.com',
@@ -352,7 +353,7 @@ export async function fetchGoogleUserProfile(accessToken: string): Promise<Googl
  */
 export async function revokeGoogleToken(token: string): Promise<boolean> {
   if (!token) return true
-  if (process.env.NODE_ENV === 'test' || token.startsWith('mock-')) {
+  if (isTestEnvironment() || token.startsWith('mock-')) {
     return true
   }
 

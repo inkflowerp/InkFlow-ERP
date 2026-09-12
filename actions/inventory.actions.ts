@@ -35,9 +35,9 @@ export async function adjustStockAction(
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
-      tenant.permissions.includes('*') ||
       tenant.permissions.includes('inventory.adjust') ||
-      tenant.permissions.includes('inventory.edit')
+      tenant.permissions.includes('inventory.edit') ||
+      tenant.permissions.includes('inventory.manage')
 
     if (!hasPermission) {
       return { success: false, error: 'Unauthorized: You do not have permission to adjust inventory stock.' }

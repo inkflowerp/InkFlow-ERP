@@ -48,73 +48,88 @@ function platformCompanyToRow(p: PlatformTenantCompany): CompanyRow {
   }
 }
 
-function slugToDisplayName(slug: string): string {
-  return (
-    slug
-      .split(/[-_]+/)
-      .filter(Boolean)
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ') + ' Ltd.'
-  )
-}
-
-function createSyntheticCompany(slug: string): CompanyRow {
-  const normSlug = slug.toLowerCase().trim()
-  const name = slugToDisplayName(normSlug)
-  return {
-    id: `co-${normSlug}`,
-    slug: normSlug,
-    name,
-    name_bn: name,
-    legal_name: `${name} Limited`,
-    trade_license_no: null,
-    bin_no: null,
-    tin_no: null,
-    business_type: 'printing_signage',
-    phone: null,
-    whatsapp: null,
-    email: null,
-    website: null,
-    division_id: 1,
-    district_id: 1,
-    upazila_id: 1,
-    area: null,
-    address: 'Dhaka, Bangladesh',
-    address_bn: null,
-    currency: 'BDT',
-    default_locale: 'bn',
-    logo_url: null,
-    is_active: true,
-    settings: { vat_rate: 7.5, bilingual_invoicing: true },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+function resolveCompanyFromContextOrStore(
+  ctx?: ServerTenantContext | null,
+  targetSlug?: string
+): CompanyRow | null {
+  if (ctx?.companyId && ctx?.companySlug) {
+    return {
+      id: ctx.companyId,
+      slug: ctx.companySlug,
+      name: ctx.companyName || ctx.companySlug,
+      name_bn: ctx.companyNameBn || ctx.companyName || null,
+      legal_name: `${ctx.companyName || ctx.companySlug} Ltd.`,
+      trade_license_no: null,
+      bin_no: null,
+      tin_no: null,
+      business_type: 'printing_signage',
+      phone: ctx.phone || null,
+      whatsapp: ctx.phone || null,
+      email: ctx.userEmail || null,
+      website: null,
+      division_id: 1,
+      district_id: 1,
+      upazila_id: 1,
+      area: null,
+      address: 'Dhaka, Bangladesh',
+      address_bn: null,
+      currency: 'BDT',
+      default_locale: 'bn',
+      logo_url: null,
+      is_active: true,
+      settings: { vat_rate: 7.5, bilingual_invoicing: true },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
   }
-}
 
-function resolveCompanyBySlug(targetSlug?: string): CompanyRow {
-  const normSlug = (targetSlug || 'my-company').toLowerCase().trim()
-  const demoMatch = DEMO_COMPANIES.find((c) => c.slug === normSlug)
-  if (demoMatch) return demoMatch
+  const slug = (targetSlug || '').toLowerCase().trim()
+  if (!slug) return null
 
   const platformCompanies =
     PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-
-  const platMatch = platformCompanies.find((c) => c.slug === normSlug)
+  const platMatch = platformCompanies.find((c) => c.slug === slug || c.id === slug)
   if (platMatch) return platformCompanyToRow(platMatch)
 
   const profile = PrintERPDataStore.get<Partial<CompanyRow>>(STORAGE_KEYS.COMPANY_PROFILE)
-  if (profile && (profile.slug === normSlug || profile.name)) {
-    return { ...createSyntheticCompany(normSlug), ...profile, slug: normSlug } as CompanyRow
+  if (profile && (profile.slug === slug || profile.id === slug)) {
+    return {
+      id: profile.id || slug,
+      slug: profile.slug || slug,
+      name: profile.name || slug,
+      name_bn: profile.name_bn || null,
+      legal_name: profile.legal_name || null,
+      trade_license_no: profile.trade_license_no || null,
+      bin_no: profile.bin_no || null,
+      tin_no: profile.tin_no || null,
+      business_type: profile.business_type || 'printing_signage',
+      phone: profile.phone || null,
+      whatsapp: profile.whatsapp || null,
+      email: profile.email || null,
+      website: profile.website || null,
+      division_id: profile.division_id || 1,
+      district_id: profile.district_id || 1,
+      upazila_id: profile.upazila_id || 1,
+      area: profile.area || null,
+      address: profile.address || 'Dhaka, Bangladesh',
+      address_bn: profile.address_bn || null,
+      currency: profile.currency || 'BDT',
+      default_locale: profile.default_locale || 'bn',
+      logo_url: profile.logo_url || null,
+      is_active: profile.is_active ?? true,
+      settings: profile.settings || { vat_rate: 7.5, bilingual_invoicing: true },
+      created_at: profile.created_at || new Date().toISOString(),
+      updated_at: profile.updated_at || new Date().toISOString(),
+    }
   }
 
-  return createSyntheticCompany(normSlug)
+  return null
 }
 
-// Clean production export - no demo companies
 export const DEMO_COMPANIES: CompanyRow[] = []
 
 function getSessionFromContext(ctx?: ServerTenantContext | null): TenantSessionData | null {
-  if (!ctx) return null
+  if (!ctx || !ctx.userId) return null
   return {
     userId: ctx.userId,
     userEmail: ctx.userEmail,
@@ -124,6 +139,7 @@ function getSessionFromContext(ctx?: ServerTenantContext | null): TenantSessionD
     companyId: ctx.companyId,
     companySlug: ctx.companySlug,
     companyName: ctx.companyName,
+    companyNameBn: ctx.companyNameBn || null,
     branchId: ctx.branchId || null,
     branchName: ctx.branchName,
     role: ctx.companyRole,
@@ -144,7 +160,11 @@ function getSessionFromCookie(): TenantSessionData | null {
   if (!match) return null
   try {
     const raw = match.split('=')[1]
-    return JSON.parse(decodeURIComponent(raw))
+    const parsed = JSON.parse(decodeURIComponent(raw))
+    if (parsed && (parsed.userId || parsed.companyId || parsed.companySlug)) {
+      return parsed
+    }
+    return null
   } catch {
     return null
   }
@@ -161,78 +181,24 @@ export function TenantProvider({
 }) {
   const router = useRouter()
   const [company, setCompany] = useState<CompanyRow | null>(() => {
-    if (initialTenantContext?.companySlug) {
-      const match = resolveCompanyBySlug(initialTenantContext.companySlug)
-      return {
-        ...match,
-        id: initialTenantContext.companyId || match.id,
-        name: initialTenantContext.companyName || match.name,
-        name_bn:
-          initialTenantContext.companyNameBn ||
-          initialTenantContext.companyName ||
-          match.name_bn ||
-          match.name,
-        slug: initialTenantContext.companySlug,
-      }
-    }
-    const targetSlug = initialSlug || 'my-company'
-    return resolveCompanyBySlug(targetSlug)
+    return resolveCompanyFromContextOrStore(initialTenantContext, initialSlug)
   })
 
   const [availableCompanies, setAvailableCompanies] = useState<CompanyRow[]>(() => {
-    const activeCo = company || resolveCompanyBySlug(initialSlug || initialTenantContext?.companySlug || 'my-company')
+    const activeCo = resolveCompanyFromContextOrStore(initialTenantContext, initialSlug)
     return activeCo ? [activeCo] : []
   })
 
   const [session, setSession] = useState<TenantSessionData | null>(() => {
     const fromCtx = getSessionFromContext(initialTenantContext)
     if (fromCtx) return fromCtx
-    const fromCookie = getSessionFromCookie()
-    if (fromCookie) return fromCookie
-
-    const targetSlug = initialSlug || initialTenantContext?.companySlug || 'my-company'
-    const targetCo = resolveCompanyBySlug(targetSlug)
-    return {
-      userId: 'usr-owner',
-      userEmail: targetCo.email || `owner@${targetCo.slug}.com`,
-      fullName: targetCo.name ? `${targetCo.name} Admin` : 'Business Owner',
-      fullNameBn: targetCo.name_bn ? `${targetCo.name_bn} অ্যাডমিন` : 'প্রতিষ্ঠান প্রধান',
-      phone: targetCo.phone || null,
-      companyId: targetCo.id,
-      companySlug: targetCo.slug,
-      companyName: targetCo.name,
-      companyNameBn: targetCo.name_bn || null,
-      branchId: null,
-      role: 'business_owner',
-      primaryRole: 'business_owner',
-      responsibilities: ['business_owner'],
-      permissions: ['*'],
-      loginTime: new Date().toISOString(),
-      token: '',
-    }
+    return getSessionFromCookie()
   })
 
   const [branches] = useState<BranchRow[]>([])
-  const [settings, setSettings] = useState<CompanySettingsRow | null>(() => {
-    return {
-      id: 'cs-default',
-      company_id: '',
-      invoice_prefix: 'INV',
-      quotation_prefix: 'QUO',
-      challan_prefix: 'CHL',
-      vat_enabled: false,
-      vat_rate: 0,
-      default_currency: 'BDT',
-      default_language: 'bn',
-      phone: null,
-      whatsapp: null,
-      email: null,
-      logo_url: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-  })
+  const [settings, setSettings] = useState<CompanySettingsRow | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [syncedUser, setSyncedUser] = useState<CompanyUserWithProfile | null>(null)
 
   // Map session role to TenantRole ('owner' | 'manager' | 'operator' | etc.)
   const currentRole: TenantRole = session?.role
@@ -251,8 +217,6 @@ export function TenantProvider({
       : (session.role as TenantRole) || 'owner'
     : 'owner'
 
-  const [syncedUser, setSyncedUser] = useState<CompanyUserWithProfile | null>(null)
-
   // Resolve current user details deterministically
   const currentUser: CompanyUserWithProfile | null = useMemo(() => {
     if (!session) return null
@@ -262,15 +226,15 @@ export function TenantProvider({
       id: session.userId,
       company_id: session.companyId,
       user_id: session.userId,
-      branch_id: session.branchId || 'br-001',
+      branch_id: session.branchId || 'br-main',
       status: 'active',
       department: 'Operations',
       responsibilities: session.responsibilities || [session.role],
       overrides: {},
       data_scopes: {},
       invited_email: null,
-      created_at: session.loginTime || '2026-01-01T00:00:00.000Z',
-      updated_at: session.loginTime || '2026-01-01T00:00:00.000Z',
+      created_at: session.loginTime || new Date().toISOString(),
+      updated_at: session.loginTime || new Date().toISOString(),
       profile: {
         id: session.userId,
         email: session.userEmail,
@@ -280,17 +244,17 @@ export function TenantProvider({
         avatar_url: null,
         preferred_locale: 'bn',
         is_active: true,
-        created_at: session.loginTime || '2026-01-01T00:00:00.000Z',
-        updated_at: session.loginTime || '2026-01-01T00:00:00.000Z',
+        created_at: session.loginTime || new Date().toISOString(),
+        updated_at: session.loginTime || new Date().toISOString(),
       },
       roles: [],
-      branch: branches.find((b) => b.id === session.branchId) || branches[0],
+      branch: branches.find((b) => b.id === session.branchId) || null,
     }
   }, [session, branches, syncedUser])
 
   const currentBranch = session?.branchId
-    ? branches.find((b) => b.id === session.branchId) || branches[0]
-    : branches[0]
+    ? branches.find((b) => b.id === session.branchId) || null
+    : branches[0] || null
 
   const responsibilities = session?.responsibilities || (currentUser?.responsibilities || [])
   const permissions = session?.permissions || []
@@ -314,16 +278,8 @@ export function TenantProvider({
       activeSession?.companySlug ||
       initialTenantContext?.companySlug ||
       ''
-    const resolved = resolveCompanyBySlug(targetSlug)
-    if (activeSession?.companyName) {
-      setCompany({
-        ...resolved,
-        id: activeSession.companyId || resolved.id,
-        name: activeSession.companyName,
-        name_bn: activeSession.companyNameBn || activeSession.companyName || resolved.name_bn,
-        slug: activeSession.companySlug || resolved.slug,
-      })
-    } else {
+    const resolved = resolveCompanyFromContextOrStore(initialTenantContext, targetSlug)
+    if (resolved) {
       setCompany(resolved)
     }
 
@@ -335,20 +291,11 @@ export function TenantProvider({
     const platformCompanies =
       PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
     const converted = platformCompanies.map(platformCompanyToRow)
-    const activeResolved = activeSession?.companyName
-      ? {
-          ...resolved,
-          id: activeSession.companyId || resolved.id,
-          name: activeSession.companyName,
-          name_bn: activeSession.companyNameBn || activeSession.companyName || resolved.name_bn,
-          slug: activeSession.companySlug || resolved.slug,
-        }
-      : resolved
 
-    if (activeResolved && !converted.some((c) => c.slug === activeResolved.slug)) {
-      setAvailableCompanies([activeResolved, ...converted])
+    if (resolved && !converted.some((c) => c.slug === resolved.slug)) {
+      setAvailableCompanies([resolved, ...converted])
     } else {
-      setAvailableCompanies(converted.length > 0 ? converted : activeResolved ? [activeResolved] : [])
+      setAvailableCompanies(converted.length > 0 ? converted : resolved ? [resolved] : [])
     }
   }, [initialSlug, initialTenantContext])
 
@@ -398,10 +345,9 @@ export function TenantProvider({
 
   const switchCompany = async (slug: string) => {
     setIsLoading(true)
-    const target = availableCompanies.find((c) => c.slug === slug) || resolveCompanyBySlug(slug)
+    const target = availableCompanies.find((c) => c.slug === slug)
     if (target) {
-      const profile = PrintERPDataStore.get<Partial<CompanyRow>>(STORAGE_KEYS.COMPANY_PROFILE)
-      setCompany(profile ? { ...target, ...profile } : target)
+      setCompany(target)
       if (typeof window !== 'undefined') {
         try {
           const storedSession = getSessionFromCookie() || session
@@ -422,7 +368,6 @@ export function TenantProvider({
     }
     setIsLoading(false)
   }
-
 
   return (
     <TenantContext.Provider
@@ -446,53 +391,11 @@ export function TenantProvider({
   )
 }
 
-function getFallbackSlug(): string {
-  if (typeof window !== 'undefined') {
-    const pathname = window.location.pathname || ''
-    const parts = pathname.split('/').filter(Boolean)
-    if (parts.length > 0) {
-      const first = parts[0]
-      const reserved = [
-        'login',
-        'register',
-        'onboarding',
-        'pricing',
-        'platform',
-        'platform-admin',
-        'terms',
-        'privacy',
-        'about',
-        'contact',
-        'faq',
-        'solutions',
-        'features',
-        'api',
-        '403',
-        'error',
-        'not-found',
-      ]
-      if (!reserved.includes(first)) {
-        return first
-      }
-    }
-  }
-  return 'vision-sign'
-}
-
 function getFallbackTenantContext(): TenantContextType {
   const activeSession = getSessionFromCookie()
-  const targetSlug = activeSession?.companySlug || getFallbackSlug()
-  const resolvedCompany = resolveCompanyBySlug(targetSlug)
-
-  const company: CompanyRow = activeSession?.companyName
-    ? {
-        ...resolvedCompany,
-        id: activeSession.companyId || resolvedCompany.id,
-        name: activeSession.companyName,
-        name_bn: activeSession.companyNameBn || resolvedCompany.name_bn || activeSession.companyName,
-        slug: activeSession.companySlug || resolvedCompany.slug,
-      }
-    : resolvedCompany
+  const resolvedCompany = activeSession
+    ? resolveCompanyFromContextOrStore(null, activeSession.companySlug || activeSession.companyId)
+    : null
 
   const currentRole: TenantRole = activeSession?.role
     ? activeSession.role === 'business_owner'
@@ -510,63 +413,47 @@ function getFallbackTenantContext(): TenantContextType {
       : (activeSession.role as TenantRole) || 'owner'
     : 'owner'
 
-  const currentUser: CompanyUserWithProfile = {
-    id: activeSession?.userId || 'usr-owner',
-    company_id: company.id,
-    user_id: activeSession?.userId || 'usr-owner',
-    branch_id: activeSession?.branchId || 'br-001',
-    status: 'active',
-    department: 'Management',
-    responsibilities: activeSession?.responsibilities || ['business_owner'],
-    overrides: {},
-    data_scopes: {},
-    invited_email: null,
-    created_at: activeSession?.loginTime || '2026-01-01T00:00:00.000Z',
-    updated_at: activeSession?.loginTime || '2026-01-01T00:00:00.000Z',
-    profile: {
-      id: activeSession?.userId || 'usr-owner',
-      email: activeSession?.userEmail || company.email || `owner@${company.slug}.com`,
-      full_name: activeSession?.fullName || `${company.name} Admin`,
-      full_name_bn: activeSession?.fullNameBn || (company.name_bn ? `${company.name_bn} অ্যাডমিন` : 'প্রতিষ্ঠান প্রধান'),
-      phone: activeSession?.phone || company.phone || null,
-      avatar_url: null,
-      preferred_locale: 'bn',
-      is_active: true,
-      created_at: activeSession?.loginTime || '2026-01-01T00:00:00.000Z',
-      updated_at: activeSession?.loginTime || '2026-01-01T00:00:00.000Z',
-    },
-    roles: [],
-    branch: null,
-  }
-
-  const defaultSettings: CompanySettingsRow = {
-    id: 'cs-default',
-    company_id: company.id,
-    invoice_prefix: 'INV',
-    quotation_prefix: 'QUO',
-    challan_prefix: 'CHL',
-    vat_enabled: false,
-    vat_rate: 0,
-    default_currency: 'BDT',
-    default_language: 'bn',
-    phone: company.phone || null,
-    whatsapp: company.whatsapp || null,
-    email: company.email || null,
-    logo_url: company.logo_url || null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
+  const currentUser: CompanyUserWithProfile | null = activeSession
+    ? {
+        id: activeSession.userId,
+        company_id: activeSession.companyId,
+        user_id: activeSession.userId,
+        branch_id: activeSession.branchId || null,
+        status: 'active',
+        department: 'Operations',
+        responsibilities: activeSession.responsibilities || [activeSession.role],
+        overrides: {},
+        data_scopes: {},
+        invited_email: null,
+        created_at: activeSession.loginTime || new Date().toISOString(),
+        updated_at: activeSession.loginTime || new Date().toISOString(),
+        profile: {
+          id: activeSession.userId,
+          email: activeSession.userEmail,
+          full_name: activeSession.fullName || 'User',
+          full_name_bn: activeSession.fullNameBn || null,
+          phone: activeSession.phone || null,
+          avatar_url: null,
+          preferred_locale: 'bn',
+          is_active: true,
+          created_at: activeSession.loginTime || new Date().toISOString(),
+          updated_at: activeSession.loginTime || new Date().toISOString(),
+        },
+        roles: [],
+        branch: null,
+      }
+    : null
 
   return {
-    company,
+    company: resolvedCompany,
     currentRole,
     currentUser,
     currentBranch: null,
-    responsibilities: activeSession?.responsibilities?.length ? activeSession.responsibilities : ['business_owner'],
-    permissions: activeSession?.permissions?.length ? activeSession.permissions : ['*'],
-    availableCompanies: [company],
+    responsibilities: activeSession?.responsibilities || [],
+    permissions: activeSession?.permissions || [],
+    availableCompanies: resolvedCompany ? [resolvedCompany] : [],
     branches: [],
-    settings: defaultSettings,
+    settings: null,
     isLoading: false,
     switchCompany: async (slug: string) => {
       if (typeof window !== 'undefined') {
@@ -584,4 +471,3 @@ export function useTenant() {
   }
   return ctx
 }
-

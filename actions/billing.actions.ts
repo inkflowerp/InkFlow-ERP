@@ -54,8 +54,8 @@ export async function createInvoiceAction(
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
-      tenant.permissions.includes('*') ||
-      tenant.permissions.includes('invoice.create')
+      tenant.permissions.includes('invoice.create') ||
+      tenant.permissions.includes('invoices.create')
 
     if (!hasPermission) {
       return { success: false, error: 'Unauthorized: You do not have permission to create invoices.' }
@@ -133,8 +133,8 @@ export async function recordPaymentAction(
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
-      tenant.permissions.includes('*') ||
-      tenant.permissions.includes('payment.create')
+      tenant.permissions.includes('payment.create') ||
+      tenant.permissions.includes('payments.create')
 
     if (!hasPermission) {
       return { success: false, error: 'Unauthorized: You do not have permission to record payments.' }

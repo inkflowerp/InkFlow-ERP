@@ -8,6 +8,7 @@ import { AuditService } from '@/services/audit.service'
 import { checkRateLimit } from '@/lib/security/rate-limiter'
 import { TENANT_SESSION_COOKIE, TenantSessionData } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
+import { MODULE_ACTION_SPECS } from '@/types/rbac.types'
 
 import { createClient } from '@/lib/supabase/server'
 
@@ -136,6 +137,10 @@ export async function signUpAction(data: {
     }
   }
 
+  const ownerPermissions = Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
+    spec.actions.map((act) => `${mod}.${act}`)
+  )
+
   const initialSession: TenantSessionData = {
     userId: result.data.userId,
     userEmail: data.email.trim().toLowerCase(),
@@ -151,7 +156,7 @@ export async function signUpAction(data: {
     role: 'business_owner',
     primaryRole: 'business_owner',
     responsibilities: ['business_owner'],
-    permissions: ['*'],
+    permissions: ownerPermissions,
     loginTime: new Date().toISOString(),
     token: `auth-${result.data.userId}`,
   }

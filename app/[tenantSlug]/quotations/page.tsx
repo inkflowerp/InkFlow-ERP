@@ -92,7 +92,7 @@ export default function QuotationsPage() {
 
     const newQuote: QuotationRecord = {
       id: `quo-${Date.now()}`,
-      company_id: company?.id || 'co-main',
+      company_id: company?.id || '',
       quotation_number: quoteNum,
       customer_id: customer.id,
       customer_name: customer.name,

@@ -19,8 +19,9 @@ export async function createCompanyUserAction(params: {
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('employees.manage') &&
+      !tenant.permissions.includes('users.manage'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
   }
@@ -54,8 +55,9 @@ export async function inviteUserAction(
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('employees.manage') &&
+      !tenant.permissions.includes('users.manage'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
   }
@@ -87,8 +89,9 @@ export async function toggleUserStatusAction(
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('employees.manage') &&
+      !tenant.permissions.includes('users.manage'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
   }
@@ -112,8 +115,9 @@ export async function changeUserRoleAction(
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('employees.manage') &&
+      !tenant.permissions.includes('users.manage'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
   }
@@ -136,8 +140,9 @@ export async function assignUserBranchAction(
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('employees.manage') &&
+      !tenant.permissions.includes('users.manage'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient branch assignment permissions.' }
   }
@@ -174,8 +179,9 @@ export async function updateUserAccessAndPermissionsAction(params: {
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('employees.manage') &&
+      !tenant.permissions.includes('users.manage'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient permissions to modify user access.' }
   }
@@ -193,8 +199,9 @@ export async function resetUserAccessAction(email: string) {
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('employees.manage') &&
+      !tenant.permissions.includes('users.manage'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
   }

@@ -80,7 +80,7 @@ export default function PurchasesPage() {
 
     const newPO: PurchaseOrderRecord = {
       id: `po-${Date.now()}`,
-      company_id: company?.id || 'co-main',
+      company_id: company?.id || '',
       po_number: poNum,
       supplier_id: supplier.id,
       supplier_name: supplier.supplier_name,

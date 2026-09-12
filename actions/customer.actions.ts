@@ -75,8 +75,8 @@ export async function createCustomerAction(
     // 2. RBAC check: Customer -> Create
     const canCreate =
       role === 'business_owner' ||
-      tenant?.permissions.includes('*') ||
       tenant?.permissions.includes('customer.create') ||
+      tenant?.permissions.includes('customers.create') ||
       checkPermission(role, 'customer.create')
 
     if (!canCreate) {
@@ -241,8 +241,8 @@ export async function updateCustomerAction(
     // 1. RBAC check: Customer -> Edit
     const canEdit =
       role === 'business_owner' ||
-      tenant?.permissions.includes('*') ||
       tenant?.permissions.includes('customer.edit') ||
+      tenant?.permissions.includes('customers.edit') ||
       checkPermission(role, 'customer.edit')
 
     if (!canEdit) {
@@ -303,8 +303,8 @@ export async function deleteCustomerAction(
 
     const canDelete =
       role === 'business_owner' ||
-      tenant?.permissions.includes('*') ||
       tenant?.permissions.includes('customer.delete') ||
+      tenant?.permissions.includes('customers.delete') ||
       checkPermission(role, 'customer.delete')
 
     if (!canDelete) {

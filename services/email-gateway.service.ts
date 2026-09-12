@@ -16,6 +16,7 @@ import type {
   EmailScopeType,
 } from '../types/communication.types.ts'
 import { decryptSecret, encryptSecret, sanitizeGatewayRecord } from '../lib/security/encryption.ts'
+import { isTestEnvironment } from '../lib/security/runtime-env.ts'
 import { createEmailProvider } from '../lib/email/provider.factory.ts'
 import type { DecryptedGatewayConfig } from '../lib/email/types.ts'
 import {
@@ -89,6 +90,19 @@ export class EmailGatewayService {
   ): Promise<EmailGatewayRecord | null> {
     const effectiveScope: EmailScopeType = scopeType || (tenantId ? 'TENANT' : 'PLATFORM')
 
+    // In unit testing environment, prioritize in-memory mock store
+    if (isTestEnvironment()) {
+      const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+      if (effectiveScope === 'TENANT') {
+        if (!tenantId) return null
+        const tenantLocal = localGateways.find((g) => g.tenant_id === tenantId && g.status === 'active')
+        return tenantLocal || null
+      } else {
+        const platformLocal = localGateways.find((g) => !g.tenant_id && g.status === 'active')
+        return platformLocal || DEFAULT_PLATFORM_GATEWAY
+      }
+    }
+
     try {
       const adminClient = createAdminClient()
 
@@ -109,15 +123,6 @@ export class EmailGatewayService {
           return tenantGw as EmailGatewayRecord
         }
 
-        // Check local data store for tenant gateway
-        const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
-        const tenantLocal = localGateways.find(
-          (g) => g.tenant_id === tenantId && g.status === 'active'
-        )
-        if (tenantLocal) {
-          return tenantLocal
-        }
-
         // STRICT ISOLATION: No fallback to Platform gateway for tenant events!
         return null
       }
@@ -135,26 +140,9 @@ export class EmailGatewayService {
         return platformGw as EmailGatewayRecord
       }
 
-      // Check local data store for platform gateway
-      const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
-      const platformLocal = localGateways.find(
-        (g) => !g.tenant_id && g.is_default && g.status === 'active'
-      )
-      if (platformLocal) {
-        return platformLocal
-      }
-
-      // Fallback only for platform scope during test / dev
-      if (process.env.NODE_ENV === 'test' || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        return DEFAULT_PLATFORM_GATEWAY
-      }
-
       return null
     } catch (err) {
       console.warn('[EmailGatewayService] Database gateway resolution error:', err)
-      if (effectiveScope === 'PLATFORM' && (process.env.NODE_ENV === 'test' || !process.env.SUPABASE_SERVICE_ROLE_KEY)) {
-        return DEFAULT_PLATFORM_GATEWAY
-      }
       return null
     }
   }
@@ -166,6 +154,16 @@ export class EmailGatewayService {
     eventType: string,
     tenantId?: string | null
   ): Promise<EmailTemplateRecord | null> {
+    if (isTestEnvironment()) {
+      const localTemplates =
+        EmailDataStore.get<EmailTemplateRecord[]>('printerp_email_templates') || []
+      const foundLocal =
+        localTemplates.find((t) => t.tenant_id === tenantId && t.event_type === eventType) ||
+        localTemplates.find((t) => !t.tenant_id && t.event_type === eventType)
+      if (foundLocal) return foundLocal
+      return DEFAULT_EMAIL_TEMPLATES.find((t) => t.event_type === eventType) || null
+    }
+
     try {
       const adminClient = createAdminClient()
 
@@ -746,11 +744,13 @@ export class EmailGatewayService {
       created_at: new Date().toISOString(),
     }
 
-    try {
-      const adminClient = createAdminClient()
-      await (adminClient as any).from('email_logs').insert(record)
-    } catch {
-      // Local fallback
+    if (!isTestEnvironment()) {
+      try {
+        const adminClient = createAdminClient()
+        await (adminClient as any).from('email_logs').insert(record)
+      } catch {
+        // Local fallback
+      }
     }
 
     // Always keep in local data store for instant UI reactivity

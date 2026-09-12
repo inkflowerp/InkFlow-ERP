@@ -4,15 +4,14 @@
 // Guards all tenant operations against cross-tenant data access.
 // ==============================================================================
 
-import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
 import { cache } from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { TenantContext, TenantRole, TenantSessionData, TENANT_SESSION_COOKIE } from './types'
-import { TenantRepository } from '@/lib/repositories/tenant.repository'
-import { getCurrentPlatformUser } from './platform-auth'
-import { MODULE_ACTION_SPECS } from '@/types/rbac.types'
+import { createClient } from '../supabase/server.ts'
+import { createAdminClient } from '../supabase/admin.ts'
+import type { TenantContext, TenantRole, TenantSessionData } from './types.ts'
+import { TENANT_SESSION_COOKIE } from './types.ts'
+import { TenantRepository } from '../repositories/tenant.repository.ts'
+import { getCurrentPlatformUser } from './platform-auth.ts'
+import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
 
 const SUPPORT_COOKIE_NAME = 'printerp_support_tenant'
 
@@ -24,6 +23,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
   requestedSlugOrId?: string
 ): Promise<TenantContext | null> {
   try {
+    const { cookies } = await import('next/headers')
     const cookieStore = await cookies()
 
     // 1. Check for Platform Support Mode session if platform admin is viewing as tenant
@@ -93,142 +93,106 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       }
     }
 
-    // 2. Query Authoritative Supabase Auth Session
+    // 2. Query Authoritative Supabase Auth Session (Mandatory)
     let user: any = null
     try {
       const supabase = await createClient()
-      const { data } = await supabase.auth.getUser()
-      user = data?.user
-    } catch {}
-
-    const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
-    let sessionData: TenantSessionData | null = null
-    if (sessionCookie) {
-      try {
-        sessionData = JSON.parse(decodeURIComponent(sessionCookie))
-      } catch {
-        try {
-          sessionData = JSON.parse(sessionCookie)
-        } catch {}
+      const { data, error: authError } = await supabase.auth.getUser()
+      if (authError || !data?.user?.id) {
+        return null // FAIL CLOSED: Unauthenticated in Supabase
       }
+      user = data.user
+    } catch {
+      return null // FAIL CLOSED: Supabase client unavailable
     }
 
-    const resolvedUserId = user?.id || sessionData?.userId
-
-    if (!resolvedUserId && !sessionData) {
-      return null
+    if (!user?.id) {
+      return null // FAIL CLOSED
     }
 
     // Hard Security Boundary: Platform Administrator accounts cannot resolve tenant context as a tenant user
-    if (user?.id) {
-      try {
-        const adminClient = createAdminClient()
-        const { data: platformAdmin } = await (adminClient as any)
-          .from('platform_admins')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .maybeSingle()
+    try {
+      const adminClient = createAdminClient()
+      const { data: platformAdmin } = await (adminClient as any)
+        .from('platform_admins')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle()
 
-        if (platformAdmin) {
-          return null
-        }
-      } catch {}
+      if (platformAdmin) {
+        return null // Platform admins must use explicit support mode to access tenant scope
+      }
+    } catch {
+      // Non-blocking
     }
 
-    // Attempt DB membership resolution
+    // 3. Authoritative DB membership resolution from company_users & companies
     let membership: any = null
-    if (resolvedUserId) {
-      try {
-        membership = await TenantRepository.resolveUserMembership(resolvedUserId, requestedSlugOrId)
-      } catch {}
+    try {
+      membership = await TenantRepository.resolveUserMembership(user.id, requestedSlugOrId)
+    } catch {
+      return null // FAIL CLOSED
     }
 
-    if (membership) {
-      const { company, companyUser, effectivePermissions, primaryRole } = membership
+    if (!membership || !membership.company || !membership.companyUser) {
+      return null // FAIL CLOSED: No active company membership found
+    }
 
-      // Validate tenant boundary if requested
-      if (
-        requestedSlugOrId &&
-        company.slug !== requestedSlugOrId &&
-        company.id !== requestedSlugOrId
-      ) {
-        if (requestedSlugOrId === 'app' || requestedSlugOrId === 'my-company') {
-          // Allow access under alias
-        } else {
-          return null
+    const { company, companyUser, effectivePermissions, primaryRole } = membership
+
+    // Validate tenant boundary if specific slug/id requested
+    if (
+      requestedSlugOrId &&
+      company.slug !== requestedSlugOrId.toLowerCase().trim() &&
+      company.id !== requestedSlugOrId
+    ) {
+      return null // FAIL CLOSED: Access to non-member company denied
+    }
+
+    // Optional auxiliary cookie session data for display preferences only
+    let displayPhone = companyUser.profile?.phone || null
+    let displayFullNameBn = companyUser.profile?.full_name_bn || null
+    try {
+      const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
+      if (sessionCookie) {
+        const parsed = JSON.parse(decodeURIComponent(sessionCookie))
+        if (parsed && (parsed.userId === user.id || parsed.userEmail === user.email)) {
+          if (parsed.phone) displayPhone = parsed.phone
+          if (parsed.fullNameBn) displayFullNameBn = parsed.fullNameBn
         }
       }
-
-      return {
-        userId: resolvedUserId,
-        userEmail: user?.email || companyUser.profile?.email || sessionData?.userEmail || '',
-        fullName: companyUser.profile?.full_name || sessionData?.fullName || user?.email?.split('@')[0] || 'User',
-        fullNameBn: companyUser.profile?.full_name_bn || sessionData?.fullNameBn || null,
-        phone: companyUser.profile?.phone || sessionData?.phone || null,
-        companyId: company.id,
-        companySlug: company.slug,
-        companyName: company.name,
-        companyNameBn: company.name_bn || company.name,
-        companyRole: (companyUser.roles?.[0]?.slug as TenantRole) || (primaryRole as TenantRole) || 'business_owner',
-        primaryRole: primaryRole as any,
-        branchId: companyUser.branch_id || undefined,
-        branchName: companyUser.branch?.name,
-        responsibilities: companyUser.responsibilities || [primaryRole],
-        permissions: effectivePermissions,
-      }
+    } catch {
+      // Non-blocking
     }
 
-    // Fallback to verified TenantSessionData (for offline, trial, demo tenants, or non-DB synced sessions)
-    if (sessionData) {
-      const targetSlug = requestedSlugOrId || sessionData.companySlug || 'my-company'
-      
-      return {
-        userId: sessionData.userId || user?.id || 'usr-owner',
-        userEmail: sessionData.userEmail || user?.email || `owner@${targetSlug}.com`,
-        fullName: sessionData.fullName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Business Owner',
-        fullNameBn: sessionData.fullNameBn || 'প্রতিষ্ঠান প্রধান',
-        phone: sessionData.phone || user?.user_metadata?.phone || null,
-        companyId: sessionData.companyId || `co-${targetSlug}`,
-        companySlug: targetSlug,
-        companyName: sessionData.companyName || targetSlug,
-        companyNameBn: sessionData.companyNameBn || sessionData.companyName || targetSlug,
-        companyRole: sessionData.role || 'business_owner',
-        primaryRole: sessionData.primaryRole || 'business_owner',
-        branchId: sessionData.branchId || undefined,
-        branchName: sessionData.branchName,
-        responsibilities: sessionData.responsibilities?.length ? sessionData.responsibilities : ['business_owner'],
-        permissions: sessionData.permissions?.length ? sessionData.permissions : ['*'],
-      }
+    return {
+      userId: user.id,
+      userEmail: user.email || companyUser.profile?.email || '',
+      fullName: companyUser.profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+      fullNameBn: displayFullNameBn,
+      phone: displayPhone,
+      companyId: company.id,
+      companySlug: company.slug,
+      companyName: company.name,
+      companyNameBn: company.name_bn || company.name,
+      companyRole: (companyUser.roles?.[0]?.slug as TenantRole) || (primaryRole as TenantRole) || 'business_owner',
+      primaryRole: primaryRole as any,
+      branchId: companyUser.branch_id || undefined,
+      branchName: companyUser.branch?.name,
+      responsibilities: companyUser.responsibilities || [primaryRole],
+      permissions: effectivePermissions || [],
     }
-
-    // Fallback for authenticated Supabase user without DB membership row
-    if (user?.id) {
-      const targetSlug = requestedSlugOrId || 'my-company'
-      return {
-        userId: user.id,
-        userEmail: user.email || `owner@${targetSlug}.com`,
-        fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Business Owner',
-        fullNameBn: 'প্রতিষ্ঠান প্রধান',
-        phone: user.user_metadata?.phone || null,
-        companyId: `co-${targetSlug}`,
-        companySlug: targetSlug,
-        companyName: targetSlug,
-        companyNameBn: targetSlug,
-        companyRole: 'business_owner',
-        primaryRole: 'business_owner',
-        branchId: undefined,
-        branchName: 'Main Branch',
-        responsibilities: ['business_owner'],
-        permissions: ['*'],
-      }
-    }
-
-    return null
   } catch {
-    return null
+    return null // FAIL CLOSED
   }
 })
+
+async function safeTenantRedirect(path: string): Promise<never> {
+  const { redirect } = await import('next/navigation')
+  redirect(path)
+  throw new Error(`Redirecting to ${path}`)
+}
 
 /**
  * Strict server-side guard for tenant routes (e.g. /app/* or /[tenantSlug]/*).
@@ -239,10 +203,11 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
 
   if (!tenantContext) {
     try {
+      const { cookies } = await import('next/headers')
       const cookieStore = await cookies()
       const hasPlatformCookie = Boolean(cookieStore.get('printerp_platform_session')?.value)
       if (hasPlatformCookie) {
-        redirect('/platform')
+        await safeTenantRedirect('/platform')
       }
     } catch (e: any) {
       if (e?.digest?.includes('NEXT_REDIRECT') || e?.message?.includes('NEXT_REDIRECT')) {
@@ -250,7 +215,8 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
       }
     }
 
-    redirect(`/login${requestedSlugOrId ? `?error=unauthorized&redirectTo=/${requestedSlugOrId}/dashboard` : '?error=unauthorized'}`)
+    await safeTenantRedirect(`/login${requestedSlugOrId ? `?error=unauthorized&redirectTo=/${requestedSlugOrId}/dashboard` : '?error=unauthorized'}`)
+    throw new Error('Unauthorized tenant user')
   }
 
   return tenantContext
@@ -274,21 +240,24 @@ export async function requireTenantPermission(
     tenant.permissions.includes(requiredPermission.split('.')[0] + '.full_control')
 
   if (!hasPerm) {
-    redirect(`/403?type=tenant&missing=${requiredPermission}`)
+    await safeTenantRedirect(`/403?type=tenant&missing=${requiredPermission}`)
   }
 
   return tenant
 }
 
 /**
- * Verifies if user has access to a specific branch scope
+ * Verifies if user has access to a specific branch scope.
+ * FAILS CLOSED: Unassigned branch users are denied access to branch-scoped resources.
  */
 export function hasBranchAccess(
   userBranchId: string | null | undefined,
   targetBranchId: string | null | undefined,
   isOwnerOrAdmin: boolean = false
 ): boolean {
-  if (isOwnerOrAdmin || !targetBranchId || !userBranchId) return true
+  if (isOwnerOrAdmin) return true
+  if (!targetBranchId) return true // Unscoped resource: accessible subject to company-level permissions
+  if (!userBranchId) return false // User has no assigned branch: denied for branch-scoped resource
   return userBranchId === targetBranchId
 }
 
@@ -301,27 +270,7 @@ export async function getTenantRedirectSlug(): Promise<string> {
     return tenant.companySlug
   }
 
-  try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
-    if (sessionCookie) {
-      const parsed = JSON.parse(sessionCookie)
-      if (parsed?.companySlug) return parsed.companySlug
-    }
-
-    const supportCookie = cookieStore.get(SUPPORT_COOKIE_NAME)?.value
-    if (supportCookie) {
-      const parsed = JSON.parse(supportCookie)
-      if (parsed?.targetCompanySlug) return parsed.targetCompanySlug
-    }
-
-    const companies = await TenantRepository.getAllCompanies()
-    if (companies && companies.length > 0 && companies[0].slug) {
-      return companies[0].slug
-    }
-  } catch {
-    // fallback gracefully
-  }
-
-  redirect('/login')
+  await safeTenantRedirect('/login')
+  throw new Error('Redirecting to login')
 }
+

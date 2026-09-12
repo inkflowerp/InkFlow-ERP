@@ -78,16 +78,9 @@ function getInitialSubscription(
     try {
       const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
       if (storedSubs) {
-        const normNoCo = companyId ? companyId.replace(/^co-/, '') : ''
-        const slugNoCo = companySlug ? companySlug.replace(/^co-/, '') : ''
         const matched =
-          storedSubs[companyId] ||
-          (normNoCo ? storedSubs[normNoCo] : null) ||
-          (normNoCo ? storedSubs[`co-${normNoCo}`] : null) ||
-          (companySlug ? storedSubs[companySlug] : null) ||
-          (slugNoCo ? storedSubs[slugNoCo] : null) ||
-          (slugNoCo ? storedSubs[`co-${slugNoCo}`] : null) ||
-          storedSubs['default']
+          (companyId ? storedSubs[companyId] : null) ||
+          (companySlug ? storedSubs[companySlug] : null)
         if (matched) {
           memoryCachedSubscriptions[companyId] = matched
           if (companySlug) memoryCachedSubscriptions[companySlug] = matched

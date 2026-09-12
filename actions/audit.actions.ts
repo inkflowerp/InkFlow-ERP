@@ -12,8 +12,8 @@ export async function getAuditLogsAction(searchTerm?: string) {
   // Audit logs require owner or view permissions
   if (
     tenant.companyRole !== 'business_owner' &&
-    !tenant.permissions.includes('*') &&
-    !tenant.permissions.includes('settings.view')
+    !tenant.permissions.includes('settings.view') &&
+    !tenant.permissions.includes('audit.view')
   ) {
     return { success: false, error: 'Unauthorized: Insufficient permissions to view audit records.' }
   }

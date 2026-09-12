@@ -252,7 +252,7 @@ export function DashboardView() {
   const handleCreateCustomer = (e: React.FormEvent) => {
     e.preventDefault()
     if (!customerName.trim()) return
-    const companyId = company?.id || 'co-main'
+    const companyId = company?.id || ''
     const newCust: CustomerRecord = {
       id: `cust-${Date.now()}`,
       company_id: companyId,
@@ -308,7 +308,7 @@ export function DashboardView() {
     const expNum = `EXP-${Date.now().toString().slice(-4)}`
     const newExp: ExpenseRecord = {
       id: `exp-${Date.now()}`,
-      company_id: company?.id || 'co-main',
+      company_id: company?.id || '',
       expense_number: expNum,
       expense_date: new Date().toISOString().split('T')[0],
       category: (expenseCategory as any) || 'maintenance',
@@ -332,7 +332,7 @@ export function DashboardView() {
     if (!materialName.trim()) return
     const newMat: MaterialRecord = {
       id: `mat-${Date.now()}`,
-      company_id: company?.id || 'co-main',
+      company_id: company?.id || '',
       sku: `MAT-${Date.now().toString().slice(-4)}`,
       name: materialName.trim(),
       name_bn: materialName.trim(),

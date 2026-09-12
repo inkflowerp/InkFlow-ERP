@@ -176,12 +176,14 @@ npm run lint
 
 ---
 
-## 8. Production Security Hardening
-
 - **Content Security Policy (CSP) & Headers**: Configured in `vercel.json` with `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and `Strict-Transport-Security`.
+- **Authoritative Identity Chains**: Supabase Auth `auth.uid()` ➔ Server Authorization ➔ PostgreSQL RLS ➔ Secure Services ➔ UI. (UI is never a security boundary).
+- **Fail-Closed Operations**: Zero synthetic fallbacks (`co-${slug}`, `co-main`, `my-company`, `permissions: ['*']`). Mismatched or absent memberships fail closed with 401/403.
+- **SECURITY DEFINER Hardening**: All PostgreSQL functions enforce fixed `SET search_path = public, pg_temp` and caller authorization checks.
 - **Signed Storage URLs**: Confidential customer vector artwork and financial receipts use short-lived HMAC signed tokens with private cache headers.
-- **API Rate Limiting**: Enforces sliding-window 120 requests/minute per tenant endpoint.
-- **Database Quarantine**: Row Level Security ensures that even direct SQL queries cannot cross company boundaries.
+- **API Rate Limiting & Webhook Idempotency**: Enforces sliding-window 120 requests/minute per tenant endpoint, cryptographic signature verification, replay protection, and database-level unique transaction idempotency.
+- **Database Quarantine**: Row Level Security (RLS) policies audited and verified across all tenant and platform tables (53 migrations).
+- **Credential Rotation Notice**: Supabase service-role keys must never be committed or accessible client-side (`server-only` protection enforced in `lib/supabase/admin.ts`). Rotate production service-role credentials upon new environment deployments.
 
 ---
 

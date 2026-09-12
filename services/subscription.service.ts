@@ -1704,7 +1704,7 @@ export function getTenantResourceUsage(
   const branches = PrintERPDataStore.get<any[]>(STORAGE_KEYS.BRANCHES) || []
 
   const isCoMatch = (item: any) =>
-    !item.company_id || item.company_id === companyId || item.company_id === 'default' || item.company_id === 'co-main'
+    !companyId || item.company_id === companyId
 
   const matchingUsers = users.filter(isCoMatch)
   const usersCount = Math.max(1, matchingUsers.length)

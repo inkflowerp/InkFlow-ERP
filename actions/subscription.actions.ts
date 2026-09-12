@@ -83,32 +83,37 @@ export async function initiateSubscriptionCheckoutAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<SubscriptionCheckoutResult>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId || input.companyId)
-    const companyId = tenant?.companyId || requestedCompanyId || input.companyId
+    const targetCompanyId = requestedCompanyId || input.companyId
+    const tenant = await getCurrentTenant(targetCompanyId)
 
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Active authenticated tenant session required.' }
+    }
+
+    if (targetCompanyId && tenant.companyId !== targetCompanyId) {
+      return { success: false, error: 'Unauthorized: Cross-tenant subscription modification is strictly prohibited.' }
     }
 
     const hasPermission =
-      !tenant ||
       tenant.companyRole === 'business_owner' ||
-      tenant.permissions?.includes('*') ||
-      tenant.permissions?.includes('billing.manage')
+      tenant.primaryRole === 'business_owner' ||
+      tenant.isSupportMode ||
+      tenant.permissions.includes('billing.manage') ||
+      tenant.permissions.includes('settings.full_control')
 
     if (!hasPermission) {
-      return { success: false, error: 'Unauthorized: Only company owners can change subscription.' }
+      return { success: false, error: 'Unauthorized: Only company owners and billing administrators can modify subscriptions.' }
     }
 
     const result = await SubscriptionService.initiatePlanCheckout(
       {
         ...input,
-        companyId,
-        customerName: tenant?.fullName || input.customerName || 'Tenant Administrator',
-        customerEmail: tenant?.userEmail || input.customerEmail || '',
+        companyId: tenant.companyId,
+        customerName: tenant.fullName || input.customerName || 'Tenant Administrator',
+        customerEmail: tenant.userEmail || input.customerEmail || '',
         customerPhone: input.customerPhone || '',
       },
-      tenant?.userId
+      tenant.userId
     )
 
     revalidatePath('/', 'layout')
@@ -150,16 +155,29 @@ export async function schedulePlanDowngradeAction(
 ): Promise<ServerActionResult<{ effectiveAt?: string }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
 
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Active authenticated tenant session required.' }
+    }
+
+    if (requestedCompanyId && tenant.companyId !== requestedCompanyId) {
+      return { success: false, error: 'Unauthorized: Cross-tenant subscription modification is prohibited.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.primaryRole === 'business_owner' ||
+      tenant.isSupportMode ||
+      tenant.permissions.includes('billing.manage')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: Insufficient permissions to change plan.' }
     }
 
     const result = await SubscriptionService.schedulePlanDowngrade(
-      companyId,
+      tenant.companyId,
       nextPlanCode,
-      tenant?.userId
+      tenant.userId
     )
 
     revalidatePath('/', 'layout')
@@ -179,17 +197,30 @@ export async function cancelSubscriptionAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
 
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Active authenticated tenant session required.' }
+    }
+
+    if (requestedCompanyId && tenant.companyId !== requestedCompanyId) {
+      return { success: false, error: 'Unauthorized: Cross-tenant subscription cancellation is prohibited.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.primaryRole === 'business_owner' ||
+      tenant.isSupportMode ||
+      tenant.permissions.includes('billing.manage')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: Insufficient permissions to cancel subscription.' }
     }
 
     const result = await SubscriptionService.cancelSubscription(
-      companyId,
+      tenant.companyId,
       immediately,
       reason,
-      tenant?.userId
+      tenant.userId
     )
 
     revalidatePath('/', 'layout')
@@ -207,13 +238,26 @@ export async function reactivateSubscriptionAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
 
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Active authenticated tenant session required.' }
     }
 
-    const result = await SubscriptionService.reactivateSubscription(companyId, tenant?.userId)
+    if (requestedCompanyId && tenant.companyId !== requestedCompanyId) {
+      return { success: false, error: 'Unauthorized: Cross-tenant subscription reactivation is prohibited.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.primaryRole === 'business_owner' ||
+      tenant.isSupportMode ||
+      tenant.permissions.includes('billing.manage')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: Insufficient permissions to reactivate subscription.' }
+    }
+
+    const result = await SubscriptionService.reactivateSubscription(tenant.companyId, tenant.userId)
 
     revalidatePath('/', 'layout')
     return { success: result.success, data: true, error: result.error }

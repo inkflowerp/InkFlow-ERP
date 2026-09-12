@@ -97,7 +97,7 @@ export default function SupplierProfilePage() {
     e.preventDefault()
     const item: SupplierMaterialPrice = {
       id: `smp-${Date.now()}`,
-      company_id: company?.id || 'co-main',
+      company_id: company?.id || '',
       supplier_id: supplier.id,
       material_name: newMaterial.material_name,
       category: newMaterial.category,

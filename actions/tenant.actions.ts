@@ -46,7 +46,7 @@ export async function createCompanyAction(data: CreateCompanyInput, fallbackUser
       role: 'business_owner',
       primaryRole: 'business_owner',
       responsibilities: ['business_owner'],
-      permissions: membership?.effectivePermissions || ['*'],
+      permissions: membership?.effectivePermissions || [],
       loginTime: new Date().toISOString(),
       token: `auth-${effectiveUserId}`,
     }
@@ -74,8 +74,8 @@ export async function updateCompanyAction(companyId: string, data: any) {
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('company.edit'))
   ) {
     return { success: false, error: 'Unauthorized: Insufficient permissions to modify company details.' }
   }
@@ -88,8 +88,8 @@ export async function updateCompanySettingsAction(companyId: string, settings: a
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('*') &&
-      !tenant.permissions.includes('settings.edit'))
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('settings.manage'))
   ) {
     return { success: false, error: 'Unauthorized: Insufficient permissions to modify company settings.' }
   }

@@ -67,7 +67,7 @@ export default function SuppliersPage() {
     e.preventDefault()
     const created: SupplierRecord = {
       id: `supp-${Date.now()}`,
-      company_id: company?.id || 'co-main',
+      company_id: company?.id || '',
       supplier_name: newSupplier.supplier_name,
       company: newSupplier.company || null,
       contact_person: newSupplier.contact_person || null,

@@ -60,8 +60,8 @@ export async function createSalesOrderAction(
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
-      tenant.permissions.includes('*') ||
-      tenant.permissions.includes('order.create')
+      tenant.permissions.includes('order.create') ||
+      tenant.permissions.includes('orders.create')
 
     if (!hasPermission) {
       return { success: false, error: 'Unauthorized: You do not have permission to create sales orders.' }
