@@ -81,11 +81,35 @@ function LoginForm() {
           ? 'আপনার অ্যাকাউন্টটি নিষ্ক্রিয় করা হয়েছে। অনুগ্রহ করে আপনার প্রতিষ্ঠানের অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।'
           : 'Your account has been disabled by your administrator. Row Level Security has revoked all access to company records.'
       )
-    } else if (errParam === 'unauthorized') {
+    } else if (errParam === 'unauthorized' || errParam === 'unauthorized_tenant') {
       setError(
         locale === 'bn'
-          ? 'এই ব্যবসায়িক ওয়ার্কস্পেসে প্রবেশের অনুমতি আপনার বর্তমান অ্যাকাউন্টে নেই।'
-          : 'You are not authorized to access that business workspace with your current account.'
+          ? 'এই গুগল অ্যাকাউন্টটির জন্য কোনো অনুমোদিত ব্যবসায়িক প্রতিষ্ঠান পাওয়া যায়নি।'
+          : 'This Google account is not authorized for this business.'
+      )
+    } else if (errParam === 'cancelled') {
+      setError(
+        locale === 'bn'
+          ? 'গুগল সাইন ইন বাতিল করা হয়েছে।'
+          : 'Google sign-in was cancelled.'
+      )
+    } else if (errParam === 'oauth_error' || errParam === 'oauth_failure' || errParam === 'auth-code-error') {
+      setError(
+        locale === 'bn'
+          ? 'গুগল সাইন ইন সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।'
+          : "We couldn't complete Google sign-in. Please try again."
+      )
+    } else if (errParam === 'provider_unavailable') {
+      setError(
+        locale === 'bn'
+          ? 'গুগল সাইন ইন সাময়িকভাবে অনুপলব্ধ। কিছুক্ষণ পর আবার চেষ্টা করুন।'
+          : 'Google sign-in is temporarily unavailable. Please try again later.'
+      )
+    } else if (errParam === 'session_failure') {
+      setError(
+        locale === 'bn'
+          ? 'সেশন তৈরি করা সম্ভব হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।'
+          : "We couldn't create your session. Please try again."
       )
     } else if (errParam === 'session_expired') {
       setError(
@@ -93,6 +117,8 @@ function LoginForm() {
           ? 'আপনার সেশনের মেয়াদ শেষ হয়েছে। পুনরায় সাইন ইন করুন।'
           : 'Your session has expired. Please sign in again to continue.'
       )
+    } else if (errParam === 'platform_user_on_tenant_portal') {
+      setIsPlatformAdminError(true)
     }
 
     if (loggedOutParam === 'true') {
@@ -193,25 +219,69 @@ function LoginForm() {
   }
 
   const handleGoogleLogin = async () => {
+    if (isGoogleLoading || isLoading) return
     setIsGoogleLoading(true)
     setError(null)
     setIsPlatformAdminError(false)
+    setIsNetworkError(false)
     try {
       const provider = new GoogleOAuthProvider()
-      const res = await provider.signInWithGoogle()
-      if (!res.success && res.error) {
-        setError('Google OAuth provider configured. Connect active Google Client ID in Supabase to enable.')
+      const redirectToParam = searchParams.get('redirectTo')
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      const callbackUrl = redirectToParam
+        ? `${origin}/auth/callback?next=${encodeURIComponent(redirectToParam)}`
+        : `${origin}/auth/callback`
+
+      const res = await provider.signInWithGoogle({ redirectTo: callbackUrl })
+      if (res.success && res.data?.url) {
+        window.location.href = res.data.url
+        return
+      }
+
+      if (!res.success) {
+        const errorMsg = res.error || ''
+        const lowerMsg = errorMsg.toLowerCase()
+
+        if (
+          lowerMsg.includes('provider is not enabled') ||
+          lowerMsg.includes('unsupported provider') ||
+          lowerMsg.includes('disabled') ||
+          lowerMsg.includes('not configured')
+        ) {
+          setError(
+            locale === 'bn'
+              ? 'গুগল সাইন ইন সাময়িকভাবে অনুপলব্ধ। কিছুক্ষণ পর আবার চেষ্টা করুন।'
+              : 'Google sign-in is temporarily unavailable. Please try again later.'
+          )
+        } else if (!navigator.onLine || lowerMsg.includes('fetch') || lowerMsg.includes('network')) {
+          setIsNetworkError(true)
+          setError(
+            locale === 'bn'
+              ? 'সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।'
+              : 'Network connection failure. Unable to communicate with the authentication server.'
+          )
+        } else {
+          setError(
+            locale === 'bn'
+              ? 'গুগল সাইন ইন সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।'
+              : "We couldn't complete Google sign-in. Please try again."
+          )
+        }
+        setIsGoogleLoading(false)
       }
     } catch (err: any) {
-      setError(err?.message || 'Google authentication encountered an unexpected issue.')
-    } finally {
+      setError(
+        locale === 'bn'
+          ? 'গুগল সাইন ইন সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।'
+          : "We couldn't complete Google sign-in. Please try again."
+      )
       setIsGoogleLoading(false)
     }
   }
 
   return (
     <Card className="border-slate-200/90 shadow-2xl shadow-slate-200/50 dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-black/40 backdrop-blur-xl">
-      <CardHeader className="space-y-1.5 text-left pb-3 pt-6 px-5 sm:px-6">
+      <CardHeader className="space-y-1.5 text-center pb-3 pt-6 px-5 sm:px-6">
         <div>
           <CardTitle className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             {t('auth.login_title')}
@@ -302,17 +372,9 @@ function LoginForm() {
 
           {/* Password Input Field with Caps Lock Warning */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label required htmlFor="tenant-login-password">
-                {t('auth.password')}
-              </Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 font-medium transition-colors hover:underline py-0.5"
-              >
-                {t('auth.forgot_password')}
-              </Link>
-            </div>
+            <Label required htmlFor="tenant-login-password">
+              {t('auth.password')}
+            </Label>
             <Input
               id="tenant-login-password"
               type={showPassword ? 'text' : 'password'}
@@ -359,8 +421,8 @@ function LoginForm() {
             )}
           </div>
 
-          {/* Remember Me Checkbox */}
-          <div className="flex items-center pt-0.5">
+          {/* Remember Me & Forgot Password Row */}
+          <div className="flex items-center justify-between pt-0.5">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -372,6 +434,13 @@ function LoginForm() {
                 {t('auth.remember_me') || 'Remember Me'}
               </span>
             </label>
+
+            <Link
+              href="/forgot-password"
+              className="text-xs text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 font-medium transition-colors hover:underline py-0.5"
+            >
+              {t('auth.forgot_password')}
+            </Link>
           </div>
 
           {/* Primary Submit Button */}
@@ -402,6 +471,7 @@ function LoginForm() {
             variant="outline"
             onClick={handleGoogleLogin}
             isLoading={isGoogleLoading}
+            disabled={isGoogleLoading || isLoading}
             className="w-full text-xs font-semibold cursor-pointer h-10 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <svg className="mr-2 h-4 w-4 shrink-0" viewBox="0 0 24 24">
@@ -422,7 +492,15 @@ function LoginForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>{t('auth.google_login') || 'Google Workspace Login'}</span>
+            <span>
+              {isGoogleLoading
+                ? locale === 'bn'
+                  ? 'গুগলের সাথে সংযুক্ত হচ্ছে...'
+                  : 'Connecting to Google...'
+                : locale === 'bn'
+                ? 'গুগল ওয়ার্কস্পেস দিয়ে এগিয়ে যান'
+                : 'Continue with Google Workspace'}
+            </span>
           </Button>
         </CardContent>
 

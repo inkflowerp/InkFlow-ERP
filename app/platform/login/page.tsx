@@ -493,20 +493,12 @@ function PlatformLoginForm() {
 
                   {/* Password Field */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <Label
-                        htmlFor="platform-password"
-                        className="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
-                      >
-                        {t.passwordLabel}
-                      </Label>
-                      <Link
-                        href="/platform/forgot-password"
-                        className="text-[10px] sm:text-[11px] text-purple-400 hover:text-purple-300 font-medium transition-colors hover:underline"
-                      >
-                        {t.forgotPassword}
-                      </Link>
-                    </div>
+                    <Label
+                      htmlFor="platform-password"
+                      className="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
+                    >
+                      {t.passwordLabel}
+                    </Label>
                     <div className="relative flex items-center">
                       <div className="absolute left-3 pointer-events-none text-slate-400">
                         <Lock className="h-4 w-4" />
@@ -533,6 +525,16 @@ function PlatformLoginForm() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                  </div>
+
+                  {/* Forgot Password Link Below Password Field */}
+                  <div className="flex justify-end pt-0.5">
+                    <Link
+                      href="/platform/forgot-password"
+                      className="text-[10px] sm:text-[11px] text-purple-400 hover:text-purple-300 font-medium transition-colors hover:underline"
+                    >
+                      {t.forgotPassword}
+                    </Link>
                   </div>
 
                   {/* Sign In Submit Button */}

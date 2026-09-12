@@ -1,19 +1,172 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { TenantRepository } from '@/lib/repositories/tenant.repository'
+import { AuditService } from '@/services/audit.service'
+import { TENANT_SESSION_COOKIE, TenantSessionData, TenantRole } from '@/lib/auth/types'
+import { PrimaryRole } from '@/types/rbac.types'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/onboarding'
+  const errorParam = searchParams.get('error')
+  const errorDesc = searchParams.get('error_description')
+  const next = searchParams.get('next')
 
-  if (code) {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+  // 1. Handle OAuth Provider Errors or User Cancellations
+  if (errorParam) {
+    if (errorParam === 'access_denied' || errorDesc?.toLowerCase().includes('cancel')) {
+      return NextResponse.redirect(`${origin}/login?error=cancelled`)
     }
+    return NextResponse.redirect(`${origin}/login?error=oauth_error`)
   }
 
-  // Return user to error page or login with message
-  return NextResponse.redirect(`${origin}/login?error=auth-code-error`)
+  // 2. Validate Authorization Code
+  if (!code) {
+    return NextResponse.redirect(`${origin}/login?error=oauth_failure`)
+  }
+
+  try {
+    const supabase = await createClient()
+    const { data: authData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (exchangeError || !authData?.user) {
+      return NextResponse.redirect(`${origin}/login?error=oauth_failure`)
+    }
+
+    const user = authData.user
+    const email = user.email?.trim().toLowerCase() || ''
+    const fullName =
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      email.split('@')[0] ||
+      'User'
+    const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null
+
+    // 3. Guarantee user_profiles record is persisted/synced
+    try {
+      const admin = createAdminClient()
+      await (admin as any).from('user_profiles').upsert(
+        {
+          id: user.id,
+          email,
+          full_name: fullName,
+          avatar_url: avatarUrl,
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      )
+    } catch {
+      // Non-blocking sync
+    }
+
+    // 4. Hard Security Boundary: Platform Administrator Accounts
+    try {
+      const admin = createAdminClient()
+      const { data: platformAdmin } = await (admin as any)
+        .from('platform_admins')
+        .select('id, is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (platformAdmin) {
+        // Platform admins must not use tenant Google OAuth without authorized tenant membership
+        const membership = await TenantRepository.resolveUserMembership(user.id)
+        if (!membership) {
+          await supabase.auth.signOut()
+          const redirectResponse = NextResponse.redirect(
+            `${origin}/platform/login?error=platform_user_on_tenant_portal`
+          )
+          redirectResponse.cookies.delete(TENANT_SESSION_COOKIE)
+          return redirectResponse
+        }
+      }
+    } catch {
+      // Non-blocking fallback
+    }
+
+    // 5. Authoritative Database Tenant Resolution (company_users + companies)
+    const membership = await TenantRepository.resolveUserMembership(user.id)
+
+    if (membership && membership.company && membership.companyUser) {
+      const { company, companyUser, effectivePermissions, primaryRole } = membership
+
+      // Check if user or company is disabled
+      if (companyUser.status === 'disabled' || !company.is_active) {
+        await supabase.auth.signOut()
+        const redirectResponse = NextResponse.redirect(`${origin}/login?error=disabled`)
+        redirectResponse.cookies.delete(TENANT_SESSION_COOKIE)
+        return redirectResponse
+      }
+
+      let tenantRole: TenantRole = 'business_owner'
+      if (primaryRole === 'business_owner') tenantRole = 'business_owner'
+      else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
+      else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
+      else if (primaryRole === 'operator') tenantRole = 'machine_operator'
+      else if (primaryRole === 'accountant') tenantRole = 'accountant'
+      else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+
+      const sessionData: TenantSessionData = {
+        userId: user.id,
+        userEmail: email,
+        fullName: companyUser.profile?.full_name || fullName,
+        fullNameBn: companyUser.profile?.full_name_bn || null,
+        phone: companyUser.profile?.phone || null,
+        companyId: company.id,
+        companySlug: company.slug,
+        companyName: company.name,
+        companyNameBn: company.name_bn || company.name,
+        branchId: companyUser.branch_id || 'br-main',
+        branchName: companyUser.branch?.name || 'Main Branch',
+        role: tenantRole,
+        primaryRole: primaryRole as PrimaryRole,
+        responsibilities: companyUser.responsibilities || [primaryRole],
+        permissions: effectivePermissions,
+        loginTime: new Date().toISOString(),
+        token: authData.session?.access_token || `auth-${user.id}`,
+      }
+
+      // Track successful login audit event
+      try {
+        await AuditService.trackLogin(company.id, user.id, email)
+      } catch {
+        // Non-blocking
+      }
+
+      // Determine safe redirect destination
+      let destination = `/${company.slug}/dashboard`
+      if (
+        next &&
+        next.startsWith('/') &&
+        !next.startsWith('/login') &&
+        !next.startsWith('/auth')
+      ) {
+        if (next.startsWith(`/${company.slug}`)) {
+          destination = next
+        }
+      }
+
+      const redirectResponse = NextResponse.redirect(`${origin}${destination}`)
+      redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionData)), {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      })
+
+      return redirectResponse
+    }
+
+    // 6. FAIL CLOSED: User has authenticated in Google/Supabase but has NO active company membership
+    // Per Rule 8 & 9: Strictly deny tenant access. No synthetic fallback (co-*, ['*'], business_owner).
+    await supabase.auth.signOut()
+    const redirectResponse = NextResponse.redirect(`${origin}/login?error=unauthorized_tenant`)
+    redirectResponse.cookies.delete(TENANT_SESSION_COOKIE)
+    return redirectResponse
+  } catch {
+    return NextResponse.redirect(`${origin}/login?error=oauth_failure`)
+  }
 }

@@ -238,6 +238,16 @@ end;
 $$;
 
 -- 3. HARDEN REPORTING & ANALYTICS FUNCTIONS
+drop function if exists public.get_tenant_sales_summary(uuid, date, date);
+drop function if exists public.get_tenant_sales_summary(uuid);
+drop function if exists public.get_tenant_sales_summary();
+drop function if exists public.get_tenant_production_summary(uuid, date, date);
+drop function if exists public.get_tenant_production_summary(uuid);
+drop function if exists public.get_tenant_production_summary();
+drop function if exists public.get_tenant_financial_summary(uuid, date, date);
+drop function if exists public.get_tenant_financial_summary(uuid);
+drop function if exists public.get_tenant_financial_summary();
+
 create or replace function public.get_tenant_sales_summary(
     p_company_id uuid,
     p_start_date date default current_date - interval '30 days',
@@ -556,12 +566,20 @@ create policy "Tenant users view own gateway_transactions"
 
 alter table if exists public.gateway_webhooks enable row level security;
 drop policy if exists "Tenant isolation on gateway_webhooks" on public.gateway_webhooks;
+drop policy if exists "Platform admins view gateway webhooks" on public.gateway_webhooks;
+drop policy if exists "Tenant users view own gateway_webhooks" on public.gateway_webhooks;
+drop policy if exists "Platform admins and gateway owners view webhooks" on public.gateway_webhooks;
 
-create policy "Tenant users view own gateway_webhooks"
+create policy "Platform admins and gateway owners view webhooks"
     on public.gateway_webhooks for all
     using (
-        (tenant_id is not null and public.auth_is_active_company_user(tenant_id))
-        or (tenant_id is null and public.auth_is_platform_admin())
+        public.auth_is_platform_admin()
+        or exists (
+            select 1 from public.gateway_integrations gi
+            where gi.id = gateway_webhooks.gateway_id
+              and gi.tenant_id is not null
+              and public.auth_is_active_company_user(gi.tenant_id)
+        )
     );
 
 alter table if exists public.audit_logs enable row level security;

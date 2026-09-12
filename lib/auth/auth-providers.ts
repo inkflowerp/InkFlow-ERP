@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/client'
-import { ApiResponse } from '@/types/common.types'
+import { createClient } from '../supabase/client.ts'
+import type { ApiResponse } from '../../types/common.types.ts'
 
 export type AuthProviderType = 'email_password' | 'phone_otp' | 'whatsapp_otp' | 'google'
 
@@ -163,19 +163,43 @@ export class GoogleOAuthProvider implements IAuthProvider {
   name = 'Google OAuth'
   isAvailable = true
 
-  async signInWithGoogle(redirectTo?: string): Promise<ApiResponse<{ url?: string }>> {
+  async signInWithGoogle(
+    optionsOrRedirect?: string | { redirectTo?: string; queryParams?: Record<string, string>; scopes?: string }
+  ): Promise<ApiResponse<{ url?: string }>> {
     try {
       const supabase = createClient()
       const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+      const redirectTo =
+        typeof optionsOrRedirect === 'string'
+          ? optionsOrRedirect
+          : optionsOrRedirect?.redirectTo || `${origin}/auth/callback`
+
+      const oauthOptions: {
+        redirectTo: string
+        queryParams?: Record<string, string>
+        scopes?: string
+      } = {
+        redirectTo,
+      }
+
+      if (typeof optionsOrRedirect === 'object' && optionsOrRedirect !== null) {
+        if (optionsOrRedirect.queryParams) {
+          oauthOptions.queryParams = optionsOrRedirect.queryParams
+        }
+        if (optionsOrRedirect.scopes) {
+          oauthOptions.scopes = optionsOrRedirect.scopes
+        }
+      }
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: redirectTo || `${origin}/auth/callback`,
-        },
+        options: oauthOptions,
       })
+
       if (error) {
         return { success: false, error: error.message }
       }
+
       return { success: true, data: { url: data.url } }
     } catch (err: unknown) {
       return {
