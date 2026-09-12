@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedPlatformContext } from '@/lib/auth/platform-auth'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { generateGoogleAuthUrl, getGoogleOAuthConfig } from '@/lib/email/oauth/google-oauth'
+import { generateGoogleAuthUrl, getGoogleOAuthDiagnostics } from '@/lib/email/oauth/google-oauth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,8 +45,8 @@ export async function GET(request: NextRequest) {
       userId = tenantUser.userId
     }
 
-    const { clientId } = getGoogleOAuthConfig()
-    if (!process.env.GOOGLE_CLIENT_ID && (clientId.startsWith('mock-') || clientId === 'mock-google-client-id.apps.googleusercontent.com')) {
+    const diag = getGoogleOAuthDiagnostics()
+    if (!diag.isConfigured) {
       const returnUrl = returnUrlParam || (isPlatform ? '/platform/settings/communication' : `/${resolvedTenantId || 'tenant'}/settings/email`)
       const redirectUrl = new URL(returnUrl, request.url)
       redirectUrl.searchParams.set('error', 'google_client_id_missing')

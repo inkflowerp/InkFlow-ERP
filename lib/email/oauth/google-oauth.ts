@@ -70,6 +70,8 @@ export function getGoogleOAuthConfig() {
   if (!redirectUri) {
     if (process.env.NEXT_PUBLIC_APP_URL) {
       redirectUri = `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
+    } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+      redirectUri = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
     } else if (process.env.VERCEL_URL) {
       redirectUri = `https://${process.env.VERCEL_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
     } else {

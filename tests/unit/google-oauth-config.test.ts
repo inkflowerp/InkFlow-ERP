@@ -70,8 +70,14 @@ describe('Google OAuth Configuration & Security Audit Tests', () => {
     let diag = getGoogleOAuthDiagnostics()
     assert.strictEqual(diag.redirectUri, 'https://custom-erp.com/api/email/oauth/google/callback')
 
-    // Test localhost fallback
+    // Test VERCEL_PROJECT_PRODUCTION_URL fallback
     delete process.env.NEXT_PUBLIC_APP_URL
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = 'inkflow-erp.vercel.app'
+    diag = getGoogleOAuthDiagnostics()
+    assert.strictEqual(diag.redirectUri, 'https://inkflow-erp.vercel.app/api/email/oauth/google/callback')
+
+    // Test localhost fallback
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL
     delete process.env.VERCEL_URL
     diag = getGoogleOAuthDiagnostics()
     assert.strictEqual(diag.redirectUri, 'http://localhost:3000/api/email/oauth/google/callback')
