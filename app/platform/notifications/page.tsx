@@ -272,8 +272,9 @@ export default function PlatformNotificationsPage() {
     if (filterSeverity !== 'all' && n.severity !== filterSeverity) return false
 
     if (filterType !== 'all') {
+      if (filterType === 'support' && n.type !== 'support') return false
       if (filterType === 'security' && n.type !== 'security') return false
-      if (filterType === 'tenant_lifecycle' && !['tenant_suspension', 'tenant_lifecycle'].includes(n.type)) return false
+      if (filterType === 'tenant_lifecycle' && !['tenant_suspension', 'tenant_lifecycle', 'tenant'].includes(n.type)) return false
       if (filterType === 'usage_warning' && !['usage_warning', 'quota'].includes(n.type)) return false
       if (filterType === 'system' && !['system', 'health', 'job'].includes(n.type)) return false
       if (filterType === 'billing' && !['billing', 'subscription'].includes(n.type)) return false
@@ -479,11 +480,12 @@ export default function PlatformNotificationsPage() {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             {[
               { key: 'all', label: 'All Alerts' },
+              { key: 'support', label: 'Support & Tickets' },
               { key: 'security', label: 'Security' },
-              { key: 'tenant_lifecycle', label: 'Tenant Lifecycle' },
+              { key: 'tenant_lifecycle', label: 'Tenants' },
+              { key: 'billing', label: 'Billing & Plans' },
               { key: 'usage_warning', label: 'Quota Warnings' },
               { key: 'system', label: 'System Health' },
-              { key: 'billing', label: 'Billing' },
               { key: 'broadcast', label: 'Broadcasts' },
             ].map((tab) => (
               <button
@@ -570,12 +572,19 @@ export default function PlatformNotificationsPage() {
             const isWarning = item.severity === 'warning'
             const isBroadcast = item.type === 'broadcast'
             const isSecurity = item.type === 'security'
+            const isSupport = item.type === 'support'
+            const isBilling = ['billing', 'subscription'].includes(item.type)
+            const isTenant = ['tenant', 'tenant_lifecycle', 'tenant_suspension'].includes(item.type)
             const isHealth = ['system', 'health', 'job'].includes(item.type)
 
             const targetUrl =
               item.action_url ||
-              (item.company_id
-                ? `/platform/tenants/${item.company_id}`
+              (isSupport
+                ? '/platform/support'
+                : isBilling
+                ? '/platform/subscriptions'
+                : isTenant
+                ? '/platform/companies'
                 : isSecurity
                 ? '/platform/security'
                 : isHealth
@@ -600,8 +609,14 @@ export default function PlatformNotificationsPage() {
                           ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
                           : isWarning
                           ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : isBroadcast
+                          : isSupport
                           ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                          : isBroadcast
+                          ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                          : isBilling
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                          : isTenant
+                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                           : isHealth
                           ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
                           : 'bg-slate-800 text-slate-300 border-slate-700'
@@ -611,8 +626,14 @@ export default function PlatformNotificationsPage() {
                         <ShieldAlert className="h-5 w-5" />
                       ) : isWarning ? (
                         <AlertTriangle className="h-5 w-5" />
+                      ) : isSupport ? (
+                        <Bell className="h-5 w-5" />
                       ) : isBroadcast ? (
                         <Megaphone className="h-5 w-5" />
+                      ) : isBilling ? (
+                        <CreditCard className="h-5 w-5" />
+                      ) : isTenant ? (
+                        <Building2 className="h-5 w-5" />
                       ) : isHealth ? (
                         <HeartPulse className="h-5 w-5" />
                       ) : (
