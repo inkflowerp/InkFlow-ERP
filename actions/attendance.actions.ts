@@ -15,6 +15,7 @@ import {
   AttendanceAuditLogRecord,
 } from '@/types/attendance.types'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveCompanyUuid } from '@/lib/repositories/attendance.repository'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -567,14 +568,17 @@ export async function getTenantBranchesForAttendanceAction(
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(tenant.companyId)) || tenant.companyId
+
     const { data: branches, error } = await (admin as any)
       .from('branches')
       .select('id, name, code, is_main')
-      .eq('company_id', tenant.companyId)
+      .eq('company_id', targetCompanyId)
       .eq('is_active', true)
       .order('is_main', { ascending: false })
 
     if (error) {
+      console.warn('[getTenantBranchesForAttendanceAction] Branches query note:', error.message)
       return { success: true, data: [] }
     }
 

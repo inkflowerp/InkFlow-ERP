@@ -16,6 +16,57 @@ import {
   UpdateAttendanceLocationInput,
 } from '@/types/attendance.types'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export async function resolveCompanyUuid(companyIdOrSlug?: string | null): Promise<string | null> {
+  if (!companyIdOrSlug) return null
+  const clean = companyIdOrSlug.trim()
+  if (UUID_REGEX.test(clean)) {
+    return clean
+  }
+
+  const slug = clean.replace(/^co-/, '').toLowerCase().trim()
+  const admin = createAdminClient()
+  try {
+    const { data } = await (admin as any)
+      .from('companies')
+      .select('id')
+      .ilike('slug', slug)
+      .maybeSingle()
+
+    if (data?.id) {
+      return data.id
+    }
+
+    const { data: compByName } = await (admin as any)
+      .from('companies')
+      .select('id')
+      .ilike('name', slug)
+      .maybeSingle()
+
+    if (compByName?.id) {
+      return compByName.id
+    }
+
+    const { data: fallback } = await (admin as any)
+      .from('companies')
+      .select('id')
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle()
+
+    return fallback?.id || null
+  } catch {
+    return null
+  }
+}
+
+export function sanitizeUuid(val?: string | null): string | null {
+  if (!val || typeof val !== 'string') return null
+  const clean = val.trim()
+  return UUID_REGEX.test(clean) ? clean : null
+}
+
 export class AttendanceRepository {
   // ==========================================
   // 1. ATTENDANCE LOCATIONS
@@ -23,10 +74,11 @@ export class AttendanceRepository {
 
   static async getLocations(companyId: string): Promise<AttendanceLocationRecord[]> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const { data: locations, error } = await (admin as any)
       .from('attendance_locations')
       .select('*, branches(name)')
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -41,7 +93,7 @@ export class AttendanceRepository {
       const { data: tokens } = await (admin as any)
         .from('attendance_qr_tokens')
         .select('*')
-        .eq('company_id', companyId)
+        .eq('company_id', targetCompanyId)
         .eq('is_active', true)
         .in('location_id', locationIds)
 
@@ -72,11 +124,12 @@ export class AttendanceRepository {
 
   static async getLocationById(id: string, companyId: string): Promise<AttendanceLocationRecord | null> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const { data: loc, error } = await (admin as any)
       .from('attendance_locations')
       .select('*, branches(name)')
       .eq('id', id)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .maybeSingle()
 
     if (error || !loc) return null
@@ -85,7 +138,7 @@ export class AttendanceRepository {
       .from('attendance_qr_tokens')
       .select('*')
       .eq('location_id', id)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .eq('is_active', true)
       .maybeSingle()
 
@@ -109,9 +162,10 @@ export class AttendanceRepository {
 
   static async createLocation(input: CreateAttendanceLocationInput): Promise<AttendanceLocationRecord> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(input.company_id)) || input.company_id
     const payload = {
-      company_id: input.company_id,
-      branch_id: input.branch_id || null,
+      company_id: targetCompanyId,
+      branch_id: sanitizeUuid(input.branch_id),
       name: input.name.trim(),
       address: input.address?.trim() || null,
       latitude: input.latitude,
@@ -156,18 +210,22 @@ export class AttendanceRepository {
     companyId: string
   ): Promise<AttendanceLocationRecord> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const payload: any = {
       ...updates,
       updated_at: new Date().toISOString(),
     }
     delete payload.id
     delete payload.company_id
+    if ('branch_id' in updates) {
+      payload.branch_id = sanitizeUuid(updates.branch_id)
+    }
 
     const { data, error } = await (admin as any)
       .from('attendance_locations')
       .update(payload)
       .eq('id', id)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .select()
       .single()
 
@@ -193,6 +251,7 @@ export class AttendanceRepository {
 
   static async deleteLocation(id: string, companyId: string): Promise<boolean> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
 
     // 1. Safely delete/unlink dependent foreign key references first
     try {
@@ -227,7 +286,7 @@ export class AttendanceRepository {
       .from('attendance_locations')
       .delete()
       .eq('id', id)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
 
     if (error) {
       // Fallback: delete by id alone in case companyId format differs
@@ -257,6 +316,7 @@ export class AttendanceRepository {
     expiresAt?: string | null
   }): Promise<AttendanceQrTokenRecord> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(params.companyId)) || params.companyId
 
     // 1. Invalidate any existing active tokens for this location
     await (admin as any)
@@ -266,16 +326,16 @@ export class AttendanceRepository {
         revoked_at: new Date().toISOString(),
       })
       .eq('location_id', params.locationId)
-      .eq('company_id', params.companyId)
+      .eq('company_id', targetCompanyId)
       .eq('is_active', true)
 
     // 2. Insert new token
     const payload = {
-      company_id: params.companyId,
+      company_id: targetCompanyId,
       location_id: params.locationId,
       token_hash: params.tokenHash,
       token_prefix: params.tokenPrefix,
-      generated_by: params.generatedBy || null,
+      generated_by: sanitizeUuid(params.generatedBy),
       expires_at: params.expiresAt || null,
       revoked_at: null,
       is_active: true,
@@ -311,11 +371,12 @@ export class AttendanceRepository {
     companyId: string
   ): Promise<AttendanceQrTokenRecord | null> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const { data, error } = await (admin as any)
       .from('attendance_qr_tokens')
       .select('*')
       .eq('location_id', locationId)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .eq('is_active', true)
       .maybeSingle()
 
@@ -339,13 +400,14 @@ export class AttendanceRepository {
     companyId?: string
   ): Promise<{ token: AttendanceQrTokenRecord; location: AttendanceLocationRecord } | null> {
     const admin = createAdminClient()
+    const targetCompanyId = companyId ? (await resolveCompanyUuid(companyId)) || companyId : undefined
     let query = (admin as any)
       .from('attendance_qr_tokens')
       .select('*, attendance_locations(*)')
       .eq('token_hash', tokenHash)
 
-    if (companyId) {
-      query = query.eq('company_id', companyId)
+    if (targetCompanyId) {
+      query = query.eq('company_id', targetCompanyId)
     }
 
     const { data, error } = await query.maybeSingle()
@@ -390,17 +452,18 @@ export class AttendanceRepository {
     companyId?: string
   ): Promise<{ token: AttendanceQrTokenRecord; location: AttendanceLocationRecord } | null> {
     const admin = createAdminClient()
+    const targetCompanyId = companyId ? (await resolveCompanyUuid(companyId)) || companyId : undefined
     let locQuery = (admin as any)
       .from('attendance_locations')
       .select('*')
       .eq('id', locationId)
 
-    if (companyId) {
-      locQuery = locQuery.eq('company_id', companyId)
+    if (targetCompanyId) {
+      locQuery = locQuery.eq('company_id', targetCompanyId)
     }
 
     let { data: loc, error: locErr } = await locQuery.maybeSingle()
-    if (!loc && companyId) {
+    if (!loc && targetCompanyId) {
       // Fallback: query by id without company filter in case of id prefix differences
       const { data: fallbackLoc } = await (admin as any)
         .from('attendance_locations')
@@ -467,14 +530,15 @@ export class AttendanceRepository {
     companyId?: string
   ): Promise<{ token: AttendanceQrTokenRecord; location: AttendanceLocationRecord } | null> {
     const admin = createAdminClient()
+    const targetCompanyId = companyId ? (await resolveCompanyUuid(companyId)) || companyId : undefined
     let query = (admin as any)
       .from('attendance_qr_tokens')
       .select('*, attendance_locations(*)')
       .eq('token_prefix', prefix)
       .eq('is_active', true)
 
-    if (companyId) {
-      query = query.eq('company_id', companyId)
+    if (targetCompanyId) {
+      query = query.eq('company_id', targetCompanyId)
     }
 
     const { data, error } = await query.maybeSingle()
@@ -513,6 +577,7 @@ export class AttendanceRepository {
 
   static async revokeLocationQrTokens(locationId: string, companyId: string): Promise<void> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     await (admin as any)
       .from('attendance_qr_tokens')
       .update({
@@ -520,7 +585,7 @@ export class AttendanceRepository {
         revoked_at: new Date().toISOString(),
       })
       .eq('location_id', locationId)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
   }
 
   // ==========================================
@@ -547,12 +612,13 @@ export class AttendanceRepository {
     notes?: string | null
   }): Promise<AttendanceRecord> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(record.company_id)) || record.company_id
     const payload = {
-      company_id: record.company_id,
+      company_id: targetCompanyId,
       employee_id: record.employee_id,
-      user_id: record.user_id || null,
-      branch_id: record.branch_id || null,
-      location_id: record.location_id || null,
+      user_id: sanitizeUuid(record.user_id),
+      branch_id: sanitizeUuid(record.branch_id),
+      location_id: sanitizeUuid(record.location_id),
       attendance_date: record.attendance_date,
       attendance_type: record.attendance_type,
       checked_at: record.checked_at,
@@ -560,7 +626,7 @@ export class AttendanceRepository {
       longitude: record.longitude,
       gps_accuracy_meters: record.gps_accuracy_meters,
       distance_from_location_meters: record.distance_from_location_meters,
-      qr_token_id: record.qr_token_id || null,
+      qr_token_id: sanitizeUuid(record.qr_token_id),
       verification_status: record.verification_status,
       verification_reason: record.verification_reason || null,
       device_info: record.device_info || {},
@@ -609,7 +675,7 @@ export class AttendanceRepository {
         }
       } else {
         await (admin as any).from('attendances').insert({
-          company_id: record.company_id,
+          company_id: targetCompanyId,
           employee_id: record.employee_id,
           attendance_date: record.attendance_date,
           status: 'present',
@@ -657,13 +723,14 @@ export class AttendanceRepository {
     dateStr?: string
   ): Promise<AttendanceRecord[]> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const targetDate = dateStr || new Date().toISOString().split('T')[0]
 
     const { data, error } = await (admin as any)
       .from('attendance_records')
       .select('*, employees(name, role), attendance_locations(name)')
       .eq('employee_id', employeeId)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .eq('attendance_date', targetDate)
       .order('checked_at', { ascending: true })
 
@@ -704,11 +771,12 @@ export class AttendanceRepository {
     limit = 30
   ): Promise<AttendanceRecord[]> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const { data, error } = await (admin as any)
       .from('attendance_records')
       .select('*, employees(name, role), attendance_locations(name)')
       .eq('employee_id', employeeId)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .order('checked_at', { ascending: false })
       .limit(limit)
 
@@ -748,12 +816,13 @@ export class AttendanceRepository {
     dateStr?: string
   ): Promise<AttendanceRecord[]> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const targetDate = dateStr || new Date().toISOString().split('T')[0]
 
     const { data, error } = await (admin as any)
       .from('attendance_records')
       .select('*, employees(name, role, department), attendance_locations(name)')
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .eq('attendance_date', targetDate)
       .order('checked_at', { ascending: false })
 
@@ -803,11 +872,12 @@ export class AttendanceRepository {
     reason: string
   }): Promise<AttendanceCorrectionRecord> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(params.companyId)) || params.companyId
     const payload = {
-      company_id: params.companyId,
+      company_id: targetCompanyId,
       employee_id: params.employeeId,
-      requested_by: params.requestedBy,
-      attendance_record_id: params.attendanceRecordId || null,
+      requested_by: sanitizeUuid(params.requestedBy),
+      attendance_record_id: sanitizeUuid(params.attendanceRecordId),
       attendance_date: params.attendanceDate,
       requested_type: params.requestedType,
       requested_time: params.requestedTime,
@@ -852,10 +922,11 @@ export class AttendanceRepository {
     status?: AttendanceCorrectionStatus
   ): Promise<AttendanceCorrectionRecord[]> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     let query = (admin as any)
       .from('attendance_corrections')
       .select('*, employees(name), user_profiles:reviewed_by(full_name)')
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .order('created_at', { ascending: false })
 
     if (status) {
@@ -895,11 +966,12 @@ export class AttendanceRepository {
     companyId: string
   ): Promise<AttendanceCorrectionRecord[]> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const { data, error } = await (admin as any)
       .from('attendance_corrections')
       .select('*, employees(name), user_profiles:reviewed_by(full_name)')
       .eq('employee_id', employeeId)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -936,19 +1008,20 @@ export class AttendanceRepository {
     reviewNotes?: string
   ): Promise<AttendanceCorrectionRecord> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const now = new Date().toISOString()
 
     const { data, error } = await (admin as any)
       .from('attendance_corrections')
       .update({
         status,
-        reviewed_by: reviewerId,
+        reviewed_by: sanitizeUuid(reviewerId),
         reviewed_at: now,
         review_notes: reviewNotes?.trim() || null,
         updated_at: now,
       })
       .eq('id', id)
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .select('*, employees(name)')
       .single()
 
@@ -1015,13 +1088,14 @@ export class AttendanceRepository {
     userAgent?: string | null
   }): Promise<AttendanceAuditLogRecord> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(params.companyId)) || params.companyId
     const payload = {
-      company_id: params.companyId,
-      actor_id: params.actorId || null,
+      company_id: targetCompanyId,
+      actor_id: sanitizeUuid(params.actorId),
       actor_name: params.actorName,
       action_type: params.actionType,
-      location_id: params.locationId || null,
-      employee_id: params.employeeId || null,
+      location_id: sanitizeUuid(params.locationId),
+      employee_id: sanitizeUuid(params.employeeId),
       details: params.details || {},
       ip_address: params.ipAddress || null,
       user_agent: params.userAgent || null,
@@ -1038,12 +1112,12 @@ export class AttendanceRepository {
       console.warn('[AttendanceRepository.logAttendanceAudit] Audit write warning:', error.message)
       return {
         id: `att-aud-${Date.now()}`,
-        company_id: params.companyId,
-        actor_id: params.actorId || null,
+        company_id: targetCompanyId,
+        actor_id: sanitizeUuid(params.actorId),
         actor_name: params.actorName,
         action_type: params.actionType as any,
-        location_id: params.locationId || null,
-        employee_id: params.employeeId || null,
+        location_id: sanitizeUuid(params.locationId),
+        employee_id: sanitizeUuid(params.employeeId),
         details: params.details,
         created_at: new Date().toISOString(),
       }
@@ -1071,10 +1145,11 @@ export class AttendanceRepository {
     limit = 50
   ): Promise<AttendanceAuditLogRecord[]> {
     const admin = createAdminClient()
+    const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
     const { data, error } = await (admin as any)
       .from('attendance_audit_logs')
       .select('*, attendance_locations(name), employees(name)')
-      .eq('company_id', companyId)
+      .eq('company_id', targetCompanyId)
       .order('created_at', { ascending: false })
       .limit(limit)
 
