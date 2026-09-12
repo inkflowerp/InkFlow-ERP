@@ -54,13 +54,14 @@ export function resolveSubscriptionPlan(
     status?: SubscriptionStatus
     plan_code?: PlanCode
     plan_name?: string
+    plan_name_bn?: string
   } | null
 ): ResolvedSubscriptionState {
   if (!subscription) {
     return {
       planCode: 'trial',
-      planName: 'Free Trial (14 Days)',
-      planNameBn: '১৪ দিনের ফ্রি ট্রায়াল',
+      planName: 'Free Trial',
+      planNameBn: 'ফ্রি ট্রায়াল',
       status: 'trial',
       badgeTextEn: 'Trial',
       badgeTextBn: 'ফ্রি ট্রায়াল',
@@ -77,8 +78,8 @@ export function resolveSubscriptionPlan(
   if (isTrial) {
     return {
       planCode: 'trial',
-      planName: subscription.plan_name || 'Free Trial (14 Days)',
-      planNameBn: '১৪ দিনের ফ্রি ট্রায়াল',
+      planName: subscription.plan_name || 'Free Trial',
+      planNameBn: subscription.plan_name_bn || 'ফ্রি ট্রায়াল',
       status: subscription.status || 'trial',
       badgeTextEn: 'Trial',
       badgeTextBn: 'ফ্রি ট্রায়াল',
@@ -96,7 +97,7 @@ export function resolveSubscriptionPlan(
       : 'starter'
 
   const names: Record<PlanCode, { en: string; bn: string }> = {
-    trial: { en: 'Free Trial (14 Days)', bn: '১৪ দিনের ফ্রি ট্রায়াল' },
+    trial: { en: 'Free Trial', bn: 'ফ্রি ট্রায়াল' },
     starter: { en: 'Starter Plan', bn: 'স্টার্টার প্ল্যান' },
     business: { en: 'Business Plan', bn: 'বিজনেস প্ল্যান' },
     enterprise: { en: 'Enterprise Plan', bn: 'এন্টারপ্রাইজ প্ল্যান' },
@@ -104,11 +105,11 @@ export function resolveSubscriptionPlan(
 
   return {
     planCode: code,
-    planName: names[code].en,
-    planNameBn: names[code].bn,
+    planName: subscription.plan_name || names[code].en,
+    planNameBn: subscription.plan_name_bn || names[code].bn,
     status: subscription.status || 'active',
     badgeTextEn: code.charAt(0).toUpperCase() + code.slice(1),
-    badgeTextBn: names[code].bn,
+    badgeTextBn: subscription.plan_name_bn || names[code].bn,
     isTrial: false,
     isSuspended,
     isPastDue,
