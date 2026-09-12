@@ -191,7 +191,7 @@ export default function QuotationDetailPage() {
 
   return (
     <FeatureGate feature="quotation_pdf">
-      <div className="space-y-6 max-w-6xl">
+      <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
         {/* Non-print Top Controls Bar */}
       <div className="print:hidden space-y-4">
         <Link
@@ -520,7 +520,7 @@ export default function QuotationDetailPage() {
         </div>
 
         {/* Signature Area */}
-        <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-slate-300 text-xs">
+        <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-slate-300 text-xs page-break-inside-avoid print-avoid-break">
           <div className="text-center space-y-1">
             <div className="font-bold text-slate-900">{quote.salesperson_name}</div>
             <div className="text-[11px] text-slate-500">

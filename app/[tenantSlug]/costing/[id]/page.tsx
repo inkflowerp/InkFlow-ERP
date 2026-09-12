@@ -85,7 +85,7 @@ export default function JobCostingDetailPage() {
 
   return (
     <FeatureGate feature="job_costing">
-      <div className="space-y-6 max-w-5xl print:max-w-none print:m-0 print:p-0">
+      <div className="space-y-6 max-w-5xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
         {/* Non-Print Action Bar */}
       <div className="print:hidden flex items-center justify-between">
         <Link
@@ -130,9 +130,9 @@ export default function JobCostingDetailPage() {
       {/* =========================================================================
           PRINTABLE JOB COST TRAVELER & PROFIT AUDIT
          ========================================================================= */}
-      <div className="bg-white dark:bg-slate-950 p-8 sm:p-12 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0 text-xs text-slate-900 dark:text-white space-y-6">
+      <div className="bg-white dark:bg-slate-950 print:bg-white print:dark:bg-white text-slate-900 dark:text-white print:text-slate-900 print:dark:text-slate-900 p-8 sm:p-12 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0 text-xs space-y-6">
         {/* Letterhead */}
-        <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100">
+        <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100 print:border-slate-900">
           <h1 className="text-xl font-black tracking-tight">{company?.name || 'Printing & Signage Solutions'}</h1>
           <p className="text-slate-500 text-[11px]">42/1 Motijheel Commercial Area, Dhaka-1000 • Phone: +8801712000000</p>
           <div className="inline-block mt-2 px-5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 font-black text-sm tracking-wider uppercase border border-slate-300 dark:border-slate-700">
@@ -281,7 +281,7 @@ export default function JobCostingDetailPage() {
         </div>
 
         {/* Dual Signatures */}
-        <div className="pt-12 flex justify-between items-end text-xs">
+        <div className="pt-12 flex justify-between items-end text-xs page-break-inside-avoid print-avoid-break">
           <div className="text-center space-y-2">
             <div className="font-mono text-slate-400">Audited By: Floor Production Supervisor</div>
             <div className="border-t border-slate-400 w-52 pt-1 font-bold">

@@ -94,7 +94,7 @@ export function PrintableQrPoster({
       {/* Printable Poster Sheet (A4 format) */}
       <div
         ref={posterRef}
-        className="bg-white text-slate-900 p-8 sm:p-12 rounded-2xl border border-slate-300 shadow-2xl max-w-lg mx-auto print:max-w-none print:w-full print:p-8 print:shadow-none print:border-none print:rounded-none"
+        className="bg-white text-slate-900 print:bg-white print:dark:bg-white print:text-slate-900 print:dark:text-slate-900 p-8 sm:p-12 rounded-2xl border border-slate-300 shadow-2xl max-w-lg mx-auto print:max-w-none print:w-full print:p-8 print:shadow-none print:border-none print:rounded-none"
       >
         {/* Poster Header */}
         <div className="text-center space-y-2 border-b-2 border-slate-900 pb-6">

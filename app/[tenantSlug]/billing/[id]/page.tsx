@@ -142,10 +142,10 @@ export default function InvoiceCockpitPage() {
       {/* =========================================================================
           DOCUMENT PRESENTATION CONTAINER (Printable)
          ========================================================================= */}
-      <div className="bg-white dark:bg-slate-950 p-6 sm:p-10 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0">
+      <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 p-6 sm:p-10 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0 print:w-full">
         {/* MODE 1: NBR MUSHAK 6.3 VAT INVOICE */}
         {docMode === 'vat_invoice' && (
-          <div className="space-y-6 text-xs text-slate-900 dark:text-white">
+          <div className="space-y-6 text-xs text-slate-900 dark:text-white print:text-slate-900">
             {/* Header: Government of Bangladesh */}
             <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100">
               <div className="font-bold text-sm">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার, জাতীয় রাজস্ব বোর্ড</div>

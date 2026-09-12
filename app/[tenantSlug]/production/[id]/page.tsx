@@ -91,12 +91,12 @@ export default function ProductionJobDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
       {/* Header & Back Link */}
       <div>
         <Link
           href={`/${slug}/production`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Production Terminal
@@ -105,29 +105,29 @@ export default function ProductionJobDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono print:text-slate-900">
                 {job.production_job_number}
               </h1>
-              <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+              <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 print:border-slate-400 print:text-slate-800 print:bg-slate-100">
                 {job.department}
               </span>
-              <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 print:border-slate-400 print:text-slate-800 print:bg-slate-100">
                 {job.status.replace('_', ' ')}
               </span>
             </div>
-            <div className="text-base font-bold text-slate-800 dark:text-slate-200">
+            <div className="text-base font-bold text-slate-800 dark:text-slate-200 print:text-slate-900">
               {job.product_name}
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-0.5">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-0.5 print:text-slate-700">
               <span>Customer: <strong>{job.customer_name}</strong></span>
               <span>•</span>
-              <span>Deadline: <strong className="text-red-600">{job.deadline}</strong></span>
+              <span>Deadline: <strong className="text-red-600 print:text-red-800">{job.deadline}</strong></span>
               <span>•</span>
               <span>Qty: <strong>{job.quantity}</strong></span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 print:hidden">
             <Button
               size="sm"
               onClick={() => window.print()}

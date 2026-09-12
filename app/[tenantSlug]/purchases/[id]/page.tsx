@@ -250,12 +250,12 @@ export default function PurchaseOrderDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
       {/* Back Link & Header */}
       <div>
         <Link
           href={`/${slug}/purchases`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Purchase Orders
@@ -264,26 +264,26 @@ export default function PurchaseOrderDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono print:text-slate-900">
                 {po.po_number}
               </h1>
-              <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300">
+              <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 print:border-slate-400 print:text-slate-800 print:bg-slate-100">
                 {po.status.replace('_', ' ')}
               </span>
             </div>
-            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+            <div className="text-sm font-bold text-slate-800 dark:text-slate-200 print:text-slate-900">
               Supplier: {po.supplier_name}
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-0.5">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-0.5 print:text-slate-700">
               <span>Date Issued: <strong>{po.po_date}</strong></span>
               <span>•</span>
-              <span>Expected Delivery: <strong className="text-indigo-600">{po.expected_delivery_date}</strong></span>
+              <span>Expected Delivery: <strong className="text-indigo-600 print:text-indigo-800">{po.expected_delivery_date}</strong></span>
               <span>•</span>
               <span>Created By: {po.created_by_name}</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 print:hidden">
             {/* Receive Material Button */}
             {po.status !== 'received' && po.status !== 'paid' && (
               <Button
@@ -379,9 +379,9 @@ export default function PurchaseOrderDetailPage() {
         </CardHeader>
         <CardContent className="p-0">
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
+          <div className="hidden md:block print:block overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800 print:bg-slate-100 print:text-slate-800">
                 <tr>
                   <th className="py-3 px-4">Material Name</th>
                   <th className="py-3 px-4 text-center">Ordered</th>
@@ -391,35 +391,35 @@ export default function PurchaseOrderDetailPage() {
                   <th className="py-3 px-4 text-right">Total (৳)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 print:divide-slate-200">
                 {po.items.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/50">
                     <td className="py-3.5 px-4">
-                      <strong className="text-slate-900 dark:text-white text-xs">{item.material_name}</strong>
+                      <strong className="text-slate-900 dark:text-white text-xs print:text-slate-900">{item.material_name}</strong>
                     </td>
 
                     {/* Ordered */}
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-900 dark:text-white">
+                    <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
                       {item.quantity_ordered} {item.unit}
                     </td>
 
                     {/* Received */}
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20">
+                    <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 print:bg-transparent print:text-emerald-800">
                       {item.quantity_received} {item.unit}
                     </td>
 
                     {/* Remaining */}
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-red-600 bg-red-50/40 dark:bg-red-950/20">
+                    <td className="py-3.5 px-4 text-center font-mono font-bold text-red-600 bg-red-50/40 dark:bg-red-950/20 print:bg-transparent print:text-red-800">
                       {item.quantity_remaining} {item.unit}
                     </td>
 
                     {/* Unit Cost */}
-                    <td className="py-3.5 px-4 text-right font-mono text-xs">
+                    <td className="py-3.5 px-4 text-right font-mono text-xs print:text-slate-900">
                       ৳ {formatBDT(item.unit_cost)}
                     </td>
 
                     {/* Total */}
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
                       ৳ {formatBDT(item.total_cost)}
                     </td>
                   </tr>
@@ -429,7 +429,7 @@ export default function PurchaseOrderDetailPage() {
           </div>
 
           {/* Mobile Item Cards */}
-          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+          <div className="md:hidden print:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
             {po.items.map((item) => (
               <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
                 <div className="flex items-center justify-between">

@@ -85,26 +85,31 @@ export default function PlatformLayout({
 
   return (
     <ToastProvider>
-      <div className="dark h-screen max-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white overflow-hidden">
+      <div className="dark h-screen max-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-slate-900">
         {/* Global Header */}
-        <PlatformHeader />
+        <div className="print:hidden">
+          <PlatformHeader />
+        </div>
 
         {/* Main Body with Sidebar + Content Area */}
-        <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden print:overflow-visible print:h-auto print:min-h-0 print:block">
           {/* Navigation Sidebar */}
-          <PlatformSidebar />
+          <div className="print:hidden">
+            <PlatformSidebar />
+          </div>
 
           {/* Page Content Container */}
-          <main className="flex-1 min-h-0 min-w-0 p-3 sm:p-5 lg:p-8 overflow-y-auto max-w-[1700px] pb-24 lg:pb-8">
+          <main className="flex-1 min-h-0 min-w-0 p-3 sm:p-5 lg:p-8 overflow-y-auto max-w-[1700px] pb-24 lg:pb-8 print:p-0 print:m-0 print:overflow-visible print:h-auto print:max-w-none">
             {children}
           </main>
         </div>
 
         {/* Mobile Bottom Navigation Bar */}
-        <PlatformMobileBottomNav />
-
-        {/* Top-tier Realtime Notification Popups */}
-        <RealtimeNotificationPopup />
+        <div className="print:hidden">
+          <PlatformMobileBottomNav />
+          {/* Top-tier Realtime Notification Popups */}
+          <RealtimeNotificationPopup />
+        </div>
       </div>
     </ToastProvider>
   )

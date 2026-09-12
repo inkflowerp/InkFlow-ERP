@@ -691,7 +691,7 @@ export default function OrderDetailPage() {
               <div>QC Inspector Passed</div>
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-2 print:hidden">
               <Button onClick={() => window.print()} className="bg-slate-900 text-white text-xs">
                 <Printer className="h-3.5 w-3.5 mr-1" />
                 Print Traveler Ticket

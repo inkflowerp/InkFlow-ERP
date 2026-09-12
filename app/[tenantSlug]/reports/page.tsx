@@ -35,7 +35,7 @@ import {
   ReportsService,
 } from '@/services/reports.service'
 import { ReportFilterState } from '@/types/reports.types'
-import { formatBDT } from '@/lib/formatters'
+import { formatBDT, formatDate } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { SalesOrderRecord } from '@/types/order.types'
@@ -180,7 +180,28 @@ export default function ReportingAnalyticsPage() {
 
   return (
     <FeatureGate feature="reports">
-      <div className="space-y-6 max-w-7xl print:max-w-none print:m-0 print:p-0">
+      <div className="space-y-6 max-w-7xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
+      {/* Printable Report Header (Visible Only When Printing) */}
+      <div className="hidden print:block border-b-2 border-slate-900 pb-4 mb-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">
+              {company?.name || 'Printing & Signage Solutions'}
+            </h1>
+            <p className="text-xs text-slate-600 font-semibold mt-0.5">
+              Executive Business Intelligence & Financial Statement Report
+            </p>
+          </div>
+          <div className="text-right text-xs text-slate-600">
+            <div className="font-bold text-slate-900">
+              Module: {activeTab.toUpperCase()}
+            </div>
+            <div>Period: {filters.dateRange.toUpperCase().replace('_', ' ')}</div>
+            <div>Printed: {formatDate(new Date(), 'en', { dateStyle: 'medium', timeStyle: 'short' })}</div>
+          </div>
+        </div>
+      </div>
+
       {/* Non-Print Header & Filter Bar */}
       <div className="print:hidden space-y-4">
         <PageHeader
