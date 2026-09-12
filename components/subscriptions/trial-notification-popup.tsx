@@ -88,7 +88,7 @@ export function TrialNotificationPopup() {
     return (
       <aside
         aria-label="Trial Notification"
-        className="fixed bottom-20 md:bottom-5 right-4 z-40 animate-in fade-in slide-in-from-bottom-3 duration-300"
+        className="fixed bottom-20 md:bottom-5 right-4 z-[99990] animate-in fade-in slide-in-from-bottom-3 duration-300"
       >
         <button
           onClick={() => setIsMinimized(false)}
@@ -125,7 +125,7 @@ export function TrialNotificationPopup() {
     <aside
       aria-label="Trial Notification"
       className={cn(
-        'fixed bottom-20 md:bottom-5 right-4 left-4 sm:left-auto sm:w-[380px] z-40',
+        'fixed bottom-20 md:bottom-5 right-4 left-4 sm:left-auto sm:w-[380px] z-[99990]',
         'rounded-2xl border shadow-2xl backdrop-blur-xl p-4 transition-all duration-300',
         'animate-in fade-in slide-in-from-bottom-4',
         isTrialExpired

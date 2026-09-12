@@ -22,6 +22,14 @@ import {
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { cn } from '@/lib/utils'
+import {
+  playNotificationSound,
+  isSoundMuted,
+  setSoundMuted,
+  toggleSoundMuted,
+  NotificationSoundType,
+} from '@/lib/notifications/sound-manager'
+import { showBrowserNotification } from '@/lib/notifications/browser-notification'
 
 export type PopupNotificationType =
   | 'order'
@@ -50,55 +58,6 @@ export interface RealtimePopupNotification {
   meta?: Record<string, any>
 }
 
-// Web Audio API Polyphonic Synthesizer for modern, soft notification chimes
-function playChime(type: PopupNotificationType = 'system') {
-  if (typeof window === 'undefined') return
-  try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-    if (!AudioContextClass) return
-
-    const ctx = new AudioContextClass()
-    if (ctx.state === 'suspended') {
-      ctx.resume()
-    }
-
-    const now = ctx.currentTime
-
-    // Choose harmonious frequency pairs based on notification archetype
-    let freqs = [523.25, 659.25] // C5, E5 (standard pleasant major third)
-    if (type === 'payment' || type === 'success') {
-      freqs = [587.33, 880.0] // D5, A5 (bright, rewarding)
-    } else if (type === 'order') {
-      freqs = [523.25, 783.99] // C5, G5 (celebratory fifth)
-    } else if (type === 'warning') {
-      freqs = [440.0, 415.3] // A4, G#4 (gentle caution)
-    } else if (type === 'delivery') {
-      freqs = [659.25, 783.99] // E5, G5 (swift dispatch)
-    }
-
-    freqs.forEach((freq, idx) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(freq, now + idx * 0.08)
-
-      // Soft envelope (gentle attack, smooth decay)
-      gain.gain.setValueAtTime(0, now + idx * 0.08)
-      gain.gain.linearRampToValueAtTime(0.08, now + idx * 0.08 + 0.03)
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.45)
-
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-
-      osc.start(now + idx * 0.08)
-      osc.stop(now + idx * 0.08 + 0.46)
-    })
-  } catch (err) {
-    // Audio context may be restricted by browser autoplay policy before first gesture
-  }
-}
-
 interface PopupItemProps {
   notification: RealtimePopupNotification
   onDismiss: (id: string) => void
@@ -110,7 +69,6 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
   const duration = notification.durationMs || 6500
   const [progress, setProgress] = useState(100)
   const [isPaused, setIsPaused] = useState(false)
-  const startTimeRef = useRef(Date.now())
   const remainingTimeRef = useRef(duration)
 
   useEffect(() => {
@@ -220,7 +178,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
       role="status"
       aria-live="polite"
       className={cn(
-        'group relative overflow-hidden rounded-2xl bg-slate-900/95 dark:bg-slate-950/95 text-white shadow-2xl border border-slate-700/60 dark:border-slate-800 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in-from-top-3 border-l-4',
+        'group relative overflow-hidden rounded-2xl bg-slate-900/95 dark:bg-slate-950/95 text-white shadow-2xl border border-slate-700/60 dark:border-slate-800 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in-from-top-3 border-l-4 pointer-events-auto',
         theme.borderAccent
       )}
     >
@@ -300,7 +258,21 @@ export function RealtimeNotificationPopup() {
   const { company } = useTenant()
   const { tBilingual } = useI18n()
   const [queue, setQueue] = useState<RealtimePopupNotification[]>([])
-  const [isMuted, setIsMuted] = useState(false)
+  const [muted, setMuted] = useState(isSoundMuted())
+
+  // Sync mute state with SoundManager
+  useEffect(() => {
+    const handleMuteChange = (e: Event) => {
+      const custom = e as CustomEvent<{ muted: boolean }>
+      if (custom.detail) {
+        setMuted(custom.detail.muted)
+      } else {
+        setMuted(isSoundMuted())
+      }
+    }
+    window.addEventListener('printerp_sound_mute_changed', handleMuteChange)
+    return () => window.removeEventListener('printerp_sound_mute_changed', handleMuteChange)
+  }, [])
 
   const dismissNotification = useCallback((id: string) => {
     setQueue((prev) => prev.filter((item) => item.id !== id))
@@ -319,15 +291,33 @@ export function RealtimeNotificationPopup() {
     [company?.slug, router]
   )
 
+  const handleToggleMute = useCallback(() => {
+    const next = toggleSoundMuted()
+    setMuted(next)
+  }, [])
+
   useEffect(() => {
     const handleNotificationEvent = (event: Event) => {
       const customEvent = event as CustomEvent<RealtimePopupNotification>
       if (customEvent.detail) {
         const item = customEvent.detail
 
-        // Play audio chime if not explicitly muted or silent
-        if (!item.silent && !isMuted) {
-          playChime(item.type)
+        // Play audio chime if not silent
+        if (!item.silent) {
+          const soundType: NotificationSoundType =
+            item.type === 'payment'
+              ? 'payment'
+              : item.type === 'order'
+              ? 'order'
+              : item.type === 'delivery'
+              ? 'delivery'
+              : item.type === 'warning'
+              ? 'warning'
+              : item.type === 'success'
+              ? 'success'
+              : 'system'
+
+          playNotificationSound(soundType)
         }
 
         // Add to active queue (capped at max 4 stacked notifications)
@@ -342,29 +332,29 @@ export function RealtimeNotificationPopup() {
     return () => {
       window.removeEventListener('printerp_popup_notification', handleNotificationEvent)
     }
-  }, [isMuted])
+  }, [])
 
   if (queue.length === 0) return null
 
   return (
     <div
       aria-live="polite"
-      className="fixed top-16 sm:top-5 right-4 left-4 sm:left-auto sm:w-[420px] z-50 flex flex-col gap-2 pointer-events-none"
+      className="fixed top-16 sm:top-5 right-4 left-4 sm:left-auto sm:w-[420px] z-[99999] flex flex-col gap-2 pointer-events-none"
     >
       {/* Controls Bar when multiple notifications are stacked */}
       {queue.length > 1 && (
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/60 backdrop-blur-md text-xs text-slate-300 pointer-events-auto shadow-lg animate-in fade-in">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700/60 backdrop-blur-md text-xs text-slate-300 pointer-events-auto shadow-2xl animate-in fade-in">
           <span className="font-semibold text-[11px] bangla-text">
             {queue.length} {tBilingual('Active Alerts', 'টি নোটিফিকেশন')}
           </span>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setIsMuted(!isMuted)}
+              onClick={handleToggleMute}
               className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
-              title={isMuted ? 'Unmute alerts' : 'Mute alert sounds'}
+              title={muted ? 'Unmute alerts' : 'Mute alert sounds'}
             >
-              {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              {muted ? <VolumeX className="h-3.5 w-3.5 text-rose-400" /> : <Volume2 className="h-3.5 w-3.5 text-emerald-400" />}
             </button>
             <button
               type="button"

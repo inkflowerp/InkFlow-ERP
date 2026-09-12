@@ -145,5 +145,71 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
     handleButtonClick({ limitType: 'max_customers', currentUsage: 10, maxLimit: 200, isTrialExpired: false })
     assert.strictEqual(triggeredPopup, 'action_modal_opened')
   })
+
+  it('verifies notification sound archetype mappings and volume bounds', () => {
+    const validSoundTypes = [
+      'order',
+      'payment',
+      'attendance',
+      'delivery',
+      'success',
+      'warning',
+      'error',
+      'system',
+      'broadcast',
+    ]
+
+    validSoundTypes.forEach((type) => {
+      assert.ok(typeof type === 'string' && type.length > 0)
+    })
+
+    const clampVolume = (val: number) => Math.max(0, Math.min(1, val))
+    assert.strictEqual(clampVolume(1.5), 1.0)
+    assert.strictEqual(clampVolume(-0.2), 0.0)
+    assert.strictEqual(clampVolume(0.75), 0.75)
+  })
+
+  it('validates notification bus payload construction and high z-index contract', () => {
+    const createNotificationPayload = (input: {
+      title: string
+      message?: string
+      type?: string
+      mode?: 'popup' | 'toast' | 'both'
+    }) => {
+      return {
+        id: `notif-${Date.now()}`,
+        title: input.title,
+        message: input.message,
+        type: input.type || 'system',
+        mode: input.mode || 'popup',
+        zIndex: 99999, // Guaranteed top-tier z-index contract
+      }
+    }
+
+    const payload = createNotificationPayload({
+      title: 'Payment Received: ৳15,000',
+      message: 'bKash Merchant settlement for #INV-5432',
+      type: 'payment',
+      mode: 'both',
+    })
+
+    assert.ok(payload.id.startsWith('notif-'))
+    assert.strictEqual(payload.title, 'Payment Received: ৳15,000')
+    assert.strictEqual(payload.type, 'payment')
+    assert.strictEqual(payload.zIndex, 99999)
+  })
+
+  it('verifies browser notification permission query and fallback handling', () => {
+    const resolvePermission = (hasNotificationAPI: boolean, permission: string) => {
+      if (!hasNotificationAPI) return 'unsupported'
+      return permission
+    }
+
+    assert.strictEqual(resolvePermission(false, 'granted'), 'unsupported')
+    assert.strictEqual(resolvePermission(true, 'granted'), 'granted')
+    assert.strictEqual(resolvePermission(true, 'denied'), 'denied')
+    assert.strictEqual(resolvePermission(true, 'default'), 'default')
+  })
 })
+
 

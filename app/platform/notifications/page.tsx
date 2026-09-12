@@ -42,6 +42,8 @@ import {
   markAllNotificationsReadAction,
 } from '@/actions/platform.actions'
 import { PlatformNotificationItem } from '@/types/platform.types'
+import { notify } from '@/lib/notifications/notification-bus'
+import { playNotificationSound } from '@/lib/notifications/sound-manager'
 
 export default function PlatformNotificationsPage() {
   const [notifications, setNotifications] = useState<PlatformNotificationItem[]>([])
@@ -100,6 +102,7 @@ export default function PlatformNotificationsPage() {
         setNotifications((prev) =>
           prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
         )
+        playNotificationSound('success')
         showToast('Notification marked as read.')
       }
     } catch {
@@ -116,6 +119,7 @@ export default function PlatformNotificationsPage() {
       const res = await markAllNotificationsReadAction()
       if (res.success) {
         setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+        playNotificationSound('success')
         showToast('All notifications marked as read.')
       }
     } catch {
@@ -194,6 +198,9 @@ export default function PlatformNotificationsPage() {
       if (res.success && res.data) {
         setNotifications((prev) => [res.data!, ...prev])
         setBroadcastModalOpen(false)
+        notify.broadcast(res.data.title, res.data.message, {
+          actionUrl: res.data.action_url || undefined,
+        })
         setBroadcastForm({
           title: '',
           message: '',
