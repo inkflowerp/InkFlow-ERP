@@ -12,10 +12,7 @@ import {
   ShieldAlert,
   Eye,
   EyeOff,
-  Printer,
-  ShieldCheck,
   RefreshCw,
-  ExternalLink,
   Sparkles,
   CheckCircle2,
   AlertTriangle,
@@ -214,19 +211,7 @@ function LoginForm() {
 
   return (
     <Card className="border-slate-200/90 shadow-2xl shadow-slate-200/50 dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-black/40 backdrop-blur-xl">
-      <CardHeader className="space-y-1.5 text-left pb-3 pt-5 px-5 sm:px-6">
-        {/* Top Header Badge & Identity */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gradient-to-r from-cyan-500/15 via-blue-500/15 to-indigo-500/15 border border-cyan-500/30 text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
-            <Printer className="h-3 w-3 text-cyan-600 dark:text-cyan-400 shrink-0" />
-            <span>{t('auth.portal_badge') || 'BUSINESS & SHOP FLOOR PORTAL'}</span>
-          </div>
-
-          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-            {t('auth.sec_rls') || 'Tenant RLS'}
-          </span>
-        </div>
-
+      <CardHeader className="space-y-1.5 text-left pb-3 pt-6 px-5 sm:px-6">
         <div>
           <CardTitle className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             {t('auth.login_title')}
@@ -375,7 +360,7 @@ function LoginForm() {
           </div>
 
           {/* Remember Me Checkbox */}
-          <div className="flex items-center justify-between pt-0.5">
+          <div className="flex items-center pt-0.5">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -387,10 +372,6 @@ function LoginForm() {
                 {t('auth.remember_me') || 'Remember Me'}
               </span>
             </label>
-
-            <span className="text-[11px] text-slate-400">
-              {t('auth.sec_ssl') || '256-Bit SSL'}
-            </span>
           </div>
 
           {/* Primary Submit Button */}
@@ -445,8 +426,8 @@ function LoginForm() {
           </Button>
         </CardContent>
 
-        {/* Card Footer: Sign Up Link & Cross-Portal Navigation */}
-        <CardFooter className="flex flex-col space-y-3 pt-2 pb-5 px-5 sm:px-6 text-center text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/80">
+        {/* Card Footer: Sign Up Link */}
+        <CardFooter className="flex flex-col space-y-3 pt-4 pb-5 px-5 sm:px-6 text-center text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/80">
           <div>
             {t('auth.no_account')}{' '}
             <Link
@@ -454,18 +435,6 @@ function LoginForm() {
               className="font-bold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 transition-colors hover:underline py-1"
             >
               {t('auth.sign_up')}
-            </Link>
-          </div>
-
-          {/* Differentiating link to Platform Superadmin login */}
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 w-full flex items-center justify-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-            <span>{t('auth.platform_admin_hint') || 'Are you a Platform Superadministrator?'}</span>
-            <Link
-              href="/platform/login"
-              className="font-semibold text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 inline-flex items-center gap-0.5 hover:underline"
-            >
-              <span>{t('auth.platform_admin_link') || 'Platform Control Center'}</span>
-              <ExternalLink className="h-3 w-3" />
             </Link>
           </div>
         </CardFooter>
