@@ -21,7 +21,6 @@ export function UserMenu() {
 
   const pathSlug = pathname ? pathname.split('/')[1] : null
   const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'my-company'
-  const isOwner = currentRole === 'owner' || currentRole === 'admin'
 
   const userName = currentUser?.profile?.full_name
     ? tBilingual(currentUser.profile.full_name, currentUser.profile.full_name_bn || currentUser.profile.full_name)
@@ -104,19 +103,6 @@ export function UserMenu() {
               <Shield className="h-3.5 w-3.5 text-amber-500" />
               <span>{tBilingual('Subscription & Plan', 'সাবস্ক্রিপশন ও প্ল্যান')}</span>
             </button>
-            {isOwner && (
-              <button
-                type="button"
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer"
-                onClick={() => {
-                  setIsOpen(false)
-                  router.push('/platform-admin')
-                }}
-              >
-                <Shield className="h-3.5 w-3.5 text-indigo-500" />
-                <span>Platform Owner Portal</span>
-              </button>
-            )}
           </div>
 
           <div className="border-t border-slate-100 pt-1 dark:border-slate-800">
