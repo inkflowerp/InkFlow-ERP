@@ -1,13 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
 import {
   Crown,
   CheckCircle2,
   Sparkles,
   ArrowRight,
-  ShieldCheck,
   Zap,
   Users,
   Building,
@@ -185,15 +183,6 @@ export default function TenantSubscriptionPage() {
         descriptionBn="আপনার প্রতিষ্ঠানের সাবস্ক্রিপশন প্ল্যান, রিসোর্স কোটা ও বিলিং স্ট্যাটাস পরিচালনা করুন।"
         icon={Crown}
         iconColor="text-amber-500"
-        actions={
-          <Link
-            href="/platform/plans"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 transition-colors bangla-text"
-          >
-            <ShieldCheck className="h-3.5 w-3.5 text-purple-600" />
-            {tBilingual('Platform Owner Console', 'প্ল্যাটফর্ম ওনার কনসোল')}
-          </Link>
-        }
       />
 
       {/* Notification Toast */}
