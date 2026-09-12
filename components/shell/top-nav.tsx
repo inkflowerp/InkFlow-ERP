@@ -16,6 +16,7 @@ import {
   CreditCard,
   Users,
   Radio,
+  Headphones,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -193,6 +194,17 @@ export function TopNav() {
         <div className="hidden sm:block shrink-0">
           <LanguageSwitcher />
         </div>
+
+        {/* Live Support Link Button */}
+        <Link
+          href={`/${slug}/support`}
+          className="flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-xl border border-slate-200/90 bg-slate-100/60 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:border-indigo-900 cursor-pointer shrink-0 transition-colors"
+          title="Live Help & Support Desk"
+          aria-label="Support Desk"
+        >
+          <Headphones className="h-4 w-4" />
+        </Link>
+
         <NotificationsDropdown />
         <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0" />
         <UserMenu />

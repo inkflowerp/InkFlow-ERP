@@ -1,7 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { AuditLogEntry, DeviceMetadata } from '@/types/audit.types'
-import { sanitizeForLog } from '@/lib/security/secrets'
+import { createAdminClient } from '../supabase/admin.ts'
+import type { AuditLogEntry, DeviceMetadata } from '../../types/audit.types.ts'
+import { sanitizeForLog } from '../security/secrets.ts'
 
 export class AuditRepository {
   static async logEvent(params: {
@@ -82,7 +81,7 @@ export class AuditRepository {
     userId?: string
     limit?: number
   }): Promise<AuditLogEntry[]> {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     let query = (supabase as any)
       .from('audit_logs')
       .select('*')

@@ -63,6 +63,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     settings: { view: true },
     tasks: { view: true, complete: true },
     notifications: { view: true },
+    support: { view: true, create: true, send: true },
   },
 
   designer: {
@@ -79,6 +80,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     settings: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
+    support: { view: true, create: true, send: true },
   },
 
   production_manager: {
@@ -95,6 +97,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     settings: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
+    support: { view: true, create: true, send: true },
   },
 
   operator: {
@@ -111,6 +114,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     settings: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
+    support: { view: true, create: true, send: true },
   },
 
   store_manager: {
@@ -127,6 +131,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     settings: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
+    support: { view: true, create: true, send: true },
   },
 
   accountant: {
@@ -143,6 +148,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     settings: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
+    support: { view: true, create: true, send: true },
   },
 
   delivery_coordinator: {
@@ -159,6 +165,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     settings: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
+    support: { view: true, create: true, send: true },
   },
 
   general_staff: {
@@ -175,6 +182,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     settings: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
+    support: { view: true, create: true, send: true },
   },
 }
 

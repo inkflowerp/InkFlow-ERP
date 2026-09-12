@@ -35,7 +35,9 @@ import {
   Filter,
   SlidersHorizontal,
   ShieldCheck,
+  MessageSquare,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -56,8 +58,13 @@ import {
   PlatformSupportSessionRecord,
   PlatformSupportOverviewStats,
 } from '@/types/platform.types'
+import { PlatformSupportConsole } from '@/components/support/platform-support-console'
+import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
+import { PlatformUserRecord } from '@/lib/auth/types'
 
 export default function PlatformSupportPage() {
+  const [supportView, setSupportView] = useState<'chat' | 'sessions'>('chat')
+  const [adminUser, setAdminUser] = useState<PlatformUserRecord | null>(null)
   const [companies, setCompanies] = useState<PlatformTenantCompany[]>([])
   const [supportSessions, setSupportSessions] = useState<PlatformSupportSessionRecord[]>([])
   const [stats, setStats] = useState<PlatformSupportOverviewStats | null>(null)
@@ -99,11 +106,16 @@ export default function PlatformSupportPage() {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [compRes, sessionsRes, statsRes] = await Promise.all([
+      const [compRes, sessionsRes, statsRes, userRes] = await Promise.all([
         getPlatformCompaniesAction({ pageSize: 200 }),
         getPlatformSupportSessionsAction(),
         getPlatformSupportOverviewStatsAction(),
+        getPlatformSessionUserAction(),
       ])
+
+      if (userRes) {
+        setAdminUser(userRes)
+      }
 
       if (compRes.success && compRes.data) {
         const compList = Array.isArray(compRes.data) ? compRes.data : compRes.data?.companies || []
@@ -375,79 +387,142 @@ export default function PlatformSupportPage() {
         </div>
       )}
 
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      {/* Top Navigation Subtabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">
-            <ShieldCheck className="h-4 w-4 text-amber-400" />
-            Audited Impersonation &amp; Zero-Trust Access
+          <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
+            <ShieldCheck className="h-4 w-4 text-indigo-400" />
+            Support Operations &amp; Live Triage
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-            <ShieldAlert className="h-7 w-7 text-amber-400" />
-            Tenant Support &amp; Impersonation Engine
+            <ShieldAlert className="h-7 w-7 text-indigo-400" />
+            Platform Support Center
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 mt-1">
-            Time-bound, cryptographically signed support access into tenant ERP workspaces. Every action is logged to the immutable platform audit ledger.
-          </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <Button
-            size="sm"
-            onClick={() => {
-              setSelectedCompany(null)
-              setSupportReason('')
-              setAccessLevel('read_only')
-              setDurationMinutes(120)
-              setActionError(null)
-              setShowInitiateModal(true)
-            }}
-            className="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs h-9 px-4 rounded-xl shadow-lg shadow-amber-600/20"
+        {/* View Mode Switcher Tabs */}
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800">
+          <button
+            type="button"
+            onClick={() => setSupportView('chat')}
+            className={cn(
+              'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer',
+              supportView === 'chat'
+                ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+            )}
           >
-            <Key className="h-3.5 w-3.5 mr-1.5" />
-            Initiate Support Session
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={handleExportCsv}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs h-9 px-3 rounded-xl"
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Live Chat &amp; Tickets</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSupportView('sessions')}
+            className={cn(
+              'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer',
+              supportView === 'sessions'
+                ? 'bg-amber-600 text-white shadow-sm shadow-amber-600/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+            )}
           >
-            <Download className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
-            Export CSV
-          </Button>
-
-          <Link href="/platform/audit">
-            <Button
-              size="sm"
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs h-9 px-3 rounded-xl"
-            >
-              <History className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
-              Audit Logs
-            </Button>
-          </Link>
-
-          <Button
-            size="sm"
-            onClick={() => loadData()}
-            disabled={loading}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs h-9 px-3 rounded-xl"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 text-slate-400 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+            <Key className="w-3.5 h-3.5" />
+            <span>Impersonation Sessions</span>
+            {activeSessions.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                {activeSessions.length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Executive Overview Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        {/* Active Support Sessions */}
-        <Card className="border-slate-800 bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="text-xs font-semibold text-slate-400">Live Active Sessions</div>
-            <div className="p-2 rounded-xl bg-amber-950/80 border border-amber-800 text-amber-400">
-              <Activity className="h-4 w-4" />
+      {/* VIEW 1: LIVE SUPPORT CONSOLE */}
+      {supportView === 'chat' && (
+        <div className="h-[calc(100vh-13.5rem)]">
+          <PlatformSupportConsole
+            currentAdminId={adminUser?.id}
+            currentAdminName={adminUser?.full_name}
+            onOpenImpersonationModal={(companyId, companyName) => {
+              const target = companies.find((c) => c.id === companyId)
+              if (target) {
+                setSelectedCompany(target)
+                setSupportReason('')
+                setAccessLevel('read_only')
+                setDurationMinutes(120)
+                setActionError(null)
+                setShowInitiateModal(true)
+                setSupportView('sessions')
+              }
+            }}
+          />
+        </div>
+      )}
+
+      {/* VIEW 2: SUPPORT IMPERSONATION SESSIONS */}
+      {supportView === 'sessions' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <p className="text-xs sm:text-sm text-slate-300">
+              Time-bound, cryptographically signed support access into tenant ERP workspaces. Every action is logged to the immutable platform audit ledger.
+            </p>
+
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSelectedCompany(null)
+                  setSupportReason('')
+                  setAccessLevel('read_only')
+                  setDurationMinutes(120)
+                  setActionError(null)
+                  setShowInitiateModal(true)
+                }}
+                className="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs h-9 px-4 rounded-xl shadow-lg shadow-amber-600/20"
+              >
+                <Key className="h-3.5 w-3.5 mr-1.5" />
+                Initiate Support Session
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={handleExportCsv}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs h-9 px-3 rounded-xl"
+              >
+                <Download className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
+                Export CSV
+              </Button>
+
+              <Link href="/platform/audit">
+                <Button
+                  size="sm"
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs h-9 px-3 rounded-xl"
+                >
+                  <History className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
+                  Audit Logs
+                </Button>
+              </Link>
+
+              <Button
+                size="sm"
+                onClick={() => loadData()}
+                disabled={loading}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs h-9 px-3 rounded-xl"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 text-slate-400 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
             </div>
+          </div>
+
+          {/* Executive Overview Metric Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            {/* Active Support Sessions */}
+            <Card className="border-slate-800 bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-semibold text-slate-400">Live Active Sessions</div>
+                <div className="p-2 rounded-xl bg-amber-950/80 border border-amber-800 text-amber-400">
+                  <Activity className="h-4 w-4" />
+                </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-black text-white">{activeSessions.length}</span>
@@ -944,6 +1019,8 @@ export default function PlatformSupportPage() {
           </table>
         </div>
       </Card>
+      </div>
+      )}
 
       {/* INITIATE SUPPORT SESSION MODAL */}
       {showInitiateModal && (

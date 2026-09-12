@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { LogOut, Settings, User as UserIcon, Shield } from 'lucide-react'
+import { LogOut, Settings, User as UserIcon, Shield, Headphones } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/use-auth'
@@ -102,6 +102,17 @@ export function UserMenu() {
             >
               <Shield className="h-3.5 w-3.5 text-amber-500" />
               <span>{tBilingual('Subscription & Plan', 'সাবস্ক্রিপশন ও প্ল্যান')}</span>
+            </button>
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
+              onClick={() => {
+                setIsOpen(false)
+                router.push(`/${slug}/support`)
+              }}
+            >
+              <Headphones className="h-3.5 w-3.5 text-indigo-500" />
+              <span>{tBilingual('Help & Support Desk', 'সহায়তা ও সাপোর্ট ডেস্ক')}</span>
             </button>
           </div>
 

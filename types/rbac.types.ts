@@ -49,6 +49,7 @@ export type PermissionModule =
   | 'settings'
   | 'tasks'
   | 'notifications'
+  | 'support'
 
 export type DataScope = 'own' | 'assigned' | 'department' | 'company'
 
@@ -165,6 +166,14 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
     description: 'Real-time job updates, alerts and internal communications',
     actions: ['view'],
     defaultScope: 'own',
+  },
+  support: {
+    module: 'support',
+    label: 'Support & Help Desk',
+    labelBn: 'সহায়তা ও হেল্প ডেস্ক',
+    description: 'Live support chat, ticket management and troubleshooting',
+    actions: ['view', 'create', 'edit', 'delete', 'manage'],
+    defaultScope: 'company',
   },
 }
 

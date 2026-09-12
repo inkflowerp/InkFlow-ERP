@@ -33,6 +33,7 @@ import {
   UserCheck,
   QrCode,
   MapPin,
+  Headphones,
 } from 'lucide-react'
 import { getNavigationConfig } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
@@ -69,6 +70,7 @@ const iconMap: Record<string, React.ElementType> = {
   UserCheck,
   QrCode,
   MapPin,
+  Headphones,
 }
 
 export function Sidebar() {

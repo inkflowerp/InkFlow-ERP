@@ -208,6 +208,13 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           badge: 'Auto',
         },
         {
+          title: 'Help & Support Desk',
+          titleBn: 'সহায়তা ও সাপোর্ট ডেস্ক',
+          href: `/${tenantSlug}/support`,
+          icon: 'Headphones',
+          badge: 'Live',
+        },
+        {
           title: 'Team Members',
           titleBn: 'টিম মেম্বার',
           href: `/${tenantSlug}/settings/users`,

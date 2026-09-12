@@ -30,6 +30,7 @@ export type RealtimeTopic =
   | 'live-sync'
   | 'users'
   | 'settings'
+  | 'support'
 
 export type RealtimeConnectionStatus =
   | 'connecting'
@@ -113,6 +114,10 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   communication_logs: STORAGE_KEYS.COMMUNICATION_LOGS,
   message_templates: STORAGE_KEYS.MESSAGE_TEMPLATES,
   channel_configs: STORAGE_KEYS.CHANNEL_CONFIGS,
+
+  // Support & Help Desk
+  support_conversations: STORAGE_KEYS.SUPPORT_CONVERSATIONS,
+  support_messages: STORAGE_KEYS.SUPPORT_MESSAGES,
 
   // Tenant Settings & Access
   companies: STORAGE_KEYS.COMPANY_PROFILE,

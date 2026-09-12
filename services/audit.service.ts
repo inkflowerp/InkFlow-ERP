@@ -3,15 +3,15 @@
 // Authoritative Supabase Database Audit Trail & Metadata
 // ==============================================================================
 
-import { AuditRepository } from '@/lib/repositories/audit.repository'
-import {
+import { AuditRepository } from '../lib/repositories/audit.repository.ts'
+import { AUDIT_ACTIONS } from '../types/audit.types.ts'
+import type {
   AuditLogEntry,
-  AUDIT_ACTIONS,
   AuditActionCode,
   AuditEntityDomain,
   DeviceMetadata,
-} from '@/types/audit.types'
-import { ApiResponse } from '@/types/common.types'
+} from '../types/audit.types.ts'
+import type { ApiResponse } from '../types/common.types.ts'
 
 export class AuditService {
   /**
