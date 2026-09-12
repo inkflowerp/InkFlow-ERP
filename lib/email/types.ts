@@ -52,11 +52,16 @@ export interface ProviderConnectionResult {
 export interface DecryptedGatewayConfig {
   id?: string
   provider: EmailProviderType
+  scope_type?: 'PLATFORM' | 'TENANT'
+  tenant_id?: string | null
   smtp_host?: string | null
   smtp_port?: number | null
   smtp_username?: string | null
   decrypted_secret?: string | null
   encryption_type?: EmailEncryptionType | null
+  gmail_account_email?: string | null
+  gmail_display_name?: string | null
+  token_expires_at?: string | null
   sender_name: string
   sender_email: string
   reply_to_email?: string | null
@@ -64,8 +69,18 @@ export interface DecryptedGatewayConfig {
     aws_region?: string
     ses_config_set?: string
     api_key?: string
+    oauth_scope?: string
+    access_token?: string
+    refresh_token?: string
+    client_id?: string
+    client_secret?: string
     [key: string]: any
   }
+  onTokenRefreshed?: (newTokens: {
+    access_token: string
+    expires_at: string
+    refresh_token?: string
+  }) => Promise<void>
 }
 
 export interface IEmailProvider {

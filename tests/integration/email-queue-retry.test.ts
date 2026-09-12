@@ -5,6 +5,19 @@ import { MockProviderAdapter } from '../../lib/email/adapters/mock.adapter.ts'
 
 describe('Email Queue Asynchronous Processing & Retry Unit Tests', () => {
   beforeEach(() => {
+    const tenantGw: any = {
+      id: 'gw-test-tenant',
+      tenant_id: 'tenant-test',
+      scope_type: 'TENANT',
+      provider: 'mock',
+      status: 'active',
+      is_default: true,
+      sender_name: 'Test Tenant',
+      sender_email: 'test@tenant.com',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    EmailDataStore.set('printerp_email_gateways', [tenantGw])
     EmailDataStore.set('printerp_email_queue', [])
     EmailDataStore.set('printerp_email_logs', [])
     MockProviderAdapter.clearHistory()

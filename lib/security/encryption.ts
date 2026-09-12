@@ -108,7 +108,7 @@ export function maskEmail(email: string): string {
 }
 
 /**
- * Sanitizes gateway records so encrypted credentials are stripped or masked before returning to client
+ * Sanitizes gateway records so encrypted credentials, passwords, and OAuth tokens are stripped or masked before returning to client
  */
 export function sanitizeGatewayRecord<T extends Record<string, any>>(record: T): T {
   if (!record) return record
@@ -121,6 +121,22 @@ export function sanitizeGatewayRecord<T extends Record<string, any>>(record: T):
   }
   if ('api_key' in clone) {
     ;(clone as any).api_key = maskCredential((clone as any).api_key)
+  }
+  if ('oauth_refresh_token' in clone) {
+    delete (clone as any).oauth_refresh_token
+  }
+  if ('oauth_access_token' in clone) {
+    delete (clone as any).oauth_access_token
+  }
+  if ('extra_settings' in clone && (clone as any).extra_settings && typeof (clone as any).extra_settings === 'object') {
+    const extra = { ...(clone as any).extra_settings }
+    delete extra.refresh_token
+    delete extra.access_token
+    delete extra.client_secret
+    if (extra.api_key) {
+      extra.api_key = maskCredential(extra.api_key)
+    }
+    ;(clone as any).extra_settings = extra
   }
   return clone
 }

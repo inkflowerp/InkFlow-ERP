@@ -37,10 +37,11 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
     assert.strictEqual(resolved.sender_email, 'billing@alphasign.com')
   })
 
-  it('2. Falls back to Platform Default Gateway when tenant has no custom gateway', async () => {
+  it('2. Fails closed (returns null) when tenant has no configured email gateway (Zero Cross-Scope Fallback)', async () => {
     const platformGateway: EmailGatewayRecord = {
       id: 'gw-platform-global',
       tenant_id: null,
+      scope_type: 'PLATFORM',
       provider: 'mock',
       type: 'transactional',
       sender_name: 'PrintERP Platform Pool',
@@ -54,12 +55,48 @@ describe('Email Gateway Resolver Priority Logic Tests', () => {
     EmailDataStore.set('printerp_email_gateways', [platformGateway])
 
     const resolved = await EmailGatewayService.resolveGateway('tenant-no-gw')
+    // Must return null, never fall back to platform gateway for a tenant!
+    assert.strictEqual(resolved, null)
+  })
+
+  it('3. Resolves Platform Gateway when requested under PLATFORM scope', async () => {
+    const platformGateway: EmailGatewayRecord = {
+      id: 'gw-platform-global',
+      tenant_id: null,
+      scope_type: 'PLATFORM',
+      provider: 'mock',
+      type: 'transactional',
+      sender_name: 'PrintERP Platform Pool',
+      sender_email: 'noreply@printerp.com',
+      status: 'active',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    EmailDataStore.set('printerp_email_gateways', [platformGateway])
+
+    const resolved = await EmailGatewayService.resolveGateway(null, 'PLATFORM')
     assert.ok(resolved)
     assert.strictEqual(resolved.id, 'gw-platform-global')
     assert.strictEqual(resolved.sender_email, 'noreply@printerp.com')
   })
 
-  it('3. Sends email successfully and records audit log', async () => {
+  it('4. Sends email successfully when gateway exists and records audit log', async () => {
+    const tenantGateway: EmailGatewayRecord = {
+      id: 'gw-tenant-123',
+      tenant_id: 'tenant-123',
+      provider: 'mock',
+      type: 'transactional',
+      sender_name: 'Alpha Sign Billing',
+      sender_email: 'billing@alphasign.com',
+      status: 'active',
+      is_default: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    EmailDataStore.set('printerp_email_gateways', [tenantGateway])
+
     const sendResult = await EmailGatewayService.sendEmail({
       tenantId: 'tenant-123',
       eventType: 'invoice_created',

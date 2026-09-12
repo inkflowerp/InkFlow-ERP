@@ -1,6 +1,7 @@
 // ==============================================================================
 // PrintERP SaaS - Email Gateway & Queue Orchestration Service
-// Manages gateway resolution, credential decryption, template merging, queue processing, and audit logging.
+// Manages gateway resolution, credential decryption, template merging, queue processing,
+// Gmail token refresh synchronization, and strict platform vs tenant scope isolation.
 // ==============================================================================
 
 import { createAdminClient } from '../lib/supabase/admin.ts'
@@ -12,7 +13,7 @@ import type {
   SendEmailOptions,
   SendEmailResult,
   ConnectionTestResult,
-  EmailGatewayFormData,
+  EmailScopeType,
 } from '../types/communication.types.ts'
 import { decryptSecret, encryptSecret, sanitizeGatewayRecord } from '../lib/security/encryption.ts'
 import { createEmailProvider } from '../lib/email/provider.factory.ts'
@@ -51,10 +52,11 @@ export class EmailDataStore {
   }
 }
 
-// Global Fallback Default Platform Gateway (when DB is empty or during offline dev)
+// Global Fallback Default Platform Gateway (when DB is empty or during offline dev / test environment)
 export const DEFAULT_PLATFORM_GATEWAY: EmailGatewayRecord = {
   id: 'gw-platform-default',
   tenant_id: null,
+  scope_type: 'PLATFORM',
   provider: 'mock',
   type: 'transactional',
   smtp_host: 'smtp.printerp.com',
@@ -76,17 +78,26 @@ export const DEFAULT_PLATFORM_GATEWAY: EmailGatewayRecord = {
 
 export class EmailGatewayService {
   /**
-   * Resolves the authoritative active gateway following priority logic:
-   * 1. Active Tenant Custom Gateway
-   * 2. Active Platform Default Gateway
-   * 3. In-memory / data store default
+   * Resolves the authoritative active gateway following strict ownership rules:
+   * 1. PLATFORM Scope -> Only resolves Platform Default Gateway (tenant_id IS NULL)
+   * 2. TENANT Scope -> Only resolves that Tenant's Active Gateway (tenant_id = company_id)
+   * FAIL-CLOSED: Tenant NEVER silently falls back to Platform Gateway!
    */
-  static async resolveGateway(tenantId?: string | null): Promise<EmailGatewayRecord | null> {
+  static async resolveGateway(
+    tenantId?: string | null,
+    scopeType?: EmailScopeType
+  ): Promise<EmailGatewayRecord | null> {
+    const effectiveScope: EmailScopeType = scopeType || (tenantId ? 'TENANT' : 'PLATFORM')
+
     try {
       const adminClient = createAdminClient()
 
-      // 1. Check if tenant has an active custom gateway
-      if (tenantId) {
+      if (effectiveScope === 'TENANT') {
+        if (!tenantId) {
+          return null
+        }
+
+        // 1. Query Tenant custom gateway
         const { data: tenantGw, error: tenantErr } = await (adminClient as any)
           .from('email_gateways')
           .select('*')
@@ -100,13 +111,18 @@ export class EmailGatewayService {
 
         // Check local data store for tenant gateway
         const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
-        const tenantLocal = localGateways.find((g) => g.tenant_id === tenantId && g.status === 'active')
+        const tenantLocal = localGateways.find(
+          (g) => g.tenant_id === tenantId && g.status === 'active'
+        )
         if (tenantLocal) {
           return tenantLocal
         }
+
+        // STRICT ISOLATION: No fallback to Platform gateway for tenant events!
+        return null
       }
 
-      // 2. Fall back to Platform Default Gateway (tenant_id IS NULL)
+      // 2. PLATFORM Scope: Query Platform gateway (tenant_id IS NULL)
       const { data: platformGw, error: platErr } = await (adminClient as any)
         .from('email_gateways')
         .select('*')
@@ -121,16 +137,25 @@ export class EmailGatewayService {
 
       // Check local data store for platform gateway
       const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
-      const platformLocal = localGateways.find((g) => !g.tenant_id && g.is_default && g.status === 'active')
+      const platformLocal = localGateways.find(
+        (g) => !g.tenant_id && g.is_default && g.status === 'active'
+      )
       if (platformLocal) {
         return platformLocal
       }
 
-      // 3. Fallback to constant default
-      return DEFAULT_PLATFORM_GATEWAY
+      // Fallback only for platform scope during test / dev
+      if (process.env.NODE_ENV === 'test' || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        return DEFAULT_PLATFORM_GATEWAY
+      }
+
+      return null
     } catch (err) {
-      console.warn('[EmailGatewayService] Database gateway resolution fallback:', err)
-      return DEFAULT_PLATFORM_GATEWAY
+      console.warn('[EmailGatewayService] Database gateway resolution error:', err)
+      if (effectiveScope === 'PLATFORM' && (process.env.NODE_ENV === 'test' || !process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+        return DEFAULT_PLATFORM_GATEWAY
+      }
+      return null
     }
   }
 
@@ -186,6 +211,7 @@ export class EmailGatewayService {
 
   /**
    * Prepares decrypted configuration object for provider instantiation
+   * and attaches a token refresh persistence hook for Gmail.
    */
   static prepareDecryptedConfig(gateway: EmailGatewayRecord): DecryptedGatewayConfig {
     let decryptedSecret = ''
@@ -200,15 +226,54 @@ export class EmailGatewayService {
     return {
       id: gateway.id,
       provider: gateway.provider,
+      scope_type: gateway.scope_type,
+      tenant_id: gateway.tenant_id,
       smtp_host: gateway.smtp_host,
       smtp_port: gateway.smtp_port,
       smtp_username: gateway.smtp_username,
       decrypted_secret: decryptedSecret,
       encryption_type: gateway.encryption_type,
+      gmail_account_email: gateway.gmail_account_email,
+      gmail_display_name: gateway.gmail_display_name,
+      token_expires_at: gateway.token_expires_at,
       sender_name: gateway.sender_name,
       sender_email: gateway.sender_email,
       reply_to_email: gateway.reply_to_email,
       extra_settings: gateway.extra_settings,
+      onTokenRefreshed: async (newTokens) => {
+        try {
+          const adminClient = createAdminClient()
+          const payloadToEncrypt = JSON.stringify({
+            access_token: newTokens.access_token,
+            refresh_token: newTokens.refresh_token,
+          })
+          const reEncrypted = encryptSecret(payloadToEncrypt)
+
+          if (gateway.id && !gateway.id.startsWith('gw-platform-default')) {
+            await (adminClient as any)
+              .from('email_gateways')
+              .update({
+                encrypted_credentials: reEncrypted,
+                token_expires_at: newTokens.expires_at,
+                last_checked_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', gateway.id)
+          }
+
+          // Update local store
+          const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+          const item = localGateways.find((g) => g.id === gateway.id)
+          if (item) {
+            item.encrypted_credentials = reEncrypted
+            item.token_expires_at = newTokens.expires_at
+            item.last_checked_at = new Date().toISOString()
+            EmailDataStore.set('printerp_email_gateways', localGateways)
+          }
+        } catch (syncErr) {
+          console.error('[EmailGatewayService] Failed to persist refreshed token:', syncErr)
+        }
+      },
     }
   }
 
@@ -232,6 +297,7 @@ export class EmailGatewayService {
               last_tested_at: new Date().toISOString(),
               last_test_status: result.success ? 'healthy' : 'error',
               last_test_error: result.success ? null : result.message || result.error,
+              last_checked_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
             .eq('id', gateway.id)
@@ -258,10 +324,12 @@ export class EmailGatewayService {
   }
 
   /**
-   * Main dispatch method: resolves gateway, merges template, sends email, writes audit log.
+   * Main dispatch method: validates scope, checks idempotency, resolves provider,
+   * merges template, sends email, applies transient retry, and writes audit log.
    */
   static async sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
     const {
+      scopeType,
       tenantId,
       eventType,
       recipient,
@@ -271,25 +339,51 @@ export class EmailGatewayService {
       customTextBody,
       replyTo,
       attachments,
+      idempotencyKey,
       metadata,
       sentBy,
       queueNow = false,
       language = 'en',
     } = options
 
+    const effectiveScope: EmailScopeType = scopeType || (tenantId ? 'TENANT' : 'PLATFORM')
+
     try {
-      // 1. Resolve active gateway
-      const gateway = await this.resolveGateway(tenantId)
+      // 1. Idempotency Check: Prevent duplicate sends on rapid clicks or repeated calls
+      if (idempotencyKey) {
+        const localLogs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
+        const existingLog = localLogs.find(
+          (l) => l.idempotency_key === idempotencyKey && l.status === 'sent'
+        )
+        if (existingLog) {
+          return {
+            success: true,
+            status: 'sent',
+            messageId: existingLog.provider_message_id || `idempotent-${existingLog.id}`,
+            providerUsed: 'cached_idempotent',
+            gatewayId: existingLog.gateway_id || undefined,
+          }
+        }
+      }
+
+      // 2. Resolve active gateway with strict scope enforcement
+      const gateway = await this.resolveGateway(tenantId, effectiveScope)
       if (!gateway || gateway.status !== 'active') {
-        const errorMsg = 'No active email gateway available for delivery'
+        const errorMsg =
+          effectiveScope === 'TENANT'
+            ? 'Tenant email provider is not configured. Please configure Gmail or SMTP in Email Settings.'
+            : 'Platform email provider is not configured.'
+
         await this.recordLog({
           tenant_id: tenantId || null,
+          scope_type: effectiveScope,
           gateway_id: gateway?.id || null,
           event_type: eventType,
           recipient,
-          subject: customSubject || 'Notification',
+          subject: customSubject || `Notification: ${eventType}`,
           status: 'failed',
           error_message: errorMsg,
+          idempotency_key: idempotencyKey,
           sent_by: sentBy || null,
           metadata,
         })
@@ -301,7 +395,7 @@ export class EmailGatewayService {
         }
       }
 
-      // 2. Resolve template & interpolate variables
+      // 3. Resolve template & interpolate variables
       let finalSubject = customSubject || ''
       let finalHtml = customHtmlBody || ''
       let finalText = customTextBody || ''
@@ -332,10 +426,11 @@ export class EmailGatewayService {
         }
       }
 
-      // 3. If asynchronous queue is requested
+      // 4. Asynchronous queue dispatch
       if (queueNow) {
         const queueJobId = await this.enqueueJob({
           tenant_id: tenantId || null,
+          scope_type: effectiveScope,
           event_type: eventType,
           recipient,
           subject: finalSubject,
@@ -343,16 +438,19 @@ export class EmailGatewayService {
           text_body: finalText,
           variables,
           attachments,
+          idempotency_key: idempotencyKey,
           metadata,
         })
 
         await this.recordLog({
           tenant_id: tenantId || null,
+          scope_type: effectiveScope,
           gateway_id: gateway.id,
           event_type: eventType,
           recipient,
           subject: finalSubject,
           status: 'queued',
+          idempotency_key: idempotencyKey,
           sent_by: sentBy || null,
           metadata,
         })
@@ -366,7 +464,7 @@ export class EmailGatewayService {
         }
       }
 
-      // 4. Synchronous Execution: Prepare provider adapter
+      // 5. Synchronous Execution: Prepare provider adapter
       const decryptedConfig = this.prepareDecryptedConfig(gateway)
       const provider = createEmailProvider(decryptedConfig)
 
@@ -386,9 +484,10 @@ export class EmailGatewayService {
         metadata,
       })
 
-      // 5. Record Transmission Log
+      // 6. Record Transmission Log
       await this.recordLog({
         tenant_id: tenantId || null,
+        scope_type: effectiveScope,
         gateway_id: gateway.id,
         event_type: eventType,
         recipient,
@@ -396,10 +495,24 @@ export class EmailGatewayService {
         status: sendResult.success ? 'sent' : 'failed',
         provider_message_id: sendResult.messageId || null,
         error_message: sendResult.error || null,
+        idempotency_key: idempotencyKey,
         sent_by: sentBy || null,
         sent_at: sendResult.success ? new Date().toISOString() : null,
         metadata,
       })
+
+      // 7. Update last_sent_at on gateway
+      if (sendResult.success && gateway.id && !gateway.id.startsWith('gw-platform-default')) {
+        try {
+          const adminClient = createAdminClient()
+          await (adminClient as any)
+            .from('email_gateways')
+            .update({ last_sent_at: new Date().toISOString() })
+            .eq('id', gateway.id)
+        } catch {
+          // ignore
+        }
+      }
 
       return {
         success: sendResult.success,
@@ -423,7 +536,10 @@ export class EmailGatewayService {
    * Enqueues an email job into the database queue
    */
   static async enqueueJob(
-    jobData: Omit<EmailQueueJob, 'id' | 'created_at' | 'updated_at' | 'status' | 'attempts' | 'max_attempts' | 'next_run_at'>
+    jobData: Omit<
+      EmailQueueJob,
+      'id' | 'created_at' | 'updated_at' | 'status' | 'attempts' | 'max_attempts' | 'next_run_at'
+    >
   ): Promise<string> {
     const jobId = `job-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
     try {
@@ -433,6 +549,7 @@ export class EmailGatewayService {
         .insert({
           id: jobId,
           tenant_id: jobData.tenant_id,
+          scope_type: jobData.scope_type || (jobData.tenant_id ? 'TENANT' : 'PLATFORM'),
           event_type: jobData.event_type,
           recipient: jobData.recipient,
           subject: jobData.subject,
@@ -440,6 +557,7 @@ export class EmailGatewayService {
           text_body: jobData.text_body,
           variables: jobData.variables || {},
           attachments: jobData.attachments || [],
+          idempotency_key: jobData.idempotency_key || null,
           metadata: jobData.metadata || {},
           status: 'pending',
           attempts: 0,
@@ -459,6 +577,7 @@ export class EmailGatewayService {
     localQueue.push({
       id: jobId,
       tenant_id: jobData.tenant_id,
+      scope_type: jobData.scope_type || (jobData.tenant_id ? 'TENANT' : 'PLATFORM'),
       event_type: jobData.event_type,
       recipient: jobData.recipient,
       subject: jobData.subject,
@@ -466,6 +585,7 @@ export class EmailGatewayService {
       text_body: jobData.text_body,
       variables: jobData.variables,
       attachments: jobData.attachments,
+      idempotency_key: jobData.idempotency_key,
       metadata: jobData.metadata,
       status: 'pending',
       attempts: 0,
@@ -482,7 +602,9 @@ export class EmailGatewayService {
   /**
    * Background Queue Worker: Processes pending email jobs with retry backoff
    */
-  static async processQueue(batchSize: number = 10): Promise<{ processed: number; succeeded: number; failed: number }> {
+  static async processQueue(
+    batchSize: number = 10
+  ): Promise<{ processed: number; succeeded: number; failed: number }> {
     let processed = 0
     let succeeded = 0
     let failed = 0
@@ -517,9 +639,9 @@ export class EmailGatewayService {
         const attempt = job.attempts + 1
 
         try {
-          // Send email directly
           const result = await this.sendEmail({
             tenantId: job.tenant_id,
+            scopeType: job.scope_type,
             eventType: job.event_type,
             recipient: job.recipient,
             customSubject: job.subject,
@@ -527,6 +649,7 @@ export class EmailGatewayService {
             customTextBody: job.text_body || undefined,
             variables: job.variables,
             attachments: job.attachments,
+            idempotencyKey: job.idempotency_key || undefined,
             metadata: job.metadata,
             queueNow: false,
           })
@@ -594,7 +717,7 @@ export class EmailGatewayService {
   }
 
   /**
-   * Non-destructive write to email_logs and communication_logs
+   * Non-destructive write to email_logs and local data store
    */
   static async recordLog(
     logData: Omit<EmailLogRecord, 'id' | 'created_at' | 'retry_count' | 'max_retries'> & {
@@ -606,6 +729,7 @@ export class EmailGatewayService {
     const record: EmailLogRecord = {
       id: logId,
       tenant_id: logData.tenant_id,
+      scope_type: logData.scope_type || (logData.tenant_id ? 'TENANT' : 'PLATFORM'),
       gateway_id: logData.gateway_id,
       event_type: logData.event_type,
       recipient: logData.recipient,
@@ -615,6 +739,7 @@ export class EmailGatewayService {
       error_message: logData.error_message || null,
       retry_count: logData.retry_count || 0,
       max_retries: logData.max_retries || 3,
+      idempotency_key: logData.idempotency_key || null,
       sent_by: logData.sent_by || null,
       sent_at: logData.sent_at || (logData.status === 'sent' ? new Date().toISOString() : null),
       metadata: logData.metadata || {},
@@ -628,7 +753,7 @@ export class EmailGatewayService {
       // Local fallback
     }
 
-    // Always keep in local data store for instant offline UI reactivity
+    // Always keep in local data store for instant UI reactivity
     const currentLogs = EmailDataStore.get<EmailLogRecord[]>('printerp_email_logs') || []
     currentLogs.unshift(record)
     EmailDataStore.set('printerp_email_logs', currentLogs.slice(0, 100))

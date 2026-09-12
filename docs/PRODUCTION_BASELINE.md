@@ -279,6 +279,10 @@ Future work must remain aligned with the modular roadmap:
 
 Do not introduce V2–V10 complexity prematurely into simple V1 workflows unless required for architectural compatibility.
 
+# 14. PERMANENT INKFLOW EMAIL ARCHITECTURE RULE
+
+> **InkFlow supports Gmail and SMTP as email providers. Platform Email and Tenant Email are separate ownership domains. Platform Email belongs exclusively to the InkFlow platform. Tenant Email belongs exclusively to its tenant. Platform-owned events use the Platform Email configuration. Tenant business events use the authenticated tenant's active email configuration. A tenant may choose Gmail or SMTP for its own email service. No tenant may access, use, manage, disconnect, inspect, or select another tenant's Gmail/SMTP configuration or Platform Email configuration. Gmail OAuth credentials, access tokens, refresh tokens, SMTP passwords, and other secrets must remain server-side and securely protected. Email ownership and provider selection must be resolved from authenticated execution context and must never blindly trust client-supplied identifiers. If a tenant has no configured email provider, sending must fail closed. Platform Email must never be an invisible fallback for Tenant Email. These boundaries must be enforced through server-side authorization, database constraints, and Supabase RLS.**
+
 ---
 
 # FINAL PRINCIPLE

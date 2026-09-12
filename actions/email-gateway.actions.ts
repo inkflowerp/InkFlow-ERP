@@ -6,9 +6,8 @@
 // Encrypts secrets at rest and prevents credential exposure to frontend.
 // ==============================================================================
 
-import { createClient } from '../lib/supabase/server.ts'
 import { createAdminClient } from '../lib/supabase/admin.ts'
-import { requirePlatformPermission, getAuthenticatedPlatformContext } from '../lib/auth/platform-auth.ts'
+import { getAuthenticatedPlatformContext } from '../lib/auth/platform-auth.ts'
 import { requireTenantPermission, requireTenantUser } from '../lib/auth/tenant-auth.ts'
 import type {
   EmailGatewayRecord,
@@ -20,13 +19,16 @@ import type {
 } from '../types/communication.types.ts'
 import {
   encryptSecret,
+  decryptSecret,
   sanitizeGatewayRecord,
 } from '../lib/security/encryption.ts'
 import { EmailGatewayService, DEFAULT_PLATFORM_GATEWAY, EmailDataStore } from '../services/email-gateway.service.ts'
 import { DEFAULT_EMAIL_TEMPLATES } from '../services/email-template.service.ts'
+import { revokeGoogleToken } from '../lib/email/oauth/google-oauth.ts'
+import { AuditService } from '../services/audit.service.ts'
 
 // -----------------------------------------------------------------------------
-// PLATFORM OWNER ACTIONS (Settings -> Communication -> Email Gateway)
+// PLATFORM OWNER ACTIONS (Platform Admin -> Settings -> Communication)
 // -----------------------------------------------------------------------------
 
 /**
@@ -91,6 +93,7 @@ export async function savePlatformEmailGatewayAction(
 
     const gatewayPayload = {
       tenant_id: null,
+      scope_type: 'PLATFORM' as const,
       provider: formData.provider,
       type: formData.type || 'transactional',
       smtp_host: formData.smtp_host || null,
@@ -98,6 +101,8 @@ export async function savePlatformEmailGatewayAction(
       smtp_username: formData.smtp_username || null,
       ...(encryptedCreds ? { encrypted_credentials: encryptedCreds } : {}),
       encryption_type: formData.encryption_type || 'tls',
+      gmail_account_email: formData.gmail_account_email || null,
+      gmail_display_name: formData.gmail_display_name || null,
       sender_name: formData.sender_name,
       sender_email: formData.sender_email,
       reply_to_email: formData.reply_to_email || null,
@@ -151,9 +156,89 @@ export async function savePlatformEmailGatewayAction(
     updatedLocal.push(savedRecord)
     EmailDataStore.set('printerp_email_gateways', updatedLocal)
 
+    try {
+      await AuditService.logEvent(
+        'platform',
+        platformUser.userId,
+        platformUser.email || 'Platform Admin',
+        'email.platform_gateway_updated',
+        'email_gateway',
+        savedRecord.id,
+        null,
+        { provider: savedRecord.provider, sender: savedRecord.sender_email },
+        `Platform default email gateway updated to ${savedRecord.provider}`
+      )
+    } catch {}
+
     return { success: true, data: sanitizeGatewayRecord(savedRecord) }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to save platform email gateway' }
+  }
+}
+
+/**
+ * Disconnects Platform Gmail Gateway, revoking tokens with Google and removing record
+ */
+export async function disconnectPlatformGmailAction(): Promise<{
+  success: boolean
+  error?: string
+}> {
+  try {
+    const platformUser = await getAuthenticatedPlatformContext()
+    if (!platformUser || !platformUser.isActive) {
+      return { success: false, error: 'Unauthorized: Platform Owner privilege required' }
+    }
+
+    const adminClient = createAdminClient()
+
+    // 1. Fetch existing platform gmail gateway to get tokens for revocation
+    const { data: existing } = await (adminClient as any)
+      .from('email_gateways')
+      .select('*')
+      .is('tenant_id', null)
+      .eq('provider', 'gmail')
+      .maybeSingle()
+
+    if (existing?.encrypted_credentials) {
+      try {
+        const decrypted = decryptSecret(existing.encrypted_credentials)
+        const parsed = JSON.parse(decrypted)
+        if (parsed.refresh_token || parsed.access_token) {
+          await revokeGoogleToken(parsed.refresh_token || parsed.access_token)
+        }
+      } catch {}
+    }
+
+    // 2. Delete or deactivate platform gmail record
+    await (adminClient as any)
+      .from('email_gateways')
+      .delete()
+      .is('tenant_id', null)
+      .eq('provider', 'gmail')
+
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    EmailDataStore.set(
+      'printerp_email_gateways',
+      localGateways.filter((g) => g.tenant_id !== null || g.provider !== 'gmail')
+    )
+
+    try {
+      await AuditService.logEvent(
+        'platform',
+        platformUser.userId,
+        platformUser.email || 'Platform Admin',
+        'email.platform_gmail_disconnected',
+        'email_gateway',
+        existing?.id || 'platform-gmail',
+        null,
+        { provider: 'gmail' },
+        'Platform Gmail account disconnected and tokens revoked'
+      )
+    } catch {}
+
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to disconnect Gmail' }
   }
 }
 
@@ -177,6 +262,7 @@ export async function testPlatformEmailGatewayAction(
     const tempGatewayRecord: EmailGatewayRecord = {
       id: formData.id || 'temp-test-gw',
       tenant_id: null,
+      scope_type: 'PLATFORM',
       provider: formData.provider,
       type: formData.type || 'transactional',
       smtp_host: formData.smtp_host || null,
@@ -184,6 +270,7 @@ export async function testPlatformEmailGatewayAction(
       smtp_username: formData.smtp_username || null,
       encrypted_credentials: formData.password || formData.api_key || null,
       encryption_type: formData.encryption_type || 'tls',
+      gmail_account_email: formData.gmail_account_email || null,
       sender_name: formData.sender_name || 'PrintERP Platform',
       sender_email: formData.sender_email || 'test@printerp.com',
       reply_to_email: formData.reply_to_email || null,
@@ -204,6 +291,41 @@ export async function testPlatformEmailGatewayAction(
       provider: formData.provider,
       latencyMs: 0,
       message: err?.message || 'Connection test failed',
+    }
+  }
+}
+
+/**
+ * Sends a real test email using the Platform Default Gateway
+ */
+export async function sendTestPlatformEmailAction(
+  recipientEmail: string
+): Promise<SendEmailResult> {
+  try {
+    const platformUser = await getAuthenticatedPlatformContext()
+    if (!platformUser || !platformUser.isActive) {
+      return { success: false, status: 'failed', error: 'Unauthorized: Platform admin credentials required' }
+    }
+
+    return await EmailGatewayService.sendEmail({
+      scopeType: 'PLATFORM',
+      tenantId: null,
+      eventType: 'test_email',
+      recipient: recipientEmail,
+      variables: {
+        company_name: 'InkFlow Platform Admin',
+        sender_name: 'InkFlow System Notifications',
+        sender_email: recipientEmail,
+        provider_name: 'Platform Email Gateway',
+        timestamp: new Date().toLocaleString(),
+      },
+      sentBy: platformUser.userId,
+    })
+  } catch (err: any) {
+    return {
+      success: false,
+      status: 'failed',
+      error: err?.message || 'Failed to dispatch platform test email',
     }
   }
 }
@@ -347,7 +469,7 @@ export async function processEmailQueueAction(): Promise<{
   try {
     const res = await EmailGatewayService.processQueue(20)
     return { success: true, ...res }
-  } catch (err: any) {
+  } catch {
     return { success: false, processed: 0, succeeded: 0, failed: 0 }
   }
 }
@@ -357,13 +479,12 @@ export async function processEmailQueueAction(): Promise<{
 // -----------------------------------------------------------------------------
 
 /**
- * Retrieves the tenant's email gateway configuration & platform fallback state
+ * Retrieves the tenant's email gateway configuration (credentials sanitized)
  */
 export async function getTenantEmailGatewayAction(companyId: string): Promise<{
   success: boolean
   customGateway?: EmailGatewayRecord | null
-  usingPlatformDefault: boolean
-  platformGatewayStatus?: string
+  hasConfiguredGateway: boolean
   error?: string
 }> {
   try {
@@ -371,15 +492,12 @@ export async function getTenantEmailGatewayAction(companyId: string): Promise<{
 
     const adminClient = createAdminClient()
 
-    // 1. Check custom gateway
+    // 1. Check custom gateway for tenant
     const { data: tenantGw } = await (adminClient as any)
       .from('email_gateways')
       .select('*')
       .eq('tenant_id', companyId)
       .maybeSingle()
-
-    // 2. Check platform gateway status
-    const platformGw = await EmailGatewayService.resolveGateway(null)
 
     const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
     const localTenant = localGateways.find((g) => g.tenant_id === companyId)
@@ -389,20 +507,19 @@ export async function getTenantEmailGatewayAction(companyId: string): Promise<{
     return {
       success: true,
       customGateway: activeCustom ? sanitizeGatewayRecord(activeCustom) : null,
-      usingPlatformDefault: !activeCustom || activeCustom.status === 'inactive',
-      platformGatewayStatus: platformGw?.status || 'active',
+      hasConfiguredGateway: !!activeCustom && activeCustom.status === 'active',
     }
   } catch (err: any) {
     return {
       success: false,
-      usingPlatformDefault: true,
+      hasConfiguredGateway: false,
       error: err?.message || 'Failed to retrieve tenant email configuration',
     }
   }
 }
 
 /**
- * Saves or updates tenant custom email gateway
+ * Saves or updates tenant custom email gateway (SMTP or Custom)
  */
 export async function saveTenantEmailGatewayAction(
   companyId: string,
@@ -421,13 +538,16 @@ export async function saveTenantEmailGatewayAction(
 
     const payload = {
       tenant_id: companyId,
+      scope_type: 'TENANT' as const,
       provider: formData.provider,
-      type: 'transactional',
+      type: 'transactional' as const,
       smtp_host: formData.smtp_host || null,
       smtp_port: formData.smtp_port ? Number(formData.smtp_port) : null,
       smtp_username: formData.smtp_username || null,
       ...(encryptedCreds ? { encrypted_credentials: encryptedCreds } : {}),
       encryption_type: formData.encryption_type || 'tls',
+      gmail_account_email: formData.gmail_account_email || null,
+      gmail_display_name: formData.gmail_display_name || null,
       sender_name: formData.sender_name,
       sender_email: formData.sender_email,
       reply_to_email: formData.reply_to_email || null,
@@ -479,6 +599,20 @@ export async function saveTenantEmailGatewayAction(
     updatedLocal.push(savedRecord)
     EmailDataStore.set('printerp_email_gateways', updatedLocal)
 
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenantUser.userId,
+        tenantUser.fullName || 'Admin',
+        'email.tenant_gateway_updated',
+        'email_gateway',
+        savedRecord.id,
+        null,
+        { provider: savedRecord.provider, sender: savedRecord.sender_email },
+        `Tenant email gateway updated to ${savedRecord.provider}`
+      )
+    } catch {}
+
     return { success: true, data: sanitizeGatewayRecord(savedRecord) }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to save tenant email gateway' }
@@ -486,13 +620,72 @@ export async function saveTenantEmailGatewayAction(
 }
 
 /**
- * Removes custom tenant gateway and reverts to Platform Default
+ * Disconnects Tenant Gmail provider and revokes OAuth tokens
+ */
+export async function disconnectTenantGmailAction(
+  companyId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const tenantUser = await requireTenantPermission(companyId, 'settings.edit')
+
+    const adminClient = createAdminClient()
+    const { data: existing } = await (adminClient as any)
+      .from('email_gateways')
+      .select('*')
+      .eq('tenant_id', companyId)
+      .eq('provider', 'gmail')
+      .maybeSingle()
+
+    if (existing?.encrypted_credentials) {
+      try {
+        const decrypted = decryptSecret(existing.encrypted_credentials)
+        const parsed = JSON.parse(decrypted)
+        if (parsed.refresh_token) {
+          await revokeGoogleToken(parsed.refresh_token)
+        }
+      } catch {}
+    }
+
+    await (adminClient as any)
+      .from('email_gateways')
+      .delete()
+      .eq('tenant_id', companyId)
+
+    // Remove from local store
+    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+    EmailDataStore.set(
+      'printerp_email_gateways',
+      localGateways.filter((g) => g.tenant_id !== companyId)
+    )
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenantUser.userId,
+        tenantUser.fullName || 'Admin',
+        'email.tenant_gmail_disconnected',
+        'email_gateway',
+        existing?.id || 'tenant-gmail',
+        null,
+        { provider: 'gmail' },
+        'Tenant Gmail account disconnected and tokens revoked'
+      )
+    } catch {}
+
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to disconnect Gmail' }
+  }
+}
+
+/**
+ * Removes custom tenant gateway and disables email sending
  */
 export async function deleteTenantEmailGatewayAction(
   companyId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await requireTenantPermission(companyId, 'settings.edit')
+    const tenantUser = await requireTenantPermission(companyId, 'settings.edit')
 
     const adminClient = createAdminClient()
     await (adminClient as any).from('email_gateways').delete().eq('tenant_id', companyId)
@@ -503,6 +696,20 @@ export async function deleteTenantEmailGatewayAction(
       'printerp_email_gateways',
       localGateways.filter((g) => g.tenant_id !== companyId)
     )
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenantUser.userId,
+        tenantUser.fullName || 'Admin',
+        'email.tenant_gateway_removed',
+        'email_gateway',
+        'deleted',
+        null,
+        {},
+        'Tenant email gateway configuration disabled/removed'
+      )
+    } catch {}
 
     return { success: true }
   } catch (err: any) {
@@ -523,6 +730,7 @@ export async function testTenantEmailGatewayAction(
     const tempGatewayRecord: EmailGatewayRecord = {
       id: formData.id || 'temp-tenant-test-gw',
       tenant_id: companyId,
+      scope_type: 'TENANT',
       provider: formData.provider,
       type: 'transactional',
       smtp_host: formData.smtp_host || null,
@@ -530,6 +738,7 @@ export async function testTenantEmailGatewayAction(
       smtp_username: formData.smtp_username || null,
       encrypted_credentials: formData.password || formData.api_key || null,
       encryption_type: formData.encryption_type || 'tls',
+      gmail_account_email: formData.gmail_account_email || null,
       sender_name: formData.sender_name,
       sender_email: formData.sender_email,
       reply_to_email: formData.reply_to_email || null,
@@ -555,7 +764,7 @@ export async function testTenantEmailGatewayAction(
 }
 
 /**
- * Sends a real test email using the tenant's active gateway
+ * Sends a real test email using the tenant's active gateway (Gmail or SMTP)
  */
 export async function sendTestTenantEmailAction(
   companyId: string,
@@ -565,6 +774,7 @@ export async function sendTestTenantEmailAction(
     const tenant = await requireTenantPermission(companyId, 'settings.edit')
 
     const result = await EmailGatewayService.sendEmail({
+      scopeType: 'TENANT',
       tenantId: companyId,
       eventType: 'test_email',
       recipient: recipientEmail,
@@ -572,7 +782,7 @@ export async function sendTestTenantEmailAction(
         company_name: tenant.companyName,
         sender_name: tenant.companyName,
         sender_email: recipientEmail,
-        provider_name: 'Configured Email Gateway',
+        provider_name: 'Tenant Active Email Gateway',
         timestamp: new Date().toLocaleString(),
       },
       sentBy: tenant.userId,
@@ -738,6 +948,7 @@ export async function dispatchWorkflowEmailAction(
     variables?: Record<string, any>
     customSubject?: string
     customHtmlBody?: string
+    idempotencyKey?: string
     attachments?: Array<{ filename: string; content?: string; path?: string }>
   }
 ): Promise<SendEmailResult> {
@@ -745,6 +956,7 @@ export async function dispatchWorkflowEmailAction(
     const tenantUser = await requireTenantUser(companyId)
 
     return await EmailGatewayService.sendEmail({
+      scopeType: 'TENANT',
       tenantId: companyId,
       eventType,
       recipient: recipientEmail,
@@ -754,6 +966,7 @@ export async function dispatchWorkflowEmailAction(
       },
       customSubject: payload.customSubject,
       customHtmlBody: payload.customHtmlBody,
+      idempotencyKey: payload.idempotencyKey,
       attachments: payload.attachments,
       sentBy: tenantUser.userId,
     })

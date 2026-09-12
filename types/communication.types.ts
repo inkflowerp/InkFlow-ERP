@@ -2,7 +2,9 @@ export type SmsProviderType = 'bulksmsbd' | 'ssl_wireless' | 'alpha' | 'mim' | '
 
 export type WhatsAppProviderType = 'meta_cloud_api' | 'twilio_whatsapp' | 'mock'
 
-export type EmailProviderType = 'smtp' | 'resend' | 'sendgrid' | 'ses' | 'custom' | 'mock'
+export type EmailProviderType = 'gmail' | 'smtp' | 'resend' | 'sendgrid' | 'ses' | 'custom' | 'mock'
+
+export type EmailScopeType = 'PLATFORM' | 'TENANT'
 
 export type EmailGatewayType = 'transactional' | 'marketing' | 'system'
 
@@ -49,7 +51,8 @@ export type EmailEventType =
 
 export interface EmailGatewayRecord {
   id: string
-  tenant_id: string | null // null = platform default
+  tenant_id: string | null // null for PLATFORM scope
+  scope_type?: EmailScopeType
   provider: EmailProviderType
   type: EmailGatewayType
   smtp_host?: string | null
@@ -57,6 +60,9 @@ export interface EmailGatewayRecord {
   smtp_username?: string | null
   encrypted_credentials?: string | null
   encryption_type?: EmailEncryptionType | null
+  gmail_account_email?: string | null
+  gmail_display_name?: string | null
+  token_expires_at?: string | null
   sender_name: string
   sender_email: string
   reply_to_email?: string | null
@@ -68,11 +74,16 @@ export interface EmailGatewayRecord {
     api_key?: string
     custom_headers?: Record<string, string>
     rate_limit_per_second?: number
+    oauth_scope?: string
+    refresh_token?: string
+    access_token?: string
     [key: string]: any
   }
   last_tested_at?: string | null
   last_test_status?: string | null
   last_test_error?: string | null
+  last_checked_at?: string | null
+  last_sent_at?: string | null
   created_by?: string | null
   created_at: string
   updated_at: string
@@ -81,6 +92,7 @@ export interface EmailGatewayRecord {
 export interface EmailGatewayFormData {
   id?: string
   tenant_id?: string | null
+  scope_type?: EmailScopeType
   provider: EmailProviderType
   type?: EmailGatewayType
   smtp_host?: string
@@ -89,6 +101,8 @@ export interface EmailGatewayFormData {
   password?: string
   api_key?: string
   encryption_type?: EmailEncryptionType
+  gmail_account_email?: string
+  gmail_display_name?: string
   sender_name: string
   sender_email: string
   reply_to_email?: string
@@ -117,6 +131,7 @@ export interface EmailTemplateRecord {
 export interface EmailLogRecord {
   id: string
   tenant_id: string | null
+  scope_type?: EmailScopeType
   gateway_id?: string | null
   event_type: EmailEventType
   recipient: string
@@ -126,6 +141,7 @@ export interface EmailLogRecord {
   error_message?: string | null
   retry_count: number
   max_retries: number
+  idempotency_key?: string | null
   metadata?: Record<string, any>
   sent_by?: string | null
   sent_at?: string | null
@@ -135,18 +151,15 @@ export interface EmailLogRecord {
 export interface EmailQueueJob {
   id: string
   tenant_id: string | null
+  scope_type?: EmailScopeType
   event_type: EmailEventType
   recipient: string
   subject: string
   html_body: string
   text_body?: string | null
   variables?: Record<string, any>
-  attachments?: Array<{
-    filename: string
-    content?: string
-    path?: string
-    contentType?: string
-  }>
+  attachments?: EmailAttachment[]
+  idempotency_key?: string | null
   metadata?: Record<string, any>
   status: EmailQueueStatus
   attempts: number
@@ -160,6 +173,7 @@ export interface EmailQueueJob {
 }
 
 export interface SendEmailOptions {
+  scopeType?: EmailScopeType
   tenantId?: string | null
   eventType: EmailEventType
   recipient: string
@@ -168,16 +182,20 @@ export interface SendEmailOptions {
   customHtmlBody?: string
   customTextBody?: string
   replyTo?: string
-  attachments?: Array<{
-    filename: string
-    content?: string
-    path?: string
-    contentType?: string
-  }>
+  attachments?: EmailAttachment[]
+  idempotencyKey?: string
   metadata?: Record<string, any>
   sentBy?: string | null
   queueNow?: boolean
   language?: 'en' | 'bn'
+}
+
+export interface EmailAttachment {
+  filename: string
+  content?: string | Buffer
+  path?: string
+  contentType?: string
+  cid?: string
 }
 
 export interface SendEmailResult {
