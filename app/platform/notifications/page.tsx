@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   Bell,
@@ -27,31 +27,23 @@ import {
   Users,
   Shield,
   Activity,
+  ArrowDownCircle,
 } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  getPlatformNotificationsAction,
   broadcastPlatformNotificationAction,
-  deletePlatformNotificationAction,
-  clearAllReadPlatformNotificationsAction,
 } from '@/actions/platform-data.actions'
-import {
-  markNotificationReadAction,
-  markAllNotificationsReadAction,
-} from '@/actions/platform.actions'
-import { PlatformNotificationItem } from '@/types/platform.types'
+import { usePlatformNotifications } from '@/hooks/use-platform-notifications'
 import { notify } from '@/lib/notifications/notification-bus'
 import { playNotificationSound } from '@/lib/notifications/sound-manager'
 
 export default function PlatformNotificationsPage() {
-  const [notifications, setNotifications] = useState<PlatformNotificationItem[]>([])
   const [filterType, setFilterType] = useState<string>('all')
   const [filterSeverity, setFilterSeverity] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showUnreadOnly, setShowUnreadOnly] = useState(false)
-  const [loading, setLoading] = useState(true)
   const [actionInProgress, setActionInProgress] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
@@ -68,43 +60,36 @@ export default function PlatformNotificationsPage() {
   })
   const [broadcasting, setBroadcasting] = useState(false)
 
+  const {
+    notifications,
+    unreadCount,
+    totalCount,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    fetchMore,
+    refetch,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    clearAllRead,
+  } = usePlatformNotifications({
+    pageSize: 50,
+  })
+
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ text, type })
     setTimeout(() => setToastMessage(null), 3500)
   }
 
-  const loadNotifications = async () => {
-    setLoading(true)
-    try {
-      const res = await getPlatformNotificationsAction()
-      if (res.success && res.data) {
-        setNotifications(res.data)
-      } else if (res.error) {
-        showToast(res.error, 'error')
-      }
-    } catch {
-      showToast('Failed to load notifications.', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadNotifications()
-  }, [])
-
   // Mark Single Notification as Read
   const handleMarkRead = async (id: string) => {
     setActionInProgress(id)
     try {
-      const res = await markNotificationReadAction(id)
-      if (res.success) {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-        )
-        playNotificationSound('success')
-        showToast('Notification marked as read.')
-      }
+      await markAsRead(id)
+      playNotificationSound('success')
+      showToast('Notification marked as read.')
     } catch {
       showToast('Failed to mark notification read.', 'error')
     } finally {
@@ -116,12 +101,9 @@ export default function PlatformNotificationsPage() {
   const handleMarkAllRead = async () => {
     setActionInProgress('all')
     try {
-      const res = await markAllNotificationsReadAction()
-      if (res.success) {
-        setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
-        playNotificationSound('success')
-        showToast('All notifications marked as read.')
-      }
+      await markAllAsRead()
+      playNotificationSound('success')
+      showToast('All notifications marked as read.')
     } catch {
       showToast('Failed to mark notifications read.', 'error')
     } finally {
@@ -133,13 +115,8 @@ export default function PlatformNotificationsPage() {
   const handleDeleteNotification = async (id: string) => {
     setActionInProgress(`del-${id}`)
     try {
-      const res = await deletePlatformNotificationAction(id)
-      if (res.success) {
-        setNotifications((prev) => prev.filter((n) => n.id !== id))
-        showToast('Notification dismissed.')
-      } else {
-        showToast(res.error || 'Failed to delete notification.', 'error')
-      }
+      await deleteNotification(id)
+      showToast('Notification dismissed.')
     } catch {
       showToast('Failed to delete notification.', 'error')
     } finally {
@@ -155,19 +132,14 @@ export default function PlatformNotificationsPage() {
       return
     }
 
-    if (!confirm(`Are you sure you want to clear ${readCount} read notifications?`)) {
+    if (!confirm(`Are you sure you want to clear read notifications?`)) {
       return
     }
 
     setActionInProgress('clear-read')
     try {
-      const res = await clearAllReadPlatformNotificationsAction()
-      if (res.success) {
-        setNotifications((prev) => prev.filter((n) => !n.is_read))
-        showToast(`Cleared ${readCount} read notifications.`)
-      } else {
-        showToast(res.error || 'Failed to clear notifications.', 'error')
-      }
+      await clearAllRead()
+      showToast(`Cleared read notifications.`)
     } catch {
       showToast('Failed to clear read notifications.', 'error')
     } finally {
@@ -196,7 +168,6 @@ export default function PlatformNotificationsPage() {
       })
 
       if (res.success && res.data) {
-        setNotifications((prev) => [res.data!, ...prev])
         setBroadcastModalOpen(false)
         notify.broadcast(res.data.title, res.data.message, {
           actionUrl: res.data.action_url || undefined,
@@ -211,6 +182,7 @@ export default function PlatformNotificationsPage() {
           action_url: '',
         })
         showToast('Administrative notice broadcasted successfully.')
+        refetch()
       } else {
         showToast(res.error || 'Failed to broadcast notification.', 'error')
       }
@@ -265,20 +237,22 @@ export default function PlatformNotificationsPage() {
     showToast('Notifications telemetry exported to CSV.')
   }
 
-  // Filtered & Searched Notifications
+  // Filtered & Searched Notifications (guarantee unknown types are NOT silently dropped)
   const trimmedSearch = searchQuery.trim().toLowerCase()
   const filteredNotifications = notifications.filter((n) => {
     if (showUnreadOnly && n.is_read) return false
     if (filterSeverity !== 'all' && n.severity !== filterSeverity) return false
 
+    const itemType = (n.type || 'system').toLowerCase()
+
     if (filterType !== 'all') {
-      if (filterType === 'support' && n.type !== 'support') return false
-      if (filterType === 'security' && n.type !== 'security') return false
-      if (filterType === 'tenant_lifecycle' && !['tenant_suspension', 'tenant_lifecycle', 'tenant'].includes(n.type)) return false
-      if (filterType === 'usage_warning' && !['usage_warning', 'quota'].includes(n.type)) return false
-      if (filterType === 'system' && !['system', 'health', 'job'].includes(n.type)) return false
-      if (filterType === 'billing' && !['billing', 'subscription'].includes(n.type)) return false
-      if (filterType === 'broadcast' && n.type !== 'broadcast') return false
+      if (filterType === 'support' && !itemType.includes('support')) return false
+      if (filterType === 'security' && itemType !== 'security') return false
+      if (filterType === 'tenant_lifecycle' && !['tenant_suspension', 'tenant_lifecycle', 'tenant'].includes(itemType)) return false
+      if (filterType === 'usage_warning' && !['usage_warning', 'quota'].includes(itemType)) return false
+      if (filterType === 'system' && !['system', 'health', 'job', 'backup', 'maintenance'].includes(itemType)) return false
+      if (filterType === 'billing' && !['billing', 'subscription'].includes(itemType)) return false
+      if (filterType === 'broadcast' && itemType !== 'broadcast') return false
     }
 
     if (trimmedSearch) {
@@ -293,8 +267,6 @@ export default function PlatformNotificationsPage() {
   })
 
   // KPIs
-  const totalCount = notifications.length
-  const unreadCount = notifications.filter((n) => !n.is_read).length
   const criticalCount = notifications.filter((n) => n.severity === 'critical').length
   const warningCount = notifications.filter((n) => n.severity === 'warning').length
   const broadcastCount = notifications.filter((n) => n.type === 'broadcast').length
@@ -323,7 +295,7 @@ export default function PlatformNotificationsPage() {
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
-            Alerts, Incidents &amp; Communications
+            Alerts, Incidents &amp; Real-Time Telemetry
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
             <Bell className="h-7 w-7 text-indigo-400" />
@@ -335,7 +307,7 @@ export default function PlatformNotificationsPage() {
             )}
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Real-time security telemetry, tenant quota thresholds, health degradation alerts, and administrative broadcasts.
+            Live database-backed stream: security events, tenant registration, quota thresholds, system telemetry, and administrative broadcasts.
           </p>
         </div>
 
@@ -389,7 +361,7 @@ export default function PlatformNotificationsPage() {
           <Button
             size="sm"
             variant="outline"
-            onClick={loadNotifications}
+            onClick={() => refetch()}
             className="h-9 text-xs border-slate-800 bg-slate-900/80 text-slate-300 hover:bg-slate-800 hover:text-white"
             title="Refresh Feed"
           >
@@ -426,7 +398,27 @@ export default function PlatformNotificationsPage() {
         </div>
       )}
 
-      {/* Executive Metric Cards (4 KPIs) */}
+      {/* Error Alert with Retry */}
+      {error && (
+        <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-800 text-xs text-rose-200 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0" />
+            <div>
+              <div className="font-bold">Unable to load notifications</div>
+              <div className="text-[11px] text-rose-300/80">{error}</div>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => refetch()}
+            className="bg-rose-800 hover:bg-rose-700 text-white text-xs h-8"
+          >
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {/* Executive Metric Cards (4 KPIs from Database State) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
@@ -436,7 +428,7 @@ export default function PlatformNotificationsPage() {
             </div>
           </div>
           <div className="text-2xl font-black text-white mt-2">{totalCount}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Aggregated operational events</div>
+          <div className="text-[11px] text-slate-500 mt-1">Authoritative database records</div>
         </Card>
 
         <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
@@ -492,7 +484,7 @@ export default function PlatformNotificationsPage() {
                 key={tab.key}
                 type="button"
                 onClick={() => setFilterType(tab.key)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
                   filterType === tab.key
                     ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
                     : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
@@ -541,7 +533,7 @@ export default function PlatformNotificationsPage() {
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs cursor-pointer"
             >
               Clear
             </button>
@@ -551,7 +543,7 @@ export default function PlatformNotificationsPage() {
 
       {/* Notification Stream Feed */}
       <div className="space-y-3">
-        {loading ? (
+        {loading && notifications.length === 0 ? (
           <div className="py-16 text-center text-slate-500 text-xs bg-slate-900/40 rounded-2xl border border-slate-800">
             <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
             Loading live platform notifications...
@@ -559,7 +551,7 @@ export default function PlatformNotificationsPage() {
         ) : filteredNotifications.length === 0 ? (
           <Card className="border-slate-800 bg-slate-900/40 p-12 text-center rounded-2xl">
             <Bell className="h-10 w-10 mx-auto mb-3 text-slate-600 opacity-60" />
-            <p className="font-bold text-slate-200 text-sm">No notifications found</p>
+            <p className="font-bold text-slate-200 text-sm">No notifications yet.</p>
             <p className="text-xs text-slate-500 mt-1">
               {searchQuery || filterType !== 'all' || filterSeverity !== 'all' || showUnreadOnly
                 ? 'Try adjusting your filters or search query.'
@@ -567,187 +559,213 @@ export default function PlatformNotificationsPage() {
             </p>
           </Card>
         ) : (
-          filteredNotifications.map((item) => {
-            const isCritical = item.severity === 'critical'
-            const isWarning = item.severity === 'warning'
-            const isBroadcast = item.type === 'broadcast'
-            const isSecurity = item.type === 'security'
-            const isSupport = item.type === 'support'
-            const isBilling = ['billing', 'subscription'].includes(item.type)
-            const isTenant = ['tenant', 'tenant_lifecycle', 'tenant_suspension'].includes(item.type)
-            const isHealth = ['system', 'health', 'job'].includes(item.type)
+          <>
+            {filteredNotifications.map((item) => {
+              const isCritical = item.severity === 'critical'
+              const isWarning = item.severity === 'warning'
+              const isBroadcast = item.type === 'broadcast'
+              const isSecurity = item.type === 'security'
+              const isSupport = item.type === 'support' || item.type?.includes('support')
+              const isBilling = ['billing', 'subscription'].includes(item.type)
+              const isTenant = ['tenant', 'tenant_lifecycle', 'tenant_suspension'].includes(item.type)
+              const isHealth = ['system', 'health', 'job', 'backup', 'maintenance'].includes(item.type)
 
-            const targetUrl =
-              item.action_url ||
-              (isSupport
-                ? '/platform/support'
-                : isBilling
-                ? '/platform/subscriptions'
-                : isTenant
-                ? '/platform/companies'
-                : isSecurity
-                ? '/platform/security'
-                : isHealth
-                ? '/platform/health'
-                : undefined)
+              const targetUrl =
+                item.action_url ||
+                (isSupport
+                  ? '/platform/support'
+                  : isBilling
+                  ? '/platform/subscriptions'
+                  : isTenant
+                  ? '/platform/companies'
+                  : isSecurity
+                  ? '/platform/security'
+                  : isHealth
+                  ? '/platform/health'
+                  : undefined)
 
-            return (
-              <Card
-                key={item.id}
-                className={`border p-4 sm:p-5 rounded-2xl transition-all ${
-                  !item.is_read
-                    ? 'bg-slate-900/95 border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-lg shadow-indigo-950/20'
-                    : 'bg-slate-950/40 border-slate-800/80 opacity-85 hover:opacity-100 hover:border-slate-700'
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="flex items-start gap-3.5 min-w-0">
-                    {/* Severity / Category Icon */}
-                    <div
-                      className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border ${
-                        isCritical
-                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                          : isWarning
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : isSupport
-                          ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
-                          : isBroadcast
-                          ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
-                          : isBilling
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                          : isTenant
-                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                          : isHealth
-                          ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-                          : 'bg-slate-800 text-slate-300 border-slate-700'
-                      }`}
-                    >
-                      {isCritical ? (
-                        <ShieldAlert className="h-5 w-5" />
-                      ) : isWarning ? (
-                        <AlertTriangle className="h-5 w-5" />
-                      ) : isSupport ? (
-                        <Bell className="h-5 w-5" />
-                      ) : isBroadcast ? (
-                        <Megaphone className="h-5 w-5" />
-                      ) : isBilling ? (
-                        <CreditCard className="h-5 w-5" />
-                      ) : isTenant ? (
-                        <Building2 className="h-5 w-5" />
-                      ) : isHealth ? (
-                        <HeartPulse className="h-5 w-5" />
-                      ) : (
-                        <Info className="h-5 w-5" />
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="space-y-1.5 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-bold text-sm text-white flex items-center gap-2">
-                          {!item.is_read && (
-                            <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse shrink-0" />
-                          )}
-                          <span>{item.title}</span>
-                        </h4>
-
-                        {/* Severity Pill */}
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${
-                            isCritical
-                              ? 'bg-rose-950/60 text-rose-300 border-rose-800'
-                              : isWarning
-                              ? 'bg-amber-950/60 text-amber-300 border-amber-800'
-                              : 'bg-slate-800 text-slate-300 border-slate-700'
-                          }`}
-                        >
-                          {item.severity}
-                        </span>
-
-                        {/* Category Tag */}
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700">
-                          {item.type}
-                        </span>
-
-                        {/* Target Audience Tag */}
-                        {item.target_audience && (
-                          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-indigo-950/40 text-indigo-300 border border-indigo-800/40 flex items-center gap-1">
-                            <Users className="h-2.5 w-2.5" />
-                            {item.target_audience === 'all_tenants'
-                              ? 'All Tenants'
-                              : item.target_audience === 'all_admins'
-                              ? 'Admin Team'
-                              : 'Single Tenant'}
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-                        {item.message}
-                      </p>
-
-                      {/* Meta Footer */}
-                      <div className="flex items-center gap-3 sm:gap-4 text-[11px] text-slate-500 pt-1 flex-wrap">
-                        <span className="flex items-center gap-1 text-slate-400">
-                          <Clock className="h-3 w-3 text-slate-500" />
-                          <span>{getRelativeTime(item.created_at)}</span>
-                          <span className="text-slate-600">({new Date(item.created_at).toLocaleString()})</span>
-                        </span>
-
-                        {item.company_name && (
-                          <Link
-                            href={`/platform/tenants/${item.company_id || ''}`}
-                            className="text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1"
-                          >
-                            <Building2 className="h-3 w-3" />
-                            {item.company_name}
-                          </Link>
-                        )}
-
-                        {targetUrl && (
-                          <Link
-                            href={targetUrl}
-                            className="text-cyan-400 hover:text-cyan-300 font-medium inline-flex items-center gap-1 group"
-                          >
-                            <span>Investigate Event</span>
-                            <ExternalLink className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions on Item */}
-                  <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-start pt-2 sm:pt-0">
-                    {!item.is_read ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={actionInProgress === item.id}
-                        onClick={() => handleMarkRead(item.id)}
-                        className="h-8 px-2.5 text-xs border-indigo-500/30 bg-indigo-950/60 text-indigo-300 hover:bg-indigo-900/80 hover:text-white"
+              return (
+                <Card
+                  key={item.id}
+                  className={`border p-4 sm:p-5 rounded-2xl transition-all ${
+                    !item.is_read
+                      ? 'bg-slate-900/95 border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-lg shadow-indigo-950/20'
+                      : 'bg-slate-950/40 border-slate-800/80 opacity-85 hover:opacity-100 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                      {/* Severity / Category Icon */}
+                      <div
+                        className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border ${
+                          isCritical
+                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                            : isWarning
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            : isSupport
+                            ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                            : isBroadcast
+                            ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                            : isBilling
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                            : isTenant
+                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                            : isHealth
+                            ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+                            : 'bg-slate-800 text-slate-300 border-slate-700'
+                        }`}
                       >
-                        <Check className="h-3.5 w-3.5 mr-1" />
-                        Mark Read
-                      </Button>
-                    ) : (
-                      <span className="text-[11px] text-slate-500 italic px-2">Acknowledged</span>
-                    )}
+                        {isCritical ? (
+                          <ShieldAlert className="h-5 w-5" />
+                        ) : isWarning ? (
+                          <AlertTriangle className="h-5 w-5" />
+                        ) : isSupport ? (
+                          <Bell className="h-5 w-5" />
+                        ) : isBroadcast ? (
+                          <Megaphone className="h-5 w-5" />
+                        ) : isBilling ? (
+                          <CreditCard className="h-5 w-5" />
+                        ) : isTenant ? (
+                          <Building2 className="h-5 w-5" />
+                        ) : isHealth ? (
+                          <HeartPulse className="h-5 w-5" />
+                        ) : (
+                          <Info className="h-5 w-5" />
+                        )}
+                      </div>
 
-                    <button
-                      type="button"
-                      disabled={actionInProgress === `del-${item.id}`}
-                      onClick={() => handleDeleteNotification(item.id)}
-                      className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800/80 transition-colors cursor-pointer"
-                      title="Dismiss notification"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                      {/* Content */}
+                      <div className="space-y-1.5 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                            {!item.is_read && (
+                              <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse shrink-0" />
+                            )}
+                            <span>{item.title}</span>
+                          </h4>
+
+                          {/* Severity Pill */}
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${
+                              isCritical
+                                ? 'bg-rose-950/60 text-rose-300 border-rose-800'
+                                : isWarning
+                                ? 'bg-amber-950/60 text-amber-300 border-amber-800'
+                                : 'bg-slate-800 text-slate-300 border-slate-700'
+                            }`}
+                          >
+                            {item.severity}
+                          </span>
+
+                          {/* Category Tag */}
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700">
+                            {item.type}
+                          </span>
+
+                          {/* Target Audience Tag */}
+                          {item.target_audience && (
+                            <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-indigo-950/40 text-indigo-300 border border-indigo-800/40 flex items-center gap-1">
+                              <Users className="h-2.5 w-2.5" />
+                              {item.target_audience === 'all_tenants'
+                                ? 'All Tenants'
+                                : item.target_audience === 'all_admins'
+                                ? 'Admin Team'
+                                : 'Single Tenant'}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
+                          {item.message}
+                        </p>
+
+                        {/* Meta Footer */}
+                        <div className="flex items-center gap-3 sm:gap-4 text-[11px] text-slate-500 pt-1 flex-wrap">
+                          <span className="flex items-center gap-1 text-slate-400">
+                            <Clock className="h-3 w-3 text-slate-500" />
+                            <span>{getRelativeTime(item.created_at)}</span>
+                            <span className="text-slate-600">({new Date(item.created_at).toLocaleString()})</span>
+                          </span>
+
+                          {item.company_name && (
+                            <Link
+                              href={`/platform/tenants/${item.company_id || ''}`}
+                              className="text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1"
+                            >
+                              <Building2 className="h-3 w-3" />
+                              {item.company_name}
+                            </Link>
+                          )}
+
+                          {targetUrl && (
+                            <Link
+                              href={targetUrl}
+                              className="text-cyan-400 hover:text-cyan-300 font-medium inline-flex items-center gap-1 group"
+                            >
+                              <span>Investigate Event</span>
+                              <ExternalLink className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions on Item */}
+                    <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-start pt-2 sm:pt-0">
+                      {!item.is_read ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={actionInProgress === item.id}
+                          onClick={() => handleMarkRead(item.id)}
+                          className="h-8 px-2.5 text-xs border-indigo-500/30 bg-indigo-950/60 text-indigo-300 hover:bg-indigo-900/80 hover:text-white cursor-pointer"
+                        >
+                          <Check className="h-3.5 w-3.5 mr-1" />
+                          Mark Read
+                        </Button>
+                      ) : (
+                        <span className="text-[11px] text-slate-500 italic px-2">Acknowledged</span>
+                      )}
+
+                      <button
+                        type="button"
+                        disabled={actionInProgress === `del-${item.id}`}
+                        onClick={() => handleDeleteNotification(item.id)}
+                        className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800/80 transition-colors cursor-pointer"
+                        title="Dismiss notification"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            )
-          })
+                </Card>
+              )
+            })}
+
+            {/* Load More Pagination */}
+            {hasMore && (
+              <div className="pt-4 text-center">
+                <Button
+                  variant="outline"
+                  onClick={fetchMore}
+                  disabled={loadingMore}
+                  className="bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-300 text-xs px-6 py-2 rounded-xl cursor-pointer"
+                >
+                  {loadingMore ? (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 mr-2 animate-spin text-indigo-400" />
+                      Loading More Alerts...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowDownCircle className="h-3.5 w-3.5 mr-2 text-indigo-400" />
+                      Load Earlier History ({notifications.length} of {totalCount})
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -768,7 +786,7 @@ export default function PlatformNotificationsPage() {
               <button
                 type="button"
                 onClick={() => setBroadcastModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>

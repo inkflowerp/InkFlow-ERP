@@ -39,6 +39,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Sheet, SheetHeader, SheetContent } from '@/components/ui/sheet'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { usePlatformNotifications } from '@/hooks/use-platform-notifications'
 
 interface NavItem {
   title: string
@@ -203,21 +204,39 @@ export function PlatformSidebar() {
     setSearchQuery('')
   }, [pathname])
 
-  // Filter sections by search query
+  const { unreadCount } = usePlatformNotifications({ pageSize: 1 })
+
+  // Filter sections by search query and inject live unread badge
   const filteredSections = useMemo(() => {
-    if (!searchQuery.trim()) return SIDEBAR_SECTIONS
+    const sectionsWithBadges = SIDEBAR_SECTIONS.map((sec) => ({
+      ...sec,
+      items: sec.items.map((item) => {
+        if (item.href === '/platform/notifications') {
+          return {
+            ...item,
+            badge: unreadCount > 0 ? `${unreadCount}` : undefined,
+            badgeColor: 'bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30',
+          }
+        }
+        return item
+      }),
+    }))
+
+    if (!searchQuery.trim()) return sectionsWithBadges
     const q = searchQuery.toLowerCase().trim()
 
-    return SIDEBAR_SECTIONS.map((sec) => ({
-      ...sec,
-      items: sec.items.filter(
-        (item) =>
-          item.title.toLowerCase().includes(q) ||
-          item.href.toLowerCase().includes(q) ||
-          sec.title.toLowerCase().includes(q)
-      ),
-    })).filter((sec) => sec.items.length > 0)
-  }, [searchQuery])
+    return sectionsWithBadges
+      .map((sec) => ({
+        ...sec,
+        items: sec.items.filter(
+          (item) =>
+            item.title.toLowerCase().includes(q) ||
+            item.href.toLowerCase().includes(q) ||
+            sec.title.toLowerCase().includes(q)
+        ),
+      }))
+      .filter((sec) => sec.items.length > 0)
+  }, [searchQuery, unreadCount])
 
   const renderNavList = (isMobile = false, isCollapsed = false) => {
     return (

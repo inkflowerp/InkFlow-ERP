@@ -2,10 +2,11 @@
 
 // ==============================================================================
 // InkFlow SaaS - Platform Notifications Popover Component
-// Live real-time notification stream with category tabs, unread counts, and routing.
+// Live real-time notification stream with Supabase Realtime, category tabs,
+// unread badges, instant mark-as-read, and authoritative database counters.
 // ==============================================================================
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   Bell,
@@ -25,73 +26,37 @@ import {
   Sparkles,
   Zap,
 } from 'lucide-react'
-import { getPlatformNotificationsAction } from '@/actions/platform-data.actions'
-import {
-  markNotificationReadAction,
-  markAllNotificationsReadAction,
-} from '@/actions/platform.actions'
-import { PlatformNotificationItem } from '@/types/platform.types'
+import { usePlatformNotifications } from '@/hooks/use-platform-notifications'
 import { formatTime, formatDate } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 export function PlatformNotificationsPopover() {
   const [open, setOpen] = useState(false)
-  const [notifications, setNotifications] = useState<PlatformNotificationItem[]>([])
   const [activeTab, setActiveTab] = useState<'all' | 'support' | 'tenant' | 'billing' | 'system'>('all')
-  const [loading, setLoading] = useState(false)
 
-  const loadNotifications = async () => {
-    setLoading(true)
-    try {
-      const res = await getPlatformNotificationsAction()
-      if (res.success && res.data) {
-        setNotifications(res.data)
-      }
-    } catch {
-      // Ignore
-    } finally {
-      setLoading(false)
-    }
-  }
+  const {
+    notifications,
+    unreadCount,
+    totalCount,
+    loading,
+    error,
+    refetch,
+    markAsRead,
+    markAllAsRead,
+  } = usePlatformNotifications({ pageSize: 30 })
 
-  useEffect(() => {
-    loadNotifications()
-    // Auto-refresh notifications every 30 seconds
-    const interval = setInterval(loadNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const unreadCount = notifications.filter((n) => !n.is_read).length
-
-  // Filtered notifications by tab
+  // Filtered notifications by tab (with safe fallback for unknown categories under 'all' or 'system')
   const filteredNotifications = useMemo(() => {
     if (activeTab === 'all') return notifications
     return notifications.filter((n) => {
-      if (activeTab === 'support') return n.type === 'support'
-      if (activeTab === 'tenant') return n.type === 'tenant'
-      if (activeTab === 'billing') return n.type === 'billing'
-      if (activeTab === 'system') return n.type === 'system' || n.type === 'security'
+      const type = n.type || 'system'
+      if (activeTab === 'support') return type === 'support' || type.includes('support')
+      if (activeTab === 'tenant') return type === 'tenant' || type === 'tenant_lifecycle'
+      if (activeTab === 'billing') return type === 'billing'
+      if (activeTab === 'system') return type === 'system' || type === 'security' || type === 'backup' || type === 'maintenance' || !['support', 'tenant', 'tenant_lifecycle', 'billing'].includes(type)
       return true
     })
   }, [notifications, activeTab])
-
-  const markAllAsRead = async () => {
-    try {
-      await markAllNotificationsReadAction()
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
-    } catch {}
-  }
-
-  const handleToggleRead = async (id: string, currentRead: boolean) => {
-    try {
-      if (!currentRead) {
-        await markNotificationReadAction(id)
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-        )
-      }
-    } catch {}
-  }
 
   const getTypeIcon = (type: string, severity: string) => {
     if (severity === 'critical') return <ShieldAlert className="h-4 w-4 text-rose-400" />
@@ -101,6 +66,7 @@ export function PlatformNotificationsPopover() {
       case 'support':
         return <MessageSquare className="h-4 w-4 text-indigo-400" />
       case 'tenant':
+      case 'tenant_lifecycle':
         return <Building2 className="h-4 w-4 text-blue-400" />
       case 'billing':
         return <CreditCard className="h-4 w-4 text-emerald-400" />
@@ -117,7 +83,7 @@ export function PlatformNotificationsPopover() {
         type="button"
         onClick={() => {
           setOpen(!open)
-          if (!open) loadNotifications()
+          if (!open) refetch()
         }}
         className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
         title="Platform Notifications"
@@ -142,14 +108,14 @@ export function PlatformNotificationsPopover() {
                   </span>
                 ) : (
                   <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400 text-[10px] font-medium">
-                    {notifications.length} total
+                    {totalCount} total
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => loadNotifications()}
+                  onClick={() => refetch()}
                   className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
                   title="Refresh Notifications"
                 >
@@ -158,7 +124,7 @@ export function PlatformNotificationsPopover() {
                 {unreadCount > 0 && (
                   <button
                     type="button"
-                    onClick={markAllAsRead}
+                    onClick={() => markAllAsRead()}
                     className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
                   >
                     Mark all read
@@ -198,10 +164,23 @@ export function PlatformNotificationsPopover() {
                   <div className="w-4 h-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
                   <span>Loading platform updates...</span>
                 </div>
+              ) : error ? (
+                <div className="p-6 text-center text-slate-400 space-y-2">
+                  <AlertTriangle className="h-6 w-6 text-amber-400 mx-auto opacity-80" />
+                  <div className="font-semibold text-rose-300 text-xs">Unable to load notifications</div>
+                  <p className="text-[11px] text-slate-500">{error}</p>
+                  <button
+                    type="button"
+                    onClick={() => refetch()}
+                    className="mt-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] rounded-lg cursor-pointer"
+                  >
+                    Retry
+                  </button>
+                </div>
               ) : filteredNotifications.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 space-y-2">
                   <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto opacity-80" />
-                  <div className="font-semibold text-white text-xs">All Caught Up</div>
+                  <div className="font-semibold text-white text-xs">No notifications yet.</div>
                   <p className="text-[11px] text-slate-500">
                     No active notifications in this category. Platform operations are nominal.
                   </p>
@@ -260,7 +239,7 @@ export function PlatformNotificationsPopover() {
                       {!notif.is_read && (
                         <button
                           type="button"
-                          onClick={() => handleToggleRead(notif.id, notif.is_read)}
+                          onClick={() => markAsRead(notif.id)}
                           className="text-slate-500 hover:text-indigo-400 p-1 shrink-0 cursor-pointer"
                           title="Mark as read"
                         >

@@ -1262,7 +1262,7 @@ export async function markNotificationReadAction(id: string) {
     if (!platformUser) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
     }
-    return await PlatformService.markNotificationRead(id)
+    return await PlatformService.markNotificationRead(id, platformUser.id)
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to mark notification read' }
   }
@@ -1274,7 +1274,7 @@ export async function markAllNotificationsReadAction() {
     if (!platformUser) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
     }
-    return await PlatformService.markAllNotificationsRead()
+    return await PlatformService.markAllNotificationsRead(platformUser.id)
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to mark notifications read' }
   }

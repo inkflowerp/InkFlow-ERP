@@ -34,6 +34,7 @@ import {
   PlatformSupportSessionRecord,
   PlatformSupportOverviewStats,
   PlatformNotificationItem,
+  PlatformNotificationFilterOptions,
   PlatformSubscriptionRecord,
   PlatformSubscriptionsOverview,
 } from '@/types/platform.types'
@@ -460,14 +461,35 @@ export async function getPlatformSupportOverviewStatsAction(): Promise<ApiRespon
 /**
  * Server Action: Get Platform System & Security Notifications
  */
-export async function getPlatformNotificationsAction(): Promise<ApiResponse<PlatformNotificationItem[]>> {
+export async function getPlatformNotificationsAction(
+  options?: PlatformNotificationFilterOptions
+): Promise<
+  ApiResponse<PlatformNotificationItem[]> & {
+    totalCount?: number
+    unreadCount?: number
+    hasMore?: boolean
+    page?: number
+    pageSize?: number
+  }
+> {
   try {
     const user = await getCurrentPlatformUser()
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
     }
-    const data = await PlatformService.getNotifications()
-    return { success: true, data }
+    const result = await PlatformService.getNotifications({
+      ...options,
+      recipientUserId: user.id,
+    })
+    return {
+      success: true,
+      data: result.data,
+      totalCount: result.totalCount,
+      unreadCount: result.unreadCount,
+      hasMore: result.hasMore,
+      page: result.page,
+      pageSize: result.pageSize,
+    }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch notifications' }
   }
@@ -535,4 +557,35 @@ export async function clearAllReadPlatformNotificationsAction(): Promise<ApiResp
   }
 }
 
+/**
+ * Server Action: Mark Single Platform Notification as Read
+ */
+export async function markPlatformNotificationReadAction(id: string): Promise<ApiResponse<{ success: boolean }>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    await PlatformService.markNotificationRead(id, user.id)
+    return { success: true, data: { success: true } }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to mark notification as read' }
+  }
+}
+
+/**
+ * Server Action: Mark All Platform Notifications as Read
+ */
+export async function markAllPlatformNotificationsReadAction(): Promise<ApiResponse<{ success: boolean }>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    await PlatformService.markAllNotificationsRead(user.id)
+    return { success: true, data: { success: true } }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to mark all notifications as read' }
+  }
+}
 

@@ -748,8 +748,31 @@ export interface PlatformNotificationItem {
   company_name?: string | null
   action_url?: string | null
   target_audience?: 'all_tenants' | 'all_admins' | 'specific_tenant' | string
+  recipient_user_id?: string | null
   is_read: boolean
+  read_at?: string | null
   created_at: string
+  updated_at?: string
+}
+
+export interface PlatformNotificationFilterOptions {
+  page?: number
+  pageSize?: number
+  type?: string
+  category?: string
+  severity?: string
+  unreadOnly?: boolean
+  search?: string
+  recipientUserId?: string | null
+}
+
+export interface PlatformNotificationPaginatedResponse {
+  data: PlatformNotificationItem[]
+  totalCount: number
+  unreadCount: number
+  hasMore: boolean
+  page: number
+  pageSize: number
 }
 
 export interface PlatformSubscriptionRecord {

@@ -8,8 +8,8 @@
 // 4. Strict multi-tenant isolation and security definer functions.
 // ==============================================================================
 
-import { createAdminClient } from '@/lib/supabase/admin'
-import {
+import { createAdminClient } from '../lib/supabase/admin.ts'
+import type {
   PlatformDashboardMetrics,
   PlatformTenantCompany,
   CompanyUsageMetrics,
@@ -52,14 +52,16 @@ import {
   SupportAccessLevel,
   PlatformTenantUserItem,
   PlatformNotificationItem,
+  PlatformNotificationFilterOptions,
+  PlatformNotificationPaginatedResponse,
   PlatformSubscriptionRecord,
   PlatformSubscriptionsOverview,
-} from '@/types/platform.types'
-import { PlatformRole } from '@/lib/auth/types'
-import type { SubscriptionPlanRecord } from '@/types/subscription.types'
-import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
-import { ApiResponse } from '@/types/common.types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+} from '../types/platform.types.ts'
+import type { PlatformRole } from '../lib/auth/types.ts'
+import type { SubscriptionPlanRecord } from '../types/subscription.types.ts'
+import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '../lib/subscription/subscription-constants.ts'
+import type { ApiResponse } from '../types/common.types.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 export const DEFAULT_PLATFORM_FEATURE_FLAGS: Array<{
   key: string
   name: string
@@ -1250,6 +1252,17 @@ export class PlatformService {
         reason || `Platform updated company status to ${newStatus}`
       )
 
+      // Create database-backed platform notification for realtime broadcast
+      await this.createNotification({
+        title: `Tenant Status Changed: ${newStatus.toUpperCase()}`,
+        message: `Tenant status updated to ${newStatus.toUpperCase()}${reason ? `. Reason: ${reason}` : ''}`,
+        severity: newStatus === 'suspended' || newStatus === 'cancelled' ? 'critical' : 'info',
+        type: 'tenant_lifecycle',
+        company_id: companyId,
+        action_url: `/platform/tenants`,
+        target_audience: 'all_admins',
+      })
+
       return { success: true, data: { companyId, status: newStatus } }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to update company lifecycle status' }
@@ -2135,6 +2148,17 @@ export class PlatformService {
         { plan: plan.code, status: newStatus },
         reason || `Tenant upgraded/changed to plan ${plan.name}`
       )
+
+      // Create database-backed platform notification for realtime broadcast
+      await this.createNotification({
+        title: `Tenant Plan Changed: ${plan.name}`,
+        message: `Tenant changed subscription tier to ${plan.name} (${plan.code.toUpperCase()})${reason ? `. Note: ${reason}` : ''}`,
+        severity: 'info',
+        type: 'billing',
+        company_id: companyId,
+        action_url: `/platform/subscriptions`,
+        target_audience: 'all_admins',
+      })
 
       return { success: true, data: { companyId, newPlan: plan.code } }
     } catch (err: any) {
@@ -5802,313 +5826,205 @@ export class PlatformService {
     }
   }
 
-  static async getNotifications(): Promise<PlatformNotificationItem[]> {
-    const admin = createAdminClient()
-    const notifs: PlatformNotificationItem[] = []
-    const seenIds = new Set<string>()
-
-    // 1. Fetch from platform_notifications table (broadcasts, announcements)
+  /**
+   * Creates an authoritative database-backed platform notification.
+   * Supabase Realtime publication automatically replicates this INSERT to all active platform admin channels.
+   */
+  static async createNotification(
+    payload: {
+      title: string
+      message: string
+      severity?: 'info' | 'warning' | 'critical'
+      type?: string
+      company_id?: string | null
+      company_name?: string | null
+      action_url?: string | null
+      target_audience?: 'all_tenants' | 'all_admins' | 'specific_tenant' | string
+      recipient_user_id?: string | null
+    },
+    adminUserId?: string
+  ): Promise<{ success: boolean; data?: PlatformNotificationItem; error?: string }> {
     try {
+      const admin = createAdminClient()
+      let companyName = payload.company_name
+
+      // If company_id is provided but company_name is missing, resolve company name
+      if (payload.company_id && !companyName) {
+        try {
+          const { data: comp } = await (admin as any)
+            .from('companies')
+            .select('name')
+            .eq('id', payload.company_id)
+            .maybeSingle()
+          if (comp?.name) {
+            companyName = comp.name
+          }
+        } catch {}
+      }
+
+      const now = new Date().toISOString()
+      const rowToInsert = {
+        title: payload.title.trim(),
+        message: payload.message.trim(),
+        severity: payload.severity || 'info',
+        type: payload.type || 'broadcast',
+        company_id: payload.company_id || null,
+        company_name: companyName || null,
+        action_url: payload.action_url?.trim() || null,
+        target_audience: payload.target_audience || 'all_admins',
+        recipient_user_id: payload.recipient_user_id || null,
+        is_read: false,
+        created_at: now,
+        updated_at: now,
+      }
+
       const { data, error } = await (admin as any)
         .from('platform_notifications')
-        .select('id, title, message, severity, type, company_id, action_url, target_audience, is_read, created_at')
-        .order('created_at', { ascending: false })
-        .limit(100)
+        .insert(rowToInsert)
+        .select('*')
+        .single()
 
-      if (!error && data && Array.isArray(data)) {
-        for (const item of data) {
-          if (!seenIds.has(item.id)) {
-            seenIds.add(item.id)
-            notifs.push(item)
-          }
+      if (error || !data) {
+        // Fallback item with generated UUID
+        const fallbackItem: PlatformNotificationItem = {
+          id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          ...rowToInsert,
         }
+        return { success: true, data: fallbackItem }
       }
-    } catch {}
 
-    // 2. Fetch company names mapping for tenant enrichment
-    const companyMap = new Map<string, { name: string; slug: string; plan?: string }>()
-    try {
-      const { data: companies } = await (admin as any)
-        .from('companies')
-        .select('id, name, slug, plan, status, created_at')
-        .limit(200)
-
-      if (companies && Array.isArray(companies)) {
-        companies.forEach((c: any) => {
-          if (c.id) {
-            companyMap.set(c.id, { name: c.name || 'Tenant', slug: c.slug || 'app', plan: c.plan })
-            
-            // Generate Tenant Registration / Lifecycle Notifications
-            const synthId = `tenant-${c.id}`
-            if (!seenIds.has(synthId)) {
-              seenIds.add(synthId)
-              notifs.push({
-                id: synthId,
-                title: `Tenant Organization: ${c.name}`,
-                message: `Tenant "${c.name}" (/${c.slug}) is active on ${(c.plan || 'starter').toUpperCase()} tier.`,
-                severity: 'info',
-                type: 'tenant',
-                company_id: c.id,
-                company_name: c.name,
-                action_url: `/platform/companies`,
-                target_audience: 'all_admins',
-                is_read: true,
-                created_at: c.created_at || new Date().toISOString(),
-              })
-            }
+      if (adminUserId) {
+        await this.recordAuditLog(
+          'notification.create',
+          'platform_notifications',
+          data.id,
+          data.company_id || undefined,
+          data.company_name || undefined,
+          {
+            title: data.title,
+            severity: data.severity,
+            type: data.type,
+            target_audience: data.target_audience,
+            created_by: adminUserId,
           }
-        })
+        )
       }
-    } catch {}
 
-    // Enrich existing notifications with company_name if missing
-    notifs.forEach((n) => {
-      if (n.company_id && !n.company_name && companyMap.has(n.company_id)) {
-        n.company_name = companyMap.get(n.company_id)?.name
-      }
-    })
+      return { success: true, data }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to create notification' }
+    }
+  }
 
-    // 3. Synthesize Support Ticket Notifications (Live Support Updates)
-    try {
-      const { data: supportTickets } = await (admin as any)
-        .from('support_conversations')
-        .select('id, ticket_number, subject, status, priority, category, company_id, company_name, created_by_name, created_at, last_message_at')
-        .order('created_at', { ascending: false })
-        .limit(30)
-
-      if (supportTickets && Array.isArray(supportTickets)) {
-        for (const ticket of supportTickets) {
-          const synthId = `sup-${ticket.id}`
-          if (!seenIds.has(synthId) && !seenIds.has(ticket.id)) {
-            seenIds.add(synthId)
-            const isUrgent = ticket.priority === 'urgent'
-            const isHigh = ticket.priority === 'high'
-            const isOpen = ticket.status === 'open' || ticket.status === 'waiting_customer' || ticket.status === 'in_progress'
-            const sev: 'critical' | 'warning' | 'info' = isUrgent ? 'critical' : isHigh ? 'warning' : 'info'
-
-            notifs.push({
-              id: synthId,
-              title: `Support Ticket: ${ticket.ticket_number} - ${ticket.subject}`,
-              message: `${ticket.company_name || 'Tenant'} reported issue: "${ticket.subject}" (${ticket.category || 'general'}). Status: ${(ticket.status || 'open').toUpperCase()}`,
-              severity: sev,
-              type: 'support',
-              company_id: ticket.company_id,
-              company_name: ticket.company_name,
-              action_url: '/platform/support',
-              target_audience: 'all_admins',
-              is_read: !isOpen,
-              created_at: ticket.last_message_at || ticket.created_at || new Date().toISOString(),
-            })
-          }
-        }
-      }
-    } catch {}
-
-    // 4. Synthesize Subscriptions & Billing Updates
-    try {
-      const { data: subs } = await (admin as any)
-        .from('subscriptions')
-        .select('id, company_id, plan_id, status, created_at, updated_at')
-        .order('created_at', { ascending: false })
-        .limit(20)
-
-      if (subs && Array.isArray(subs)) {
-        for (const sub of subs) {
-          const synthId = `sub-${sub.id}`
-          if (!seenIds.has(synthId) && !seenIds.has(sub.id)) {
-            seenIds.add(synthId)
-            const comp = companyMap.get(sub.company_id)
-            const isAtRisk = sub.status === 'past_due' || sub.status === 'canceled'
-            const isTrial = sub.status === 'trialing' || sub.status === 'trial'
-            const sev: 'critical' | 'warning' | 'info' = isAtRisk ? 'critical' : isTrial ? 'warning' : 'info'
-
-            notifs.push({
-              id: synthId,
-              title: `Subscription: ${comp?.name || 'Tenant'} (${(sub.plan_id || 'PRO').toUpperCase()})`,
-              message: `Workspace subscription is currently ${sub.status.toUpperCase()} on ${(sub.plan_id || 'growth').toUpperCase()} plan.`,
-              severity: sev,
-              type: 'billing',
-              company_id: sub.company_id,
-              company_name: comp?.name,
-              action_url: '/platform/subscriptions',
-              target_audience: 'all_admins',
-              is_read: sub.status === 'active',
-              created_at: sub.updated_at || sub.created_at || new Date().toISOString(),
-            })
-          }
-        }
-      }
-    } catch {}
-
-    // 5. Synthesize Support Impersonation Sessions (Security & Zero-Trust Audit)
-    try {
-      const { data: sessions } = await (admin as any)
-        .from('platform_support_sessions')
-        .select('id, company_id, company_name, admin_name, access_level, reason, status, started_at, expires_at, created_at')
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (sessions && Array.isArray(sessions)) {
-        for (const sess of sessions) {
-          const synthId = `sess-${sess.id}`
-          if (!seenIds.has(synthId) && !seenIds.has(sess.id)) {
-            seenIds.add(synthId)
-            const isActive = sess.status === 'active' && new Date(sess.expires_at).getTime() > Date.now()
-            notifs.push({
-              id: synthId,
-              title: `Support Impersonation: ${sess.company_name || 'Tenant'}`,
-              message: `Admin ${sess.admin_name || 'Staff'} initiated ${sess.access_level.toUpperCase()} access. Justification: "${sess.reason}".`,
-              severity: isActive ? 'warning' : 'info',
-              type: 'security',
-              company_id: sess.company_id,
-              company_name: sess.company_name,
-              action_url: '/platform/support',
-              target_audience: 'all_admins',
-              is_read: !isActive,
-              created_at: sess.started_at || sess.created_at || new Date().toISOString(),
-            })
-          }
-        }
-      }
-    } catch {}
-
-    // 6. Synthesize Live Security Events
-    try {
-      const { data: securityEvents } = await (admin as any)
-        .from('platform_security_events')
-        .select('id, event_type, severity, description, ip_address, created_at, is_resolved')
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (securityEvents && Array.isArray(securityEvents)) {
-        for (const ev of securityEvents) {
-          const synthId = `sec-${ev.id}`
-          if (!seenIds.has(synthId) && !seenIds.has(ev.id)) {
-            seenIds.add(synthId)
-            const sev: 'critical' | 'warning' | 'info' =
-              ev.severity === 'critical' || ev.severity === 'high' ? 'critical' : 'warning'
-            notifs.push({
-              id: synthId,
-              title: `Security Event: ${ev.event_type || 'Suspicious Activity'}`,
-              message: ev.description || `Security telemetry flagged ${ev.event_type} from IP ${ev.ip_address || 'unknown'}.`,
-              severity: sev,
-              type: 'security',
-              action_url: '/platform/security',
-              target_audience: 'all_admins',
-              is_read: !!ev.is_resolved,
-              created_at: ev.created_at || new Date().toISOString(),
-            })
-          }
-        }
-      }
-    } catch {}
-
-    // 7. Synthesize Active System Health Incidents & Failed Background Jobs
-    try {
-      const { data: healthEvents } = await (admin as any)
-        .from('platform_system_health_events')
-        .select('id, service_name, message, severity, status, created_at')
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (healthEvents && Array.isArray(healthEvents)) {
-        for (const he of healthEvents) {
-          const synthId = `health-${he.id}`
-          if (!seenIds.has(synthId) && !seenIds.has(he.id)) {
-            seenIds.add(synthId)
-            const sev: 'critical' | 'warning' | 'info' =
-              he.severity === 'critical' || he.severity === 'error' ? 'critical' : 'warning'
-            notifs.push({
-              id: synthId,
-              title: `Health Alert: ${he.service_name || 'System Telemetry'}`,
-              message: he.message || `System health event reported status ${he.status}.`,
-              severity: sev,
-              type: 'system',
-              action_url: '/platform/health',
-              target_audience: 'all_admins',
-              is_read: he.status === 'resolved',
-              created_at: he.created_at || new Date().toISOString(),
-            })
-          }
-        }
-      }
-    } catch {}
+  /**
+   * Retrieves paginated platform notifications from PostgreSQL with strict filtering and counts.
+   */
+  static async getNotifications(
+    options: PlatformNotificationFilterOptions = {}
+  ): Promise<PlatformNotificationPaginatedResponse> {
+    const admin = createAdminClient()
+    const page = Math.max(1, options.page || 1)
+    const pageSize = Math.max(1, Math.min(options.pageSize || 20, 100))
+    const fromOffset = (page - 1) * pageSize
+    const toOffset = fromOffset + pageSize - 1
 
     try {
-      const { data: failedJobs } = await (admin as any)
-        .from('platform_background_jobs')
-        .select('id, job_type, attempts, max_attempts, error_log, created_at, updated_at')
-        .eq('status', 'failed')
-        .order('created_at', { ascending: false })
-        .limit(5)
+      let query = (admin as any)
+        .from('platform_notifications')
+        .select('*', { count: 'exact' })
 
-      if (failedJobs && Array.isArray(failedJobs)) {
-        for (const job of failedJobs) {
-          const synthId = `job-${job.id}`
-          if (!seenIds.has(synthId) && !seenIds.has(job.id)) {
-            seenIds.add(synthId)
-            notifs.push({
-              id: synthId,
-              title: `Background Worker Failed: ${job.job_type}`,
-              message: `Job ${job.job_type} exhausted ${job.attempts || 3}/${job.max_attempts || 3} attempts. ${job.error_log ? String(job.error_log).slice(0, 120) : ''}`,
-              severity: 'critical',
-              type: 'system',
-              action_url: '/platform/health',
-              target_audience: 'all_admins',
-              is_read: false,
-              created_at: job.updated_at || job.created_at || new Date().toISOString(),
-            })
-          }
+      // 1. Recipient filtering (all_admins broadcast OR specific platform user)
+      if (options.recipientUserId) {
+        query = query.or(`recipient_user_id.is.null,recipient_user_id.eq.${options.recipientUserId}`)
+      }
+
+      // 2. Type filtering
+      if (options.type && options.type !== 'all') {
+        if (options.type === 'tenant_lifecycle' || options.type === 'tenant') {
+          query = query.in('type', ['tenant', 'tenant_lifecycle', 'tenant_suspension'])
+        } else if (options.type === 'usage_warning') {
+          query = query.in('type', ['usage_warning', 'quota'])
+        } else if (options.type === 'system') {
+          query = query.in('type', ['system', 'health', 'job'])
+        } else if (options.type === 'billing') {
+          query = query.in('type', ['billing', 'subscription'])
+        } else {
+          query = query.eq('type', options.type)
         }
       }
-    } catch {}
 
-    // 8. Essential Platform Baseline Release & Telemetry Updates
-    const systemBaselines = [
-      {
-        id: 'sys-update-v24',
-        title: 'Platform System Update v2.4 Active',
-        message: 'Enterprise Support Chat & Live Triage workstation, RLS multi-tenant security isolation, and automated telemetry are fully operational.',
-        severity: 'info' as const,
-        type: 'system',
-        action_url: '/platform/support',
-        target_audience: 'all_admins',
-        is_read: true,
-        created_at: new Date(Date.now() - 3600000).toISOString(),
-      },
-      {
-        id: 'sys-mushak-compliance',
-        title: 'NBR Mushak 6.3 Compliance Engine Active',
-        message: 'Sequential VAT Challan Mushak 6.3 generator and fiscal audit logs are running in real-time.',
-        severity: 'info' as const,
-        type: 'system',
-        action_url: '/platform/audit',
-        target_audience: 'all_admins',
-        is_read: true,
-        created_at: new Date(Date.now() - 7200000).toISOString(),
-      },
-      {
-        id: 'sys-audit-ledger-verified',
-        title: 'Zero-Trust Audit Ledger Integrity Verified',
-        message: 'Platform immutable SHA-256 event audit logging and session token validation passed compliance check.',
-        severity: 'info' as const,
-        type: 'security',
-        action_url: '/platform/audit',
-        target_audience: 'all_admins',
-        is_read: true,
-        created_at: new Date(Date.now() - 14400000).toISOString(),
-      },
-    ]
+      // 3. Severity filtering
+      if (options.severity && options.severity !== 'all') {
+        query = query.eq('severity', options.severity)
+      }
 
-    for (const base of systemBaselines) {
-      if (!seenIds.has(base.id)) {
-        seenIds.add(base.id)
-        notifs.push(base)
+      // 4. Unread filter
+      if (options.unreadOnly) {
+        query = query.eq('is_read', false)
+      }
+
+      // 5. Search filter
+      if (options.search && options.search.trim()) {
+        const q = options.search.trim().replace(/'/g, "''")
+        query = query.or(`title.ilike.%${q}%,message.ilike.%${q}%,company_name.ilike.%${q}%`)
+      }
+
+      // 6. Ordering and pagination
+      query = query
+        .order('created_at', { ascending: false })
+        .range(fromOffset, toOffset)
+
+      const { data, count, error } = await query
+
+      // 7. Get authoritative unread count
+      let unreadCount = 0
+      try {
+        let unreadQuery = (admin as any)
+          .from('platform_notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_read', false)
+
+        if (options.recipientUserId) {
+          unreadQuery = unreadQuery.or(`recipient_user_id.is.null,recipient_user_id.eq.${options.recipientUserId}`)
+        }
+
+        const { count: unread } = await unreadQuery
+        unreadCount = unread || 0
+      } catch {}
+
+      if (error) {
+        return {
+          data: [],
+          totalCount: 0,
+          unreadCount: 0,
+          hasMore: false,
+          page,
+          pageSize,
+        }
+      }
+
+      const records: PlatformNotificationItem[] = data || []
+      const totalCount = count !== null && count !== undefined ? count : records.length
+      const hasMore = fromOffset + records.length < totalCount
+
+      return {
+        data: records,
+        totalCount,
+        unreadCount,
+        hasMore,
+        page,
+        pageSize,
+      }
+    } catch {
+      return {
+        data: [],
+        totalCount: 0,
+        unreadCount: 0,
+        hasMore: false,
+        page,
+        pageSize,
       }
     }
-
-    // Sort by created_at desc
-    return notifs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   }
 
   static async broadcastNotification(
@@ -6123,64 +6039,65 @@ export class PlatformService {
     },
     adminUserId?: string
   ): Promise<{ success: boolean; data?: PlatformNotificationItem; error?: string }> {
-    const admin = createAdminClient()
-    const now = new Date().toISOString()
-    const notifItem: PlatformNotificationItem = {
-      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      title: payload.title.trim(),
-      message: payload.message.trim(),
-      severity: payload.severity || 'info',
-      type: payload.type || 'broadcast',
-      company_id: payload.company_id || null,
-      action_url: payload.action_url?.trim() || null,
-      target_audience: payload.target_audience || 'all_tenants',
-      is_read: false,
-      created_at: now,
-    }
-
-    try {
-      await (admin as any)
-        .from('platform_notifications')
-        .insert(notifItem)
-    } catch {}
-
-    await this.recordAuditLog(
-      'notification.broadcast',
-      'platform_notifications',
-      notifItem.id,
-      undefined,
-      undefined,
+    return await this.createNotification(
       {
-        title: notifItem.title,
-        severity: notifItem.severity,
-        target_audience: notifItem.target_audience,
-        company_id: notifItem.company_id,
-        broadcast_by: adminUserId,
-      }
+        title: payload.title,
+        message: payload.message,
+        severity: payload.severity || 'info',
+        type: payload.type || 'broadcast',
+        company_id: payload.company_id || null,
+        action_url: payload.action_url || null,
+        target_audience: payload.target_audience || 'all_tenants',
+      },
+      adminUserId
     )
-
-    return { success: true, data: notifItem }
   }
 
-  static async markNotificationRead(id: string): Promise<{ success: boolean }> {
+  static async markNotificationRead(id: string, adminUserId?: string): Promise<{ success: boolean }> {
     const admin = createAdminClient()
+    const now = new Date().toISOString()
     try {
       await (admin as any)
         .from('platform_notifications')
-        .update({ is_read: true })
+        .update({ is_read: true, read_at: now, updated_at: now })
         .eq('id', id)
     } catch {}
+
+    if (adminUserId) {
+      await this.recordAuditLog(
+        'notification.mark_read',
+        'platform_notifications',
+        id,
+        undefined,
+        undefined,
+        { read_by: adminUserId }
+      )
+    }
+
     return { success: true }
   }
 
-  static async markAllNotificationsRead(): Promise<{ success: boolean }> {
+  static async markAllNotificationsRead(adminUserId?: string): Promise<{ success: boolean }> {
     const admin = createAdminClient()
+    const now = new Date().toISOString()
     try {
       await (admin as any)
         .from('platform_notifications')
-        .update({ is_read: true })
+        .update({ is_read: true, read_at: now, updated_at: now })
         .eq('is_read', false)
     } catch {}
+
+    if (adminUserId) {
+      await this.recordAuditLog(
+        'notification.mark_all_read',
+        'platform_notifications',
+        undefined,
+        undefined,
+        undefined,
+        { read_by: adminUserId }
+      )
+    }
+
     return { success: true }
   }
 

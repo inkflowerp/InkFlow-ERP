@@ -560,6 +560,125 @@ class RealtimeSubscriptionManager {
   }
 
   /**
+   * Platform Administrator Realtime: Multiplexed WebSocket channel for platform_notifications
+   */
+  subscribeToPlatformNotifications(
+    onEvent?: (event: PostgresChangeEvent<any>) => void
+  ): () => void {
+    if (typeof window === 'undefined') {
+      return () => {}
+    }
+
+    const channelName = 'platform:notifications:admin'
+    let channelRef = this.activeChannels.get(channelName)
+
+    if (!channelRef) {
+      const supabase = createClient()
+      this.setStatus('connecting')
+
+      const channel = supabase.channel(channelName)
+
+      // 1. Broadcast channel listener for administrative announcements
+      channel.on('broadcast', { event: 'platform_notification_event' }, (response: any) => {
+        const payload = response.payload
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('printerp_platform_notification', {
+              detail: payload,
+            })
+          )
+        }
+        if (payload?.title) {
+          triggerPopupNotification({
+            id: payload.id || `plat-bc-${Date.now()}`,
+            type: payload.type || 'system',
+            title: payload.title,
+            message: payload.message || '',
+            actionUrl: payload.action_url || '/platform/notifications',
+          })
+        }
+      })
+
+      // 2. PostgreSQL Replication changes on public.platform_notifications
+      channel.on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'platform_notifications',
+        },
+        (payload: any) => {
+          const changeEvent: PostgresChangeEvent<any> = {
+            eventType: payload.eventType,
+            schema: payload.schema,
+            table: payload.table,
+            new: payload.new,
+            old: payload.old,
+          }
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('printerp_platform_notification_change', {
+                detail: changeEvent,
+              })
+            )
+          }
+
+          if (payload.eventType === 'INSERT' && payload.new) {
+            triggerPopupNotification({
+              id: payload.new.id || `plat-notif-${Date.now()}`,
+              type: payload.new.type || 'system',
+              title: payload.new.title || 'Platform Alert',
+              message: payload.new.message || '',
+              actionUrl: payload.new.action_url || '/platform/notifications',
+            })
+          }
+
+          if (onEvent) {
+            onEvent(changeEvent)
+          }
+        }
+      )
+
+      channel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          this.setStatus('connected')
+          if (channelRef) channelRef.status = 'connected'
+          console.log(`[RealtimeManager] Platform Realtime Active: ${channelName}`)
+        } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
+          this.setStatus('reconnecting')
+          if (channelRef) channelRef.status = 'error'
+        } else if (status === 'CLOSED') {
+          this.setStatus('disconnected')
+          if (channelRef) channelRef.status = 'disconnected'
+        }
+      })
+
+      channelRef = { channel, refCount: 1, status: 'connecting' }
+      this.activeChannels.set(channelName, channelRef)
+    } else {
+      channelRef.refCount += 1
+    }
+
+    let windowListener: ((e: any) => void) | null = null
+    if (onEvent && typeof window !== 'undefined') {
+      windowListener = (e: any) => {
+        if (e?.detail) {
+          onEvent(e.detail)
+        }
+      }
+      window.addEventListener('printerp_platform_notification_change', windowListener)
+    }
+
+    return () => {
+      if (windowListener && typeof window !== 'undefined') {
+        window.removeEventListener('printerp_platform_notification_change', windowListener)
+      }
+      this.unsubscribe(channelName)
+    }
+  }
+
+  /**
    * Broadcasts a realtime event to other connected clients/users in the company
    */
   broadcastSyncEvent(

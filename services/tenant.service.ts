@@ -200,6 +200,23 @@ export class TenantService {
         resolvedOwnerId || undefined
       )
 
+      // Generate real-time platform notification for tenant registration
+      try {
+        await (admin as any).from('platform_notifications').insert({
+          title: `New Tenant Registered: ${created.name}`,
+          message: `Tenant "${created.name}" (/${created.slug}) registered on ${(data.plan || 'trial').toUpperCase()} tier.`,
+          severity: 'info',
+          type: 'tenant',
+          company_id: created.id,
+          company_name: created.name,
+          action_url: `/platform/tenants`,
+          target_audience: 'all_admins',
+          is_read: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+      } catch {}
+
       return {
         success: true,
         data: created,
