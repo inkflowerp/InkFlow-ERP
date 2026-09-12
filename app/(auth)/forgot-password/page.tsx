@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Mail, ArrowLeft, ArrowRight, CheckCircle2, Lock, ShieldCheck, AlertCircle, RefreshCw } from 'lucide-react'
 import {
   forgotPasswordAction,
@@ -31,7 +30,6 @@ export default function ForgotPasswordPage() {
   const [isResending, setIsResending] = useState(false)
   const [cooldown, setCooldown] = useState<number>(60)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
-  const router = useRouter()
   const { t, locale } = useI18n()
 
   // Live countdown timer for 60s resend cooldown in Step 2

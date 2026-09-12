@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Mail, CheckCircle2, AlertCircle, ArrowRight, RefreshCw, ShieldCheck } from 'lucide-react'
 import {
   verifyRegistrationOtpAction,
@@ -14,7 +14,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { useI18n } from '@/i18n/context'
 
 function VerifyEmailForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const emailParam = searchParams.get('email') || ''
   const tokenParam = searchParams.get('token') || ''

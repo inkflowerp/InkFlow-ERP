@@ -709,7 +709,7 @@ export class AuthService {
       const supabase = await getSupabaseAuthClient()
       await supabase.auth.signOut()
       return { success: true }
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
       if (typeof document !== 'undefined') {
         document.cookie = `${TENANT_SESSION_COOKIE}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;`
         window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: null }))

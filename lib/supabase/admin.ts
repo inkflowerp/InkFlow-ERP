@@ -24,13 +24,11 @@ export function createAdminClient() {
 
   const supabaseUrl =
     process.env.SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    'https://liqhihsqcblddqfjmmse.supabase.co'
+    process.env.NEXT_PUBLIC_SUPABASE_URL
 
   const serviceRoleKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SECRET_KEY ||
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcWhpaHNxY2JsZGRxZmptbXNlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODgxMTIyNSwiZXhwIjoyMTA0Mzg3MjI1fQ.r1YkQlNn12i5ra1XdcGBJVj1QAT6gY2_uK-o0VL9Q4Q'
+    process.env.SUPABASE_SECRET_KEY
 
   const isPlaceholderUrl = (url?: string) =>
     !url || url.includes('your-project-ref') || (url.includes('test-project') && isTestEnvironment())

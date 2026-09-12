@@ -30,7 +30,7 @@ create or replace function public.verify_auth_otp_atomic(
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
     v_record public.auth_verifications%rowtype;
@@ -126,7 +126,7 @@ create or replace function public.verify_auth_token_atomic(
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
     v_record public.auth_verifications%rowtype;
@@ -174,3 +174,10 @@ begin
     );
 end;
 $$;
+
+-- 5. Function Execution Privileges
+revoke all on function public.verify_auth_otp_atomic(text, text, text) from public;
+grant execute on function public.verify_auth_otp_atomic(text, text, text) to service_role;
+
+revoke all on function public.verify_auth_token_atomic(text, text) from public;
+grant execute on function public.verify_auth_token_atomic(text, text) to service_role;
