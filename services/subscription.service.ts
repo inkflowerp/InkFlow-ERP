@@ -565,6 +565,8 @@ export class SubscriptionService {
           company_id: sub.company_id || resolvedCompanyId,
           plan_id: sub.plan_id || planRecord?.id || `sp-${planCode}`,
           plan_code: planCode,
+          plan_name: planRecord?.name,
+          plan_name_bn: planRecord?.name_bn,
           status: sub.status,
           billing_interval: sub.billing_interval || 'monthly',
           current_period_start: sub.current_period_start || companyCreatedAt,
@@ -589,10 +591,17 @@ export class SubscriptionService {
         STORAGE_KEYS.COMPANY_SUBSCRIPTIONS
       )
       if (storedSubs) {
+        const normNoCo = normId ? normId.replace(/^co-/, '') : ''
+        const slugNoCo = resolvedSlug ? resolvedSlug.replace(/^co-/, '') : ''
         const matched =
           storedSubs[resolvedCompanyId] ||
           storedSubs[normId] ||
-          (resolvedSlug ? storedSubs[resolvedSlug] : null)
+          (normNoCo ? storedSubs[normNoCo] : null) ||
+          (normNoCo ? storedSubs[`co-${normNoCo}`] : null) ||
+          (resolvedSlug ? storedSubs[resolvedSlug] : null) ||
+          (slugNoCo ? storedSubs[slugNoCo] : null) ||
+          (slugNoCo ? storedSubs[`co-${slugNoCo}`] : null) ||
+          storedSubs['default']
         if (matched) {
           return matched
         }
@@ -602,6 +611,8 @@ export class SubscriptionService {
     // 4. Fallback default trial: dynamically fetch trial plan duration and settings
     let defaultTrialDays = DEFAULT_TRIAL_PLAN.trial_days || 14
     let trialPlanId = DEFAULT_TRIAL_PLAN.id
+    let trialPlanName = DEFAULT_TRIAL_PLAN.name
+    let trialPlanNameBn = DEFAULT_TRIAL_PLAN.name_bn
 
     try {
       const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
@@ -609,6 +620,8 @@ export class SubscriptionService {
       if (foundTrial) {
         if (foundTrial.trial_days !== undefined) defaultTrialDays = Number(foundTrial.trial_days)
         if (foundTrial.id) trialPlanId = foundTrial.id
+        if (foundTrial.name) trialPlanName = foundTrial.name
+        if (foundTrial.name_bn) trialPlanNameBn = foundTrial.name_bn
       }
     } catch {}
 
@@ -616,13 +629,15 @@ export class SubscriptionService {
       const admin = createAdminClient()
       const { data: trialPlan } = await (admin as any)
         .from('subscription_plans')
-        .select('id, trial_days')
+        .select('id, trial_days, name, name_bn')
         .eq('code', 'trial')
         .maybeSingle()
 
       if (trialPlan) {
         if (trialPlan.trial_days !== undefined) defaultTrialDays = Number(trialPlan.trial_days)
         if (trialPlan.id) trialPlanId = trialPlan.id
+        if (trialPlan.name) trialPlanName = trialPlan.name
+        if (trialPlan.name_bn) trialPlanNameBn = trialPlan.name_bn
       }
     } catch {}
 
@@ -633,6 +648,8 @@ export class SubscriptionService {
       company_id: resolvedCompanyId,
       plan_id: trialPlanId,
       plan_code: 'trial',
+      plan_name: trialPlanName,
+      plan_name_bn: trialPlanNameBn,
       status: 'trial',
       billing_interval: 'monthly',
       current_period_start: companyCreatedAt,

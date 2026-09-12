@@ -78,6 +78,12 @@ function syncPlansLocally(updatedPlans: SubscriptionPlanRecord[]) {
       PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updatedPlans, true)
       window.dispatchEvent(new CustomEvent('printerp_plans_sync', { detail: { plans: updatedPlans } }))
       window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: STORAGE_KEYS.PLATFORM_PLANS, data: updatedPlans } }))
+      window.dispatchEvent(new CustomEvent('printerp_platform_plans_updated', { detail: { plans: updatedPlans } }))
+      if ('BroadcastChannel' in window) {
+        const bus = new BroadcastChannel('printerp_realtime_bus')
+        bus.postMessage({ type: 'PLAN_UPDATE', storageKey: STORAGE_KEYS.PLATFORM_PLANS, data: updatedPlans })
+        bus.close()
+      }
     } catch {}
   }
 }

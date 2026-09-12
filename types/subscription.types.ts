@@ -192,6 +192,8 @@ export interface CompanySubscriptionRecord {
   company_id: string
   plan_id: string
   plan_code: PlanCode
+  plan_name?: string
+  plan_name_bn?: string
   status: SubscriptionStatus
   billing_interval: BillingInterval
   current_period_start: string

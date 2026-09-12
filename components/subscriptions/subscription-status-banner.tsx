@@ -31,6 +31,7 @@ export function SubscriptionStatusBanner() {
     isPastDue,
     isTrial,
     isTrialExpired,
+    isPlanExpired,
     daysRemainingInTrial,
     timeRemainingInTrial,
     currentPlan,
@@ -44,7 +45,7 @@ export function SubscriptionStatusBanner() {
     return null
   }
 
-  if (subscription.status === 'active' && !isTrial) {
+  if (subscription.status === 'active' && !isTrial && !isPlanExpired) {
     return null
   }
 
@@ -182,6 +183,34 @@ export function SubscriptionStatusBanner() {
               {tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}
             </Button>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isPlanExpired || subscription.status === 'expired' || subscription.status === 'cancelled') {
+    return (
+      <div className="bg-red-600 text-white px-4 py-2.5 shadow-md">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-white animate-bounce" />
+            <span className="bangla-text font-bold">
+              {tBilingual(
+                `Subscription Expired: Your ${currentPlan?.name || 'Subscription'} plan has ended. Please renew or upgrade your plan to resume adding orders, users, and customers.`,
+                `সাবস্ক্রিপশন শেষ: আপনার ${currentPlan?.name_bn || 'সাবস্ক্রিপশন'} প্ল্যানের মেয়াদ শেষ হয়েছে। নতুন কাজ বুকিং ও কার্যক্রম চালিয়ে যেতে অনুগ্রহ করে প্ল্যান নবায়ন বা আপগ্রেড করুন।`
+              )}
+            </span>
+          </div>
+
+          <Button
+            size="sm"
+            onClick={() => openUpgradeModal(currentPlan?.code || 'business')}
+            className="h-7 text-xs bg-white text-red-700 hover:bg-red-50 font-black bangla-text shadow-sm"
+          >
+            <Crown className="mr-1 h-3.5 w-3.5 text-amber-500" />
+            {tBilingual('Renew / Upgrade Plan', 'প্ল্যান নবায়ন / আপগ্রেড')}
+            <ArrowRight className="ml-1 h-3 w-3" />
+          </Button>
         </div>
       </div>
     )

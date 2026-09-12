@@ -78,7 +78,16 @@ function getInitialSubscription(
     try {
       const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
       if (storedSubs) {
-        const matched = storedSubs[companyId] || (companySlug ? storedSubs[companySlug] : null)
+        const normNoCo = companyId ? companyId.replace(/^co-/, '') : ''
+        const slugNoCo = companySlug ? companySlug.replace(/^co-/, '') : ''
+        const matched =
+          storedSubs[companyId] ||
+          (normNoCo ? storedSubs[normNoCo] : null) ||
+          (normNoCo ? storedSubs[`co-${normNoCo}`] : null) ||
+          (companySlug ? storedSubs[companySlug] : null) ||
+          (slugNoCo ? storedSubs[slugNoCo] : null) ||
+          (slugNoCo ? storedSubs[`co-${slugNoCo}`] : null) ||
+          storedSubs['default']
         if (matched) {
           memoryCachedSubscriptions[companyId] = matched
           if (companySlug) memoryCachedSubscriptions[companySlug] = matched
@@ -102,6 +111,8 @@ function getInitialSubscription(
     company_id: companyId,
     plan_id: trialPlan.id,
     plan_code: 'trial',
+    plan_name: trialPlan.name,
+    plan_name_bn: trialPlan.name_bn,
     status: 'trial',
     billing_interval: 'monthly',
     current_period_start: createdAt,
@@ -202,10 +213,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   })
 
   const refreshSubscription = useCallback(async () => {
-    if (!companyId || companyId === 'default') {
-      setIsLoading(false)
-      return
-    }
     try {
       const [subRes, plansRes] = await Promise.all([
         getTenantSubscriptionAction(companyId, companySlug),
@@ -224,18 +231,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
       if (subRes && subRes.success && subRes.data) {
         setSubscription(subRes.data)
-        memoryCachedSubscriptions[companyId] = subRes.data
-        if (companySlug) {
-          memoryCachedSubscriptions[companySlug] = subRes.data
-        }
+        if (companyId) memoryCachedSubscriptions[companyId] = subRes.data
+        if (companySlug) memoryCachedSubscriptions[companySlug] = subRes.data
         if (typeof window !== 'undefined') {
           try {
             const currentSubs =
               PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
-            currentSubs[companyId] = subRes.data
-            if (companySlug) {
-              currentSubs[companySlug] = subRes.data
-            }
+            if (companyId) currentSubs[companyId] = subRes.data
+            if (companySlug) currentSubs[companySlug] = subRes.data
             PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, false)
           } catch {}
         }
@@ -603,13 +606,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const hasFeature = useCallback(
     (feature: FeatureCode) => {
-      if (isTrialExpired || isSuspended) return false
+      if (isTrialExpired || isSuspended || isPlanExpired) return false
       if (currentPlan && Array.isArray(currentPlan.features)) {
         return currentPlan.features.includes(feature)
       }
       return checkFeatureAccess(subscription.plan_code, feature, plans)
     },
-    [currentPlan, subscription.plan_code, plans, isTrialExpired, isSuspended]
+    [currentPlan, subscription.plan_code, plans, isTrialExpired, isSuspended, isPlanExpired]
   )
 
   const checkCanCreate = useCallback(
@@ -632,6 +635,20 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           allowed: false,
           reason: `Your ${totalTrialDays}-day free trial has expired. Upgrade your plan to continue adding records.`,
           reasonBn: `আপনার ${toBengaliDigits(totalTrialDays)} দিনের ফ্রি ট্রায়ালের মেয়াদ শেষ হয়েছে। কাজ চালিয়ে যেতে প্ল্যান আপগ্রেড করুন।`,
+          current: 0,
+          limit: 0,
+          percentage: 100,
+          warning: true,
+          exceeded: true,
+          nextPlan: getNextTierPlan(currentPlanCode, plans),
+        }
+      }
+
+      if (isPlanExpired) {
+        return {
+          allowed: false,
+          reason: `Your subscription plan (${currentPlan?.name || 'Current Plan'}) has expired. Please renew or upgrade your subscription to continue adding records.`,
+          reasonBn: `আপনার সাবস্ক্রিপশন প্ল্যানের (${currentPlan?.name_bn || 'বর্তমান প্ল্যান'}) মেয়াদ শেষ হয়েছে। কাজ চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন নবায়ন বা আপগ্রেড করুন।`,
           current: 0,
           limit: 0,
           percentage: 100,

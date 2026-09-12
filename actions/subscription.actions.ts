@@ -45,10 +45,11 @@ export async function getTenantSubscriptionAction(
   companySlug?: string
 ): Promise<ServerActionResult<CompanySubscriptionRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId || 'default'
+    const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
+    const companyId = requestedCompanyId || tenant?.companyId || 'default'
+    const slug = companySlug || tenant?.companySlug
 
-    const subscription = await SubscriptionService.getTenantSubscription(companyId, companySlug)
+    const subscription = await SubscriptionService.getTenantSubscription(companyId, slug)
     return { success: true, data: subscription }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch subscription' }
@@ -63,10 +64,11 @@ export async function getTenantEntitlementsAction(
   companySlug?: string
 ): Promise<ServerActionResult<TenantEntitlements>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId || 'default'
+    const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
+    const companyId = requestedCompanyId || tenant?.companyId || 'default'
+    const slug = companySlug || tenant?.companySlug
 
-    const entitlements = await EntitlementService.getTenantEntitlements(companyId, companySlug)
+    const entitlements = await EntitlementService.getTenantEntitlements(companyId, slug)
     return { success: true, data: entitlements }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch entitlements' }

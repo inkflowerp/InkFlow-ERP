@@ -156,15 +156,37 @@ export function PublicPlansProvider({
     const handleDataSync = (e: Event) => {
       const customEvent = e as CustomEvent
       const key = customEvent.detail?.key
-      if (key === STORAGE_KEYS.PLATFORM_PLANS && customEvent.detail?.data) {
-        if (Array.isArray(customEvent.detail.data)) {
-          setPlans(customEvent.detail.data)
-        }
+      if (key === STORAGE_KEYS.PLATFORM_PLANS || key === 'plans') {
+        fetchPlans()
+      }
+    }
+
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.PLATFORM_PLANS || e.key?.includes('plan')) {
+        fetchPlans()
       }
     }
 
     window.addEventListener('printerp_plans_sync', handlePlansSync)
     window.addEventListener('printerp_data_sync', handleDataSync)
+    window.addEventListener('storage', handleStorageEvent)
+    window.addEventListener('printerp_platform_plans_updated', handlePlansSync)
+
+    let busChannel: BroadcastChannel | null = null
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        busChannel = new BroadcastChannel('printerp_realtime_bus')
+        busChannel.onmessage = (event) => {
+          if (
+            event.data?.storageKey === STORAGE_KEYS.PLATFORM_PLANS ||
+            event.data?.type === 'PLAN_UPDATE' ||
+            event.data?.type === 'LOCAL_STORE_MUTATION'
+          ) {
+            fetchPlans()
+          }
+        }
+      }
+    } catch {}
 
     let channel: any = null
     try {
@@ -191,6 +213,13 @@ export function PublicPlansProvider({
     return () => {
       window.removeEventListener('printerp_plans_sync', handlePlansSync)
       window.removeEventListener('printerp_data_sync', handleDataSync)
+      window.removeEventListener('storage', handleStorageEvent)
+      window.removeEventListener('printerp_platform_plans_updated', handlePlansSync)
+      if (busChannel) {
+        try {
+          busChannel.close()
+        } catch {}
+      }
       if (channel) {
         try {
           const supabase = createClient()

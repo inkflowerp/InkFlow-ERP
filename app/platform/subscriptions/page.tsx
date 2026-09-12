@@ -53,6 +53,21 @@ import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { DEFAULT_PLANS } from '@/lib/subscription/subscription-constants'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
+function broadcastSubscriptionChange(companyId?: string) {
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('printerp_plans_sync'))
+      window.dispatchEvent(new CustomEvent('printerp_company_subscriptions_updated', { detail: { companyId } }))
+      window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, companyId } }))
+      if ('BroadcastChannel' in window) {
+        const bus = new BroadcastChannel('printerp_realtime_bus')
+        bus.postMessage({ type: 'SUBSCRIPTION_UPDATE', storageKey: STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, companyId })
+        bus.close()
+      }
+    } catch {}
+  }
+}
+
 export default function PlatformSubscriptionsPage() {
   const [data, setData] = useState<PlatformSubscriptionsOverview | null>(null)
   const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => {
@@ -218,6 +233,7 @@ export default function PlatformSubscriptionsPage() {
 
       if (res.success) {
         showToast(`Subscription settings updated for "${configuringSub.company_name}".`)
+        broadcastSubscriptionChange(configuringSub.company_id)
         setConfiguringSub(null)
         await loadData()
       } else {
@@ -253,6 +269,7 @@ export default function PlatformSubscriptionsPage() {
 
       if (res.success) {
         showToast(`Extended ${extendingTrialSub.is_trial ? 'trial' : 'period'} by ${extendDays} days for "${extendingTrialSub.company_name}".`)
+        broadcastSubscriptionChange(extendingTrialSub.company_id)
         setExtendingTrialSub(null)
         await loadData()
       } else {
@@ -295,6 +312,7 @@ export default function PlatformSubscriptionsPage() {
 
       if (res.success) {
         showToast(`Payment of ৳${paymentAmount} recorded for "${recordingPaymentSub.company_name}". Subscription active until renewal.`)
+        broadcastSubscriptionChange(recordingPaymentSub.company_id)
         setRecordingPaymentSub(null)
         await loadData()
       } else {
@@ -321,6 +339,7 @@ export default function PlatformSubscriptionsPage() {
 
       if (res.success) {
         showToast(`Tenant "${statusToggleSub.sub.company_name}" status updated to ${statusToggleSub.targetStatus}.`)
+        broadcastSubscriptionChange(statusToggleSub.sub.company_id)
         setStatusToggleSub(null)
         setStatusReason('')
         await loadData()
