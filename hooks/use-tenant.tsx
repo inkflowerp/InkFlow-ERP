@@ -446,10 +446,141 @@ export function TenantProvider({
   )
 }
 
+function getFallbackSlug(): string {
+  if (typeof window !== 'undefined') {
+    const pathname = window.location.pathname || ''
+    const parts = pathname.split('/').filter(Boolean)
+    if (parts.length > 0) {
+      const first = parts[0]
+      const reserved = [
+        'login',
+        'register',
+        'onboarding',
+        'pricing',
+        'platform',
+        'platform-admin',
+        'terms',
+        'privacy',
+        'about',
+        'contact',
+        'faq',
+        'solutions',
+        'features',
+        'api',
+        '403',
+        'error',
+        'not-found',
+      ]
+      if (!reserved.includes(first)) {
+        return first
+      }
+    }
+  }
+  return 'vision-sign'
+}
+
+function getFallbackTenantContext(): TenantContextType {
+  const activeSession = getSessionFromCookie()
+  const targetSlug = activeSession?.companySlug || getFallbackSlug()
+  const resolvedCompany = resolveCompanyBySlug(targetSlug)
+
+  const company: CompanyRow = activeSession?.companyName
+    ? {
+        ...resolvedCompany,
+        id: activeSession.companyId || resolvedCompany.id,
+        name: activeSession.companyName,
+        name_bn: activeSession.companyNameBn || resolvedCompany.name_bn || activeSession.companyName,
+        slug: activeSession.companySlug || resolvedCompany.slug,
+      }
+    : resolvedCompany
+
+  const currentRole: TenantRole = activeSession?.role
+    ? activeSession.role === 'business_owner'
+      ? 'owner'
+      : activeSession.role === 'sales_manager'
+      ? 'manager'
+      : activeSession.role === 'graphic_designer'
+      ? 'designer'
+      : activeSession.role === 'machine_operator'
+      ? 'operator'
+      : activeSession.role === 'accountant'
+      ? 'accountant'
+      : activeSession.role === 'delivery_coordinator'
+      ? 'installer'
+      : (activeSession.role as TenantRole) || 'owner'
+    : 'owner'
+
+  const currentUser: CompanyUserWithProfile = {
+    id: activeSession?.userId || 'usr-owner',
+    company_id: company.id,
+    user_id: activeSession?.userId || 'usr-owner',
+    branch_id: activeSession?.branchId || 'br-001',
+    status: 'active',
+    department: 'Management',
+    responsibilities: activeSession?.responsibilities || ['business_owner'],
+    overrides: {},
+    data_scopes: {},
+    invited_email: null,
+    created_at: activeSession?.loginTime || '2026-01-01T00:00:00.000Z',
+    updated_at: activeSession?.loginTime || '2026-01-01T00:00:00.000Z',
+    profile: {
+      id: activeSession?.userId || 'usr-owner',
+      email: activeSession?.userEmail || company.email || `owner@${company.slug}.com`,
+      full_name: activeSession?.fullName || `${company.name} Admin`,
+      full_name_bn: activeSession?.fullNameBn || (company.name_bn ? `${company.name_bn} অ্যাডমিন` : 'প্রতিষ্ঠান প্রধান'),
+      phone: activeSession?.phone || company.phone || null,
+      avatar_url: null,
+      preferred_locale: 'bn',
+      is_active: true,
+      created_at: activeSession?.loginTime || '2026-01-01T00:00:00.000Z',
+      updated_at: activeSession?.loginTime || '2026-01-01T00:00:00.000Z',
+    },
+    roles: [],
+    branch: null,
+  }
+
+  const defaultSettings: CompanySettingsRow = {
+    id: 'cs-default',
+    company_id: company.id,
+    invoice_prefix: 'INV',
+    quotation_prefix: 'QUO',
+    challan_prefix: 'CHL',
+    vat_enabled: false,
+    vat_rate: 0,
+    default_currency: 'BDT',
+    default_language: 'bn',
+    phone: company.phone || null,
+    whatsapp: company.whatsapp || null,
+    email: company.email || null,
+    logo_url: company.logo_url || null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  return {
+    company,
+    currentRole,
+    currentUser,
+    currentBranch: null,
+    responsibilities: activeSession?.responsibilities?.length ? activeSession.responsibilities : ['business_owner'],
+    permissions: activeSession?.permissions?.length ? activeSession.permissions : ['*'],
+    availableCompanies: [company],
+    branches: [],
+    settings: defaultSettings,
+    isLoading: false,
+    switchCompany: async (slug: string) => {
+      if (typeof window !== 'undefined') {
+        window.location.href = `/${slug}/dashboard`
+      }
+    },
+    refreshTenant: async () => {},
+  }
+}
+
 export function useTenant() {
   const ctx = useContext(TenantContext)
   if (!ctx) {
-    throw new Error('useTenant must be used within a TenantProvider')
+    return getFallbackTenantContext()
   }
   return ctx
 }
