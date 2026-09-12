@@ -58,6 +58,7 @@ export function PlatformSupportConsole({
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [stats, setStats] = useState<SupportOverviewStats | null>(null)
+  const [showDetailsPane, setShowDetailsPane] = useState(true)
 
   const {
     conversations,
@@ -71,6 +72,7 @@ export function PlatformSupportConsole({
     sendMessage,
     updateStatus,
     updatePriority,
+    updateCategory,
     assignTicket,
   } = useSupportChat({
     mode: 'platform',
@@ -190,8 +192,13 @@ export function PlatformSupportConsole({
 
       {/* 2. Main 3-Pane Workstation Container */}
       <div className="flex-1 min-h-0 bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden flex shadow-xl">
-        {/* Left Pane: Conversation Queue (Width: 340px) */}
-        <div className="w-80 shrink-0 h-full flex flex-col border-r border-slate-800 bg-slate-900/90">
+        {/* Left Pane: Conversation Queue */}
+        <div
+          className={cn(
+            'w-full lg:w-80 shrink-0 h-full flex flex-col border-r border-slate-800 bg-slate-900/90',
+            selectedConversationId && 'hidden lg:flex'
+          )}
+        >
           {/* Queue Filter Bar */}
           <div className="p-3.5 border-b border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
@@ -276,7 +283,10 @@ export function PlatformSupportConsole({
                 return (
                   <button
                     key={conv.id}
-                    onClick={() => setSelectedConversationId(conv.id)}
+                    onClick={() => {
+                      setSelectedConversationId(conv.id)
+                      setShowDetailsPane(true)
+                    }}
                     className={cn(
                       'w-full text-left p-3.5 transition-all flex flex-col gap-1 cursor-pointer relative',
                       isSelected
@@ -305,25 +315,33 @@ export function PlatformSupportConsole({
         </div>
 
         {/* Center Pane: Active Live Chat */}
-        <PlatformChatPane
-          conversation={selectedConversation}
-          messages={messages}
-          loading={loadingMessages}
-          onSendMessage={sendMessage}
-          onUpdateStatus={updateStatus}
-          onUpdatePriority={updatePriority}
-          onUpdateCategory={(cat) => Promise.resolve()}
-          onAssignTicket={assignTicket}
-          currentAdminId={currentAdminId}
-          currentAdminName={currentAdminName}
-        />
+        <div className={cn('flex-1 min-w-0 h-full flex flex-col', !selectedConversationId && 'hidden lg:flex')}>
+          <PlatformChatPane
+            conversation={selectedConversation}
+            messages={messages}
+            loading={loadingMessages}
+            onSendMessage={sendMessage}
+            onUpdateStatus={updateStatus}
+            onUpdatePriority={updatePriority}
+            onUpdateCategory={updateCategory}
+            onAssignTicket={assignTicket}
+            onBackToQueue={() => setSelectedConversationId(null)}
+            onToggleDetails={() => setShowDetailsPane((prev) => !prev)}
+            showDetails={showDetailsPane}
+            currentAdminId={currentAdminId}
+            currentAdminName={currentAdminName}
+          />
+        </div>
 
         {/* Right Pane: Context & Tenant Info */}
-        {selectedConversation && (
-          <PlatformTicketInfo
-            conversation={selectedConversation}
-            onOpenImpersonationModal={onOpenImpersonationModal}
-          />
+        {selectedConversation && showDetailsPane && (
+          <div className="hidden xl:block h-full">
+            <PlatformTicketInfo
+              conversation={selectedConversation}
+              onOpenImpersonationModal={onOpenImpersonationModal}
+              onClose={() => setShowDetailsPane(false)}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -25,6 +25,7 @@ import {
   Smartphone,
   Timer,
   CheckCircle2,
+  X,
 } from 'lucide-react'
 import {
   SupportConversationRecord,
@@ -38,11 +39,13 @@ import { cn } from '@/lib/utils'
 interface PlatformTicketInfoProps {
   conversation: SupportConversationRecord | null
   onOpenImpersonationModal?: (companyId: string, companyName: string) => void
+  onClose?: () => void
 }
 
 export function PlatformTicketInfo({
   conversation,
   onOpenImpersonationModal,
+  onClose,
 }: PlatformTicketInfoProps) {
   if (!conversation) return null
 
@@ -62,13 +65,25 @@ export function PlatformTicketInfo({
     : 'Pending First Response'
 
   return (
-    <div className="w-80 shrink-0 h-full overflow-y-auto bg-slate-900/60 p-4 border-l border-slate-800 space-y-5 text-xs">
+    <div className="w-80 shrink-0 h-full overflow-y-auto bg-slate-900/90 p-4 border-l border-slate-800 space-y-5 text-xs">
       {/* 1. Ticket Overview Card */}
       <div className="space-y-3">
-        <h3 className="font-semibold text-slate-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-          <Tag className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Ticket Attributes</span>
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-slate-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+            <Tag className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Ticket Attributes</span>
+          </h3>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              title="Close Details"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
 
         <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
           <div className="flex items-center justify-between">

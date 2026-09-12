@@ -28,6 +28,9 @@ import {
   UserCheck,
   Tag,
   Zap,
+  ChevronLeft,
+  Info,
+  SlidersHorizontal,
 } from 'lucide-react'
 import {
   SupportConversationRecord,
@@ -52,6 +55,9 @@ interface PlatformChatPaneProps {
   onUpdatePriority: (priority: SupportPriority) => Promise<void>
   onUpdateCategory: (category: SupportCategory) => Promise<void>
   onAssignTicket: (adminId: string | null, adminName: string | null) => Promise<void>
+  onBackToQueue?: () => void
+  onToggleDetails?: () => void
+  showDetails?: boolean
   currentAdminId?: string
   currentAdminName?: string
 }
@@ -65,6 +71,9 @@ export function PlatformChatPane({
   onUpdatePriority,
   onUpdateCategory,
   onAssignTicket,
+  onBackToQueue,
+  onToggleDetails,
+  showDetails,
   currentAdminId,
   currentAdminName,
 }: PlatformChatPaneProps) {
@@ -151,34 +160,60 @@ export function PlatformChatPane({
   const priorityConfig = SUPPORT_PRIORITY_CONFIG[conversation.priority]
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-950/60 overflow-hidden border-r border-slate-800/80">
+    <div className="flex-1 flex flex-col h-full bg-slate-950/60 overflow-hidden border-r border-slate-800/80 min-w-0">
       {/* Top Action Bar */}
-      <div className="px-5 py-3 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="font-mono font-bold text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-800/80">
+      <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-slate-800 bg-slate-900/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
+          {onBackToQueue && (
+            <button
+              type="button"
+              onClick={onBackToQueue}
+              className="lg:hidden p-1.5 -ml-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+              title="Back to Queue"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+
+          <span className="font-mono font-bold text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-800/80 shrink-0">
             {conversation.ticket_number}
           </span>
           <div className="min-w-0">
-            <h2 className="text-sm font-bold text-slate-100 truncate">{conversation.subject}</h2>
-            <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-              <span>{conversation.company_name || 'Tenant'}</span>
+            <h2 className="text-xs sm:text-sm font-bold text-slate-100 truncate">{conversation.subject}</h2>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+              <span className="font-medium text-slate-300 truncate">{conversation.company_name || 'Tenant'}</span>
               <span>·</span>
-              <span>{conversation.created_by_name} ({conversation.created_by_email})</span>
+              <span className="truncate">{conversation.created_by_name}</span>
             </div>
           </div>
         </div>
 
-        {/* Status, Priority & Assignment Selectors */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Status, Priority, Category & Assignment Selectors */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap ml-auto">
+          {/* Category Dropdown */}
+          <select
+            value={conversation.category}
+            onChange={(e) => onUpdateCategory(e.target.value as SupportCategory)}
+            className="hidden sm:inline-block px-2 py-1 text-[11px] rounded-lg font-medium bg-slate-800 text-slate-200 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer max-w-[130px] truncate"
+            title="Ticket Category"
+          >
+            {SUPPORT_CATEGORIES.map((cat) => (
+              <option key={cat.key} value={cat.key}>
+                {cat.labelEn}
+              </option>
+            ))}
+          </select>
+
           {/* Status Dropdown */}
           <select
             value={conversation.status}
             onChange={(e) => onUpdateStatus(e.target.value as SupportStatus)}
-            className="px-2.5 py-1 text-xs rounded-lg font-medium bg-slate-800 text-slate-200 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+            className="px-2 py-1 text-[11px] rounded-lg font-medium bg-slate-800 text-slate-200 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+            title="Ticket Status"
           >
             <option value="open">Open</option>
             <option value="in_progress">In Progress</option>
-            <option value="waiting_customer">Waiting for Customer</option>
+            <option value="waiting_customer">Waiting</option>
             <option value="resolved">Resolved</option>
             <option value="closed">Closed</option>
           </select>
@@ -187,22 +222,41 @@ export function PlatformChatPane({
           <select
             value={conversation.priority}
             onChange={(e) => onUpdatePriority(e.target.value as SupportPriority)}
-            className="px-2.5 py-1 text-xs rounded-lg font-medium bg-slate-800 text-slate-200 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+            className="px-2 py-1 text-[11px] rounded-lg font-medium bg-slate-800 text-slate-200 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+            title="Ticket Priority"
           >
-            <option value="low">Low Priority</option>
-            <option value="normal">Normal Priority</option>
-            <option value="high">High Priority</option>
-            <option value="urgent">Urgent Priority</option>
+            <option value="low">Low</option>
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
           </select>
 
           {/* Assign to Me button */}
           {conversation.assigned_to !== currentAdminId && currentAdminId && (
             <button
               onClick={() => onAssignTicket(currentAdminId, currentAdminName || 'Staff')}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-300 bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-800/80 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-indigo-300 bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-800/80 rounded-lg transition-colors cursor-pointer"
+              title="Claim this ticket"
             >
               <UserCheck className="w-3.5 h-3.5" />
-              <span>Claim / Assign to Me</span>
+              <span className="hidden sm:inline">Claim</span>
+            </button>
+          )}
+
+          {/* Toggle Details Sidebar Button */}
+          {onToggleDetails && (
+            <button
+              type="button"
+              onClick={onToggleDetails}
+              className={cn(
+                'p-1.5 rounded-lg border text-xs font-semibold transition-colors cursor-pointer',
+                showDetails
+                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm'
+                  : 'bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-700'
+              )}
+              title="Toggle Ticket Details"
+            >
+              <Info className="w-4 h-4" />
             </button>
           )}
         </div>

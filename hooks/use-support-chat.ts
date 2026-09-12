@@ -35,6 +35,7 @@ import {
   assignSupportConversationAction,
   updateSupportConversationStatusAction,
   updateSupportConversationPriorityAction,
+  updateSupportConversationCategoryAction,
   markConversationReadByPlatformAction,
 } from '@/actions/support.actions'
 
@@ -364,6 +365,17 @@ export function useSupportChat({ mode, companyId, initialConversationId }: UseSu
     [selectedConversationId, mode, loadConversations, loadMessages]
   )
 
+  // Category update (platform)
+  const updateCategory = useCallback(
+    async (category: SupportCategory) => {
+      if (!selectedConversationId || mode !== 'platform') return
+      await updateSupportConversationCategoryAction(selectedConversationId, category)
+      loadConversations()
+      loadMessages(selectedConversationId)
+    },
+    [selectedConversationId, mode, loadConversations, loadMessages]
+  )
+
   // Assign ticket (platform)
   const assignTicket = useCallback(
     async (adminId: string | null, adminName: string | null) => {
@@ -393,6 +405,7 @@ export function useSupportChat({ mode, companyId, initialConversationId }: UseSu
     createTicket,
     updateStatus,
     updatePriority,
+    updateCategory,
     assignTicket,
   }
 }
