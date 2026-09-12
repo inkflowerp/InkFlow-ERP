@@ -220,4 +220,27 @@ export async function signOutAction() {
   redirect('/login')
 }
 
+export async function signInWithGoogleAction(redirectTo?: string) {
+  try {
+    const supabase = await createClient()
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const callbackUrl = redirectTo || `${appUrl}/auth/callback`
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: callbackUrl,
+      },
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, url: data.url }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to initialize Google OAuth' }
+  }
+}
+
 

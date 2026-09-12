@@ -18,7 +18,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { loginSchema, LoginFormData } from '@/features/auth/auth.schemas'
-import { signInAction } from '@/actions/auth.actions'
+import { signInAction, signInWithGoogleAction } from '@/actions/auth.actions'
 import { GoogleOAuthProvider } from '@/lib/auth/auth-providers'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -228,21 +228,29 @@ function LoginForm() {
     setIsPlatformAdminError(false)
     setIsNetworkError(false)
     try {
-      const provider = new GoogleOAuthProvider()
       const redirectToParam = searchParams.get('redirectTo')
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const callbackUrl = redirectToParam
         ? `${origin}/auth/callback?next=${encodeURIComponent(redirectToParam)}`
         : `${origin}/auth/callback`
 
-      const res = await provider.signInWithGoogle({ redirectTo: callbackUrl })
-      if (res.success && res.data?.url) {
-        window.location.href = res.data.url
+      // 1. Primary: Secure Server Action initialization (immune to client-side env bundler stripping)
+      const res = await signInWithGoogleAction(callbackUrl)
+      if (res.success && res.url) {
+        window.location.href = res.url
         return
       }
 
+      // 2. Fallback: Client SDK Provider
       if (!res.success) {
-        const errorMsg = res.error || ''
+        const provider = new GoogleOAuthProvider()
+        const clientRes = await provider.signInWithGoogle({ redirectTo: callbackUrl })
+        if (clientRes.success && clientRes.data?.url) {
+          window.location.href = clientRes.data.url
+          return
+        }
+
+        const errorMsg = clientRes.error || res.error || ''
         const lowerMsg = errorMsg.toLowerCase()
 
         if (
