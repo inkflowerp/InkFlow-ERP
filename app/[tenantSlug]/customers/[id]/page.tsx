@@ -42,6 +42,7 @@ import { CustomerFinancialSummaryCards } from '@/components/customers/customer-f
 import { CustomerRatesTable } from '@/components/customers/customer-rates-table'
 import { CustomerProductAnalytics } from '@/components/customers/customer-product-analytics'
 import { CustomerTimeline } from '@/components/customers/customer-timeline'
+import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import {
   updateCustomerAction,
   resolveCustomerRatesAction,
@@ -105,6 +106,7 @@ export default function CustomerProfilePage() {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isRecordPayOpen, setIsRecordPayOpen] = useState(false)
   const [isLogCommOpen, setIsLogCommOpen] = useState(false)
+  const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
 
   // Edit Customer Form State
@@ -495,12 +497,14 @@ export default function CustomerProfilePage() {
 
           {/* Quick Actions Bar */}
           <div className="pt-3 border-t border-slate-100 dark:border-slate-900 flex flex-wrap items-center gap-2">
-            <Link href={`/${slug}/billing/invoices/new?customerId=${customer.id}`}>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8">
-                <Receipt className="h-3.5 w-3.5 mr-1.5" />
-                + Create Invoice
-              </Button>
-            </Link>
+            <Button
+              size="sm"
+              onClick={() => setIsNewInvoiceOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8"
+            >
+              <Receipt className="h-3.5 w-3.5 mr-1.5" />
+              + Create Invoice
+            </Button>
 
             <Link href={`/${slug}/quotations/new?customerId=${customer.id}`}>
               <Button size="sm" variant="outline" className="text-xs font-semibold h-8">
@@ -740,11 +744,13 @@ export default function CustomerProfilePage() {
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Customer Invoices</h3>
               <p className="text-xs text-slate-400">All sales bills generated for this account</p>
             </div>
-            <Link href={`/${slug}/billing/invoices/new?customerId=${customer.id}`}>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs font-bold h-8">
-                + Create Invoice
-              </Button>
-            </Link>
+            <Button
+              size="sm"
+              onClick={() => setIsNewInvoiceOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-xs font-bold h-8"
+            >
+              + Create Invoice
+            </Button>
           </div>
 
           <div className="overflow-x-auto">
@@ -1239,6 +1245,17 @@ export default function CustomerProfilePage() {
           </div>
         </div>
       )}
+
+      {/* New Invoice Modal Workspace */}
+      <NewInvoiceModal
+        open={isNewInvoiceOpen}
+        onOpenChange={setIsNewInvoiceOpen}
+        preselectedCustomerId={customer.id}
+        onInvoiceCreated={(newInv) => {
+          loadCustomerData()
+          showNotification(`Invoice ${newInv.invoice_number} created & Customer 360 profile updated!`)
+        }}
+      />
     </div>
   )
 }

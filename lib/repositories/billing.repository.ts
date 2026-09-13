@@ -148,20 +148,78 @@ export class BillingRepository {
 
     // Insert invoice items if present
     if (invoice.items && invoice.items.length > 0) {
-      const itemsPayload = invoice.items.map((it) => ({
+      const itemsPayload = invoice.items.map((it: any) => ({
         invoice_id: data.id,
-        item_description: it.item_description,
-        dimensions_spec: it.dimensions_spec || null,
+        product_id: it.product_id || null,
+        item_description: it.item_description || it.item_name || 'Printing Item',
+        dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
         quantity: it.quantity,
-        unit: it.unit,
+        unit: it.unit || 'pcs',
         unit_price: it.unit_price,
         vat_percentage: it.vat_percentage || 0,
-        total_price: it.total_price || it.quantity * it.unit_price,
+        total_price: it.total_price || (it.quantity * it.unit_price),
       }))
       await (supabase as any).from('invoice_items').insert(itemsPayload)
     }
 
+    // Atomically record advance payment if paid_amount > 0
+    if (paidAmount > 0) {
+      try {
+        const receiptNumber = await this.getNextDocumentNumber(invoice.company_id, 'payment')
+        const paymentPayload: any = {
+          company_id: invoice.company_id,
+          receipt_number: receiptNumber,
+          customer_id: invoice.customer_id,
+          customer_name: invoice.customer_name,
+          payment_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
+          payment_type: paidAmount >= grandTotal ? 'full_payment' : 'advance_payment',
+          payment_method: (invoice as any).payment_method || 'cash',
+          amount: paidAmount,
+          bank_name: (invoice as any).bank_name || null,
+          mfs_transaction_id: (invoice as any).mfs_transaction_id || null,
+          notes: `Advance collection on invoice creation for ${invoiceNumber}`,
+          received_by_name: invoice.created_by_name || 'Billing Executive',
+        }
+
+        const { data: payData, error: payErr } = await (supabase as any)
+          .from('payments')
+          .insert(paymentPayload)
+          .select()
+          .single()
+
+        if (!payErr && payData) {
+          await (supabase as any).from('payment_allocations').insert({
+            payment_id: payData.id,
+            invoice_id: data.id,
+            allocated_amount: paidAmount,
+          })
+        }
+      } catch (err) {
+        console.error('Failed to log advance payment allocation:', err)
+      }
+    }
+
     return (await this.getInvoiceById(data.id, invoice.company_id)) as InvoiceRecord
+  }
+
+  static async getInvoicePrintData(id: string, companyId: string): Promise<{
+    invoice: InvoiceRecord
+    company: any
+  } | null> {
+    const supabase = await createClient()
+    const invoice = await this.getInvoiceById(id, companyId)
+    if (!invoice) return null
+
+    const { data: company } = await (supabase as any)
+      .from('companies')
+      .select('*')
+      .eq('id', companyId)
+      .maybeSingle()
+
+    return {
+      invoice,
+      company: company || { name: 'InkFlow Enterprise', address: 'Dhaka, Bangladesh' },
+    }
   }
 
   static async updateInvoice(id: string, updates: Partial<InvoiceRecord>, companyId: string): Promise<InvoiceRecord> {

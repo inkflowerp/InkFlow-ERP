@@ -33,6 +33,7 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { CustomerRecord } from '@/types/crm.types'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
+import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import {
   InvoiceRecord,
   InvoiceStatus,
@@ -827,145 +828,14 @@ export default function BillingPage() {
       </ModalDialog>
 
       {/* MODAL: CREATE INVOICE */}
-      <ModalDialog
+      <NewInvoiceModal
         open={isNewInvoiceOpen}
         onOpenChange={setIsNewInvoiceOpen}
-        title="Create New Customer Invoice"
-        description="Issue standard commercial sales invoice or official NBR Mushak 6.3 VAT document."
-      >
-        <form onSubmit={handleCreateInvoice} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="invCust" required>Select Customer</Label>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomerModalOpen(true)}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
-                >
-                  + New Customer
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <select
-                  id="invCust"
-                  value={newCustId}
-                  onChange={(e) => setNewCustId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-                >
-                  {customerList.map((c: CustomerRecord) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.customer_type || c.customer_category || 'Customer'})
-                    </option>
-                  ))}
-                </select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCustomerModalOpen(true)}
-                  className="h-10 px-3 shrink-0 rounded-xl border-dashed border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-                >
-                  + New
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="invTyp" required>Invoice Document Type</Label>
-              <select
-                id="invTyp"
-                value={newInvType}
-                onChange={(e) => {
-                  const typ = e.target.value as InvoiceType
-                  setNewInvType(typ)
-                  if (typ === 'vat_invoice') setNewVatPercent(10)
-                }}
-                className="w-full h-10 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="sales_invoice">Commercial Sales Invoice</option>
-                <option value="vat_invoice">NBR VAT Invoice (মূসক ৬.৩)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="invDue" required>Payment Due Date</Label>
-              <Input
-                id="invDue"
-                type="date"
-                value={newDueDate}
-                onChange={(e) => setNewDueDate(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="invVat">VAT Rate (%)</Label>
-              <Input
-                id="invVat"
-                type="number"
-                value={newVatPercent}
-                onChange={(e) => setNewVatPercent(Number(e.target.value))}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="invDesc" required>Item / Service Description</Label>
-            <Input
-              id="invDesc"
-              placeholder="e.g. Star Flex Billboard Print & High-Altitude Rigging"
-              value={newDesc}
-              onChange={(e) => setNewDesc(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="invDim">Size / Specs</Label>
-              <Input
-                id="invDim"
-                value={newDimensions}
-                onChange={(e) => setNewDimensions(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="invQ" required>Quantity</Label>
-              <Input
-                id="invQ"
-                type="number"
-                min="1"
-                value={newQty}
-                onChange={(e) => setNewQty(Number(e.target.value))}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="invP" required>Unit Price (৳)</Label>
-              <Input
-                id="invP"
-                type="number"
-                value={newPrice}
-                onChange={(e) => setNewPrice(Number(e.target.value))}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewInvoiceOpen(false)} className="w-full sm:w-auto min-h-[40px]">
-              Cancel
-            </Button>
-            <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
-              Issue Invoice
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
+        onInvoiceCreated={(newInv) => {
+          setInvoices((prev) => [newInv, ...prev.filter((i) => i.id !== newInv.id)])
+          showNotification(`Invoice ${newInv.invoice_number} created successfully!`)
+        }}
+      />
 
       {/* MODAL: NEW CUSTOMER */}
       <NewCustomerModal
