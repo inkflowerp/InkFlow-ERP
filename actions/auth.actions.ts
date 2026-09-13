@@ -2,13 +2,23 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { AuthService } from '@/services/auth.service'
 import { AuditService } from '@/services/audit.service'
 import { checkRateLimit } from '@/lib/security/rate-limiter'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { createClient } from '@/lib/supabase/server'
+import { resolveRequestOrigin } from '@/lib/security/runtime-env'
+
+async function getRequestBaseUrl(): Promise<string> {
+  try {
+    const headerStore = await headers()
+    return resolveRequestOrigin(headerStore)
+  } catch {
+    return resolveRequestOrigin()
+  }
+}
 
 export async function loginAction(formData: FormData) {
   const email = (formData.get('email') as string) || ''
@@ -132,11 +142,13 @@ export async function signUpAction(data: {
     }
   }
 
+  const appUrl = await getRequestBaseUrl()
   const result = await AuthService.signUp(
     data.email,
     data.password || 'TemporaryPass123!',
     data.fullName,
-    data.phone
+    data.phone,
+    appUrl
   )
 
   if (!result.success || !result.data) {
@@ -229,7 +241,8 @@ export async function resendVerificationOtpAction(
     }
   }
 
-  return await AuthService.resendVerification(email, purpose)
+  const appUrl = await getRequestBaseUrl()
+  return await AuthService.resendVerification(email, purpose, appUrl)
 }
 
 export async function forgotPasswordAction(email: string) {
@@ -245,7 +258,8 @@ export async function forgotPasswordAction(email: string) {
     }
   }
 
-  return await AuthService.forgotPassword(email)
+  const appUrl = await getRequestBaseUrl()
+  return await AuthService.forgotPassword(email, appUrl)
 }
 
 export async function verifyPasswordResetOtpAction(email: string, otp: string) {
@@ -329,7 +343,7 @@ export async function signOutAction() {
 export async function signInWithGoogleAction(redirectTo?: string) {
   try {
     const supabase = await createClient()
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const appUrl = await getRequestBaseUrl()
     const callbackUrl = redirectTo || `${appUrl}/auth/callback`
 
     const { data, error } = await supabase.auth.signInWithOAuth({

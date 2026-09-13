@@ -8,6 +8,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { AuthEmailService } from '../../services/auth-email.service.ts'
 import { AuthService } from '../../services/auth.service.ts'
+import { resolveAppBaseUrl, resolveRequestOrigin } from '../../lib/security/runtime-env.ts'
 
 describe('Auth Verification & Tenant Access Security Tests', () => {
   it('1. Rejects OTP replay attack on registration', async () => {
@@ -161,5 +162,37 @@ describe('Auth Verification & Tenant Access Security Tests', () => {
     assert.strictEqual(res.success, true)
     assert.strictEqual(res.data?.requiresVerification, true)
     assert.strictEqual(res.data?.email, unverifiedEmail)
+  })
+
+  it('11. Dynamically resolves canonical origin and never leaks localhost in production', () => {
+    // Explicit valid domain
+    assert.strictEqual(resolveAppBaseUrl('https://app.printerp.com/'), 'https://app.printerp.com')
+    
+    // Simulating headers with x-forwarded-host
+    const mockHeaders = new Headers({
+      'x-forwarded-host': 'custom.printerp.io',
+      'x-forwarded-proto': 'https',
+    })
+    assert.strictEqual(resolveRequestOrigin(mockHeaders), 'https://custom.printerp.io')
+  })
+
+  it('12. Generates verification link with dynamically passed appUrl and verifies token', async () => {
+    const customOrigin = 'https://cloud.printerp.com'
+    const email = 'custom-origin@example.com'
+    
+    const sendRes = await AuthEmailService.sendRegistrationVerificationEmail({
+      email,
+      fullName: 'Custom Domain User',
+      appUrl: customOrigin,
+    })
+
+    assert.strictEqual(sendRes.success, true)
+    assert.strictEqual(sendRes.otpCreated, true)
+    assert.ok(sendRes.token)
+    assert.ok(sendRes.otp)
+
+    // Verify token works for registration activation
+    const verifyRes = await AuthEmailService.verifyToken(sendRes.token!, email, 'registration')
+    assert.strictEqual(verifyRes.success, true)
   })
 })

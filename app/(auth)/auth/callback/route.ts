@@ -5,9 +5,11 @@ import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { AuditService } from '@/services/audit.service'
 import { TENANT_SESSION_COOKIE, TenantSessionData, TenantRole } from '@/lib/auth/types'
 import { PrimaryRole, MODULE_ACTION_SPECS } from '@/types/rbac.types'
+import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
+  const origin = resolveRequestOrigin(request)
   const code = searchParams.get('code')
   const errorParam = searchParams.get('error')
   const errorDesc = searchParams.get('error_description')

@@ -13,7 +13,7 @@ import crypto from 'crypto'
 import { EmailGatewayService } from './email-gateway.service.ts'
 import { AuditService } from './audit.service.ts'
 import { createAdminClient } from '../lib/supabase/admin.ts'
-import { isTestEnvironment } from '../lib/security/runtime-env.ts'
+import { isTestEnvironment, resolveAppBaseUrl } from '../lib/security/runtime-env.ts'
 import type { SendEmailResult, EmailScopeType } from '../types/communication.types.ts'
 
 export type VerificationPurpose = 'registration' | 'password_reset' | 'password_reset_auth' | 'login_2fa'
@@ -718,7 +718,7 @@ export class AuthEmailService {
     appUrl?: string
   }): Promise<SendEmailResult & { otpCreated?: boolean; otp?: string; token?: string }> {
     const { email, fullName, userId = null } = params
-    const appUrl = params.appUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const appUrl = resolveAppBaseUrl(params.appUrl)
 
     const recordRes = await this.createVerificationRecord({
       email,
@@ -786,7 +786,7 @@ export class AuthEmailService {
     tenantId?: string | null
   }): Promise<SendEmailResult & { otpCreated?: boolean; otp?: string; token?: string }> {
     const { email, userName, userId = null, scopeType = 'PLATFORM', tenantId = null } = params
-    const appUrl = params.appUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const appUrl = resolveAppBaseUrl(params.appUrl)
 
     const recordRes = await this.createVerificationRecord({
       email,

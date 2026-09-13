@@ -2,9 +2,12 @@ import { NextResponse } from 'next/server'
 import { AuthService } from '@/services/auth.service'
 import { AuthEmailService } from '@/services/auth-email.service'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
+import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const urlObj = new URL(request.url)
+  const searchParams = urlObj.searchParams
+  const origin = resolveRequestOrigin(request)
   const token = searchParams.get('token')
   const email = searchParams.get('email') || ''
 

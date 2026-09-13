@@ -225,7 +225,8 @@ export class AuthService {
     email: string,
     password: string,
     fullName: string,
-    phone?: string
+    phone?: string,
+    appUrl?: string
   ): Promise<ApiResponse<{ userId: string; requiresVerification: boolean; email: string }>> {
     try {
       const normalizedEmail = email.trim().toLowerCase()
@@ -330,6 +331,7 @@ export class AuthService {
         email: normalizedEmail,
         fullName,
         userId,
+        appUrl,
       })
 
       if (!emailRes.success && !emailRes.otpCreated) {
@@ -508,7 +510,8 @@ export class AuthService {
    */
   static async resendVerification(
     email: string,
-    purpose: 'registration' | 'password_reset' = 'registration'
+    purpose: 'registration' | 'password_reset' = 'registration',
+    appUrl?: string
   ): Promise<ApiResponse> {
     try {
       const normalizedEmail = email.trim().toLowerCase()
@@ -525,13 +528,14 @@ export class AuthService {
           email: normalizedEmail,
           fullName: profile?.full_name || normalizedEmail.split('@')[0],
           userId: profile?.id,
+          appUrl,
         })
 
         if (!res.success && !res.otpCreated) {
           return { success: false, error: res.error || 'Failed to resend code. Please try again.' }
         }
       } else {
-        return await this.forgotPassword(normalizedEmail)
+        return await this.forgotPassword(normalizedEmail, appUrl)
       }
 
       return { success: true, message: 'A new verification code has been dispatched to your email.' }
@@ -546,7 +550,7 @@ export class AuthService {
   /**
    * Requests password reset with Email Enumeration Protection & branded email dispatch
    */
-  static async forgotPassword(email: string): Promise<ApiResponse> {
+  static async forgotPassword(email: string, appUrl?: string): Promise<ApiResponse> {
     try {
       const normalizedEmail = email.trim().toLowerCase()
       if (!normalizedEmail) {
@@ -591,6 +595,7 @@ export class AuthService {
           email: normalizedEmail,
           userName: userName || normalizedEmail.split('@')[0],
           userId: userId || undefined,
+          appUrl,
         })
 
         if (!emailRes.success && !emailRes.otpCreated) {

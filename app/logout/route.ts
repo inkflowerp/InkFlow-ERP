@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { AuthService } from '@/services/auth.service'
 import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '@/lib/auth/types'
 
+import { resolveRequestOrigin } from '@/lib/security/runtime-env'
+
 const SUPPORT_COOKIE_NAME = 'printerp_support_tenant'
 
 export async function GET(request: NextRequest) {
@@ -29,8 +31,9 @@ export async function GET(request: NextRequest) {
   }
 
   // 3. Determine redirect target (default to /login with logged_out param)
+  const origin = resolveRequestOrigin(request)
   const redirectTo = request.nextUrl.searchParams.get('redirectTo') || '/login?logged_out=true'
-  const targetUrl = new URL(redirectTo, request.nextUrl.origin)
+  const targetUrl = new URL(redirectTo, origin)
 
   const response = NextResponse.redirect(targetUrl)
 

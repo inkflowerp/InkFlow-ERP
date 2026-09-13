@@ -14,9 +14,11 @@ import { encryptSecret } from '@/lib/security/encryption'
 import { EmailDataStore } from '@/services/email-gateway.service'
 import { AuditService } from '@/services/audit.service'
 import type { EmailGatewayRecord } from '@/types/communication.types'
+import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
+  const origin = resolveRequestOrigin(request)
   const code = searchParams.get('code')
   const state = searchParams.get('state')
   const oauthError = searchParams.get('error')
