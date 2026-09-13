@@ -45,6 +45,7 @@ export default function MobileOperatorPanelPage() {
   const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
+  const [actionInProgressTaskId, setActionInProgressTaskId] = useState<string | null>(null)
 
   // Completion Modal State
   const [selectedTaskForComplete, setSelectedTaskForComplete] = useState<ProductionTaskRecord | null>(null)
@@ -79,6 +80,8 @@ export default function MobileOperatorPanelPage() {
   }, [])
 
   const handleStartTask = async (task: ProductionTaskRecord) => {
+    if (actionInProgressTaskId) return
+    setActionInProgressTaskId(task.id)
     try {
       const res = await startProductionTaskAction(task.id)
       if (res.success) {
@@ -89,13 +92,17 @@ export default function MobileOperatorPanelPage() {
       }
     } catch (err: any) {
       showNotification(`Error: ${err.message}`)
+    } finally {
+      setActionInProgressTaskId(null)
     }
   }
 
   const handlePauseTask = async (task: ProductionTaskRecord) => {
+    if (actionInProgressTaskId) return
     const reason = prompt('Enter pause reason (e.g. Break / Maintenance / Media change):')
     if (reason === null) return
 
+    setActionInProgressTaskId(task.id)
     try {
       const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused')
       if (res.success) {
@@ -106,6 +113,8 @@ export default function MobileOperatorPanelPage() {
       }
     } catch (err: any) {
       showNotification(`Error: ${err.message}`)
+    } finally {
+      setActionInProgressTaskId(null)
     }
   }
 
@@ -234,6 +243,7 @@ export default function MobileOperatorPanelPage() {
                       size="lg"
                       variant="outline"
                       onClick={() => handlePauseTask(task)}
+                      disabled={!!actionInProgressTaskId}
                       className="h-12 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50"
                     >
                       <Pause className="h-4 w-4 mr-1.5" />
@@ -244,6 +254,7 @@ export default function MobileOperatorPanelPage() {
                       size="lg"
                       variant="outline"
                       onClick={() => setSelectedTaskForHold(task)}
+                      disabled={!!actionInProgressTaskId}
                       className="h-12 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50"
                     >
                       <AlertOctagon className="h-4 w-4 mr-1.5" />
@@ -254,6 +265,7 @@ export default function MobileOperatorPanelPage() {
                       size="lg"
                       variant="default"
                       onClick={() => handleOpenCompleteModal(task)}
+                      disabled={!!actionInProgressTaskId}
                       className="h-12 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                     >
                       <CheckCircle2 className="h-4 w-4 mr-1.5" />
@@ -305,7 +317,7 @@ export default function MobileOperatorPanelPage() {
                     size="sm"
                     variant="default"
                     onClick={() => handleStartTask(task)}
-                    disabled={task.is_blocked_by_dependency}
+                    disabled={task.is_blocked_by_dependency || !!actionInProgressTaskId}
                     className="text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 font-semibold h-9 px-3"
                   >
                     <Play className="h-3.5 w-3.5 fill-current" />

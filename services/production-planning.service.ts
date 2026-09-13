@@ -13,6 +13,28 @@ import { ProductionTaskRepository, TaskFilterOptions } from '@/lib/repositories/
 import { MachineryRepository } from '@/lib/repositories/machinery.repository'
 import { MachineryService } from '@/services/machinery.service'
 
+// Concurrency mutex lock per (companyId + machineId) to serialize concurrent booking promises
+const scheduleLocks = new Map<string, Promise<void>>()
+
+async function withScheduleLock<T>(lockKey: string, fn: () => Promise<T>): Promise<T> {
+  while (scheduleLocks.has(lockKey)) {
+    try {
+      await scheduleLocks.get(lockKey)
+    } catch (_) {}
+  }
+  let resolveLock: () => void = () => {}
+  const lockPromise = new Promise<void>((resolve) => {
+    resolveLock = resolve
+  })
+  scheduleLocks.set(lockKey, lockPromise)
+  try {
+    return await fn()
+  } finally {
+    scheduleLocks.delete(lockKey)
+    resolveLock()
+  }
+}
+
 export class ProductionPlanningService {
   /**
    * Validate if a status transition is permitted by the production state machine.
@@ -132,7 +154,7 @@ export class ProductionPlanningService {
   }
 
   /**
-   * Schedule a task onto a machine and operator with conflict detection.
+   * Schedule a task onto a machine and operator with hardened conflict detection & capability validation.
    */
   static async scheduleTask(
     input: ScheduleTaskInput,
@@ -142,107 +164,150 @@ export class ProductionPlanningService {
     if (!input.task_id) throw new Error('Task ID is required')
     if (!input.scheduled_start) throw new Error('Scheduled start time is required')
 
-    const task = await ProductionTaskRepository.getTaskById(input.task_id, companyId)
-    if (!task) throw new Error(`Production task not found: ${input.task_id}`)
+    const lockKey = `${companyId}:${input.assigned_machine_id || 'manual'}`
 
-    const startDate = new Date(input.scheduled_start)
-    if (isNaN(startDate.getTime())) {
-      throw new Error('Invalid scheduled start timestamp')
-    }
+    return await withScheduleLock(lockKey, async () => {
+      const task = await ProductionTaskRepository.getTaskById(input.task_id, companyId)
+      if (!task) throw new Error(`Production task not found: ${input.task_id}`)
 
-    const durationMinutes = input.estimated_duration_minutes || task.estimated_duration_minutes || 60
-    const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000)
-
-    let machineName: string | null = null
-
-    // Machine conflict check if a machine is assigned
-    if (input.assigned_machine_id) {
-      const machine = await MachineryRepository.getMachineryById(input.assigned_machine_id, companyId)
-      if (!machine) {
-        throw new Error('Assigned machine not found')
-      }
-      if (machine.status === 'breakdown') {
-        throw new Error(`Cannot schedule task on ${machine.name}: Machine is currently broken down.`)
-      }
-      if (machine.status === 'maintenance') {
-        throw new Error(`Cannot schedule task on ${machine.name}: Machine is currently under maintenance.`)
-      }
-      if (machine.status === 'retired' || machine.status === 'offline') {
-        throw new Error(`Cannot schedule task on ${machine.name}: Machine is ${machine.status}.`)
+      if (task.status === 'cancelled') {
+        throw new Error('Cannot schedule a cancelled production task.')
       }
 
-      machineName = machine.name
+      const startDate = new Date(input.scheduled_start)
+      if (isNaN(startDate.getTime())) {
+        throw new Error('Invalid scheduled start timestamp')
+      }
 
-      // Check maintenance schedule conflict
-      const maintenances = await MachineryRepository.getMaintenances(machine.id, companyId)
-      for (const m of maintenances) {
-        if (m.status !== 'completed' && m.status !== 'cancelled' && m.scheduled_date) {
-          const mDate = new Date(m.scheduled_date)
-          // 4-hour maintenance block window
-          const mEnd = new Date(mDate.getTime() + 4 * 60 * 60 * 1000)
-          if (startDate < mEnd && endDate > mDate) {
-            throw new Error(`Schedule conflict: Machine ${machine.name} has scheduled maintenance at ${mDate.toLocaleTimeString()}.`)
+      const durationMinutes = input.estimated_duration_minutes || task.estimated_duration_minutes || 60
+      const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000)
+
+      let machineName: string | null = null
+
+      // Machine validation and capability checking
+      if (input.assigned_machine_id) {
+        const machine = await MachineryRepository.getMachineryById(input.assigned_machine_id, companyId)
+        if (!machine) {
+          throw new Error('Assigned machine not found in this company')
+        }
+
+        // Branch isolation check
+        if (machine.branch_id && task.branch_id && machine.branch_id !== task.branch_id) {
+          throw new Error(`Cannot assign machine: Machine belongs to branch ${machine.branch_id}, but task is in branch ${task.branch_id}.`)
+        }
+
+        // Operational status checks
+        if (machine.status === 'breakdown') {
+          throw new Error(`Cannot schedule task on ${machine.name}: Machine is currently broken down.`)
+        }
+        if (machine.status === 'maintenance') {
+          throw new Error(`Cannot schedule task on ${machine.name}: Machine is currently under maintenance.`)
+        }
+        if (machine.status === 'retired' || machine.status === 'offline') {
+          throw new Error(`Cannot schedule task on ${machine.name}: Machine is ${machine.status}.`)
+        }
+
+        // Capability: Dimension limits check
+        if (task.width && machine.max_width && task.width > machine.max_width) {
+          throw new Error(
+            `Machine capability exceeded: Task width (${task.width}) exceeds ${machine.name} max width (${machine.max_width} ${machine.dimension_unit || 'inch'}).`
+          )
+        }
+        if (task.height && machine.max_height && task.height > machine.max_height) {
+          throw new Error(
+            `Machine capability exceeded: Task height (${task.height}) exceeds ${machine.name} max height (${machine.max_height} ${machine.dimension_unit || 'inch'}).`
+          )
+        }
+
+        // Capability: Production type support check
+        if (
+          machine.supported_production_types &&
+          machine.supported_production_types.length > 0 &&
+          task.task_type &&
+          !machine.supported_production_types.includes(task.task_type) &&
+          !machine.supported_production_types.includes('all')
+        ) {
+          throw new Error(
+            `Machine compatibility error: ${machine.name} does not support production type "${task.task_type}".`
+          )
+        }
+
+        machineName = machine.name
+
+        // Check maintenance schedule conflict
+        const maintenances = await MachineryRepository.getMaintenances(machine.id, companyId)
+        for (const m of maintenances) {
+          if (m.status !== 'completed' && m.status !== 'cancelled' && m.scheduled_date) {
+            const mDate = new Date(m.scheduled_date)
+            // 4-hour maintenance block window
+            const mEnd = new Date(mDate.getTime() + 4 * 60 * 60 * 1000)
+            if (startDate < mEnd && endDate > mDate) {
+              throw new Error(`Schedule conflict: Machine ${machine.name} has scheduled maintenance during this window.`)
+            }
           }
+        }
+
+        // Check existing task overlap conflicts on this machine
+        const existingTasks = await ProductionTaskRepository.getTasks(companyId, {
+          assigned_machine_id: machine.id,
+        })
+
+        for (const t of existingTasks) {
+          if (
+            t.id !== task.id &&
+            t.status !== 'cancelled' &&
+            t.status !== 'completed' &&
+            t.scheduled_start &&
+            t.scheduled_end
+          ) {
+            const exStart = new Date(t.scheduled_start)
+            const exEnd = new Date(t.scheduled_end)
+            if (startDate < exEnd && endDate > exStart) {
+              throw new Error(
+                `Schedule conflict: Machine ${machine.name} is already booked from ${exStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} to ${exEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (Job #${t.job_number || t.task_number}).`
+              )
+            }
+          }
+        }
+
+        // Sync with Machinery Assignment record
+        try {
+          await MachineryRepository.createAssignment({
+            company_id: companyId,
+            machine_id: machine.id,
+            job_order_id: task.job_order_id,
+            production_job_id: task.production_job_id || null,
+            operator_id: input.assigned_operator_id || null,
+            task_type: task.task_type,
+            task_name: task.task_name,
+            branch_id: task.branch_id || null,
+            scheduled_start: startDate.toISOString(),
+            scheduled_end: endDate.toISOString(),
+            status: 'scheduled',
+            notes: input.notes || null,
+          })
+        } catch (err: any) {
+          // If exclusion violation occurs at DB level, rethrow clear conflict message
+          if (err.message?.includes('exclude') || err.code === '23P01') {
+            throw new Error(`Schedule conflict: Machine ${machine.name} is already booked during this time window.`)
+          }
+          console.warn('Machinery assignment sync notice:', err.message)
         }
       }
 
-      // Check existing task overlap conflicts on this machine
-      const existingTasks = await ProductionTaskRepository.getTasks(companyId, {
-        assigned_machine_id: machine.id,
+      const updated = await ProductionTaskRepository.updateTask(task.id, companyId, {
+        assigned_machine_id: input.assigned_machine_id || null,
+        assigned_machine_name: machineName,
+        assigned_operator_id: input.assigned_operator_id || task.assigned_operator_id || null,
+        scheduled_start: startDate.toISOString(),
+        scheduled_end: endDate.toISOString(),
+        estimated_duration_minutes: durationMinutes,
+        status: task.status === 'queued' ? 'scheduled' : task.status,
+        notes: input.notes !== undefined ? input.notes : task.notes,
       })
 
-      for (const t of existingTasks) {
-        if (
-          t.id !== task.id &&
-          t.status !== 'cancelled' &&
-          t.status !== 'completed' &&
-          t.scheduled_start &&
-          t.scheduled_end
-        ) {
-          const exStart = new Date(t.scheduled_start)
-          const exEnd = new Date(t.scheduled_end)
-          if (startDate < exEnd && endDate > exStart) {
-            throw new Error(
-              `Schedule conflict: Machine ${machine.name} is already booked from ${exStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} to ${exEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (Job #${t.job_number || t.task_number}).`
-            )
-          }
-        }
-      }
-
-      // Sync with Machinery Assignment record
-      try {
-        await MachineryRepository.createAssignment({
-          company_id: companyId,
-          machine_id: machine.id,
-          job_order_id: task.job_order_id,
-          production_job_id: task.production_job_id || null,
-          operator_id: input.assigned_operator_id || null,
-          task_type: task.task_type,
-          task_name: task.task_name,
-          branch_id: task.branch_id || null,
-          scheduled_start: startDate.toISOString(),
-          scheduled_end: endDate.toISOString(),
-          status: 'scheduled',
-          notes: input.notes || null,
-        })
-      } catch (err: any) {
-        // Non-fatal if assignment duplicate exists
-        console.warn('Machinery assignment sync notice:', err.message)
-      }
-    }
-
-    const updated = await ProductionTaskRepository.updateTask(task.id, companyId, {
-      assigned_machine_id: input.assigned_machine_id || null,
-      assigned_machine_name: machineName,
-      assigned_operator_id: input.assigned_operator_id || task.assigned_operator_id || null,
-      scheduled_start: startDate.toISOString(),
-      scheduled_end: endDate.toISOString(),
-      estimated_duration_minutes: durationMinutes,
-      status: task.status === 'queued' ? 'scheduled' : task.status,
-      notes: input.notes !== undefined ? input.notes : task.notes,
+      return updated
     })
-
-    return updated
   }
 
   /**
@@ -324,6 +389,10 @@ export class ProductionPlanningService {
     const task = await this.getTaskById(taskId, companyId)
     if (!task) throw new Error('Task not found')
 
+    if (task.status === 'on_hold') {
+      throw new Error('Cannot complete task while on hold. Resume or start task first.')
+    }
+
     if (!this.isValidStatusTransition(task.status, 'completed')) {
       throw new Error(`Invalid status transition from ${task.status} to completed`)
     }
@@ -382,6 +451,10 @@ export class ProductionPlanningService {
   static async resumeTask(taskId: string, companyId: string): Promise<ProductionTaskRecord> {
     const task = await this.getTaskById(taskId, companyId)
     if (!task) throw new Error('Task not found')
+
+    if (task.status !== 'on_hold') {
+      throw new Error(`Cannot resume task: Task is currently "${task.status}", not on hold.`)
+    }
 
     // Determine target state based on scheduling and dependencies
     let targetStatus: ProductionTaskStatus = 'ready'
