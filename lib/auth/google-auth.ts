@@ -101,7 +101,13 @@ export function getGoogleAuthClientConfig(requestOrigin?: string): GoogleAuthCli
     }
   }
 
-  const redirectUri = `${origin}/api/auth/google/callback`
+  // Check for explicit redirect URI override, otherwise construct from origin
+  const explicitRedirectUri =
+    process.env.GOOGLE_AUTH_REDIRECT_URI ||
+    process.env.GOOGLE_REDIRECT_URI ||
+    ''
+
+  const redirectUri = explicitRedirectUri || `${origin}/api/auth/google/callback`
 
   let mode: 'direct_domain' | 'custom_auth_domain' | 'supabase_default' = 'supabase_default'
   if (!isMockOrEmptyId && !isMockOrEmptySecret) {
