@@ -43,6 +43,8 @@ import { CustomerRatesTable } from '@/components/customers/customer-rates-table'
 import { CustomerProductAnalytics } from '@/components/customers/customer-product-analytics'
 import { CustomerTimeline } from '@/components/customers/customer-timeline'
 import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
+import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
+import { MoneyReceiptModal } from '@/components/billing/money-receipt-modal'
 import {
   updateCustomerAction,
   resolveCustomerRatesAction,
@@ -107,6 +109,7 @@ export default function CustomerProfilePage() {
   const [isRecordPayOpen, setIsRecordPayOpen] = useState(false)
   const [isLogCommOpen, setIsLogCommOpen] = useState(false)
   const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(false)
+  const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState<any | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
 
   // Edit Customer Form State
@@ -870,12 +873,15 @@ export default function CustomerProfilePage() {
                       </td>
                       <td className="py-3 px-3 text-slate-500">{p.received_by_name}</td>
                       <td className="py-3 px-4 text-center">
-                        <Link
-                          href={`/${slug}/billing/payments`}
-                          className="text-blue-600 hover:underline font-semibold"
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedPaymentForReceipt(p as any)}
+                          className="h-7 text-xs font-bold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 gap-1"
                         >
-                          View Receipt
-                        </Link>
+                          <Receipt className="h-3 w-3" />
+                          View MR
+                        </Button>
                       </td>
                     </tr>
                   ))
@@ -1092,94 +1098,23 @@ export default function CustomerProfilePage() {
       )}
 
       {/* RECORD PAYMENT MODAL */}
-      {isRecordPayOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Record Customer Collection
-                </h3>
-                <p className="text-xs text-slate-400">Current Due: ৳{financialSummary.totalDue.toLocaleString('en-IN')}</p>
-              </div>
-              <button onClick={() => setIsRecordPayOpen(false)} className="text-slate-400 hover:text-slate-700">
-                &times;
-              </button>
-            </div>
+      <RecordPaymentModal
+        open={isRecordPayOpen}
+        onOpenChange={setIsRecordPayOpen}
+        preselectedCustomerId={customer.id}
+        onPaymentRecorded={() => {
+          loadCustomerData()
+        }}
+      />
 
-            <form onSubmit={handleRecordPayment} className="space-y-3.5">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Payment Amount (BDT) *</Label>
-                <Input
-                  required
-                  type="number"
-                  step="0.01"
-                  placeholder="e.g. 5000"
-                  value={payAmount}
-                  onChange={(e) => setPayAmount(e.target.value)}
-                  className="text-sm font-bold h-9"
-                  autoFocus
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Payment Method *</Label>
-                <select
-                  value={payMethod}
-                  onChange={(e) => setPayMethod(e.target.value as any)}
-                  className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs"
-                >
-                  <option value="cash">Cash Counter (ক্যাশ)</option>
-                  <option value="bkash">bKash (বিকাশ)</option>
-                  <option value="nagad">Nagad (নগদ)</option>
-                  <option value="bank">Bank Transfer / BEFTN</option>
-                  <option value="cheque">Cheque (চেক)</option>
-                  <option value="other_mfs">Other MFS</option>
-                </select>
-              </div>
-
-              {invoices.filter((i) => (Number(i.due_amount) || 0) > 0).length > 0 && (
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-slate-600">Allocate to Invoice (Optional)</Label>
-                  <select
-                    value={payInvoiceId}
-                    onChange={(e) => setPayInvoiceId(e.target.value)}
-                    className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs"
-                  >
-                    <option value="">Auto-allocate across oldest invoices</option>
-                    {invoices
-                      .filter((i) => (Number(i.due_amount) || 0) > 0)
-                      .map((inv) => (
-                        <option key={inv.id} value={inv.id}>
-                          {inv.invoice_number} (Due: ৳{Number(inv.due_amount).toLocaleString('en-IN')})
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-600">Receipt Notes / TrxID</Label>
-                <Input
-                  placeholder="e.g. TrxID 9H87G65F / Bank Dep Slip #1049"
-                  value={payNotes}
-                  onChange={(e) => setPayNotes(e.target.value)}
-                  className="text-xs h-9"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t">
-                <Button type="button" variant="outline" size="sm" onClick={() => setIsRecordPayOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" size="sm" disabled={isRecordingPayment} className="bg-emerald-600 hover:bg-emerald-700 font-bold">
-                  {isRecordingPayment ? 'Recording...' : 'Generate Money Receipt'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* VIEW MONEY RECEIPT MODAL */}
+      <MoneyReceiptModal
+        open={Boolean(selectedPaymentForReceipt)}
+        onOpenChange={(open) => !open && setSelectedPaymentForReceipt(null)}
+        payment={selectedPaymentForReceipt}
+        customer={customer}
+        invoices={invoices}
+      />
 
       {/* LOG COMMUNICATION MODAL */}
       {isLogCommOpen && (

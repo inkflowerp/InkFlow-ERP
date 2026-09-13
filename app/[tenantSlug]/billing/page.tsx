@@ -34,6 +34,8 @@ import { PageHeader } from '@/components/shared/page-header'
 import { CustomerRecord } from '@/types/crm.types'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
+import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
+import { MoneyReceiptModal } from '@/components/billing/money-receipt-modal'
 import {
   InvoiceRecord,
   InvoiceStatus,
@@ -62,6 +64,9 @@ export default function BillingPage() {
   // Modals
   const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(false)
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false)
+  const [selectedCustomerForPayment, setSelectedCustomerForPayment] = useState<string | null>(null)
+  const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<string | null>(null)
+  const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState<PaymentRecord | null>(null)
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false)
   const [selectedInvoiceForWriteOff, setSelectedInvoiceForWriteOff] = useState<InvoiceRecord | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
@@ -73,22 +78,13 @@ export default function BillingPage() {
 
   const handleCustomerCreated = (newCust: CustomerRecord) => {
     if (isRecordPaymentOpen) {
-      setPayCustomerId(newCust.id)
+      setSelectedCustomerForPayment(newCust.id)
     }
     if (isNewInvoiceOpen) {
       setNewCustId(newCust.id)
     }
     showNotification(`Selected customer: ${newCust.name}`)
   }
-
-  // Payment Form State (Multi-Invoice Allocation)
-  const [payCustomerId, setPayCustomerId] = useState<string>('cust-02')
-  const [totalPayAmount, setTotalPayAmount] = useState<number>(50000)
-  const [payMethod, setPayMethod] = useState<PaymentMethod>('bank')
-  const [payBankName, setPayBankName] = useState('City Bank PLC')
-  const [payChequeNo, setPayChequeNo] = useState('')
-  const [payMfsTrx, setPayMfsTrx] = useState('')
-  const [payAllocations, setPayAllocations] = useState<Record<string, number>>({})
 
   // Write-off Form State
   const [writeOffAmount, setWriteOffAmount] = useState<number>(2000)
@@ -120,6 +116,16 @@ export default function BillingPage() {
     return true
   })
 
+  // Filtered payments (Money Receipts)
+  const filteredPayments = payments.filter((p: PaymentRecord) => {
+    return (
+      p.receipt_number.toLowerCase().includes(search.toLowerCase()) ||
+      p.customer_name.toLowerCase().includes(search.toLowerCase()) ||
+      (p.notes && p.notes.toLowerCase().includes(search.toLowerCase())) ||
+      (p.mfs_transaction_id && p.mfs_transaction_id.toLowerCase().includes(search.toLowerCase()))
+    )
+  })
+
   // Executive Metrics
   const totalInvoiced = invoices.reduce((acc: number, inv: InvoiceRecord) => acc + inv.grand_total, 0)
   const totalCollected = invoices.reduce((acc: number, inv: InvoiceRecord) => acc + inv.paid_amount, 0)
@@ -128,27 +134,6 @@ export default function BillingPage() {
     (inv: InvoiceRecord) => inv.due_amount > 0 && (inv.status === 'overdue' || calculateDaysOverdue(inv.due_date) > 0)
   )
   const totalOverdueAmount = overdueInvoices.reduce((acc: number, inv: InvoiceRecord) => acc + inv.due_amount, 0)
-
-  // Quick Action: Record Payment & Multi-Invoice Allocation
-  const handleRecordPayment = (e: React.FormEvent) => {
-    e.preventDefault()
-    const customer = customerList.find((c: CustomerRecord) => c.id === payCustomerId) || customerList[0]
-    const receiptNum = `MR-${Date.now().toString().slice(-4)}`
-
-    if (customer) {
-      PrintERPDataStore.recordPaymentCollection({
-        customerId: customer.id,
-        amount: totalPayAmount,
-        paymentMethod: payMethod,
-        notes: `Payment collected and allocated across invoices for ${customer.name}. Money Receipt: ${receiptNum}`,
-      })
-    }
-
-    setIsRecordPaymentOpen(false)
-    showNotification(
-      `Payment of ৳ ${formatBDT(totalPayAmount)} received from ${customer?.name || 'Customer'} and synced to Customer Ledger & Cash Book.`
-    )
-  }
 
   // Quick Action: Non-Destructive Write-off
   const handleRecordWriteOff = (e: React.FormEvent) => {
@@ -393,6 +378,7 @@ export default function BillingPage() {
               { id: 'vat', label: 'NBR VAT (Mushak 6.3)' },
               { id: 'overdue', label: 'Overdue Aging' },
               { id: 'unpaid', label: 'Pending Due' },
+              { id: 'payments', label: `Money Receipts (${payments.length})` },
             ].map((tab) => (
               <Button
                 key={tab.id}
@@ -408,42 +394,255 @@ export default function BillingPage() {
         </div>
       </Card>
 
-      {/* Invoices Directory Table */}
-      <Card>
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Invoices Ledger ({filtered.length})</CardTitle>
-            <span className="text-xs text-slate-400">Multi-type invoices with aging tracking</span>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Invoice #</th>
-                  <th className="py-3 px-4">Customer & BIN</th>
-                  <th className="py-3 px-4">Date / Due Date</th>
-                  <th className="py-3 px-4">Grand Total</th>
-                  <th className="py-3 px-4">Paid / Due</th>
-                  <th className="py-3 px-4">Status & Overdue</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((inv: InvoiceRecord) => (
-                  <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Invoice # */}
-                    <td className="py-3.5 px-4">
-                      <Link
-                        href={`/${slug}/billing/${inv.id}`}
-                        className="font-mono font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 group"
-                      >
-                        <span>{inv.invoice_number}</span>
-                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </Link>
-                      <div className="mt-0.5">
+      {/* Directory Table: Invoices or Money Receipts */}
+      {selectedTab === 'payments' ? (
+        <Card>
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Money Receipts & Collections ({filteredPayments.length})</CardTitle>
+                <CardDescription className="text-xs">Official customer collection receipts with ledger synchronizations</CardDescription>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSelectedCustomerForPayment(null)
+                  setSelectedInvoiceForPayment(null)
+                  setIsRecordPaymentOpen(true)
+                }}
+                className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1"
+              >
+                <DollarSign className="h-3.5 w-3.5" />
+                Record Payment (MR)
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Receipt #</th>
+                    <th className="py-3 px-4">Customer</th>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Channel</th>
+                    <th className="py-3 px-4 text-right">Amount Received</th>
+                    <th className="py-3 px-4">Allocated / Remarks</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filteredPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-xs text-slate-400">
+                        No money receipts recorded yet. Click &quot;Record Payment (MR)&quot; above to collect customer payments.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPayments.map((p: PaymentRecord) => (
+                      <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        <td className="py-3.5 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          {p.receipt_number}
+                        </td>
+                        <td className="py-3.5 px-4 font-semibold text-xs text-slate-900 dark:text-white">
+                          {p.customer_name}
+                        </td>
+                        <td className="py-3.5 px-4 text-xs font-mono text-slate-600 dark:text-slate-300">
+                          {p.payment_date}
+                        </td>
+                        <td className="py-3.5 px-4 text-xs">
+                          <Badge variant="outline" className="text-[10px] uppercase font-bold py-0 h-5">
+                            {p.payment_method}
+                          </Badge>
+                          {p.mfs_transaction_id && (
+                            <span className="block text-[10px] font-mono text-slate-400 mt-0.5">Trx: {p.mfs_transaction_id}</span>
+                          )}
+                          {p.cheque_number && (
+                            <span className="block text-[10px] font-mono text-slate-400 mt-0.5">CQ: {p.cheque_number}</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400">
+                          ৳ {formatBDT(p.amount)}
+                        </td>
+                        <td className="py-3.5 px-4 text-xs text-slate-500 max-w-xs truncate">
+                          {p.notes || (p.allocations && p.allocations.length > 0 ? `Settled ${p.allocations.map(a => a.invoice_number).join(', ')}` : 'Due Settlement')}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedPaymentForReceipt(p)}
+                            className="h-7 text-xs gap-1 font-bold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400"
+                          >
+                            <Receipt className="h-3 w-3" />
+                            View MR
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Invoices Ledger ({filtered.length})</CardTitle>
+              <span className="text-xs text-slate-400">Multi-type invoices with aging tracking</span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Invoice #</th>
+                    <th className="py-3 px-4">Customer & BIN</th>
+                    <th className="py-3 px-4">Date / Due Date</th>
+                    <th className="py-3 px-4">Grand Total</th>
+                    <th className="py-3 px-4">Paid / Due</th>
+                    <th className="py-3 px-4">Status & Overdue</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filtered.map((inv: InvoiceRecord) => (
+                    <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      {/* Invoice # */}
+                      <td className="py-3.5 px-4">
+                        <Link
+                          href={`/${slug}/billing/${inv.id}`}
+                          className="font-mono font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 group"
+                        >
+                          <span>{inv.invoice_number}</span>
+                          <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </Link>
+                        <div className="mt-0.5">
+                          {inv.invoice_type === 'vat_invoice' ? (
+                            <span className="inline-block text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">
+                              মূসক ৬.৩
+                            </span>
+                          ) : (
+                            <span className="inline-block text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                              Sales Inv
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Customer */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-900 dark:text-white text-xs">
+                          {inv.customer_name}
+                        </div>
+                        {inv.customer_bin && (
+                          <div className="text-[10px] font-mono text-purple-600">
+                            BIN: {inv.customer_bin}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Dates */}
+                      <td className="py-3.5 px-4 text-xs">
+                        <div className="font-mono text-slate-600 dark:text-slate-300">
+                          {inv.invoice_date}
+                        </div>
+                        <div className="text-[11px] font-mono text-slate-400">
+                          Due: {inv.due_date}
+                        </div>
+                      </td>
+
+                      {/* Grand Total */}
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white font-mono text-xs">
+                        <CurrencyDisplay amount={inv.grand_total} />
+                      </td>
+
+                      {/* Paid / Due */}
+                      <td className="py-3.5 px-4 text-xs font-mono">
+                        <div className="text-emerald-600 font-medium">Paid: ৳ {formatBDT(inv.paid_amount)}</div>
+                        {inv.due_amount > 0 ? (
+                          <div className="text-red-600 font-bold">Due: ৳ {formatBDT(inv.due_amount)}</div>
+                        ) : (
+                          <div className="text-slate-400">Due: ৳ 0</div>
+                        )}
+                      </td>
+
+                      {/* Status & Overdue */}
+                      <td className="py-3.5 px-4">
+                        {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {inv.due_amount > 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedCustomerForPayment(inv.customer_id)
+                                setSelectedInvoiceForPayment(inv.id)
+                                setIsRecordPaymentOpen(true)
+                              }}
+                              className="h-7 text-[11px] px-2 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 font-semibold"
+                            >
+                              <DollarSign className="h-3 w-3 mr-0.5" />
+                              Collect (MR)
+                            </Button>
+                          )}
+
+                          <Link
+                            href={`/${slug}/billing/${inv.id}`}
+                            className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                          >
+                            Cockpit
+                          </Link>
+
+                          {inv.due_amount > 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedInvoiceForWriteOff(inv)
+                                setWriteOffAmount(Math.min(inv.due_amount, 2000))
+                              }}
+                              className="h-7 text-[11px] px-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
+                            >
+                              <TrendingDown className="h-3 w-3 mr-1" />
+                              Write-off
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {filtered.length === 0 ? (
+                <div className="p-6 text-center text-xs text-slate-400">
+                  {tBilingual('No invoices found matching filter.', 'কোন ইনভয়েস পাওয়া যায়নি।')}
+                </div>
+              ) : (
+                filtered.map((inv: InvoiceRecord) => (
+                  <div key={inv.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Top Bar: Invoice # & Document Type & Status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/${slug}/billing/${inv.id}`}
+                          className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                        >
+                          <span>{inv.invoice_number}</span>
+                          <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                        </Link>
                         {inv.invoice_type === 'vat_invoice' ? (
                           <span className="inline-block text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">
                             মূসক ৬.৩
@@ -454,312 +653,121 @@ export default function BillingPage() {
                           </span>
                         )}
                       </div>
-                    </td>
-
-                    {/* Customer */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                        {inv.customer_name}
-                      </div>
-                      {inv.customer_bin && (
-                        <div className="text-[10px] font-mono text-purple-600">
-                          BIN: {inv.customer_bin}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Dates */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <div className="font-mono text-slate-600 dark:text-slate-300">
-                        {inv.invoice_date}
-                      </div>
-                      <div className="text-[11px] font-mono text-slate-400">
-                        Due: {inv.due_date}
-                      </div>
-                    </td>
-
-                    {/* Grand Total */}
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white font-mono text-xs">
-                      <CurrencyDisplay amount={inv.grand_total} />
-                    </td>
-
-                    {/* Paid / Due */}
-                    <td className="py-3.5 px-4 text-xs font-mono">
-                      <div className="text-emerald-600 font-medium">Paid: ৳ {formatBDT(inv.paid_amount)}</div>
-                      {inv.due_amount > 0 ? (
-                        <div className="text-red-600 font-bold">Due: ৳ {formatBDT(inv.due_amount)}</div>
-                      ) : (
-                        <div className="text-slate-400">Due: ৳ 0</div>
-                      )}
-                    </td>
-
-                    {/* Status & Overdue */}
-                    <td className="py-3.5 px-4">
                       {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
-                    </td>
+                    </div>
 
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link
-                          href={`/${slug}/billing/${inv.id}`}
-                          className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
-                        >
-                          Cockpit
-                        </Link>
-
-                        {inv.due_amount > 0 && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedInvoiceForWriteOff(inv)
-                              setWriteOffAmount(Math.min(inv.due_amount, 2000))
-                            }}
-                            className="h-7 text-[11px] px-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
-                          >
-                            <TrendingDown className="h-3 w-3 mr-1" />
-                            Write-off
-                          </Button>
+                    {/* Customer Info */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-semibold text-sm text-slate-900 dark:text-white">{inv.customer_name}</div>
+                        {inv.customer_bin && (
+                          <div className="text-[11px] font-mono text-purple-600">BIN: {inv.customer_bin}</div>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total</span>
+                        <span className="text-sm font-black text-slate-900 dark:text-white">
+                          <CurrencyDisplay amount={inv.grand_total} />
+                        </span>
+                      </div>
+                    </div>
 
-          {/* Mobile Card List View */}
-          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-            {filtered.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-400">
-                {tBilingual('No invoices found matching filter.', 'কোন ইনভয়েস পাওয়া যায়নি।')}
-              </div>
-            ) : (
-              filtered.map((inv: InvoiceRecord) => (
-                <div key={inv.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                  {/* Top Bar: Invoice # & Document Type & Status */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                    {/* Payment Breakdown Card */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Paid Amount</span>
+                        <span className="font-medium text-emerald-600">৳ {formatBDT(inv.paid_amount)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Due Balance</span>
+                        {inv.due_amount > 0 ? (
+                          <span className="font-bold text-red-600">৳ {formatBDT(inv.due_amount)}</span>
+                        ) : (
+                          <span className="text-emerald-600 font-semibold">৳ 0 (Paid)</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Invoice Date</span>
+                        <span className="font-mono text-slate-600 dark:text-slate-300">{inv.invoice_date}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Due Date</span>
+                        <span className="font-mono text-slate-600 dark:text-slate-300">{inv.due_date}</span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      {inv.due_amount > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedCustomerForPayment(inv.customer_id)
+                            setSelectedInvoiceForPayment(inv.id)
+                            setIsRecordPaymentOpen(true)
+                          }}
+                          className="h-9 text-xs px-3 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 font-semibold"
+                        >
+                          <DollarSign className="h-3.5 w-3.5 mr-1" />
+                          Collect (MR)
+                        </Button>
+                      )}
+                      {inv.due_amount > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedInvoiceForWriteOff(inv)
+                            setWriteOffAmount(Math.min(inv.due_amount, 2000))
+                          }}
+                          className="h-9 text-xs px-3 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
+                        >
+                          <TrendingDown className="h-3.5 w-3.5 mr-1" />
+                          Write-off
+                        </Button>
+                      )}
                       <Link
                         href={`/${slug}/billing/${inv.id}`}
-                        className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                        className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/60 min-h-[36px]"
                       >
-                        <span>{inv.invoice_number}</span>
-                        <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                        Invoice Cockpit →
                       </Link>
-                      {inv.invoice_type === 'vat_invoice' ? (
-                        <span className="inline-block text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">
-                          মূসক ৬.৩
-                        </span>
-                      ) : (
-                        <span className="inline-block text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                          Sales Inv
-                        </span>
-                      )}
-                    </div>
-                    {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
-                  </div>
-
-                  {/* Customer Info */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{inv.customer_name}</div>
-                      {inv.customer_bin && (
-                        <div className="text-[11px] font-mono text-purple-600">BIN: {inv.customer_bin}</div>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total</span>
-                      <span className="text-sm font-black text-slate-900 dark:text-white">
-                        <CurrencyDisplay amount={inv.grand_total} />
-                      </span>
                     </div>
                   </div>
-
-                  {/* Payment Breakdown Card */}
-                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Paid Amount</span>
-                      <span className="font-medium text-emerald-600">৳ {formatBDT(inv.paid_amount)}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Due Balance</span>
-                      {inv.due_amount > 0 ? (
-                        <span className="font-bold text-red-600">৳ {formatBDT(inv.due_amount)}</span>
-                      ) : (
-                        <span className="text-emerald-600 font-semibold">৳ 0 (Paid)</span>
-                      )}
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Invoice Date</span>
-                      <span className="font-mono text-slate-600 dark:text-slate-300">{inv.invoice_date}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Due Date</span>
-                      <span className="font-mono text-slate-600 dark:text-slate-300">{inv.due_date}</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    {inv.due_amount > 0 && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedInvoiceForWriteOff(inv)
-                          setWriteOffAmount(Math.min(inv.due_amount, 2000))
-                        }}
-                        className="h-9 text-xs px-3 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
-                      >
-                        <TrendingDown className="h-3.5 w-3.5 mr-1" />
-                        Write-off
-                      </Button>
-                    )}
-                    <Link
-                      href={`/${slug}/billing/${inv.id}`}
-                      className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/60 min-h-[36px]"
-                    >
-                      Invoice Cockpit →
-                    </Link>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* MODAL: RECORD MULTI-INVOICE PAYMENT (MONEY RECEIPT) */}
-      <ModalDialog
-        open={isRecordPaymentOpen}
-        onOpenChange={setIsRecordPaymentOpen}
-        title="Record Customer Payment & Money Receipt (MR)"
-        description="A single lump-sum customer payment can be allocated across multiple outstanding invoices."
-      >
-        <form onSubmit={handleRecordPayment} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="payCust" required>Select Customer</Label>
-              <button
-                type="button"
-                onClick={() => setIsCustomerModalOpen(true)}
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
-              >
-                + New Customer
-              </button>
-            </div>
-            <div className="flex gap-2">
-              <select
-                id="payCust"
-                value={payCustomerId}
-                onChange={(e) => setPayCustomerId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                {customerList.map((c: CustomerRecord) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} - Phone: {c.mobile}
-                  </option>
-                ))}
-              </select>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCustomerModalOpen(true)}
-                className="h-10 px-3 shrink-0 rounded-xl border-dashed border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-              >
-                + New
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="pAmt" required>Total Received Amount (৳ BDT)</Label>
-              <Input
-                id="pAmt"
-                type="number"
-                value={totalPayAmount}
-                onChange={(e) => setTotalPayAmount(Number(e.target.value))}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="pMeth" required>Payment Channel</Label>
-              <select
-                id="pMeth"
-                value={payMethod}
-                onChange={(e) => setPayMethod(e.target.value as PaymentMethod)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="bank">Bank Transfer (EFT / RTGS)</option>
-                <option value="cheque">Bank Cheque</option>
-                <option value="cash">Cash Counter</option>
-                <option value="bkash">bKash Merchant</option>
-                <option value="nagad">Nagad Wallet</option>
-                <option value="other_mfs">Rocket / Other MFS</option>
-              </select>
-            </div>
-          </div>
-
-          {(payMethod === 'bank' || payMethod === 'cheque') && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="pBank">Bank Name</Label>
-                <Input
-                  id="pBank"
-                  value={payBankName}
-                  onChange={(e) => setPayBankName(e.target.value)}
-                />
-              </div>
-              {payMethod === 'cheque' && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="pCheq" required>Cheque Number</Label>
-                  <Input
-                    id="pCheq"
-                    placeholder="e.g. CQ-8849201"
-                    value={payChequeNo}
-                    onChange={(e) => setPayChequeNo(e.target.value)}
-                    required
-                  />
-                </div>
+                ))
               )}
             </div>
-          )}
+          </CardContent>
+        </Card>
+      )}
 
-          {(payMethod === 'bkash' || payMethod === 'nagad') && (
-            <div className="space-y-1.5">
-              <Label htmlFor="pTrx" required>MFS Transaction ID (TrxID)</Label>
-              <Input
-                id="pTrx"
-                placeholder="e.g. 9J48KL21"
-                value={payMfsTrx}
-                onChange={(e) => setPayMfsTrx(e.target.value)}
-                required
-              />
-            </div>
-          )}
+      {/* MODAL: RECORD MULTI-INVOICE PAYMENT (MONEY RECEIPT) */}
+      <RecordPaymentModal
+        open={isRecordPaymentOpen}
+        onOpenChange={(open) => {
+          setIsRecordPaymentOpen(open)
+          if (!open) {
+            setSelectedCustomerForPayment(null)
+            setSelectedInvoiceForPayment(null)
+          }
+        }}
+        preselectedCustomerId={selectedCustomerForPayment || undefined}
+        preselectedInvoiceId={selectedInvoiceForPayment || undefined}
+        onPaymentRecorded={(payment) => {
+          setInvoices(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || [])
+          setPayments(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS) || [])
+        }}
+      />
 
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs space-y-1">
-            <span className="font-bold text-emerald-800 dark:text-emerald-300">Multi-Invoice Allocation:</span>
-            <p className="text-slate-600 dark:text-slate-400">
-              This payment will be automatically applied to the customer&apos;s oldest open invoices to settle outstanding balances in FIFO order.
-            </p>
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsRecordPaymentOpen(false)} className="w-full sm:w-auto min-h-[40px]">
-              Cancel
-            </Button>
-            <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
-              Generate Money Receipt
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
+      {/* MODAL: VIEW OFFICIAL MONEY RECEIPT */}
+      <MoneyReceiptModal
+        open={Boolean(selectedPaymentForReceipt)}
+        onOpenChange={(open) => !open && setSelectedPaymentForReceipt(null)}
+        payment={selectedPaymentForReceipt}
+        customer={customerList.find(c => c.id === selectedPaymentForReceipt?.customer_id)}
+        invoices={invoices}
+      />
 
       {/* MODAL: FINANCIAL WRITE-OFF & ADJUSTMENT */}
       <ModalDialog

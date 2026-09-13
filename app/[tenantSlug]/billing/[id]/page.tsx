@@ -33,7 +33,8 @@ import {
 } from '@/lib/formatters'
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { useDataStore } from '@/hooks/use-data-store'
-import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 
 export default function InvoiceCockpitPage() {
   const params = useParams()
@@ -42,9 +43,10 @@ export default function InvoiceCockpitPage() {
   const { locale } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
-  const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
+  const [invoices, setInvoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
   const invoice = invoices.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
   const [docMode, setDocMode] = useState<InvoiceType>(invoice?.invoice_type || 'sales_invoice')
+  const [isRecordPayOpen, setIsRecordPayOpen] = useState(false)
 
   if (!invoice) {
     return (
@@ -127,6 +129,17 @@ export default function InvoiceCockpitPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {invoice.due_amount > 0 && (
+              <Button
+                size="sm"
+                onClick={() => setIsRecordPayOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white font-bold gap-1"
+              >
+                <DollarSign className="h-3.5 w-3.5" />
+                Collect Payment (MR)
+              </Button>
+            )}
+
             <Button
               size="sm"
               onClick={() => window.print()}
@@ -461,6 +474,17 @@ export default function InvoiceCockpitPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* RECORD PAYMENT MODAL */}
+      <RecordPaymentModal
+        open={isRecordPayOpen}
+        onOpenChange={setIsRecordPayOpen}
+        preselectedInvoiceId={invoice.id}
+        preselectedCustomerId={invoice.customer_id}
+        onPaymentRecorded={() => {
+          setInvoices(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || [])
+        }}
+      />
     </div>
   )
 }

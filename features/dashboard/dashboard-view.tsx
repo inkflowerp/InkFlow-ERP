@@ -53,6 +53,7 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { DateDisplay } from '@/components/shared/date-display'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
+import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { KpiCard, KpiGrid, KpiColorVariant } from '@/components/shared/kpi-card'
 import { TrialDashboardCard } from '@/components/subscriptions/trial-dashboard-card'
 import { useTenant } from '@/hooks/use-tenant'
@@ -947,78 +948,10 @@ export function DashboardView() {
       </ModalDialog>
 
       {/* 3. Modal: Record Payment / Money Receipt */}
-      <ModalDialog
+      <RecordPaymentModal
         open={activeModal === 'payment'}
         onOpenChange={(open) => !open && setActiveModal(null)}
-        title="Record Payment / Money Receipt"
-        description="Receive customer payment via Cash, bKash, Nagad, or Bank Transfer."
-      >
-        <form onSubmit={handleRecordPayment} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="payCust" required>Select Customer</Label>
-            <select
-              id="payCust"
-              value={selectedCustomerId || customers?.[0]?.id || ''}
-              onChange={(e) => setSelectedCustomerId(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-            >
-              {(customers || []).length === 0 ? (
-                <option value="">No customers found - please add a customer first</option>
-              ) : (
-                (customers || []).map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} (Due: ৳ {formatBDT(c.total_due_balance || 0)})
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="payAmount" required>Amount (৳ BDT)</Label>
-              <Input
-                id="payAmount"
-                type="number"
-                placeholder="e.g. 25000"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                className="h-10 text-xs"
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="payMethod">Payment Method</Label>
-              <select
-                id="payMethod"
-                value={payMethod}
-                onChange={(e) => setPayMethod(e.target.value as any)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="cash">Cash Counter</option>
-                <option value="bkash">bKash Merchant</option>
-                <option value="nagad">Nagad</option>
-                <option value="bank_transfer">Bank Deposit / Cheque</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setActiveModal(null)}
-              className="w-full sm:w-auto h-11 sm:h-9"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto h-11 sm:h-9 bg-emerald-600 hover:bg-emerald-700 font-bold"
-            >
-              Issue Money Receipt
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
+      />
 
       {/* 4. Modal: Add Expense */}
       <ModalDialog

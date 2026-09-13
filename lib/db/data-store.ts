@@ -553,6 +553,21 @@ export class PrintERPDataStore {
   }
 
   /**
+   * Retrieves all items from an array collection
+   */
+  static getAll<T = any>(key: StorageKey, tenantSlug?: string): T[] {
+    const list = this.get<T[]>(key, tenantSlug)
+    return Array.isArray(list) ? list : []
+  }
+
+  /**
+   * Clears a storage key collection
+   */
+  static clear(key: StorageKey, tenantSlug?: string): void {
+    this.set(key, [], true, tenantSlug, true)
+  }
+
+  /**
    * Appends an item to an array collection or creates it if not present
    */
   static addItem<T extends { id?: string }>(
@@ -827,45 +842,138 @@ export class PrintERPDataStore {
     companyId?: string
     orderId?: string
     invoiceId?: string
+    receiptNumber?: string
+    paymentDate?: string
     amount: number
     paymentMethod: string
+    bankName?: string | null
+    chequeNumber?: string | null
+    chequeDate?: string | null
+    mfsTrxId?: string | null
     notes?: string
     receivedByName?: string
+    allocations?: { invoiceId: string; amount: number }[]
   }): PaymentRecord {
     const cust = this.findItem<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, params.customerId)
-    const receiptNum = `MR-${Date.now().toString().slice(-6)}`
-    const paymentDate = new Date().toISOString().split('T')[0]
+    const companyId = params.companyId || 'default'
+    const receiptNum = params.receiptNumber || `MR-${Date.now().toString().slice(-6)}`
+    const paymentDate = params.paymentDate || new Date().toISOString().split('T')[0]
 
+    const recordedAllocations: any[] = []
+
+    // 1. Process explicit allocations or specific invoice or auto FIFO
+    if (params.allocations && params.allocations.length > 0) {
+      for (const alloc of params.allocations) {
+        if (alloc.amount > 0) {
+          const inv = this.findItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, alloc.invoiceId)
+          if (inv) {
+            const newPaid = (Number(inv.paid_amount) || 0) + Number(alloc.amount)
+            const newDue = Math.max(0, (Number(inv.grand_total) || 0) - newPaid - (Number(inv.write_off_amount) || 0))
+            const newStatus = newDue === 0 ? 'paid' : 'partially_paid'
+            this.updateItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, inv.id, {
+              paid_amount: newPaid,
+              due_amount: newDue,
+              status: newStatus,
+            })
+            recordedAllocations.push({
+              id: `alloc-${Date.now()}-${inv.id}`,
+              payment_id: '',
+              invoice_id: inv.id,
+              invoice_number: inv.invoice_number,
+              allocated_amount: alloc.amount,
+              created_at: new Date().toISOString(),
+            })
+          }
+        }
+      }
+    } else if (params.invoiceId) {
+      const inv = this.findItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, params.invoiceId)
+      if (inv) {
+        const allocAmt = Math.min(params.amount, Number(inv.due_amount) || Number(inv.grand_total))
+        const newPaid = (Number(inv.paid_amount) || 0) + Number(params.amount)
+        const newDue = Math.max(0, (Number(inv.grand_total) || 0) - newPaid - (Number(inv.write_off_amount) || 0))
+        this.updateItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, inv.id, {
+          paid_amount: newPaid,
+          due_amount: newDue,
+          status: newDue === 0 ? 'paid' : 'partially_paid',
+        })
+        recordedAllocations.push({
+          id: `alloc-${Date.now()}-${inv.id}`,
+          payment_id: '',
+          invoice_id: inv.id,
+          invoice_number: inv.invoice_number,
+          allocated_amount: allocAmt,
+          created_at: new Date().toISOString(),
+        })
+      }
+    } else {
+      // Auto FIFO allocation across customer's open invoices
+      const allInvoices = this.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES)
+      const customerInvoices = allInvoices
+        .filter((inv) => inv.customer_id === params.customerId && (Number(inv.due_amount) || 0) > 0)
+        .sort((a, b) => new Date(a.invoice_date).getTime() - new Date(b.invoice_date).getTime())
+
+      let remainingToAllocate = params.amount
+      for (const inv of customerInvoices) {
+        if (remainingToAllocate <= 0) break
+        const invDue = Number(inv.due_amount) || 0
+        const allocAmt = Math.min(remainingToAllocate, invDue)
+        const newPaid = (Number(inv.paid_amount) || 0) + allocAmt
+        const newDue = Math.max(0, (Number(inv.grand_total) || 0) - newPaid - (Number(inv.write_off_amount) || 0))
+        this.updateItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, inv.id, {
+          paid_amount: newPaid,
+          due_amount: newDue,
+          status: newDue === 0 ? 'paid' : 'partially_paid',
+        })
+        recordedAllocations.push({
+          id: `alloc-${Date.now()}-${inv.id}`,
+          payment_id: '',
+          invoice_id: inv.id,
+          invoice_number: inv.invoice_number,
+          allocated_amount: allocAmt,
+          created_at: new Date().toISOString(),
+        })
+        remainingToAllocate -= allocAmt
+      }
+    }
+
+    // 2. Create Payment Record
+    const paymentId = `pay-${Date.now()}`
     const payment: PaymentRecord = {
-      id: `pay-${Date.now()}`,
-      company_id: params.companyId || 'default',
+      id: paymentId,
+      company_id: companyId,
       receipt_number: receiptNum,
       customer_id: params.customerId,
       customer_name: cust?.name || 'Customer',
       payment_date: paymentDate,
-      payment_type: 'partial_payment',
+      payment_type: params.invoiceId ? 'partial_payment' : 'due_payment',
       payment_method: params.paymentMethod as any,
       amount: params.amount,
+      bank_name: params.bankName || null,
+      cheque_number: params.chequeNumber || null,
+      cheque_date: params.chequeDate || null,
+      mfs_transaction_id: params.mfsTrxId || null,
       notes: params.notes || `Payment collection of ৳ ${params.amount}`,
       received_by_name: params.receivedByName || 'Cashier',
+      allocations: recordedAllocations.map((a) => ({ ...a, payment_id: paymentId })),
       created_at: new Date().toISOString(),
     }
     this.addItem(STORAGE_KEYS.PAYMENTS, payment)
 
-    // Update Customer Due
+    // 3. Update Customer Due Balance
     if (cust) {
-      const newDue = Math.max(0, (cust.total_due_balance || 0) - params.amount)
+      const newDue = Math.max(0, (Number(cust.total_due_balance) || 0) - params.amount)
       this.updateItem<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, cust.id, {
         total_due_balance: newDue,
       })
     }
 
-    // Update Order if specified
+    // 4. Update Order if specified
     if (params.orderId) {
       const ord = this.findItem<SalesOrderRecord>(STORAGE_KEYS.ORDERS, params.orderId)
       if (ord) {
-        const newAdv = (ord.advance_amount || 0) + params.amount
-        const newDue = Math.max(0, ord.final_price - newAdv)
+        const newAdv = (Number(ord.advance_amount) || 0) + params.amount
+        const newDue = Math.max(0, Number(ord.final_price) - newAdv)
         this.updateItem<SalesOrderRecord>(STORAGE_KEYS.ORDERS, ord.id, {
           advance_amount: newAdv,
           due_amount: newDue,
@@ -873,29 +981,15 @@ export class PrintERPDataStore {
       }
     }
 
-    // Update Invoice if specified
-    if (params.invoiceId) {
-      const inv = this.findItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, params.invoiceId)
-      if (inv) {
-        const newPaid = (inv.paid_amount || 0) + params.amount
-        const newDue = Math.max(0, inv.grand_total - newPaid)
-        this.updateItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, inv.id, {
-          paid_amount: newPaid,
-          due_amount: newDue,
-          status: newDue === 0 ? 'paid' : 'partially_paid',
-        })
-      }
-    }
-
-    // Record Cash Book Inflow
+    // 5. Record Cash Book Inflow
     const cashEntry: CashBookEntryRecord = {
       id: `cb-${Date.now()}`,
-      company_id: params.companyId || 'default',
+      company_id: companyId,
       entry_date: paymentDate,
       entry_type: 'cash_in',
       category: 'Due Collection',
       amount: params.amount,
-      description: `Payment collected from ${cust?.name || 'Customer'}. Receipt: ${receiptNum}`,
+      description: `Payment collected from ${cust?.name || 'Customer'}. Receipt: ${receiptNum} (${params.paymentMethod.toUpperCase()})`,
       reference_id: receiptNum,
       performed_by_name: params.receivedByName || 'Cashier',
       created_at: new Date().toISOString(),
