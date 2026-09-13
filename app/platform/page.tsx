@@ -247,7 +247,7 @@ export default function PlatformDashboardPage() {
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">{data.trial_companies}</div>
-            <div className="text-[10px] text-cyan-400 mt-1 font-semibold">14-day trials</div>
+            <div className="text-[10px] text-cyan-400 mt-1 font-semibold">Active trials</div>
           </Card>
 
           <Card className="bg-slate-900/90 border-slate-800 p-4">

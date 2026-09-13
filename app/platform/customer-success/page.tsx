@@ -93,7 +93,7 @@ export default function CustomerSuccessPage() {
             <Clock className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-white mt-1">{data.trials_ending_soon.length}</div>
-          <div className="text-[11px] text-cyan-400 mt-1">In 14-day evaluation window</div>
+          <div className="text-[11px] text-cyan-400 mt-1">In trial evaluation window</div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-4">

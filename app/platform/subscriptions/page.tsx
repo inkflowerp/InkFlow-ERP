@@ -948,7 +948,7 @@ export default function PlatformSubscriptionsPage() {
                       {/* Payment & Gateway */}
                       <td className="py-3 px-4">
                         {s.is_trial ? (
-                          <span className="text-[10px] text-cyan-400 font-mono">14-day Evaluation</span>
+                          <span className="text-[10px] text-cyan-400 font-mono font-bold">Free Trial</span>
                         ) : (
                           <div>
                             <span className="capitalize px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-800 text-emerald-300 border border-slate-700">
@@ -1062,7 +1062,7 @@ export default function PlatformSubscriptionsPage() {
                 >
                   {plans.map((p) => (
                     <option key={p.id} value={p.code}>
-                      {p.name} {p.code === 'trial' ? '(৳0/mo - 14 Days Evaluation)' : `(৳${p.price_monthly}/mo)`}
+                      {p.name} {p.code === 'trial' ? '(৳0 - Free Trial)' : `(৳${p.price_monthly}/mo)`}
                     </option>
                   ))}
                 </select>

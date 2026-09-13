@@ -614,7 +614,7 @@ export default function PlatformTenantsPage() {
             {companies.filter((c) => c.status === 'trial').length}
             <span className="text-[11px] font-normal text-slate-500 font-mono">evaluating</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">14-day evaluation accounts</div>
+          <div className="text-[11px] text-slate-400 mt-1">Trial evaluation accounts</div>
         </Card>
 
         {/* Incomplete / Started-but-not-finished Registrations KPI Card */}
@@ -1775,7 +1775,7 @@ export default function PlatformTenantsPage() {
                     {
                       code: 'trial' as PlatformPlanCode,
                       title: 'Free Trial',
-                      price: '৳0 / 14 Days',
+                      price: '৳0 / Free Trial',
                       desc: 'Full evaluation access for testing and initial pilot setup.',
                     },
                     {
