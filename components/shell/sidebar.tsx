@@ -275,14 +275,20 @@ export function Sidebar() {
             )
           )}
 
-          <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800">
-            <p className="text-[10px] font-bold text-slate-800 dark:text-slate-200">
-              {tBilingual('Local Support', 'বাংলা হেল্পলাইন')}
-            </p>
+          <Link
+            href={`/${tenantSlug}/support`}
+            className="block rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 hover:border-blue-300 dark:hover:border-slate-700 hover:bg-slate-100/80 dark:hover:bg-slate-800/90 transition-all group"
+          >
+            <div className="flex items-center justify-between mb-0.5">
+              <p className="text-[10px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                {tBilingual('Live Help & Support desk', 'লাইভ হেল্প ও সাপোর্ট ডেস্ক')}
+              </p>
+              <Headphones className="h-3 w-3 text-blue-600 dark:text-blue-400 shrink-0" />
+            </div>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
               +880 1700-000000
             </p>
-          </div>
+          </Link>
         </div>
       )}
     </aside>
