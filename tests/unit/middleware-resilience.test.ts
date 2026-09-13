@@ -36,6 +36,7 @@ function safeMiddlewareSimulator(request: MockReq, user: any = null): MockRes {
     const isTenantAuthPage =
       pathname === '/login' ||
       pathname === '/register' ||
+      pathname === '/verify' ||
       pathname === '/forgot-password' ||
       pathname === '/reset-password'
 
@@ -51,6 +52,7 @@ function safeMiddlewareSimulator(request: MockReq, user: any = null): MockRes {
       pathname.startsWith('/terms') ||
       pathname.startsWith('/privacy') ||
       pathname === '/logout' ||
+      pathname.startsWith('/auth/verify') ||
       pathname.startsWith('/auth/callback') ||
       pathname.startsWith('/api') ||
       pathname.startsWith('/403')
@@ -220,6 +222,21 @@ describe('Middleware Resilience & Vercel Crash Prevention', () => {
       }
       const res = safeMiddlewareSimulator(req, null)
       assert.equal(res.status, 200, `Path ${path} should be publicly accessible`)
+    }
+  })
+
+  test('7. Allows /verify and /auth/verify registration verification without redirecting to /login', () => {
+    const verifyPaths = ['/verify', '/auth/verify']
+
+    for (const path of verifyPaths) {
+      const req: MockReq = {
+        pathname: path,
+        searchParams: { email: 'newuser@example.com' },
+        cookies: {},
+        env: {},
+      }
+      const res = safeMiddlewareSimulator(req, null)
+      assert.equal(res.status, 200, `Verification path ${path} must not be redirected to /login`)
     }
   })
 })

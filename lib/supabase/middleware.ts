@@ -24,6 +24,7 @@ export async function updateSession(request: NextRequest) {
     const isTenantAuthPage =
       pathname === '/login' ||
       pathname === '/register' ||
+      pathname === '/verify' ||
       pathname === '/forgot-password' ||
       pathname === '/reset-password'
 
@@ -40,6 +41,7 @@ export async function updateSession(request: NextRequest) {
       pathname.startsWith('/terms') ||
       pathname.startsWith('/privacy') ||
       pathname === '/logout' ||
+      pathname.startsWith('/auth/verify') ||
       pathname.startsWith('/auth/callback') ||
       pathname.startsWith('/api') ||
       pathname.startsWith('/403') ||

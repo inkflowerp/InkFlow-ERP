@@ -43,6 +43,7 @@ function simulateMiddleware(request: MockRequest, user: { id: string; email: str
   const isTenantAuthPage =
     pathname === '/login' ||
     pathname === '/register' ||
+    pathname === '/verify' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password'
 
@@ -56,7 +57,8 @@ function simulateMiddleware(request: MockRequest, user: { id: string; email: str
     pathname.startsWith('/contact') ||
     pathname.startsWith('/faq') ||
     pathname.startsWith('/terms') ||
-    pathname.startsWith('/privacy')
+    pathname.startsWith('/privacy') ||
+    pathname.startsWith('/auth/verify')
 
   // Check Tenant Session Cookie
   const tenantSessionCookie = request.cookies['printerp_tenant_session']

@@ -434,7 +434,7 @@ export class PrintERPDataStore {
       if (match && match[1]) {
         const seg = match[1].toLowerCase()
         if (
-          !['login', 'register', 'onboarding', 'platform', 'forgot-password', 'reset-password', 'api', '403'].includes(
+          !['login', 'register', 'verify', 'auth', 'onboarding', 'platform', 'forgot-password', 'reset-password', 'api', '403'].includes(
             seg
           )
         ) {
