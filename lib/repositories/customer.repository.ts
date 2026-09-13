@@ -127,7 +127,7 @@ export class CustomerRepository {
 
       if (options.search?.trim()) {
         const term = `%${options.search.trim()}%`
-        query = query.or(`name.ilike.${term},name_bn.ilike.${term},company_name.ilike.${term},mobile.ilike.${term},whatsapp.ilike.${term},area.ilike.${term}`)
+        query = query.or(`name.ilike.${term},name_bn.ilike.${term},contact_person.ilike.${term},mobile.ilike.${term},whatsapp.ilike.${term},area.ilike.${term}`)
       }
 
       if (options.customerType && options.customerType !== 'all') {
@@ -261,11 +261,52 @@ export class CustomerRepository {
       payload.id = customer.id
     }
 
-    const { data, error } = await (supabase as any)
+    let { data, error } = await (supabase as any)
       .from('customers')
       .insert(payload)
       .select()
       .single()
+
+    if (error) {
+      // 1. If PostgREST schema cache does not have 'company_name' column yet, fallback gracefully
+      if (error.message?.includes('company_name') || error.message?.includes('schema cache')) {
+        const fallbackPayload = { ...payload }
+        delete fallbackPayload.company_name
+        if (payload.company_name) {
+          if (!fallbackPayload.contact_person) {
+            fallbackPayload.contact_person = fallbackPayload.name
+            fallbackPayload.name = payload.company_name
+          } else {
+            fallbackPayload.notes = fallbackPayload.notes
+              ? `[Company: ${payload.company_name}] ${fallbackPayload.notes}`
+              : `[Company: ${payload.company_name}]`
+          }
+        }
+        const retryRes = await (supabase as any)
+          .from('customers')
+          .insert(fallbackPayload)
+          .select()
+          .single()
+        data = retryRes.data
+        error = retryRes.error
+      }
+
+      // 2. If customer_type check constraint fails on legacy database schemas (e.g. 'reseller'), fallback to 'dealer'
+      if (error && (error.message?.includes('customer_type') || error.message?.includes('check constraint'))) {
+        const fallbackPayload = { ...payload }
+        delete fallbackPayload.company_name
+        if (fallbackPayload.customer_type === 'reseller') {
+          fallbackPayload.customer_type = 'dealer'
+        }
+        const retryRes = await (supabase as any)
+          .from('customers')
+          .insert(fallbackPayload)
+          .select()
+          .single()
+        data = retryRes.data
+        error = retryRes.error
+      }
+    }
 
     if (error) {
       throw new Error(`Failed to create customer: ${error.message}`)
@@ -290,13 +331,27 @@ export class CustomerRepository {
     delete payload.last_order_date
     delete payload.last_order_number
 
-    const { data, error } = await (supabase as any)
+    let { data, error } = await (supabase as any)
       .from('customers')
       .update(payload)
       .eq('id', id)
       .eq('company_id', companyId)
       .select()
       .single()
+
+    if (error && (error.message?.includes('company_name') || error.message?.includes('schema cache'))) {
+      const fallbackPayload = { ...payload }
+      delete fallbackPayload.company_name
+      const retryRes = await (supabase as any)
+        .from('customers')
+        .update(fallbackPayload)
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .select()
+        .single()
+      data = retryRes.data
+      error = retryRes.error
+    }
 
     if (error) {
       throw new Error(`Failed to update customer: ${error.message}`)
