@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { User, Mail, Phone, Lock, ArrowRight } from 'lucide-react'
+import { User, Mail, Phone, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 import { registerSchema, RegisterFormData } from '@/features/auth/auth.schemas'
 import { signUpAction, signInWithGoogleAction } from '@/actions/auth.actions'
 import { Input } from '@/components/ui/input'
@@ -94,8 +94,18 @@ function RegisterForm() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-3.5">
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200">
-              {error}
+            <div className="flex flex-col gap-1.5 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+              {error.toLowerCase().includes('already exists') && (
+                <div className="pl-6 pt-0.5">
+                  <Link href="/login" className="font-bold underline hover:text-red-800 dark:hover:text-red-200">
+                    {locale === 'bn' ? 'লগইন পেজে যান →' : 'Go to Sign In →'}
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

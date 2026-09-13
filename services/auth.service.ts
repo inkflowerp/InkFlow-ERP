@@ -233,55 +233,79 @@ export class AuthService {
       let userId: string | null = null
 
       // Check if user already exists in auth.users
-      const { data: userList } = await admin.auth.admin.listUsers()
-      const existingUser = userList?.users?.find(
-        (u) => u.email?.toLowerCase() === normalizedEmail
-      )
-
-      if (existingUser) {
-        return { success: false, error: 'An account with this email already exists. Please sign in.' }
+      let existingUser: any = null
+      try {
+        const { data: userList } = await admin.auth.admin.listUsers()
+        existingUser = userList?.users?.find(
+          (u) => u.email?.toLowerCase() === normalizedEmail
+        )
+      } catch (listErr) {
+        console.warn('[AuthService] listUsers error:', listErr)
       }
 
-      // 1. Create user in Supabase Auth via Admin client (email_confirm: false until verified)
-      const { data: newAuthData, error: createAuthErr } = await admin.auth.admin.createUser({
-        email: normalizedEmail,
-        password,
-        email_confirm: false, // Must verify email before activation
-        user_metadata: {
-          full_name: fullName,
-          phone: phone || null,
-          preferred_locale: 'bn',
-        },
-      })
+      if (existingUser) {
+        const isConfirmed = Boolean(existingUser.email_confirmed_at || existingUser.confirmed_at)
+        if (isConfirmed) {
+          return { success: false, error: 'An account with this email already exists. Please sign in.' }
+        }
 
-      if (createAuthErr || !newAuthData?.user) {
-        if (isTestEnvironment()) {
-          userId = `test-user-${normalizedEmail}`
-        } else {
-          // Fallback to client signUp if admin fails in restricted environment
-          const supabase = await getSupabaseAuthClient()
-          const { data: clientAuthData, error: clientErr } = await supabase.auth.signUp({
-            email: normalizedEmail,
+        // Account exists but email is unconfirmed: update password/profile and re-dispatch verification
+        userId = existingUser.id
+        try {
+          await admin.auth.admin.updateUserById(userId, {
             password,
-            options: {
-              data: {
-                full_name: fullName,
-                phone: phone || null,
-                preferred_locale: 'bn',
-              },
+            email_confirm: false,
+            user_metadata: {
+              full_name: fullName,
+              phone: phone || null,
+              preferred_locale: 'bn',
             },
           })
-
-          if (clientErr || !clientAuthData?.user) {
-            return {
-              success: false,
-              error: clientErr?.message || createAuthErr?.message || 'Registration failed',
-            }
-          }
-          userId = clientAuthData.user.id
+        } catch (updateErr) {
+          console.warn('[AuthService] updateUserById error:', updateErr)
         }
       } else {
-        userId = newAuthData.user.id
+        // 1. Create user in Supabase Auth via Admin client (email_confirm: false until verified)
+        const { data: newAuthData, error: createAuthErr } = await admin.auth.admin.createUser({
+          email: normalizedEmail,
+          password,
+          email_confirm: false, // Must verify email before activation
+          user_metadata: {
+            full_name: fullName,
+            phone: phone || null,
+            preferred_locale: 'bn',
+          },
+        })
+
+        if (createAuthErr || !newAuthData?.user) {
+          if (isTestEnvironment()) {
+            userId = `test-user-${normalizedEmail}`
+          } else {
+            // Check if error is user already registered
+            if (createAuthErr?.message?.toLowerCase().includes('already registered')) {
+              try {
+                const { data: retryList } = await admin.auth.admin.listUsers()
+                const found = retryList?.users?.find((u) => u.email?.toLowerCase() === normalizedEmail)
+                if (found) {
+                  const isConfirmed = Boolean(found.email_confirmed_at || found.confirmed_at)
+                  if (isConfirmed) {
+                    return { success: false, error: 'An account with this email already exists. Please sign in.' }
+                  }
+                  userId = found.id
+                }
+              } catch {}
+            }
+
+            if (!userId) {
+              return {
+                success: false,
+                error: createAuthErr?.message || 'Registration failed',
+              }
+            }
+          }
+        } else {
+          userId = newAuthData.user.id
+        }
       }
 
       // 2. Persist initial user_profiles record in pending state (is_active: false until verified)
