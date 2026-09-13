@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   FileText,
@@ -22,6 +22,10 @@ import {
   Layers,
   Code2,
   Smartphone,
+  Search,
+  User,
+  Info,
+  ExternalLink,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -41,7 +45,11 @@ import {
   DocumentTemplateConfigRecord,
   CompanyTaxSettingsRecord,
 } from '@/types/tax-and-docs.types'
-import { CommunicationTemplateService } from '@/services/communication-templates.service'
+import {
+  CommunicationTemplateService,
+  SUPPORTED_TEMPLATE_VARIABLES,
+  TemplateVariableDefinition,
+} from '@/services/communication-templates.service'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
@@ -54,8 +62,10 @@ export default function DocumentDesignerPage() {
   const [selectedDoc, setSelectedDoc] = useState<DocumentType>('quotation')
   const [langMode, setLangMode] = useState<DocumentLanguageMode>('bengali')
   const [activeControlTab, setActiveControlTab] = useState<'pdf' | 'communication'>('pdf')
-  const [previewMode, setPreviewMode] = useState<'pdf' | 'email' | 'whatsapp'>('pdf')
+  const [previewMode, setPreviewMode] = useState<'pdf' | 'email' | 'whatsapp' | 'variables'>('pdf')
   const [copiedVar, setCopiedVar] = useState<string | null>(null)
+  const [variableCategory, setVariableCategory] = useState<'all' | 'company' | 'customer' | 'doc' | 'user'>('all')
+  const [variableSearch, setVariableSearch] = useState('')
 
   const [templates, setTemplates] = useDataStore<Record<DocumentType, DocumentTemplateConfigRecord>>(
     STORAGE_KEYS.DOCUMENT_TEMPLATES,
@@ -92,28 +102,112 @@ export default function DocumentDesignerPage() {
     setTimeout(() => setCopiedVar(null), 2000)
   }
 
-  // Sample variables for live rendering preview
+  // Insert tag into specific template field
+  const handleInsertTag = (fieldKey: 'email_subject' | 'email_body' | 'whatsapp', tag: string) => {
+    const isBn = langMode === 'bengali'
+    if (fieldKey === 'email_subject') {
+      const currentVal = isBn ? (activeTpl.email_subject_template_bn || '') : (activeTpl.email_subject_template || '')
+      const updatedVal = currentVal ? `${currentVal} ${tag}` : tag
+      handleUpdateTemplate(isBn ? { email_subject_template_bn: updatedVal } : { email_subject_template: updatedVal })
+    } else if (fieldKey === 'email_body') {
+      const currentVal = isBn ? (activeTpl.email_body_template_bn || '') : (activeTpl.email_body_template || '')
+      const updatedVal = currentVal ? `${currentVal} ${tag}` : tag
+      handleUpdateTemplate(isBn ? { email_body_template_bn: updatedVal } : { email_body_template: updatedVal })
+    } else if (fieldKey === 'whatsapp') {
+      const currentVal = isBn ? (activeTpl.whatsapp_template_bn || '') : (activeTpl.whatsapp_template || '')
+      const updatedVal = currentVal ? `${currentVal} ${tag}` : tag
+      handleUpdateTemplate(isBn ? { whatsapp_template_bn: updatedVal } : { whatsapp_template: updatedVal })
+    }
+    copyToClipboard(tag)
+    showNotification(`Inserted ${tag} into template.`)
+  }
+
+  // Sample variables for live rendering preview covering all supported backend tags
   const sampleVariables: Record<string, string> = {
-    customer_name: 'Metro Advertising Ltd.',
-    customer_company: 'Metro Media Group',
-    customer_phone: '+880 1711-223344',
+    // Company
     company_name: company?.name || 'Vision Sign BD',
+    company_phone: company?.phone || '+880 1711-000000',
+    company_email: company?.email || 'billing@visionsign.com',
+    company_address: company?.address || '12/A Motijheel C/A, Dhaka',
+    company_website: company?.website || `https://${slug}.printerp.app`,
+
+    // Customer
+    customer_name: 'Ashiqur Rahman',
+    customer_company: 'Metro Advertising Ltd.',
+    customer_phone: '+880 1711-223344',
+    customer_whatsapp: '+880 1711-223344',
+    customer_email: 'ashiq@metromedia.com',
+    customer_address: 'Gulshan-2, Dhaka-1212',
+
+    // Quotation
     quotation_number: 'Q-2026-0842',
+    quotation_date: new Date().toISOString().split('T')[0],
+    valid_until: '15 days from issuance',
+    quotation_subtotal: '42,000',
+    quotation_discount: '0',
+    quotation_vat: '3,500',
+    quotation_total: '45,500',
+    quotation_notes: 'Standard production time 3-5 business days.',
+
+    // Invoice
     invoice_number: 'INV-2026-1055',
+    invoice_date: new Date().toISOString().split('T')[0],
+    invoice_subtotal: '42,000',
+    invoice_discount: '0',
+    invoice_vat: '3,500',
+    invoice_total: '45,500',
+    paid_amount: '20,000',
+    due_amount: '25,500',
+    payment_status: 'PARTIALLY PAID',
+
+    // User
+    prepared_by: 'Kazi Farhan',
+    salesperson_name: 'Tanvir Ahmed',
+
+    // Aliases & Backwards Compatibility
     grand_total: '45,500',
     total_amount: '45,500',
     subtotal: '42,000',
     discount_amount: '0',
     vat_amount: '3,500',
-    paid_amount: '20,000',
-    due_amount: '25,500',
     date: new Date().toISOString().split('T')[0],
-    invoice_date: new Date().toISOString().split('T')[0],
-    valid_until: '15 days from issuance',
     due_date: 'Due Upon Receipt',
     items_summary: '• PVC Flex Vinyl Banner (120 sqft) - ৳ 18,000\n• Acrylic LED 3D Letter Signboard (1 set) - ৳ 27,500',
     document_link: `https://printerp.app/${slug}/${selectedDoc === 'quotation' ? 'quotations' : 'billing'}/sample-preview`,
   }
+
+  // Active Document Available Variables
+  const activeDocVariables = useMemo(() => {
+    const list: TemplateVariableDefinition[] = [
+      ...SUPPORTED_TEMPLATE_VARIABLES.company,
+      ...SUPPORTED_TEMPLATE_VARIABLES.customer,
+      ...(selectedDoc === 'quotation' ? SUPPORTED_TEMPLATE_VARIABLES.quotation : SUPPORTED_TEMPLATE_VARIABLES.invoice),
+      ...SUPPORTED_TEMPLATE_VARIABLES.user,
+    ]
+    return list
+  }, [selectedDoc])
+
+  // Filtered variables based on search and category
+  const filteredVariables = useMemo(() => {
+    return activeDocVariables.filter((v) => {
+      const matchCat =
+        variableCategory === 'all'
+          ? true
+          : variableCategory === 'doc'
+            ? v.category === 'quotation' || v.category === 'invoice'
+            : v.category === variableCategory
+
+      const query = variableSearch.trim().toLowerCase()
+      const matchSearch =
+        !query ||
+        v.tag.toLowerCase().includes(query) ||
+        v.name.toLowerCase().includes(query) ||
+        v.description.toLowerCase().includes(query) ||
+        v.example.toLowerCase().includes(query)
+
+      return matchCat && matchSearch
+    })
+  }, [activeDocVariables, variableCategory, variableSearch])
 
   // Current communication templates
   const currentEmailSubject =
@@ -342,36 +436,17 @@ export default function DocumentDesignerPage() {
             {/* TAB 2: Communication Templates Controls (Email Subject, Body, WhatsApp) */}
             {activeControlTab === 'communication' && (
               <div className="space-y-4 text-xs">
-                {/* Dynamic Variables Pill Box */}
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                    <span>Available Dynamic Variables</span>
-                    {copiedVar && <span className="text-emerald-600 font-normal text-[10px]">Copied!</span>}
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {availableVariables.map((v) => (
-                      <button
-                        key={v.tag}
-                        type="button"
-                        onClick={() => copyToClipboard(v.tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer"
-                        title={`Click to copy ${v.desc}`}
-                      >
-                        {v.tag}
-                        <Copy className="h-2.5 w-2.5 text-slate-400" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Email Subject Template */}
-                <div className="space-y-1">
-                  <Label className="font-bold flex items-center justify-between">
-                    <span>Email Subject Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})</span>
-                    <Badge variant="outline" className="text-[9px]">
+                <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-bold flex items-center gap-1.5 text-slate-900 dark:text-white">
+                      <Mail className="h-3.5 w-3.5 text-blue-600" />
+                      Email Subject Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
+                    </Label>
+                    <Badge variant="outline" className="text-[9px] bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300">
                       PDF Attached
                     </Badge>
-                  </Label>
+                  </div>
                   <Input
                     value={
                       langMode === 'bengali'
@@ -385,16 +460,43 @@ export default function DocumentDesignerPage() {
                         handleUpdateTemplate({ email_subject_template: e.target.value })
                       }
                     }}
-                    placeholder="e.g. Official Quotation #{{quotation_number}} [৳ {{grand_total}}]"
-                    className="h-9 text-xs font-medium"
+                    placeholder="e.g. Official Quotation #{{quotation_number}} [৳ {{quotation_total}}]"
+                    className="h-9 text-xs font-medium bg-white dark:bg-slate-950"
                   />
+                  {/* Quick-insert tags for Subject */}
+                  <div className="flex flex-wrap items-center gap-1 pt-1">
+                    <span className="text-[10px] text-slate-400 font-medium mr-1">Quick Add:</span>
+                    {[
+                      selectedDoc === 'quotation' ? '{{quotation_number}}' : '{{invoice_number}}',
+                      '{{company_name}}',
+                      selectedDoc === 'quotation' ? '{{quotation_total}}' : '{{invoice_total}}',
+                      '{{customer_name}}',
+                      ...(selectedDoc === 'invoice' ? ['{{due_amount}}'] : []),
+                    ].map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleInsertTag('email_subject', tag)}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                        title={`Insert ${tag}`}
+                      >
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Email Body Template */}
-                <div className="space-y-1">
-                  <Label className="font-bold">Email Body Template (HTML Supported)</Label>
+                <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-bold flex items-center gap-1.5 text-slate-900 dark:text-white">
+                      <Code2 className="h-3.5 w-3.5 text-blue-600" />
+                      Email Body Template (HTML Supported)
+                    </Label>
+                    <span className="text-[10px] text-slate-400">PDF attached automatically</span>
+                  </div>
                   <textarea
-                    rows={5}
+                    rows={6}
                     value={
                       langMode === 'bengali'
                         ? activeTpl.email_body_template_bn || ''
@@ -408,21 +510,43 @@ export default function DocumentDesignerPage() {
                       }
                     }}
                     placeholder="<p>Dear {{customer_name}},</p><p>Please find attached...</p>"
-                    className="w-full p-2.5 rounded-xl border text-xs font-mono bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2.5 rounded-xl border text-xs font-mono bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
-                  <p className="text-[10px] text-slate-400">
-                    The formal PDF document is automatically attached to this email.
-                  </p>
+                  {/* Quick-insert tags for Email Body */}
+                  <div className="flex flex-wrap items-center gap-1 pt-1">
+                    <span className="text-[10px] text-slate-400 font-medium mr-1">Quick Add:</span>
+                    {[
+                      '{{customer_name}}',
+                      '{{company_name}}',
+                      selectedDoc === 'quotation' ? '{{quotation_total}}' : '{{invoice_total}}',
+                      selectedDoc === 'quotation' ? '{{quotation_date}}' : '{{invoice_date}}',
+                      '{{document_link}}',
+                      '{{items_summary}}',
+                    ].map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleInsertTag('email_body', tag)}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                        title={`Insert ${tag}`}
+                      >
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* WhatsApp Message Template */}
-                <div className="space-y-1 pt-2 border-t">
-                  <Label className="font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    WhatsApp Message Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
-                  </Label>
+                <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      WhatsApp Message Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
+                    </Label>
+                    <span className="text-[10px] text-slate-400">*bold* _italic_</span>
+                  </div>
                   <textarea
-                    rows={5}
+                    rows={6}
                     value={
                       langMode === 'bengali'
                         ? activeTpl.whatsapp_template_bn || ''
@@ -435,12 +559,124 @@ export default function DocumentDesignerPage() {
                         handleUpdateTemplate({ whatsapp_template: e.target.value })
                       }
                     }}
-                    placeholder="*QUOTATION - {{company_name}}*&#10;Dear {{customer_name}},&#10;Total: ৳ {{grand_total}}..."
-                    className="w-full p-2.5 rounded-xl border text-xs font-mono bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    placeholder="*QUOTATION - {{company_name}}*&#10;Dear {{customer_name}},&#10;Total: ৳ {{quotation_total}}..."
+                    className="w-full p-2.5 rounded-xl border text-xs font-mono bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
-                  <p className="text-[10px] text-slate-400">
-                    Uses WhatsApp formatting (*bold*, _italic_). Includes document approval link.
-                  </p>
+                  {/* Quick-insert tags for WhatsApp */}
+                  <div className="flex flex-wrap items-center gap-1 pt-1">
+                    <span className="text-[10px] text-slate-400 font-medium mr-1">Quick Add:</span>
+                    {[
+                      '{{customer_name}}',
+                      '{{company_name}}',
+                      selectedDoc === 'quotation' ? '{{quotation_total}}' : '{{invoice_total}}',
+                      ...(selectedDoc === 'invoice' ? ['{{due_amount}}', '{{payment_status}}'] : []),
+                      '{{document_link}}',
+                    ].map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleInsertTag('whatsapp', tag)}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-700 dark:text-slate-300 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+                        title={`Insert ${tag}`}
+                      >
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* =========================================================================
+                    VISIBLE AVAILABLE VARIABLES HELPER PANEL
+                   ========================================================================= */}
+                <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                      <span className="font-bold text-xs text-slate-900 dark:text-white">Available Variables Helper</span>
+                    </div>
+                    {copiedVar ? (
+                      <Badge variant="outline" className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300">
+                        Copied {copiedVar}!
+                      </Badge>
+                    ) : (
+                      <span className="text-[10px] text-slate-400">{filteredVariables.length} supported tags</span>
+                    )}
+                  </div>
+
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search className="h-3 w-3 absolute left-2.5 top-2.5 text-slate-400" />
+                    <input
+                      type="text"
+                      value={variableSearch}
+                      onChange={(e) => setVariableSearch(e.target.value)}
+                      placeholder="Search variables (e.g. phone, vat, due)..."
+                      className="w-full pl-7 pr-3 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+
+                  {/* Category Filter Tabs */}
+                  <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[10px]">
+                    {[
+                      { id: 'all', label: 'All' },
+                      { id: 'company', label: '🏢 Company' },
+                      { id: 'customer', label: '👤 Customer' },
+                      { id: 'doc', label: selectedDoc === 'quotation' ? '📄 Quotation' : '📄 Invoice' },
+                      { id: 'user', label: '🧑‍💼 User' },
+                    ].map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setVariableCategory(cat.id as any)}
+                        className={`px-2 py-1 rounded-md font-semibold whitespace-nowrap transition-colors ${
+                          variableCategory === cat.id
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Scrollable Variable Items */}
+                  <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1 touch-scroll">
+                    {filteredVariables.map((v) => (
+                      <div
+                        key={v.tag}
+                        className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between gap-2 text-[11px]"
+                      >
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-blue-700 dark:text-blue-400 text-[10px]">
+                              {v.tag}
+                            </span>
+                            <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">
+                              {v.name}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 truncate" title={v.description}>
+                            {v.description}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(v.tag)}
+                            className="p-1 rounded bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+                            title="Copy variable tag"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredVariables.length === 0 && (
+                      <div className="p-4 text-center text-slate-400 text-[11px]">
+                        No supported variables found matching &ldquo;{variableSearch}&rdquo;.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -448,7 +684,7 @@ export default function DocumentDesignerPage() {
         </div>
 
         {/* =========================================================================
-            LIVE PREVIEW CANVAS (PDF PRINT vs EMAIL vs WHATSAPP)
+            LIVE PREVIEW CANVAS (PDF PRINT vs EMAIL vs WHATSAPP vs VARIABLES GUIDE)
            ========================================================================= */}
         <div className="lg:col-span-2 print:col-span-3 print:w-full overflow-x-auto print:overflow-visible space-y-3">
           {/* Live Preview Mode Switcher */}
@@ -457,7 +693,7 @@ export default function DocumentDesignerPage() {
               <Eye className="h-3.5 w-3.5 text-blue-600" />
               Live Output Preview:
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto">
               <Button
                 size="sm"
                 variant={previewMode === 'pdf' ? 'default' : 'ghost'}
@@ -484,6 +720,15 @@ export default function DocumentDesignerPage() {
               >
                 <MessageSquare className="h-3 w-3 mr-1" />
                 WhatsApp
+              </Button>
+              <Button
+                size="sm"
+                variant={previewMode === 'variables' ? 'default' : 'ghost'}
+                onClick={() => setPreviewMode('variables')}
+                className={`text-xs h-7 px-3 ${previewMode === 'variables' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600'}`}
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                Variables Guide
               </Button>
             </div>
           </div>
@@ -654,6 +899,75 @@ export default function DocumentDesignerPage() {
                 <div className="text-[10px] text-right text-slate-400 pt-1">
                   10:45 AM • Delivered
                 </div>
+              </div>
+            </Card>
+          )}
+
+          {/* VIEW 4: VARIABLES REFERENCE GUIDE TABLE */}
+          {previewMode === 'variables' && (
+            <Card className="border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+              <div className="p-4 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-indigo-600" />
+                    Supported Backend Template Variables
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Click any tag to copy it. All variables are reliably provided and populated by the backend.
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-xs font-mono">
+                  {activeDocVariables.length} Variables Available
+                </Badge>
+              </div>
+
+              <div className="p-4 overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px]">
+                      <th className="pb-2 font-mono">Variable Tag</th>
+                      <th className="pb-2">Name</th>
+                      <th className="pb-2">Category</th>
+                      <th className="pb-2">Description</th>
+                      <th className="pb-2 font-mono">Example / Live Value</th>
+                      <th className="pb-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {activeDocVariables.map((v) => (
+                      <tr key={v.tag} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        <td className="py-2.5 font-mono font-bold text-blue-600 dark:text-blue-400">
+                          {v.tag}
+                        </td>
+                        <td className="py-2.5 font-semibold text-slate-900 dark:text-slate-100">
+                          {v.name}
+                        </td>
+                        <td className="py-2.5">
+                          <span className="capitalize px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            {v.category}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-slate-600 dark:text-slate-400">
+                          {v.description}
+                        </td>
+                        <td className="py-2.5 font-mono text-slate-700 dark:text-slate-300">
+                          {sampleVariables[v.tag.replace(/[{}]/g, '')] || v.example}
+                        </td>
+                        <td className="py-2.5 text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copyToClipboard(v.tag)}
+                            className="h-6 text-[10px] px-2"
+                          >
+                            <Copy className="h-2.5 w-2.5 mr-1" />
+                            Copy
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </Card>
           )}

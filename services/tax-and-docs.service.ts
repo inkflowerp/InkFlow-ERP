@@ -54,16 +54,16 @@ export const DEFAULT_DOCUMENT_TEMPLATES: Record<DocumentType, DocumentTemplateCo
     footer_terms_bn: '১. কোটেশনের মেয়াদ প্রদানের তারিখ হতে ১৫ দিন।\n২. কাজের অর্ডারের সাথে অগ্রিম এবং অবশিষ্ট মালামাল ডেলিভারির সময় প্রদেয়।',
     authorized_signatory_title: 'Authorized Signature',
     show_seal_box: true,
-    email_subject_template: 'Official Quotation #{{quotation_number}} from {{company_name}} [৳ {{grand_total}}]',
-    email_subject_template_bn: 'বাণিজ্যিক কোটেশন #{{quotation_number}} - {{company_name}} [৳ {{grand_total}}]',
+    email_subject_template: 'Official Quotation #{{quotation_number}} from {{company_name}} [৳ {{quotation_total}}]',
+    email_subject_template_bn: 'বাণিজ্যিক কোটেশন #{{quotation_number}} - {{company_name}} [৳ {{quotation_total}}]',
     email_body_template: `<p>Dear <strong>{{customer_name}}</strong>,</p>
 <p>Thank you for reaching out to <strong>{{company_name}}</strong>. Please find attached our official price proposal for your requested print items.</p>
 <div class="info-card">
   <table>
     <tr><td class="label">Quotation #:</td><td class="value"><strong>{{quotation_number}}</strong></td></tr>
-    <tr><td class="label">Issue Date:</td><td class="value">{{date}}</td></tr>
+    <tr><td class="label">Issue Date:</td><td class="value">{{quotation_date}}</td></tr>
     <tr><td class="label">Valid Until:</td><td class="value">{{valid_until}}</td></tr>
-    <tr><td class="label">Grand Total:</td><td class="value"><strong>৳ {{grand_total}}</strong></td></tr>
+    <tr><td class="label">Grand Total:</td><td class="value"><strong>৳ {{quotation_total}}</strong></td></tr>
   </table>
 </div>
 <p><strong>Item Overview:</strong><br>{{items_summary}}</p>
@@ -75,9 +75,9 @@ export const DEFAULT_DOCUMENT_TEMPLATES: Record<DocumentType, DocumentTemplateCo
 <div class="info-card">
   <table>
     <tr><td class="label">কোটেশন নং:</td><td class="value"><strong>{{quotation_number}}</strong></td></tr>
-    <tr><td class="label">প্রদানের তারিখ:</td><td class="value">{{date}}</td></tr>
+    <tr><td class="label">প্রদানের তারিখ:</td><td class="value">{{quotation_date}}</td></tr>
     <tr><td class="label">মেয়াদ:</td><td class="value">{{valid_until}}</td></tr>
-    <tr><td class="label">মোট মূল্য:</td><td class="value"><strong>৳ {{grand_total}}</strong></td></tr>
+    <tr><td class="label">মোট মূল্য:</td><td class="value"><strong>৳ {{quotation_total}}</strong></td></tr>
   </table>
 </div>
 <p><a href="{{document_link}}" class="btn">কোটেশন বিস্তারিত দেখুন ও অনুমোদন দিন</a></p>
@@ -88,13 +88,13 @@ Dear {{customer_name}},
 Thank you for your inquiry! Here is your official price proposal:
 
 📄 *Quotation No:* #{{quotation_number}}
-📅 *Date:* {{date}}
+📅 *Date:* {{quotation_date}}
 ⏳ *Valid Until:* {{valid_until}}
 
 📋 *Items Summary:*
 {{items_summary}}
 
-💵 *Grand Total:* ৳ {{grand_total}}
+💵 *Grand Total:* ৳ {{quotation_total}}
 
 🔗 *View & Approve Online:* {{document_link}}
 
@@ -105,13 +105,13 @@ _Thank you for doing business with {{company_name}}!_`,
 আমাদের সাথে যোগাযোগের জন্য ধন্যবাদ। আপনার কোটেশন বিবরণ:
 
 📄 *কোটেশন নং:* #{{quotation_number}}
-📅 *তারিখ:* {{date}}
+📅 *তারিখ:* {{quotation_date}}
 ⏳ *মেয়াদ:* {{valid_until}} পর্যন্ত
 
 📋 *আইটেম বিবরণ:*
 {{items_summary}}
 
-💵 *সর্বমোট বিল:* ৳ {{grand_total}}
+💵 *সর্বমোট বিল:* ৳ {{quotation_total}}
 
 🔗 *কোটেশন দেখুন ও অনুমোদন দিন:* {{document_link}}
 
@@ -138,10 +138,10 @@ _{{company_name}}_`,
   <table>
     <tr><td class="label">Invoice No:</td><td class="value"><strong>{{invoice_number}}</strong></td></tr>
     <tr><td class="label">Invoice Date:</td><td class="value">{{invoice_date}}</td></tr>
-    <tr><td class="label">Grand Total:</td><td class="value">৳ {{grand_total}}</td></tr>
+    <tr><td class="label">Grand Total:</td><td class="value">৳ {{invoice_total}}</td></tr>
     <tr><td class="label">Paid Amount:</td><td class="value" style="color:#10b981;">৳ {{paid_amount}}</td></tr>
     <tr><td class="label">Due Balance:</td><td class="value" style="color:#ef4444;"><strong>৳ {{due_amount}}</strong></td></tr>
-    <tr><td class="label">Due Date:</td><td class="value">{{due_date}}</td></tr>
+    <tr><td class="label">Payment Status:</td><td class="value"><strong>{{payment_status}}</strong></td></tr>
   </table>
 </div>
 <p><strong>Item Overview:</strong><br>{{items_summary}}</p>
@@ -154,9 +154,10 @@ _{{company_name}}_`,
   <table>
     <tr><td class="label">ইনভয়েস নং:</td><td class="value"><strong>{{invoice_number}}</strong></td></tr>
     <tr><td class="label">তারিখ:</td><td class="value">{{invoice_date}}</td></tr>
-    <tr><td class="label">মোট বিল:</td><td class="value">৳ {{grand_total}}</td></tr>
+    <tr><td class="label">মোট বিল:</td><td class="value">৳ {{invoice_total}}</td></tr>
     <tr><td class="label">পরিশোধিত:</td><td class="value">৳ {{paid_amount}}</td></tr>
     <tr><td class="label">অবশিষ্ট বকেয়া:</td><td class="value" style="color:#ef4444;"><strong>৳ {{due_amount}}</strong></td></tr>
+    <tr><td class="label">স্ট্যাটাস:</td><td class="value"><strong>{{payment_status}}</strong></td></tr>
   </table>
 </div>
 <p><a href="{{document_link}}" class="btn">অনলাইনে ইনভয়েস দেখুন ও পেমেন্ট করুন</a></p>
@@ -168,12 +169,12 @@ Your invoice has been generated for your recent print order:
 
 📄 *Invoice No:* #{{invoice_number}}
 📅 *Date:* {{invoice_date}}
-⏳ *Due Date:* {{due_date}}
+📊 *Status:* {{payment_status}}
 
 📋 *Items Summary:*
 {{items_summary}}
 
-💰 *Grand Total:* ৳ {{grand_total}}
+💰 *Grand Total:* ৳ {{invoice_total}}
 ✅ *Paid Amount:* ৳ {{paid_amount}}
 ⚠️ *Due Balance:* ৳ {{due_amount}}
 
@@ -187,12 +188,12 @@ _Thank you for doing business with {{company_name}}!_`,
 
 📄 *ইনভয়েস নং:* #{{invoice_number}}
 📅 *তারিখ:* {{invoice_date}}
-⏳ *পরিশোধের মেয়াদ:* {{due_date}}
+📊 *স্ট্যাটাস:* {{payment_status}}
 
 📋 *আইটেম বিবরণ:*
 {{items_summary}}
 
-💰 *সর্বমোট বিল:* ৳ {{grand_total}}
+💰 *সর্বমোট বিল:* ৳ {{invoice_total}}
 ✅ *জমা:* ৳ {{paid_amount}}
 ⚠️ *বকেয়া:* ৳ {{due_amount}}
 

@@ -3,6 +3,7 @@ import assert from 'node:assert'
 import { PdfGeneratorService } from '../../services/pdf-generator.service.ts'
 import {
   CommunicationTemplateService,
+  SUPPORTED_TEMPLATE_VARIABLES,
   DEFAULT_QUOTATION_COMMUNICATION_TEMPLATE,
   DEFAULT_INVOICE_COMMUNICATION_TEMPLATE,
 } from '../../services/communication-templates.service.ts'
@@ -222,5 +223,74 @@ describe('Quotation & Invoice PDF and Communication Template Suite', () => {
 
     assert.strictEqual(smsRes.success, false)
     assert.ok(smsRes.error?.includes('SMS dispatch is deprecated and disabled'))
+  })
+
+  test('8. SUPPORTED_TEMPLATE_VARIABLES matches recommended whitelist across all 5 categories', () => {
+    assert.ok(SUPPORTED_TEMPLATE_VARIABLES.company.length >= 5)
+    assert.ok(SUPPORTED_TEMPLATE_VARIABLES.customer.length >= 6)
+    assert.ok(SUPPORTED_TEMPLATE_VARIABLES.quotation.length >= 8)
+    assert.ok(SUPPORTED_TEMPLATE_VARIABLES.invoice.length >= 9)
+    assert.ok(SUPPORTED_TEMPLATE_VARIABLES.user.length >= 2)
+
+    const compTags = SUPPORTED_TEMPLATE_VARIABLES.company.map((v) => v.tag)
+    assert.ok(compTags.includes('{{company_name}}'))
+    assert.ok(compTags.includes('{{company_phone}}'))
+    assert.ok(compTags.includes('{{company_email}}'))
+    assert.ok(compTags.includes('{{company_address}}'))
+    assert.ok(compTags.includes('{{company_website}}'))
+
+    const custTags = SUPPORTED_TEMPLATE_VARIABLES.customer.map((v) => v.tag)
+    assert.ok(custTags.includes('{{customer_name}}'))
+    assert.ok(custTags.includes('{{customer_company}}'))
+    assert.ok(custTags.includes('{{customer_phone}}'))
+    assert.ok(custTags.includes('{{customer_whatsapp}}'))
+    assert.ok(custTags.includes('{{customer_email}}'))
+    assert.ok(custTags.includes('{{customer_address}}'))
+
+    const quoteTags = SUPPORTED_TEMPLATE_VARIABLES.quotation.map((v) => v.tag)
+    assert.ok(quoteTags.includes('{{quotation_number}}'))
+    assert.ok(quoteTags.includes('{{quotation_date}}'))
+    assert.ok(quoteTags.includes('{{valid_until}}'))
+    assert.ok(quoteTags.includes('{{quotation_subtotal}}'))
+    assert.ok(quoteTags.includes('{{quotation_discount}}'))
+    assert.ok(quoteTags.includes('{{quotation_vat}}'))
+    assert.ok(quoteTags.includes('{{quotation_total}}'))
+    assert.ok(quoteTags.includes('{{quotation_notes}}'))
+
+    const invTags = SUPPORTED_TEMPLATE_VARIABLES.invoice.map((v) => v.tag)
+    assert.ok(invTags.includes('{{invoice_number}}'))
+    assert.ok(invTags.includes('{{invoice_date}}'))
+    assert.ok(invTags.includes('{{invoice_subtotal}}'))
+    assert.ok(invTags.includes('{{invoice_discount}}'))
+    assert.ok(invTags.includes('{{invoice_vat}}'))
+    assert.ok(invTags.includes('{{invoice_total}}'))
+    assert.ok(invTags.includes('{{paid_amount}}'))
+    assert.ok(invTags.includes('{{due_amount}}'))
+    assert.ok(invTags.includes('{{payment_status}}'))
+
+    const userTags = SUPPORTED_TEMPLATE_VARIABLES.user.map((v) => v.tag)
+    assert.ok(userTags.includes('{{prepared_by}}'))
+    assert.ok(userTags.includes('{{salesperson_name}}'))
+  })
+
+  test('9. buildQuotationVariables and buildInvoiceVariables populate all supported variables without arbitrary leaks', () => {
+    const quoteVars = CommunicationTemplateService.buildQuotationVariables(mockQuotation, mockCompany, 'https://printerp.app')
+    assert.strictEqual(quoteVars.company_name, 'PrintCraft Visuals Ltd.')
+    assert.strictEqual(quoteVars.customer_name, 'Metro Retail Ltd.')
+    assert.strictEqual(quoteVars.customer_phone, '01711223344')
+    assert.strictEqual(quoteVars.customer_whatsapp, '01711223344')
+    assert.strictEqual(quoteVars.quotation_number, 'Q-2026-0099')
+    assert.strictEqual(quoteVars.quotation_subtotal, '30,000')
+    assert.strictEqual(quoteVars.quotation_vat, '2,250')
+    assert.strictEqual(quoteVars.quotation_total, '32,250')
+    assert.strictEqual(quoteVars.salesperson_name, 'Imtiaz Ahmed')
+
+    const invVars = CommunicationTemplateService.buildInvoiceVariables(mockInvoice, mockCompany, 'https://printerp.app')
+    assert.strictEqual(invVars.invoice_number, 'INV-2026-0501')
+    assert.strictEqual(invVars.invoice_total, '32,250')
+    assert.strictEqual(invVars.paid_amount, '10,000')
+    assert.strictEqual(invVars.due_amount, '22,250')
+    assert.strictEqual(invVars.payment_status, 'UNPAID')
+    assert.strictEqual(invVars.prepared_by, 'Admin User')
   })
 })
