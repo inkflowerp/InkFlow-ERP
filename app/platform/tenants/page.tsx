@@ -378,9 +378,9 @@ export default function PlatformTenantsPage() {
 
   // Handle Delete Single Tenant
   const handleDeleteCompany = async () => {
-    if (!deleteModalCompany) return
+    if (!deleteModalCompany || !deleteReason.trim()) return
     setIsDeletingCompany(true)
-    const res = await deleteBusinessAction(deleteModalCompany.id, deleteReason)
+    const res = await deleteBusinessAction(deleteModalCompany.id, deleteReason.trim())
     if (res.success) {
       showNotification(`Tenant "${deleteModalCompany.name}" and all associated workspace data have been deleted.`)
       setDeleteModalCompany(null)
@@ -2025,12 +2025,16 @@ export default function PlatformTenantsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300">Reason for Deletion (Audit Trail)</label>
+                <label className="font-semibold text-slate-300 flex items-center gap-1">
+                  <span>Reason for Deletion (Audit Trail)</span>
+                  <span className="text-red-400">*</span>
+                </label>
                 <Input
+                  required
                   placeholder="e.g. Account closed at owner request / Testing cleanup..."
                   value={deleteReason}
                   onChange={(e) => setDeleteReason(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                  className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500"
                 />
               </div>
             </CardContent>
@@ -2048,10 +2052,10 @@ export default function PlatformTenantsPage() {
                 Cancel
               </Button>
               <Button
-                disabled={isDeletingCompany}
+                disabled={isDeletingCompany || !deleteReason.trim()}
                 onClick={handleDeleteCompany}
                 size="sm"
-                className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs"
+                className="bg-red-600 hover:bg-red-500 disabled:bg-red-950/60 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold text-xs"
               >
                 {isDeletingCompany ? 'Deleting...' : 'Confirm Permanent Deletion'}
               </Button>

@@ -69,7 +69,11 @@ export async function deleteBusinessAction(companyId: string, reason?: string) {
       return { success: false, error: 'Unauthorized: Insufficient platform permissions to delete a tenant.' }
     }
 
-    const result = await PlatformService.deleteCompany(companyId, reason)
+    if (!reason || !reason.trim()) {
+      return { success: false, error: 'Reason for deletion (Audit Trail) is mandatory.' }
+    }
+
+    const result = await PlatformService.deleteCompany(companyId, reason.trim())
     if (result.success) {
       revalidatePath('/platform', 'layout')
       revalidatePath('/platform/companies')
