@@ -167,13 +167,27 @@ export class GoogleOAuthProvider implements IAuthProvider {
     optionsOrRedirect?: string | { redirectTo?: string; queryParams?: Record<string, string>; scopes?: string }
   ): Promise<ApiResponse<{ url?: string }>> {
     try {
-      const supabase = createClient()
       const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
       const redirectTo =
         typeof optionsOrRedirect === 'string'
           ? optionsOrRedirect
           : optionsOrRedirect?.redirectTo || `${origin}/auth/callback`
 
+      const { getGoogleAuthClientConfig, generateGoogleAuthSignInUrl } = await import('./google-auth.ts')
+      const config = getGoogleAuthClientConfig(origin)
+
+      // 1. Direct Branded InkFlow Domain Flow (Removes *.supabase.co domain exposure)
+      if (config.isConfigured) {
+        const { url } = generateGoogleAuthSignInUrl({
+          origin,
+          next: redirectTo,
+          prompt: 'select_account',
+        })
+        return { success: true, data: { url } }
+      }
+
+      // 2. Fallback: Supabase Client SDK Provider
+      const supabase = createClient()
       const oauthOptions: {
         redirectTo: string
         queryParams?: Record<string, string>

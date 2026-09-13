@@ -363,8 +363,22 @@ export async function signOutAction() {
 
 export async function signInWithGoogleAction(redirectTo?: string) {
   try {
-    const supabase = await createClient()
     const appUrl = await getRequestBaseUrl()
+    const { getGoogleAuthClientConfig, generateGoogleAuthSignInUrl } = await import('@/lib/auth/google-auth')
+    const config = getGoogleAuthClientConfig(appUrl)
+
+    // 1. Direct Branded Domain Flow (Eliminates raw *.supabase.co domain in Google account chooser)
+    if (config.isConfigured) {
+      const { url } = generateGoogleAuthSignInUrl({
+        origin: appUrl,
+        next: redirectTo,
+        prompt: 'select_account',
+      })
+      return { success: true, url }
+    }
+
+    // 2. Fallback: Supabase Client OAuth Provider Flow
+    const supabase = await createClient()
     const callbackUrl = redirectTo || `${appUrl}/auth/callback`
 
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -381,5 +395,16 @@ export async function signInWithGoogleAction(redirectTo?: string) {
     return { success: true, url: data.url }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to initialize Google OAuth' }
+  }
+}
+
+export async function getGoogleAuthBrandingDiagnosticsAction() {
+  try {
+    const appUrl = await getRequestBaseUrl()
+    const { getGoogleAuthBrandingDiagnostics } = await import('@/lib/auth/google-auth')
+    const diag = getGoogleAuthBrandingDiagnostics(appUrl)
+    return { success: true, data: diag }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to load Google OAuth diagnostics' }
   }
 }
