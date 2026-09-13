@@ -45,6 +45,9 @@ import {
   testTriggerWorkflowRuleAction,
 } from '@/actions/workflow.actions'
 import { FeatureGate } from '@/components/shared/feature-gate'
+import { ModalDialog } from '@/components/shared/modal-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
 
 export default function WorkflowAutomationsPage() {
   const params = useParams()
@@ -524,179 +527,208 @@ export default function WorkflowAutomationsPage() {
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* ==================================================================== */}
+      )}      {/* ==================================================================== */}
       {/* MODAL: RULE BUILDER / CREATOR                                       */}
       {/* ==================================================================== */}
-      {isModalOpen && editingRule && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in-0">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-4 sm:p-6 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="flex items-center gap-3 pr-8">
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0">
+      {editingRule && (
+        <ModalDialog
+          open={isModalOpen}
+          onOpenChange={(open) => {
+            if (!open) setIsModalOpen(false)
+          }}
+          size="2xl"
+          title={
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
                 <Workflow className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Create Automation Workflow</h3>
-                <p className="text-xs text-slate-400">Declarative triggers and action pipeline</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-black text-slate-900 dark:text-white">
+                    Create Automation Workflow
+                  </span>
+                  <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                    Engine
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Declarative triggers and action pipeline automation
+                </p>
+              </div>
+            </div>
+          }
+        >
+          <form onSubmit={handleSaveRule} className="space-y-4 pt-1">
+            {/* Section 1: Rule Details */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  1
+                </div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Rule Identity
+                </h3>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Rule Name <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  placeholder="e.g. Quotation Approved ➔ Auto-Create Order"
+                  value={editingRule.name || ''}
+                  onChange={(e) => setEditingRule({ ...editingRule, name: e.target.value })}
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Description (Optional)
+                </Label>
+                <Input
+                  placeholder="Describe what this automation accomplishes..."
+                  value={editingRule.description || ''}
+                  onChange={(e) => setEditingRule({ ...editingRule, description: e.target.value })}
+                  className="text-xs h-9"
+                />
               </div>
             </div>
 
-            <form onSubmit={handleSaveRule} className="space-y-4 text-xs">
-              {/* Name & Description */}
-              <div className="space-y-3">
-                <div>
-                  <label className="font-bold text-slate-300 block mb-1">Rule Name</label>
-                  <Input
-                    placeholder="e.g. Quotation Approved ➔ Auto-Create Order"
-                    value={editingRule.name || ''}
-                    onChange={(e) => setEditingRule({ ...editingRule, name: e.target.value })}
-                    className="h-10 bg-slate-950 border-slate-800 text-white rounded-xl"
-                    required
-                  />
+            {/* Section 2: Trigger Event */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  2
                 </div>
-                <div>
-                  <label className="font-medium text-slate-400 block mb-1">Description (Optional)</label>
-                  <Input
-                    placeholder="Describe what this automation accomplishes..."
-                    value={editingRule.description || ''}
-                    onChange={(e) => setEditingRule({ ...editingRule, description: e.target.value })}
-                    className="h-10 bg-slate-950 border-slate-800 text-slate-300 text-xs rounded-xl"
-                  />
-                </div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Trigger Event
+                </h3>
               </div>
 
-              {/* Step 2: Trigger & Entity */}
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="font-bold text-indigo-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                  <Zap className="h-3.5 w-3.5" />
-                  <span>1. Define Trigger Event</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-slate-400 block mb-1">Trigger Type</label>
-                    <select
-                      value={editingRule.trigger_type}
-                      onChange={(e) => setEditingRule({ ...editingRule, trigger_type: e.target.value as any })}
-                      className="w-full h-10 sm:h-9 bg-slate-900 border border-slate-800 text-white rounded-xl px-2.5 text-xs font-semibold focus:outline-hidden"
-                    >
-                      {TRIGGER_DEFINITIONS.map((t) => (
-                        <option key={t.type} value={t.type}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-slate-400 block mb-1">Trigger Entity</label>
-                    <select
-                      value={editingRule.trigger_entity}
-                      onChange={(e) => setEditingRule({ ...editingRule, trigger_entity: e.target.value as any })}
-                      className="w-full h-10 sm:h-9 bg-slate-900 border border-slate-800 text-white rounded-xl px-2.5 text-xs font-semibold focus:outline-hidden capitalize"
-                    >
-                      <option value="quotation">Quotation</option>
-                      <option value="order">Order</option>
-                      <option value="design">Design</option>
-                      <option value="job">Job</option>
-                      <option value="invoice">Invoice</option>
-                      <option value="payment">Payment</option>
-                      <option value="material">Material</option>
-                      <option value="delivery">Delivery</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Step 3: Actions Pipeline */}
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="font-bold text-emerald-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5" />
-                  <span>2. Action Pipeline</span>
-                </div>
-
-                <div className="space-y-2">
-                  {editingRule.actions?.map((act, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
-                          {idx + 1}
-                        </span>
-                        <span className="font-bold text-white capitalize">{act.type.replace('_', ' ')}</span>
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-mono break-all sm:break-normal">
-                        {JSON.stringify(act.config)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">Trigger Type</Label>
                   <select
-                    id="new-action-type"
-                    className="h-10 sm:h-8 bg-slate-900 border border-slate-800 text-slate-200 rounded-xl px-2 text-xs flex-1"
-                    defaultValue="send_notification"
+                    value={editingRule.trigger_type}
+                    onChange={(e) => setEditingRule({ ...editingRule, trigger_type: e.target.value as any })}
+                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
                   >
-                    {ACTION_DEFINITIONS.map((a) => (
-                      <option key={a.type} value={a.type}>
-                        {a.label}
+                    {TRIGGER_DEFINITIONS.map((t) => (
+                      <option key={t.type} value={t.type}>
+                        {t.label}
                       </option>
                     ))}
                   </select>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const sel = document.getElementById('new-action-type') as HTMLSelectElement
-                      const actionType = sel.value as WorkflowActionType
-                      setEditingRule({
-                        ...editingRule,
-                        actions: [
-                           ...(editingRule.actions || []),
-                          { type: actionType, config: { auto: true } },
-                        ],
-                      })
-                    }}
-                    className="h-10 sm:h-8 text-xs border-slate-800 text-slate-300 rounded-xl"
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">Trigger Entity</Label>
+                  <select
+                    value={editingRule.trigger_entity}
+                    onChange={(e) => setEditingRule({ ...editingRule, trigger_entity: e.target.value as any })}
+                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium capitalize"
                   >
-                    <Plus className="h-3.5 w-3.5 mr-1" />
-                    Append Action
-                  </Button>
+                    <option value="quotation">Quotation</option>
+                    <option value="order">Order</option>
+                    <option value="design">Design</option>
+                    <option value="job">Job</option>
+                    <option value="invoice">Invoice</option>
+                    <option value="payment">Payment</option>
+                    <option value="material">Material</option>
+                    <option value="delivery">Delivery</option>
+                  </select>
                 </div>
               </div>
+            </div>
 
-              {/* Submit Buttons */}
-              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            {/* Section 3: Action Pipeline */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  3
+                </div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Action Pipeline
+                </h3>
+              </div>
+
+              <div className="space-y-2">
+                {editingRule.actions?.map((act, idx) => (
+                  <div
+                    key={idx}
+                    className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="h-5 w-5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-bold text-slate-900 dark:text-white capitalize">
+                        {act.type.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-mono break-all sm:break-normal">
+                      {JSON.stringify(act.config)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                <select
+                  id="new-action-type"
+                  className="h-9 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-lg px-3 text-xs flex-1 font-medium"
+                  defaultValue="send_notification"
+                >
+                  {ACTION_DEFINITIONS.map((a) => (
+                    <option key={a.type} value={a.type}>
+                      {a.label}
+                    </option>
+                  ))}
+                </select>
                 <Button
                   type="button"
-                  variant="ghost"
-                  onClick={() => setIsModalOpen(false)}
-                  className="w-full sm:w-auto h-11 sm:h-9 text-xs text-slate-400 hover:text-white"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const sel = document.getElementById('new-action-type') as HTMLSelectElement
+                    const actionType = sel.value as WorkflowActionType
+                    setEditingRule({
+                      ...editingRule,
+                      actions: [
+                        ...(editingRule.actions || []),
+                        { type: actionType, config: { auto: true } },
+                      ],
+                    })
+                  }}
+                  className="h-9 text-xs"
                 >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="w-full sm:w-auto h-11 sm:h-9 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-4 font-bold"
-                >
-                  Save Workflow Rule
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Append Action
                 </Button>
               </div>
-            </form>
-          </div>
-        </div>
+            </div>
+
+            {/* Action Footer */}
+            <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsModalOpen(false)}
+                className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
+              >
+                Save Workflow Rule
+              </Button>
+            </div>
+          </form>
+        </ModalDialog>
       )}
       </div>
     </FeatureGate>

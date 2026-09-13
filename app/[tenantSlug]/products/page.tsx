@@ -456,144 +456,222 @@ export default function ProductsCatalogPage() {
       <ModalDialog
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
-        title="Add Catalog Item / Service Tariff"
-        description="Configure printing media, fabrication item, or installation crew rates."
-        hideFooter
+        size="3xl"
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <Package className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-900 dark:text-white">
+                  {tBilingual('Register New Product / Tariff', 'নতুন প্রোডাক্ট / রেট যোগ করুন')}
+                </span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                  Catalog
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {tBilingual('Configure printing media, fabrication item, or service rates', 'প্রিন্টিং উপাদান, ফ্যাব্রিকেশন বা সেবামূল্য কনফিগার করুন')}
+              </p>
+            </div>
+          </div>
+        }
       >
-        <form onSubmit={handleCreateProduct} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="pName" required>Product / Service Name (English)</Label>
-              <Input
-                id="pName"
-                placeholder="e.g. Star Flex Banner 320gsm"
-                value={newProduct.name}
-                onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                required
-              />
+        <form onSubmit={handleCreateProduct} className="space-y-4 pt-1">
+          {/* Section 1: Item Identity */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                1
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Item Identity', 'আইটেমের বিবরণ')}
+              </h3>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="pNameBn">আইটেমের নাম (বাংলা)</Label>
-              <Input
-                id="pNameBn"
-                placeholder="যেমন: স্টার ফ্লেক্স ব্যানার"
-                value={newProduct.name_bn}
-                onChange={(e) => setNewProduct({ ...newProduct, name_bn: e.target.value })}
-              />
-            </div>
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Product / Service Name (English)', 'প্রোডাক্ট / সেবার নাম (ইংরেজি)')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  placeholder="e.g. Star Flex Banner 320gsm"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="pSku" required>SKU / Item Code</Label>
-              <Input
-                id="pSku"
-                placeholder="PRD-FLX-008"
-                value={newProduct.sku}
-                onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="pType" required>Product Type</Label>
-              <select
-                id="pType"
-                value={newProduct.product_type}
-                onChange={(e) => setNewProduct({ ...newProduct, product_type: e.target.value as ProductType })}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="print_service">Print Service</option>
-                <option value="fabrication_service">Fabrication Service</option>
-                <option value="installation_service">Installation Service</option>
-                <option value="finished_product">Finished Product</option>
-                <option value="material">Raw Material</option>
-                <option value="custom_job">Custom Job</option>
-              </select>
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Item Name (Bangla)', 'আইটেমের নাম (বাংলা)')}
+                </Label>
+                <Input
+                  placeholder="যেমন: স্টার ফ্লেক্স ব্যানার"
+                  value={newProduct.name_bn}
+                  onChange={(e) => setNewProduct({ ...newProduct, name_bn: e.target.value })}
+                  className="text-xs h-9"
+                />
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="pUnit" required>Billing Unit</Label>
-              <select
-                id="pUnit"
-                value={newProduct.unit}
-                onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value as UnitOfMeasure })}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="sft">Square Feet (sft)</option>
-                <option value="pcs">Piece (pcs)</option>
-                <option value="ft">Running Feet (ft)</option>
-                <option value="inch">Inch</option>
-                <option value="sheet">Sheet</option>
-                <option value="roll">Roll</option>
-                <option value="kg">Kilogram (kg)</option>
-                <option value="ltr">Liter (ltr)</option>
-                <option value="hr">Labor Hour (hr)</option>
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('SKU / Item Code', 'এসকেইউ / কোড')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  placeholder="PRD-FLX-008"
+                  value={newProduct.sku}
+                  onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
+                  className="text-xs h-9 font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Material Specification', 'উপাদানের বিবরণ')}
+                </Label>
+                <Input
+                  placeholder="e.g. 320g Gloss Frontlit, 5mm Cast Acrylic, IP68 LEDs"
+                  value={newProduct.material_spec}
+                  onChange={(e) => setNewProduct({ ...newProduct, material_spec: e.target.value })}
+                  className="text-xs h-9"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="pSpec">Material Specification</Label>
-            <Input
-              id="pSpec"
-              placeholder="e.g. 320g Gloss Frontlit, 5mm Cast Acrylic, IP68 LEDs"
-              value={newProduct.material_spec}
-              onChange={(e) => setNewProduct({ ...newProduct, material_spec: e.target.value })}
-            />
+          {/* Section 2: Classification & Units */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                2
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Classification & Units', 'ক্যাটাগরি ও পরিমাপক')}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Product Type', 'প্রোডাক্টের ধরণ')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={newProduct.product_type}
+                  onChange={(e) => setNewProduct({ ...newProduct, product_type: e.target.value as ProductType })}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                >
+                  <option value="print_service">Print Service</option>
+                  <option value="fabrication_service">Fabrication Service</option>
+                  <option value="installation_service">Installation Service</option>
+                  <option value="finished_product">Finished Product</option>
+                  <option value="material">Raw Material</option>
+                  <option value="custom_job">Custom Job</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Billing Unit', 'বিলিং ইউনিট')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={newProduct.unit}
+                  onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value as UnitOfMeasure })}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                >
+                  <option value="sft">Square Feet (sft)</option>
+                  <option value="pcs">Piece (pcs)</option>
+                  <option value="ft">Running Feet (ft)</option>
+                  <option value="inch">Inch</option>
+                  <option value="sheet">Sheet</option>
+                  <option value="roll">Roll</option>
+                  <option value="kg">Kilogram (kg)</option>
+                  <option value="ltr">Liter (ltr)</option>
+                  <option value="hr">Labor Hour (hr)</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="pCost" required>Base Cost (৳ BDT)</Label>
-              <Input
-                id="pCost"
-                type="number"
-                step="0.1"
-                placeholder="14.50"
-                value={newProduct.base_cost || ''}
-                onChange={(e) => setNewProduct({ ...newProduct, base_cost: Number(e.target.value) })}
-                required
-              />
+          {/* Section 3: Pricing & Floor Rates */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                3
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Pricing & Floor Rates', 'মূল্য ও সর্বনিম্ন রেট')}
+              </h3>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="pPrice" required>Selling Price (৳ BDT)</Label>
-              <Input
-                id="pPrice"
-                type="number"
-                step="0.1"
-                placeholder="25.00"
-                value={newProduct.selling_price || ''}
-                onChange={(e) => setNewProduct({ ...newProduct, selling_price: Number(e.target.value) })}
-                required
-              />
-            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Base Cost (৳ BDT)', 'মূল খরচ (৳)')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="14.50"
+                  value={newProduct.base_cost || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, base_cost: Number(e.target.value) })}
+                  className="text-xs h-9 font-mono font-semibold"
+                  required
+                />
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="pMin" required>Min Floor Price (৳ BDT)</Label>
-              <Input
-                id="pMin"
-                type="number"
-                step="0.1"
-                placeholder="18.00"
-                value={newProduct.min_price || ''}
-                onChange={(e) => setNewProduct({ ...newProduct, min_price: Number(e.target.value) })}
-                required
-              />
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Selling Price (৳ BDT)', 'বিক্রয়মূল্য (৳)')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="25.00"
+                  value={newProduct.selling_price || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, selling_price: Number(e.target.value) })}
+                  className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Min Floor Price (৳ BDT)', 'ফ্লোর প্রাইস (৳)')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="18.00"
+                  value={newProduct.min_price || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, min_price: Number(e.target.value) })}
+                  className="text-xs h-9 font-mono font-semibold text-amber-600 dark:text-amber-400"
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
+          {/* Action Footer */}
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAddOpen(false)}
+              className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+            >
+              {tBilingual('Cancel', 'বাতিল')}
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9"
+              className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
             >
-              Register Item
+              {tBilingual('Register Item', 'আইটেম যুক্ত করুন')}
             </Button>
           </div>
         </form>
@@ -603,55 +681,88 @@ export default function ProductsCatalogPage() {
       <ModalDialog
         open={Boolean(editingProduct)}
         onOpenChange={(open) => !open && setEditingProduct(null)}
-        title="Adjust Catalog Selling Price"
-        description={`Update official rate for ${editingProduct?.name} (${editingProduct?.sku}).`}
-        hideFooter
+        size="lg"
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <Tag className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-900 dark:text-white">
+                  {tBilingual('Adjust Catalog Selling Price', 'ক্যাটালগ মূল্য সংশোধন')}
+                </span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                  Audit Logged
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {editingProduct?.name} ({editingProduct?.sku})
+              </p>
+            </div>
+          </div>
+        }
       >
-        <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs">
+        <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1">
+          <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 p-3.5 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span>Current Base Cost:</span>
-              <strong>৳ {editingProduct?.base_cost}</strong>
+              <span className="text-slate-600 dark:text-slate-400">Current Base Cost:</span>
+              <span className="font-mono font-bold">৳{editingProduct?.base_cost}</span>
             </div>
-            <div className="flex justify-between mt-1">
-              <span>Current Selling Price:</span>
-              <strong>৳ {editingProduct?.selling_price} / {editingProduct?.unit}</strong>
+            <div className="flex justify-between">
+              <span className="text-slate-600 dark:text-slate-400">Current Selling Price:</span>
+              <span className="font-mono font-bold text-blue-600 dark:text-blue-400">৳{editingProduct?.selling_price} / {editingProduct?.unit}</span>
             </div>
-            <div className="flex justify-between mt-1">
-              <span>Minimum Floor Price:</span>
-              <strong className="text-amber-600">৳ {editingProduct?.min_price}</strong>
+            <div className="flex justify-between">
+              <span className="text-slate-600 dark:text-slate-400">Minimum Floor Price:</span>
+              <span className="font-mono font-bold text-amber-600 dark:text-amber-400">৳{editingProduct?.min_price}</span>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="newPr" required>New Selling Price (৳ BDT / {editingProduct?.unit})</Label>
-            <Input
-              id="newPr"
-              type="number"
-              step="0.1"
-              value={newPrice}
-              onChange={(e) => setNewPrice(Number(e.target.value))}
-              required
-            />
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('New Selling Price (৳ BDT / Unit)', 'নতুন বিক্রয়মূল্য (৳)')} <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={newPrice}
+                onChange={(e) => setNewPrice(Number(e.target.value))}
+                className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
+                required
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Reason for Price Adjustment (Audit Log)', 'মূল্য পরিবর্তনের কারণ (অডিট ট্রেইল)')} <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                placeholder="e.g. Raw solvent ink import duty increase from vendor"
+                value={priceReason}
+                onChange={(e) => setPriceReason(e.target.value)}
+                className="text-xs h-9"
+                required
+              />
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="chgReason" required>Reason for Price Adjustment (Audit Log)</Label>
-            <Input
-              id="chgReason"
-              placeholder="e.g. Raw solvent ink import duty increase from vendor"
-              value={priceReason}
-              onChange={(e) => setPriceReason(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setEditingProduct(null)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
+          {/* Action Footer */}
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingProduct(null)}
+              className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+            >
+              {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
-              Save & Log Audit History
+            <Button
+              type="submit"
+              className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
+            >
+              {tBilingual('Save & Log Audit History', 'সংরক্ষণ ও অডিট লগ')}
             </Button>
           </div>
         </form>

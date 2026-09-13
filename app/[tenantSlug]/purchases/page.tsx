@@ -513,119 +513,196 @@ export default function PurchasesPage() {
       <ModalDialog
         open={isNewOpen}
         onOpenChange={setIsNewOpen}
-        title="Issue New Purchase Order (PO)"
-        description="Formal supplier contract with agreed unit costs and expected warehouse delivery date."
-      >
-        <form onSubmit={handleCreatePO} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="space-y-1.5">
-            <Label htmlFor="poSupp" required>Select Material Supplier</Label>
-            <select
-              id="poSupp"
-              value={selectedSupplierId}
-              onChange={(e) => setSelectedSupplierId(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-            >
-              <option value="">Select Material Supplier...</option>
-              {suppliers.map((s: SupplierRecord) => (
-                <option key={s.id} value={s.id}>
-                  {s.supplier_name} ({s.category.replace('_', ' ')}) - {s.mobile}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="poMat" required>Select Inventory Material</Label>
-            <select
-              id="poMat"
-              value={selectedMaterialId}
-              onChange={(e) => {
-                const matId = e.target.value
-                setSelectedMaterialId(matId)
-                const found = materials.find((m: MaterialRecord) => m.id === matId)
-                if (found) setPoUnitCost(found.last_purchase_price || found.average_cost)
-              }}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-            >
-              <option value="">Select Inventory Material...</option>
-              {materials.map((m: MaterialRecord) => (
-                <option key={m.id} value={m.id}>
-                  {m.name} ({m.sku}) - Standard Unit: {m.unit}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="poQty" required>Order Quantity</Label>
-              <Input
-                id="poQty"
-                type="number"
-                min="1"
-                value={poQuantity}
-                onChange={(e) => setPoQuantity(Math.max(1, Number(e.target.value)))}
-                required
-              />
+        size="3xl"
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <ShoppingBag className="h-5 w-5" />
             </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="poCost" required>Unit Cost (৳ BDT)</Label>
-              <Input
-                id="poCost"
-                type="number"
-                value={poUnitCost}
-                onChange={(e) => setPoUnitCost(Number(e.target.value))}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="poDate" required>Expected Delivery</Label>
-              <Input
-                id="poDate"
-                type="date"
-                value={expectedDate}
-                onChange={(e) => setExpectedDate(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Calculated Grand Total Banner */}
-          <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex justify-between items-center text-xs">
             <div>
-              <span className="text-slate-500">Calculated Purchase Total:</span>
-              <div className="font-mono text-slate-700 dark:text-slate-300 font-medium">
-                {poQuantity} × ৳ {formatBDT(poUnitCost)}
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-900 dark:text-white">
+                  {tBilingual('Issue New Purchase Order (PO)', 'নতুন ক্রয় আদেশ (PO) জারি করুন')}
+                </span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                  Procurement
+                </Badge>
               </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {tBilingual('Formal supplier contract with agreed unit costs and delivery date', 'সাপ্লায়ারের সাথে নির্ধারিত রেট ও ডেলিভারি তারিখে কাঁচামাল ক্রয় চুক্তি')}
+              </p>
             </div>
-            <div className="text-right">
-              <span className="text-[10px] text-slate-400 uppercase font-bold">Total Commitment</span>
-              <div className="text-xl font-black text-indigo-700 dark:text-indigo-400 font-mono">
-                ৳ {formatBDT(poQuantity * poUnitCost)}
+          </div>
+        }
+      >
+        <form onSubmit={handleCreatePO} className="space-y-4 pt-1">
+          {/* Section 1: Supplier & Material Selection */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                1
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Supplier & Material Selection', 'সাপ্লায়ার ও মেটেরিয়াল নির্বাচন')}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Select Material Supplier', 'সাপ্লায়ার নির্বাচন')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={selectedSupplierId}
+                  onChange={(e) => setSelectedSupplierId(e.target.value)}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  required
+                >
+                  <option value="">Select Material Supplier...</option>
+                  {suppliers.map((s: SupplierRecord) => (
+                    <option key={s.id} value={s.id}>
+                      {s.supplier_name} ({s.category.replace('_', ' ')}) - {s.mobile}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Select Inventory Material', 'ইনভেন্টরি মেটেরিয়াল')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={selectedMaterialId}
+                  onChange={(e) => {
+                    const matId = e.target.value
+                    setSelectedMaterialId(matId)
+                    const found = materials.find((m: MaterialRecord) => m.id === matId)
+                    if (found) setPoUnitCost(found.last_purchase_price || found.average_cost)
+                  }}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  required
+                >
+                  <option value="">Select Inventory Material...</option>
+                  {materials.map((m: MaterialRecord) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} ({m.sku}) - Standard Unit: {m.unit}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="poNotes">Purchase Order Terms & Instructions</Label>
-            <textarea
-              id="poNotes"
-              rows={2}
-              placeholder="e.g. Include test certificate; deliver before 2 PM for unloading crane availability."
-              value={poNotes}
-              onChange={(e) => setPoNotes(e.target.value)}
-              className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
-            />
+          {/* Section 2: Quantity & Commitment Date */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                2
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Quantity & Commitment', 'পরিমাণ ও রেট')}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Order Quantity', 'অর্ডার পরিমাণ')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={poQuantity || ''}
+                  onChange={(e) => setPoQuantity(Math.max(1, Number(e.target.value)))}
+                  className="text-xs h-9 font-bold"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Unit Cost (৳ BDT)', 'একক মূল্য (৳)')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  value={poUnitCost || ''}
+                  onChange={(e) => setPoUnitCost(Number(e.target.value))}
+                  className="text-xs h-9 font-mono font-semibold"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Expected Delivery Date', 'প্রত্যাশিত ডেলিভারি')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={expectedDate}
+                  onChange={(e) => setExpectedDate(e.target.value)}
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Calculated Grand Total Banner */}
+            <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex justify-between items-center text-xs">
+              <div>
+                <span className="text-slate-500 dark:text-slate-400">Calculated Purchase Total:</span>
+                <div className="font-mono text-slate-700 dark:text-slate-300 font-bold">
+                  {poQuantity} × ৳{formatBDT(poUnitCost)}
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Total Commitment</span>
+                <div className="text-xl font-black text-blue-600 dark:text-blue-400 font-mono">
+                  ৳{formatBDT(poQuantity * poUnitCost)}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
+          {/* Section 3: Terms & Warehouse Instructions */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                3
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Terms & Instructions', 'শর্তাবলী ও নির্দেশনা')}
+              </h3>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Purchase Order Terms & Instructions', 'ক্রয় আদেশের শর্তাবলী')}
+              </Label>
+              <textarea
+                rows={2}
+                placeholder="e.g. Include test certificate; deliver before 2 PM for unloading crane availability."
+                value={poNotes}
+                onChange={(e) => setPoNotes(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Action Footer */}
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsNewOpen(false)}
+              className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+            >
+              {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
-              Issue Purchase Order
+            <Button
+              type="submit"
+              className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
+            >
+              {tBilingual('Issue Purchase Order', 'ক্রয় আদেশ জারি করুন')}
             </Button>
           </div>
         </form>

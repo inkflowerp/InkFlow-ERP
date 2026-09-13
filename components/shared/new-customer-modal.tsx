@@ -12,7 +12,6 @@ import {
   ChevronDown,
   ChevronUp,
   AlertTriangle,
-  Check,
   CheckCircle2,
   Sparkles,
   Loader2,
@@ -25,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { ModalDialog } from '@/components/shared/modal-dialog'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -39,7 +39,6 @@ import {
   CustomerRecord,
   CustomerKind,
   CustomerCategory,
-  CustomerRateLevel,
   CustomerPaymentTerms,
   DuplicateMatchResult,
 } from '@/types/crm.types'
@@ -66,7 +65,6 @@ export function NewCustomerModal({
 }: NewCustomerModalProps) {
   const { tBilingual, locale } = useI18n()
   const { company } = useTenant()
-  const { hasPermission } = usePermissions()
   const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
   const nameInputRef = useRef<HTMLInputElement>(null)
 
@@ -289,59 +287,53 @@ export function NewCustomerModal({
     }
   }
 
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-blue-600 text-white font-bold">
-              <User className="h-4 w-4" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                {tBilingual('New Customer', 'নতুন কাস্টমার')}
-              </h2>
-              <p className="text-xs text-slate-500">
-                Register customer, contact details, and custom product pricing
-              </p>
-            </div>
+    <ModalDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      size="4xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center">
+            <User className="h-5 w-5" />
           </div>
-
-          <button
-            onClick={() => onOpenChange(false)}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div>
+            <h2 className="text-base font-black text-slate-900 dark:text-white">
+              {locale === 'bn' ? 'নতুন কাস্টমার নিবন্ধন' : 'New Customer Registration'}
+            </h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Create profile, credit limits, delivery addresses, and customer-specific rates
+            </p>
+          </div>
         </div>
-
-        {/* Tab Selector */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50 px-5 pt-2 gap-2 text-xs">
+      }
+      hideFooter
+    >
+      <div className="space-y-4 pt-1 pb-2">
+        {/* Tab Switcher */}
+        <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-slate-800/80 text-xs font-semibold gap-1">
           <button
             type="button"
             onClick={() => setActiveTab('info')}
             className={cn(
-              'py-2 px-3.5 font-semibold rounded-t-lg border-b-2 transition-colors flex items-center gap-1.5',
+              'flex-1 py-1.5 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer',
               activeTab === 'info'
-                ? 'border-blue-600 text-blue-600 bg-white dark:bg-slate-950'
-                : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white text-blue-600 shadow-xs dark:bg-slate-950 dark:text-blue-400'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             )}
           >
             <User className="h-3.5 w-3.5" />
-            <span>Basic Information *</span>
+            <span>Basic Information</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('rates')}
             className={cn(
-              'py-2 px-3.5 font-semibold rounded-t-lg border-b-2 transition-colors flex items-center gap-1.5',
+              'flex-1 py-1.5 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer',
               activeTab === 'rates'
-                ? 'border-blue-600 text-blue-600 bg-white dark:bg-slate-950'
-                : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white text-blue-600 shadow-xs dark:bg-slate-950 dark:text-blue-400'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             )}
           >
             <Tag className="h-3.5 w-3.5" />
@@ -349,63 +341,71 @@ export function NewCustomerModal({
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Error Message */}
-          {errorMessage && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
-          {/* Duplicate Matches Alert */}
-          {duplicateMatches.length > 0 && !dismissDuplicate && (
-            <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/40 text-xs space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                  <span>Possible Duplicate Customer Detected</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setDismissDuplicate(true)}
-                  className="text-[11px] font-semibold text-amber-700 underline"
-                >
-                  Dismiss
-                </button>
+        {/* Duplicate Matches Alert */}
+        {duplicateMatches.length > 0 && !dismissDuplicate && (
+          <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/40 text-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <span>Possible Duplicate Customer Detected</span>
               </div>
+              <button
+                type="button"
+                onClick={() => setDismissDuplicate(true)}
+                className="text-[11px] font-semibold text-amber-700 underline cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
 
-              <div className="space-y-1">
-                {duplicateMatches.map((m) => (
-                  <div
-                    key={m.customer.id}
-                    className="p-2 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-amber-200/60 dark:border-amber-900/60 flex items-center justify-between"
-                  >
-                    <div>
-                      <span className="font-semibold text-slate-900 dark:text-white bangla-text">
-                        {m.customer.name}
-                      </span>
-                      <span className="text-slate-500 dark:text-slate-400 ml-1.5 font-mono text-xs">
-                        ({m.customer.mobile})
-                      </span>
-                      <div className="text-xs text-amber-600 dark:text-amber-400 font-medium bangla-text">
-                        {m.matchReason}
-                      </div>
+            <div className="space-y-1">
+              {duplicateMatches.map((m) => (
+                <div
+                  key={m.customer.id}
+                  className="p-2 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-amber-200/60 dark:border-amber-900/60 flex items-center justify-between"
+                >
+                  <div>
+                    <span className="font-semibold text-slate-900 dark:text-white bangla-text">
+                      {m.customer.name}
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400 ml-1.5 font-mono text-xs">
+                      ({m.customer.mobile})
+                    </span>
+                    <div className="text-xs text-amber-600 dark:text-amber-400 font-medium bangla-text">
+                      {m.matchReason}
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* TAB 1: Basic Information */}
-          {activeTab === 'info' && (
-            <div className="space-y-4">
-              {/* Row 1: Name & Type */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">
+        {/* TAB 1: Basic Information */}
+        {activeTab === 'info' && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Section 1: Identity & Category */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  1
+                </div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Identity & Category
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
                     Customer Name <span className="text-rose-500">*</span>
                   </Label>
                   <Input
@@ -414,48 +414,12 @@ export function NewCustomerModal({
                     placeholder="e.g. Rahim Chowdhury"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="text-xs h-9"
+                    className="text-xs h-9 font-medium"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">
-                    Customer Type <span className="text-rose-500">*</span>
-                  </Label>
-                  <select
-                    value={customerType}
-                    onChange={(e) => setCustomerType(e.target.value as CustomerCategory)}
-                    className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs font-medium"
-                  >
-                    <option value="retail">Retail (ওয়াক-ইন / রিটেইল)</option>
-                    <option value="reseller">Reseller (রিসেলার / সাব-কন্ট্রাক্টর)</option>
-                    <option value="corporate">Corporate (কর্পোরেট একাউন্ট)</option>
-                    <option value="agency">Agency (বিজ্ঞাপন সংস্থা / ডিজাইন)</option>
-                    <option value="government">Government (সরকারি / দরপত্র)</option>
-                    <option value="regular">Regular (নিয়মিত খদ্দের)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Row 2: Bangla Name & Company Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    Company Name (Optional)
-                  </Label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                    <Input
-                      placeholder="e.g. Apex Media Limited"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      className="pl-9 text-xs h-9"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
                     Bangla Name (বাংলা নাম)
                   </Label>
                   <Input
@@ -465,60 +429,39 @@ export function NewCustomerModal({
                     className="text-xs h-9"
                   />
                 </div>
-              </div>
 
-              {/* Row 3: Phone & WhatsApp */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">
-                    Phone Number <span className="text-rose-500">*</span>
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Customer Type <span className="text-rose-500">*</span>
                   </Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                    <Input
-                      required
-                      type="tel"
-                      placeholder="01XXXXXXXXX"
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value)}
-                      className="pl-9 text-xs h-9"
-                    />
-                  </div>
+                  <select
+                    value={customerType}
+                    onChange={(e) => setCustomerType(e.target.value as CustomerCategory)}
+                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium text-slate-800 dark:text-slate-200"
+                  >
+                    <option value="retail">Retail (ওয়াক-ইন / রিটেইল)</option>
+                    <option value="reseller">Reseller (রিসেলার / সাব-কন্ট্রাক্টর)</option>
+                    <option value="corporate">Corporate (কর্পোরেট একাউন্ট)</option>
+                    <option value="agency">Agency (বিজ্ঞাপন সংস্থা / ডিজাইন)</option>
+                    <option value="government">Government (সরকারি / দরপত্র)</option>
+                    <option value="regular">Regular (নিয়মিত খদ্দের)</option>
+                  </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                      WhatsApp Number
-                    </Label>
-                    <label className="flex items-center gap-1.5 text-[11px] text-slate-500 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={sameAsMobile}
-                        onChange={(e) => setSameAsMobile(e.target.checked)}
-                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
-                      />
-                      <span>Same as Phone</span>
-                    </label>
-                  </div>
-                  <div className="relative">
-                    <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-emerald-500" />
-                    <Input
-                      type="tel"
-                      disabled={sameAsMobile}
-                      placeholder="01XXXXXXXXX"
-                      value={whatsapp}
-                      onChange={(e) => setWhatsapp(e.target.value)}
-                      className="pl-9 text-xs h-9 disabled:opacity-60"
-                    />
-                  </div>
+                <div className="sm:col-span-2">
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Company Name (Optional)
+                  </Label>
+                  <Input
+                    placeholder="e.g. Apex Media Limited"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    className="text-xs h-9"
+                  />
                 </div>
-              </div>
 
-              {/* Row 4: Email & Contact Person */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
                     Contact Person
                   </Label>
                   <Input
@@ -528,32 +471,87 @@ export function NewCustomerModal({
                     className="text-xs h-9"
                   />
                 </div>
+              </div>
+            </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    Email Address
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                    <Input
-                      type="email"
-                      placeholder="client@company.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-9 text-xs h-9"
-                    />
-                  </div>
+            {/* Section 2: Contact & Phone */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  2
                 </div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Contact & Communication
+                </h3>
               </div>
 
-              {/* Row 5: BD Address Picker */}
-              <div className="space-y-2 pt-1 border-t border-slate-200 dark:border-slate-800">
-                <Label className="text-xs font-semibold">
-                  Address & Area <span className="text-rose-500">*</span>
-                </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Phone Number <span className="text-rose-500">*</span>
+                  </Label>
+                  <Input
+                    required
+                    type="tel"
+                    placeholder="01XXXXXXXXX"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    className="text-xs h-9 font-mono"
+                  />
+                </div>
 
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  {/* Division */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold">WhatsApp Number</Label>
+                    <label className="flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sameAsMobile}
+                        onChange={(e) => setSameAsMobile(e.target.checked)}
+                        className="rounded border-slate-300 text-blue-600 h-3 w-3"
+                      />
+                      <span>Same as Phone</span>
+                    </label>
+                  </div>
+                  <Input
+                    type="tel"
+                    disabled={sameAsMobile}
+                    placeholder="01XXXXXXXXX"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    className="text-xs h-9 font-mono disabled:opacity-60"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Email Address
+                  </Label>
+                  <Input
+                    type="email"
+                    placeholder="client@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="text-xs h-9"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Location & Address */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  3
+                </div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Location & Address
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">Division</Label>
                   <select
                     value={divisionId || ''}
                     onChange={(e) => {
@@ -562,7 +560,7 @@ export function NewCustomerModal({
                       setDistrictId(null)
                       setUpazilaId(null)
                     }}
-                    className="h-8 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs"
+                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
                   >
                     <option value="">Select Division</option>
                     {divisions.map((d) => (
@@ -571,8 +569,10 @@ export function NewCustomerModal({
                       </option>
                     ))}
                   </select>
+                </div>
 
-                  {/* District */}
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">District</Label>
                   <select
                     value={districtId || ''}
                     onChange={(e) => {
@@ -581,7 +581,7 @@ export function NewCustomerModal({
                       setUpazilaId(null)
                     }}
                     disabled={!divisionId}
-                    className="h-8 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs disabled:opacity-50"
+                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium disabled:opacity-50"
                   >
                     <option value="">Select District</option>
                     {districts.map((dst) => (
@@ -590,13 +590,15 @@ export function NewCustomerModal({
                       </option>
                     ))}
                   </select>
+                </div>
 
-                  {/* Upazila */}
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">Thana / Upazila</Label>
                   <select
                     value={upazilaId || ''}
                     onChange={(e) => setUpazilaId(e.target.value ? Number(e.target.value) : null)}
                     disabled={!districtId}
-                    className="h-8 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs disabled:opacity-50"
+                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium disabled:opacity-50"
                   >
                     <option value="">Select Thana / Upazila</option>
                     {upazilas.map((u) => (
@@ -606,205 +608,241 @@ export function NewCustomerModal({
                     ))}
                   </select>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">Area / Landmark</Label>
                   <Input
-                    placeholder="Specific Area / Landmark (e.g. Motijheel, Gulshan-1)"
+                    placeholder="e.g. Motijheel, Gulshan-1"
                     value={area}
                     onChange={(e) => setArea(e.target.value)}
-                    className="text-xs h-8"
+                    className="text-xs h-9"
                   />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Street Address <span className="text-rose-500">*</span>
+                  </Label>
                   <Input
-                    placeholder="Street / Holding Address (English or বাংলা)"
+                    placeholder="Holding / Road / Suite details..."
                     value={fullAddress}
                     onChange={(e) => setFullAddress(e.target.value)}
-                    className="text-xs h-8"
+                    className="text-xs h-9"
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Collapsible Additional Details */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden text-xs">
-                <button
-                  type="button"
-                  onClick={() => setIsAdditionalOpen(!isAdditionalOpen)}
-                  className="w-full flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/60 font-semibold text-slate-700 dark:text-slate-300"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <CreditCard className="h-3.5 w-3.5 text-blue-500" />
-                    <span>Credit Limits, Payment Terms & Tax IDs (Optional)</span>
+            {/* Section 4: Collapsible Terms & Tax */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 overflow-hidden shadow-xs">
+              <button
+                type="button"
+                onClick={() => setIsAdditionalOpen(!isAdditionalOpen)}
+                className="w-full flex items-center justify-between p-4 font-bold text-xs text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                    4
                   </div>
-                  {isAdditionalOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </button>
+                  <span className="uppercase tracking-wider">Credit Terms, Tax IDs & Notes (Optional)</span>
+                </div>
+                {isAdditionalOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
 
-                {isAdditionalOpen && (
-                  <div className="p-3.5 space-y-3 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 animate-in fade-in duration-150">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-[11px] font-semibold text-slate-600">Credit Limit (BDT)</Label>
-                        <Input
-                          type="number"
-                          value={creditLimit}
-                          onChange={(e) => setCreditLimit(Number(e.target.value))}
-                          className="text-xs h-8"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-[11px] font-semibold text-slate-600">Payment Terms</Label>
-                        <select
-                          value={paymentTerms}
-                          onChange={(e) => setPaymentTerms(e.target.value as CustomerPaymentTerms)}
-                          className="w-full h-8 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs"
-                        >
-                          <option value="cash_on_delivery">Cash On Delivery (ক্যাশ অন ডেলিভারি)</option>
-                          <option value="advance_50">50% Advance with Order</option>
-                          <option value="net_7">Net 7 Days Credit</option>
-                          <option value="net_15">Net 15 Days Credit</option>
-                          <option value="net_30">Net 30 Days Credit</option>
-                        </select>
-                      </div>
+              {isAdditionalOpen && (
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3.5 bg-slate-50/50 dark:bg-slate-950/40">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                      <Label className="text-xs font-semibold mb-1 block">Credit Limit (৳)</Label>
+                      <Input
+                        type="number"
+                        value={creditLimit}
+                        onChange={(e) => setCreditLimit(Number(e.target.value))}
+                        className="text-xs h-9 font-mono"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-[11px] font-semibold text-slate-600">13-Digit BIN (NBR VAT)</Label>
-                        <Input
-                          placeholder="e.g. 001234567-0101"
-                          value={bin}
-                          onChange={(e) => setBin(e.target.value)}
-                          className="text-xs h-8"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-[11px] font-semibold text-slate-600">e-TIN Number</Label>
-                        <Input
-                          placeholder="e.g. 123456789012"
-                          value={tin}
-                          onChange={(e) => setTin(e.target.value)}
-                          className="text-xs h-8"
-                        />
-                      </div>
+                    <div>
+                      <Label className="text-xs font-semibold mb-1 block">Payment Terms</Label>
+                      <select
+                        value={paymentTerms}
+                        onChange={(e) => setPaymentTerms(e.target.value as CustomerPaymentTerms)}
+                        className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                      >
+                        <option value="cash_on_delivery">Cash On Delivery (ক্যাশ অন ডেলিভারি)</option>
+                        <option value="advance_50">50% Advance with Order</option>
+                        <option value="net_7">Net 7 Days Credit</option>
+                        <option value="net_15">Net 15 Days Credit</option>
+                        <option value="net_30">Net 30 Days Credit</option>
+                      </select>
                     </div>
 
-                    <div className="space-y-1">
-                      <Label className="text-[11px] font-semibold text-slate-600">Internal Account Notes</Label>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. VIP client referred by Chairman; requires proof approval via WhatsApp..."
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-2 text-xs"
+                    <div>
+                      <Label className="text-xs font-semibold mb-1 block">13-Digit BIN (VAT)</Label>
+                      <Input
+                        placeholder="e.g. 001234567-0101"
+                        value={bin}
+                        onChange={(e) => setBin(e.target.value)}
+                        className="text-xs h-9 font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-semibold mb-1 block">e-TIN Number</Label>
+                      <Input
+                        placeholder="e.g. 123456789012"
+                        value={tin}
+                        onChange={(e) => setTin(e.target.value)}
+                        className="text-xs h-9 font-mono"
                       />
                     </div>
                   </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Internal Notes</Label>
+                    <textarea
+                      rows={2}
+                      placeholder="e.g. VIP client; requires proof approval via WhatsApp..."
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Action */}
+            <div className="pt-3 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="w-full sm:w-auto text-xs min-h-[40px]"
+              >
+                Cancel
+              </Button>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    Saving Customer...
+                  </>
+                ) : (
+                  'Save Customer'
                 )}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* TAB 2: Customer Rates */}
+        {activeTab === 'rates' && (
+          <div className="space-y-4">
+            <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-xs flex items-start gap-2.5">
+              <Sparkles className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+              <div className="text-slate-700 dark:text-slate-300 text-xs leading-relaxed">
+                Configure special contracted rates for this customer. When creating quotations or invoices, InkFlow automatically pulls these custom rates.
               </div>
             </div>
-          )}
 
-          {/* TAB 2: Customer Rates */}
-          {activeTab === 'rates' && (
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-xs flex items-start gap-2">
-                <Sparkles className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
-                <div className="text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
-                  Configure special unit prices for this customer. If left blank, the system automatically falls back to the customer&apos;s <strong>Last Valid Invoice Rate</strong> or catalog <strong>Default Rate</strong>.
-                </div>
+            {isLoadingProducts ? (
+              <div className="py-12 text-center text-xs text-slate-400">
+                <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2 text-blue-600" />
+                Loading products catalog...
               </div>
+            ) : products.length === 0 ? (
+              <div className="py-12 text-center text-xs text-slate-400">
+                No active products found in catalog.
+              </div>
+            ) : (
+              <div className="space-y-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                {products.map((prod) => {
+                  const customVal = customRateOverrides[prod.id] || ''
 
-              {isLoadingProducts ? (
-                <div className="py-8 text-center text-xs text-slate-400">
-                  <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2 text-blue-600" />
-                  Loading products catalog...
-                </div>
-              ) : products.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-400">
-                  No active products found in catalog.
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                  {products.map((prod) => {
-                    const customVal = customRateOverrides[prod.id] || ''
-
-                    return (
-                      <div
-                        key={prod.id}
-                        className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between gap-3 text-xs"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-slate-900 dark:text-white truncate bangla-text">
-                            {prod.name}
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
-                            {prod.sku} • Default: ৳{prod.selling_price}/{prod.unit}
-                          </div>
+                  return (
+                    <div
+                      key={prod.id}
+                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex items-center justify-between gap-3 text-xs shadow-xs"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-900 dark:text-white truncate bangla-text">
+                          {prod.name}
                         </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">Customer Rate:</span>
-                          <div className="relative w-28">
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">৳</span>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder={String(prod.selling_price)}
-                              value={customVal}
-                              onChange={(e) => {
-                                const val = e.target.value
-                                setCustomRateOverrides((prev) => {
-                                  const updated = { ...prev }
-                                  if (val === '') {
-                                    delete updated[prod.id]
-                                  } else {
-                                    updated[prod.id] = val
-                                  }
-                                  return updated
-                                })
-                              }}
-                              className="h-8 pl-6 text-right text-xs font-bold bg-white dark:bg-slate-950"
-                            />
-                          </div>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 uppercase font-mono w-6">
-                            /{prod.unit}
-                          </span>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {prod.sku} • Default: ৳{prod.selling_price}/{prod.unit}
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
-              )}
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">Custom Rate:</span>
+                        <div className="relative w-32">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">৳</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder={String(prod.selling_price)}
+                            value={customVal}
+                            onChange={(e) => {
+                              const val = e.target.value
+                              setCustomRateOverrides((prev) => {
+                                const updated = { ...prev }
+                                if (val === '') {
+                                  delete updated[prod.id]
+                                } else {
+                                  updated[prod.id] = val
+                                }
+                                return updated
+                              })
+                            }}
+                            className="h-8 pl-6 text-right text-xs font-bold font-mono bg-slate-50 dark:bg-slate-950"
+                          />
+                        </div>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 uppercase font-mono w-8">
+                          /{prod.unit}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            <div className="pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setActiveTab('info')}
+                className="text-xs min-h-[40px]"
+              >
+                Back to Information
+              </Button>
+
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Customer with Rates'
+                )}
+              </Button>
             </div>
-          )}
-
-          {/* Footer Actions */}
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="text-xs h-9"
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 text-xs font-bold h-9 px-5"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                  Saving Customer...
-                </>
-              ) : (
-                'Save Customer Profile'
-              )}
-            </Button>
           </div>
-        </form>
+        )}
       </div>
-    </div>
+    </ModalDialog>
   )
 }

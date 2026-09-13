@@ -853,58 +853,100 @@ export default function DeliveryLogisticsPage() {
       <ModalDialog
         open={Boolean(selectedChallanForDelivery)}
         onOpenChange={(open) => !open && setSelectedChallanForDelivery(null)}
-        title="Record Final Delivery Sign-Off"
-        description="Verify goods handed over to the client representative on site."
+        size="lg"
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-900 dark:text-white">
+                  {tBilingual('Record Delivery Sign-Off', 'ডেলিভারি প্রাপ্তিস্বীকার রেকর্ড')}
+                </span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                  Proof of Delivery
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {tBilingual('Verify goods handed over to the client representative on site', 'গ্রাহকের প্রতিনিধির নিকট মালামাল বুঝিয়ে দেওয়ার বিবরণ')}
+              </p>
+            </div>
+          </div>
+        }
       >
         {selectedChallanForDelivery && (
           <form onSubmit={handleConfirmDelivery} className="space-y-4 pt-1">
-            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs">
-              <span className="text-blue-700 dark:text-blue-300 font-bold">Challan: </span>
-              <strong>{selectedChallanForDelivery.challan_number}</strong> ({selectedChallanForDelivery.customer_name})
-              <div className="text-slate-600 dark:text-slate-400 mt-0.5">
-                Destination: {selectedChallanForDelivery.delivery_address}
+            <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 p-3.5 space-y-1 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-blue-700 dark:text-blue-300 font-mono">
+                  {selectedChallanForDelivery.challan_number}
+                </span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  {selectedChallanForDelivery.customer_name}
+                </span>
+              </div>
+              <div className="text-slate-600 dark:text-slate-400 text-[11px] truncate">
+                📍 {selectedChallanForDelivery.delivery_address}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="rcvName" required>Receiver Full Name</Label>
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    {tBilingual('Receiver Full Name', 'গ্রহণকারীর নাম')} <span className="text-rose-500">*</span>
+                  </Label>
+                  <Input
+                    value={receiverName}
+                    onChange={(e) => setReceiverName(e.target.value)}
+                    className="text-xs h-9"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    {tBilingual('Receiver Mobile Number', 'মোবাইল নম্বর')} <span className="text-rose-500">*</span>
+                  </Label>
+                  <Input
+                    value={receiverPhone}
+                    onChange={(e) => setReceiverPhone(e.target.value)}
+                    className="text-xs h-9 font-mono"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Receiver Signature / Remarks', 'প্রাপ্তিস্বীকার বা মন্তব্য')} <span className="text-rose-500">*</span>
+                </Label>
                 <Input
-                  id="rcvName"
-                  value={receiverName}
-                  onChange={(e) => setReceiverName(e.target.value)}
+                  placeholder="e.g. Received by Md. Zahid Hassan (Official Store Seal)"
+                  value={receiverSignature}
+                  onChange={(e) => setReceiverSignature(e.target.value)}
+                  className="text-xs h-9"
                   required
                 />
               </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="rcvPhone" required>Receiver Mobile Number</Label>
-                <Input
-                  id="rcvPhone"
-                  value={receiverPhone}
-                  onChange={(e) => setReceiverPhone(e.target.value)}
-                  required
-                />
-              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="rcvSig" required>Receiver Signature / Acknowledgement</Label>
-              <Input
-                id="rcvSig"
-                placeholder="e.g. Received by Md. Zahid Hassan (Official Store Seal)"
-                value={receiverSignature}
-                onChange={(e) => setReceiverSignature(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedChallanForDelivery(null)} className="w-full sm:w-auto min-h-[40px]">
-                Cancel
+            {/* Action Footer */}
+            <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSelectedChallanForDelivery(null)}
+                className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+              >
+                {tBilingual('Cancel', 'বাতিল')}
               </Button>
-              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
-                Confirm Delivery & Archive Challan
+              <Button
+                type="submit"
+                className="w-full sm:w-auto min-h-[40px] text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm px-5"
+              >
+                {tBilingual('Confirm Delivery & Archive Challan', 'ডেলিভারি নিশ্চিত ও আর্কাইভ করুন')}
               </Button>
             </div>
           </form>
@@ -915,131 +957,213 @@ export default function DeliveryLogisticsPage() {
       <ModalDialog
         open={isNewChallanOpen}
         onOpenChange={setIsNewChallanOpen}
-        title="Generate New Delivery Challan (চালানপত্র)"
-        description="Dispatch printed products or signage structures to the customer site."
+        size="3xl"
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <Truck className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-900 dark:text-white">
+                  {tBilingual('Generate New Delivery Challan', 'নতুন ডেলিভারি চালানপত্র তৈরি করুন')}
+                </span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                  Logistics
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {tBilingual('Dispatch printed products or signage structures to the customer site', 'গ্রাহকের ঠিকানায় পণ্য পরিবহনের চালানপত্র প্রস্তুত করুন')}
+              </p>
+            </div>
+          </div>
+        }
       >
-        <form onSubmit={handleCreateChallan} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="chCust" required>Customer</Label>
-              <select
-                id="chCust"
-                value={chCustomer}
-                onChange={(e) => {
-                  setChCustomer(e.target.value)
-                  const found = customers.find((c: CustomerRecord) => c.id === e.target.value)
-                  if (found) setChAddress(found.address || '')
-                }}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="">Select customer...</option>
-                {customers.map((c: CustomerRecord) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.customer_type})
-                  </option>
-                ))}
-              </select>
+        <form onSubmit={handleCreateChallan} className="space-y-4 pt-1">
+          {/* Section 1: Customer & Method */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                1
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Customer & Transport Method', 'গ্রাহক ও পরিবহন মাধ্যম')}
+              </h3>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="chMeth" required>Delivery Method</Label>
-              <select
-                id="chMeth"
-                value={chMethod}
-                onChange={(e) => setChMethod(e.target.value as DeliveryMethod)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="company_vehicle">Company Vehicle (Pickup/Van)</option>
-                <option value="courier">Courier (Sundarban / SA Paribahan)</option>
-                <option value="local_transport">Local Transport (CNG / Hired Truck)</option>
-                <option value="customer_pickup">Customer Self-Pickup</option>
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Customer', 'গ্রাহক')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={chCustomer}
+                  onChange={(e) => {
+                    setChCustomer(e.target.value)
+                    const found = customers.find((c: CustomerRecord) => c.id === e.target.value)
+                    if (found) setChAddress(found.address || '')
+                  }}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  required
+                >
+                  <option value="">Select customer...</option>
+                  {customers.map((c: CustomerRecord) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.customer_type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Delivery Method', 'ডেলিভারি পদ্ধতি')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={chMethod}
+                  onChange={(e) => setChMethod(e.target.value as DeliveryMethod)}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                >
+                  <option value="company_vehicle">Company Vehicle (Pickup/Van)</option>
+                  <option value="courier">Courier (Sundarban / SA Paribahan)</option>
+                  <option value="local_transport">Local Transport (CNG / Hired Truck)</option>
+                  <option value="customer_pickup">Customer Self-Pickup</option>
+                </select>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="chAddr" required>Delivery Site Address</Label>
-            <Input
-              id="chAddr"
-              value={chAddress}
-              onChange={(e) => setChAddress(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="chVeh">Vehicle Number / Courier Consignment</Label>
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Delivery Site Address', 'ডেলিভারি সাইটের ঠিকানা')} <span className="text-rose-500">*</span>
+              </Label>
               <Input
-                id="chVeh"
-                placeholder="e.g. Dhaka Metro-Tha 11-4829 or SBN-9948102"
-                value={chVehicle}
-                onChange={(e) => setChVehicle(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="chDr">Driver / Delivery Person</Label>
-              <Input
-                id="chDr"
-                placeholder="e.g. Selim Mia (01711998877)"
-                value={chPerson}
-                onChange={(e) => setChPerson(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="chPrd" required>Product Description</Label>
-            <Input
-              id="chPrd"
-              value={chDesc}
-              onChange={(e) => setChDesc(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="chQ" required>Quantity</Label>
-              <Input
-                id="chQ"
-                type="number"
-                min="1"
-                value={chQty}
-                onChange={(e) => setChQty(Number(e.target.value))}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="chCst">Transport Cost (৳)</Label>
-              <Input
-                id="chCst"
-                type="number"
-                value={chCost}
-                onChange={(e) => setChCost(Number(e.target.value))}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="chDt" required>Scheduled Date</Label>
-              <Input
-                id="chDt"
-                type="date"
-                value={chDate}
-                onChange={(e) => setChDate(e.target.value)}
+                value={chAddress}
+                onChange={(e) => setChAddress(e.target.value)}
+                className="text-xs h-9"
                 required
               />
             </div>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewChallanOpen(false)} className="w-full sm:w-auto min-h-[40px]">
-              Cancel
+          {/* Section 2: Vehicle & Transit Details */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                2
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Transit & Vehicle Info', 'যানবাহন ও চালকের তথ্য')}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Vehicle No. / Consignment', 'গাড়ির নম্বর / ট্র্যাকিং নম্বর')}
+                </Label>
+                <Input
+                  placeholder="e.g. Dhaka Metro-Tha 11-4829 or SBN-9948102"
+                  value={chVehicle}
+                  onChange={(e) => setChVehicle(e.target.value)}
+                  className="text-xs h-9 font-mono"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Driver / Delivery Person', 'চালক / ডেলিভারিম্যান')}
+                </Label>
+                <Input
+                  placeholder="e.g. Selim Mia (01711998877)"
+                  value={chPerson}
+                  onChange={(e) => setChPerson(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Goods & Dispatch Date */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                3
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Goods & Dispatch Schedule', 'পণ্যের বিবরণ ও তারিখ')}
+              </h3>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Product Description', 'পণ্যের বিবরণ')} <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                value={chDesc}
+                onChange={(e) => setChDesc(e.target.value)}
+                placeholder="e.g. Panaflex Signboard Print (10ft x 4ft)"
+                className="text-xs h-9"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Quantity', 'পরিমাণ')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={chQty || ''}
+                  onChange={(e) => setChQty(Number(e.target.value))}
+                  className="text-xs h-9 font-bold"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Transport Cost (৳ BDT)', 'পরিবহন খরচ (৳)')}
+                </Label>
+                <Input
+                  type="number"
+                  value={chCost || ''}
+                  onChange={(e) => setChCost(Number(e.target.value))}
+                  className="text-xs h-9 font-mono"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Scheduled Date', 'নির্ধারিত তারিখ')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={chDate}
+                  onChange={(e) => setChDate(e.target.value)}
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Action Footer */}
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsNewChallanOpen(false)}
+              className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+            >
+              {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold">
-              Issue Delivery Challan
+            <Button
+              type="submit"
+              className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
+            >
+              {tBilingual('Issue Delivery Challan', 'চালানপত্র জারি করুন')}
             </Button>
           </div>
         </form>
@@ -1049,88 +1173,153 @@ export default function DeliveryLogisticsPage() {
       <ModalDialog
         open={isNewInstallationOpen}
         onOpenChange={setIsNewInstallationOpen}
-        title="Schedule On-Site Signage Installation"
-        description="Deploy rigging technicians, cranes, and safety gear to the client installation site."
+        size="3xl"
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <Wrench className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-900 dark:text-white">
+                  {tBilingual('Schedule On-Site Signage Installation', 'সাইট ইনস্টলেশন শিডিউল করুন')}
+                </span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                  Rigging & Setup
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {tBilingual('Deploy rigging technicians, cranes, and safety gear to the client installation site', 'সাইটে ফিটিংস টেকনিশিয়ান ও সরঞ্জাম প্রেরণ শিডিউল করুন')}
+              </p>
+            </div>
+          </div>
+        }
       >
-        <form onSubmit={handleCreateInstallation} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="insCust" required>Customer</Label>
-              <select
-                id="insCust"
-                value={insCustomer}
-                onChange={(e) => setInsCustomer(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="">Select customer...</option>
-                {customers.map((c: CustomerRecord) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.customer_type})
-                  </option>
-                ))}
-              </select>
+        <form onSubmit={handleCreateInstallation} className="space-y-4 pt-1">
+          {/* Section 1: Customer & Site */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                1
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Customer & Site Location', 'গ্রাহক ও সাইট লোকেশন')}
+              </h3>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="insDate" required>Installation Date</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Customer', 'গ্রাহক')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={insCustomer}
+                  onChange={(e) => setInsCustomer(e.target.value)}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  required
+                >
+                  <option value="">Select customer...</option>
+                  {customers.map((c: CustomerRecord) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.customer_type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Installation Date', 'ইনস্টলেশন তারিখ')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={insDate}
+                  onChange={(e) => setInsDate(e.target.value)}
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Site Address & Mounting Location', 'সাইট ঠিকানা ও ফিটিংস লোকেশন')} <span className="text-rose-500">*</span>
+              </Label>
               <Input
-                id="insDate"
-                type="date"
-                value={insDate}
-                onChange={(e) => setInsDate(e.target.value)}
+                placeholder="e.g. 19 Dhanmondi R/A, Road 7 (Main Entrance Facade)"
+                value={insSite}
+                onChange={(e) => setInsSite(e.target.value)}
+                className="text-xs h-9"
                 required
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="insSite" required>Site Address & Mounting Location</Label>
-            <Input
-              id="insSite"
-              placeholder="e.g. 19 Dhanmondi R/A, Road 7 (Main Entrance Facade)"
-              value={insSite}
-              onChange={(e) => setInsSite(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="insLead" required>Lead Technician</Label>
-              <Input
-                id="insLead"
-                value={insLead}
-                onChange={(e) => setInsLead(e.target.value)}
-                required
-              />
+          {/* Section 2: Rigging Crew & Safety Gear */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                2
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Crew Team & Equipment', 'টেকনিশিয়ান টিম ও সরঞ্জাম')}
+              </h3>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="insCrew">Crew Members (comma separated)</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Lead Technician', 'প্রধান টেকনিশিয়ান')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  value={insLead}
+                  onChange={(e) => setInsLead(e.target.value)}
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Crew Members', 'অন্যান্য সদস্য')}
+                </Label>
+                <Input
+                  placeholder="e.g. Jamal, Rafiq, Biplob"
+                  value={insCrew}
+                  onChange={(e) => setInsCrew(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Required Safety Gear & Rigging Equipment', 'প্রয়োজনীয় নিরাপত্তা সরঞ্জাম ও যন্ত্রপাতি')}
+              </Label>
               <Input
-                id="insCrew"
-                value={insCrew}
-                onChange={(e) => setInsCrew(e.target.value)}
+                placeholder="e.g. Scaffolding, Safety Harness Belts, Heavy Power Drill, Crane"
+                value={insEquipment}
+                onChange={(e) => setInsEquipment(e.target.value)}
+                className="text-xs h-9"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="insEq">Required Safety Gear & Rigging Equipment</Label>
-            <Input
-              id="insEq"
-              placeholder="e.g. Scaffolding, Safety Harness Belts, Heavy Power Drill, Crane"
-              value={insEquipment}
-              onChange={(e) => setInsEquipment(e.target.value)}
-            />
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewInstallationOpen(false)} className="w-full sm:w-auto min-h-[40px]">
-              Cancel
+          {/* Action Footer */}
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsNewInstallationOpen(false)}
+              className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+            >
+              {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-purple-600 hover:bg-purple-700 text-white font-bold">
-              Dispatch Installation Team
+            <Button
+              type="submit"
+              className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
+            >
+              {tBilingual('Dispatch Installation Team', 'টিম শিডিউল করুন')}
             </Button>
           </div>
         </form>

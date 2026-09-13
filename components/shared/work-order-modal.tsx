@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useId } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   FileText,
   Search,
@@ -12,15 +12,17 @@ import {
   Upload,
   Send,
   Save,
-  X,
   Layers,
   Sparkles,
   AlertCircle,
+  Loader2,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { ModalDialog } from '@/components/shared/modal-dialog'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -105,24 +107,13 @@ export function WorkOrderModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Lock body scroll and handle escape
   useEffect(() => {
-    if (!isOpen) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+    if (isOpen) {
+      setErrorMessage(null)
+      setSuccessMessage(null)
+      setIsSubmitting(false)
     }
-
-    document.body.style.overflow = 'hidden'
-    window.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.body.style.overflow = ''
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
+  }, [isOpen])
 
   // Filtered customer matches
   const customerMatches = (Array.isArray(customers) ? customers : []).filter((c) => {
@@ -152,6 +143,20 @@ export function WorkOrderModal({
     }
   }
 
+  const numWidth = Number(width) || 1
+  const numHeight = Number(height) || 1
+  const numQty = Number(quantity) || 1
+
+  // Calculate approximate square footage
+  let totalSft = 0
+  if (dimensionUnit === 'ft') {
+    totalSft = numWidth * numHeight * numQty
+  } else if (dimensionUnit === 'inch') {
+    totalSft = Number((((numWidth * numHeight) / 144) * numQty).toFixed(2))
+  } else {
+    totalSft = Number((((numWidth * numHeight) / 92903) * numQty).toFixed(2))
+  }
+
   const handleSave = async (sendInvoiceRequest: boolean) => {
     setErrorMessage(null)
 
@@ -173,20 +178,6 @@ export function WorkOrderModal({
       return
     }
 
-    const numWidth = Number(width) || 1
-    const numHeight = Number(height) || 1
-    const numQty = Number(quantity) || 1
-
-    // Calculate approximate square footage
-    let totalSft = 0
-    if (dimensionUnit === 'ft') {
-      totalSft = numWidth * numHeight * numQty
-    } else if (dimensionUnit === 'inch') {
-      totalSft = ((numWidth * numHeight) / 144) * numQty
-    } else {
-      totalSft = ((numWidth * numHeight) / 92903) * numQty
-    }
-
     const orderCheck = checkCanCreate('monthly_orders')
     if (!orderCheck.allowed) {
       setErrorMessage(orderCheck.reason || 'Monthly order quota reached for your plan.')
@@ -199,7 +190,6 @@ export function WorkOrderModal({
     try {
       // 1. Get collision-free document numbers
       const orderNumber = PrintERPDataStore.getNextDocumentNumber(companyId, 'order')
-      const jobNumber = PrintERPDataStore.getNextDocumentNumber(companyId, 'job')
 
       // 2. Build Sales Order record
       const orderId = `ord-${Date.now()}`
@@ -320,7 +310,7 @@ export function WorkOrderModal({
         setIsSubmitting(false)
         if (onSuccess) onSuccess(newOrder, sendInvoiceRequest)
         onClose()
-      }, 1000)
+      }, 900)
     } catch (err: any) {
       console.error('[WorkOrderModal] Save error:', err)
       setErrorMessage(err.message || 'Failed to save Work Order.')
@@ -329,76 +319,74 @@ export function WorkOrderModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 animate-in fade-in-0">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
-      />
-
-      {/* Modal Card */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[92vh] overflow-hidden z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4 bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-900/30">
-              <FileText className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-slate-100 flex items-center gap-2 bangla-text">
-                {tBilingual('Add Work Order', 'নতুন ওয়ার্ক অর্ডার যোগ করুন')}
-                <Badge variant="outline" className="text-xs uppercase font-mono py-0.5 px-2">
-                  Designer Flow
-                </Badge>
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 bangla-text">
-                {tBilingual(
-                  'Fast pre-press booking with instant invoice dispatch to manager',
-                  'দ্রুত প্রি-প্রেস বুকিং ও ম্যানেজারের নিকট তাৎক্ষণিক ইনভয়েস প্রেরণের সুবিধা'
-                )}
-              </p>
-            </div>
+    <ModalDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+      size="4xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+            <Layers className="h-5 w-5" />
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-300 transition-colors cursor-pointer"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Scrollable Form Body */}
-        <div className="overflow-y-auto p-5 space-y-4">
-          {errorMessage && (
-            <div className="flex items-center gap-2 p-3 text-xs rounded-xl bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/40 dark:border-red-900 dark:text-red-300 bangla-text">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{errorMessage}</span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-black text-slate-900 dark:text-white">
+                {tBilingual('Add Work Order', 'নতুন ওয়ার্ক অর্ডার যোগ করুন')}
+              </span>
+              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                Pre-Press Flow
+              </Badge>
             </div>
-          )}
-
-          {successMessage && (
-            <div className="flex items-center gap-2 p-3 text-xs rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-300 bangla-text">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              <span>{successMessage}</span>
-            </div>
-          )}
-
-          {/* Customer Search & Auto-Fill Section */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 p-3.5 space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-200 flex items-center gap-1.5 bangla-text">
-                <Search className="h-3.5 w-3.5 text-blue-600" />
-                {tBilingual('Customer Search & Auto-fill', 'গ্রাহক অনুসন্ধান ও অটো-পূরণ')}
-              </Label>
-              {selectedCustomerId && (
-                <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-medium border-0 px-2 py-0.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                  {tBilingual('Existing Customer Linked', 'সংরক্ষিত গ্রাহক যুক্ত')}
-                </Badge>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              {tBilingual(
+                'Fast pre-press booking with instant invoice dispatch to manager',
+                'দ্রুত প্রি-প্রেস বুকিং ও ম্যানেজারের নিকট তাৎক্ষণিক ইনভয়েস প্রেরণের সুবিধা'
               )}
-            </div>
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <div className="space-y-4 pt-1">
+        {errorMessage && (
+          <div className="flex items-center gap-2 p-3 text-xs rounded-xl bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/40 dark:border-red-900 dark:text-red-300">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
+        {successMessage && (
+          <div className="flex items-center gap-2 p-3 text-xs rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-300">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
+        {/* Section 1: Customer Information */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                1
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Customer Information', 'গ্রাহকের তথ্য')}
+              </h3>
+            </div>
+            {selectedCustomerId && (
+              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-medium border-0 px-2 py-0.5">
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                {tBilingual('Existing Customer Linked', 'সংরক্ষিত গ্রাহক যুক্ত')}
+              </Badge>
+            )}
+          </div>
+
+          <div className="relative">
+            <Label className="text-xs font-semibold mb-1 block">
+              {tBilingual('Customer Search / Name', 'গ্রাহক অনুসন্ধান / নাম')} <span className="text-rose-500">*</span>
+            </Label>
             <div className="relative">
               <Input
                 placeholder={tBilingual(
@@ -408,75 +396,106 @@ export function WorkOrderModal({
                 value={customerSearch}
                 onChange={(e) => {
                   setCustomerSearch(e.target.value)
+                  setCustomerName(e.target.value)
                   setShowCustomerDropdown(true)
                   if (selectedCustomerId) {
                     setSelectedCustomerId(null)
                   }
                 }}
                 onFocus={() => setShowCustomerDropdown(true)}
-                className="h-9 text-xs bg-white dark:bg-slate-900 bangla-text"
+                className="text-xs h-9 pr-8"
               />
-
-              {showCustomerDropdown && customerMatches.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xl z-20 divide-y divide-slate-100 dark:divide-slate-800">
-                  {customerMatches.map((c) => (
-                    <div
-                      key={c.id}
-                      onClick={() => handleSelectCustomer(c)}
-                      className="p-2.5 hover:bg-blue-50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-xs text-slate-900 dark:text-slate-100">
-                          {c.name}
-                        </span>
-                        <span className="text-[11px] font-mono text-slate-500">{c.mobile}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        {c.company_name ? `${c.company_name} • ` : ''}
-                        {c.address || c.area || 'Dhaka'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {customerSearch && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomerSearch('')
+                    setCustomerName('')
+                    setSelectedCustomerId(null)
+                    setCustomerPhone('')
+                    setCustomerAddress('')
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               )}
             </div>
 
-            {/* Auto-filled details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-              <div>
-                <Label className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
-                  {tBilingual('Phone Number', 'মোবাইল নম্বর')} *
-                </Label>
-                <Input
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="+880 17..."
-                  className="h-8 text-xs bg-white dark:bg-slate-900 font-mono mt-0.5"
-                />
+            {showCustomerDropdown && customerMatches.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xl z-20 divide-y divide-slate-100 dark:divide-slate-800">
+                {customerMatches.map((c) => (
+                  <div
+                    key={c.id}
+                    onClick={() => handleSelectCustomer(c)}
+                    className="p-2.5 hover:bg-blue-50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-xs text-slate-900 dark:text-slate-100">
+                        {c.name}
+                      </span>
+                      <span className="text-[11px] font-mono text-slate-500">{c.mobile}</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                      {c.company_name ? `${c.company_name} • ` : ''}
+                      {c.address || c.area || 'Dhaka'}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <Label className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
-                  {tBilingual('Delivery Address / Area', 'ডেলিভারি ঠিকানা / এলাকা')}
-                </Label>
-                <Input
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  placeholder="Fakirapool, Dhaka"
-                  className="h-8 text-xs bg-white dark:bg-slate-900 mt-0.5 bangla-text"
-                />
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Design / Material Selection */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Phone Number', 'মোবাইল নম্বর')} <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="+880 17..."
+                className="text-xs h-9 font-mono"
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Delivery Address / Area', 'ডেলিভারি ঠিকানা / এলাকা')}
+              </Label>
+              <Input
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+                placeholder="Fakirapool, Dhaka"
+                className="text-xs h-9"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2: Material & Dimensions */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                2
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Material & Dimensions', 'উপাদান ও পরিমাপ')}
+              </h3>
+            </div>
+            <Badge variant="outline" className="text-xs font-mono bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+              Total Area: {totalSft} {dimensionUnit === 'ft' ? 'SFT' : dimensionUnit}
+            </Badge>
+          </div>
+
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-900 dark:text-slate-200 bangla-text">
-              {tBilingual('Design / Material Spec', 'ডিজাইন ও উপাদান')} *
+            <Label className="text-xs font-semibold mb-1 block">
+              {tBilingual('Design / Material Spec', 'ডিজাইন ও উপাদান')} <span className="text-rose-500">*</span>
             </Label>
             <select
               value={material}
               onChange={(e) => setMaterial(e.target.value)}
-              className="w-full h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
             >
               {COMMON_MATERIALS.map((m) => (
                 <option key={m} value={m}>
@@ -486,10 +505,9 @@ export function WorkOrderModal({
             </select>
           </div>
 
-          {/* Dimensions & Quantity */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <Label className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+              <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('Width', 'প্রস্থ')}
               </Label>
               <Input
@@ -498,11 +516,11 @@ export function WorkOrderModal({
                 step="0.1"
                 value={width}
                 onChange={(e) => setWidth(e.target.value === '' ? '' : Number(e.target.value))}
-                className="h-8 text-xs bg-white dark:bg-slate-900 mt-0.5"
+                className="text-xs h-9"
               />
             </div>
             <div>
-              <Label className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+              <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('Height', 'উচ্চতা')}
               </Label>
               <Input
@@ -511,17 +529,17 @@ export function WorkOrderModal({
                 step="0.1"
                 value={height}
                 onChange={(e) => setHeight(e.target.value === '' ? '' : Number(e.target.value))}
-                className="h-8 text-xs bg-white dark:bg-slate-900 mt-0.5"
+                className="text-xs h-9"
               />
             </div>
             <div>
-              <Label className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
-                {tBilingual('Unit', 'পরিমাপক')}
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Dimension Unit', 'পরিমাপক')}
               </Label>
               <select
                 value={dimensionUnit}
                 onChange={(e) => setDimensionUnit(e.target.value as any)}
-                className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 text-xs mt-0.5"
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
               >
                 <option value="ft">Feet (ফুট)</option>
                 <option value="inch">Inch (ইঞ্চি)</option>
@@ -529,7 +547,7 @@ export function WorkOrderModal({
               </select>
             </div>
             <div>
-              <Label className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+              <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('Quantity', 'পরিমাণ')}
               </Label>
               <Input
@@ -537,74 +555,90 @@ export function WorkOrderModal({
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value === '' ? '' : Number(e.target.value))}
-                className="h-8 text-xs bg-white dark:bg-slate-900 mt-0.5"
+                className="text-xs h-9"
               />
             </div>
           </div>
+        </div>
 
-          {/* Finishing Options */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-900 dark:text-slate-200 bangla-text">
-              {tBilingual('Finishing & Fabrication Requirements', 'ফিনিশিং ও ফিটিংস')}
-            </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-              {FINISHING_OPTIONS.map((f) => {
-                const isSelected = selectedFinishings.includes(f)
-                return (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => toggleFinishing(f)}
-                    className={`flex items-center gap-2 p-2 rounded-lg border text-left text-xs transition-colors cursor-pointer bangla-text ${
+        {/* Section 3: Finishing & Special Processing */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              3
+            </div>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              {tBilingual('Finishing & Fabrication', 'ফিনিশিং ও ফিটিংস')}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {FINISHING_OPTIONS.map((f) => {
+              const isSelected = selectedFinishings.includes(f)
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => toggleFinishing(f)}
+                  className={cn(
+                    'flex items-center gap-2.5 p-2.5 rounded-lg border text-left text-xs transition-colors cursor-pointer',
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700 font-semibold'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'h-4 w-4 rounded flex items-center justify-center border shrink-0',
                       isSelected
-                        ? 'border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
-                    }`}
+                        ? 'bg-blue-600 border-blue-600 text-white'
+                        : 'border-slate-300 dark:border-slate-600'
+                    )}
                   >
-                    <div
-                      className={`h-3.5 w-3.5 rounded flex items-center justify-center border ${
-                        isSelected
-                          ? 'bg-blue-600 border-blue-600 text-white'
-                          : 'border-slate-300 dark:border-slate-600'
-                      }`}
-                    >
-                      {isSelected && <CheckCircle2 className="h-3 w-3" />}
-                    </div>
-                    <span className="truncate">{f}</span>
-                  </button>
-                )
-              })}
+                    {isSelected && <CheckCircle2 className="h-3 w-3" />}
+                  </div>
+                  <span className="truncate">{f}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Section 4: Reference Artwork & Pre-Press Notes */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              4
             </div>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              {tBilingual('Artwork & Pre-Press Notes', 'রেফারেন্স আর্টওয়ার্ক ও নির্দেশনাবলী')}
+            </h3>
           </div>
 
-          {/* Reference File & Notes */}
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold text-slate-900 dark:text-slate-200 bangla-text">
-              {tBilingual('Reference File / Brief', 'রেফারেন্স ফাইল / আর্টওয়ার্ক')}
-            </Label>
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50">
-              <Upload className="h-5 w-5 text-slate-400 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
-                  {referenceFileName ||
-                    tBilingual('No file uploaded yet (Click to browse)', 'কোন ফাইল সংযুক্ত করা হয়নি')}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">AI, EPS, PDF, CDR, TIFF, JPG up to 100MB</p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setReferenceFileName(`client_brief_${Date.now().toString().slice(-4)}.ai`)}
-                className="h-7 text-xs bangla-text"
-              >
-                {tBilingual('Simulate Upload', 'ফাইল যুক্ত')}
-              </Button>
+          <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50">
+            <Upload className="h-5 w-5 text-slate-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
+                {referenceFileName ||
+                  tBilingual('No file uploaded yet (Click to browse)', 'কোন ফাইল সংযুক্ত করা হয়নি')}
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                AI, EPS, PDF, CDR, TIFF, JPG up to 100MB
+              </p>
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setReferenceFileName(`client_brief_${Date.now().toString().slice(-4)}.ai`)}
+              className="h-8 text-xs"
+            >
+              {tBilingual('Simulate Upload', 'ফাইল যুক্ত')}
+            </Button>
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-slate-900 dark:text-slate-200 bangla-text">
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">
               {tBilingual('Special Pre-Press Instructions', 'বিশেষ নির্দেশনাবলী')}
             </Label>
             <textarea
@@ -615,20 +649,19 @@ export function WorkOrderModal({
                 'e.g. Color profile CMYK, add 1 inch bleed on all sides...',
                 'যেমন: সিএমওয়াইকে কালার মোড, চারপাশে ১ ইঞ্চি ব্লিড মার্জিন...'
               )}
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 bangla-text"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
+        {/* Action Footer */}
+        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="w-full sm:w-auto h-9 text-xs bangla-text"
+            className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
           >
             {tBilingual('Cancel', 'বাতিল')}
           </Button>
@@ -637,30 +670,34 @@ export function WorkOrderModal({
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() => handleSave(false)}
               disabled={isSubmitting}
-              title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
-              className="flex-1 sm:flex-initial h-9 text-xs bangla-text"
+              className="flex-1 sm:flex-initial min-h-[40px] text-xs font-semibold"
             >
-              <Save className="h-3.5 w-3.5 mr-1.5 text-slate-600" />
+              {isSubmitting ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5 mr-1.5 text-slate-600" />
+              )}
               {tBilingual('Save Draft', 'ড্রাফট সংরক্ষণ')}
             </Button>
 
             <Button
               type="button"
-              size="sm"
               onClick={() => handleSave(true)}
               disabled={isSubmitting}
-              title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
-              className="flex-1 sm:flex-initial h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium bangla-text"
+              className="flex-1 sm:flex-initial min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm"
             >
-              <Send className="h-3.5 w-3.5 mr-1.5" />
+              {isSubmitting ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+              )}
               {tBilingual('Save & Send Invoice Request', 'সংরক্ষণ ও ইনভয়েস রিকোয়েস্ট পাঠান')}
             </Button>
           </div>
         </div>
       </div>
-    </div>
+    </ModalDialog>
   )
 }

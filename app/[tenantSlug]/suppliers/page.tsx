@@ -398,131 +398,210 @@ export default function SuppliersPage() {
       <ModalDialog
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
-        title="Register New Material Supplier"
-        description="Add a vendor partner for rolls, inks, acrylic sheets, LEDs, or art card."
+        size="3xl"
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <Truck className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-900 dark:text-white">
+                  {tBilingual('Register New Material Supplier', 'নতুন সাপ্লায়ার / মহাজন যুক্ত করুন')}
+                </span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                  Vendor
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {tBilingual('Add a vendor partner for rolls, inks, acrylic sheets, LEDs, or boards', 'রোল, কালি, এক্রিলিক শিট বা এলইডি ভেন্ডর পার্টনার সংরক্ষণ করুন')}
+              </p>
+            </div>
+          </div>
+        }
       >
-        <form onSubmit={handleCreateSupplier} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="sName" required>Supplier / Merchant Name</Label>
+        <form onSubmit={handleCreateSupplier} className="space-y-4 pt-1">
+          {/* Section 1: Supplier Identity */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                1
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Supplier Identity', 'সাপ্লায়ারের বিবরণ')}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Supplier / Merchant Name', 'সাপ্লায়ার / দোকানের নাম')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  placeholder="e.g. Bangla Plastic & Media Ltd."
+                  value={newSupplier.supplier_name}
+                  onChange={(e) => setNewSupplier({ ...newSupplier, supplier_name: e.target.value })}
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Trading House / Entity', 'কোম্পানি / প্রতিষ্ঠান')}
+                </Label>
+                <Input
+                  placeholder="Bangla Import Syndicate"
+                  value={newSupplier.company}
+                  onChange={(e) => setNewSupplier({ ...newSupplier, company: e.target.value })}
+                  className="text-xs h-9"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Category & Terms */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                2
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Category & Terms', 'ক্যাটাগরি ও শর্তাবলী')}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Material Category', 'উপাদানের ক্যাটাগরি')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={newSupplier.category}
+                  onChange={(e) => setNewSupplier({ ...newSupplier, category: e.target.value as SupplierCategory })}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                >
+                  <option value="media">Media (Flex, Vinyl, Canvas)</option>
+                  <option value="acrylic">Acrylic (Cast, Clear, Mirror)</option>
+                  <option value="led">LED (Modules, Power Supplies)</option>
+                  <option value="hardware">Hardware (Rollup Stands, MS Frames)</option>
+                  <option value="ink">Ink (Solvent, Eco-solvent, UV)</option>
+                  <option value="paper">Paper (Art Card, Offset Board)</option>
+                  <option value="pvc">PVC (Foam Board, Celuka)</option>
+                  <option value="aluminum">Aluminum (ACP Panels)</option>
+                  <option value="other">Other Material</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Payment Terms', 'পেমেন্টের শর্ত')}
+                </Label>
+                <select
+                  value={newSupplier.payment_terms}
+                  onChange={(e) => setNewSupplier({ ...newSupplier, payment_terms: e.target.value as SupplierPaymentTerms })}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                >
+                  <option value="cash">Cash on Delivery (নগদ)</option>
+                  <option value="credit_15">Credit 15 Days</option>
+                  <option value="credit_30">Credit 30 Days (মাসিক বাকি)</option>
+                  <option value="advance">Advance Payment Required</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Contact & Address */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                3
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Contact & Location', 'যোগাযোগ ও ঠিকানা')}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Contact Person', 'যোগাযোগকারী ব্যক্তি')}
+                </Label>
+                <Input
+                  placeholder="Sales Representative"
+                  value={newSupplier.contact_person}
+                  onChange={(e) => setNewSupplier({ ...newSupplier, contact_person: e.target.value })}
+                  className="text-xs h-9"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Mobile Number', 'মোবাইল নম্বর')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  placeholder="01711-XXXXXX"
+                  value={newSupplier.mobile}
+                  onChange={(e) => setNewSupplier({ ...newSupplier, mobile: e.target.value })}
+                  className="text-xs h-9 font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('WhatsApp Number', 'হোয়াটসঅ্যাপ নম্বর')}
+                </Label>
+                <Input
+                  placeholder="01819-XXXXXX"
+                  value={newSupplier.whatsapp}
+                  onChange={(e) => setNewSupplier({ ...newSupplier, whatsapp: e.target.value })}
+                  className="text-xs h-9 font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Market Address & Hub', 'মার্কেট ঠিকানা ও এলাকা')}
+              </Label>
               <Input
-                id="sName"
-                placeholder="e.g. Bangla Plastic & Media Ltd."
-                value={newSupplier.supplier_name}
-                onChange={(e) => setNewSupplier({ ...newSupplier, supplier_name: e.target.value })}
-                required
+                placeholder="e.g. 42 Nayabazar Paper Market, Dhaka"
+                value={newSupplier.address}
+                onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
+                className="text-xs h-9"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="sCompany">Trading House / Entity</Label>
-              <Input
-                id="sCompany"
-                placeholder="Bangla Import Syndicate"
-                value={newSupplier.company}
-                onChange={(e) => setNewSupplier({ ...newSupplier, company: e.target.value })}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {tBilingual('Payment Remarks / Notes', 'পেমেন্ট নোট / বিশেষ তথ্য')}
+              </Label>
+              <textarea
+                rows={2}
+                placeholder="Cheque clearing schedule, delivery discount notes..."
+                value={newSupplier.notes}
+                onChange={(e) => setNewSupplier({ ...newSupplier, notes: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="sCat" required>Material Category</Label>
-              <select
-                id="sCat"
-                value={newSupplier.category}
-                onChange={(e) => setNewSupplier({ ...newSupplier, category: e.target.value as SupplierCategory })}
-                className="w-full h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="media">Media (Flex, Vinyl, Canvas)</option>
-                <option value="acrylic">Acrylic (Cast, Clear, Mirror)</option>
-                <option value="led">LED (Modules, Power Supplies)</option>
-                <option value="hardware">Hardware (Rollup Stands, MS Frames)</option>
-                <option value="ink">Ink (Solvent, Eco-solvent, UV)</option>
-                <option value="paper">Paper (Art Card, Offset Board)</option>
-                <option value="pvc">PVC (Foam Board, Celuka)</option>
-                <option value="aluminum">Aluminum (ACP Panels)</option>
-                <option value="other">Other Material</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="sTerms">Payment Terms</Label>
-              <select
-                id="sTerms"
-                value={newSupplier.payment_terms}
-                onChange={(e) => setNewSupplier({ ...newSupplier, payment_terms: e.target.value as SupplierPaymentTerms })}
-                className="w-full h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="cash">Cash on Delivery (নগদ)</option>
-                <option value="credit_15">Credit 15 Days</option>
-                <option value="credit_30">Credit 30 Days (মাসিক বাকি)</option>
-                <option value="advance">Advance Payment Required</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="sContact">Contact Person</Label>
-              <Input
-                id="sContact"
-                placeholder="Sales Representative"
-                value={newSupplier.contact_person}
-                onChange={(e) => setNewSupplier({ ...newSupplier, contact_person: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="sMobile" required>Mobile No.</Label>
-              <Input
-                id="sMobile"
-                placeholder="01711-XXXXXX"
-                value={newSupplier.mobile}
-                onChange={(e) => setNewSupplier({ ...newSupplier, mobile: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="sWhatsapp">WhatsApp No.</Label>
-              <Input
-                id="sWhatsapp"
-                placeholder="01819-XXXXXX"
-                value={newSupplier.whatsapp}
-                onChange={(e) => setNewSupplier({ ...newSupplier, whatsapp: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="sAddress">Market Address & Hub</Label>
-            <Input
-              id="sAddress"
-              placeholder="e.g. 42 Nayabazar Paper Market, Dhaka"
-              value={newSupplier.address}
-              onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="sNotes">Payment Remarks / Mahajan Terms</Label>
-            <textarea
-              id="sNotes"
-              rows={2}
-              placeholder="Cheque clearing schedule, delivery discount notes..."
-              value={newSupplier.notes}
-              onChange={(e) => setNewSupplier({ ...newSupplier, notes: e.target.value })}
-              className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
-            />
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
+          {/* Action Footer */}
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAddOpen(false)}
+              className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+            >
+              {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
-              Save Supplier
+            <Button
+              type="submit"
+              className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
+            >
+              {tBilingual('Save Supplier', 'সাপ্লায়ার সংরক্ষণ করুন')}
             </Button>
           </div>
         </form>

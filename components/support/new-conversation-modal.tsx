@@ -2,12 +2,11 @@
 
 // ==============================================================================
 // InkFlow SaaS - New Support Conversation Modal
-// Simple, clean, modern SaaS ticket composer asking only necessary information.
+// Standardized modal for ticket creation using unified ModalDialog design system.
 // ==============================================================================
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
-  X,
   Send,
   Paperclip,
   Sparkles,
@@ -16,6 +15,8 @@ import {
   FileText,
   Image as ImageIcon,
   Loader2,
+  X,
+  LifeBuoy,
 } from 'lucide-react'
 import {
   SupportCategory,
@@ -25,6 +26,11 @@ import {
   SupportAttachmentMeta,
 } from '@/types/support.types'
 import { useI18n } from '@/i18n/context'
+import { ModalDialog } from '@/components/shared/modal-dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 
 interface NewConversationModalProps {
   isOpen: boolean
@@ -48,7 +54,12 @@ export function NewConversationModal({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (isOpen) {
+      setError(null)
+      setSubmitting(false)
+    }
+  }, [isOpen])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -112,69 +123,74 @@ export function NewConversationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div
-        className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]"
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/40">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100 dark:border-indigo-900/50">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                {tBilingual('Start Support Conversation', 'সহায়তা বার্তা শুরু করুন')}
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {tBilingual('Our support team is online and ready to assist', 'আমাদের সাপোর্ট টিম আপনাকে সহায়তা করতে প্রস্তুত')}
-              </p>
-            </div>
+    <ModalDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+      size="2xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+            <LifeBuoy className="h-5 w-5" />
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Body Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
-          {error && (
-            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Subject */}
           <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-              {tBilingual('Subject / What do you need help with?', 'বিষয় / কী ধরণের সহায়তা প্রয়োজন?')} *
-            </label>
-            <input
-              type="text"
+            <div className="flex items-center gap-2">
+              <span className="text-base font-black text-slate-900 dark:text-white">
+                {tBilingual('Start Support Conversation', 'সহায়তা বার্তা শুরু করুন')}
+              </span>
+              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                Helpdesk
+              </Badge>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              {tBilingual('Our support team is online and ready to assist', 'আমাদের সাপোর্ট টিম আপনাকে সহায়তা করতে প্রস্তুত')}
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+        {error && (
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Section 1: Classification */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              1
+            </div>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              {tBilingual('Request Classification', 'অনুরোধের বিবরণ')}
+            </h3>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">
+              {tBilingual('Subject / What do you need help with?', 'বিষয় / কী ধরণের সহায়তা প্রয়োজন?')} <span className="text-rose-500">*</span>
+            </Label>
+            <Input
               required
               placeholder={tBilingual('e.g. Issue with Flex invoice calculation or WhatsApp alerts', 'যেমন: ইনভয়েস তৈরি অথবা হোয়াটসঅ্যাপ নোটিফিকেশন সমস্যা')}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+              className="text-xs h-9"
             />
           </div>
 
-          {/* Category & Priority Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('Category', 'ক্যাটাগরি')}
-              </label>
+              </Label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as SupportCategory)}
-                className="w-full px-3 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
               >
                 {SUPPORT_CATEGORIES.map((cat) => (
                   <option key={cat.key} value={cat.key}>
@@ -185,13 +201,13 @@ export function NewConversationModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('Priority', 'অগ্রাধিকার')}
-              </label>
+              </Label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as SupportPriority)}
-                className="w-full px-3 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
               >
                 <option value="low">{tBilingual('Low - General question', 'নিম্ন - সাধারণ প্রশ্ন')}</option>
                 <option value="normal">{tBilingual('Normal - Routine assistance', 'স্বাভাবিক - সাধারণ সহায়তা')}</option>
@@ -200,103 +216,125 @@ export function NewConversationModal({
               </select>
             </div>
           </div>
+        </div>
 
-          {/* Message Body */}
+        {/* Section 2: Message & Details */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              2
+            </div>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              {tBilingual('Detailed Message', 'বিস্তারিত বার্তা')}
+            </h3>
+          </div>
+
           <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-              {tBilingual('Message / Detailed Description', 'বিস্তারিত বার্তা')} *
-            </label>
+            <Label className="text-xs font-semibold mb-1 block">
+              {tBilingual('Message Description', 'বিস্তারিত বার্তা')} <span className="text-rose-500">*</span>
+            </Label>
             <textarea
               required
-              rows={5}
-              placeholder={tBilingual('Describe the issue in detail. If this relates to a specific invoice, order, or customer, mention it here.', 'বিস্তারিত লিখুন। কোনো নির্দিষ্ট অর্ডার বা ইনভয়েস সম্পর্কিত হলে উল্লেখ করুন।')}
+              rows={4}
+              placeholder={tBilingual(
+                'Describe the issue in detail. If this relates to a specific invoice, order, or customer, mention it here.',
+                'বিস্তারিত লিখুন। কোনো নির্দিষ্ট অর্ডার বা ইনভয়েস সম্পর্কিত হলে উল্লেখ করুন।'
+              )}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 resize-y min-h-[110px]"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 resize-y min-h-[90px]"
             />
           </div>
+        </div>
 
-          {/* Attachments */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                {tBilingual('Attachments (Optional)', 'ফাইল বা স্ক্রিনশট যুক্ত করুন')}
-              </label>
-              <span className="text-[11px] text-slate-400">Max 10MB (Images, PDF, Logs)</span>
-            </div>
-
-            <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 bg-slate-50/50 dark:bg-slate-950/50 cursor-pointer transition-colors text-xs text-slate-600 dark:text-slate-400">
-              <Paperclip className="w-4 h-4 text-slate-400" />
-              <span>{tBilingual('Upload screenshot, error log, or invoice PDF', 'স্ক্রিনশট বা পিডিএফ ফাইল আপলোড করুন')}</span>
-              <input
-                type="file"
-                multiple
-                accept="image/*,application/pdf,text/plain"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </label>
-
-            {attachments.length > 0 && (
-              <div className="mt-2 space-y-1.5">
-                {attachments.map((att) => (
-                  <div
-                    key={att.id}
-                    className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-xs text-slate-700 dark:text-slate-300"
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      {att.type.startsWith('image/') ? (
-                        <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
-                      ) : (
-                        <FileText className="w-3.5 h-3.5 text-amber-500" />
-                      )}
-                      <span className="truncate max-w-[280px]">{att.name}</span>
-                      <span className="text-[10px] text-slate-400">
-                        ({Math.round(att.size / 1024)} KB)
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeAttachment(att.id)}
-                      className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
+        {/* Section 3: Attachments */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                3
               </div>
-            )}
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Attachments (Optional)', 'ফাইল বা স্ক্রিনশট')}
+              </h3>
+            </div>
+            <span className="text-[11px] text-slate-400 font-mono">Max 10MB</span>
           </div>
 
-          {/* Footer Action */}
-          <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
-            >
-              {tBilingual('Cancel', 'বাতিল')}
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || !subject.trim() || !message.trim()}
-              className="inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm shadow-indigo-500/20 transition-all cursor-pointer"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>{tBilingual('Submitting...', 'পাঠানো হচ্ছে...')}</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{tBilingual('Send Request', 'বার্তা পাঠান')}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/50 dark:bg-slate-950/50 cursor-pointer transition-colors text-xs text-slate-600 dark:text-slate-400">
+            <Paperclip className="w-4 h-4 text-slate-400" />
+            <span>{tBilingual('Upload screenshot, error log, or invoice PDF', 'স্ক্রিনশট বা পিডিএফ ফাইল আপলোড করুন')}</span>
+            <input
+              type="file"
+              multiple
+              accept="image/*,application/pdf,text/plain"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </label>
+
+          {attachments.length > 0 && (
+            <div className="space-y-1.5">
+              {attachments.map((att) => (
+                <div
+                  key={att.id}
+                  className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-xs text-slate-700 dark:text-slate-300"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    {att.type.startsWith('image/') ? (
+                      <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
+                    ) : (
+                      <FileText className="w-3.5 h-3.5 text-amber-500" />
+                    )}
+                    <span className="truncate max-w-[240px]">{att.name}</span>
+                    <span className="text-[10px] text-slate-400">
+                      ({Math.round(att.size / 1024)} KB)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(att.id)}
+                    className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Action Footer */}
+        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={submitting}
+            className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+          >
+            {tBilingual('Cancel', 'বাতিল')}
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={submitting || !subject.trim() || !message.trim()}
+            className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <span>{tBilingual('Submitting...', 'পাঠানো হচ্ছে...')}</span>
+              </>
+            ) : (
+              <>
+                <Send className="w-3.5 h-3.5 mr-1.5" />
+                <span>{tBilingual('Send Request', 'বার্তা পাঠান')}</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </ModalDialog>
   )
 }
