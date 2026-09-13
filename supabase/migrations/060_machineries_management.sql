@@ -292,12 +292,21 @@ create policy "Authorized company users can update machinery breakdowns"
 
 
 -- 6. POPULATE AND SEED RBAC PERMISSIONS FOR MACHINERIES
+DO $$
+BEGIN
+    ALTER TABLE public.permissions DROP CONSTRAINT IF EXISTS permissions_action_check;
+    ALTER TABLE public.permissions ADD CONSTRAINT permissions_action_check 
+        CHECK (action IN ('view', 'create', 'edit', 'delete', 'approve', 'assign', 'manage', 'full_control'));
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
 insert into public.permissions (code, module, resource, action, name, description) values
 ('machineries.view', 'production', 'machinery', 'view', 'View Machineries', 'View list, status, and specifications of workshop machines'),
 ('machineries.create', 'production', 'machinery', 'create', 'Create Machinery', 'Add new machinery and production equipment'),
 ('machineries.edit', 'production', 'machinery', 'edit', 'Edit Machinery', 'Update machinery specifications, dimensions, and operational parameters'),
 ('machineries.delete', 'production', 'machinery', 'delete', 'Archive / Delete Machinery', 'Archive, retire, or delete machinery records'),
-('machineries.assign', 'production', 'machinery', 'assign', 'Assign Machinery', 'Allocate and schedule machines for job orders and production tasks'),
+('machineries.assign', 'production', 'machinery', 'edit', 'Assign Machinery', 'Allocate and schedule machines for job orders and production tasks'),
 ('machineries.status', 'production', 'machinery', 'edit', 'Change Machinery Status', 'Update live operating status of machines (Available, In Use, Maintenance, etc.)'),
 ('machineries.maintenance', 'production', 'machinery', 'edit', 'Manage Maintenance', 'Schedule, start, and complete preventive and corrective maintenance'),
 ('machineries.breakdown', 'production', 'machinery', 'create', 'Report Breakdown', 'Report machine malfunctions and workshop breakdowns'),
