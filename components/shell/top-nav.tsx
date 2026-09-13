@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { CompanySelector } from './company-selector'
 import { Breadcrumbs } from './breadcrumbs'
-import { LanguageSwitcher } from './language-switcher'
 import { NotificationsDropdown } from './notifications-dropdown'
 import { UserMenu } from './user-menu'
 import { MobileNav } from './mobile-nav'
@@ -80,16 +79,16 @@ export function TopNav() {
   ]
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-1.5 sm:gap-2">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-2 sm:gap-4">
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
         <MobileNav />
         <CompanySelector />
-        <div className="hidden xl:block pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
+        <div className="hidden 2xl:block pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
           <Breadcrumbs />
         </div>
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Realtime Live Sync Health Indicator */}
         <div className="hidden lg:flex items-center mr-1" suppressHydrationWarning>
           {isLive ? (
@@ -111,12 +110,39 @@ export function TopNav() {
           )}
         </div>
 
-        {/* Quick Action Hub (Hidden on mobile <640px to prevent crowding with CompanySelector) */}
-        <div ref={quickActionRef} className="relative shrink-0 hidden sm:block">
+        {/* Search Bar - Moved to Left & Increased Width */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
+          className="hidden sm:flex items-center justify-between gap-3 w-48 md:w-64 lg:w-80 xl:w-96 rounded-xl border border-slate-200/90 bg-slate-100/70 hover:bg-slate-100 px-3.5 py-2 text-xs text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200 cursor-pointer shrink-0 transition-all min-h-[40px] shadow-2xs"
+          title="Global Search (⌘K or /)"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Search className="h-4 w-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
+            <span className="truncate bangla-text font-medium text-slate-500 dark:text-slate-400">{t('common.search')}</span>
+          </div>
+          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-900 font-mono shrink-0 shadow-2xs">
+            ⌘K /
+          </kbd>
+        </button>
+
+        {/* Quick Search Icon Button (Mobile under 640px) */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
+          className="sm:hidden flex items-center justify-center h-9 w-9 rounded-xl border border-slate-200 bg-slate-100/60 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer shrink-0 min-h-[36px] min-w-[36px] transition-colors"
+          title="Global Search (/)"
+          aria-label="Search"
+        >
+          <Search className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+        </button>
+
+        {/* Quick Action Hub - Moved to Right after Search Bar */}
+        <div ref={quickActionRef} className="relative shrink-0">
           <button
             type="button"
             onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
-            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-sm shadow-blue-500/20 cursor-pointer transition-all active:scale-98 shrink-0 whitespace-nowrap min-h-[40px]"
+            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-blue-700 shadow-sm shadow-blue-500/20 cursor-pointer transition-all active:scale-98 shrink-0 whitespace-nowrap min-h-[40px]"
             title="Quick operational actions (+ Quotation, + Order, + Payment)"
           >
             <Plus className="h-4 w-4 shrink-0" />
@@ -164,34 +190,6 @@ export function TopNav() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Quick Search Button (Desktop 1280px+) */}
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
-          className="hidden xl:flex items-center gap-2.5 rounded-xl border border-slate-200/90 bg-slate-100/60 px-3 py-1.5 text-xs text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200 cursor-pointer shrink-0 whitespace-nowrap min-h-[40px] transition-colors"
-        >
-          <Search className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" />
-          <span className="whitespace-nowrap bangla-text font-medium">{t('common.search')}</span>
-          <kbd className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-900 font-mono shrink-0 shadow-xs">
-            ⌘K /
-          </kbd>
-        </button>
-
-        {/* Quick Search Icon Button (Mobile / Tablets under 1280px) */}
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
-          className="xl:hidden flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-xl border border-slate-200 bg-slate-100/60 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer shrink-0 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px] transition-colors"
-          title="Global Search (/)"
-          aria-label="Search"
-        >
-          <Search className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
-        </button>
-
-        <div className="shrink-0">
-          <LanguageSwitcher />
         </div>
 
         <NotificationsDropdown />
