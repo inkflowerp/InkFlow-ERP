@@ -15,8 +15,8 @@ export interface NavSection {
 export function getNavigationConfig(tenantSlug: string): NavSection[] {
   return [
     {
-      title: 'Main',
-      titleBn: 'প্রধান',
+      title: 'Core Operations',
+      titleBn: 'প্রধান মেনু',
       items: [
         {
           title: 'Dashboard',
@@ -24,12 +24,36 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           href: `/${tenantSlug}/dashboard`,
           icon: 'LayoutDashboard',
         },
+        {
+          title: 'Quotations',
+          titleBn: 'কোটেশন সমূহ',
+          href: `/${tenantSlug}/quotations`,
+          icon: 'FileSpreadsheet',
+        },
+        {
+          title: 'Invoices & Billing',
+          titleBn: 'ইনভয়েস ও বিলিং',
+          href: `/${tenantSlug}/billing`,
+          icon: 'Receipt',
+        },
+        {
+          title: 'Customers',
+          titleBn: 'কাস্টমার তালিকা',
+          href: `/${tenantSlug}/customers`,
+          icon: 'Users',
+        },
       ],
     },
     {
       title: 'Commercial & Sales',
-      titleBn: 'সেলস ও কোটেশন',
+      titleBn: 'সেলস ও কস্টিং',
       items: [
+        {
+          title: 'Sales Orders',
+          titleBn: 'সেলস অর্ডার সমূহ',
+          href: `/${tenantSlug}/orders`,
+          icon: 'Layers',
+        },
         {
           title: 'Sales Dashboard',
           titleBn: 'সেলস ড্যাশবোর্ড',
@@ -49,28 +73,10 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           icon: 'Package',
         },
         {
-          title: 'Quotations',
-          titleBn: 'কোটেশন সমূহ',
-          href: `/${tenantSlug}/quotations`,
-          icon: 'FileSpreadsheet',
-        },
-        {
-          title: 'Sales Orders',
-          titleBn: 'সেলস অর্ডার সমূহ',
-          href: `/${tenantSlug}/orders`,
-          icon: 'Layers',
-        },
-        {
           title: 'Job Costing & Profit',
           titleBn: 'কস্টিং ও লাভ নিরীক্ষা',
           href: `/${tenantSlug}/costing`,
           icon: 'Calculator',
-        },
-        {
-          title: 'Customers',
-          titleBn: 'কাস্টমার তালিকা',
-          href: `/${tenantSlug}/customers`,
-          icon: 'Users',
         },
       ],
     },
@@ -118,20 +124,14 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
       ],
     },
     {
-      title: 'Fulfillment & Accounts',
-      titleBn: 'ডেলিভারি ও বিলিং',
+      title: 'Fulfillment & Finance',
+      titleBn: 'ডেলিভারি ও ফাইন্যান্স',
       items: [
         {
           title: 'Delivery & Fitting',
           titleBn: 'ডেলিভারি ও ফিটিং',
           href: `/${tenantSlug}/delivery`,
           icon: 'Truck',
-        },
-        {
-          title: 'Invoices & Billing',
-          titleBn: 'ইনভয়েস ও বিলিং',
-          href: `/${tenantSlug}/billing`,
-          icon: 'Receipt',
         },
         {
           title: 'Expenses & Accounting',
