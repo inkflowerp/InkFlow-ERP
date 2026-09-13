@@ -1,8 +1,13 @@
-import {
+import type {
   QuotationRecord,
   QuotationActivityRecord,
   QuotationStatus,
-} from '@/types/quotation.types'
+  CreateQuotationPayload,
+} from '../types/quotation.types.ts'
+import { QuotationRepository } from '../lib/repositories/quotation.repository.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import type { SalesOrderRecord } from '../types/order.types.ts'
+import type { InvoiceRecord } from '../types/billing.types.ts'
 
 export const DEFAULT_QUOTATION_TERMS = `1. Payment Terms: 50% advance with work order confirmation, balance upon delivery or invoice.
 2. Proof Approval: Color tone and typography must be approved by the client via digital soft proof before production.
@@ -16,78 +21,103 @@ export const DEFAULT_QUOTATION_TERMS_BN = `১. মূল্য পরিশো�
 ৪. ট্যাক্স ও ভ্যাট: জাতীয় রাজস্ব বোর্ডের মূসক-৬.৩ চালান অনুযায়ী প্রযোজ্য ভ্যাট ধার্য করা হয়েছে।
 ৫. মেয়াদের শর্ত: এই উদ্ধৃতিপত্রটি জারির তারিখ হতে পরবর্তী ১৫ দিন পর্যন্ত বলবৎ থাকবে।`
 
-
-
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { SalesOrderRecord } from '@/types/order.types'
-
 export class QuotationService {
   static async getQuotations(companyId: string = 'c-01'): Promise<QuotationRecord[]> {
-    const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-    return quotes.filter((q) => !q.company_id || q.company_id === companyId)
+    return QuotationRepository.getQuotations(companyId)
   }
 
   static async getQuotationById(id: string, companyId: string = 'c-01'): Promise<QuotationRecord | null> {
-    const quotes = await this.getQuotations(companyId)
-    return quotes.find((q) => q.id === id || q.quotation_number === id) || null
+    return QuotationRepository.getQuotationById(id, companyId)
   }
 
   static async createQuotation(data: Partial<QuotationRecord>): Promise<QuotationRecord> {
-    const id = data.id || `quo-${Date.now()}`
-    const num = data.quotation_number || `QUO-0000${Math.floor(Math.random() * 900) + 100}`
-    const newQuote: QuotationRecord = {
-      id,
+    return QuotationRepository.createQuotation({
       company_id: data.company_id || 'c-01',
-      quotation_number: num,
-      customer_id: data.customer_id || 'cust-01',
+      customer_id: data.customer_id || null,
       customer_name: data.customer_name || 'Customer',
       customer_name_bn: data.customer_name_bn || null,
+      customer_company: data.customer_company || null,
       customer_phone: data.customer_phone || '+8801711000000',
+      customer_whatsapp: data.customer_whatsapp || null,
       customer_email: data.customer_email || null,
       customer_address: data.customer_address || null,
       customer_bin: data.customer_bin || null,
+      customer_type: data.customer_type || 'retail',
       status: data.status || 'draft',
       quotation_date: data.quotation_date || new Date().toISOString().split('T')[0],
-      valid_until: data.valid_until || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      salesperson_id: data.salesperson_id || 'usr-001',
+      valid_until: data.valid_until || new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
+      reference_no: data.reference_no || null,
+      salesperson_id: data.salesperson_id || null,
       salesperson_name: data.salesperson_name || 'Sales Representative',
       language_mode: data.language_mode || 'bn',
       items: data.items || [],
-      subtotal: data.subtotal || 0,
       discount_amount: data.discount_amount || 0,
       vat_rate: data.vat_rate || 7.5,
-      vat_amount: data.vat_amount || 0,
-      grand_total: data.grand_total || 0,
-      total_cost: data.total_cost || Math.round((data.grand_total || 0) * 0.65),
-      margin_percent: data.margin_percent || 35,
-      terms_and_conditions: data.terms_and_conditions || DEFAULT_QUOTATION_TERMS,
+      delivery_date: data.delivery_date || null,
+      delivery_location: data.delivery_location || null,
+      delivery_method: data.delivery_method || 'customer_pickup',
+      installation_required: data.installation_required || false,
       notes: data.notes || '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-    PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, newQuote)
-    return newQuote
+      terms_and_conditions: data.terms_and_conditions || DEFAULT_QUOTATION_TERMS,
+      internal_notes: data.internal_notes || null,
+    })
   }
 
-  static async updateQuotation(id: string, data: Partial<QuotationRecord>): Promise<QuotationRecord | null> {
-    return PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, id, data)
+  static async updateQuotation(id: string, data: Partial<QuotationRecord>, companyId: string = 'c-01'): Promise<QuotationRecord | null> {
+    return QuotationRepository.updateQuotation(id, data, companyId)
   }
 
-  static async deleteQuotation(id: string): Promise<boolean> {
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
+  static async deleteQuotation(id: string, companyId: string = 'c-01'): Promise<boolean> {
+    const quote = await this.getQuotationById(id, companyId)
+    if (!quote) return false
+    PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
+    return true
   }
 
   static async convertToOrder(quoteId: string): Promise<SalesOrderRecord | null> {
     return PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
   }
 
-  static async getActivities(quotationId: string): Promise<QuotationActivityRecord[]> {
-    const activities = PrintERPDataStore.get<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES) || []
-    return activities.filter((a) => a.quotation_id === quotationId)
+  static async convertToInvoice(quoteId: string, companyId: string = 'c-01', createdByName?: string): Promise<InvoiceRecord> {
+    return QuotationRepository.convertQuotationToInvoice(quoteId, companyId, { createdByName })
+  }
+
+  static async getActivities(quotationId: string, companyId: string = 'c-01'): Promise<QuotationActivityRecord[]> {
+    return QuotationRepository.getActivities(quotationId, companyId)
   }
 
   static async addActivity(activity: QuotationActivityRecord): Promise<QuotationActivityRecord[]> {
     return PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
   }
-}
 
+  /**
+   * Generates customer-facing text message for WhatsApp, SMS, or Email
+   * Strictly shields internal notes, database IDs, and sensitive data.
+   */
+  static generateQuotationTextMessage(quote: QuotationRecord, companyName: string = 'InkFlow'): string {
+    const itemsSummary = (quote.items || [])
+      .map((it, idx) => {
+        const dim = it.width > 0 && it.height > 0 ? ` (${it.width}ft × ${it.height}ft)` : ''
+        return `${idx + 1}. ${it.description}${dim} - ৳${Number(it.item_total).toLocaleString('en-BD')}`
+      })
+      .slice(0, 4)
+      .join('\n')
+
+    const moreItems = quote.items && quote.items.length > 4 ? `\n...and ${quote.items.length - 4} more items` : ''
+
+    return `*Quotation: ${quote.quotation_number}*
+From: ${companyName}
+Customer: ${quote.customer_name}${quote.customer_company ? ` (${quote.customer_company})` : ''}
+Date: ${quote.quotation_date}
+Valid Until: ${quote.valid_until}
+
+*Items Summary:*
+${itemsSummary}${moreItems}
+
+Subtotal: ৳${Number(quote.subtotal).toLocaleString('en-BD')}
+${quote.discount_amount > 0 ? `Discount: -৳${Number(quote.discount_amount).toLocaleString('en-BD')}\n` : ''}VAT (${quote.vat_rate}%): ৳${Number(quote.vat_amount).toLocaleString('en-BD')}
+*Grand Total: ৳${Number(quote.grand_total).toLocaleString('en-BD')} BDT*
+
+${quote.notes ? `*Notes:* ${quote.notes}\n` : ''}Thank you for your business.`
+  }
+}
