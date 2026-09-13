@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Receipt,
   Search,
@@ -11,7 +11,7 @@ import {
   CreditCard,
   Smartphone,
   CheckCircle2,
-  AlertCircle,
+  AlertTriangle,
   Clock,
   Printer,
   MessageSquare,
@@ -19,6 +19,12 @@ import {
   ArrowRight,
   ShieldCheck,
   UserCheck,
+  Loader2,
+  Send,
+  X,
+  Copy,
+  Check,
+  ExternalLink,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -68,9 +74,13 @@ export function RecordPaymentModal({
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([])
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false)
 
-  // Form State
+  // Customer Autocomplete / Selection
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
-  const [customerSearch, setCustomerSearch] = useState('')
+  const [customerSearchQuery, setCustomerSearchQuery] = useState('')
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
+  const customerSearchRef = useRef<HTMLDivElement>(null)
+
+  // Form State
   const [amount, setAmount] = useState<number | ''>('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
   const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0])
@@ -94,8 +104,9 @@ export function RecordPaymentModal({
   const [sendNotification, setSendNotification] = useState(true)
   const [autoOpenReceipt, setAutoOpenReceipt] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  // Success Receipt Modal State
+  // Success State
   const [savedPayment, setSavedPayment] = useState<PaymentRecord | null>(null)
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
 
@@ -106,6 +117,7 @@ export function RecordPaymentModal({
       const invList = PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || []
       setCustomers(custList)
       setInvoices(invList)
+      setSubmitError(null)
 
       const targetCustId = preselectedCustomerId || (preselectedInvoiceId ? invList.find((i: InvoiceRecord) => i.id === preselectedInvoiceId)?.customer_id : '') || custList[0]?.id || ''
       setSelectedCustomerId(targetCustId)
@@ -126,10 +138,33 @@ export function RecordPaymentModal({
     }
   }, [open, preselectedCustomerId, preselectedInvoiceId, company?.id])
 
+  // Click outside to close customer dropdown
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (customerSearchRef.current && !customerSearchRef.current.contains(e.target as Node)) {
+        setShowCustomerDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   // Selected Customer Record
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId) || null
   }, [customers, selectedCustomerId])
+
+  // Customer Filter for Autocomplete
+  const filteredCustomers = useMemo(() => {
+    if (!customerSearchQuery.trim()) return customers.slice(0, 8)
+    const q = customerSearchQuery.toLowerCase()
+    return customers.filter(
+      c =>
+        c.name.toLowerCase().includes(q) ||
+        (c.company_name && c.company_name.toLowerCase().includes(q)) ||
+        c.mobile.includes(q)
+    ).slice(0, 10)
+  }, [customers, customerSearchQuery])
 
   // Unpaid Invoices for this customer
   const customerUnpaidInvoices = useMemo(() => {
@@ -206,24 +241,41 @@ export function RecordPaymentModal({
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSelectCustomer = (cust: CustomerRecord) => {
+    setSelectedCustomerId(cust.id)
+    setCustomerSearchQuery('')
+    setShowCustomerDropdown(false)
+  }
+
+  const handleClearCustomer = () => {
+    setSelectedCustomerId('')
+    setCustomerSearchQuery('')
+  }
+
+  const handleResetForm = () => {
+    setAmount('')
+    setNotes('')
+    setMfsTrxId('')
+    setMfsSenderNumber('')
+    setChequeNumber('')
+    setSavedPayment(null)
+    setSubmitError(null)
+    const autoReceipt = PrintERPDataStore.getNextDocumentNumber(company?.id || 'default', 'receipt')
+    setReceiptNumber(autoReceipt)
+  }
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    setSubmitError(null)
+
     if (!selectedCustomerId) {
-      notify({
-        title: 'Customer Required',
-        message: 'Please select a customer to record payment.',
-        type: 'warning',
-      })
+      setSubmitError('Please select a customer before recording payment.')
       return
     }
 
     const payAmount = Number(amount) || 0
     if (payAmount <= 0) {
-      notify({
-        title: 'Invalid Amount',
-        message: 'Payment amount must be greater than 0.',
-        type: 'warning',
-      })
+      setSubmitError('Payment amount must be greater than ৳0.')
       return
     }
 
@@ -262,23 +314,18 @@ export function RecordPaymentModal({
         type: 'payment',
       })
 
+      setSavedPayment(payment)
+
       if (onPaymentRecorded) {
         onPaymentRecorded(payment)
       }
 
-      onOpenChange(false)
-
       // If auto open receipt is checked, show official Money Receipt modal
       if (autoOpenReceipt) {
-        setSavedPayment(payment)
         setIsReceiptModalOpen(true)
       }
     } catch (err: any) {
-      notify({
-        title: 'Payment Failed',
-        message: err.message || 'Failed to record payment collection.',
-        type: 'error',
-      })
+      setSubmitError(err.message || 'Failed to record payment collection.')
     } finally {
       setIsSubmitting(false)
     }
@@ -288,14 +335,73 @@ export function RecordPaymentModal({
     <>
       <ModalDialog
         open={open}
-        onOpenChange={onOpenChange}
-        title="Record Customer Payment & Money Receipt (MR)"
-        description="Easier than Excel • Faster than paper • More organized than WhatsApp"
-        className="max-w-3xl"
+        onOpenChange={(v) => {
+          if (!v) handleResetForm()
+          onOpenChange(v)
+        }}
+        size="5xl"
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-xl bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center">
+              <Receipt className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-black text-slate-900 dark:text-white">
+                {locale === 'bn' ? 'কাস্টমার পেমেন্ট ও মানি রিসিট (MR)' : 'Record Customer Payment & Money Receipt (MR)'}
+              </h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Easier than Excel • Faster than paper • More organized than WhatsApp
+              </p>
+            </div>
+          </div>
+        }
+        hideFooter
       >
-        <form onSubmit={handleSubmit} className="space-y-4 pt-1 max-h-[82vh] overflow-y-auto px-1">
+        <div className="space-y-5 pt-1 pb-4 max-h-[80vh] overflow-y-auto pr-1">
+          {/* SUCCESS BANNER */}
+          {savedPayment && (
+            <div className="rounded-xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-900 dark:text-emerald-200 animate-in fade-in-0">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span>
+                  <strong>Money Receipt #{savedPayment.receipt_number} Created!</strong> Received: ৳{formatBDT(savedPayment.amount)} from {savedPayment.customer_name}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsReceiptModalOpen(true)}
+                  className="h-7 text-xs bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-100 dark:bg-slate-900 dark:text-emerald-300 dark:border-emerald-700 font-bold"
+                >
+                  <Printer className="h-3.5 w-3.5 mr-1" />
+                  View & Print MR
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleResetForm}
+                  className="h-7 text-xs text-slate-600 dark:text-slate-300"
+                >
+                  + Record Another
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ERROR BANNER */}
+          {submitError && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 p-3.5 flex items-start gap-2.5 text-xs text-rose-900 dark:text-rose-200 animate-in fade-in-0">
+              <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-bold">Validation Error</span>
+                <p>{submitError}</p>
+              </div>
+            </div>
+          )}
+
           {/* =========================================================================
-              SECTION 1: CUSTOMER SELECTION & RECEIVABLES SUMMARY
+              SECTION 1: CUSTOMER INFORMATION & RECEIVABLES
              ========================================================================= */}
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
             <div className="flex items-center justify-between">
@@ -308,44 +414,100 @@ export function RecordPaymentModal({
                 </h3>
               </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsCustomerModalOpen(true)}
-                className="h-7 text-xs font-bold gap-1 text-emerald-600 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                + New Customer
-              </Button>
+              <div className="flex items-center gap-2">
+                {selectedCustomer && (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                      <UserCheck className="h-3.5 w-3.5" />
+                      Existing Customer Linked
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleClearCustomer}
+                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer"
+                    >
+                      Change
+                    </button>
+                  </div>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCustomerModalOpen(true)}
+                  className="h-7 text-xs font-bold gap-1 text-emerald-600 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  + New Customer
+                </Button>
+              </div>
             </div>
 
-            {/* Customer Picker */}
-            <div className="space-y-1.5">
-              <Label htmlFor="custSelect" className="text-xs font-semibold">
-                Select Customer *
-              </Label>
-              <select
-                id="custSelect"
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold focus:ring-2 focus:ring-emerald-500"
-              >
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} {c.company_name ? `(${c.company_name})` : ''} — 📞 {c.mobile} — Due: ৳ {formatBDT(c.total_due_balance || 0)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Unified Customer Search & Autocomplete */}
+            {!selectedCustomer ? (
+              <div className="relative" ref={customerSearchRef}>
+                <Label htmlFor="custSearchInput" className="text-xs font-semibold mb-1 block">
+                  Search & Select Customer <span className="text-rose-500">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="custSearchInput"
+                    placeholder="Search by name, company name, or mobile number..."
+                    value={customerSearchQuery}
+                    onChange={(e) => {
+                      setCustomerSearchQuery(e.target.value)
+                      setShowCustomerDropdown(true)
+                    }}
+                    onFocus={() => setShowCustomerDropdown(true)}
+                    className="text-xs h-9 pr-8 font-medium border-slate-300 dark:border-slate-700 focus:border-emerald-500"
+                  />
+                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                </div>
 
-            {/* Selected Customer Summary Card */}
-            {selectedCustomer && (
+                {/* Dropdown list */}
+                {showCustomerDropdown && filteredCustomers.length > 0 && (
+                  <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredCustomers.map((cust) => (
+                      <div
+                        key={cust.id}
+                        onClick={() => handleSelectCustomer(cust)}
+                        className="p-3 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 cursor-pointer transition-colors flex items-center justify-between text-xs"
+                      >
+                        <div>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">
+                            {cust.name} {cust.name_bn && <span className="font-normal text-slate-500">({cust.name_bn})</span>}
+                          </div>
+                          {cust.company_name && (
+                            <div className="text-[11px] text-slate-500 font-medium">🏢 {cust.company_name}</div>
+                          )}
+                          <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+                            📞 {cust.mobile}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] text-slate-400 block font-semibold">Total Due</span>
+                          <span className={cn(
+                            "font-mono font-bold text-xs",
+                            (cust.total_due_balance || 0) > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
+                          )}>
+                            ৳ {formatBDT(cust.total_due_balance || 0)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Selected Customer Profile Summary */
               <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div className="space-y-0.5">
                   <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
                     <span>{selectedCustomer.name}</span>
+                    {selectedCustomer.company_name && (
+                      <span className="font-normal text-slate-500">({selectedCustomer.company_name})</span>
+                    )}
                     {selectedCustomer.customer_type && (
                       <Badge variant="outline" className="text-[10px] uppercase font-bold py-0 h-4">
                         {selectedCustomer.customer_type}
@@ -353,12 +515,12 @@ export function RecordPaymentModal({
                     )}
                   </div>
                   <div className="text-slate-500 dark:text-slate-400 text-[11px]">
-                    Phone: <strong>{selectedCustomer.mobile}</strong>
+                    Phone: <strong className="font-mono text-slate-700 dark:text-slate-300">{selectedCustomer.mobile}</strong>
                     {selectedCustomer.address ? ` • ${selectedCustomer.address}` : ''}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <div className="text-right">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Due Balance</span>
                     <span className={cn(
@@ -393,7 +555,7 @@ export function RecordPaymentModal({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="payAmount" className="text-xs font-semibold">
-                  Amount Received (৳ BDT) *
+                  Amount Received (৳ BDT) <span className="text-rose-500">*</span>
                 </Label>
                 {totalCustomerDue > 0 && (
                   <div className="flex items-center gap-1.5">
@@ -438,7 +600,9 @@ export function RecordPaymentModal({
 
             {/* Payment Channel / Method Selector */}
             <div className="space-y-2">
-              <Label className="text-xs font-semibold block">Payment Channel *</Label>
+              <Label className="text-xs font-semibold block">
+                Payment Channel <span className="text-rose-500">*</span>
+              </Label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {PAYMENT_METHODS.map((pm) => {
                   const isSelected = paymentMethod === pm.id
@@ -470,7 +634,7 @@ export function RecordPaymentModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="space-y-1">
                   <Label htmlFor="trxId" className="text-xs font-semibold">
-                    MFS Transaction ID (TrxID) *
+                    MFS Transaction ID (TrxID) <span className="text-rose-500">*</span>
                   </Label>
                   <Input
                     id="trxId"
@@ -500,7 +664,7 @@ export function RecordPaymentModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="space-y-1">
                   <Label htmlFor="bankName" className="text-xs font-semibold">
-                    Bank Name *
+                    Bank Name <span className="text-rose-500">*</span>
                   </Label>
                   <Input
                     id="bankName"
@@ -531,7 +695,7 @@ export function RecordPaymentModal({
                   <>
                     <div className="space-y-1">
                       <Label htmlFor="chequeNo" className="text-xs font-semibold">
-                        Cheque Number *
+                        Cheque Number <span className="text-rose-500">*</span>
                       </Label>
                       <Input
                         id="chequeNo"
@@ -563,7 +727,7 @@ export function RecordPaymentModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="payDate" className="text-xs font-semibold">
-                  Payment Collection Date *
+                  Payment Collection Date <span className="text-rose-500">*</span>
                 </Label>
                 <Input
                   id="payDate"
@@ -576,7 +740,7 @@ export function RecordPaymentModal({
               </div>
               <div className="space-y-1">
                 <Label htmlFor="recBy" className="text-xs font-semibold">
-                  Received / Collected By *
+                  Received / Collected By <span className="text-rose-500">*</span>
                 </Label>
                 <Input
                   id="recBy"
@@ -721,7 +885,7 @@ export function RecordPaymentModal({
                 4
               </div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Money Receipt (MR) & Notification Options
+                Money Receipt (MR) & Remarks
               </h3>
             </div>
 
@@ -780,31 +944,60 @@ export function RecordPaymentModal({
               </label>
             </div>
           </div>
+        </div>
 
-          {/* =========================================================================
-              MODAL FOOTER ACTIONS
-             ========================================================================= */}
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        {/* =========================================================================
+            STANDARDIZED MODAL BOTTOM ACTION BAR (MATCHING INVOICE & QUOTATION MODALS)
+           ========================================================================= */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              handleResetForm()
+              onOpenChange(false)
+            }}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            Cancel
+          </Button>
+
+          <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+            {/* Direct MR Preview Trigger if payment already recorded */}
+            {savedPayment && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsReceiptModalOpen(true)}
+                className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1.5"
+              >
+                <Printer className="h-4 w-4" />
+                <span>View / Print MR</span>
+              </Button>
+            )}
+
+            {/* Primary Save & Issue Money Receipt Button */}
             <Button
               type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="w-full sm:w-auto h-10 text-xs font-bold"
-              disabled={isSubmitting}
+              onClick={() => handleSubmit()}
+              disabled={isSubmitting || !selectedCustomerId || !amount || Number(amount) <= 0}
+              className="h-10 px-5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2"
             >
-              Cancel
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting || !amount || Number(amount) <= 0}
-              className="w-full sm:w-auto h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm"
-            >
-              <Receipt className="h-4 w-4" />
-              {isSubmitting ? 'Recording Payment...' : 'Save & Issue Money Receipt'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Recording Payment...</span>
+                </>
+              ) : (
+                <>
+                  <Receipt className="h-4 w-4" />
+                  <span>Save & Issue Money Receipt</span>
+                </>
+              )}
             </Button>
           </div>
-        </form>
+        </div>
       </ModalDialog>
 
       {/* QUICK NEW CUSTOMER MODAL */}
@@ -817,7 +1010,7 @@ export function RecordPaymentModal({
         }}
       />
 
-      {/* MONEY RECEIPT VIEWER MODAL */}
+      {/* OFFICIAL MONEY RECEIPT VIEWER MODAL */}
       <MoneyReceiptModal
         open={isReceiptModalOpen}
         onOpenChange={setIsReceiptModalOpen}
