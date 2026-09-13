@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Printer,
@@ -24,6 +24,12 @@ import {
   Check,
   FileCheck,
   Cpu,
+  Calendar,
+  LayoutGrid,
+  ListFilter,
+  Plus,
+  ArrowRight,
+  ShieldAlert,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -31,581 +37,416 @@ import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import {
-  getDepartmentColumns,
-} from '@/lib/formatters'
-import {
-  ProductionJobRecord,
+  ProductionTaskRecord,
+  MachineQueueGroup,
   ProductionDepartment,
-  ProductionJobStatus,
-  ProductionReworkRecord,
-  JobPriority,
+  ProductionTaskStatus,
 } from '@/types/production.types'
-import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import {
+  getProductionTasksAction,
+  getMachineQueuesAction,
+  startProductionTaskAction,
+  pauseProductionTaskAction,
+  completeProductionTaskAction,
+  resumeProductionTaskAction,
+} from '@/actions/production-planning.actions'
+import { ProductionBoardCard } from '@/components/production/production-board-card'
+import { MachineQueueView } from '@/components/production/machine-queue-view'
+import { ScheduleTaskModal } from '@/components/production/schedule-task-modal'
+import { HoldTaskModal } from '@/components/production/hold-task-modal'
+import { ReworkTaskModal } from '@/components/production/rework-task-modal'
 
 const DEPARTMENTS = [
-  { id: 'all', label: 'All Operations', icon: Printer },
-  { id: 'pre_press', label: 'Pre-Press / Rip', icon: FileCheck },
-  { id: 'printing', label: 'Wide & Flatbed Print', icon: Printer },
-  { id: 'finishing', label: 'Lamination & Die-cut', icon: Layers },
-  { id: 'fabrication', label: 'Metal & Acrylic Fab', icon: Wrench },
-  { id: 'installation', label: 'On-Site Installation', icon: Truck },
+  { id: 'all', label: 'All Operations', labelBn: 'সকল অপারেশন', icon: Printer },
+  { id: 'printing', label: 'Wide & Flatbed Print', labelBn: 'প্রিন্টিং', icon: Printer },
+  { id: 'finishing', label: 'Lamination & Die-cut', labelBn: 'ফিনিশিং', icon: Layers },
+  { id: 'fabrication', label: 'Metal & Acrylic Fab', labelBn: 'ফেব্রিকেশন', icon: Wrench },
+  { id: 'installation', label: 'On-Site Installation', labelBn: 'ইনস্টলেশন', icon: Truck },
 ]
 
-export default function ProductionDashboardPage() {
+export default function AdvancedProductionPage() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
-  const [jobs, setJobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
+  const [activeTab, setActiveTab] = useState<'board' | 'machine_queues' | 'table'>('board')
+  const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
+  const [machineQueues, setMachineQueues] = useState<MachineQueueGroup[]>([])
   const [selectedDept, setSelectedDept] = useState<string>('all')
   const [search, setSearch] = useState('')
-
-  // Action Modals
-  const [selectedJobForRework, setSelectedJobForRework] = useState<ProductionJobRecord | null>(null)
-  const [selectedJobForPause, setSelectedJobForPause] = useState<ProductionJobRecord | null>(null)
-  const [pauseReason, setPauseReason] = useState('')
-
-  // Rework Form State
-  const [reworkReason, setReworkReason] = useState('')
-  const [reworkDept, setReworkDept] = useState<ProductionDepartment>('printing')
-  const [materialWastage, setMaterialWastage] = useState('')
-  const [extraLaborHours, setExtraLaborHours] = useState<number>(2)
-  const [additionalHours, setAdditionalHours] = useState<number>(4)
+  const [loading, setLoading] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
+
+  // Interactive Modals State
+  const [scheduleTaskTarget, setScheduleTaskTarget] = useState<ProductionTaskRecord | null>(null)
+  const [holdTaskTarget, setHoldTaskTarget] = useState<ProductionTaskRecord | null>(null)
+  const [reworkTaskTarget, setReworkTaskTarget] = useState<ProductionTaskRecord | null>(null)
 
   const showNotification = (msg: string) => {
     setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+    setTimeout(() => setNotification(null), 4000)
   }
 
-  // Filter Jobs by Dept & Search
-  const filteredJobs = jobs.filter((job) => {
-    const matchDept = selectedDept === 'all' || job.department === selectedDept
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const [taskRes, queueRes] = await Promise.all([
+        getProductionTasksAction({ department: selectedDept }),
+        getMachineQueuesAction(),
+      ])
+
+      if (taskRes.success && taskRes.data) {
+        setTasks(taskRes.data)
+      }
+      if (queueRes.success && queueRes.data) {
+        setMachineQueues(queueRes.data)
+      }
+    } catch (_) {
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [selectedDept])
+
+  // Filter Tasks
+  const filteredTasks = tasks.filter((task) => {
+    const matchDept = selectedDept === 'all' || task.department === selectedDept
     const matchSearch =
-      job.production_job_number.toLowerCase().includes(search.toLowerCase()) ||
-      job.product_name.toLowerCase().includes(search.toLowerCase()) ||
-      job.customer_name.toLowerCase().includes(search.toLowerCase())
+      task.task_number.toLowerCase().includes(search.toLowerCase()) ||
+      task.task_name.toLowerCase().includes(search.toLowerCase()) ||
+      (task.customer_name && task.customer_name.toLowerCase().includes(search.toLowerCase())) ||
+      (task.job_number && task.job_number.toLowerCase().includes(search.toLowerCase()))
 
     return matchDept && matchSearch
   })
 
-  // Executive Count Badges
-  const totalJobs = jobs.length
-  const countInProgress = jobs.filter((j) => j.status === 'in_progress').length
-  const countUrgent = jobs.filter((j) => j.priority === 'urgent' || j.priority === 'very_urgent').length
-  const countRework = jobs.filter((j) => j.status === 'rework' || j.has_rework).length
-  const countCompleted = jobs.filter((j) => j.status === 'completed').length
+  // Executive KPI Counts
+  const totalTasks = tasks.length
+  const countQueued = tasks.filter((t) => t.status === 'queued' || t.status === 'scheduled').length
+  const countInProgress = tasks.filter((t) => t.status === 'in_progress').length
+  const countOnHold = tasks.filter((t) => t.status === 'on_hold' || t.hold_reason).length
+  const countCompleted = tasks.filter((t) => t.status === 'completed').length
+  const countMachinesInUse = machineQueues.filter((m) => m.operating_status === 'in_use' || m.now !== null).length
 
-  const handleUpdateStatus = (jobId: string, newStatus: ProductionJobStatus) => {
-    PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, jobId, {
-      status: newStatus,
-      updated_at: new Date().toISOString(),
-    })
-    showNotification(`Job #${jobId.slice(-6).toUpperCase()} status changed to ${newStatus}.`)
-  }
-
-  const handleStartJob = (jobId: string) => {
-    handleUpdateStatus(jobId, 'in_progress')
-  }
-
-  const handleCompleteJob = (jobId: string) => {
-    handleUpdateStatus(jobId, 'completed')
-  }
-
-  // Quick Action: Pause Job
-  const handleConfirmPause = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedJobForPause) return
-
-    PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, selectedJobForPause.id, {
-      status: 'paused',
-      pause_reason: pauseReason,
-      updated_at: new Date().toISOString(),
-    })
-    setSelectedJobForPause(null)
-    setPauseReason('')
-    showNotification('Job production paused with reason logged.')
-  }
-
-  // Quick Action: Log Rework & Scrap
-  const handleConfirmRework = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedJobForRework) return
-
-    const reworkNum = `RW-${Date.now().toString().slice(-4)}`
-    const newRework: ProductionReworkRecord = {
-      id: `rw-${Date.now()}`,
-      production_job_id: selectedJobForRework.id,
-      rework_number: reworkNum,
-      reason: reworkReason,
-      responsible_department: reworkDept,
-      material_wastage: materialWastage,
-      extra_labor_hours: extraLaborHours,
-      additional_time_hours: additionalHours,
-      estimated_wastage_cost: extraLaborHours * 500 + 1500,
-      reported_by_name: 'Floor QC Inspector',
-      status: 'in_rework',
-      created_at: new Date().toISOString(),
+  // Quick Card Handlers
+  const handleStartTask = async (task: ProductionTaskRecord) => {
+    try {
+      const res = await startProductionTaskAction(task.id)
+      if (res.success) {
+        showNotification(`Started task: ${task.task_name}`)
+        loadData()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
     }
-
-    PrintERPDataStore.addItem<ProductionReworkRecord>(STORAGE_KEYS.REWORKS, newRework)
-    PrintERPDataStore.updateItem<ProductionJobRecord>(STORAGE_KEYS.PRODUCTION_JOBS, selectedJobForRework.id, {
-      has_rework: true,
-      rework_count: (selectedJobForRework.rework_count || 0) + 1,
-      status: 'rework',
-      reworks: [newRework, ...(selectedJobForRework.reworks || [])],
-      updated_at: new Date().toISOString(),
-    })
-
-    setSelectedJobForRework(null)
-    setReworkReason('')
-    showNotification(`Rework ticket ${reworkNum} created. Additional scrap & labor logged.`)
   }
 
-  const activeColumns = getDepartmentColumns(selectedDept)
+  const handlePauseTask = async (task: ProductionTaskRecord) => {
+    const reason = prompt('Enter pause reason (e.g. Break / Shift change / QC inspection):')
+    if (reason === null) return
+
+    try {
+      const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused')
+      if (res.success) {
+        showNotification(`Paused task: ${task.task_name}`)
+        loadData()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    }
+  }
+
+  const handleCompleteTask = async (task: ProductionTaskRecord) => {
+    try {
+      const res = await completeProductionTaskAction(task.id, {
+        good_quantity: task.quantity,
+        rejected_quantity: 0,
+      })
+      if (res.success) {
+        showNotification(`Task completed! ${res.data?.nextReadyTask ? `Next task (${res.data.nextReadyTask.task_name}) is now READY.` : ''}`)
+        loadData()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    }
+  }
+
+  const handleResumeTask = async (task: ProductionTaskRecord) => {
+    try {
+      const res = await resumeProductionTaskAction(task.id)
+      if (res.success) {
+        showNotification(`Task ${task.task_number} resumed from hold.`)
+        loadData()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    }
+  }
+
+  // Kanban Columns Definition
+  const kanbanColumns: { id: string; title: string; titleBn: string; statuses: ProductionTaskStatus[] }[] = [
+    { id: 'queued', title: 'QUEUED', titleBn: 'অপেক্ষারত', statuses: ['queued'] },
+    { id: 'scheduled', title: 'SCHEDULED', titleBn: 'শিডিউল্ড', statuses: ['scheduled', 'ready'] },
+    { id: 'in_progress', title: 'IN PROGRESS', titleBn: 'চলমান', statuses: ['in_progress', 'paused'] },
+    { id: 'on_hold', title: 'ON HOLD / REWORK', titleBn: 'স্থগিত / রি-ওয়ার্ক', statuses: ['on_hold', 'rework'] },
+    { id: 'completed', title: 'COMPLETED', titleBn: 'সম্পন্ন', statuses: ['completed'] },
+  ]
 
   return (
     <FeatureGate feature="production">
       <div className="space-y-6 max-w-7xl">
         {/* Header */}
         <PageHeader
-          titleEn="Shop Floor Production Terminal"
-          titleBn="শপ ফ্লোর প্রোডাকশন টার্মিনাল"
-          descriptionEn="Dispatch, track, pause, and log reworks across printing, finishing, fabrication, and installation."
-          descriptionBn="প্রিন্টিং, ফিনিশিং, ফেব্রিকেশন এবং ইনস্টলেশন পর্যায়ের জব ট্র্যাকিং ও রি-ওয়ার্ক পর্যবেক্ষণ করুন।"
+          titleEn="Production Planning & Shop Floor Terminal"
+          titleBn="প্রোডাকশন প্ল্যানিং ও শপ ফ্লোর টার্মিনাল"
+          descriptionEn="Dispatch tasks, sequence multi-machine job orders, monitor machine queues, and manage floor execution."
+          descriptionBn="টাস্ক শিডিউলিং, একাধিক মেশিনের কাজ বণ্টন, মেশিন কিউ পর্যবেক্ষণ এবং ফ্লোর কার্যক্রম পরিচালনা করুন।"
           icon={Printer}
           iconColor="text-blue-600"
           actions={
             <div className="flex items-center gap-2">
               <Link href={`/${slug}/production/machineries`}>
-                <Button variant="default" size="sm" className="text-xs bangla-text bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-xs">
-                  <Cpu className="h-3.5 w-3.5" />
+                <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5">
+                  <Cpu className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Machinery Fleet', 'মেশিনারি বহর')}
                 </Button>
               </Link>
-              <Link href={`/${slug}/orders`}>
-                <Button variant="outline" size="sm" className="text-xs bangla-text">
-                  {tBilingual('View Sales Orders', 'সকল সেলস অর্ডার')}
+              <Link href={`/${slug}/operator`}>
+                <Button variant="default" size="sm" className="text-xs bangla-text bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-xs">
+                  <Printer className="h-3.5 w-3.5" />
+                  {tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}
                 </Button>
               </Link>
             </div>
           }
         />
 
-      {/* Notification */}
-      {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span>{notification}</span>
+        {/* Notifications Toast */}
+        {notification && (
+          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>{notification}</span>
+          </div>
+        )}
+
+        {/* KPI Summary Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <Card className="p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              {tBilingual('Tasks Total', 'মোট কাজ')}
+            </div>
+            <div className="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1">
+              {totalTasks}
+            </div>
+          </Card>
+
+          <Card className="p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <div className="text-[11px] font-semibold text-purple-600 uppercase tracking-wider">
+              {tBilingual('Queued / Sched.', 'কিউ / শিডিউল')}
+            </div>
+            <div className="text-xl font-bold text-purple-700 dark:text-purple-300 mt-1">
+              {countQueued}
+            </div>
+          </Card>
+
+          <Card className="p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <div className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider">
+              {tBilingual('Running Now', 'চলমান কাজ')}
+            </div>
+            <div className="text-xl font-bold text-blue-700 dark:text-blue-300 mt-1 flex items-center gap-1.5">
+              <Flame className="h-4 w-4 text-blue-600 animate-pulse" />
+              {countInProgress}
+            </div>
+          </Card>
+
+          <Card className="p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <div className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider">
+              {tBilingual('On Hold / Blocked', 'স্থগিতাদেশ')}
+            </div>
+            <div className="text-xl font-bold text-amber-700 dark:text-amber-300 mt-1">
+              {countOnHold}
+            </div>
+          </Card>
+
+          <Card className="p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <div className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider">
+              {tBilingual('Completed', 'সম্পন্ন')}
+            </div>
+            <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
+              {countCompleted}
+            </div>
+          </Card>
+
+          <Card className="p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              {tBilingual('Machines Active', 'সক্রিয় মেশিন')}
+            </div>
+            <div className="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1 flex items-center gap-1">
+              <Cpu className="h-4 w-4 text-blue-600" />
+              {countMachinesInUse} / {machineQueues.length}
+            </div>
+          </Card>
         </div>
-      )}
 
-      {/* Production Dashboard Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
-        <Card className="p-3.5">
-          <span className="text-xs font-semibold text-slate-500">Floor Jobs (মোট কাজ)</span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{totalJobs}</div>
-          <span className="text-[11px] text-slate-400">Active machine bays</span>
-        </Card>
-
-        <Card className="p-3.5 border-l-4 border-l-blue-500">
-          <span className="text-xs font-semibold text-slate-500">In Progress (প্রিন্ট চলছে)</span>
-          <div className="text-2xl font-black text-blue-600 mt-1">{countInProgress}</div>
-          <span className="text-[11px] text-blue-600 font-medium">Running on presses</span>
-        </Card>
-
-        <Card className="p-3.5 border-l-4 border-l-amber-500">
-          <span className="text-xs font-semibold text-slate-500">Urgent Priority</span>
-          <div className="text-2xl font-black text-amber-600 mt-1">{countUrgent}</div>
-          <span className="text-[11px] text-amber-600 font-medium">Priority queue</span>
-        </Card>
-
-        <Card className="p-3.5 border-l-4 border-l-red-500 bg-red-50/20 dark:bg-red-950/10">
-          <span className="text-xs font-semibold text-red-700 dark:text-red-400">Rework & Scrap (পুনঃকাজ)</span>
-          <div className="text-2xl font-black text-red-600 mt-1">{countRework}</div>
-          <span className="text-[11px] text-red-600 font-medium">Material wastage logged</span>
-        </Card>
-
-        <Card className="p-3.5 border-l-4 border-l-emerald-500">
-          <span className="text-xs font-semibold text-slate-500">Completed Today</span>
-          <div className="text-2xl font-black text-emerald-600 mt-1">{countCompleted}</div>
-          <span className="text-[11px] text-emerald-600 font-medium">Passed final QC</span>
-        </Card>
-      </div>
-
-      {/* Department Filter Tabs */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-          {DEPARTMENTS.map((dept) => {
-            const Icon = dept.icon
-            const isSelected = selectedDept === dept.id
-
-            return (
-              <Button
-                key={dept.id}
-                size="sm"
-                variant={isSelected ? 'default' : 'ghost'}
-                onClick={() => setSelectedDept(dept.id)}
-                className={`text-xs h-8 px-3 whitespace-nowrap ${
-                  isSelected ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5 mr-1.5" />
-                {dept.label}
-              </Button>
-            )
-          })}
-        </div>
-
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
-          <Input
-            placeholder="Search job #, product, operator..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 h-8 text-xs bg-white dark:bg-slate-950"
-          />
-        </div>
-      </div>
-
-      {/* DYNAMIC ADAPTIVE KANBAN BOARD */}
-      <div className="flex md:grid md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-x-auto pb-4 touch-scroll snap-x snap-mandatory">
-        {activeColumns.map((col) => {
-          const colJobs = filteredJobs.filter((j) => col.statusMatch.includes(j.status))
-
-          return (
-            <div
-              key={col.id}
-              className="bg-slate-50/90 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200 dark:border-slate-800 flex flex-col min-w-[280px] xs:min-w-[300px] md:min-w-0 snap-start shrink-0 md:shrink"
+        {/* View Switcher & Filters */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+          {/* Tabs */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/60 p-1 rounded-lg">
+            <button
+              onClick={() => setActiveTab('board')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
+                activeTab === 'board'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
             >
-              {/* Column Header */}
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800 mb-3">
-                <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
-                  {col.title}
-                </span>
-                <span className="h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-800 text-[11px] font-mono font-bold flex items-center justify-center text-slate-600 dark:text-slate-400">
-                  {colJobs.length}
-                </span>
-              </div>
+              <LayoutGrid className="h-3.5 w-3.5" />
+              {tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}
+            </button>
+            <button
+              onClick={() => setActiveTab('machine_queues')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
+                activeTab === 'machine_queues'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <Cpu className="h-3.5 w-3.5" />
+              {tBilingual('Machine Queues (NOW/NEXT)', 'মেশিন কিউ')}
+            </button>
+          </div>
 
-              {/* Job Cards */}
-              <div className="space-y-3 flex-1 overflow-y-auto max-h-[650px]">
-                {colJobs.length === 0 ? (
-                  <div className="py-8 text-center text-slate-400 text-xs italic">
-                    No jobs in this stage.
-                  </div>
-                ) : (
-                  colJobs.map((job) => (
-                    <Card
-                      key={job.id}
-                      className={`p-3.5 border transition-all ${
-                        job.status === 'rework'
-                          ? 'border-red-400 bg-red-50/20 dark:bg-red-950/20'
-                          : job.status === 'paused'
-                          ? 'border-amber-300 bg-amber-50/20 dark:bg-amber-950/20'
-                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950'
-                      }`}
-                    >
-                      {/* Top Meta: Job # & Priority */}
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="font-mono text-xs font-black text-blue-600 dark:text-blue-400">
-                          {job.production_job_number}
-                        </span>
-
-                        <div className="flex items-center gap-1">
-                          {job.priority === 'very_urgent' && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-red-600 bg-red-100 dark:bg-red-950 px-1.5 py-0.5 rounded border border-red-200 animate-pulse">
-                              <Flame className="h-2.5 w-2.5" /> Urgent
-                            </span>
-                          )}
-
-                          <span className="uppercase text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                            {job.department}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Title & Customer */}
-                      <h4 className="font-bold text-xs text-slate-900 dark:text-white">
-                        {job.product_name}
-                      </h4>
-                      <div className="text-[11px] text-slate-500 mt-0.5 truncate">
-                        {job.customer_name}
-                      </div>
-
-                      {/* Specs: Dimensions, Material */}
-                      <div className="mt-2 p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[11px] space-y-1">
-                        <div className="flex justify-between">
-                          <span className="text-slate-400">Size:</span>
-                          <strong className="font-mono text-slate-800 dark:text-slate-200">
-                            {job.dimensions_spec}
-                          </strong>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-400">Material:</span>
-                          <span className="text-slate-600 dark:text-slate-300 truncate max-w-[150px]">
-                            {job.material_spec}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Finishing / Fabrication Task Tags */}
-                      {job.finishing_tasks && job.finishing_tasks.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {job.finishing_tasks.map((t) => (
-                            <span
-                              key={t}
-                              className="text-[10px] capitalize px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {job.fabrication_tasks && job.fabrication_tasks.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {job.fabrication_tasks.map((t) => (
-                            <span
-                              key={t}
-                              className="text-[10px] capitalize px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200"
-                            >
-                              {t.replace('_', ' ')}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Workers & Deadline */}
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] flex items-center justify-between text-slate-500">
-                        <div className="flex items-center gap-1">
-                          <Users className="h-3 w-3 text-slate-400" />
-                          <span className="truncate max-w-[120px]">
-                            {job.assigned_workers[0] || 'Unassigned'}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1 text-red-600 font-semibold font-mono">
-                          <Clock className="h-3 w-3" />
-                          <span>{job.deadline.split(' ')[0]}</span>
-                        </div>
-                      </div>
-
-                      {/* Rework Alert Warning */}
-                      {job.has_rework && (
-                        <div className="mt-2 p-1.5 rounded bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 text-[10px] font-bold flex items-center gap-1 border border-red-300">
-                          <AlertOctagon className="h-3 w-3 text-red-600 shrink-0" />
-                          <span>Rework Active: {job.reworks?.[0]?.reason || 'Material defect'}</span>
-                        </div>
-                      )}
-
-                      {/* 1-CLICK PRODUCTION ACTION BUTTONS */}
-                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1">
-                        {job.status === 'queued' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleStartJob(job.id)}
-                            className="h-8 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold flex-1 min-h-[36px]"
-                          >
-                            <Play className="h-3.5 w-3.5 mr-1" />
-                            Start Run
-                          </Button>
-                        )}
-
-                        {job.status === 'in_progress' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedJobForPause(job)
-                                setPauseReason('')
-                              }}
-                              className="h-8 text-xs px-2.5 border-amber-300 text-amber-700 hover:bg-amber-50 min-h-[36px]"
-                            >
-                              <Pause className="h-3.5 w-3.5 mr-1" />
-                              Pause
-                            </Button>
-
-                            <Button
-                              size="sm"
-                              onClick={() => handleCompleteJob(job.id)}
-                              className="h-8 text-xs px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex-1 min-h-[36px]"
-                            >
-                              <Check className="h-3.5 w-3.5 mr-1" />
-                              Complete
-                            </Button>
-                          </>
-                        )}
-
-                        {job.status === 'paused' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleStartJob(job.id)}
-                            className="h-8 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold flex-1 min-h-[36px]"
-                          >
-                            <Play className="h-3.5 w-3.5 mr-1" />
-                            Resume
-                          </Button>
-                        )}
-
-                        {/* Rework Button (Allowed on any active job) */}
-                        {job.status !== 'completed' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedJobForRework(job)
-                              setReworkDept(job.department)
-                              setReworkReason('')
-                              setMaterialWastage('')
-                            }}
-                            className="h-8 text-xs px-2.5 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 min-h-[36px]"
-                          >
-                            <RotateCcw className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                      </div>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* MODAL: LOG REWORK & SCRAP */}
-      <ModalDialog
-        open={Boolean(selectedJobForRework)}
-        onOpenChange={(open) => !open && setSelectedJobForRework(null)}
-        title="Log Production Rework & Material Wastage"
-        description="Records defective output, scrapped substrates, and overtime labor for shop floor auditing."
-      >
-        {selectedJobForRework && (
-          <form onSubmit={handleConfirmRework} className="space-y-4 pt-1">
-            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs">
-              <span className="text-red-600 font-bold">Defective Job: </span>
-              <strong>{selectedJobForRework.production_job_number}</strong> ({selectedJobForRework.product_name})
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="rwkReason" required>Defect / Rework Reason</Label>
-              <textarea
-                id="rwkReason"
-                rows={2}
-                placeholder="e.g. Color banding streaks on Flora UV 3200; yellow printhead nozzle clogged."
-                value={reworkReason}
-                onChange={(e) => setReworkReason(e.target.value)}
-                required
-                className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+          {/* Department Pills & Search */}
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-48">
+              <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search job, task, client..."
+                className="text-xs pl-8 h-8"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="rwkDept" required>Responsible Department</Label>
-                <select
-                  id="rwkDept"
-                  value={reworkDept}
-                  onChange={(e) => setReworkDept(e.target.value as ProductionDepartment)}
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold capitalize"
+            <select
+              value={selectedDept}
+              onChange={(e) => setSelectedDept(e.target.value)}
+              className="text-xs h-8 rounded-md border border-slate-300 bg-white px-2.5 text-slate-900 shadow-xs dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            >
+              {DEPARTMENTS.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Tab 1: KANBAN PRODUCTION BOARD */}
+        {activeTab === 'board' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3.5 items-start">
+            {kanbanColumns.map((col) => {
+              const colTasks = filteredTasks.filter((t) => col.statuses.includes(t.status))
+
+              return (
+                <div
+                  key={col.id}
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 p-3 space-y-3 min-h-[500px]"
                 >
-                  <option value="printing">Printing</option>
-                  <option value="finishing">Finishing</option>
-                  <option value="fabrication">Fabrication</option>
-                  <option value="design">Design / Prepress</option>
-                  <option value="installation">Installation</option>
-                </select>
-              </div>
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      {tBilingual(col.title, col.titleBn)}
+                    </span>
+                    <Badge variant="outline" className="text-[11px] font-mono">
+                      {colTasks.length}
+                    </Badge>
+                  </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="rwkWaste" required>Material Wastage (Scrapped)</Label>
-                <Input
-                  id="rwkWaste"
-                  placeholder="e.g. 75 sft Panaflex 440gsm"
-                  value={materialWastage}
-                  onChange={(e) => setMaterialWastage(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
+                  <div className="space-y-2.5">
+                    {colTasks.map((task) => (
+                      <ProductionBoardCard
+                        key={task.id}
+                        task={task}
+                        onSchedule={(t) => setScheduleTaskTarget(t)}
+                        onStart={handleStartTask}
+                        onPause={handlePauseTask}
+                        onComplete={handleCompleteTask}
+                        onHold={(t) => setHoldTaskTarget(t)}
+                        onResume={handleResumeTask}
+                        onRework={(t) => setReworkTaskTarget(t)}
+                      />
+                    ))}
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="rwkLab">Extra Labor Hours</Label>
-                <Input
-                  id="rwkLab"
-                  type="number"
-                  step="0.5"
-                  value={extraLaborHours}
-                  onChange={(e) => setExtraLaborHours(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="rwkDel">Additional Time (Delivery Delay)</Label>
-                <Input
-                  id="rwkDel"
-                  type="number"
-                  step="0.5"
-                  value={additionalHours}
-                  onChange={(e) => setAdditionalHours(Number(e.target.value))}
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedJobForRework(null)} className="w-full sm:w-auto min-h-[40px]">
-                Cancel
-              </Button>
-              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-red-600 hover:bg-red-700 text-white font-bold">
-                Register Rework & Scrap Ticket
-              </Button>
-            </div>
-          </form>
+                    {colTasks.length === 0 && (
+                      <div className="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
+                        No tasks in this stage.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         )}
-      </ModalDialog>
 
-      {/* MODAL: PAUSE JOB */}
-      <ModalDialog
-        open={Boolean(selectedJobForPause)}
-        onOpenChange={(open) => !open && setSelectedJobForPause(null)}
-        title="Temporarily Pause Machine Run"
-        description="Provide a reason for putting this job on hold (e.g. drying time, roll replacement, ink refill)."
-      >
-        {selectedJobForPause && (
-          <form onSubmit={handleConfirmPause} className="space-y-4 pt-1">
-            <div className="space-y-1.5">
-              <Label htmlFor="pReason" required>Mandatory Pause Reason</Label>
-              <textarea
-                id="pReason"
-                rows={3}
-                placeholder="e.g. Waiting for solvent ink to dry before roll-up; replacing Konica magenta cartridge."
-                value={pauseReason}
-                onChange={(e) => setPauseReason(e.target.value)}
-                required
-                className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
-              />
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedJobForPause(null)} className="w-full sm:w-auto min-h-[40px]">
-                Cancel
-              </Button>
-              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-amber-600 hover:bg-amber-700 text-white font-medium">
-                Confirm Pause
-              </Button>
-            </div>
-          </form>
+        {/* Tab 2: MACHINE QUEUES TIMELINE */}
+        {activeTab === 'machine_queues' && (
+          <MachineQueueView
+            queues={machineQueues}
+            tenantSlug={slug}
+            onScheduleClick={(mId) => {
+              // Open scheduler for first queued task or prompt
+              if (tasks.length > 0) {
+                setScheduleTaskTarget(tasks[0])
+              }
+            }}
+          />
         )}
-      </ModalDialog>
+
+        {/* Modals */}
+        <ScheduleTaskModal
+          isOpen={!!scheduleTaskTarget}
+          onClose={() => setScheduleTaskTarget(null)}
+          task={scheduleTaskTarget}
+          onSuccess={() => {
+            showNotification('Task scheduled successfully!')
+            loadData()
+          }}
+        />
+
+        <HoldTaskModal
+          isOpen={!!holdTaskTarget}
+          onClose={() => setHoldTaskTarget(null)}
+          task={holdTaskTarget}
+          onSuccess={() => {
+            showNotification('Task placed on hold.')
+            loadData()
+          }}
+        />
+
+        <ReworkTaskModal
+          isOpen={!!reworkTaskTarget}
+          onClose={() => setReworkTaskTarget(null)}
+          task={reworkTaskTarget}
+          onSuccess={() => {
+            showNotification('Rework ticket logged and queued!')
+            loadData()
+          }}
+        />
       </div>
     </FeatureGate>
   )

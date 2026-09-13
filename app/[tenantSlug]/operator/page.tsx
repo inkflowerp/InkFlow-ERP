@@ -1,94 +1,170 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
   Printer,
   CheckCircle2,
   Play,
+  Pause,
   Layers,
   Scissors,
-  Save,
+  Clock,
+  Cpu,
+  RotateCcw,
+  AlertOctagon,
+  AlertTriangle,
+  FileCheck,
+  Check,
+  ChevronRight,
+  User,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
-import { Card, CardContent } from '@/components/ui/card'
+import { useTenant } from '@/hooks/use-tenant'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ProductionTaskRecord } from '@/types/production.types'
+import {
+  getProductionTasksAction,
+  startProductionTaskAction,
+  pauseProductionTaskAction,
+  completeProductionTaskAction,
+} from '@/actions/production-planning.actions'
+import { HoldTaskModal } from '@/components/production/hold-task-modal'
 
-interface OperatorJob {
-  id: string
-  orderNo: string
-  title: string
-  media: string
-  widthFt: number
-  heightFt: number
-  qty: number
-  status: 'pending' | 'printing' | 'completed'
-  finishingNotes: string
-  materialLoggedSft: number
-}
+export default function MobileOperatorPanelPage() {
+  const { tBilingual } = useI18n()
+  const { company } = useTenant()
+  const slug = company?.slug || 'my-company'
 
-const INITIAL_OPERATOR_JOBS: OperatorJob[] = []
-
-import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-
-export default function OperatorPanelPage() {
-  const { locale, tBilingual } = useI18n()
-  const [jobs, setJobs] = useDataStore<OperatorJob[]>(STORAGE_KEYS.OPERATOR_JOBS, INITIAL_OPERATOR_JOBS)
-  const [selectedJob, setSelectedJob] = useState<OperatorJob | null>(null)
-  const [isLogMaterialOpen, setIsLogMaterialOpen] = useState(false)
-  const [loggedSft, setLoggedSft] = useState<number>(0)
-  const [wastageSft, setWastageSft] = useState<number>(0)
+  const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
+  const [loading, setLoading] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
+
+  // Completion Modal State
+  const [selectedTaskForComplete, setSelectedTaskForComplete] = useState<ProductionTaskRecord | null>(null)
+  const [goodQty, setGoodQty] = useState<number>(1)
+  const [rejectedQty, setRejectedQty] = useState<number>(0)
+  const [notes, setNotes] = useState<string>('')
+  const [isSubmittingComplete, setIsSubmittingComplete] = useState(false)
+
+  // Problem / Hold Modal
+  const [selectedTaskForHold, setSelectedTaskForHold] = useState<ProductionTaskRecord | null>(null)
 
   const showNotification = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const handleStartPrint = (jobId: string) => {
-    PrintERPDataStore.updateItem<OperatorJob>(STORAGE_KEYS.OPERATOR_JOBS, jobId, { status: 'printing' })
-    showNotification(`Job started printing on machine.`)
+  const loadTasks = async () => {
+    setLoading(true)
+    try {
+      const res = await getProductionTasksAction()
+      if (res.success && res.data) {
+        setTasks(res.data)
+      }
+    } catch (_) {
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleCompleteJob = (jobId: string) => {
-    PrintERPDataStore.updateItem<OperatorJob>(STORAGE_KEYS.OPERATOR_JOBS, jobId, { status: 'completed' })
-    showNotification(`Job completed & marked QC Pass! Handed over to finishing.`)
+  useEffect(() => {
+    loadTasks()
+  }, [])
+
+  const handleStartTask = async (task: ProductionTaskRecord) => {
+    try {
+      const res = await startProductionTaskAction(task.id)
+      if (res.success) {
+        showNotification(`Started production for ${task.task_name}`)
+        loadTasks()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    }
   }
 
-  const handleSaveMaterial = (e: React.FormEvent) => {
+  const handlePauseTask = async (task: ProductionTaskRecord) => {
+    const reason = prompt('Enter pause reason (e.g. Break / Maintenance / Media change):')
+    if (reason === null) return
+
+    try {
+      const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused')
+      if (res.success) {
+        showNotification(`Production paused.`)
+        loadTasks()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    }
+  }
+
+  const handleOpenCompleteModal = (task: ProductionTaskRecord) => {
+    setSelectedTaskForComplete(task)
+    setGoodQty(task.quantity)
+    setRejectedQty(0)
+    setNotes('')
+  }
+
+  const handleConfirmComplete = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedJob) return
+    if (!selectedTaskForComplete) return
 
-    PrintERPDataStore.updateItem<OperatorJob>(STORAGE_KEYS.OPERATOR_JOBS, selectedJob.id, {
-      materialLoggedSft: loggedSft,
-    })
-    setIsLogMaterialOpen(false)
-    showNotification(`Material usage logged: ${loggedSft} sft (+${wastageSft} sft wastage)`)
+    setIsSubmittingComplete(true)
+    try {
+      const res = await completeProductionTaskAction(selectedTaskForComplete.id, {
+        good_quantity: goodQty,
+        rejected_quantity: rejectedQty,
+        notes: notes.trim() || undefined,
+      })
+
+      if (res.success) {
+        showNotification(`Production completed & signed off! Good: ${goodQty}, Scrap: ${rejectedQty}`)
+        setSelectedTaskForComplete(null)
+        loadTasks()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    } finally {
+      setIsSubmittingComplete(false)
+    }
   }
+
+  // Active / Ready Tasks first
+  const activeTasks = tasks.filter((t) => t.status === 'in_progress' || t.status === 'paused')
+  const upcomingTasks = tasks.filter((t) => t.status === 'scheduled' || t.status === 'ready' || t.status === 'queued')
+  const completedTasks = tasks.filter((t) => t.status === 'completed').slice(0, 5)
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-4 max-w-3xl mx-auto pb-12">
       {/* Header */}
       <PageHeader
-        titleEn="My Printing Jobs & Floor Queue"
-        titleBn="প্রেস অপারেটর জব কিউ"
-        descriptionEn="Machine operator terminal: view assigned jobs, execute print runs, log material consumption, and sign off QC."
-        descriptionBn="মেশিন চালক টার্মিনাল: বরাদ্দকৃত কাজ দেখুন, প্রিন্ট সম্পন্ন করুন, মিডিয়া অপচয় এন্ট্রি দিন এবং কিউসি স্বাক্ষর করুন।"
+        titleEn="My Floor Queue & Operator Terminal"
+        titleBn="আমার প্রোডাকশন কিউ ও অপারেটর টার্মিনাল"
+        descriptionEn="Touch-optimized terminal to run production, log scrap, report issues, and sign off completed tasks."
+        descriptionBn="সহজ ও দ্রুত টার্মিনাল: কাজ শুরু করুন, অপচয় হিসাব রাখুন এবং কাজ সম্পন্ন করুন।"
         icon={Printer}
         iconColor="text-blue-600"
         badge={
-          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 bangla-text">
-            {tBilingual('Role: Print Operator', 'রোল: মেশিন অপারেটর')}
+          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+            {tBilingual('Role: Press Operator', 'প্রেস অপারেটর')}
           </Badge>
         }
       />
 
-      {/* Notification */}
+      {/* Notifications */}
       {notification && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
           <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
@@ -96,179 +172,253 @@ export default function OperatorPanelPage() {
         </div>
       )}
 
-      {/* Active Jobs Cards */}
-      <div className="space-y-4">
-        {jobs.length === 0 ? (
-          <Card className="p-12 text-center space-y-3 border-dashed border-slate-200 dark:border-slate-800">
-            <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-              <Printer className="h-6 w-6" />
-            </div>
-            <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 bangla-text">
-              {tBilingual('No active printing jobs in queue', 'কোন সক্রিয় প্রিন্টিং জব নেই')}
-            </div>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto bangla-text">
-              {tBilingual(
-                'Jobs sent to production from the sales orders panel will appear here for machine operators to start printing.',
-                'সেলস অর্ডার প্যানেল থেকে প্রডাকশনে পাঠানো নতুন কাজগুলো এখানে প্রদর্শিত হবে।'
-              )}
-            </p>
-          </Card>
-        ) : (
-          jobs.map((job: OperatorJob) => {
-          const totalAreaSft = job.widthFt * job.heightFt * job.qty
-          return (
-            <Card
-              key={job.id}
-              className={`border-l-4 transition-all ${
-                job.status === 'printing'
-                  ? 'border-l-blue-600 shadow-md bg-blue-50/20'
-                  : job.status === 'completed'
-                  ? 'border-l-emerald-600 opacity-80'
-                  : 'border-l-slate-300 dark:border-l-slate-700'
-              }`}
-            >
-              <CardContent className="p-5">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  {/* Left Column: Job Info */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300">
-                        {job.orderNo}
-                      </span>
-                      <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                        {job.title}
-                      </h3>
-                      {job.status === 'printing' && (
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-blue-600 animate-pulse">
-                          <span className="h-2 w-2 rounded-full bg-blue-600" />
-                          PRINTING LIVE
-                        </span>
-                      )}
-                      {job.status === 'completed' && (
-                        <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          QC Passed & Completed
+      {/* ACTIVE RUNNING TASKS SECTION */}
+      {activeTasks.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            {tBilingual('CURRENTLY RUNNING', 'বর্তমানে চলমান কাজ')} ({activeTasks.length})
+          </div>
+
+          <div className="space-y-3">
+            {activeTasks.map((task) => (
+              <Card
+                key={task.id}
+                className="border-2 border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 shadow-md"
+              >
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-600 text-white text-xs font-bold uppercase tracking-wider">
+                          Job #{task.job_number || 'N/A'}
                         </Badge>
-                      )}
+                        <span className="text-xs font-mono text-slate-500">{task.task_number}</span>
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1">
+                        {task.task_name}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {task.customer_name} • {task.product_name}
+                      </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 dark:text-slate-300">
-                      <div>
-                        Media: <strong className="text-slate-900 dark:text-white">{job.media}</strong>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                        {task.quantity} <span className="text-xs font-normal text-slate-500">{task.unit}</span>
                       </div>
-                      <div>
-                        Size: <strong className="text-slate-900 dark:text-white">{job.widthFt} ft × {job.heightFt} ft</strong> ({totalAreaSft} sft total)
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1 justify-end">
+                        <Clock className="h-3 w-3" />
+                        <span>{task.estimated_duration_minutes}m est.</span>
                       </div>
-                      <div>
-                        Quantity: <strong className="text-slate-900 dark:text-white">{job.qty} pcs</strong>
-                      </div>
-                    </div>
-
-                    {/* Finishing instruction */}
-                    <div className="rounded-lg bg-amber-50/80 border border-amber-200/80 p-2.5 text-xs text-amber-900 dark:bg-amber-950/30 dark:border-amber-900/50 dark:text-amber-300 flex items-start gap-2">
-                      <Scissors className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
-                      <span>
-                        <strong>Finishing Instructions:</strong> {job.finishingNotes}
-                      </span>
                     </div>
                   </div>
 
-                  {/* Right Column: Actions */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0 pt-2 lg:pt-0">
+                  {/* Machine & Operator Info */}
+                  <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300">
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <Cpu className="h-4 w-4 text-blue-600" />
+                      {task.assigned_machine_name || 'Manual (No Machine)'}
+                    </span>
+                    <span className="text-slate-500">
+                      Started: {task.actual_start ? new Date(task.actual_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                    </span>
+                  </div>
+
+                  {/* Large Operator Touch Targets */}
+                  <div className="grid grid-cols-3 gap-2 pt-1">
                     <Button
+                      size="lg"
                       variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedJob(job)
-                        setLoggedSft(job.materialLoggedSft || totalAreaSft)
-                        setWastageSft(Math.round(totalAreaSft * 0.05))
-                        setIsLogMaterialOpen(true)
-                      }}
-                      className="w-full sm:w-auto h-11 sm:h-9 text-xs font-medium"
+                      onClick={() => handlePauseTask(task)}
+                      className="h-12 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50"
                     >
-                      <Layers className="h-4 w-4 mr-1.5 shrink-0" />
-                      Log Material ({job.materialLoggedSft ? `${job.materialLoggedSft} sft` : 'Add'})
+                      <Pause className="h-4 w-4 mr-1.5" />
+                      {tBilingual('Pause', 'স্থগিত')}
                     </Button>
 
-                    {job.status === 'pending' && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleStartPrint(job.id)}
-                        className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 font-semibold text-xs text-white"
-                      >
-                        <Play className="h-4 w-4 mr-1.5 shrink-0" />
-                        Start Print
-                      </Button>
-                    )}
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => setSelectedTaskForHold(task)}
+                      className="h-12 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50"
+                    >
+                      <AlertOctagon className="h-4 w-4 mr-1.5" />
+                      {tBilingual('Report Issue', 'সমস্যা')}
+                    </Button>
 
-                    {job.status === 'printing' && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCompleteJob(job.id)}
-                        className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto h-11 sm:h-9 font-bold text-xs text-white shadow-md"
-                      >
-                        <CheckCircle2 className="h-4 w-4 mr-1.5 shrink-0" />
-                        Complete & QC Pass
-                      </Button>
-                    )}
+                    <Button
+                      size="lg"
+                      variant="default"
+                      onClick={() => handleOpenCompleteModal(task)}
+                      className="h-12 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                      {tBilingual('Complete', 'সম্পন্ন')}
+                    </Button>
                   </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* UPCOMING QUEUE SECTION */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+          {tBilingual('UPCOMING IN QUEUE', 'পরবর্তী কিউ')} ({upcomingTasks.length})
+        </div>
+
+        <div className="space-y-2.5">
+          {upcomingTasks.map((task) => (
+            <Card
+              key={task.id}
+              className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
+            >
+              <CardContent className="p-3.5 flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px] font-mono">
+                      #{task.job_number || task.task_number}
+                    </Badge>
+                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                      {task.task_name}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                    <span>{task.customer_name}</span>
+                    <span>•</span>
+                    <span>{task.quantity} {task.unit}</span>
+                    <span>•</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {task.assigned_machine_name || 'Manual'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="shrink-0">
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => handleStartTask(task)}
+                    disabled={task.is_blocked_by_dependency}
+                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 font-semibold h-9 px-3"
+                  >
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                    {tBilingual('Start', 'শুরু')}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          )
-        })
-      )}
-    </div>
+          ))}
 
-      {/* MODAL: LOG MATERIAL USAGE */}
+          {upcomingTasks.length === 0 && activeTasks.length === 0 && (
+            <Card className="p-8 text-center border-dashed">
+              <Printer className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                {tBilingual('No active jobs in your queue!', 'আপনার কিউতে কোনো কাজ অপেক্ষমাণ নেই!')}
+              </p>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* COMPLETE PRODUCTION TASK MODAL */}
       <ModalDialog
-        open={isLogMaterialOpen}
-        onOpenChange={setIsLogMaterialOpen}
-        title="Log Raw Material Consumption"
-        description={`Record media rolls consumed for ${selectedJob?.orderNo} to keep inventory accurate.`}
+        open={!!selectedTaskForComplete}
+        onOpenChange={(open) => !open && setSelectedTaskForComplete(null)}
+        title={tBilingual('Sign Off Production Task', 'কাজ সম্পন্ন ও পরিমাণ নিশ্চিতকরণ')}
+        hideFooter={true}
       >
-        <form onSubmit={handleSaveMaterial} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="loggedSft" required>
-              Actual Media Consumed (Square Feet / বর্গফুট)
-            </Label>
-            <Input
-              id="loggedSft"
-              type="number"
-              value={loggedSft}
-              onChange={(e) => setLoggedSft(Number(e.target.value))}
-              className="h-10 text-sm"
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="wastageSft">
-              Estimated Edge/Lead Wastage (Square Feet / অপচয়)
-            </Label>
-            <Input
-              id="wastageSft"
-              type="number"
-              value={wastageSft}
-              onChange={(e) => setWastageSft(Number(e.target.value))}
-              className="h-10 text-sm"
-            />
-            <span className="text-[11px] text-slate-500">
-              Typically 5% margin for machine grip and roll alignment.
+        <form onSubmit={handleConfirmComplete} className="space-y-4">
+          <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800 space-y-1">
+            <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+              {selectedTaskForComplete?.task_name}
             </span>
+            <p className="text-[11px] text-emerald-800/80 dark:text-emerald-300/80">
+              Confirm quantities produced. Downstream tasks (e.g. Lamination or Cutting) will automatically be marked READY.
+            </p>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsLogMaterialOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                {tBilingual('Good Quantity Produced', 'সঠিক পরিমাণ')}
+              </Label>
+              <Input
+                type="number"
+                min={0}
+                required
+                value={goodQty}
+                onChange={(e) => setGoodQty(parseInt(e.target.value) || 0)}
+                className="text-xs font-bold text-emerald-800 dark:text-emerald-200"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-rose-700 dark:text-rose-400">
+                {tBilingual('Rejected / Scrap Qty', 'নষ্ট / অপচয়')}
+              </Label>
+              <Input
+                type="number"
+                min={0}
+                value={rejectedQty}
+                onChange={(e) => setRejectedQty(parseInt(e.target.value) || 0)}
+                className="text-xs font-bold text-rose-800 dark:text-rose-200"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">
+              {tBilingual('Operator Notes (Optional)', 'অপারেটর মন্তব্য')}
+            </Label>
+            <Input
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Finished with high quality color profile..."
+              className="text-xs"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedTaskForComplete(null)}
+              disabled={isSubmittingComplete}
+              className="text-xs"
+            >
+              {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-10 sm:h-9">
-              <Save className="h-4 w-4 mr-1.5" />
-              Save Consumption
+            <Button
+              type="submit"
+              variant="default"
+              size="sm"
+              disabled={isSubmittingComplete}
+              className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+            >
+              {isSubmittingComplete ? tBilingual('Completing...', 'সম্পন্ন হচ্ছে...') : tBilingual('Sign Off & Finish', 'সম্পন্ন নিশ্চিত করুন')}
             </Button>
           </div>
         </form>
       </ModalDialog>
+
+      {/* PROBLEM / HOLD MODAL */}
+      <HoldTaskModal
+        isOpen={!!selectedTaskForHold}
+        onClose={() => setSelectedTaskForHold(null)}
+        task={selectedTaskForHold}
+        onSuccess={() => {
+          showNotification('Problem reported and task placed on hold.')
+          loadTasks()
+        }}
+      />
     </div>
   )
 }
