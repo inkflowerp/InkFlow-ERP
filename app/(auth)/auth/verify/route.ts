@@ -35,7 +35,12 @@ export async function GET(request: Request) {
 
       if (authRes.success && authRes.data) {
         const session = authRes.data.session
-        const redirectResponse = NextResponse.redirect(`${origin}/onboarding`)
+        const destination =
+          session.companySlug && !authRes.data.requiresOnboarding
+            ? `${origin}/${session.companySlug}/dashboard`
+            : `${origin}/onboarding`
+
+        const redirectResponse = NextResponse.redirect(destination)
         redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
           path: '/',
           maxAge: 60 * 60 * 24 * 7,

@@ -9,6 +9,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { AuthEmailService } from '../../services/auth-email.service.ts'
 import { AuthService } from '../../services/auth.service.ts'
+import { TenantRepository } from '../../lib/repositories/tenant.repository.ts'
 
 describe('Email Verification & OTP Security Unit Tests', () => {
   it('1. Generates 6-digit numeric OTP', () => {
@@ -304,5 +305,50 @@ describe('Email Verification & OTP Security Unit Tests', () => {
     assert.strictEqual(otpRes.success, true)
     assert.ok(otpRes.data?.session)
     assert.strictEqual(otpRes.data?.session?.userEmail, email)
+  })
+
+  it('18. Directs to workspace dashboard when user already completed onboarding', async () => {
+    const email = 'already-onboarded@inkflow.com'
+    const origResolve = (TenantRepository as any).resolveUserMembership
+    try {
+      (TenantRepository as any).resolveUserMembership = async (userId: string) => {
+        return {
+          company: {
+            id: 'comp-123',
+            name: 'Speedy Print Shop',
+            slug: 'speedy-print',
+            is_active: true,
+          },
+          companyUser: {
+            id: 'cu-123',
+            user_id: userId,
+            company_id: 'comp-123',
+            status: 'active',
+            profile: {
+              full_name: 'Speedy Owner',
+            },
+          },
+          effectivePermissions: ['order.view', 'order.create'],
+          primaryRole: 'business_owner',
+        }
+      }
+
+      // Mark verified in test environment
+      AuthEmailService.markVerifiedInTest(email)
+
+      const statusRes = await AuthService.checkRegistrationVerificationStatus(email)
+      assert.strictEqual(statusRes.success, true)
+      assert.strictEqual(statusRes.data?.isVerified, true)
+      assert.strictEqual(statusRes.data?.requiresOnboarding, false)
+      assert.strictEqual(statusRes.data?.destinationUrl, '/speedy-print/dashboard')
+      assert.strictEqual(statusRes.data?.session?.companySlug, 'speedy-print')
+
+      const finalizeRes = await AuthService.finalizeRegistrationVerification(email)
+      assert.strictEqual(finalizeRes.success, true)
+      assert.strictEqual(finalizeRes.data?.requiresOnboarding, false)
+      assert.strictEqual(finalizeRes.data?.session?.companySlug, 'speedy-print')
+    } finally {
+      (TenantRepository as any).resolveUserMembership = origResolve
+    }
   })
 })

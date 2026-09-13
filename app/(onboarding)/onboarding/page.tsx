@@ -98,7 +98,7 @@ function OnboardingWizard() {
     },
   })
 
-  // Prefill owner information if user just signed up or has session
+  // Prefill owner information if user just signed up or has session; redirect if already onboarded
   React.useEffect(() => {
     try {
       const match = typeof document !== 'undefined'
@@ -109,6 +109,11 @@ function OnboardingWizard() {
         const raw = match.split('=')[1]
         const session = JSON.parse(decodeURIComponent(raw))
         if (session) {
+          // If tenant has already created their company workspace, redirect to dashboard
+          if (session.companySlug && session.companyId) {
+            window.location.href = `/${session.companySlug}/dashboard`
+            return
+          }
           if (session.fullName) setValue('owner_name', session.fullName)
           if (session.userEmail) setValue('owner_email', session.userEmail)
           if (session.phone) setValue('owner_phone', session.phone)

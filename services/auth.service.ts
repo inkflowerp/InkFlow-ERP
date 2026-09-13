@@ -361,11 +361,11 @@ export class AuthService {
    */
   static async checkRegistrationVerificationStatus(
     email: string
-  ): Promise<ApiResponse<{ isVerified: boolean; session?: TenantSessionData }>> {
+  ): Promise<ApiResponse<{ isVerified: boolean; requiresOnboarding?: boolean; session?: TenantSessionData; destinationUrl?: string }>> {
     try {
       const normalizedEmail = email.trim().toLowerCase()
       if (!normalizedEmail) {
-        return { success: true, data: { isVerified: false } }
+        return { success: true, data: { isVerified: false, requiresOnboarding: true } }
       }
 
       const admin = createAdminClient()
@@ -382,6 +382,51 @@ export class AuthService {
       } catch {}
 
       if (profile && profile.is_active) {
+        // Check if user already has an established company membership
+        try {
+          const membership = await TenantRepository.resolveUserMembership(profile.id)
+          if (membership && membership.company) {
+            const { company, companyUser, effectivePermissions, primaryRole } = membership
+            let tenantRole: TenantRole = 'business_owner'
+            if (primaryRole === 'business_owner') tenantRole = 'business_owner'
+            else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
+            else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
+            else if (primaryRole === 'operator') tenantRole = 'machine_operator'
+            else if (primaryRole === 'accountant') tenantRole = 'accountant'
+            else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+
+            const sessionData: TenantSessionData = {
+              userId: profile.id,
+              userEmail: normalizedEmail,
+              fullName: companyUser.profile?.full_name || profile.full_name || normalizedEmail.split('@')[0],
+              fullNameBn: companyUser.profile?.full_name_bn || profile.full_name_bn || null,
+              phone: companyUser.profile?.phone || profile.phone || null,
+              companyId: company.id,
+              companySlug: company.slug,
+              companyName: company.name,
+              companyNameBn: company.name_bn || company.name,
+              branchId: companyUser.branch_id || 'br-main',
+              branchName: companyUser.branch?.name || 'Main Branch',
+              role: tenantRole,
+              primaryRole: primaryRole as PrimaryRole,
+              responsibilities: companyUser.responsibilities || [primaryRole],
+              permissions: effectivePermissions,
+              loginTime: new Date().toISOString(),
+              token: `auth-${profile.id}`,
+            }
+
+            return {
+              success: true,
+              data: {
+                isVerified: true,
+                requiresOnboarding: false,
+                session: sessionData,
+                destinationUrl: `/${company.slug}/dashboard`,
+              },
+            }
+          }
+        } catch {}
+
         const ownerPermissions = Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
           spec.actions.map((act) => `${mod}.${act}`)
         )
@@ -410,7 +455,9 @@ export class AuthService {
           success: true,
           data: {
             isVerified: true,
+            requiresOnboarding: true,
             session: sessionData,
+            destinationUrl: '/onboarding',
           },
         }
       }
@@ -419,11 +466,56 @@ export class AuthService {
       if (isTestEnvironment()) {
         const isVerifiedInTest = AuthEmailService.isVerifiedInTestStore(normalizedEmail, 'registration')
         if (isVerifiedInTest) {
+          const testUserId = `test-user-${normalizedEmail}`
+          try {
+            const membership = await TenantRepository.resolveUserMembership(testUserId)
+            if (membership && membership.company) {
+              const { company, companyUser, effectivePermissions, primaryRole } = membership
+              let tenantRole: TenantRole = 'business_owner'
+              if (primaryRole === 'business_owner') tenantRole = 'business_owner'
+              else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
+              else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
+              else if (primaryRole === 'operator') tenantRole = 'machine_operator'
+              else if (primaryRole === 'accountant') tenantRole = 'accountant'
+              else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+
+              const sessionData: TenantSessionData = {
+                userId: testUserId,
+                userEmail: normalizedEmail,
+                fullName: companyUser.profile?.full_name || normalizedEmail.split('@')[0],
+                fullNameBn: companyUser.profile?.full_name_bn || null,
+                phone: companyUser.profile?.phone || null,
+                companyId: company.id,
+                companySlug: company.slug,
+                companyName: company.name,
+                companyNameBn: company.name_bn || company.name,
+                branchId: companyUser.branch_id || 'br-main',
+                branchName: companyUser.branch?.name || 'Main Branch',
+                role: tenantRole,
+                primaryRole: primaryRole as PrimaryRole,
+                responsibilities: companyUser.responsibilities || [primaryRole],
+                permissions: effectivePermissions,
+                loginTime: new Date().toISOString(),
+                token: `auth-test-${normalizedEmail}`,
+              }
+
+              return {
+                success: true,
+                data: {
+                  isVerified: true,
+                  requiresOnboarding: false,
+                  session: sessionData,
+                  destinationUrl: `/${company.slug}/dashboard`,
+                },
+              }
+            }
+          } catch {}
+
           const ownerPermissions = Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
             spec.actions.map((act) => `${mod}.${act}`)
           )
           const sessionData: TenantSessionData = {
-            userId: `test-user-${normalizedEmail}`,
+            userId: testUserId,
             userEmail: normalizedEmail,
             fullName: normalizedEmail.split('@')[0],
             fullNameBn: null,
@@ -445,7 +537,9 @@ export class AuthService {
             success: true,
             data: {
               isVerified: true,
+              requiresOnboarding: true,
               session: sessionData,
+              destinationUrl: '/onboarding',
             },
           }
         }
@@ -464,10 +558,27 @@ export class AuthService {
           .maybeSingle()
 
         if (verRecord && verRecord.verified_at) {
+          if (verRecord.user_id) {
+            try {
+              const membership = await TenantRepository.resolveUserMembership(verRecord.user_id)
+              if (membership && membership.company) {
+                return {
+                  success: true,
+                  data: {
+                    isVerified: true,
+                    requiresOnboarding: false,
+                    destinationUrl: `/${membership.company.slug}/dashboard`,
+                  },
+                }
+              }
+            } catch {}
+          }
           return {
             success: true,
             data: {
               isVerified: true,
+              requiresOnboarding: true,
+              destinationUrl: '/onboarding',
             },
           }
         }
@@ -477,6 +588,7 @@ export class AuthService {
         success: true,
         data: {
           isVerified: false,
+          requiresOnboarding: true,
         },
       }
     } catch (err: unknown) {
@@ -597,6 +709,58 @@ export class AuthService {
           .eq('id', userId)
       } catch {}
     }
+
+    // 3. Check if user already has an active company membership (already completed onboarding)
+    try {
+      const membership = await TenantRepository.resolveUserMembership(userId)
+      if (membership && membership.company) {
+        const { company, companyUser, effectivePermissions, primaryRole } = membership
+        let tenantRole: TenantRole = 'business_owner'
+        if (primaryRole === 'business_owner') tenantRole = 'business_owner'
+        else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
+        else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
+        else if (primaryRole === 'operator') tenantRole = 'machine_operator'
+        else if (primaryRole === 'accountant') tenantRole = 'accountant'
+        else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+
+        const sessionData: TenantSessionData = {
+          userId,
+          userEmail: email,
+          fullName: companyUser.profile?.full_name || email.split('@')[0],
+          fullNameBn: companyUser.profile?.full_name_bn || null,
+          phone: companyUser.profile?.phone || null,
+          companyId: company.id,
+          companySlug: company.slug,
+          companyName: company.name,
+          companyNameBn: company.name_bn || company.name,
+          branchId: companyUser.branch_id || 'br-main',
+          branchName: companyUser.branch?.name || 'Main Branch',
+          role: tenantRole,
+          primaryRole: primaryRole as PrimaryRole,
+          responsibilities: companyUser.responsibilities || [primaryRole],
+          permissions: effectivePermissions,
+          loginTime: new Date().toISOString(),
+          token: `auth-${userId}`,
+        }
+
+        if (typeof document !== 'undefined') {
+          const encoded = encodeURIComponent(JSON.stringify(sessionData))
+          const maxAge = 60 * 60 * 24 * 7
+          document.cookie = `${TENANT_SESSION_COOKIE}=${encoded}; path=/; max-age=${maxAge}; SameSite=Lax;`
+          window.dispatchEvent(new CustomEvent('printerp_auth_changed', { detail: sessionData }))
+        }
+
+        return {
+          success: true,
+          data: {
+            userId,
+            session: sessionData,
+            requiresOnboarding: false,
+          },
+          message: 'Account verified and active.',
+        }
+      }
+    } catch {}
 
     const { data: profile } = await (admin as any)
       .from('user_profiles')

@@ -43,43 +43,81 @@ function VerifyEmailForm() {
     return () => clearInterval(timer)
   }, [cooldown])
 
-  const handleVerifiedSuccess = useCallback((viaLink = false) => {
-    setIsVerified(true)
-    if (viaLink) {
-      setIsLinkVerified(true)
-    }
-    setError(null)
-    setSuccessMsg(
-      viaLink
-        ? locale === 'bn'
-          ? 'ভেরিফিকেশন লিংকের মাধ্যমে ইমেইল যাচাই সম্পন্ন হয়েছে! ওটিপি ফর্ম সমাপ্ত করা হয়েছে। অনবোর্ডিং-এ নিয়ে যাওয়া হচ্ছে...'
-          : 'Email verified via link! OTP submission expired. Redirecting to onboarding...'
-        : locale === 'bn'
-        ? 'ইমেইল সফলভাবে নিশ্চিত হয়েছে! অনবোর্ডিং-এ পাঠানো হচ্ছে...'
-        : 'Email successfully verified! Redirecting to onboarding...'
-    )
+  const handleVerifiedSuccess = useCallback(
+    (viaLink = false, customDestination?: string) => {
+      setIsVerified(true)
+      if (viaLink) {
+        setIsLinkVerified(true)
+      }
+      setError(null)
 
-    // Broadcast verification event to other active tabs / windows
-    if (email) {
+      const isDashboard = customDestination && customDestination.includes('/dashboard')
+      setSuccessMsg(
+        viaLink
+          ? locale === 'bn'
+            ? isDashboard
+              ? 'ভেরিফিকেশন সম্পন্ন হয়েছে! ড্যাশবোর্ডে নিয়ে যাওয়া হচ্ছে...'
+              : 'ভেরিফিকেশন লিংকের মাধ্যমে ইমেইল যাচাই সম্পন্ন হয়েছে! ওটিপি ফর্ম সমাপ্ত করা হয়েছে। অনবোর্ডিং-এ নিয়ে যাওয়া হচ্ছে...'
+            : isDashboard
+            ? 'Email verified! Redirecting to dashboard...'
+            : 'Email verified via link! OTP submission expired. Redirecting to onboarding...'
+          : locale === 'bn'
+          ? isDashboard
+            ? 'ইমেইল সফলভাবে নিশ্চিত হয়েছে! ড্যাশবোর্ডে পাঠানো হচ্ছে...'
+            : 'ইমেইল সফলভাবে নিশ্চিত হয়েছে! অনবোর্ডিং-এ পাঠানো হচ্ছে...'
+          : isDashboard
+          ? 'Email successfully verified! Redirecting to dashboard...'
+          : 'Email successfully verified! Redirecting to onboarding...'
+      )
+
+      // Broadcast verification event to other active tabs / windows
+      if (email) {
+        try {
+          const bc = new BroadcastChannel('printerp_verification_channel')
+          bc.postMessage({ type: 'EMAIL_VERIFIED', email, destinationUrl: customDestination })
+          bc.close()
+        } catch {}
+
+        try {
+          localStorage.setItem(
+            'printerp_last_verified_email',
+            JSON.stringify({ email, destinationUrl: customDestination, timestamp: Date.now() })
+          )
+        } catch {}
+      }
+
+      setTimeout(async () => {
+        let targetUrl = customDestination
+        if (!targetUrl) {
+          try {
+            const statusRes = await checkEmailVerificationStatusAction(email)
+            if (statusRes.success && statusRes.data?.destinationUrl) {
+              targetUrl = statusRes.data.destinationUrl
+            }
+          } catch {}
+        }
+        if (!targetUrl) {
+          targetUrl = planParam ? `/onboarding?plan=${encodeURIComponent(planParam)}` : '/onboarding'
+        }
+        window.location.href = targetUrl
+      }, 1200)
+    },
+    [email, locale, planParam]
+  )
+
+  // Check initial verification status on mount (handles reload or navigation when already verified/onboarded)
+  useEffect(() => {
+    if (!email || isVerified || tokenParam) return
+    const checkInitial = async () => {
       try {
-        const bc = new BroadcastChannel('printerp_verification_channel')
-        bc.postMessage({ type: 'EMAIL_VERIFIED', email })
-        bc.close()
-      } catch {}
-
-      try {
-        localStorage.setItem(
-          'printerp_last_verified_email',
-          JSON.stringify({ email, timestamp: Date.now() })
-        )
+        const res = await checkEmailVerificationStatusAction(email)
+        if (res.success && res.data?.isVerified) {
+          handleVerifiedSuccess(true, res.data.destinationUrl)
+        }
       } catch {}
     }
-
-    setTimeout(() => {
-      const targetUrl = planParam ? `/onboarding?plan=${encodeURIComponent(planParam)}` : '/onboarding'
-      window.location.href = targetUrl
-    }, 1200)
-  }, [email, locale, planParam])
+    checkInitial()
+  }, [email, isVerified, tokenParam, handleVerifiedSuccess])
 
   // Auto-verify if token is present in query params (Magic Link flow)
   useEffect(() => {
@@ -90,7 +128,10 @@ function VerifyEmailForm() {
         try {
           const res = await verifyRegistrationTokenAction(tokenParam, email)
           if (res.success) {
-            handleVerifiedSuccess(true)
+            const dest = (res.data as any)?.session?.companySlug && !(res.data as any)?.requiresOnboarding
+              ? `/${(res.data as any).session.companySlug}/dashboard`
+              : undefined
+            handleVerifiedSuccess(true, dest)
           } else {
             setError(res.error || 'Failed to verify verification link.')
           }
@@ -115,7 +156,7 @@ function VerifyEmailForm() {
         if (event.data?.type === 'EMAIL_VERIFIED') {
           const verifiedEmail = (event.data.email || '').trim().toLowerCase()
           if (!email || verifiedEmail === email) {
-            handleVerifiedSuccess(true)
+            handleVerifiedSuccess(true, event.data.destinationUrl)
           }
         }
       }
@@ -127,7 +168,7 @@ function VerifyEmailForm() {
           const data = JSON.parse(e.newValue)
           const verifiedEmail = (data?.email || '').trim().toLowerCase()
           if (!email || verifiedEmail === email) {
-            handleVerifiedSuccess(true)
+            handleVerifiedSuccess(true, data.destinationUrl)
           }
         } catch {}
       }
@@ -148,7 +189,7 @@ function VerifyEmailForm() {
       try {
         const res = await checkEmailVerificationStatusAction(email)
         if (res.success && res.data?.isVerified) {
-          handleVerifiedSuccess(true)
+          handleVerifiedSuccess(true, res.data.destinationUrl)
         }
       } catch {
         // Non-blocking poll
@@ -234,7 +275,10 @@ function VerifyEmailForm() {
     try {
       const res = await verifyRegistrationOtpAction(email, otp)
       if (res.success) {
-        handleVerifiedSuccess(false)
+        const dest = (res.data as any)?.session?.companySlug && !(res.data as any)?.requiresOnboarding
+          ? `/${(res.data as any).session.companySlug}/dashboard`
+          : undefined
+        handleVerifiedSuccess(false, dest)
       } else {
         setError(res.error || 'Invalid or expired verification code.')
       }
