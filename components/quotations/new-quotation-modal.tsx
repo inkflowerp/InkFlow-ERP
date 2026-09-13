@@ -1087,16 +1087,6 @@ export function NewQuotationModal({
                 Quotation Items ({items.length})
               </h3>
             </div>
-
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleAddItem}
-              className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Add Another Item
-            </Button>
           </div>
 
           <div className="space-y-3.5">
@@ -1300,6 +1290,17 @@ export function NewQuotationModal({
                 </div>
               </div>
             ))}
+
+            {/* Add Item Button below items */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddItem}
+              className="w-full h-9 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 rounded-lg cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              Add Item
+            </Button>
           </div>
         </div>
 

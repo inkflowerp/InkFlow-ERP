@@ -843,18 +843,8 @@ export function NewInvoiceModal({
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              Items
+              Items ({calculatedItems.length})
             </h3>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddItem}
-              className="h-7 text-xs font-bold gap-1 text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/30"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add Another
-            </Button>
           </div>
 
           <div className="space-y-3">
@@ -986,7 +976,7 @@ export function NewInvoiceModal({
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(index)}
-                      className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1"
+                      className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
                     >
                       <Trash2 className="h-3 w-3" /> Remove
                     </button>
@@ -994,6 +984,17 @@ export function NewInvoiceModal({
                 </div>
               </div>
             ))}
+
+            {/* Add Item Button below items */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddItem}
+              className="w-full h-9 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 rounded-lg cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              Add Item
+            </Button>
           </div>
         </div>
 
