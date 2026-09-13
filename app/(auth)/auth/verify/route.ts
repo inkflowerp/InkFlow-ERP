@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
     // 2. Handle Registration Purpose
     if (verifyRes.purpose === 'registration') {
-      const authRes = await AuthService.verifyRegistrationToken(token, resolvedEmail)
+      const authRes = await AuthService.finalizeRegistrationVerification(resolvedEmail, verifyRes.userId)
 
       if (authRes.success && authRes.data) {
         const session = authRes.data.session

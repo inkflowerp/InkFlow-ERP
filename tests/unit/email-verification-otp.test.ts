@@ -220,4 +220,40 @@ describe('Email Verification & OTP Security Unit Tests', () => {
     assert.ok(authRes.data?.session)
     assert.strictEqual(authRes.data?.requiresOnboarding, true)
   })
+
+  it('14. Verifies registration URL link token flow', async () => {
+    const email = 'link-flow@inkflow.com'
+    const regRes = await AuthEmailService.createVerificationRecord({
+      email,
+      purpose: 'registration',
+      ttlSeconds: 600,
+    })
+    assert.ok(!('error' in regRes))
+
+    const authRes = await AuthService.verifyRegistrationToken(regRes.token, email)
+    assert.strictEqual(authRes.success, true)
+    assert.ok(authRes.data?.session)
+    assert.strictEqual(authRes.data?.requiresOnboarding, true)
+  })
+
+  it('15. Verifies direct token resolution and finalizeRegistrationVerification (/auth/verify route flow)', async () => {
+    const email = 'route-flow@inkflow.com'
+    const regRes = await AuthEmailService.createVerificationRecord({
+      email,
+      purpose: 'registration',
+      ttlSeconds: 600,
+    })
+    assert.ok(!('error' in regRes))
+
+    // Step 1: verifyToken in route handler
+    const verifyRes = await AuthEmailService.verifyToken(regRes.token, email)
+    assert.strictEqual(verifyRes.success, true)
+    assert.strictEqual(verifyRes.purpose, 'registration')
+
+    // Step 2: finalizeRegistrationVerification directly without re-consuming token
+    const authRes = await AuthService.finalizeRegistrationVerification(email, verifyRes.userId)
+    assert.strictEqual(authRes.success, true)
+    assert.ok(authRes.data?.session)
+    assert.strictEqual(authRes.data?.requiresOnboarding, true)
+  })
 })

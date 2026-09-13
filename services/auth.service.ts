@@ -380,7 +380,7 @@ export class AuthService {
   /**
    * Activates user account after successful verification and constructs onboarding session
    */
-  private static async finalizeRegistrationVerification(
+  static async finalizeRegistrationVerification(
     email: string,
     verifiedUserId?: string
   ): Promise<ApiResponse<SignInResultData>> {
@@ -392,6 +392,17 @@ export class AuthService {
         const { data: userList } = await admin.auth.admin.listUsers()
         const user = userList?.users?.find((u) => u.email?.toLowerCase() === email)
         if (user) userId = user.id
+      } catch {}
+    }
+
+    if (!userId) {
+      try {
+        const { data: profile } = await (admin as any)
+          .from('user_profiles')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle()
+        if (profile) userId = profile.id
       } catch {}
     }
 
