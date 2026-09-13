@@ -120,7 +120,7 @@ export function UserMenu() {
           {/* Quick Language Toggle */}
           <div className="border-t border-slate-100 px-3 py-2 flex items-center justify-between dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
             <span className="bangla-text font-medium">{tBilingual('Language', 'ভাষা')}</span>
-            <LanguageSwitcher compact size="sm" showIcon={false} />
+            <LanguageSwitcher size="sm" />
           </div>
 
           <div className="border-t border-slate-100 pt-1 dark:border-slate-800">
