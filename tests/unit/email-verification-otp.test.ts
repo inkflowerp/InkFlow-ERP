@@ -256,4 +256,53 @@ describe('Email Verification & OTP Security Unit Tests', () => {
     assert.ok(authRes.data?.session)
     assert.strictEqual(authRes.data?.requiresOnboarding, true)
   })
+
+  it('16. checkRegistrationVerificationStatus live polling detects link verification status', async () => {
+    const email = 'poll-check@inkflow.com'
+    
+    // Initial check: not verified
+    const initCheck = await AuthService.checkRegistrationVerificationStatus(email)
+    assert.strictEqual(initCheck.success, true)
+    assert.strictEqual(initCheck.data?.isVerified, false)
+
+    // User receives email and clicks verification link
+    const regRes = await AuthEmailService.createVerificationRecord({
+      email,
+      purpose: 'registration',
+      ttlSeconds: 600,
+    })
+    assert.ok(!('error' in regRes))
+
+    await AuthService.verifyRegistrationToken(regRes.token, email)
+
+    // Second check: live status detects verified state
+    const afterCheck = await AuthService.checkRegistrationVerificationStatus(email)
+    assert.strictEqual(afterCheck.success, true)
+    assert.strictEqual(afterCheck.data?.isVerified, true)
+    assert.ok(afterCheck.data?.session)
+    assert.strictEqual(afterCheck.data?.session?.userEmail, email)
+  })
+
+  it('17. OTP submission gracefully succeeds and returns session if user already verified via link', async () => {
+    const email = 'link-first-otp-second@inkflow.com'
+
+    // 1. User signs up and verification code & link are dispatched
+    const regRes = await AuthEmailService.createVerificationRecord({
+      email,
+      purpose: 'registration',
+      ttlSeconds: 600,
+    })
+    assert.ok(!('error' in regRes))
+
+    // 2. User clicks verification link in email first
+    const linkRes = await AuthService.verifyRegistrationToken(regRes.token, email)
+    assert.strictEqual(linkRes.success, true)
+
+    // 3. User attempts to submit OTP in original tab after link verification
+    // Must gracefully succeed rather than throwing a confusing error
+    const otpRes = await AuthService.verifyRegistrationOtp(email, regRes.otp)
+    assert.strictEqual(otpRes.success, true)
+    assert.ok(otpRes.data?.session)
+    assert.strictEqual(otpRes.data?.session?.userEmail, email)
+  })
 })

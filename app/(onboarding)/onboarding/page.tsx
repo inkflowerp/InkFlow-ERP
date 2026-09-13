@@ -223,6 +223,16 @@ function OnboardingWizard() {
         return
       }
 
+      const companySlug = (res.data.slug || data.slug).toLowerCase().trim()
+
+      // Notify client-side state listeners about company creation
+      if (typeof window !== 'undefined') {
+        try {
+          window.dispatchEvent(new CustomEvent('printerp_auth_changed'))
+          window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: 'printerp_company_profile' } }))
+        } catch {}
+      }
+
       // 2. If Paid Plan, initiate subscription checkout
       if (isPaidPlan) {
         try {
@@ -234,8 +244,8 @@ function OnboardingWizard() {
             customerName: data.owner_name || data.name,
             customerPhone: data.owner_phone || data.phone,
             customerEmail: data.owner_email || data.email,
-            successUrl: `/${res.data.slug}/dashboard?payment=success&plan=${selectedPlan}`,
-            cancelUrl: `/${res.data.slug}/dashboard?payment=cancelled`,
+            successUrl: `/${companySlug}/dashboard?payment=success&plan=${selectedPlan}`,
+            cancelUrl: `/${companySlug}/dashboard?payment=cancelled`,
           })
 
           if (checkoutRes.success && checkoutRes.data?.checkoutUrl) {
@@ -244,22 +254,22 @@ function OnboardingWizard() {
             return
           } else if (checkoutRes.success) {
             // Offline / Bank wire / direct activation
-            window.location.href = `/${res.data.slug}/dashboard?payment=initiated&trx=${checkoutRes.data?.internalTrxId || ''}`
+            window.location.href = `/${companySlug}/dashboard?payment=initiated&trx=${checkoutRes.data?.internalTrxId || ''}`
             return
           } else {
             console.warn('Checkout warning:', checkoutRes.error)
-            window.location.href = `/${res.data.slug}/dashboard?payment=pending`
+            window.location.href = `/${companySlug}/dashboard?payment=pending`
             return
           }
         } catch (checkoutErr) {
           console.warn('Checkout initiation error:', checkoutErr)
-          window.location.href = `/${res.data.slug}/dashboard`
+          window.location.href = `/${companySlug}/dashboard`
           return
         }
       }
 
-      // 3. For trial plan: Hard redirect directly to the new company dashboard
-      window.location.href = `/${res.data.slug}/dashboard`
+      // 3. For trial / free plan: Hard redirect directly to the new company dashboard
+      window.location.href = `/${companySlug}/dashboard`
     } catch (err: any) {
       setError(err?.message || 'An unexpected error occurred during setup')
       setIsLoading(false)

@@ -47,6 +47,18 @@ export interface VerificationResult {
 export class AuthEmailService {
   // Isolated in-memory store exclusively for test environment execution
   private static testStore: Map<string, VerificationRecord> = new Map()
+  private static testVerifiedEmails: Set<string> = new Set()
+
+  static markVerifiedInTest(email: string): void {
+    this.testVerifiedEmails.add(email.trim().toLowerCase())
+  }
+
+  static isVerifiedInTestStore(email: string, purpose: VerificationPurpose = 'registration'): boolean {
+    const normalized = email.trim().toLowerCase()
+    if (this.testVerifiedEmails.has(normalized)) return true
+    const record = this.testStore.get(`${normalized}:${purpose}`)
+    return Boolean(record && record.isUsed)
+  }
 
   /**
    * Hashes a sensitive secret (OTP or token) with SHA-256
@@ -240,6 +252,7 @@ export class AuthEmailService {
     // Clean test store
     this.testStore.delete(`${normalizedEmail}:registration`)
     this.testStore.delete(`${normalizedEmail}:password_reset`)
+    this.testVerifiedEmails.delete(normalizedEmail)
 
     try {
       const admin = createAdminClient()
@@ -309,6 +322,9 @@ export class AuthEmailService {
       // Mark consumed (Single-use guarantee)
       record.isUsed = true
       record.verifiedAt = now
+      if (purpose === 'registration') {
+        this.testVerifiedEmails.add(normalizedEmail)
+      }
       this.testStore.delete(storeKey)
 
       // If password reset, generate short-lived reset authorization token
@@ -539,6 +555,9 @@ export class AuthEmailService {
       // Mark consumed
       matchedRecord.isUsed = true
       matchedRecord.verifiedAt = now
+      if (matchedRecord.purpose === 'registration') {
+        this.testVerifiedEmails.add(matchedRecord.email.toLowerCase())
+      }
       this.testStore.delete(matchedKey)
 
       let resetToken: string | undefined = undefined

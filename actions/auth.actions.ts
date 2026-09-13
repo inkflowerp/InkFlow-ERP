@@ -225,6 +225,27 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
   return result
 }
 
+export async function checkEmailVerificationStatusAction(email: string) {
+  if (!email) {
+    return { success: true, data: { isVerified: false } }
+  }
+
+  const result = await AuthService.checkRegistrationVerificationStatus(email)
+  if (result.success && result.data?.isVerified && result.data.session) {
+    const session = result.data.session
+    const cookieStore = await cookies()
+    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    })
+    revalidatePath('/', 'layout')
+  }
+
+  return result
+}
+
 export async function resendVerificationOtpAction(
   email: string,
   purpose: 'registration' | 'password_reset' = 'registration'

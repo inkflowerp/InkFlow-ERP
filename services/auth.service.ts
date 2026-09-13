@@ -356,6 +356,138 @@ export class AuthService {
   }
 
   /**
+   * Checks if an email has already been verified (via link, OTP, or active profile)
+   * Used for cross-tab / cross-device OTP screen expiration and live status polling
+   */
+  static async checkRegistrationVerificationStatus(
+    email: string
+  ): Promise<ApiResponse<{ isVerified: boolean; session?: TenantSessionData }>> {
+    try {
+      const normalizedEmail = email.trim().toLowerCase()
+      if (!normalizedEmail) {
+        return { success: true, data: { isVerified: false } }
+      }
+
+      const admin = createAdminClient()
+
+      // 1. Check user_profiles table for active status
+      let profile: any = null
+      try {
+        const { data } = await (admin as any)
+          .from('user_profiles')
+          .select('id, email, full_name, full_name_bn, phone, is_active')
+          .eq('email', normalizedEmail)
+          .maybeSingle()
+        profile = data
+      } catch {}
+
+      if (profile && profile.is_active) {
+        const ownerPermissions = Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
+          spec.actions.map((act) => `${mod}.${act}`)
+        )
+
+        const sessionData: TenantSessionData = {
+          userId: profile.id,
+          userEmail: normalizedEmail,
+          fullName: profile.full_name || normalizedEmail.split('@')[0],
+          fullNameBn: profile.full_name_bn || null,
+          phone: profile.phone || null,
+          companyId: '',
+          companySlug: '',
+          companyName: 'New Organization',
+          companyNameBn: 'নতুন প্রতিষ্ঠান',
+          branchId: 'br-main',
+          branchName: 'Main Branch',
+          role: 'business_owner',
+          primaryRole: 'business_owner',
+          responsibilities: ['business_owner'],
+          permissions: ownerPermissions,
+          loginTime: new Date().toISOString(),
+          token: `auth-${profile.id}`,
+        }
+
+        return {
+          success: true,
+          data: {
+            isVerified: true,
+            session: sessionData,
+          },
+        }
+      }
+
+      // 2. In test environment, check AuthEmailService testStore / verified tracking
+      if (isTestEnvironment()) {
+        const isVerifiedInTest = AuthEmailService.isVerifiedInTestStore(normalizedEmail, 'registration')
+        if (isVerifiedInTest) {
+          const ownerPermissions = Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
+            spec.actions.map((act) => `${mod}.${act}`)
+          )
+          const sessionData: TenantSessionData = {
+            userId: `test-user-${normalizedEmail}`,
+            userEmail: normalizedEmail,
+            fullName: normalizedEmail.split('@')[0],
+            fullNameBn: null,
+            phone: null,
+            companyId: '',
+            companySlug: '',
+            companyName: 'New Organization',
+            companyNameBn: 'নতুন প্রতিষ্ঠান',
+            branchId: 'br-main',
+            branchName: 'Main Branch',
+            role: 'business_owner',
+            primaryRole: 'business_owner',
+            responsibilities: ['business_owner'],
+            permissions: ownerPermissions,
+            loginTime: new Date().toISOString(),
+            token: `auth-test-${normalizedEmail}`,
+          }
+          return {
+            success: true,
+            data: {
+              isVerified: true,
+              session: sessionData,
+            },
+          }
+        }
+      }
+
+      // 3. Check auth_verifications for used/verified registration records
+      try {
+        const { data: verRecord } = await (admin as any)
+          .from('auth_verifications')
+          .select('id, is_used, verified_at, user_id')
+          .eq('email', normalizedEmail)
+          .eq('purpose', 'registration')
+          .not('verified_at', 'is', null)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (verRecord && verRecord.verified_at) {
+          return {
+            success: true,
+            data: {
+              isVerified: true,
+            },
+          }
+        }
+      } catch {}
+
+      return {
+        success: true,
+        data: {
+          isVerified: false,
+        },
+      }
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'Failed to check verification status',
+      }
+    }
+  }
+
+  /**
    * Verifies registration 6-digit OTP, confirms email in Supabase Auth, and establishes onboarding session
    */
   static async verifyRegistrationOtp(
@@ -367,6 +499,11 @@ export class AuthService {
       const verifyRes = await AuthEmailService.verifyOtp(normalizedEmail, otp, 'registration')
 
       if (!verifyRes.success) {
+        // If already verified previously (e.g. user used the email verification link right before submitting OTP)
+        const checkStatus = await this.checkRegistrationVerificationStatus(normalizedEmail)
+        if (checkStatus.success && checkStatus.data?.isVerified) {
+          return await this.finalizeRegistrationVerification(normalizedEmail, checkStatus.data.session?.userId)
+        }
         return { success: false, error: verifyRes.error || 'The verification code is incorrect.' }
       }
 
@@ -412,6 +549,10 @@ export class AuthService {
   ): Promise<ApiResponse<SignInResultData>> {
     const admin = createAdminClient()
     let userId = verifiedUserId
+
+    if (isTestEnvironment()) {
+      AuthEmailService.markVerifiedInTest(email)
+    }
 
     if (!userId) {
       try {

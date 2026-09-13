@@ -52,7 +52,7 @@ export async function createCompanyAction(data: CreateCompanyInput, fallbackUser
     }
 
     const cookieStore = await cookies()
-    cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(sessionData), {
+    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionData)), {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
       sameSite: 'lax',
