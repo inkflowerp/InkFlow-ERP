@@ -9,21 +9,15 @@ import {
   Send,
   CheckCircle2,
   AlertTriangle,
-  Clock,
-  Sparkles,
-  User,
-  Building,
-  Phone,
-  Mail,
-  MapPin,
   ChevronDown,
-  FileText,
   MessageSquare,
+  Mail,
   Smartphone,
   ShieldCheck,
   RefreshCw,
   Search,
   X,
+  UserCheck,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -32,7 +26,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { CustomerRecord, ResolvedProductRate, RateSource } from '@/types/crm.types'
+import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
 import { InvoiceRecord } from '@/types/billing.types'
 import { ProductRecord } from '@/types/product.types'
 import { formatBDT } from '@/lib/formatters'
@@ -53,8 +47,6 @@ export interface NewInvoiceModalProps {
   onInvoiceCreated?: (invoice: InvoiceRecord) => void
 }
 
-export type ModalRateSource = 'custom' | 'last_invoice' | 'default' | 'manual'
-
 interface ItemRowState {
   id: string
   productId?: string
@@ -65,7 +57,7 @@ interface ItemRowState {
   unit: string
   rate: number
   finishing: string
-  rateSource?: ModalRateSource
+  rateSource?: 'custom' | 'last_invoice' | 'default' | 'manual'
   isManualRate?: boolean
 }
 
@@ -83,12 +75,12 @@ const FINISHING_OPTIONS = [
 ]
 
 const UNIT_OPTIONS = [
-  { value: 'sft', label: 'SFT (Sq Feet)' },
-  { value: 'sqin', label: 'Sq Inch' },
-  { value: 'pcs', label: 'Pieces (Pcs)' },
-  { value: 'page', label: 'Pages' },
-  { value: 'book', label: 'Books' },
-  { value: 'set', label: 'Sets' },
+  { value: 'sft', label: 'SFT' },
+  { value: 'sqin', label: 'SQIN' },
+  { value: 'pcs', label: 'PCS' },
+  { value: 'page', label: 'PAGE' },
+  { value: 'book', label: 'BOOK' },
+  { value: 'set', label: 'SET' },
 ]
 
 export function NewInvoiceModal({
@@ -98,34 +90,29 @@ export function NewInvoiceModal({
   onInvoiceCreated,
 }: NewInvoiceModalProps) {
   const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
+  const { locale } = useI18n()
   const tenantSlug = company?.slug || 'my-company'
 
   // Products catalog & pricing cache
   const [products, setProducts] = useState<ProductRecord[]>([])
   const [customerRates, setCustomerRates] = useState<ResolvedProductRate[]>([])
-  const [loadingProducts, setLoadingProducts] = useState(false)
 
-  // Customer search & selection
-  const [customerSearchQuery, setCustomerSearchQuery] = useState('')
-  const [customerSearchResults, setCustomerSearchResults] = useState<CustomerRecord[]>([])
-  const [isSearchingCustomers, setIsSearchingCustomers] = useState(false)
-  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null)
-  const [isNewCustomerMode, setIsNewCustomerMode] = useState(false)
-
-  // New customer form fields
-  const [newCustomerName, setNewCustomerName] = useState('')
-  const [newCompanyName, setNewCompanyName] = useState('')
-  const [newCustomerPhone, setNewCustomerPhone] = useState('')
-  const [newCustomerWhatsApp, setNewCustomerWhatsApp] = useState('')
-  const [newCustomerAddress, setNewCustomerAddress] = useState('')
-  const [newCustomerType, setNewCustomerType] = useState<'retail' | 'reseller' | 'corporate' | 'government'>('retail')
-  const [newCustomerEmail, setNewCustomerEmail] = useState('')
+  // Customer Form Fields
+  const [customerId, setCustomerId] = useState<string | undefined>(undefined)
+  const [customerName, setCustomerName] = useState('')
+  const [companyName, setCompanyName] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [whatsappNumber, setWhatsappNumber] = useState('')
+  const [address, setAddress] = useState('')
+  const [customerType, setCustomerType] = useState<'retail' | 'reseller' | 'corporate' | 'government'>('retail')
+  const [emailAddress, setEmailAddress] = useState('')
   const [saveCustomer, setSaveCustomer] = useState(true)
 
-  // Duplicate customer warning
-  const [duplicateMatchWarning, setDuplicateMatchWarning] = useState<CustomerRecord | null>(null)
+  // Search suggestions dropdown
+  const [searchResults, setSearchResults] = useState<CustomerRecord[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const [isExistingCustomerSelected, setIsExistingCustomerSelected] = useState(false)
 
   // Items State
   const [items, setItems] = useState<ItemRowState[]>([
@@ -144,20 +131,15 @@ export function NewInvoiceModal({
   ])
 
   // Financials State
-  const [invoiceType, setInvoiceType] = useState<'sales_invoice' | 'vat_invoice'>('sales_invoice')
-  const [invoiceDate, setInvoiceDate] = useState<string>(() => new Date().toISOString().split('T')[0])
-  const [dueDate, setDueDate] = useState<string>(() => new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
   const [discountAmount, setDiscountAmount] = useState<number>(0)
   const [vatPercentage, setVatPercentage] = useState<number>(0)
   const [advanceAmount, setAdvanceAmount] = useState<number>(0)
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bkash' | 'nagad' | 'bank' | 'cheque'>('cash')
-  const [invoiceNotes, setInvoiceNotes] = useState('')
 
-  // State flags & feedback
+  // Feedback & Action states
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submittingAction, setSubmittingAction] = useState<'save' | 'print' | 'send' | null>(null)
   const [savedInvoice, setSavedInvoice] = useState<InvoiceRecord | null>(null)
-  const [validationError, setValidationError] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [communicationStatus, setCommunicationStatus] = useState<{
     status: 'idle' | 'success' | 'failed'
     message: string
@@ -168,38 +150,33 @@ export function NewInvoiceModal({
   // Send Dropdown state
   const [showSendMenu, setShowSendMenu] = useState(false)
   const sendMenuRef = useRef<HTMLDivElement>(null)
+  const searchContainerRef = useRef<HTMLDivElement>(null)
 
-  // Load active products on mount
+  // Fetch active catalog products
   useEffect(() => {
     if (!open) return
-    let isMounted = true
-    setLoadingProducts(true)
-    getInvoiceProductsAction(company?.id)
-      .then((res) => {
-        if (isMounted && res.success && res.data) {
-          setProducts(res.data)
-        }
-      })
-      .finally(() => {
-        if (isMounted) setLoadingProducts(false)
-      })
-    return () => {
-      isMounted = false
-    }
+    getInvoiceProductsAction(company?.id).then((res) => {
+      if (res.success && res.data) {
+        setProducts(res.data)
+      }
+    })
   }, [open, company?.id])
 
-  // Close Send dropdown on outside click
+  // Close menus on outside click
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (sendMenuRef.current && !sendMenuRef.current.contains(e.target as Node)) {
         setShowSendMenu(false)
+      }
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false)
       }
     }
     document.addEventListener('mousedown', handleOutsideClick)
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
 
-  // Handle preselected customer ID
+  // Auto-fill when preselected customer ID is provided
   useEffect(() => {
     if (open && preselectedCustomerId) {
       searchInvoiceCustomersAction(preselectedCustomerId, company?.id).then((res) => {
@@ -210,46 +187,56 @@ export function NewInvoiceModal({
     }
   }, [open, preselectedCustomerId, company?.id])
 
-  // Customer search with debounce
+  // Customer keyword search
   useEffect(() => {
-    if (!customerSearchQuery.trim() || isNewCustomerMode) {
-      setCustomerSearchResults([])
+    if (!customerName.trim() || isExistingCustomerSelected) {
+      setSearchResults([])
       return
     }
 
     const timer = setTimeout(async () => {
-      setIsSearchingCustomers(true)
+      setIsSearching(true)
       try {
-        const res = await searchInvoiceCustomersAction(customerSearchQuery, company?.id)
-        if (res.success && res.data) {
-          setCustomerSearchResults(res.data)
-          setShowCustomerDropdown(true)
+        const res = await searchInvoiceCustomersAction(customerName, company?.id)
+        if (res.success && res.data && res.data.length > 0) {
+          setSearchResults(res.data)
+          setShowSuggestions(true)
+        } else {
+          setSearchResults([])
+          setShowSuggestions(false)
         }
       } catch (err) {
         console.error('Customer search error:', err)
       } finally {
-        setIsSearchingCustomers(false)
+        setIsSearching(false)
       }
-    }, 250)
+    }, 200)
 
     return () => clearTimeout(timer)
-  }, [customerSearchQuery, isNewCustomerMode, company?.id])
+  }, [customerName, isExistingCustomerSelected, company?.id])
 
-  // Rate resolution when customer changes
+  // Select existing customer & auto-fill without creating duplicates
   const handleSelectCustomer = async (cust: CustomerRecord) => {
-    setSelectedCustomer(cust)
-    setIsNewCustomerMode(false)
-    setCustomerSearchQuery(`${cust.name} ${cust.company_name ? `(${cust.company_name})` : ''}`)
-    setShowCustomerDropdown(false)
-    setDuplicateMatchWarning(null)
-    setValidationError(null)
+    setCustomerId(cust.id)
+    setCustomerName(cust.name)
+    setCompanyName(cust.company_name || '')
+    setPhoneNumber(cust.mobile)
+    setWhatsappNumber(cust.whatsapp || '')
+    setAddress(cust.address || '')
+    const typeMapping = ['retail', 'reseller', 'corporate', 'government'].includes(cust.customer_type || '')
+      ? (cust.customer_type as any)
+      : 'retail'
+    setCustomerType(typeMapping)
+    setEmailAddress(cust.email || '')
+    setIsExistingCustomerSelected(true)
+    setShowSuggestions(false)
+    setErrorMessage(null)
 
-    // Load 3-tier customer pricing
+    // Resolve 3-tier customer pricing
     try {
       const rateRes = await resolveCustomerPricingAction(cust.id, company?.id)
       if (rateRes.success && rateRes.data) {
         setCustomerRates(rateRes.data)
-        // Refresh rates on current items if not manually modified
         setItems((prev) =>
           prev.map((item) => {
             if (item.productId && !item.isManualRate) {
@@ -271,28 +258,16 @@ export function NewInvoiceModal({
     }
   }
 
-  const handleStartNewCustomer = () => {
-    setIsNewCustomerMode(true)
-    setSelectedCustomer(null)
-    setCustomerRates([])
-    setShowCustomerDropdown(false)
-    setNewCustomerName(customerSearchQuery.trim())
-    setDuplicateMatchWarning(null)
+  const handleCustomerNameChange = (val: string) => {
+    setCustomerName(val)
+    if (isExistingCustomerSelected) {
+      setIsExistingCustomerSelected(false)
+      setCustomerId(undefined)
+      setCustomerRates([])
+    }
   }
 
-  const handleCancelNewCustomer = () => {
-    setIsNewCustomerMode(false)
-    setCustomerSearchQuery('')
-    setNewCustomerName('')
-    setNewCompanyName('')
-    setNewCustomerPhone('')
-    setNewCustomerWhatsApp('')
-    setNewCustomerAddress('')
-    setNewCustomerEmail('')
-    setDuplicateMatchWarning(null)
-  }
-
-  // Handle line item changes & automatic rate resolution
+  // Line Item Handlers
   const handleProductSelect = (index: number, productId: string) => {
     const prd = products.find((p) => p.id === productId)
     if (!prd) return
@@ -301,12 +276,11 @@ export function NewInvoiceModal({
       const next = [...prev]
       const current = next[index]
 
-      // Determine rate from hierarchy
-      const defaultSellingPrice = Number(prd.selling_price) || Number((prd as any).base_price) || 20
-      let effectiveRate = defaultSellingPrice
-      let rateSrc: ModalRateSource = 'default'
+      const defaultPrice = Number(prd.selling_price) || Number((prd as any).base_price) || 20
+      let effectiveRate = defaultPrice
+      let rateSrc: 'custom' | 'last_invoice' | 'default' = 'default'
 
-      if (selectedCustomer && customerRates.length > 0) {
+      if (customerId && customerRates.length > 0) {
         const resolved = customerRates.find((r) => r.productId === prd.id)
         if (resolved) {
           effectiveRate = resolved.effectiveRate
@@ -355,8 +329,8 @@ export function NewInvoiceModal({
         id: `item-${Date.now()}-${prev.length + 1}`,
         productId: defaultProduct?.id || '',
         itemName: defaultProduct?.name || 'Printing Service Item',
-        width: '3',
-        height: '5',
+        width: '4',
+        height: '6',
         quantity: 1,
         unit: defaultUnit,
         rate: defaultPrice,
@@ -371,7 +345,7 @@ export function NewInvoiceModal({
     setItems((prev) => prev.filter((_, i) => i !== index))
   }
 
-  // Calculate line item totals
+  // Calculate line items
   const calculatedItems = useMemo(() => {
     return items.map((item) => {
       const qty = Math.max(0.01, Number(item.quantity) || 1)
@@ -396,9 +370,9 @@ export function NewInvoiceModal({
     })
   }, [items])
 
-  // Overall Financial Calculations
+  // Overall Totals
   const subtotal = useMemo(() => {
-    return calculatedItems.reduce((acc, it) => acc + it.lineTotal, 0)
+    return calculatedItems.reduce((sum, it) => sum + it.lineTotal, 0)
   }, [calculatedItems])
 
   const subtotalAfterDiscount = useMemo(() => {
@@ -423,31 +397,22 @@ export function NewInvoiceModal({
 
   // Save-First Core Validation & Persistence
   const persistInvoice = async (): Promise<InvoiceRecord | null> => {
-    setValidationError(null)
+    setErrorMessage(null)
 
-    // Validation
-    if (!selectedCustomer && !isNewCustomerMode) {
-      setValidationError('Please select an existing customer or create a new customer.')
+    if (!customerName.trim()) {
+      setErrorMessage('Customer Name is required.')
       return null
     }
-
-    if (isNewCustomerMode) {
-      if (!newCustomerName.trim()) {
-        setValidationError('Customer Name is required.')
-        return null
-      }
-      if (!newCustomerPhone.trim()) {
-        setValidationError('Customer Phone number is required.')
-        return null
-      }
-      if (!newCustomerAddress.trim()) {
-        setValidationError('Customer Address is required.')
-        return null
-      }
+    if (!phoneNumber.trim()) {
+      setErrorMessage('Phone Number is required.')
+      return null
     }
-
+    if (!address.trim()) {
+      setErrorMessage('Address is required.')
+      return null
+    }
     if (items.length === 0) {
-      setValidationError('At least one line item is required.')
+      setErrorMessage('At least one item is required.')
       return null
     }
 
@@ -464,34 +429,29 @@ export function NewInvoiceModal({
     }))
 
     const payload = {
-      customer_id: selectedCustomer?.id,
-      new_customer: isNewCustomerMode
+      customer_id: customerId,
+      new_customer: !customerId
         ? {
-            name: newCustomerName,
-            company_name: newCompanyName,
-            mobile: newCustomerPhone,
-            whatsapp: newCustomerWhatsApp,
-            address: newCustomerAddress,
-            customer_type: newCustomerType,
-            email: newCustomerEmail,
+            name: customerName.trim(),
+            company_name: companyName.trim() || undefined,
+            mobile: phoneNumber.trim(),
+            whatsapp: whatsappNumber.trim() || undefined,
+            address: address.trim(),
+            customer_type: customerType,
+            email: emailAddress.trim() || undefined,
             save_customer: saveCustomer,
           }
         : undefined,
-      customer_name: selectedCustomer?.name,
-      customer_company: selectedCustomer?.company_name || undefined,
-      customer_phone: selectedCustomer?.mobile,
-      customer_whatsapp: selectedCustomer?.whatsapp || undefined,
-      customer_address: selectedCustomer?.address || undefined,
-      customer_email: selectedCustomer?.email || undefined,
-      customer_type: selectedCustomer?.customer_type,
-      invoice_type: invoiceType,
-      invoice_date: invoiceDate,
-      due_date: dueDate,
+      customer_name: customerName.trim(),
+      customer_company: companyName.trim() || undefined,
+      customer_phone: phoneNumber.trim(),
+      customer_whatsapp: whatsappNumber.trim() || undefined,
+      customer_address: address.trim(),
+      customer_email: emailAddress.trim() || undefined,
+      customer_type: customerType,
       discount_amount: Number(discountAmount) || 0,
       vat_percentage: Number(vatPercentage) || 0,
       advance_amount: effectiveAdvance,
-      payment_method: paymentMethod,
-      notes: invoiceNotes,
       items: payloadItems,
     }
 
@@ -499,10 +459,10 @@ export function NewInvoiceModal({
 
     if (!res.success || !res.data) {
       if (res.duplicateMatch && res.duplicateCustomer) {
-        setDuplicateMatchWarning(res.duplicateCustomer)
-        setValidationError(`Existing customer found with matching phone (${res.duplicateCustomer.name}).`)
+        handleSelectCustomer(res.duplicateCustomer)
+        setErrorMessage(`Existing customer found with this phone (${res.duplicateCustomer.name}). Auto-filled existing profile.`)
       } else {
-        setValidationError(res.error || 'Failed to save invoice.')
+        setErrorMessage(res.error || 'Failed to save invoice.')
       }
       return null
     }
@@ -524,7 +484,7 @@ export function NewInvoiceModal({
       if (inv) {
         setCommunicationStatus({
           status: 'success',
-          message: `Invoice ${inv.invoice_number} saved successfully with immutable snapshot!`,
+          message: `Invoice ${inv.invoice_number} saved successfully!`,
         })
       }
     } finally {
@@ -547,7 +507,7 @@ export function NewInvoiceModal({
         window.open(`/${tenantSlug}/billing/${inv.id}`, '_blank')
         setCommunicationStatus({
           status: 'success',
-          message: `Invoice ${inv.invoice_number} saved & print document prepared!`,
+          message: `Invoice ${inv.invoice_number} saved & ready for print!`,
         })
       }
     } finally {
@@ -568,9 +528,7 @@ export function NewInvoiceModal({
         inv = await persistInvoice()
       }
 
-      if (!inv) {
-        return
-      }
+      if (!inv) return
 
       const sendRes = await sendInvoiceAction(
         {
@@ -584,14 +542,14 @@ export function NewInvoiceModal({
       if (sendRes.success) {
         setCommunicationStatus({
           status: 'success',
-          message: `Invoice ${inv.invoice_number} sent via ${channel.toUpperCase()} (${format.toUpperCase()}) successfully!`,
+          message: `Invoice ${inv.invoice_number} sent via ${channel.toUpperCase()} (${format.toUpperCase()})!`,
           channel,
           format,
         })
       } else {
         setCommunicationStatus({
           status: 'failed',
-          message: `Invoice ${inv.invoice_number} saved successfully, but ${channel.toUpperCase()} delivery failed: ${sendRes.error}`,
+          message: `Invoice ${inv.invoice_number} saved, but ${channel.toUpperCase()} send failed: ${sendRes.error}`,
           channel,
           format,
         })
@@ -602,21 +560,21 @@ export function NewInvoiceModal({
     }
   }
 
-  const handleRetrySend = async () => {
-    if (!savedInvoice || !communicationStatus.channel || !communicationStatus.format) return
-    handleSend(
-      communicationStatus.channel as 'whatsapp' | 'email' | 'sms',
-      communicationStatus.format as 'pdf' | 'text'
-    )
-  }
-
   const resetModal = () => {
     setSavedInvoice(null)
-    setValidationError(null)
+    setErrorMessage(null)
     setCommunicationStatus({ status: 'idle', message: '' })
-    setSelectedCustomer(null)
-    setIsNewCustomerMode(false)
-    setCustomerSearchQuery('')
+    setCustomerId(undefined)
+    setCustomerName('')
+    setCompanyName('')
+    setPhoneNumber('')
+    setWhatsappNumber('')
+    setAddress('')
+    setCustomerType('retail')
+    setEmailAddress('')
+    setSaveCustomer(true)
+    setIsExistingCustomerSelected(false)
+    setCustomerRates([])
     const defaultProduct = products[0]
     const defaultPrice = defaultProduct
       ? Number(defaultProduct.selling_price) || Number((defaultProduct as any).base_price) || 22
@@ -640,7 +598,6 @@ export function NewInvoiceModal({
     setDiscountAmount(0)
     setVatPercentage(0)
     setAdvanceAmount(0)
-    setInvoiceNotes('')
   }
 
   return (
@@ -650,57 +607,43 @@ export function NewInvoiceModal({
         if (!v) resetModal()
         onOpenChange(v)
       }}
-      size="6xl"
+      size="5xl"
       title={
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center">
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center">
             <Receipt className="h-5 w-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-black text-slate-900 dark:text-white">
-                {locale === 'bn' ? 'নতুন চালান / ইনভয়েস তৈরি' : 'New Invoice Workspace'}
-              </h2>
-              <Badge variant="outline" className="text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-200">
-                Save-First Engine
-              </Badge>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Easier than Excel • Faster than paper • Centralized Persistence & Financial Integrity
+            <h2 className="text-base font-black text-slate-900 dark:text-white">
+              {locale === 'bn' ? 'নতুন চালান তৈরি করুন' : 'New Invoice'}
+            </h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Easier than Excel • Faster than paper • More organized than WhatsApp
             </p>
           </div>
         </div>
       }
       hideFooter
     >
-      <div className="space-y-6 pt-2 pb-6 max-h-[80vh] overflow-y-auto pr-1">
-        {/* Success Banner if Invoice Persisted */}
+      <div className="space-y-5 pt-1 pb-4 max-h-[80vh] overflow-y-auto pr-1">
+        {/* Success Banner */}
         {savedInvoice && (
-          <div className="rounded-2xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-sm font-black text-emerald-900 dark:text-emerald-200">
-                  Invoice {savedInvoice.invoice_number} Persisted in Database
-                </div>
-                <div className="text-xs text-emerald-700 dark:text-emerald-400">
-                  Total: ৳{formatBDT(savedInvoice.grand_total)} • Paid: ৳{formatBDT(savedInvoice.paid_amount)} • Due: ৳{formatBDT(savedInvoice.due_amount)}
-                </div>
-              </div>
+          <div className="rounded-xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 flex items-center justify-between gap-3 text-xs text-emerald-900 dark:text-emerald-200">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>
+                <strong>Invoice {savedInvoice.invoice_number} Saved!</strong> Grand Total: ৳{formatBDT(savedInvoice.grand_total)} • Due: ৳{formatBDT(savedInvoice.due_amount)}
+              </span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <a
-                href={`/${tenantSlug}/billing/${savedInvoice.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs"
-              >
-                <Printer className="h-3.5 w-3.5" />
-                View & Print Invoice
-              </a>
-            </div>
+            <a
+              href={`/${tenantSlug}/billing/${savedInvoice.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white"
+            >
+              <Printer className="h-3 w-3" />
+              Print
+            </a>
           </div>
         )}
 
@@ -708,7 +651,7 @@ export function NewInvoiceModal({
         {communicationStatus.status !== 'idle' && (
           <div
             className={cn(
-              'rounded-xl border p-3.5 flex items-center justify-between gap-3 text-xs',
+              'rounded-xl border p-3 flex items-center justify-between gap-3 text-xs',
               communicationStatus.status === 'success'
                 ? 'bg-blue-50 border-blue-200 text-blue-900 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-200'
                 : 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200'
@@ -722,353 +665,219 @@ export function NewInvoiceModal({
               )}
               <span>{communicationStatus.message}</span>
             </div>
-            {communicationStatus.status === 'failed' && (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={handleRetrySend}
-                className="h-7 text-[11px] gap-1 shrink-0"
-              >
-                <RefreshCw className="h-3 w-3" />
-                Retry Send
-              </Button>
-            )}
           </div>
         )}
 
-        {/* Validation / Error Banner */}
-        {validationError && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 p-3.5 flex items-start gap-2.5 text-xs text-rose-800 dark:text-rose-200">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <span className="font-semibold">{validationError}</span>
-              {duplicateMatchWarning && (
-                <div className="mt-2 flex items-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => handleSelectCustomer(duplicateMatchWarning)}
-                    className="h-7 text-xs bg-rose-700 hover:bg-rose-800 text-white"
-                  >
-                    Use Existing Customer ({duplicateMatchWarning.name})
-                  </Button>
-                </div>
-              )}
-            </div>
+        {/* Error Banner */}
+        {errorMessage && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 p-3 flex items-center gap-2 text-xs text-rose-800 dark:text-rose-200">
+            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+            <span className="font-semibold">{errorMessage}</span>
           </div>
         )}
 
-        {/* SECTION 1: CUSTOMER SELECTION & DETAILS */}
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-4">
+        {/* SECTION 1: CUSTOMER INFORMATION */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-600 flex items-center justify-center text-xs font-black">
-                1
-              </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Customer Information <span className="text-rose-500">*</span>
-              </h3>
-            </div>
-            {!isNewCustomerMode && selectedCustomer && (
-              <Badge variant="outline" className="text-[11px] bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                Customer ID: {selectedCustomer.id.slice(0, 8)}
-              </Badge>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+              Customer Details
+            </h3>
+            {isExistingCustomerSelected && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                <UserCheck className="h-3.5 w-3.5" />
+                Existing Customer Linked
+              </span>
             )}
           </div>
 
-          {!isNewCustomerMode ? (
-            <div className="space-y-3">
-              {/* Existing Customer Search Input */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {/* Customer Name with Search Dropdown */}
+            <div className="relative" ref={searchContainerRef}>
+              <Label className="text-xs font-semibold mb-1 block">
+                Customer Name <span className="text-rose-500">*</span>
+              </Label>
               <div className="relative">
-                <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5 block">
-                  Search Existing Customer (Name / Bangla / Phone / WhatsApp / Company)
-                </Label>
-                <div className="relative">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    type="text"
-                    value={customerSearchQuery}
-                    onChange={(e) => {
-                      setCustomerSearchQuery(e.target.value)
-                      if (selectedCustomer) setSelectedCustomer(null)
-                    }}
-                    onFocus={() => {
-                      if (customerSearchResults.length > 0) setShowCustomerDropdown(true)
-                    }}
-                    placeholder="Search by customer name, 017xxxxxxxx, company..."
-                    className="pl-10 pr-10 h-11 rounded-xl text-sm font-medium border-slate-200 dark:border-slate-800"
-                  />
-                  {customerSearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCustomerSearchQuery('')
-                        setSelectedCustomer(null)
-                        setCustomerRates([])
-                      }}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Dropdown Results */}
-                {showCustomerDropdown && customerSearchResults.length > 0 && (
-                  <div className="absolute z-30 left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
-                    {customerSearchResults.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => handleSelectCustomer(c)}
-                        className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center justify-between transition-colors"
-                      >
-                        <div className="space-y-0.5">
-                          <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span>{c.name}</span>
-                            {c.name_bn && <span className="text-xs text-slate-400 font-normal">({c.name_bn})</span>}
-                            {c.company_name && (
-                              <span className="text-[11px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-normal">
-                                {c.company_name}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-3">
-                            <span className="flex items-center gap-1 font-mono">
-                              <Phone className="h-3 w-3" /> {c.mobile}
-                            </span>
-                            {c.address && <span className="truncate max-w-xs">• {c.address}</span>}
-                          </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <Badge variant="outline" className="text-[10px] uppercase font-bold">
-                            {c.customer_type || 'Retail'}
-                          </Badge>
-                          {Number(c.total_due_balance) > 0 && (
-                            <div className="text-[11px] font-bold text-rose-600 mt-1">
-                              Due: ৳{formatBDT(c.total_due_balance || 0)}
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+                <Input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => handleCustomerNameChange(e.target.value)}
+                  onFocus={() => {
+                    if (searchResults.length > 0) setShowSuggestions(true)
+                  }}
+                  placeholder="Type customer name or phone..."
+                  className="h-9 text-xs rounded-lg font-medium pr-7"
+                />
+                {isSearching && (
+                  <RefreshCw className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 animate-spin" />
                 )}
               </div>
 
-              {/* Selected Customer Card Preview or "Create New Customer" Option */}
-              {selectedCustomer ? (
-                <div className="rounded-xl border border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900/50 p-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div>
-                    <span className="text-slate-400 font-semibold block">Customer:</span>
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">{selectedCustomer.name}</span>
-                    {selectedCustomer.company_name && (
-                      <span className="text-slate-500 block">{selectedCustomer.company_name}</span>
-                    )}
-                  </div>
-                  <div>
-                    <span className="text-slate-400 font-semibold block">Contact:</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200 block">{selectedCustomer.mobile}</span>
-                    {selectedCustomer.whatsapp && (
-                      <span className="text-emerald-600 font-mono block">WA: {selectedCustomer.whatsapp}</span>
-                    )}
-                  </div>
-                  <div>
-                    <span className="text-slate-400 font-semibold block">Address & Type:</span>
-                    <span className="text-slate-700 dark:text-slate-300 block truncate">{selectedCustomer.address || 'Dhaka, Bangladesh'}</span>
-                    <Badge variant="outline" className="text-[10px] mt-1 capitalize">
-                      {selectedCustomer.customer_type || 'Retail'}
-                    </Badge>
-                  </div>
-                </div>
-              ) : (
-                <div className="pt-1 flex items-center justify-between">
-                  <span className="text-xs text-slate-500">Don't see the customer in database?</span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleStartNewCustomer}
-                    className="h-8 text-xs font-bold gap-1.5 border-dashed border-blue-400 text-blue-600 hover:bg-blue-50"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    + Enter New Customer
-                  </Button>
+              {/* Suggestions Dropdown */}
+              {showSuggestions && searchResults.length > 0 && (
+                <div className="absolute z-40 left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
+                  {searchResults.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => handleSelectCustomer(c)}
+                      className="w-full text-left px-3 py-2.5 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                    >
+                      <div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <span>{c.name}</span>
+                          {c.company_name && (
+                            <span className="text-[10px] text-slate-500 font-normal">({c.company_name})</span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-mono">{c.mobile}</div>
+                      </div>
+                      <Badge variant="outline" className="text-[9px] uppercase">
+                        {c.customer_type || 'Retail'}
+                      </Badge>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
-          ) : (
-            /* New Customer Input Form */
-            <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/30 dark:bg-amber-950/10 p-4">
-              <div className="flex items-center justify-between border-b border-amber-200/60 pb-2">
-                <span className="text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5" />
-                  Creating New Customer Profile
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancelNewCustomer}
-                  className="h-7 text-xs text-slate-500 hover:text-slate-800"
-                >
-                  Cancel & Search Existing
-                </Button>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Customer Name <span className="text-rose-500">*</span>
-                  </Label>
-                  <Input
-                    type="text"
-                    value={newCustomerName}
-                    onChange={(e) => setNewCustomerName(e.target.value)}
-                    placeholder="e.g. Rahim Uddin"
-                    className="h-9 text-xs rounded-lg"
-                  />
-                </div>
+            {/* Company Name */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Company Name</Label>
+              <Input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Enterprise / Business Name"
+                className="h-9 text-xs rounded-lg"
+              />
+            </div>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Company Name</Label>
-                  <Input
-                    type="text"
-                    value={newCompanyName}
-                    onChange={(e) => setNewCompanyName(e.target.value)}
-                    placeholder="e.g. Rahim Enterprise Ltd."
-                    className="h-9 text-xs rounded-lg"
-                  />
-                </div>
+            {/* Phone Number */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                Phone Number <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="01XXXXXXXXX"
+                className="h-9 text-xs rounded-lg font-mono"
+              />
+            </div>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Phone Number <span className="text-rose-500">*</span>
-                  </Label>
-                  <Input
-                    type="tel"
-                    value={newCustomerPhone}
-                    onChange={(e) => setNewCustomerPhone(e.target.value)}
-                    placeholder="017XXXXXXXX"
-                    className="h-9 text-xs rounded-lg font-mono"
-                  />
-                </div>
+            {/* WhatsApp Number */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">WhatsApp Number</Label>
+              <Input
+                type="tel"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                placeholder="01XXXXXXXXX"
+                className="h-9 text-xs rounded-lg font-mono"
+              />
+            </div>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">WhatsApp Number</Label>
-                  <Input
-                    type="tel"
-                    value={newCustomerWhatsApp}
-                    onChange={(e) => setNewCustomerWhatsApp(e.target.value)}
-                    placeholder="017XXXXXXXX"
-                    className="h-9 text-xs rounded-lg font-mono"
-                  />
-                </div>
+            {/* Customer Type */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                Customer Type <span className="text-rose-500">*</span>
+              </Label>
+              <select
+                value={customerType}
+                onChange={(e) => setCustomerType(e.target.value as any)}
+                className="w-full h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 text-xs font-medium"
+              >
+                <option value="retail">Retail</option>
+                <option value="reseller">Reseller</option>
+                <option value="corporate">Corporate</option>
+                <option value="government">Government</option>
+              </select>
+            </div>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Customer Type <span className="text-rose-500">*</span>
-                  </Label>
-                  <select
-                    value={newCustomerType}
-                    onChange={(e) => setNewCustomerType(e.target.value as any)}
-                    className="w-full h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-                  >
-                    <option value="retail">Retail</option>
-                    <option value="reseller">Reseller</option>
-                    <option value="corporate">Corporate</option>
-                    <option value="government">Government</option>
-                  </select>
-                </div>
+            {/* Email Address */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Email Address</Label>
+              <Input
+                type="email"
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
+                placeholder="client@email.com"
+                className="h-9 text-xs rounded-lg"
+              />
+            </div>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Email Address (Optional)</Label>
-                  <Input
-                    type="email"
-                    value={newCustomerEmail}
-                    onChange={(e) => setNewCustomerEmail(e.target.value)}
-                    placeholder="billing@company.com"
-                    className="h-9 text-xs rounded-lg"
-                  />
-                </div>
+            {/* Address */}
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Label className="text-xs font-semibold mb-1 block">
+                Address <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Shop/Office Address, Area, Dhaka"
+                className="h-9 text-xs rounded-lg"
+              />
+            </div>
+          </div>
 
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Address <span className="text-rose-500">*</span>
-                  </Label>
-                  <Input
-                    type="text"
-                    value={newCustomerAddress}
-                    onChange={(e) => setNewCustomerAddress(e.target.value)}
-                    placeholder="e.g. 42 Motijheel C/A, Dhaka - 1000"
-                    className="h-9 text-xs rounded-lg"
-                  />
-                </div>
-              </div>
-
-              {/* Save Customer Checkbox */}
-              <div className="pt-2 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="save-customer-toggle"
-                  checked={saveCustomer}
-                  onChange={(e) => setSaveCustomer(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="save-customer-toggle" className="text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
-                  Save Customer profile to permanent customer directory (Recommended)
-                </label>
-              </div>
+          {/* Save Customer Checkbox */}
+          {!isExistingCustomerSelected && (
+            <div className="pt-1 flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="save-customer-chk"
+                checked={saveCustomer}
+                onChange={(e) => setSaveCustomer(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="save-customer-chk" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                Save Customer to directory (Checked by default)
+              </label>
             </div>
           )}
         </div>
 
-        {/* SECTION 2: LINE ITEMS BUILDER */}
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-4">
+        {/* SECTION 2: ITEMS SECTION */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center text-xs font-black">
-                2
-              </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Invoice Line Items <span className="text-rose-500">*</span>
-              </h3>
-            </div>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Items
+            </h3>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={handleAddItem}
-              className="h-8 text-xs font-bold gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200"
+              className="h-7 text-xs font-bold gap-1 text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/30"
             >
               <Plus className="h-3.5 w-3.5" />
-              + Add Another Item
+              Add Another
             </Button>
           </div>
 
-          {/* Items Table / Cards */}
           <div className="space-y-3">
             {calculatedItems.map((item, index) => (
               <div
                 key={item.id}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 p-3.5 space-y-3"
+                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 p-3 space-y-2.5"
               >
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
-                  {/* Product / Service Catalog */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-start">
+                  {/* Item (Product / Service) */}
                   <div className="md:col-span-4 space-y-1">
                     <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                      Product / Service Catalog
+                      Item
                     </Label>
                     <select
                       value={item.productId || ''}
                       onChange={(e) => handleProductSelect(index, e.target.value)}
-                      className="w-full h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 text-xs font-bold"
+                      className="w-full h-8 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 text-xs font-semibold"
                     >
-                      <option value="">Custom Service Item</option>
+                      <option value="">Custom Item</option>
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name} ({p.unit || (p as any).unit_of_measure})
+                          {p.name}
                         </option>
                       ))}
                     </select>
@@ -1077,63 +886,58 @@ export function NewInvoiceModal({
                       value={item.itemName}
                       onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
                       placeholder="Item description..."
-                      className="h-8 text-xs rounded-lg mt-1"
+                      className="h-7 text-xs rounded-md mt-1"
                     />
                   </div>
 
-                  {/* Size (Width x Height) */}
+                  {/* Size (Width, Height, Unit) */}
                   <div className="md:col-span-3 space-y-1">
                     <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                      Dimensions & Unit
+                      Size (Width × Height)
                     </Label>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       <Input
                         type="number"
                         step="any"
                         value={item.width}
                         onChange={(e) => handleItemChange(index, 'width', e.target.value)}
                         placeholder="W"
-                        className="h-9 text-xs rounded-lg w-16 text-center font-mono"
+                        className="h-8 text-xs rounded-md w-14 text-center font-mono"
                         title="Width"
                       />
-                      <span className="text-slate-400 text-xs font-bold">×</span>
+                      <span className="text-slate-400 text-xs">×</span>
                       <Input
                         type="number"
                         step="any"
                         value={item.height}
                         onChange={(e) => handleItemChange(index, 'height', e.target.value)}
                         placeholder="H"
-                        className="h-9 text-xs rounded-lg w-16 text-center font-mono"
+                        className="h-8 text-xs rounded-md w-14 text-center font-mono"
                         title="Height"
                       />
                       <select
                         value={item.unit}
                         onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                        className="h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-1.5 text-[11px] font-medium flex-1"
+                        className="h-8 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-1 text-[11px] font-medium flex-1"
                       >
                         {UNIT_OPTIONS.map((u) => (
                           <option key={u.value} value={u.value}>
-                            {u.value.toUpperCase()}
+                            {u.label}
                           </option>
                         ))}
                       </select>
                     </div>
-                    {item.area > 0 && (
-                      <span className="text-[10px] text-slate-500 font-mono block">
-                        Area: {item.area.toFixed(2)} {item.unit}
-                      </span>
-                    )}
                   </div>
 
                   {/* Quantity */}
                   <div className="md:col-span-1 space-y-1">
-                    <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Qty</Label>
+                    <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Quantity</Label>
                     <Input
                       type="number"
                       min="1"
                       value={item.quantity}
                       onChange={(e) => handleItemChange(index, 'quantity', Math.max(1, Number(e.target.value)))}
-                      className="h-9 text-xs rounded-lg text-center font-mono font-bold"
+                      className="h-8 text-xs rounded-md text-center font-mono font-bold"
                     />
                   </div>
 
@@ -1143,7 +947,7 @@ export function NewInvoiceModal({
                     <select
                       value={item.finishing}
                       onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
-                      className="w-full h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 text-xs font-medium"
+                      className="w-full h-8 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 text-xs font-medium"
                     >
                       {FINISHING_OPTIONS.map((f) => (
                         <option key={f} value={f}>
@@ -1153,32 +957,13 @@ export function NewInvoiceModal({
                     </select>
                   </div>
 
-                  {/* Unit Rate & Rate Source */}
+                  {/* Rate */}
                   <div className="md:col-span-2 space-y-1">
                     <div className="flex items-center justify-between">
-                      <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                        Rate (৳)
-                      </Label>
+                      <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Rate</Label>
                       {item.rateSource && (
-                        <span
-                          className={cn(
-                            'text-[9px] font-extrabold px-1 rounded uppercase tracking-tighter',
-                            item.rateSource === 'custom'
-                              ? 'bg-purple-100 text-purple-700'
-                              : item.rateSource === 'last_invoice'
-                              ? 'bg-blue-100 text-blue-700'
-                              : item.rateSource === 'manual'
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-slate-100 text-slate-600'
-                          )}
-                        >
-                          {item.rateSource === 'last_invoice'
-                            ? 'Last Inv'
-                            : item.rateSource === 'custom'
-                            ? 'Special'
-                            : item.rateSource === 'manual'
-                            ? 'Manual'
-                            : 'Std'}
+                        <span className="text-[9px] font-extrabold uppercase text-blue-600">
+                          {item.rateSource === 'custom' ? 'Custom' : item.rateSource === 'last_invoice' ? 'Last Inv' : ''}
                         </span>
                       )}
                     </div>
@@ -1187,34 +972,24 @@ export function NewInvoiceModal({
                       step="any"
                       value={item.rate}
                       onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value))}
-                      className="h-9 text-xs rounded-lg font-mono font-bold text-right"
+                      className="h-8 text-xs rounded-md font-mono font-bold text-right"
                     />
                   </div>
                 </div>
 
-                {/* Line Calculation & Remove Item */}
-                <div className="flex items-center justify-between border-t border-slate-200/60 dark:border-slate-800 pt-2 text-xs">
-                  <div className="flex items-center gap-2 text-slate-500 font-mono text-[11px]">
-                    <span>
-                      {item.area > 0 ? `${item.area.toFixed(2)} ${item.unit} × ` : ''}
-                      {item.quantity} pcs @ ৳{item.rate}
-                    </span>
-                    <span className="font-bold text-slate-900 dark:text-white">
-                      = ৳{formatBDT(item.lineTotal)}
-                    </span>
+                {/* Line Total & Remove */}
+                <div className="flex items-center justify-between border-t border-slate-200/50 dark:border-slate-800 pt-1.5 text-xs">
+                  <div className="text-[11px] font-mono text-slate-500">
+                    Line Total: <strong className="text-slate-900 dark:text-white">৳{formatBDT(item.lineTotal)}</strong>
                   </div>
-
                   {items.length > 1 && (
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="sm"
                       onClick={() => handleRemoveItem(index)}
-                      className="h-7 text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                      className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Remove
-                    </Button>
+                      <Trash2 className="h-3 w-3" /> Remove
+                    </button>
                   )}
                 </div>
               </div>
@@ -1222,304 +997,211 @@ export function NewInvoiceModal({
           </div>
         </div>
 
-        {/* SECTION 3: INVOICE CONFIGURATION & FINANCIAL TOTALS */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          {/* Left Column: Dates & Notes */}
-          <div className="lg:col-span-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-4">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              Terms & Billing Configuration
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">Document Type</Label>
-                <select
-                  value={invoiceType}
-                  onChange={(e) => setInvoiceType(e.target.value as any)}
-                  className="w-full h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 text-xs font-bold"
-                >
-                  <option value="sales_invoice">Standard Sales Invoice</option>
-                  <option value="vat_invoice">NBR Mushak 6.3 Tax Invoice</option>
-                </select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">Payment Method (for Advance)</Label>
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value as any)}
-                  className="w-full h-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 text-xs font-bold capitalize"
-                >
-                  <option value="cash">Cash in Hand</option>
-                  <option value="bkash">bKash Merchant / Personal</option>
-                  <option value="nagad">Nagad MFS</option>
-                  <option value="bank">Bank Transfer (EFT/NPSB)</option>
-                  <option value="cheque">Bank Cheque</option>
-                </select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">Invoice Date</Label>
-                <Input
-                  type="date"
-                  value={invoiceDate}
-                  onChange={(e) => setInvoiceDate(e.target.value)}
-                  className="h-9 text-xs rounded-lg font-mono"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">Payment Due Date</Label>
-                <Input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="h-9 text-xs rounded-lg font-mono"
-                />
-              </div>
+        {/* SECTION 3: TOTALS */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 p-4 shadow-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 items-center text-xs">
+            {/* Total */}
+            <div>
+              <span className="text-slate-500 font-semibold block text-[11px]">Total (Subtotal)</span>
+              <span className="text-base font-black font-mono text-slate-900 dark:text-white">
+                ৳{formatBDT(subtotal)}
+              </span>
             </div>
 
+            {/* Discount */}
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Invoice Notes / Terms</Label>
-              <textarea
-                value={invoiceNotes}
-                onChange={(e) => setInvoiceNotes(e.target.value)}
-                placeholder="Specific delivery instructions, PO reference, or payment terms..."
-                rows={2}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 text-xs focus:ring-1 focus:ring-blue-500"
+              <Label className="text-[11px] font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                Discount (৳)
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                value={discountAmount}
+                onChange={(e) => setDiscountAmount(Math.max(0, Number(e.target.value)))}
+                className="h-8 text-xs font-mono font-bold text-right rounded-md"
               />
             </div>
-          </div>
 
-          {/* Right Column: Financial Summary */}
-          <div className="lg:col-span-6 rounded-2xl border border-blue-200 bg-blue-50/30 dark:bg-slate-900 dark:border-blue-900/40 p-4 sm:p-5 shadow-xs space-y-3.5">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center justify-between">
-              <span>Financial Calculation</span>
-              <Badge variant="outline" className="text-[10px] font-mono bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200">
-                Server-Authoritative
-              </Badge>
-            </h3>
+            {/* Vat */}
+            <div>
+              <Label className="text-[11px] font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                VAT (%)
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                value={vatPercentage}
+                onChange={(e) => setVatPercentage(Math.max(0, Number(e.target.value)))}
+                className="h-8 text-xs font-mono font-bold text-right rounded-md"
+              />
+            </div>
 
-            <div className="space-y-2 text-xs divide-y divide-slate-200/60 dark:divide-slate-800">
-              {/* Subtotal */}
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-slate-600 dark:text-slate-400">Subtotal ({calculatedItems.length} items):</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{formatBDT(subtotal)}</span>
-              </div>
+            {/* Advance */}
+            <div>
+              <Label className="text-[11px] font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                Advance (৳)
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                max={grandTotal}
+                value={advanceAmount}
+                onChange={(e) => setAdvanceAmount(Math.max(0, Number(e.target.value)))}
+                className="h-8 text-xs font-mono font-bold text-right text-emerald-600 rounded-md"
+              />
+            </div>
 
-              {/* Discount */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-slate-600 dark:text-slate-400">Special Discount (৳):</span>
-                </div>
-                <Input
-                  type="number"
-                  min="0"
-                  value={discountAmount}
-                  onChange={(e) => setDiscountAmount(Math.max(0, Number(e.target.value)))}
-                  className="h-8 w-28 text-right font-mono font-bold text-xs rounded-lg"
-                />
-              </div>
-
-              {/* VAT */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-slate-600 dark:text-slate-400">VAT (%):</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={vatPercentage}
-                    onChange={(e) => setVatPercentage(Math.max(0, Number(e.target.value)))}
-                    className="h-8 w-20 text-right font-mono font-bold text-xs rounded-lg"
-                  />
-                  <span className="font-mono font-bold text-slate-700 dark:text-slate-300 w-20 text-right">
-                    +৳{formatBDT(vatAmount)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Grand Total */}
-              <div className="flex items-center justify-between pt-2 text-sm font-black text-slate-900 dark:text-white">
-                <span>Grand Total:</span>
-                <span className="text-base text-blue-700 dark:text-blue-400 font-mono">
-                  ৳{formatBDT(grandTotal)}
-                </span>
-              </div>
-
-              {/* Advance Amount */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-slate-600 dark:text-slate-400 font-semibold">Advance Received (৳):</span>
-                </div>
-                <Input
-                  type="number"
-                  min="0"
-                  max={grandTotal}
-                  value={advanceAmount}
-                  onChange={(e) => setAdvanceAmount(Math.max(0, Number(e.target.value)))}
-                  className="h-8 w-28 text-right font-mono font-bold text-xs rounded-lg text-emerald-600"
-                />
-              </div>
-
-              {/* Due Balance */}
-              <div className="flex items-center justify-between pt-2 text-sm font-black">
-                <span className="text-rose-600">Total Due Balance:</span>
-                <span className="text-base text-rose-600 font-mono">৳{formatBDT(dueAmount)}</span>
-              </div>
+            {/* Due */}
+            <div>
+              <span className="text-rose-600 font-bold block text-[11px]">Due Balance</span>
+              <span className="text-base font-black font-mono text-rose-600">
+                ৳{formatBDT(dueAmount)}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* SECTION 4: SAVE-FIRST ACTION BAR */}
-        <div className="sticky bottom-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 pt-4 pb-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
-            <span className="font-bold text-slate-900 dark:text-white">Save-First Guarantee:</span> All actions
-            persist to PostgreSQL ledger before printing or dispatching.
-          </div>
+        {/* SECTION 4: SAVE-FIRST ACTION BUTTONS */}
+        <div className="sticky bottom-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 pt-3 pb-1 flex items-center justify-end gap-2.5">
+          {/* [Save] Button */}
+          <Button
+            type="button"
+            onClick={handleSaveOnly}
+            disabled={isSubmitting}
+            className="h-10 px-5 rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-xs"
+          >
+            {isSubmitting && submittingAction === 'save' ? (
+              <div className="flex items-center gap-1.5">
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <span>Saving...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4" />
+                <span>Save</span>
+              </div>
+            )}
+          </Button>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-            {/* 1. SAVE BUTTON */}
+          {/* [Send (Dropdown)] Button */}
+          <div className="relative" ref={sendMenuRef}>
             <Button
               type="button"
-              onClick={handleSaveOnly}
+              onClick={() => setShowSendMenu(!showSendMenu)}
               disabled={isSubmitting}
-              className="flex-1 sm:flex-initial h-11 px-5 rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-xs"
+              className="h-10 px-4 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5"
             >
-              {isSubmitting && submittingAction === 'save' ? (
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Saving...</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>Save Invoice</span>
-                </div>
-              )}
-            </Button>
-
-            {/* 2. SEND DROPDOWN */}
-            <div className="relative" ref={sendMenuRef}>
-              <Button
-                type="button"
-                onClick={() => setShowSendMenu(!showSendMenu)}
-                disabled={isSubmitting}
-                className="h-11 px-4 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5"
-              >
-                {isSubmitting && submittingAction === 'send' ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                <span>Send</span>
-                <ChevronDown className="h-3.5 w-3.5 opacity-80" />
-              </Button>
-
-              {showSendMenu && (
-                <div className="absolute right-0 bottom-full mb-2 w-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-1.5 z-50 divide-y divide-slate-100 dark:divide-slate-800">
-                  {/* WhatsApp Options */}
-                  <div className="p-1 space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-emerald-600 px-2 py-1 flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3" /> WhatsApp
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSend('whatsapp', 'pdf')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 flex items-center justify-between"
-                    >
-                      <span>Send PDF Document</span>
-                      <Badge variant="outline" className="text-[9px] border-emerald-300 text-emerald-700">
-                        PDF
-                      </Badge>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSend('whatsapp', 'text')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 flex items-center justify-between"
-                    >
-                      <span>Send Text Summary</span>
-                      <Badge variant="outline" className="text-[9px]">
-                        Text
-                      </Badge>
-                    </button>
-                  </div>
-
-                  {/* Email Options */}
-                  <div className="p-1 space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-blue-600 px-2 py-1 flex items-center gap-1">
-                      <Mail className="h-3 w-3" /> Email
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSend('email', 'pdf')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 flex items-center justify-between"
-                    >
-                      <span>Attach Invoice PDF</span>
-                      <Badge variant="outline" className="text-[9px] border-blue-300 text-blue-700">
-                        PDF
-                      </Badge>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSend('email', 'text')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 flex items-center justify-between"
-                    >
-                      <span>Send Email Summary</span>
-                      <Badge variant="outline" className="text-[9px]">
-                        Text
-                      </Badge>
-                    </button>
-                  </div>
-
-                  {/* SMS Options */}
-                  <div className="p-1 space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-purple-600 px-2 py-1 flex items-center gap-1">
-                      <Smartphone className="h-3 w-3" /> SMS Gateway
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSend('sms', 'text')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 flex items-center justify-between"
-                    >
-                      <span>Send SMS Text</span>
-                      <Badge variant="outline" className="text-[9px]">
-                        Text
-                      </Badge>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSend('sms', 'pdf')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 flex items-center justify-between"
-                    >
-                      <span>SMS with PDF Link</span>
-                      <Badge variant="outline" className="text-[9px] border-purple-300 text-purple-700">
-                        Link
-                      </Badge>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 3. PRINT BUTTON */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handlePrint}
-              disabled={isSubmitting}
-              className="h-11 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-xs flex items-center gap-1.5"
-            >
-              {isSubmitting && submittingAction === 'print' ? (
+              {isSubmitting && submittingAction === 'send' ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
               ) : (
-                <Printer className="h-4 w-4" />
+                <Send className="h-4 w-4" />
               )}
-              <span>Print</span>
+              <span>Send</span>
+              <ChevronDown className="h-3.5 w-3.5 opacity-80" />
             </Button>
+
+            {showSendMenu && (
+              <div className="absolute right-0 bottom-full mb-2 w-52 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-1.5 z-50 divide-y divide-slate-100 dark:divide-slate-800">
+                {/* WhatsApp */}
+                <div className="p-1 space-y-0.5">
+                  <div className="text-[10px] font-black uppercase text-emerald-600 px-2 py-1 flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3" /> WhatsApp
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSend('whatsapp', 'pdf')}
+                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 flex items-center justify-between"
+                  >
+                    <span>PDF Document</span>
+                    <Badge variant="outline" className="text-[9px] border-emerald-300 text-emerald-700">
+                      PDF
+                    </Badge>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSend('whatsapp', 'text')}
+                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 flex items-center justify-between"
+                  >
+                    <span>Text Message</span>
+                    <Badge variant="outline" className="text-[9px]">
+                      Text
+                    </Badge>
+                  </button>
+                </div>
+
+                {/* Email */}
+                <div className="p-1 space-y-0.5">
+                  <div className="text-[10px] font-black uppercase text-blue-600 px-2 py-1 flex items-center gap-1">
+                    <Mail className="h-3 w-3" /> Email
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSend('email', 'pdf')}
+                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 flex items-center justify-between"
+                  >
+                    <span>PDF Attachment</span>
+                    <Badge variant="outline" className="text-[9px] border-blue-300 text-blue-700">
+                      PDF
+                    </Badge>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSend('email', 'text')}
+                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 flex items-center justify-between"
+                  >
+                    <span>Text Summary</span>
+                    <Badge variant="outline" className="text-[9px]">
+                      Text
+                    </Badge>
+                  </button>
+                </div>
+
+                {/* SMS */}
+                <div className="p-1 space-y-0.5">
+                  <div className="text-[10px] font-black uppercase text-purple-600 px-2 py-1 flex items-center gap-1">
+                    <Smartphone className="h-3 w-3" /> SMS
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSend('sms', 'text')}
+                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 flex items-center justify-between"
+                  >
+                    <span>Text SMS</span>
+                    <Badge variant="outline" className="text-[9px]">
+                      Text
+                    </Badge>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSend('sms', 'pdf')}
+                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 flex items-center justify-between"
+                  >
+                    <span>PDF Web Link</span>
+                    <Badge variant="outline" className="text-[9px] border-purple-300 text-purple-700">
+                      PDF
+                    </Badge>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* [Print] Button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrint}
+            disabled={isSubmitting}
+            className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-xs flex items-center gap-1.5"
+          >
+            {isSubmitting && submittingAction === 'print' ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Printer className="h-4 w-4" />
+            )}
+            <span>Print</span>
+          </Button>
         </div>
       </div>
     </ModalDialog>
