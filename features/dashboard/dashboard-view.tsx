@@ -412,10 +412,10 @@ export function DashboardView() {
       sortable: true,
       render: (row) => (
         <div className="flex flex-col">
-          <span className="font-semibold text-slate-900 dark:text-slate-100">
+          <span className="font-semibold text-slate-900 dark:text-slate-100 bangla-text">
             {tBilingual(row.customerName, row.customerNameBn)}
           </span>
-          <span className="text-[11px] text-slate-400">{row.specs}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">{row.specs}</span>
         </div>
       ),
     },
@@ -496,13 +496,13 @@ export function DashboardView() {
               <Badge
                 key={resp}
                 variant="outline"
-                className="bg-white/10 text-white border-white/20 text-[10px] sm:text-xs py-0.5 capitalize bangla-text"
+                className="bg-white/10 text-white border-white/20 text-xs py-0.5 capitalize bangla-text"
               >
                 {resp.replace('_', ' ')}
               </Badge>
             ))}
           </div>
-          <span className="text-[11px] text-slate-300 font-medium" suppressHydrationWarning>
+          <span className="text-xs text-slate-300 font-medium" suppressHydrationWarning>
             {new Date().toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-US', {
               timeZone: 'Asia/Dhaka',
               weekday: 'short',
@@ -565,7 +565,7 @@ export function DashboardView() {
               {tBilingual('Quick Operations', 'দ্রুত কাজ ও এন্ট্রি')}
             </span>
           </div>
-          <span className="text-[11px] text-slate-400 bangla-text hidden sm:inline">
+          <span className="text-xs text-slate-500 dark:text-slate-400 bangla-text hidden sm:inline">
             {tBilingual('1-2 tap direct actions', '১-২ ক্লিকে দ্রুত সম্পাদন')}
           </span>
         </div>
@@ -638,7 +638,7 @@ export function DashboardView() {
                       {tBilingual(item.titleEn, item.titleBn)}
                     </h3>
                   </div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 bangla-text pl-4">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text pl-4">
                     {tBilingual(item.subtitleEn, item.subtitleBn)}
                   </p>
                 </div>
@@ -654,7 +654,7 @@ export function DashboardView() {
                     }
                   }}
                   className={cn(
-                    'h-9 text-xs font-bold shrink-0 min-h-[36px] bangla-text',
+                    'h-9 text-xs font-bold shrink-0 min-h-[36px] bangla-text cursor-pointer',
                     item.severity === 'urgent'
                       ? 'bg-red-600 text-white hover:bg-red-700 border-red-600'
                       : 'bg-amber-600 text-white hover:bg-amber-700 border-amber-600'
@@ -748,7 +748,7 @@ export function DashboardView() {
                           : 'outline'
                       }
                       className={cn(
-                        'text-[10px] py-0 h-4 bangla-text',
+                        'text-xs py-0.5 px-2 h-5 bangla-text',
                         (item.status === 'in_progress' || item.status === 'printing') &&
                           'bg-purple-600 text-white font-bold animate-pulse'
                       )}
@@ -765,12 +765,12 @@ export function DashboardView() {
                     <strong className="text-slate-800 dark:text-slate-200">{item.customerName}</strong>
                   </p>
 
-                  <p className="text-[11px] text-slate-400 font-mono">{item.specs}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{item.specs}</p>
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                  <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
+                  <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
                     {item.deadline}
                   </span>
 
@@ -780,7 +780,7 @@ export function DashboardView() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleWorkItemAction(item, item.secondaryActionType!)}
-                        className="h-8 px-2 text-[11px] font-semibold text-slate-600 dark:text-slate-300 min-h-[36px] bangla-text cursor-pointer"
+                        className="h-8 px-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 min-h-[36px] bangla-text cursor-pointer"
                       >
                         {tBilingual(item.secondaryActionLabelEn, item.secondaryActionLabelBn || item.secondaryActionLabelEn)}
                       </Button>

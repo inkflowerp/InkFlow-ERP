@@ -161,11 +161,11 @@ export function KpiCard({
       {/* Top row: Title + Icon Badge */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5 min-w-0">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate bangla-text">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate bangla-text">
             {title}
           </span>
           {badge && (
-            <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+            <span className="inline-block px-2 py-0.5 rounded text-xs font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               {badge}
             </span>
           )}
@@ -198,7 +198,7 @@ export function KpiCard({
         )}
 
         {unit && (
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 bangla-text" suppressHydrationWarning>
+          <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 bangla-text" suppressHydrationWarning>
             {unit}
           </span>
         )}
@@ -210,7 +210,7 @@ export function KpiCard({
           {trend ? (
             <div
               className={cn(
-                'inline-flex items-center gap-1 font-semibold text-[11px] font-mono rounded-md px-1.5 py-0.5 border',
+                'inline-flex items-center gap-1 font-semibold text-xs font-mono rounded-md px-1.5 py-0.5 border',
                 trend.direction === 'up'
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/80'
                   : trend.direction === 'down'
@@ -223,7 +223,7 @@ export function KpiCard({
               {trend.direction === 'neutral' && <Minus className="h-3 w-3 shrink-0" />}
               <span>{typeof trend.value === 'number' ? formatVal(trend.value) : trend.value}</span>
               {(trend.labelEn || trend.labelBn) && (
-                <span className="text-[10px] font-sans font-normal opacity-80 bangla-text">
+                <span className="text-xs font-sans font-normal opacity-90 bangla-text">
                   {tBilingual(trend.labelEn || '', trend.labelBn || '')}
                 </span>
               )}
@@ -231,7 +231,7 @@ export function KpiCard({
           ) : null}
 
           {subtitle && (
-            <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate bangla-text">
+            <span className="text-xs text-slate-500 dark:text-slate-400 truncate bangla-text">
               {subtitle}
             </span>
           )}

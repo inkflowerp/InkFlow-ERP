@@ -40,11 +40,11 @@ export function UserMenu() {
           src={currentUser?.profile?.avatar_url || undefined}
           className="h-8 w-8 text-xs font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
         />
-        <div className="hidden 2xl:flex flex-col text-left shrink-0 whitespace-nowrap max-w-[130px]">
-          <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 leading-tight whitespace-nowrap truncate">
+        <div className="hidden 2xl:flex flex-col text-left shrink-0 whitespace-nowrap max-w-[140px]">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-tight whitespace-nowrap truncate bangla-text">
             {userName}
           </span>
-          <span className="text-[10px] text-slate-400 capitalize whitespace-nowrap truncate">
+          <span className="text-xs text-slate-500 dark:text-slate-400 capitalize whitespace-nowrap truncate">
             {currentRole || 'Staff'} {currentBranch ? `• ${currentBranch.code || currentBranch.name.split(' ')[0]}` : ''}
           </span>
         </div>
@@ -53,17 +53,17 @@ export function UserMenu() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl z-50 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
           <div className="border-b border-slate-100 px-3 py-2.5 dark:border-slate-800">
-            <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+            <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 truncate bangla-text">
               {userName}
             </p>
-            {userEmail && <p className="text-[11px] text-slate-400 truncate">{userEmail}</p>}
+            {userEmail && <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{userEmail}</p>}
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <Badge variant="outline" className="text-[10px] uppercase font-bold py-0 h-4 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
-                <Shield className="h-2.5 w-2.5 mr-1 text-blue-600" />
+              <Badge variant="outline" className="text-xs uppercase font-semibold py-0.5 px-2 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
+                <Shield className="h-3 w-3 mr-1 text-blue-600" />
                 {currentRole || 'Staff'}
               </Badge>
               {currentBranch && (
-                <Badge variant="secondary" className="text-[9px] py-0 h-4 truncate max-w-[130px]">
+                <Badge variant="secondary" className="text-xs py-0.5 px-2 truncate max-w-[130px]">
                   {currentBranch.name.split('(')[0].trim()}
                 </Badge>
               )}

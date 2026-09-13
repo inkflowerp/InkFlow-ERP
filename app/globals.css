@@ -54,15 +54,23 @@
 }
 
 @theme {
-  --font-sans: var(--font-inter), var(--font-hind-siliguri), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-bangla: var(--font-hind-siliguri), "Hind Siliguri", sans-serif;
+  --font-sans: var(--font-inter), var(--font-hind-siliguri), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+  --font-bangla: var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", sans-serif;
   --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   background-color: #f8fafc;
   color: #0f172a;
-  font-family: var(--font-inter), var(--font-hind-siliguri), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 0.875rem; /* 14px standard UI base */
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -73,20 +81,32 @@ body {
   color: #f8fafc;
 }
 
-/* Bengali Typography */
+/* Headings Base Hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  color: inherit;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* Bengali Typography - Crisp, legible line-height and letter-spacing */
 .bangla-text,
-[lang="bn"],
-[lang="bn"] * {
-  font-family: var(--font-hind-siliguri), "Hind Siliguri", sans-serif;
+[lang="bn"] {
+  font-family: var(--font-bangla);
   word-break: normal;
   overflow-wrap: normal;
-  line-height: 1.5;
+  line-height: 1.55;
+  letter-spacing: normal;
+}
+
+/* Base font-family and sizing inheritance for controls */
+button, input, select, textarea {
+  font-family: inherit;
 }
 
 /* Numeric & Monospace Data */
 .font-mono,
 .font-numeric {
-  font-family: var(--font-mono), "JetBrains Mono", monospace;
+  font-family: var(--font-mono);
   font-feature-settings: "tnum" 1, "zero" 1;
 }
 

@@ -69,15 +69,15 @@ export function ProductSelector({
           <Printer className="h-4 w-4 text-slate-400 shrink-0" />
           {selected ? (
             <div className="flex items-center gap-2 truncate">
-              <span className="font-medium text-slate-900 dark:text-slate-100 truncate">
+              <span className="font-medium text-slate-900 dark:text-slate-100 truncate bangla-text">
                 {tBilingual(selected.nameEn, selected.nameBn)}
               </span>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 uppercase">
+              <Badge variant="secondary" className="text-xs px-2 py-0.5 uppercase">
                 {selected.defaultUnit}
               </Badge>
             </div>
           ) : (
-            <span>{t('common.select_option')}</span>
+            <span className="bangla-text">{t('common.select_option')}</span>
           )}
         </div>
         <ChevronsUpDown className="h-4 w-4 shrink-0 text-slate-400" />
@@ -89,7 +89,7 @@ export function ProductSelector({
           <div className="absolute left-0 top-11 z-40 w-full rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
             <input
               type="text"
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-800"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-800 bangla-text"
               placeholder={t('common.type_to_search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -107,18 +107,18 @@ export function ProductSelector({
                       setOpen(false)
                     }}
                     className={cn(
-                      'flex items-center justify-between rounded-lg p-2 text-xs cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800',
-                      isSelected && 'bg-blue-50 text-blue-900 dark:bg-blue-950/50'
+                      'flex items-center justify-between rounded-lg p-2 text-xs sm:text-[13px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800',
+                      isSelected && 'bg-blue-50 text-blue-900 dark:bg-blue-950/50 font-semibold'
                     )}
                   >
                     <div className="flex flex-col">
-                      <span className="font-semibold text-slate-800 dark:text-slate-100">
+                      <span className="font-semibold text-slate-800 dark:text-slate-100 bangla-text">
                         {tBilingual(item.nameEn, item.nameBn)}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 uppercase">
+                      <Badge variant="outline" className="text-xs px-2 py-0.5 uppercase">
                         {item.defaultUnit}
                       </Badge>
                       {isSelected && <Check className="h-4 w-4 text-blue-600" />}

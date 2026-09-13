@@ -37,18 +37,18 @@ export function CompanySelector() {
         </div>
         <div className="flex flex-col text-left max-w-[110px] xs:max-w-[150px] sm:max-w-[180px] lg:max-w-[220px] min-w-0" suppressHydrationWarning>
           <div className="flex items-center gap-1.5">
-            <span className="truncate font-semibold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap" suppressHydrationWarning>
+            <span className="truncate font-semibold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap bangla-text" suppressHydrationWarning>
               {displayName}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-[10px] text-slate-400 capitalize whitespace-nowrap hidden xs:inline" suppressHydrationWarning>
+            <span className="truncate text-xs text-slate-500 dark:text-slate-400 capitalize whitespace-nowrap hidden xs:inline" suppressHydrationWarning>
               {company?.business_type?.replace('_', ' ') || 'Printing & Signage'}
             </span>
             <span
               suppressHydrationWarning
               className={cn(
-                'text-[8px] xs:text-[9px] px-1 xs:px-1.5 py-0.2 rounded font-bold uppercase tracking-wider border shrink-0',
+                'text-[10px] xs:text-[11px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border shrink-0',
                 accountTypeMeta.badgeClass
               )}
             >
@@ -65,7 +65,7 @@ export function CompanySelector() {
 
       {isOpen && (
         <div className="absolute left-0 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-2 shadow-2xl z-50 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
-          <div className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 bangla-text">
+          <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400 bangla-text">
             {tBilingual('Your Organizations', 'আপনার প্রতিষ্ঠানসমূহ')}
           </div>
 

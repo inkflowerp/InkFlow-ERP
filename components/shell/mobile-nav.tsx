@@ -218,7 +218,7 @@ export function MobileNav() {
                 <span className="font-black text-base text-slate-900 dark:text-white leading-tight">
                   Print<span className="text-blue-600">ERP</span>
                 </span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none">
                   BD Print SaaS
                 </span>
               </div>
@@ -232,7 +232,7 @@ export function MobileNav() {
         <SheetContent className="pb-6">
           <div className="space-y-4 py-1">
             {/* Active Workspace & User Profile Card */}
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-800/80 dark:to-slate-900/90 border border-slate-200/90 dark:border-slate-800 space-y-2.5 shadow-xs">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-800/80 dark:to-slate-900/90 border border-slate-200/90 dark:border-slate-800 space-y-2.5 shadow-xs">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <Avatar
@@ -241,10 +241,10 @@ export function MobileNav() {
                     className="h-8 w-8 text-xs font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 ring-1 ring-blue-500/20"
                   />
                   <div className="truncate">
-                    <span className="block font-bold text-xs text-slate-900 dark:text-white truncate leading-tight">
+                    <span className="block font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate leading-tight bangla-text">
                       {userName}
                     </span>
-                    <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
                       {company?.name || 'PrintERP Workspace'}
                     </span>
                   </div>
@@ -252,27 +252,27 @@ export function MobileNav() {
 
                 <Badge
                   variant="outline"
-                  className="text-[9px] uppercase font-bold py-0.5 px-1.5 h-4.5 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 shrink-0"
+                  className="text-xs uppercase font-semibold py-0.5 px-2 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 shrink-0"
                 >
-                  <Shield className="h-2.5 w-2.5 mr-1 text-blue-600" />
+                  <Shield className="h-3 w-3 mr-1 text-blue-600" />
                   {currentRole || 'Staff'}
                 </Badge>
               </div>
 
               {/* Status / Trial Badge */}
-              <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-[11px]">
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-xs">
                 <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                  <Building className="h-3 w-3 text-blue-600" />
-                  <span className="font-medium text-[10px] truncate max-w-[140px]">
+                  <Building className="h-3.5 w-3.5 text-blue-600" />
+                  <span className="font-medium text-xs truncate max-w-[140px]">
                     {currentBranch ? currentBranch.name.split('(')[0].trim() : currentPlan.name}
                   </span>
                 </div>
                 {isTrial ? (
-                  <Badge suppressHydrationWarning className="bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[9px] font-bold border-amber-300 shrink-0">
+                  <Badge suppressHydrationWarning className="bg-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-bold border-amber-300 shrink-0 px-1.5 py-0.5">
                     {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d trial`}
                   </Badge>
                 ) : (
-                  <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     {currentPlan.name}
                   </span>
@@ -285,25 +285,25 @@ export function MobileNav() {
               <Link
                 href={`/${tenantSlug}/quotations`}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-[11px] font-semibold hover:bg-blue-100 transition-colors min-h-[38px] bangla-text"
+                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 transition-colors min-h-[38px] bangla-text"
               >
-                <Plus className="h-3 w-3 text-blue-600" />
+                <Plus className="h-3.5 w-3.5 text-blue-600" />
                 <span>{tBilingual('Quote', 'কোটেশন')}</span>
               </Link>
               <Link
                 href={`/${tenantSlug}/orders`}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[11px] font-semibold hover:bg-indigo-100 transition-colors min-h-[38px] bangla-text"
+                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 transition-colors min-h-[38px] bangla-text"
               >
-                <Plus className="h-3 w-3 text-indigo-600" />
+                <Plus className="h-3.5 w-3.5 text-indigo-600" />
                 <span>{tBilingual('Order', 'অর্ডার')}</span>
               </Link>
               <Link
                 href={`/${tenantSlug}/production`}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200/70 dark:border-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-[11px] font-semibold hover:bg-cyan-100 transition-colors min-h-[38px] bangla-text"
+                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200/70 dark:border-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-xs font-semibold hover:bg-cyan-100 transition-colors min-h-[38px] bangla-text"
               >
-                <Printer className="h-3 w-3 text-cyan-600" />
+                <Printer className="h-3.5 w-3.5 text-cyan-600" />
                 <span>{tBilingual('Press', 'প্রোডাকশন')}</span>
               </Link>
             </div>
@@ -341,7 +341,7 @@ export function MobileNav() {
 
                 return (
                   <div key={sIdx} className="space-y-1">
-                    <h4 className="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1 bangla-text">
+                    <h4 className="px-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1 bangla-text">
                       {sectionTitle}
                     </h4>
 
@@ -357,7 +357,7 @@ export function MobileNav() {
                             href={item.href}
                             onClick={() => setOpen(false)}
                             className={cn(
-                              'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
+                              'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-[13px] font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
                               isActive
                                 ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
                                 : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
@@ -374,7 +374,7 @@ export function MobileNav() {
                               <Badge
                                 variant={isActive ? 'secondary' : 'default'}
                                 className={cn(
-                                  'text-[9px] px-1.5 py-0 h-4 font-bold shrink-0',
+                                  'text-xs px-2 py-0.5 h-4.5 font-bold shrink-0',
                                   item.badge === 'Live'
                                     ? 'bg-rose-500 text-white'
                                     : item.badge === 'PWA'
@@ -402,11 +402,11 @@ export function MobileNav() {
                     <Crown className="h-4 w-4 text-amber-500" />
                     <span>{tBilingual('Free Trial Active', 'ফ্রি ট্রায়াল চলছে')}</span>
                   </span>
-                  <Badge suppressHydrationWarning className="text-[9px] bg-amber-500 text-white font-bold px-1.5 py-0 h-4">
+                  <Badge suppressHydrationWarning className="text-xs bg-amber-500 text-white font-bold px-2 py-0.5">
                     {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d left`}
                   </Badge>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight bangla-text">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-snug bangla-text">
                   {tBilingual('Unlock unlimited orders, multi-branch, and SMS automation.', 'আনলিমিটেড অর্ডার ও ফিচারের জন্য বিজনেস প্ল্যানে আপগ্রেড করুন।')}
                 </p>
                 <button
@@ -427,12 +427,12 @@ export function MobileNav() {
 
         {/* Footer with Support Hotline and Sign Out Button */}
         <SheetFooter className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
-          <div className="flex items-center justify-between w-full text-[11px] text-slate-500 dark:text-slate-400 px-1">
+          <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 px-1">
             <div className="flex items-center gap-1.5">
               <PhoneCall className="h-3.5 w-3.5 text-blue-600" />
               <span>+880 1700-000000</span>
             </div>
-            <span className="text-[10px] text-slate-400">PrintERP SaaS v2.5</span>
+            <span className="text-xs text-slate-400">PrintERP SaaS v2.5</span>
           </div>
 
           <button

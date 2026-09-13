@@ -51,7 +51,7 @@ function EmptyChartState({ title, titleBn }: { title?: string; titleBn?: string 
       <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 bangla-text">
         {tBilingual('Not enough data yet', 'এখনও পর্যাপ্ত তথ্য নেই')}
       </p>
-      <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-xs mt-1 bangla-text">
+      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mt-1 bangla-text">
         {tBilingual(
           title || 'New chart trends will appear automatically as you create records.',
           titleBn || 'নতুন রেকর্ড তৈরি করলে চার্ট স্বয়ংক্রিয়ভাবে আপডেট হবে।'

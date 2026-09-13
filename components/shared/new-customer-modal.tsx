@@ -383,13 +383,13 @@ export function NewCustomerModal({
                     className="p-2 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-amber-200/60 dark:border-amber-900/60 flex items-center justify-between"
                   >
                     <div>
-                      <span className="font-semibold text-slate-900 dark:text-white">
+                      <span className="font-semibold text-slate-900 dark:text-white bangla-text">
                         {m.customer.name}
                       </span>
-                      <span className="text-slate-400 ml-1.5 font-mono text-[11px]">
+                      <span className="text-slate-500 dark:text-slate-400 ml-1.5 font-mono text-xs">
                         ({m.customer.mobile})
                       </span>
-                      <div className="text-[10px] text-amber-600 dark:text-amber-400">
+                      <div className="text-xs text-amber-600 dark:text-amber-400 font-medium bangla-text">
                         {m.matchReason}
                       </div>
                     </div>
@@ -733,18 +733,18 @@ export function NewCustomerModal({
                         className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between gap-3 text-xs"
                       >
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-slate-900 dark:text-white truncate">
+                          <div className="font-semibold text-slate-900 dark:text-white truncate bangla-text">
                             {prod.name}
                           </div>
-                          <div className="text-[10px] text-slate-400">
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
                             {prod.sku} • Default: ৳{prod.selling_price}/{prod.unit}
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[11px] text-slate-500 font-medium">Customer Rate:</span>
+                          <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">Customer Rate:</span>
                           <div className="relative w-28">
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-slate-400">৳</span>
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">৳</span>
                             <Input
                               type="number"
                               step="0.01"
@@ -765,7 +765,7 @@ export function NewCustomerModal({
                               className="h-8 pl-6 text-right text-xs font-bold bg-white dark:bg-slate-950"
                             />
                           </div>
-                          <span className="text-[10px] text-slate-400 uppercase font-mono w-6">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 uppercase font-mono w-6">
                             /{prod.unit}
                           </span>
                         </div>

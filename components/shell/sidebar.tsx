@@ -133,7 +133,7 @@ export function Sidebar() {
               <span className="font-black tracking-tight text-base text-slate-900 dark:text-white leading-tight">
                 Print<span className="text-blue-600">ERP</span>
               </span>
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                 BD Print SaaS
               </span>
             </div>
@@ -171,7 +171,7 @@ export function Sidebar() {
             return (
               <div key={sIdx} className="space-y-1">
                 {!collapsed && (
-                  <h4 className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
+                  <h4 className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 bangla-text">
                     {sectionTitle}
                   </h4>
                 )}
@@ -187,7 +187,7 @@ export function Sidebar() {
                       href={item.href}
                       title={collapsed ? itemTitle : undefined}
                       className={cn(
-                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-all cursor-pointer',
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all cursor-pointer bangla-text',
                         isActive
                           ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
                           : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
@@ -209,7 +209,7 @@ export function Sidebar() {
                           {item.badge && (
                             <Badge
                               variant={isActive ? 'secondary' : 'default'}
-                              className="text-[9px] px-1.5 py-0 h-4 bg-emerald-500 text-white font-bold"
+                              className="text-xs px-2 py-0.5 h-4.5 bg-emerald-500 text-white font-bold"
                             >
                               {item.badge}
                             </Badge>
@@ -233,25 +233,25 @@ export function Sidebar() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Crown className="h-3.5 w-3.5 text-amber-500" />
-                  <span className="text-[11px] font-bold text-slate-900 dark:text-white">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white bangla-text">
                     {tBilingual(currentPlan?.name || 'Free Trial', currentPlan?.name_bn || 'ফ্রি ট্রায়াল')}
                   </span>
                 </div>
-                <Badge suppressHydrationWarning className="text-[9px] bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1 py-0 h-4">
+                <Badge suppressHydrationWarning className="text-xs bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1.5 py-0.5">
                   {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d left`}
                 </Badge>
               </div>
 
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight bangla-text">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-snug bangla-text">
                 {tBilingual('Upgrade now to unlock unlimited orders & users.', 'আনলিমিটেড অর্ডার ও ফিচারের জন্য আপগ্রেড করুন।')}
               </p>
 
               <button
                 type="button"
                 onClick={() => openUpgradeModal('business')}
-                className="w-full flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-bold shadow-xs hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer bangla-text"
+                className="w-full flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold shadow-xs hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer bangla-text"
               >
-                <Crown className="h-3 w-3 text-amber-300" />
+                <Crown className="h-3.5 w-3.5 text-amber-300" />
                 <span>{tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}</span>
               </button>
             </div>
@@ -260,14 +260,14 @@ export function Sidebar() {
               <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 p-2.5 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
-                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200 bangla-text">
                     {tBilingual(currentPlan.name, currentPlan.name_bn)}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => openUpgradeModal('enterprise')}
-                  className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline bangla-text"
+                  className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline bangla-text cursor-pointer"
                 >
                   {tBilingual('Upgrade', 'আপগ্রেড')}
                 </button>
@@ -280,12 +280,12 @@ export function Sidebar() {
             className="block rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 hover:border-blue-300 dark:hover:border-slate-700 hover:bg-slate-100/80 dark:hover:bg-slate-800/90 transition-all group"
           >
             <div className="flex items-center justify-between mb-0.5">
-              <p className="text-[10px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors bangla-text">
                 {tBilingual('Live Help & Support desk', 'লাইভ হেল্প ও সাপোর্ট ডেস্ক')}
               </p>
-              <Headphones className="h-3 w-3 text-blue-600 dark:text-blue-400 shrink-0" />
+              <Headphones className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
             </div>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               +880 1700-000000
             </p>
           </Link>
