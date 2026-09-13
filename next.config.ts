@@ -38,6 +38,16 @@ const nextConfig: NextConfig = {
         destination: '/platform/:path*',
         permanent: false,
       },
+      {
+        source: '/platform/tenant',
+        destination: '/platform/tenants',
+        permanent: false,
+      },
+      {
+        source: '/platform/tenant/:path*',
+        destination: '/platform/tenants/:path*',
+        permanent: false,
+      },
     ]
   },
   async headers() {

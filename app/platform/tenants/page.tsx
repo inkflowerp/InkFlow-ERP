@@ -41,18 +41,30 @@ import {
   Key,
   Globe,
   Lock,
+  UserPlus,
+  Hourglass,
+  Send,
+  MailCheck,
+  HelpCircle,
+  Zap,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { formatDate } from '@/lib/formatters'
-import { getPlatformCompaniesAction, getPlatformPlansAction } from '@/actions/platform-data.actions'
+import {
+  getPlatformCompaniesAction,
+  getPlatformPlansAction,
+  getPlatformIncompleteRegistrationsAction,
+} from '@/actions/platform-data.actions'
 import {
   PlatformTenantCompany,
   PlatformCompanyStatus,
   PlatformPlanCode,
   TenantHealthStatus,
+  IncompleteRegistrationRecord,
+  IncompleteRegistrationStage,
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import {
@@ -63,6 +75,8 @@ import {
   createBusinessAction,
   deleteBusinessAction,
   deleteAllBusinessesAction,
+  resendIncompleteRegistrationVerificationAction,
+  deleteIncompleteRegistrationAction,
 } from '@/actions/platform.actions'
 
 export default function PlatformTenantsPage() {
@@ -72,6 +86,25 @@ export default function PlatformTenantsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [planFilter, setPlanFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
+
+  // Incomplete / Started-but-not-finished Registrations State
+  const [incompleteRegistrations, setIncompleteRegistrations] = useState<IncompleteRegistrationRecord[]>([])
+  const [incompleteMetrics, setIncompleteMetrics] = useState<{
+    total_incomplete: number
+    pending_verification_count: number
+    verified_pending_onboarding_count: number
+    expired_count: number
+  }>({
+    total_incomplete: 0,
+    pending_verification_count: 0,
+    verified_pending_onboarding_count: 0,
+    expired_count: 0,
+  })
+  const [incompleteStageFilter, setIncompleteStageFilter] = useState<string>('all')
+  const [resendingMap, setResendingMap] = useState<Record<string, boolean>>({})
+  const [deleteIncompleteTarget, setDeleteIncompleteTarget] = useState<IncompleteRegistrationRecord | null>(null)
+  const [isDeletingIncomplete, setIsDeletingIncomplete] = useState(false)
+
 
   // Create Business Modal State
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -179,9 +212,10 @@ export default function PlatformTenantsPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [compRes, plansRes] = await Promise.all([
+      const [compRes, plansRes, incRes] = await Promise.all([
         getPlatformCompaniesAction(),
         getPlatformPlansAction(),
+        getPlatformIncompleteRegistrationsAction(),
       ])
       if (compRes.success && compRes.data) {
         const list = Array.isArray(compRes.data) ? compRes.data : compRes.data.companies
@@ -192,10 +226,74 @@ export default function PlatformTenantsPage() {
       if (plansRes.success && plansRes.data) {
         setPlans(plansRes.data)
       }
+      if (incRes.success && incRes.data) {
+        setIncompleteRegistrations(incRes.data.registrations || [])
+        setIncompleteMetrics(incRes.data.metrics || {
+          total_incomplete: (incRes.data.registrations || []).length,
+          pending_verification_count: 0,
+          verified_pending_onboarding_count: 0,
+          expired_count: 0,
+        })
+      }
     } catch (err: any) {
       showNotification(err?.message || 'Failed to load platform data')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Handle Resend Verification OTP / Email for Incomplete Registration
+  const handleResendIncompleteOtp = async (reg: IncompleteRegistrationRecord) => {
+    setResendingMap((prev) => ({ ...prev, [reg.email]: true }))
+    try {
+      const res = await resendIncompleteRegistrationVerificationAction(reg.email)
+      if (res.success) {
+        showNotification(`Verification email & OTP code re-sent to ${reg.email}`)
+        loadData()
+      } else {
+        showNotification(res.error || 'Failed to resend verification code')
+      }
+    } catch {
+      showNotification('Failed to dispatch verification email')
+    } finally {
+      setResendingMap((prev) => ({ ...prev, [reg.email]: false }))
+    }
+  }
+
+  // Handle Launch / Provision Tenant from Incomplete Registration
+  const handleProvisionIncomplete = (reg: IncompleteRegistrationRecord) => {
+    setProvisionOwnerName(reg.full_name || '')
+    setProvisionOwnerEmail(reg.email || '')
+    setProvisionOwnerPhone(reg.phone || '')
+    const baseName = reg.full_name ? `${reg.full_name} Printings` : 'New Print Shop'
+    setProvisionName(baseName)
+    setProvisionSlug(generateSlug(baseName))
+    setSlugManuallyEdited(false)
+    setProvisionPlan(reg.plan || 'trial')
+    setCreateError(null)
+    setShowCreateModal(true)
+  }
+
+  // Handle Delete / Purge Incomplete Registration
+  const handleDeleteIncomplete = async () => {
+    if (!deleteIncompleteTarget) return
+    setIsDeletingIncomplete(true)
+    try {
+      const res = await deleteIncompleteRegistrationAction(
+        deleteIncompleteTarget.id || deleteIncompleteTarget.email,
+        'Abandoned incomplete registration purged by platform administrator'
+      )
+      if (res.success) {
+        showNotification(`Incomplete registration for ${deleteIncompleteTarget.email} has been purged.`)
+        setDeleteIncompleteTarget(null)
+        loadData()
+      } else {
+        showNotification(res.error || 'Failed to delete record')
+      }
+    } catch {
+      showNotification('Failed to delete incomplete registration')
+    } finally {
+      setIsDeletingIncomplete(false)
     }
   }
 
@@ -390,6 +488,18 @@ export default function PlatformTenantsPage() {
     )
   })
 
+  const filteredIncomplete = incompleteRegistrations.filter((item) => {
+    if (incompleteStageFilter !== 'all' && item.stage !== incompleteStageFilter) return false
+    if (planFilter !== 'all' && item.plan !== planFilter) return false
+    if (!search.trim()) return true
+    const q = search.toLowerCase().trim()
+    return (
+      item.full_name.toLowerCase().includes(q) ||
+      item.email.toLowerCase().includes(q) ||
+      (item.phone && item.phone.includes(q))
+    )
+  })
+
   return (
     <div className="space-y-6">
       {/* Toast Notification */}
@@ -454,7 +564,7 @@ export default function PlatformTenantsPage() {
       </div>
 
       {/* KPI Metrics Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">Total Tenants</span>
@@ -506,6 +616,28 @@ export default function PlatformTenantsPage() {
           <div className="text-[11px] text-slate-400 mt-1">14-day evaluation accounts</div>
         </Card>
 
+        {/* Incomplete / Started-but-not-finished Registrations KPI Card */}
+        <Card
+          onClick={() => setStatusFilter('incomplete')}
+          className={`bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group cursor-pointer transition-all shadow-lg hover:border-amber-500/40 ${
+            statusFilter === 'incomplete' ? 'ring-2 ring-amber-500/50 bg-amber-950/20' : ''
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-amber-400">Incomplete Registrations</span>
+            <div className="h-8 w-8 rounded-xl bg-amber-600/15 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+              <Hourglass className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-amber-400 mt-2 flex items-baseline gap-2">
+            {incompleteRegistrations.length}
+            <span className="text-[11px] font-normal text-slate-400 font-mono">pending</span>
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+            <span className="text-amber-300 font-semibold">{incompleteMetrics.pending_verification_count} awaiting OTP</span>
+          </div>
+        </Card>
+
         <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">Suspended / Risk</span>
@@ -542,6 +674,7 @@ export default function PlatformTenantsPage() {
             { key: 'active', label: 'Active', count: companies.filter((c) => c.status === 'active').length },
             { key: 'trial', label: 'Trial', count: companies.filter((c) => c.status === 'trial').length },
             { key: 'suspended', label: 'Suspended', count: companies.filter((c) => c.status === 'suspended').length },
+            { key: 'incomplete', label: 'Registration Incomplete', count: incompleteRegistrations.length, isSpecial: true },
           ].map((tab) => {
             const isSelected = statusFilter === tab.key
             return (
@@ -551,14 +684,23 @@ export default function PlatformTenantsPage() {
                 onClick={() => setStatusFilter(tab.key)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   isSelected
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    ? tab.isSpecial
+                      ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
+                      : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : tab.isSpecial
+                    ? 'bg-amber-950/40 text-amber-300 hover:text-amber-100 hover:bg-amber-900/50 border border-amber-800/60'
                     : 'bg-slate-950/70 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800/80'
                 }`}
               >
+                {tab.isSpecial && <Hourglass className="h-3.5 w-3.5 text-amber-300 shrink-0" />}
                 <span>{tab.label}</span>
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                    isSelected ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
+                    isSelected
+                      ? 'bg-white/20 text-white'
+                      : tab.isSpecial
+                      ? 'bg-amber-900/70 text-amber-200'
+                      : 'bg-slate-800 text-slate-400'
                   }`}
                 >
                   {tab.count}
@@ -572,7 +714,11 @@ export default function PlatformTenantsPage() {
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
             <Input
-              placeholder="Search by name, slug, owner, phone..."
+              placeholder={
+                statusFilter === 'incomplete'
+                  ? 'Search by registrant name, email, phone...'
+                  : 'Search by name, slug, owner, phone...'
+              }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 bg-slate-950/80 border-slate-800 text-xs text-white placeholder:text-slate-500 h-9 rounded-xl focus-visible:ring-indigo-500"
@@ -604,12 +750,258 @@ export default function PlatformTenantsPage() {
         </div>
       </div>
 
-      {/* Tenant Table / Cards */}
+      {/* Cross-tab Search Discovery Banner */}
+      {statusFilter !== 'incomplete' && search && filteredIncomplete.length > 0 && (
+        <div className="flex items-center justify-between p-3 rounded-xl bg-amber-950/30 border border-amber-800/50 text-amber-300 text-xs">
+          <div className="flex items-center gap-2">
+            <Hourglass className="h-4 w-4 text-amber-400 shrink-0" />
+            <span>
+              Found <strong>{filteredIncomplete.length}</strong> registration started but not finished tenant(s) matching &quot;{search}&quot;.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('incomplete')}
+            className="font-bold underline hover:text-amber-100 flex items-center gap-1 shrink-0 ml-3"
+          >
+            View Incomplete Registrations →
+          </button>
+        </div>
+      )}
+
+      {/* Main Content Area */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-20 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
           ))}
+        </div>
+      ) : statusFilter === 'incomplete' ? (
+        /* INCOMPLETE REGISTRATIONS TABLE VIEW */
+        <div className="space-y-4">
+          {/* Incomplete Sub-stage Filter Chips */}
+          <div className="flex items-center justify-between gap-3 flex-wrap bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">Stage:</span>
+              {[
+                { key: 'all', label: 'All Incomplete', count: incompleteMetrics.total_incomplete },
+                { key: 'pending_verification', label: 'Pending Email OTP', count: incompleteMetrics.pending_verification_count },
+                { key: 'verified_pending_onboarding', label: 'Email Verified / Onboarding Pending', count: incompleteMetrics.verified_pending_onboarding_count },
+                { key: 'verification_expired', label: 'OTP Expired', count: incompleteMetrics.expired_count },
+              ].map((sub) => {
+                const isSubActive = incompleteStageFilter === sub.key
+                return (
+                  <button
+                    key={sub.key}
+                    type="button"
+                    onClick={() => setIncompleteStageFilter(sub.key)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      isSubActive
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                        : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800/60'
+                    }`}
+                  >
+                    <span>{sub.label}</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-slate-500'}`}>
+                      {sub.count}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <div className="text-[11px] text-slate-400 px-2 flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 text-amber-400" />
+              <span>Registration drop-off triage &amp; workspace provisioning</span>
+            </div>
+          </div>
+
+          {/* Incomplete Registrations Table / Empty State */}
+          {filteredIncomplete.length === 0 ? (
+            <Card className="bg-slate-900/60 border-slate-800 text-center py-16">
+              <CardContent className="space-y-3">
+                <UserCheck className="h-12 w-12 text-slate-600 mx-auto" />
+                <div className="text-base font-bold text-white">No Incomplete Registrations Found</div>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  {search || incompleteStageFilter !== 'all' || planFilter !== 'all'
+                    ? 'No incomplete tenant registrations match your current search or stage criteria.'
+                    : 'All users who initiated registration have completed onboarding and activated their workspace.'}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-900/90 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th className="py-3.5 px-4 font-bold">Prospective Owner</th>
+                      <th className="py-3.5 px-3 font-bold">Contact Details</th>
+                      <th className="py-3.5 px-3 font-bold">Target Plan</th>
+                      <th className="py-3.5 px-3 font-bold">Registration Stage</th>
+                      <th className="py-3.5 px-3 font-bold">Verification Telemetry</th>
+                      <th className="py-3.5 px-3 font-bold">Started At</th>
+                      <th className="py-3.5 px-4 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                    {filteredIncomplete.map((reg) => {
+                      const isExpired = reg.stage === 'verification_expired'
+                      const isVerified = reg.stage === 'verified_pending_onboarding'
+                      const isPending = reg.stage === 'pending_verification'
+
+                      return (
+                        <tr key={reg.id} className="hover:bg-slate-800/40 transition-colors group">
+                          {/* Prospective Owner */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-9 w-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                {reg.full_name ? reg.full_name.slice(0, 2).toUpperCase() : 'UR'}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-white truncate">{reg.full_name || 'Anonymous Registrant'}</div>
+                                <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                                  <span>ID:</span>
+                                  <span className="truncate max-w-[120px]">{reg.id.slice(0, 12)}...</span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Contact Details */}
+                          <td className="py-3.5 px-3">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                              <a
+                                href={`mailto:${reg.email}?subject=${encodeURIComponent('Complete your InkFlow ERP Workspace Setup')}`}
+                                className="font-mono text-slate-200 hover:text-indigo-400 transition-colors truncate max-w-[180px]"
+                                title="Click to send email"
+                              >
+                                {reg.email}
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyText(reg.email, `email-${reg.id}`)}
+                                className="text-slate-500 hover:text-slate-300 ml-0.5"
+                                title="Copy Email"
+                              >
+                                {copiedField === `email-${reg.id}` ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                              </button>
+                            </div>
+                            {reg.phone ? (
+                              <div className="flex items-center gap-1.5 mt-0.5 text-slate-400 font-mono text-[11px]">
+                                <Phone className="h-3 w-3 text-slate-500 shrink-0" />
+                                <a href={`tel:${reg.phone}`} className="hover:text-indigo-400 transition-colors">
+                                  {reg.phone}
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyText(reg.phone!, `phone-${reg.id}`)}
+                                  className="text-slate-500 hover:text-slate-300 ml-0.5"
+                                  title="Copy Phone"
+                                >
+                                  {copiedField === `phone-${reg.id}` ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="text-[11px] text-slate-500 italic mt-0.5">No phone provided</div>
+                            )}
+                          </td>
+
+                          {/* Target Plan */}
+                          <td className="py-3.5 px-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 capitalize">
+                              {reg.plan || 'trial'}
+                            </span>
+                          </td>
+
+                          {/* Registration Stage */}
+                          <td className="py-3.5 px-3">
+                            {isVerified ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/15 border border-blue-500/40 text-blue-300">
+                                <MailCheck className="h-3 w-3 text-blue-400" />
+                                Verified • Onboarding Pending
+                              </span>
+                            ) : isExpired ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/15 border border-red-500/40 text-red-300">
+                                <Clock className="h-3 w-3 text-red-400" />
+                                OTP Expired
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 border border-amber-500/40 text-amber-300">
+                                <Hourglass className="h-3 w-3 text-amber-400 animate-pulse" />
+                                Pending Email OTP
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Verification Telemetry */}
+                          <td className="py-3.5 px-3">
+                            <div className="text-[11px] text-slate-300">
+                              {reg.is_email_confirmed ? (
+                                <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                                  <CheckCircle2 className="h-3 w-3" /> Email Confirmed
+                                </span>
+                              ) : (
+                                <span className="text-amber-400">
+                                  {reg.attempts || 0} / 5 OTP Attempts
+                                </span>
+                              )}
+                            </div>
+                            {reg.expires_at && !reg.is_email_confirmed && (
+                              <div className="text-[10px] text-slate-500 font-mono">
+                                Expires: {formatDate(reg.expires_at)}
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Started At */}
+                          <td className="py-3.5 px-3 text-[11px] text-slate-400 whitespace-nowrap">
+                            {formatDate(reg.created_at)}
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                onClick={() => handleProvisionIncomplete(reg)}
+                                className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs h-7 px-2.5 rounded-lg shadow-sm"
+                                title="Complete Tenant Provisioning on Behalf of User"
+                              >
+                                <Plus className="h-3.5 w-3.5 mr-1" />
+                                Provision
+                              </Button>
+
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                disabled={Boolean(resendingMap[reg.email])}
+                                onClick={() => handleResendIncompleteOtp(reg)}
+                                className="h-7 px-2 text-amber-400 hover:text-amber-300 hover:bg-amber-950/40 text-xs"
+                                title="Resend Verification OTP Email"
+                              >
+                                <RefreshCw className={`h-3.5 w-3.5 ${resendingMap[reg.email] ? 'animate-spin' : ''}`} />
+                              </Button>
+
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setDeleteIncompleteTarget(reg)}
+                                className="h-7 px-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 text-xs"
+                                title="Delete / Purge Incomplete Registration"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       ) : filteredCompanies.length === 0 ? (
         <Card className="bg-slate-900/60 border-slate-800 text-center py-16">
@@ -818,6 +1210,7 @@ export default function PlatformTenantsPage() {
           </div>
         </div>
       )}
+
 
       {/* 1. CREATE BUSINESS MODAL */}
       {showCreateModal && (
@@ -1738,6 +2131,72 @@ export default function PlatformTenantsPage() {
                 className="bg-red-600 hover:bg-red-500 disabled:bg-red-950 disabled:text-slate-500 text-white font-bold text-xs"
               >
                 {isPurgingAll ? 'Purging All Tenants...' : 'Purge All Tenants Now'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* 6. DELETE INCOMPLETE REGISTRATION MODAL */}
+      {deleteIncompleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in-0 duration-200">
+          <Card className="w-full max-w-md bg-slate-900 border-amber-800/60 text-slate-100 shadow-2xl shadow-amber-950/40">
+            <CardHeader className="border-b border-slate-800 pb-3">
+              <CardTitle className="text-base font-bold text-amber-400 flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-amber-500" />
+                Purge Abandoned Registration
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-400">
+                Are you sure you want to remove the incomplete registration for{' '}
+                <strong className="text-white">{deleteIncompleteTarget.email}</strong>?
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-3 pt-4 text-xs">
+              <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-200 space-y-1">
+                <div className="font-semibold flex items-center gap-1.5 text-amber-300">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
+                  Registration Purge
+                </div>
+                <p className="text-[11px] text-amber-300/90 leading-relaxed">
+                  This will purge the pending verification OTP tokens and un-onboarded user profile for{' '}
+                  <span className="font-mono font-semibold">{deleteIncompleteTarget.email}</span>.
+                  The prospective user will need to register anew at /register if they wish to create a tenant later.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Registrant:</span>
+                  <span className="font-semibold text-white">{deleteIncompleteTarget.full_name || 'Anonymous'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Stage:</span>
+                  <span className="font-semibold text-amber-300 capitalize">{deleteIncompleteTarget.stage.replace(/_/g, ' ')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Target Plan:</span>
+                  <span className="font-semibold text-indigo-300 capitalize">{deleteIncompleteTarget.plan || 'trial'}</span>
+                </div>
+              </div>
+            </CardContent>
+
+            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteIncompleteTarget(null)}
+                className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={isDeletingIncomplete}
+                onClick={handleDeleteIncomplete}
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs"
+              >
+                {isDeletingIncomplete ? 'Purging...' : 'Confirm Purge Registration'}
               </Button>
             </div>
           </Card>

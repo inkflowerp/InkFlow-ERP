@@ -1299,3 +1299,48 @@ export async function updateTenantUserStatusAction(
   }
 }
 
+/**
+ * Server Action: Resend Verification Email/OTP for Incomplete Registration
+ */
+export async function resendIncompleteRegistrationVerificationAction(email: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    const res = await PlatformService.resendIncompleteRegistrationVerification(email)
+    if (res.success) {
+      revalidatePath('/platform/tenants')
+      revalidatePath('/platform/tenant')
+    }
+    return res
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to resend verification' }
+  }
+}
+
+/**
+ * Server Action: Delete / Purge Abandoned Incomplete Registration
+ */
+export async function deleteIncompleteRegistrationAction(idOrEmail: string, reason?: string) {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    const isOwnerOrAdmin = platformUser.role === 'platform_owner' || platformUser.role === 'platform_admin'
+    if (!isOwnerOrAdmin) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+    }
+    const res = await PlatformService.deleteIncompleteRegistration(idOrEmail, reason)
+    if (res.success) {
+      revalidatePath('/platform/tenants')
+      revalidatePath('/platform/tenant')
+    }
+    return res
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to delete incomplete registration' }
+  }
+}
+
+

@@ -850,3 +850,36 @@ export interface PlatformSubscriptionsOverview {
   }
 }
 
+export type IncompleteRegistrationStage =
+  | 'pending_verification' // Email OTP dispatched, awaiting verification
+  | 'verified_pending_onboarding' // Email verified, workspace/onboarding not yet completed
+  | 'verification_expired' // Verification token or OTP expired
+
+export interface IncompleteRegistrationRecord {
+  id: string
+  user_id?: string | null
+  email: string
+  full_name: string
+  phone?: string | null
+  stage: IncompleteRegistrationStage
+  plan?: string
+  created_at: string
+  updated_at?: string
+  expires_at?: string | null
+  attempts?: number
+  is_email_confirmed: boolean
+  metadata?: Record<string, any>
+}
+
+export interface IncompleteRegistrationsOverview {
+  registrations: IncompleteRegistrationRecord[]
+  total: number
+  metrics: {
+    total_incomplete: number
+    pending_verification_count: number
+    verified_pending_onboarding_count: number
+    expired_count: number
+  }
+}
+
+

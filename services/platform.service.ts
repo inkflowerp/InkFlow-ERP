@@ -56,7 +56,11 @@ import type {
   PlatformNotificationPaginatedResponse,
   PlatformSubscriptionRecord,
   PlatformSubscriptionsOverview,
+  IncompleteRegistrationRecord,
+  IncompleteRegistrationStage,
+  IncompleteRegistrationsOverview,
 } from '../types/platform.types.ts'
+import { AuthEmailService } from './auth-email.service.ts'
 import type { PlatformRole } from '../lib/auth/types.ts'
 import type { SubscriptionPlanRecord } from '../types/subscription.types.ts'
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '../lib/subscription/subscription-constants.ts'
@@ -854,6 +858,315 @@ export class PlatformService {
       }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to fetch companies' }
+    }
+  }
+
+  /**
+   * 2b. Incomplete / Started-but-not-finished Registrations Directory
+   * Resolves prospective tenants who initiated registration (email OTP dispatched / unconfirmed
+   * or email confirmed but workspace onboarding was not finalized into a company).
+   */
+  static async getIncompleteRegistrations(filters?: {
+    search?: string
+    stage?: IncompleteRegistrationStage
+    page?: number
+    pageSize?: number
+  }): Promise<ApiResponse<IncompleteRegistrationsOverview>> {
+    try {
+      const admin = createAdminClient()
+      const now = Date.now()
+
+      // 1. Fetch completed company users, companies, and platform admins to exclude completed workspaces
+      const [{ data: dbCompanyUsers }, { data: dbCompanies }, { data: dbPlatformAdmins }] = await Promise.all([
+        (admin as any).from('company_users').select('user_id, company_id, invited_email'),
+        (admin as any).from('companies').select('id, email'),
+        (admin as any).from('platform_admins').select('user_id, email'),
+      ])
+
+      const completedUserIds = new Set<string>()
+      const completedEmails = new Set<string>()
+
+      ;(dbCompanyUsers || []).forEach((cu: any) => {
+        if (cu.user_id) completedUserIds.add(cu.user_id)
+        if (cu.invited_email) completedEmails.add(cu.invited_email.toLowerCase().trim())
+      })
+      ;(dbCompanies || []).forEach((c: any) => {
+        if (c.email) completedEmails.add(c.email.toLowerCase().trim())
+      })
+      ;(dbPlatformAdmins || []).forEach((pa: any) => {
+        if (pa.user_id) completedUserIds.add(pa.user_id)
+        if (pa.email) completedEmails.add(pa.email.toLowerCase().trim())
+      })
+
+      // 2. Query auth_verifications for registration attempts
+      const { data: dbVerifications } = await (admin as any)
+        .from('auth_verifications')
+        .select('*')
+        .eq('purpose', 'registration')
+        .order('created_at', { ascending: false })
+
+      // 3. Query user_profiles
+      const { data: dbProfiles } = await (admin as any)
+        .from('user_profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      const profileMapByEmail = new Map<string, any>()
+      const profileMapById = new Map<string, any>()
+
+      ;(dbProfiles || []).forEach((p: any) => {
+        if (p.email) profileMapByEmail.set(p.email.toLowerCase().trim(), p)
+        if (p.id) profileMapById.set(p.id, p)
+      })
+
+      const incompleteMap = new Map<string, IncompleteRegistrationRecord>()
+
+      // 4. Process auth_verifications records
+      ;(dbVerifications || []).forEach((v: any) => {
+        const normalizedEmail = (v.email || '').toLowerCase().trim()
+        if (!normalizedEmail) return
+
+        // Skip if user already completed registration / created company or is platform admin
+        if (
+          (v.user_id && completedUserIds.has(v.user_id)) ||
+          completedEmails.has(normalizedEmail)
+        ) {
+          return
+        }
+
+        const profile = profileMapByEmail.get(normalizedEmail) || (v.user_id ? profileMapById.get(v.user_id) : null)
+        const isEmailConfirmed = Boolean(v.is_used || profile?.is_active)
+        const isExpired = v.expires_at ? new Date(v.expires_at).getTime() < now : false
+
+        let stage: IncompleteRegistrationStage = 'pending_verification'
+        if (isEmailConfirmed) {
+          stage = 'verified_pending_onboarding'
+        } else if (isExpired) {
+          stage = 'verification_expired'
+        } else {
+          stage = 'pending_verification'
+        }
+
+        const metadata = v.metadata || {}
+        const fullName = profile?.full_name || metadata.fullName || metadata.name || normalizedEmail.split('@')[0]
+        const phone = profile?.phone || metadata.phone || null
+        const plan = metadata.plan || 'trial'
+
+        // Only add latest record per email
+        if (!incompleteMap.has(normalizedEmail)) {
+          incompleteMap.set(normalizedEmail, {
+            id: v.id || `inc-${normalizedEmail}`,
+            user_id: v.user_id || profile?.id || null,
+            email: normalizedEmail,
+            full_name: fullName,
+            phone,
+            stage,
+            plan,
+            created_at: v.created_at || profile?.created_at || new Date().toISOString(),
+            updated_at: v.updated_at || profile?.updated_at || v.created_at,
+            expires_at: v.expires_at || null,
+            attempts: v.attempts || 0,
+            is_email_confirmed: isEmailConfirmed,
+            metadata,
+          })
+        }
+      })
+
+      // 5. Process user_profiles that might not have an auth_verifications entry (e.g. SSO or direct register)
+      ;(dbProfiles || []).forEach((p: any) => {
+        const normalizedEmail = (p.email || '').toLowerCase().trim()
+        if (!normalizedEmail) return
+
+        if (
+          completedUserIds.has(p.id) ||
+          completedEmails.has(normalizedEmail) ||
+          incompleteMap.has(normalizedEmail)
+        ) {
+          return
+        }
+
+        const isEmailConfirmed = Boolean(p.is_active)
+        const stage: IncompleteRegistrationStage = isEmailConfirmed
+          ? 'verified_pending_onboarding'
+          : 'pending_verification'
+
+        incompleteMap.set(normalizedEmail, {
+          id: p.id,
+          user_id: p.id,
+          email: normalizedEmail,
+          full_name: p.full_name || normalizedEmail.split('@')[0],
+          phone: p.phone || null,
+          stage,
+          plan: 'trial',
+          created_at: p.created_at || new Date().toISOString(),
+          updated_at: p.updated_at || p.created_at,
+          expires_at: null,
+          attempts: 0,
+          is_email_confirmed: isEmailConfirmed,
+          metadata: {},
+        })
+      })
+
+      // 6. Check local test data store fallback
+      const localIncomplete = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
+      localIncomplete.forEach((item: any) => {
+        const normalizedEmail = (item.email || '').toLowerCase().trim()
+        if (normalizedEmail && !completedEmails.has(normalizedEmail) && !incompleteMap.has(normalizedEmail)) {
+          incompleteMap.set(normalizedEmail, {
+            id: item.id || `inc-${normalizedEmail}`,
+            user_id: item.user_id || null,
+            email: normalizedEmail,
+            full_name: item.full_name || normalizedEmail.split('@')[0],
+            phone: item.phone || null,
+            stage: item.stage || 'pending_verification',
+            plan: item.plan || 'trial',
+            created_at: item.created_at || new Date().toISOString(),
+            updated_at: item.updated_at || item.created_at,
+            expires_at: item.expires_at || null,
+            attempts: item.attempts || 0,
+            is_email_confirmed: Boolean(item.is_email_confirmed),
+            metadata: item.metadata || {},
+          })
+        }
+      })
+
+      let allIncomplete = Array.from(incompleteMap.values())
+
+      // Sort by creation date descending
+      allIncomplete.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+      // Metrics calculation across all incomplete registrations
+      const metrics = {
+        total_incomplete: allIncomplete.length,
+        pending_verification_count: allIncomplete.filter((i) => i.stage === 'pending_verification').length,
+        verified_pending_onboarding_count: allIncomplete.filter((i) => i.stage === 'verified_pending_onboarding').length,
+        expired_count: allIncomplete.filter((i) => i.stage === 'verification_expired').length,
+      }
+
+      // Apply Filters
+      let filtered = allIncomplete
+      if (filters?.stage && filters.stage !== ('all' as any)) {
+        filtered = filtered.filter((i) => i.stage === filters.stage)
+      }
+      if (filters?.search) {
+        const q = filters.search.toLowerCase().trim()
+        filtered = filtered.filter(
+          (i) =>
+            i.full_name.toLowerCase().includes(q) ||
+            i.email.toLowerCase().includes(q) ||
+            (i.phone && i.phone.includes(q))
+        )
+      }
+
+      // Pagination
+      const page = Math.max(1, filters?.page || 1)
+      const pageSize = Math.max(1, Math.min(100, filters?.pageSize || 50))
+      const from = (page - 1) * pageSize
+      const to = from + pageSize
+      const paginated = filtered.slice(from, to)
+
+      return {
+        success: true,
+        data: {
+          registrations: paginated,
+          total: filtered.length,
+          metrics,
+        },
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to fetch incomplete registrations' }
+    }
+  }
+
+  /**
+   * Resend Verification OTP / Link for Incomplete Registration
+   */
+  static async resendIncompleteRegistrationVerification(
+    email: string,
+    appUrl?: string
+  ): Promise<ApiResponse> {
+    try {
+      const normalizedEmail = email.trim().toLowerCase()
+      if (!normalizedEmail) {
+        return { success: false, error: 'Email address is required' }
+      }
+
+      const admin = createAdminClient()
+      const { data: profile } = await (admin as any)
+        .from('user_profiles')
+        .select('id, full_name')
+        .eq('email', normalizedEmail)
+        .maybeSingle()
+
+      const res = await AuthEmailService.sendRegistrationVerificationEmail({
+        email: normalizedEmail,
+        fullName: profile?.full_name || normalizedEmail.split('@')[0],
+        userId: profile?.id,
+        appUrl,
+      })
+
+      if (!res.success && !res.otpCreated) {
+        return { success: false, error: res.error || 'Failed to send verification email' }
+      }
+
+      return {
+        success: true,
+        message: `Fresh verification code dispatched to ${normalizedEmail}.`,
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to resend verification email' }
+    }
+  }
+
+  /**
+   * Delete / Purge an Abandoned Incomplete Registration
+   */
+  static async deleteIncompleteRegistration(
+    idOrEmail: string,
+    reason?: string
+  ): Promise<ApiResponse> {
+    try {
+      const admin = createAdminClient()
+      const normalized = idOrEmail.trim().toLowerCase()
+
+      // 1. Delete from auth_verifications
+      await (admin as any)
+        .from('auth_verifications')
+        .delete()
+        .or(`id.eq.${idOrEmail},email.eq.${normalized}`)
+
+      // 2. Resolve user ID if exists in user_profiles
+      const { data: profile } = await (admin as any)
+        .from('user_profiles')
+        .select('id')
+        .or(`id.eq.${idOrEmail},email.eq.${normalized}`)
+        .maybeSingle()
+
+      const userId = profile?.id
+
+      if (userId) {
+        // Delete user_profiles row
+        await (admin as any).from('user_profiles').delete().eq('id', userId)
+
+        // Try deleting from Supabase Auth
+        try {
+          await admin.auth.admin.deleteUser(userId)
+        } catch {}
+      }
+
+      // Also clean from local test store if present
+      const local = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
+      const filteredLocal = local.filter(
+        (i: any) => i.id !== idOrEmail && i.email?.toLowerCase() !== normalized
+      )
+      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS, filteredLocal)
+
+      return {
+        success: true,
+        message: 'Incomplete registration record purged successfully.',
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to delete incomplete registration' }
     }
   }
 

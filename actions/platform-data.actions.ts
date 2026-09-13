@@ -37,6 +37,9 @@ import {
   PlatformNotificationFilterOptions,
   PlatformSubscriptionRecord,
   PlatformSubscriptionsOverview,
+  IncompleteRegistrationRecord,
+  IncompleteRegistrationStage,
+  IncompleteRegistrationsOverview,
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { getCurrentPlatformUser } from '@/lib/auth/platform-auth'
@@ -588,4 +591,25 @@ export async function markAllPlatformNotificationsReadAction(): Promise<ApiRespo
     return { success: false, error: err?.message || 'Failed to mark all notifications as read' }
   }
 }
+
+/**
+ * Server Action: Get Incomplete / Started-but-not-finished Registrations
+ */
+export async function getPlatformIncompleteRegistrationsAction(filters?: {
+  search?: string
+  stage?: IncompleteRegistrationStage
+  page?: number
+  pageSize?: number
+}): Promise<ApiResponse<IncompleteRegistrationsOverview>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    return await PlatformService.getIncompleteRegistrations(filters)
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch incomplete registrations' }
+  }
+}
+
 

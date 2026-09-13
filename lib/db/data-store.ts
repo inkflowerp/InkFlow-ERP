@@ -153,6 +153,7 @@ export const STORAGE_KEYS = {
   PLATFORM_USERS: 'printerp_platform_users',
   PLATFORM_INCIDENTS: 'printerp_platform_incidents',
   PLATFORM_SYSTEM_SETTINGS: 'printerp_platform_system_settings',
+  PLATFORM_INCOMPLETE_REGISTRATIONS: 'printerp_platform_incomplete_registrations',
   OPERATOR_JOBS: 'printerp_tenant_operator_jobs',
   AUDIT_LOGS: 'printerp_tenant_audit_logs',
   USER_OVERRIDES: 'printerp_tenant_user_overrides',
@@ -171,6 +172,7 @@ export function isPlatformKey(key: string): boolean {
     key === STORAGE_KEYS.PLATFORM_USERS ||
     key === STORAGE_KEYS.PLATFORM_INCIDENTS ||
     key === STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS ||
+    key === STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS ||
     key === STORAGE_KEYS.COMPANY_USERS
   )
 }
