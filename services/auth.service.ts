@@ -253,7 +253,7 @@ export class AuthService {
         // Account exists but email is unconfirmed: update password/profile and re-dispatch verification
         userId = existingUser.id
         try {
-          await admin.auth.admin.updateUserById(userId, {
+          await admin.auth.admin.updateUserById(existingUser.id, {
             password,
             email_confirm: false,
             user_metadata: {
