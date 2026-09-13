@@ -357,7 +357,7 @@ export function MobileNav() {
                             href={item.href}
                             onClick={() => setOpen(false)}
                             className={cn(
-                              'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-[13px] font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
+                              'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
                               isActive
                                 ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
                                 : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
@@ -374,7 +374,7 @@ export function MobileNav() {
                               <Badge
                                 variant={isActive ? 'secondary' : 'default'}
                                 className={cn(
-                                  'text-xs px-2 py-0.5 h-4.5 font-bold shrink-0',
+                                  'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0',
                                   item.badge === 'Live'
                                     ? 'bg-rose-500 text-white'
                                     : item.badge === 'PWA'

@@ -161,7 +161,7 @@ export function KpiCard({
       {/* Top row: Title + Icon Badge */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate bangla-text">
+          <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 block truncate bangla-text">
             {title}
           </span>
           {badge && (

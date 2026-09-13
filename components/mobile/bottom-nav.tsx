@@ -47,7 +47,7 @@ export function MobileBottomNav() {
             }`}
           >
             <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[10px] mt-1 tracking-tight">Dashboard</span>
+            <span className="text-xs font-semibold mt-1 tracking-normal bangla-text">Dashboard</span>
           </Link>
 
           {/* 2. Sales */}
@@ -60,7 +60,7 @@ export function MobileBottomNav() {
             }`}
           >
             <Briefcase className="h-5 w-5" />
-            <span className="text-[10px] mt-1 tracking-tight">Sales</span>
+            <span className="text-xs font-semibold mt-1 tracking-normal bangla-text">Sales</span>
           </Link>
 
           {/* 3. Center Quick Quote Floating Action */}
@@ -70,10 +70,10 @@ export function MobileBottomNav() {
             className="flex flex-col items-center justify-center -mt-5 min-h-[48px] min-w-[48px] cursor-pointer"
             aria-label="Quick Quote"
           >
-            <div className="h-13 w-13 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/40 border-2 border-slate-950 active:scale-95 transition-transform">
-              <Zap className="h-6 w-6 fill-current" />
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/40 border-2 border-slate-950 active:scale-95 transition-transform">
+              <Zap className="h-5 w-5 fill-current" />
             </div>
-            <span className="text-[10px] font-bold text-white mt-1">Quote</span>
+            <span className="text-xs font-bold text-white mt-1 bangla-text">Quote</span>
           </button>
 
           {/* 4. Production Floor */}
@@ -86,7 +86,7 @@ export function MobileBottomNav() {
             }`}
           >
             <Printer className="h-5 w-5" />
-            <span className="text-[10px] mt-1 tracking-tight">Press</span>
+            <span className="text-xs font-semibold mt-1 tracking-normal bangla-text">Press</span>
           </Link>
 
           {/* 5. Offline Sync & Drafts */}
@@ -101,10 +101,10 @@ export function MobileBottomNav() {
             ) : (
               <Cloud className="h-5 w-5" />
             )}
-            <span className="text-[10px] mt-1 tracking-tight">Sync</span>
+            <span className="text-xs font-semibold mt-1 tracking-normal bangla-text">Sync</span>
 
             {pendingCount > 0 && (
-              <span className="absolute top-1.5 right-4 h-4 min-w-[16px] px-1 rounded-full bg-indigo-600 text-white font-mono text-[9px] font-bold flex items-center justify-center">
+              <span className="absolute top-1.5 right-4 h-4.5 min-w-[18px] px-1 rounded-full bg-indigo-600 text-white font-mono text-2xs font-bold flex items-center justify-center shadow-xs">
                 {pendingCount}
               </span>
             )}

@@ -85,7 +85,7 @@ export function PricingSection() {
               onClick={() => setInterval('yearly')}
             >
               <span>{tBilingual('Yearly Billing', 'বার্ষিক বিলিং')}</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+              <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
                 {tBilingual('Save ~20%', '২০% পর্যন্ত ছাড়')}
               </span>
             </span>
@@ -112,7 +112,7 @@ export function PricingSection() {
               >
                 {/* Popular Ribbon Tag */}
                 {isPopular && (
-                  <div className="absolute -top-3 sm:-top-3.5 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md whitespace-nowrap">
+                  <div className="absolute -top-3 sm:-top-3.5 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-xs uppercase tracking-wider shadow-md whitespace-nowrap">
                     Most Popular for BD Press
                   </div>
                 )}
@@ -128,7 +128,7 @@ export function PricingSection() {
                         <Crown className="h-5 w-5 text-amber-400 shrink-0" />
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 mt-1 min-h-0 sm:min-h-[36px] leading-relaxed bangla-text">
+                    <p className="text-xs sm:text-sm text-slate-400 mt-1 min-h-0 sm:min-h-[36px] leading-relaxed bangla-text">
                       {p.description}
                     </p>
                   </div>
@@ -136,14 +136,14 @@ export function PricingSection() {
                   {/* Price in BDT */}
                   <div className="pt-2 pb-3 sm:pb-4 border-b border-slate-800">
                     <div className="flex items-baseline gap-1 flex-wrap">
-                      <span className="text-2xl sm:text-4xl font-black text-white tabular-nums tracking-tight">
+                      <span className="text-2xl sm:text-4xl font-black text-white tabular-nums tracking-tight font-mono">
                         ৳ {price.toLocaleString()}
                       </span>
-                      <span className="text-xs text-slate-400 font-medium">
+                      <span className="text-xs sm:text-sm text-slate-400 font-medium">
                         / month {interval === 'yearly' && '(billed annually)'}
                       </span>
                     </div>
-                    <div className="text-[11px] text-cyan-400 font-semibold mt-1">
+                    <div className="text-xs text-cyan-400 font-semibold mt-1">
                       {interval === 'yearly'
                         ? `৳ ${p.price_yearly.toLocaleString()} BDT per year ${annualSavings > 0 ? `(~${annualSavings}% savings)` : ''}`
                         : 'Standard monthly billing in BDT'}
@@ -235,7 +235,7 @@ export function PricingSection() {
                       <ArrowRight className="ml-1.5 h-4 w-4" />
                     </Button>
                   </Link>
-                  <p className="text-[10px] sm:text-[11px] text-center text-slate-500 mt-2 bangla-text">
+                  <p className="text-xs text-center text-slate-500 mt-2 bangla-text">
                     {tBilingual('Instant account activation • BDT billing', 'ইনস্ট্যান্ট একাউন্ট অ্যাক্টিভেশন • টাকা বিলিং')}
                   </p>
                 </div>
@@ -271,7 +271,7 @@ export function PricingSection() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <span className="text-[11px] text-slate-400 bangla-text">
+            <span className="text-xs text-slate-400 bangla-text">
               {tBilingual('No credit card • Free instant setup', 'কোনো কার্ড লাগবে না • ইনস্ট্যান্ট সেটআপ')}
             </span>
           </div>

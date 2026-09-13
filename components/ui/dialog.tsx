@@ -97,11 +97,11 @@ export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLD
 }
 
 export function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn('text-base sm:text-lg font-semibold leading-tight tracking-tight text-slate-900 dark:text-white', className)} {...props} />
+  return <h2 className={cn('text-base sm:text-lg font-bold leading-snug tracking-tight text-slate-900 dark:text-white bangla-text', className)} {...props} />
 }
 
 export function DialogDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-xs sm:text-sm text-slate-500 dark:text-slate-400', className)} {...props} />
+  return <p className={cn('text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed bangla-text', className)} {...props} />
 }
 
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

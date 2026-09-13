@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer shadow-sm',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer shadow-xs bangla-text select-none active:scale-[0.99]',
   {
     variants: {
       variant: {
@@ -13,13 +13,13 @@ const buttonVariants = cva(
         outline: 'border border-slate-200 bg-white text-slate-800 hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
         secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100',
         ghost: 'shadow-none hover:bg-slate-100 text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800',
-        link: 'text-blue-600 underline-offset-4 hover:underline shadow-none p-0 h-auto',
+        link: 'text-blue-600 underline-offset-4 hover:underline shadow-none p-0 h-auto font-semibold',
         cmyk: 'bg-gradient-to-r from-cyan-600 via-sky-600 to-indigo-600 text-white hover:opacity-95 shadow-sky-500/20',
       },
       size: {
-        default: 'h-10 px-4 py-2',
+        default: 'h-10 px-4 py-2 text-sm',
         sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-11 rounded-lg px-6 text-base',
+        lg: 'h-11 rounded-xl px-6 text-base',
         icon: 'h-9 w-9 p-0',
       },
     },

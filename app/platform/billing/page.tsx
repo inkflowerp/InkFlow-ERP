@@ -162,7 +162,7 @@ export default function PlatformBillingPage() {
           <ShieldCheck className="h-3.5 w-3.5" />
           Payment Verification &amp; Audit
           {platformRecon.some((r) => r.is_mismatched) && (
-            <Badge className="bg-red-500 text-white text-[9px] px-1 py-0 ml-1">Alert</Badge>
+            <Badge className="bg-red-500 text-white text-2xs px-1.5 py-0.5 ml-1">Alert</Badge>
           )}
         </button>
       </div>
@@ -179,7 +179,7 @@ export default function PlatformBillingPage() {
               <div className="text-2xl font-black text-white mt-1">
                 <CurrencyDisplay amount={tenantBillingData?.expected_mrr ?? 0} />
               </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">All Active Tenant Subscriptions</div>
+              <div className="text-xs text-slate-400 mt-0.5">All Active Tenant Subscriptions</div>
             </Card>
 
             <Card className="bg-slate-900 border-slate-800 p-4">
@@ -190,7 +190,7 @@ export default function PlatformBillingPage() {
               <div className="text-2xl font-black text-emerald-400 mt-1">
                 <CurrencyDisplay amount={tenantBillingData?.collected_mrr ?? 0} />
               </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">Verified Gateway Deposits</div>
+              <div className="text-xs text-slate-400 mt-0.5">Verified Gateway Deposits</div>
             </Card>
 
             <Card className="bg-slate-900 border-slate-800 p-4">
@@ -201,7 +201,7 @@ export default function PlatformBillingPage() {
               <div className="text-2xl font-black text-amber-400 mt-1">
                 <CurrencyDisplay amount={tenantBillingData?.outstanding_mrr ?? 0} />
               </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
+              <div className="text-xs text-slate-400 mt-0.5">
                 Collection Rate: {tenantBillingData?.collection_efficiency_pct ?? 100}%
               </div>
             </Card>
@@ -214,7 +214,7 @@ export default function PlatformBillingPage() {
               <div className="text-2xl font-black text-rose-400 mt-1">
                 {tenantBillingData?.past_due_tenants_count ?? 0} Tenants
               </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
+              <div className="text-xs text-slate-400 mt-0.5">
                 {tenantBillingData?.failed_payments_count ?? 0} Failed Transactions
               </div>
             </Card>
@@ -229,7 +229,7 @@ export default function PlatformBillingPage() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-[10px]">
+                <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-xs">
                   <tr>
                     <th className="p-3">Company</th>
                     <th className="p-3">Plan</th>
@@ -256,14 +256,14 @@ export default function PlatformBillingPage() {
                           <CurrencyDisplay amount={it.expected_amount_bdt} />
                         </td>
                         <td className="p-3">
-                          <Badge className="bg-slate-800 text-slate-300 text-[10px] uppercase">
+                          <Badge className="bg-slate-800 text-slate-300 text-2xs uppercase">
                             {it.payment_status}
                           </Badge>
                         </td>
                         <td className="p-3 uppercase">{it.payment_gateway || 'bKash'}</td>
-                        <td className="p-3 font-mono text-[11px]">{it.transaction_ref || 'TRX-AUTO'}</td>
+                        <td className="p-3 font-mono text-xs">{it.transaction_ref || 'TRX-AUTO'}</td>
                         <td className="p-3">
-                          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px] uppercase">
+                          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-2xs uppercase">
                             VERIFIED
                           </Badge>
                         </td>
@@ -294,7 +294,7 @@ export default function PlatformBillingPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-[10px]">
+              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-xs">
                 <tr>
                   <th className="p-3">Invoice / Trx ID</th>
                   <th className="p-3">Type</th>
@@ -320,7 +320,7 @@ export default function PlatformBillingPage() {
                         {tx.invoice_id || tx.internal_trx_id}
                       </td>
                       <td className="p-3">
-                        <Badge className="bg-slate-800 text-slate-300 border-slate-700 text-[10px]">
+                        <Badge className="bg-slate-800 text-slate-300 border-slate-700 text-2xs">
                           {tx.transaction_type}
                         </Badge>
                       </td>
@@ -334,7 +334,7 @@ export default function PlatformBillingPage() {
                             tx.payment_status === 'paid'
                               ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                               : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                          } text-[10px] uppercase font-bold`}
+                          } text-2xs uppercase font-bold`}
                         >
                           {tx.payment_status}
                         </Badge>
@@ -345,7 +345,7 @@ export default function PlatformBillingPage() {
                             tx.verification_status === 'VERIFIED'
                               ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                               : 'bg-red-500/20 text-red-300 border-red-500/40'
-                          } text-[10px] uppercase font-bold`}
+                          } text-2xs uppercase font-bold`}
                         >
                           {tx.verification_status}
                         </Badge>
@@ -389,7 +389,7 @@ export default function PlatformBillingPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-[10px]">
+              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-xs">
                 <tr>
                   <th className="p-3">Internal Trx ID</th>
                   <th className="p-3">Provider Trx ID</th>
@@ -423,14 +423,14 @@ export default function PlatformBillingPage() {
                             r.verification_status === 'VERIFIED'
                               ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                               : 'bg-red-500/20 text-red-300 border-red-500/40'
-                          } text-[10px] uppercase font-bold`}
+                          } text-2xs uppercase font-bold`}
                         >
                           {r.verification_status}
                         </Badge>
                       </td>
                       <td className="p-3">
                         {r.is_mismatched ? (
-                          <Badge className="bg-red-500/20 text-red-300 border-red-500/40 text-[10px]">
+                          <Badge className="bg-red-500/20 text-red-300 border-red-500/40 text-2xs">
                             {r.mismatch_reason || 'Anomaly'}
                           </Badge>
                         ) : (

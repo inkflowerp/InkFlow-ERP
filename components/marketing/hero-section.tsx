@@ -47,7 +47,7 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {/* Tag Pill Badge */}
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-[11px] sm:text-xs font-semibold backdrop-blur-md shadow-inner animate-in fade-in-0 zoom-in-95 duration-500 bangla-text max-w-full">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-xs font-semibold backdrop-blur-md shadow-inner animate-in fade-in-0 zoom-in-95 duration-500 bangla-text max-w-full">
             <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
             <span className="truncate sm:whitespace-normal">
               {tBilingual(
@@ -59,7 +59,7 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.15] sm:leading-[1.1] bangla-text">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.2] sm:leading-[1.15] bangla-text">
             {tBilingual(
               'Run Your Print Business Smarter.',
               'আপনার প্রেস ও সাইনেজ ব্যবসা চালান আরও স্মার্টলি।'
@@ -67,7 +67,7 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-base sm:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed bangla-text">
+          <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed bangla-text">
             {tBilingual(
               'Manage quotations, orders, production, inventory, payments, delivery and profit — all from one simple platform.',
               'কোটেশন, জব অর্ডার, কারখানা প্রোডাকশন, কাঁচামাল স্টক, বকেয়া আদায়, ডেলিভারি ও আসল লাভ—সবকিছু এক প্ল্যাটফর্মে।'
@@ -128,7 +128,7 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
                   <div className="h-7 w-7 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/20">
                     <Icon className="h-3.5 w-3.5" />
                   </div>
-                  <span className="font-medium text-slate-200 text-[11px] sm:text-xs leading-snug">
+                  <span className="font-medium text-slate-200 text-xs leading-snug">
                     {tBilingual(t.textEn, t.textBn)}
                   </span>
                 </div>

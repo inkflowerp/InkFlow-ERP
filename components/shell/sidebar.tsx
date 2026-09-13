@@ -133,7 +133,7 @@ export function Sidebar() {
               <span className="font-black tracking-tight text-base text-slate-900 dark:text-white leading-tight">
                 Print<span className="text-blue-600">ERP</span>
               </span>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 BD Print SaaS
               </span>
             </div>
@@ -187,7 +187,7 @@ export function Sidebar() {
                       href={item.href}
                       title={collapsed ? itemTitle : undefined}
                       className={cn(
-                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all cursor-pointer bangla-text',
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text',
                         isActive
                           ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
                           : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
@@ -209,7 +209,7 @@ export function Sidebar() {
                           {item.badge && (
                             <Badge
                               variant={isActive ? 'secondary' : 'default'}
-                              className="text-xs px-2 py-0.5 h-4.5 bg-emerald-500 text-white font-bold"
+                              className="text-2xs px-2 py-0.5 h-4.5 bg-emerald-500 text-white font-bold"
                             >
                               {item.badge}
                             </Badge>
