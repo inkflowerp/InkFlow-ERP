@@ -118,7 +118,6 @@ export async function recordAttendanceAction(
 
     revalidatePath(`/${tenant.companySlug}/attendance`)
     revalidatePath(`/${tenant.companySlug}/hr`)
-    revalidatePath(`/${tenant.companySlug}/mobile`)
 
     return {
       success: true,

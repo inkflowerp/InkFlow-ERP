@@ -29,30 +29,32 @@ export function MobileBottomNav() {
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [syncOpen, setSyncOpen] = useState(false)
 
-  const isMobileSuite = pathname?.includes('/mobile')
+  const isDashboardActive = pathname?.endsWith('/dashboard')
+  const isSalesActive = pathname?.includes('/sales') || pathname?.includes('/quotations')
+  const isProductionActive = pathname?.includes('/production')
 
   return (
     <>
       <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-slate-950/95 backdrop-blur-md border-t border-slate-800 pb-[env(safe-area-inset-bottom)]">
         <div className="grid grid-cols-5 h-16 items-center px-1">
-          {/* 1. Owner */}
+          {/* 1. Dashboard / Owner */}
           <Link
-            href={`/${tenantSlug}/mobile?tab=owner`}
+            href={`/${tenantSlug}/dashboard`}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors ${
-              isMobileSuite && pathname.includes('tab=owner')
+              isDashboardActive
                 ? 'text-indigo-400 font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[10px] mt-1 tracking-tight">Owner</span>
+            <span className="text-[10px] mt-1 tracking-tight">Dashboard</span>
           </Link>
 
           {/* 2. Sales */}
           <Link
-            href={`/${tenantSlug}/mobile?tab=sales`}
+            href={`/${tenantSlug}/sales`}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors ${
-              isMobileSuite && pathname.includes('tab=sales')
+              isSalesActive
                 ? 'text-indigo-400 font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
@@ -76,9 +78,9 @@ export function MobileBottomNav() {
 
           {/* 4. Production Floor */}
           <Link
-            href={`/${tenantSlug}/mobile?tab=production`}
+            href={`/${tenantSlug}/production`}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors ${
-              isMobileSuite && pathname.includes('tab=production')
+              isProductionActive
                 ? 'text-indigo-400 font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}

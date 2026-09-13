@@ -131,7 +131,7 @@ export function MobileNav() {
 
   const isNavItemAllowed = (href: string): boolean => {
     if (isOwner) return true
-    if (href.endsWith('/dashboard') || href.endsWith('/mobile') || href.includes('/attendance')) return true
+    if (href.endsWith('/dashboard') || href.includes('/attendance')) return true
 
     if (href.includes('/customers')) return can('view', 'customers')
     if (href.includes('/quotations')) return can('view', 'quotations')
@@ -299,12 +299,12 @@ export function MobileNav() {
                 <span>{tBilingual('Order', 'অর্ডার')}</span>
               </Link>
               <Link
-                href={`/${tenantSlug}/mobile`}
+                href={`/${tenantSlug}/production`}
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200/70 dark:border-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-[11px] font-semibold hover:bg-cyan-100 transition-colors min-h-[38px] bangla-text"
               >
-                <Zap className="h-3 w-3 text-cyan-600" />
-                <span>{tBilingual('Mobile', 'মোবাইল')}</span>
+                <Printer className="h-3 w-3 text-cyan-600" />
+                <span>{tBilingual('Press', 'প্রোডাকশন')}</span>
               </Link>
             </div>
 

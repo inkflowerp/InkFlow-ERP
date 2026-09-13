@@ -26,19 +26,19 @@
       "name": "Quick Quote",
       "short_name": "Quote",
       "description": "Calculate instant print estimate in BDT",
-      "url": "/mobile?tab=owner&action=quote"
+      "url": "/pricing"
     },
     {
       "name": "Production Floor",
       "short_name": "Production",
       "description": "View assigned print jobs and press queue",
-      "url": "/mobile?tab=production"
+      "url": "/production"
     },
     {
       "name": "Today's Sales",
       "short_name": "Sales",
       "description": "Owner daily sales and collection KPI",
-      "url": "/mobile?tab=owner"
+      "url": "/sales"
     }
   ],
   "categories": ["business", "productivity", "utilities"]

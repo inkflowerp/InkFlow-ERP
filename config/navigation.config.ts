@@ -24,13 +24,6 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           href: `/${tenantSlug}/dashboard`,
           icon: 'LayoutDashboard',
         },
-        {
-          title: 'Mobile Workshop',
-          titleBn: 'মোবাইল হাব',
-          href: `/${tenantSlug}/mobile`,
-          icon: 'Smartphone',
-          badge: 'PWA',
-        },
       ],
     },
     {
