@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export interface CreateCompanyInput {
   name: string
   name_bn?: string
+  legal_name?: string | null
   slug: string
   business_type: string
   division_id?: number | null
@@ -14,6 +15,9 @@ export interface CreateCompanyInput {
   area?: string | null
   address?: string | null
   address_bn?: string | null
+  office_hours?: string | null
+  holidays?: string | null
+  logo_url?: string | null
   trade_license_no?: string | null
   bin_no?: string | null
   tin_no?: string | null
@@ -180,6 +184,7 @@ export class TenantService {
         {
           name: data.name,
           name_bn: data.name_bn,
+          legal_name: data.legal_name,
           slug: data.slug,
           business_type: data.business_type,
           trade_license_no: data.trade_license_no,
@@ -193,6 +198,9 @@ export class TenantService {
           upazila_id: data.upazila_id,
           address: data.address,
           address_bn: data.address_bn,
+          office_hours: data.office_hours,
+          holidays: data.holidays,
+          logo_url: data.logo_url,
           currency: data.currency || 'BDT',
           default_locale: data.default_locale || data.default_language || 'bn',
           plan: data.plan || 'trial',

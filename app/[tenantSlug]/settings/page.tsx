@@ -11,6 +11,14 @@ import {
   Save,
   Globe,
   Percent,
+  Clock,
+  Calendar,
+  Phone,
+  Mail,
+  MapPin,
+  Image as ImageIcon,
+  Landmark,
+  Sparkles,
 } from 'lucide-react'
 import { companySettingsSchema, CompanySettingsFormData } from '@/features/tenant/tenant.schemas'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
@@ -23,12 +31,27 @@ import { Button } from '@/components/ui/button'
 import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 
+const OFFICE_HOURS_PRESETS = [
+  '9:00 AM - 8:00 PM (Sat - Thu)',
+  '10:00 AM - 9:00 PM (Sat - Thu)',
+  '9:30 AM - 7:30 PM (Sun - Thu)',
+  '8:30 AM - 6:30 PM (Sat - Thu)',
+  '24/7 Production Floor',
+]
+
+const HOLIDAY_PRESETS = [
+  'Friday (সাপ্তাহিক ছুটি)',
+  'Friday & Saturday (দ্বি-সাপ্তাহিক ছুটি)',
+  'Friday & Govt Holidays (শুক্রবার ও সরকারি ছুটি)',
+  'Sunday (রবিবার)',
+]
+
 export default function CompanySettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'general' | 'tax' | 'prefixes' | 'regional'>('general')
+  const [activeTab, setActiveTab] = useState<'general' | 'schedule' | 'tax' | 'prefixes' | 'regional'>('general')
 
   const lastLoadedCompanyIdRef = React.useRef<string | null>(null)
 
@@ -36,6 +59,7 @@ export default function CompanySettingsPage() {
     register,
     handleSubmit,
     watch,
+    setValue,
     reset,
     formState: { errors, isDirty },
   } = useForm<CompanySettingsFormData>({
@@ -43,13 +67,16 @@ export default function CompanySettingsPage() {
     defaultValues: {
       name: company?.name || '',
       name_bn: company?.name_bn || '',
-      logo_url: company?.logo_url || '',
+      legal_name: company?.legal_name || (settings as any)?.legal_name || '',
+      logo_url: company?.logo_url || settings?.logo_url || '',
       phone: company?.phone || settings?.phone || '',
       whatsapp: company?.whatsapp || settings?.whatsapp || '',
       email: company?.email || settings?.email || '',
       address: company?.address || '',
       address_bn: company?.address_bn || '',
       area: company?.area || '',
+      office_hours: company?.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
+      holidays: company?.holidays || (settings as any)?.holidays || 'Friday (সাপ্তাহিক ছুটি)',
       bin_no: company?.bin_no || '',
       tin_no: company?.tin_no || '',
       trade_license_no: company?.trade_license_no || '',
@@ -71,13 +98,16 @@ export default function CompanySettingsPage() {
         reset({
           name: company.name || '',
           name_bn: company.name_bn || '',
-          logo_url: company.logo_url || '',
+          legal_name: company.legal_name || (settings as any)?.legal_name || '',
+          logo_url: company.logo_url || settings?.logo_url || '',
           phone: company.phone || settings?.phone || '',
           whatsapp: company.whatsapp || settings?.whatsapp || '',
           email: company.email || settings?.email || '',
           address: company.address || '',
           address_bn: company.address_bn || '',
           area: company.area || '',
+          office_hours: company.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
+          holidays: company.holidays || (settings as any)?.holidays || 'Friday (সাপ্তাহিক ছুটি)',
           bin_no: company.bin_no || '',
           tin_no: company.tin_no || '',
           trade_license_no: company.trade_license_no || '',
@@ -94,6 +124,7 @@ export default function CompanySettingsPage() {
   }, [company, settings, reset, isDirty])
 
   const watchedVatEnabled = watch('vat_enabled')
+  const watchedLogoUrl = watch('logo_url')
 
   const onSubmit = async (data: CompanySettingsFormData) => {
     if (!company) return
@@ -101,15 +132,20 @@ export default function CompanySettingsPage() {
     setIsSaved(false)
 
     try {
-      // 1. Update company record
+      // 1. Update company record with all 12 company fields
       await updateCompanyAction(company.id, {
         name: data.name,
         name_bn: data.name_bn || null,
+        legal_name: data.legal_name || null,
+        logo_url: data.logo_url || null,
         phone: data.phone,
         whatsapp: data.whatsapp || null,
         email: data.email,
         address: data.address,
         address_bn: data.address_bn || null,
+        area: data.area || null,
+        office_hours: data.office_hours || null,
+        holidays: data.holidays || null,
         bin_no: data.bin_no || null,
         tin_no: data.tin_no || null,
         trade_license_no: data.trade_license_no || null,
@@ -127,6 +163,9 @@ export default function CompanySettingsPage() {
         whatsapp: data.whatsapp || null,
         phone: data.phone,
         email: data.email,
+        logo_url: data.logo_url || null,
+        office_hours: data.office_hours || null,
+        holidays: data.holidays || null,
       })
 
       await refreshTenant()
@@ -142,10 +181,10 @@ export default function CompanySettingsPage() {
     <div className="space-y-6 max-w-5xl">
       {/* Title & Actions */}
       <PageHeader
-        titleEn="Company Settings"
-        titleBn="কোম্পানি সেটিংস"
-        descriptionEn="Configure enterprise identity, tax registrations, document numbering sequences, and localization."
-        descriptionBn="প্রতিষ্ঠানের তথ্য, ট্যাক্স নিবন্ধন, চালান নম্বর ক্রম এবং আঞ্চলিক ভাষা সেটিংস।"
+        titleEn="Company Profile & Settings"
+        titleBn="প্রতিষ্ঠান পরিচিতি ও সেটিংস"
+        descriptionEn="Manage corporate identity, legal entity details, NBR tax registrations, office hours, and official contact channels."
+        descriptionBn="প্রাতিষ্ঠানিক তথ্য, আইনি সত্তা, এনবিআর ট্যাক্স নিবন্ধন, অফিস সময়সূচি এবং যোগাযোগের তথ্য পরিচালনা করুন।"
         icon={Building2}
         iconColor="text-blue-600"
         actions={
@@ -164,7 +203,8 @@ export default function CompanySettingsPage() {
       <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto touch-scroll">
         {[
           { id: 'general', label: 'General Identity', icon: Building2 },
-          { id: 'tax', label: 'BIN, TIN & VAT', icon: ShieldCheck },
+          { id: 'schedule', label: 'Office Hours & Holidays', icon: Clock },
+          { id: 'tax', label: 'BIN, TIN & Trade License', icon: ShieldCheck },
           { id: 'prefixes', label: 'Document Prefixes', icon: FileText },
           { id: 'regional', label: 'Regional & Language', icon: Globe },
         ].map((tab) => {
@@ -191,104 +231,256 @@ export default function CompanySettingsPage() {
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* TAB 1: GENERAL IDENTITY */}
         {activeTab === 'general' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Building2 className="h-4 w-4 text-blue-600" />
+                  Corporate Identity & Branding
+                </CardTitle>
+                <CardDescription>
+                  Display names, registered legal entity, and corporate logo printed on invoices and contracts.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name" required>
+                      Display Name (English)
+                    </Label>
+                    <Input id="name" {...register('name')} error={errors.name?.message} placeholder="e.g. Rapid Print & Media" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name_bn">Display Name (বাংলা)</Label>
+                    <Input id="name_bn" {...register('name_bn')} error={errors.name_bn?.message} placeholder="উদা: র‍্যাপিড প্রিন্ট অ্যান্ড মিডিয়া" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="legal_name">
+                      Registered Legal Entity Name (for NBR & Contracts)
+                    </Label>
+                    <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                      চুক্তি ও ভ্যাট চালানের জন্য
+                    </span>
+                  </div>
+                  <Input
+                    id="legal_name"
+                    placeholder="e.g. Rapid Print Solutions Limited"
+                    {...register('legal_name')}
+                  />
+                  <p className="text-[11px] text-slate-500">
+                    Official registered company name used for formal contracts, legal tender submissions, and NBR Mushak forms.
+                  </p>
+                </div>
+
+                {/* Company Logo with Live Preview */}
+                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <Label htmlFor="logo_url">Company Logo URL (কোম্পানির লোগো)</Label>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    <div className="h-16 w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden shrink-0">
+                      {watchedLogoUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={watchedLogoUrl}
+                          alt="Company Logo Preview"
+                          className="h-full w-full object-contain p-1"
+                          onError={(e) => {
+                            ;(e.target as HTMLElement).style.display = 'none'
+                          }}
+                        />
+                      ) : (
+                        <div className="text-center p-2">
+                          <ImageIcon className="h-5 w-5 mx-auto text-slate-400" />
+                          <span className="text-[9px] text-slate-400 block mt-0.5">No Logo</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 w-full space-y-1">
+                      <Input
+                        id="logo_url"
+                        placeholder="https://example.com/logo.png"
+                        {...register('logo_url')}
+                      />
+                      <span className="text-[11px] text-slate-500 block">
+                        Will appear on header of printed quotations, job challans, and customer receipts.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Phone className="h-4 w-4 text-emerald-600" />
+                  Official Contact Channels
+                </CardTitle>
+                <CardDescription>
+                  Phone, WhatsApp, and official billing email for customer support and payment notifications.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" required>
+                      Office Phone Number (অফিস ফোন)
+                    </Label>
+                    <Input id="phone" placeholder="+880 1711-000000" {...register('phone')} error={errors.phone?.message} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="whatsapp">
+                      Business WhatsApp Number (হোয়াটসঅ্যাপ)
+                    </Label>
+                    <Input id="whatsapp" placeholder="+880 1811-000000" {...register('whatsapp')} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" required>
+                      Official Billing Email (অফিসিয়াল ইমেইল)
+                    </Label>
+                    <Input id="email" type="email" placeholder="billing@company.com" {...register('email')} error={errors.email?.message} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <MapPin className="h-4 w-4 text-rose-600" />
+                  Address & Production Hub
+                </CardTitle>
+                <CardDescription>
+                  Physical factory location, commercial printing hub, and showroom address.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="area">
+                    Commercial Area / Printing Hub (মার্কেট বা বাণিজ্যিক এলাকা)
+                  </Label>
+                  <Input id="area" placeholder="e.g. Fakirapool, Arambagh, Banglabazar, Nilkhet" {...register('area')} />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="address" required>
+                      Full Address (English)
+                    </Label>
+                    <Input id="address" placeholder="e.g. 14/A Toyenbee Circular Road, Motijheel" {...register('address')} error={errors.address?.message} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="address_bn">ঠিকানা (বাংলায়)</Label>
+                    <Input id="address_bn" placeholder="উদা: ১৪/এ তোয়েনবি সার্কুলার রোড, মতিঝিল" {...register('address_bn')} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* TAB 2: OFFICE HOURS & HOLIDAYS */}
+        {activeTab === 'schedule' && (
           <Card>
             <CardHeader>
-              <CardTitle>General Company Information</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Clock className="h-4 w-4 text-blue-600" />
+                Office Hours & Operational Holiday Schedule
+              </CardTitle>
               <CardDescription>
-                Details printed on customer quotations, work orders, invoices, and delivery challans.
+                Define your shop opening hours and weekly holidays for customer inquiries and order delivery scheduling.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="name" required>
-                    Company Name (English)
-                  </Label>
-                  <Input id="name" {...register('name')} error={errors.name?.message} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="name_bn">প্রতিষ্ঠানের নাম (বাংলায়)</Label>
-                  <Input id="name_bn" {...register('name_bn')} error={errors.name_bn?.message} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone" required>
-                    Primary Phone (ফোন)
-                  </Label>
-                  <Input id="phone" {...register('phone')} error={errors.phone?.message} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="whatsapp">
-                    WhatsApp Business (হোয়াটসঅ্যাপ)
-                  </Label>
-                  <Input id="whatsapp" {...register('whatsapp')} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" required>
-                    Official Email (ইমেইল)
-                  </Label>
-                  <Input id="email" type="email" {...register('email')} error={errors.email?.message} />
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <Label htmlFor="office_hours" className="text-sm font-semibold">
+                  Office Hours / Business Hours (অফিস সময়সূচী)
+                </Label>
+                <Input
+                  id="office_hours"
+                  placeholder="e.g. 9:00 AM - 8:00 PM (Sat - Thu)"
+                  {...register('office_hours')}
+                />
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-xs text-slate-500">Quick Presets:</span>
+                  {OFFICE_HOURS_PRESETS.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setValue('office_hours', preset, { shouldDirty: true })}
+                      className="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+                    >
+                      {preset}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="address" required>
-                    Full Address (English)
-                  </Label>
-                  <Input id="address" {...register('address')} error={errors.address?.message} />
+              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <Label htmlFor="holidays" className="text-sm font-semibold">
+                  Weekly Holiday & Closed Days (সাপ্তাহিক ছুটি ও বন্ধের দিন)
+                </Label>
+                <Input
+                  id="holidays"
+                  placeholder="e.g. Friday (সাপ্তাহিক ছুটি)"
+                  {...register('holidays')}
+                />
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-xs text-slate-500">Quick Presets:</span>
+                  {HOLIDAY_PRESETS.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setValue('holidays', preset, { shouldDirty: true })}
+                      className="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+                    >
+                      {preset}
+                    </button>
+                  ))}
                 </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="address_bn">ঠিকানা (বাংলায়)</Label>
-                  <Input id="address_bn" {...register('address_bn')} />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="logo_url">Company Logo URL</Label>
-                <Input id="logo_url" placeholder="https://..." {...register('logo_url')} />
-                <span className="text-[11px] text-slate-500">
-                  Will appear on printed invoices and PDF work challans.
-                </span>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* TAB 2: TAX & REGISTRATIONS */}
+        {/* TAB 3: TAX & REGISTRATIONS */}
         {activeTab === 'tax' && (
           <Card>
             <CardHeader>
-              <CardTitle>Government & Tax Registrations</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                Government & Tax Registrations
+              </CardTitle>
               <CardDescription>
-                NBR VAT registration, Taxpayer Identification, and City Corporation Trade License.
+                NBR VAT registration (BIN), Taxpayer Identification (TIN), and City Corporation Trade License.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
+                  <Label htmlFor="trade_license_no">
+                    Trade License Number (ট্রেড লাইসেন্স নং)
+                  </Label>
+                  <Input id="trade_license_no" placeholder="TRAD/DNCC/..." {...register('trade_license_no')} />
+                </div>
+
+                <div className="space-y-1.5">
                   <Label htmlFor="bin_no">
                     BIN (Business Identification Number / ভ্যাট নিবন্ধন নং)
                   </Label>
                   <Input id="bin_no" placeholder="e.g. 004819284-0101" {...register('bin_no')} />
+                  <span className="text-[11px] text-slate-500">NBR 9 or 13-digit registration</span>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="tin_no">TIN (Tax Identification Number / ই-টিন নং)</Label>
                   <Input id="tin_no" placeholder="e.g. 8492049182" {...register('tin_no')} />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="trade_license_no">
-                    Trade License Number (ট্রেড লাইসেন্স নং)
-                  </Label>
-                  <Input id="trade_license_no" placeholder="TRAD/DNCC/..." {...register('trade_license_no')} />
                 </div>
               </div>
 
@@ -299,7 +491,7 @@ export default function CompanySettingsPage() {
                       Automated VAT Calculation (ভ্যাট গণনা)
                     </div>
                     <p className="text-xs text-slate-500">
-                      Automatically calculate VAT on printing jobs and billings.
+                      Automatically calculate VAT on printing jobs and customer billings.
                     </p>
                   </div>
                   <input
@@ -334,11 +526,14 @@ export default function CompanySettingsPage() {
           </Card>
         )}
 
-        {/* TAB 3: DOCUMENT PREFIXES */}
+        {/* TAB 4: DOCUMENT PREFIXES */}
         {activeTab === 'prefixes' && (
           <Card>
             <CardHeader>
-              <CardTitle>Document Numbering & Sequences</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FileText className="h-4 w-4 text-blue-600" />
+                Document Numbering & Sequences
+              </CardTitle>
               <CardDescription>
                 Customize the serial prefixes generated on quotations, tax invoices, and delivery challans.
               </CardDescription>
@@ -373,11 +568,14 @@ export default function CompanySettingsPage() {
           </Card>
         )}
 
-        {/* TAB 4: REGIONAL & LOCALIZATION */}
+        {/* TAB 5: REGIONAL & LOCALIZATION */}
         {activeTab === 'regional' && (
           <Card>
             <CardHeader>
-              <CardTitle>Regional & Language Preferences</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Globe className="h-4 w-4 text-purple-600" />
+                Regional & Language Preferences
+              </CardTitle>
               <CardDescription>
                 Default currency and presentation language for vouchers and system interface.
               </CardDescription>
@@ -386,7 +584,7 @@ export default function CompanySettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="default_currency">Default Currency</Label>
-                  <Input id="default_currency" value="BDT (৳)" readOnly className="bg-slate-50" />
+                  <Input id="default_currency" value="BDT (৳)" readOnly className="bg-slate-50 dark:bg-slate-900" />
                 </div>
 
                 <div className="space-y-1.5">

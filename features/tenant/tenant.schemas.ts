@@ -43,7 +43,8 @@ export type OnboardingFormData = z.infer<typeof onboardingSchema>
 
 export const companySettingsSchema = z.object({
   name: z.string().min(2, 'Company name is required'),
-  name_bn: z.string().optional(),
+  name_bn: z.string().optional().nullable(),
+  legal_name: z.string().optional().nullable(),
   logo_url: z.string().optional().nullable(),
   phone: z.string().min(11, 'Phone is required'),
   whatsapp: z.string().optional().nullable(),
@@ -51,6 +52,8 @@ export const companySettingsSchema = z.object({
   address: z.string().min(3, 'Address is required'),
   address_bn: z.string().optional().nullable(),
   area: z.string().optional().nullable(),
+  office_hours: z.string().optional().nullable(),
+  holidays: z.string().optional().nullable(),
   bin_no: z.string().optional().nullable(),
   tin_no: z.string().optional().nullable(),
   trade_license_no: z.string().optional().nullable(),

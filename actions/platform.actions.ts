@@ -350,12 +350,17 @@ export async function createBusinessAction(formData: FormData) {
 
     const name = (formData.get('name') as string)?.trim()
     const nameBn = (formData.get('name_bn') as string)?.trim() || undefined
+    const legalName = (formData.get('legal_name') as string)?.trim() || undefined
     const slug = (formData.get('slug') as string)?.trim()?.toLowerCase()
     const businessType = (formData.get('business_type') as string) || 'commercial_printing'
     const email = (formData.get('email') as string)?.trim() || undefined
     const phone = (formData.get('phone') as string)?.trim() || undefined
+    const whatsapp = (formData.get('whatsapp') as string)?.trim() || undefined
     const address = (formData.get('address') as string)?.trim() || undefined
     const addressBn = (formData.get('address_bn') as string)?.trim() || undefined
+    const officeHours = (formData.get('office_hours') as string)?.trim() || undefined
+    const holidays = (formData.get('holidays') as string)?.trim() || undefined
+    const logoUrl = (formData.get('logo_url') as string)?.trim() || undefined
     const currency = (formData.get('currency') as string)?.trim() || 'BDT'
     const ownerName = (formData.get('owner_name') as string)?.trim() || undefined
     const ownerEmail = (formData.get('owner_email') as string)?.trim() || undefined
@@ -375,12 +380,17 @@ export async function createBusinessAction(formData: FormData) {
     const createRes = await TenantService.createCompany({
       name,
       name_bn: nameBn,
+      legal_name: legalName,
       slug,
       business_type: businessType,
       email: email || ownerEmail,
       phone: phone || ownerPhone,
+      whatsapp: whatsapp || phone || ownerPhone,
       address,
       address_bn: addressBn,
+      office_hours: officeHours,
+      holidays,
+      logo_url: logoUrl,
       currency,
       trade_license_no: tradeLicenseNo,
       bin_no: binNo,

@@ -30,6 +30,8 @@ export interface Database {
           area: string | null
           address: string | null
           address_bn: string | null
+          office_hours: string | null
+          holidays: string | null
           currency: string
           default_locale: string
           logo_url: string | null
@@ -58,6 +60,8 @@ export interface Database {
           area?: string | null
           address?: string | null
           address_bn?: string | null
+          office_hours?: string | null
+          holidays?: string | null
           currency?: string
           default_locale?: string
           logo_url?: string | null
@@ -86,6 +90,8 @@ export interface Database {
           area?: string | null
           address?: string | null
           address_bn?: string | null
+          office_hours?: string | null
+          holidays?: string | null
           currency?: string
           default_locale?: string
           logo_url?: string | null
@@ -111,6 +117,8 @@ export interface Database {
           whatsapp: string | null
           email: string | null
           logo_url: string | null
+          office_hours: string | null
+          holidays: string | null
           created_at: string
           updated_at: string
         }
@@ -128,6 +136,8 @@ export interface Database {
           whatsapp?: string | null
           email?: string | null
           logo_url?: string | null
+          office_hours?: string | null
+          holidays?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -145,6 +155,8 @@ export interface Database {
           whatsapp?: string | null
           email?: string | null
           logo_url?: string | null
+          office_hours?: string | null
+          holidays?: string | null
           created_at?: string
           updated_at?: string
         }

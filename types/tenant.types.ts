@@ -24,6 +24,9 @@ export interface CompanySettings {
   whatsapp?: string | null
   email?: string | null
   logo_url?: string | null
+  legal_name?: string | null
+  office_hours?: string | null
+  holidays?: string | null
 }
 
 import { DataScope } from './rbac.types'

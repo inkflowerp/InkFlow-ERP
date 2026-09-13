@@ -33,6 +33,8 @@ create table if not exists public.companies (
     upazila_id integer,
     address text,
     address_bn text,
+    office_hours text default '9:00 AM - 8:00 PM (Sat - Thu)',
+    holidays text default 'Friday',
     currency text not null default 'BDT',
     default_locale text not null default 'bn',
     logo_url text,
