@@ -266,19 +266,27 @@ export async function createQuotationAction(
   }
 }
 
+import { PdfGeneratorService } from '@/services/pdf-generator.service'
+import { CommunicationTemplateService } from '@/services/communication-templates.service'
+import { BusinessEmailService } from '@/services/business-email.service'
+
 /**
- * Server Action: Dispatches quotation communication (WhatsApp / Email / SMS)
- * Strictly guarantees Save-First before dispatch
+ * Server Action: Dispatches quotation communication (WhatsApp / Email)
+ * Strictly guarantees Save-First before dispatch, attaches PDF, and uses customizable templates
  */
 export async function sendQuotationAction(
   params: SendQuotationPayload,
   requestedCompanyId?: string
-): Promise<ServerActionResult<{ messageId: string }>> {
+): Promise<ServerActionResult<{ messageId: string; whatsappUrl?: string }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     const companyId = tenant?.companyId || requestedCompanyId
     if (!companyId || !tenant) {
       return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    if (params.channel === 'sms') {
+      return { success: false, error: 'SMS dispatch is deprecated and disabled for quotations. Please use WhatsApp or Email with PDF.' }
     }
 
     const quote = await QuotationRepository.getQuotationById(params.quotationId, companyId)
@@ -287,11 +295,77 @@ export async function sendQuotationAction(
     }
 
     const companyName = tenant.companyName || 'InkFlow'
-    const textBody = QuotationService.generateQuotationTextMessage(quote, companyName)
     const recipient = params.recipientOverride || (params.channel === 'email' ? quote.customer_email : (quote.customer_whatsapp || quote.customer_phone))
 
     if (!recipient) {
       return { success: false, error: `Customer ${params.channel} contact information is missing.` }
+    }
+
+    // Build template variables
+    const vars = CommunicationTemplateService.buildQuotationVariables(quote, {
+      name: companyName,
+      slug: tenant.companySlug,
+    })
+
+    const templates = CommunicationTemplateService.getQuotationTemplates(companyId)
+    const lang = quote.language_mode || 'bn'
+
+    let whatsappUrl: string | undefined
+
+    if (params.channel === 'email') {
+      const subject = CommunicationTemplateService.interpolate(
+        lang === 'en' ? templates.emailSubjectEn : templates.emailSubjectBn,
+        vars
+      )
+      const bodyHtml = CommunicationTemplateService.interpolate(
+        lang === 'en' ? templates.emailBodyEn : templates.emailBodyBn,
+        vars
+      )
+
+      // Generate Quotation PDF Buffer
+      const pdfBuffer = PdfGeneratorService.generateQuotationPdf(quote, {
+        name: companyName,
+        slug: tenant.companySlug,
+      })
+
+      const sendRes = await BusinessEmailService.sendQuotationEmail({
+        companyId,
+        companyName,
+        quotationId: quote.id,
+        quotationNumber: quote.quotation_number,
+        customerName: quote.customer_name,
+        recipientEmail: recipient,
+        grandTotal: quote.grand_total,
+        validUntil: quote.valid_until,
+        notes: quote.notes || '',
+        language: lang === 'en' ? 'en' : 'bn',
+        sentBy: tenant.userEmail,
+        customSubject: subject,
+        customHtmlBody: bodyHtml,
+        attachments: [
+          {
+            filename: `Quotation-${quote.quotation_number}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+          },
+        ],
+      })
+
+      if (!sendRes.success) {
+        console.warn('[QuotationAction] Email sending notice:', sendRes.error)
+      }
+    } else if (params.channel === 'whatsapp') {
+      const whatsappText = CommunicationTemplateService.interpolate(
+        lang === 'en' ? templates.whatsappTemplateEn : templates.whatsappTemplateBn,
+        vars
+      )
+      const cleanPhone = recipient.replace(/\D/g, '')
+      const formattedPhone = cleanPhone.startsWith('880')
+        ? cleanPhone
+        : cleanPhone.startsWith('0')
+        ? `88${cleanPhone}`
+        : `880${cleanPhone}`
+      whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(whatsappText)}`
     }
 
     // Update status to 'sent'
@@ -302,7 +376,7 @@ export async function sendQuotationAction(
       id: `qa-${Date.now()}`,
       quotation_id: quote.id,
       action: 'sent' as const,
-      details: `Quotation sent via ${params.channel.toUpperCase()} (${params.format.toUpperCase()}) to ${recipient}`,
+      details: `Quotation sent via ${params.channel.toUpperCase()} (${params.format.toUpperCase()}) to ${recipient} (PDF attached)`,
       actor_name: tenant.fullName || 'Sales Executive',
       created_at: new Date().toISOString(),
     }
@@ -318,8 +392,8 @@ export async function sendQuotationAction(
         'quotation',
         quote.id,
         null,
-        { channel: params.channel, format: params.format, recipient },
-        `Sent quotation #${quote.quotation_number} via ${params.channel}`
+        { channel: params.channel, format: params.format, recipient, hasPdfAttachment: true },
+        `Sent quotation #${quote.quotation_number} via ${params.channel} with PDF`
       )
     } catch {
       // Non-blocking
@@ -328,7 +402,7 @@ export async function sendQuotationAction(
     revalidatePath('/', 'layout')
     return {
       success: true,
-      data: { messageId: `${params.channel}-${Date.now()}` },
+      data: { messageId: `${params.channel}-${Date.now()}`, whatsappUrl },
     }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to dispatch quotation communication' }

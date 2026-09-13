@@ -517,7 +517,7 @@ export function NewInvoiceModal({
   }
 
   // 3. SEND ACTION (Save First -> Dispatch Communication)
-  const handleSend = async (channel: 'whatsapp' | 'email' | 'sms', format: 'pdf' | 'text') => {
+  const handleSend = async (channel: 'whatsapp' | 'email', format: 'pdf' | 'text' = 'pdf') => {
     setShowSendMenu(false)
     if (isSubmitting) return
     setIsSubmitting(true)
@@ -542,10 +542,17 @@ export function NewInvoiceModal({
       if (sendRes.success) {
         setCommunicationStatus({
           status: 'success',
-          message: `Invoice ${inv.invoice_number} sent via ${channel.toUpperCase()} (${format.toUpperCase()})!`,
+          message:
+            channel === 'whatsapp'
+              ? `Invoice ${inv.invoice_number} dispatched to WhatsApp!`
+              : `Invoice ${inv.invoice_number} emailed with PDF attachment!`,
           channel,
           format,
         })
+
+        if (channel === 'whatsapp' && sendRes.data?.whatsappUrl) {
+          window.open(sendRes.data.whatsappUrl, '_blank')
+        }
       } else {
         setCommunicationStatus({
           status: 'failed',
@@ -1114,19 +1121,9 @@ export function NewInvoiceModal({
                     onClick={() => handleSend('whatsapp', 'pdf')}
                     className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 flex items-center justify-between"
                   >
-                    <span>PDF Document</span>
+                    <span>Send WhatsApp</span>
                     <Badge variant="outline" className="text-[9px] border-emerald-300 text-emerald-700">
-                      PDF
-                    </Badge>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSend('whatsapp', 'text')}
-                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 flex items-center justify-between"
-                  >
-                    <span>Text Message</span>
-                    <Badge variant="outline" className="text-[9px]">
-                      Text
+                      WhatsApp
                     </Badge>
                   </button>
                 </div>
@@ -1143,43 +1140,6 @@ export function NewInvoiceModal({
                   >
                     <span>PDF Attachment</span>
                     <Badge variant="outline" className="text-[9px] border-blue-300 text-blue-700">
-                      PDF
-                    </Badge>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSend('email', 'text')}
-                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 flex items-center justify-between"
-                  >
-                    <span>Text Summary</span>
-                    <Badge variant="outline" className="text-[9px]">
-                      Text
-                    </Badge>
-                  </button>
-                </div>
-
-                {/* SMS */}
-                <div className="p-1 space-y-0.5">
-                  <div className="text-[10px] font-black uppercase text-purple-600 px-2 py-1 flex items-center gap-1">
-                    <Smartphone className="h-3 w-3" /> SMS
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleSend('sms', 'text')}
-                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 flex items-center justify-between"
-                  >
-                    <span>Text SMS</span>
-                    <Badge variant="outline" className="text-[9px]">
-                      Text
-                    </Badge>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSend('sms', 'pdf')}
-                    className="w-full text-left px-2 py-1 rounded-md text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 flex items-center justify-between"
-                  >
-                    <span>PDF Web Link</span>
-                    <Badge variant="outline" className="text-[9px] border-purple-300 text-purple-700">
                       PDF
                     </Badge>
                   </button>

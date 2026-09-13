@@ -300,17 +300,17 @@ export async function createInvoiceAction(
 }
 
 /**
- * Server Action: Dispatches invoice communication (WhatsApp / Email / SMS)
+ * Server Action: Dispatches invoice communication (WhatsApp / Email)
  */
 export async function sendInvoiceAction(
   params: {
     invoiceId: string
     channel: 'whatsapp' | 'email' | 'sms'
-    format: 'pdf' | 'text'
+    format?: 'pdf' | 'text'
     recipientOverride?: string
   },
   requestedCompanyId?: string
-): Promise<ServerActionResult<{ messageId: string }>> {
+): Promise<ServerActionResult<{ messageId: string; whatsappUrl?: string }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     const companyId = tenant?.companyId || requestedCompanyId
@@ -318,20 +318,33 @@ export async function sendInvoiceAction(
       return { success: false, error: 'Unauthorized: No active tenant context found.' }
     }
 
+    if (params.channel === 'sms') {
+      return { success: false, error: 'SMS dispatch is deprecated and disabled for invoices. Please use WhatsApp or Email with PDF.' }
+    }
+
     const res = await BillingService.sendInvoice({
       companyId,
       invoiceId: params.invoiceId,
       channel: params.channel,
-      format: params.format,
+      format: params.format || 'pdf',
       recipientOverride: params.recipientOverride,
       actorName: tenant.fullName,
+      userEmail: tenant.userEmail,
+      companyName: tenant.companyName,
+      tenantSlug: tenant.companySlug,
     })
 
     if (!res.success) {
       return { success: false, error: res.error || `Failed to send invoice via ${params.channel}.` }
     }
 
-    return { success: true, data: { messageId: res.messageId || `msg-${Date.now()}` } }
+    return {
+      success: true,
+      data: {
+        messageId: res.messageId || `msg-${Date.now()}`,
+        whatsappUrl: res.whatsappUrl,
+      },
+    }
   } catch (error: any) {
     return { success: false, error: error.message || 'Communication dispatch error' }
   }

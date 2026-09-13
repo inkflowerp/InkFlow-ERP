@@ -633,7 +633,7 @@ export function NewQuotationModal({
   }
 
   // Handle Send Action (Saves first)
-  const handleSend = async (channel: 'whatsapp' | 'email' | 'sms', format: 'pdf' | 'text') => {
+  const handleSend = async (channel: 'whatsapp' | 'email', format: 'pdf' | 'text' = 'pdf') => {
     setSendDropdownOpen(false)
     let quoteToSend = saveSuccessQuote
     if (!quoteToSend) {
@@ -659,18 +659,20 @@ export function NewQuotationModal({
         setSendSuccessMsg(
           channel === 'whatsapp'
             ? `Quotation #${quoteToSend.quotation_number} dispatched to WhatsApp (${quoteToSend.customer_phone}).`
-            : channel === 'email'
-            ? `Quotation #${quoteToSend.quotation_number} emailed to ${quoteToSend.customer_email || quoteToSend.customer_name}.`
-            : `Quotation #${quoteToSend.quotation_number} sent via SMS to ${quoteToSend.customer_phone}.`
+            : `Quotation #${quoteToSend.quotation_number} emailed with PDF attachment to ${quoteToSend.customer_email || quoteToSend.customer_name}.`
         )
 
         if (channel === 'whatsapp') {
-          const rawPhone = quoteToSend.customer_whatsapp || quoteToSend.customer_phone
-          const clean = rawPhone.replace(/\D/g, '')
-          const text = encodeURIComponent(
-            `Hello ${quoteToSend.customer_name},\nHere is your official quotation #${quoteToSend.quotation_number} from ${company?.name || 'InkFlow'}.\nTotal: ৳${quoteToSend.grand_total} (Valid until ${quoteToSend.valid_until}).\nPlease review and let us know your confirmation.`
-          )
-          window.open(`https://wa.me/${clean}?text=${text}`, '_blank')
+          if (res.data?.whatsappUrl) {
+            window.open(res.data.whatsappUrl, '_blank')
+          } else {
+            const rawPhone = quoteToSend.customer_whatsapp || quoteToSend.customer_phone
+            const clean = rawPhone.replace(/\D/g, '')
+            const text = encodeURIComponent(
+              `Hello ${quoteToSend.customer_name},\nHere is your official quotation #${quoteToSend.quotation_number} from ${company?.name || 'InkFlow'}.\nTotal: ৳${quoteToSend.grand_total} (Valid until ${quoteToSend.valid_until}).\nPlease review and let us know your confirmation.`
+            )
+            window.open(`https://wa.me/${clean}?text=${text}`, '_blank')
+          }
         }
       } else {
         setSubmitError(`Quotation saved, but ${channel} sending failed: ${res.error}`)
@@ -1571,19 +1573,8 @@ export function NewQuotationModal({
                     >
                       <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
                       <div>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">Send WhatsApp PDF</div>
-                        <div className="text-[10px] text-slate-400">Attach quotation document</div>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSend('whatsapp', 'text')}
-                      className="w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 rounded-lg cursor-pointer"
-                    >
-                      <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
-                      <div>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">Send WhatsApp Text</div>
-                        <div className="text-[10px] text-slate-400">Concise proposal summary</div>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">Send WhatsApp</div>
+                        <div className="text-[10px] text-slate-400">Message with document link</div>
                       </div>
                     </button>
                   </div>
@@ -1601,23 +1592,6 @@ export function NewQuotationModal({
                       <div>
                         <div className="font-semibold text-slate-800 dark:text-slate-200">Send Email with PDF</div>
                         <div className="text-[10px] text-slate-400">Formal PDF attachment</div>
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="p-1.5 font-bold text-slate-400 uppercase text-[10px]">
-                    SMS Notification
-                  </div>
-                  <div className="py-1">
-                    <button
-                      type="button"
-                      onClick={() => handleSend('sms', 'text')}
-                      className="w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 rounded-lg cursor-pointer"
-                    >
-                      <Phone className="h-3.5 w-3.5 text-indigo-600" />
-                      <div>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">Send SMS Text</div>
-                        <div className="text-[10px] text-slate-400">Total & valid date</div>
                       </div>
                     </button>
                   </div>

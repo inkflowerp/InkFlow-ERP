@@ -1,12 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import {
+import { createClient } from '../supabase/server.ts'
+import { createAdminClient } from '../supabase/admin.ts'
+import type {
   InvoiceRecord,
   InvoiceItemRecord,
   PaymentRecord,
   PaymentAllocationRecord,
   FinancialWriteOffRecord,
-} from '@/types/billing.types'
+} from '../../types/billing.types.ts'
 
 export class BillingRepository {
   /**

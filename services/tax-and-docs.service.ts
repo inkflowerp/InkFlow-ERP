@@ -54,6 +54,68 @@ export const DEFAULT_DOCUMENT_TEMPLATES: Record<DocumentType, DocumentTemplateCo
     footer_terms_bn: '১. কোটেশনের মেয়াদ প্রদানের তারিখ হতে ১৫ দিন।\n২. কাজের অর্ডারের সাথে অগ্রিম এবং অবশিষ্ট মালামাল ডেলিভারির সময় প্রদেয়।',
     authorized_signatory_title: 'Authorized Signature',
     show_seal_box: true,
+    email_subject_template: 'Official Quotation #{{quotation_number}} from {{company_name}} [৳ {{grand_total}}]',
+    email_subject_template_bn: 'বাণিজ্যিক কোটেশন #{{quotation_number}} - {{company_name}} [৳ {{grand_total}}]',
+    email_body_template: `<p>Dear <strong>{{customer_name}}</strong>,</p>
+<p>Thank you for reaching out to <strong>{{company_name}}</strong>. Please find attached our official price proposal for your requested print items.</p>
+<div class="info-card">
+  <table>
+    <tr><td class="label">Quotation #:</td><td class="value"><strong>{{quotation_number}}</strong></td></tr>
+    <tr><td class="label">Issue Date:</td><td class="value">{{date}}</td></tr>
+    <tr><td class="label">Valid Until:</td><td class="value">{{valid_until}}</td></tr>
+    <tr><td class="label">Grand Total:</td><td class="value"><strong>৳ {{grand_total}}</strong></td></tr>
+  </table>
+</div>
+<p><strong>Item Overview:</strong><br>{{items_summary}}</p>
+<p>The formal PDF proposal has been attached to this email for your convenience and records.</p>
+<p><a href="{{document_link}}" class="btn">View & Approve Quotation Online</a></p>
+<p>Thank you for choosing {{company_name}}!</p>`,
+    email_body_template_bn: `<p>প্রিয় <strong>{{customer_name}}</strong>,</p>
+<p><strong>{{company_name}}</strong>-এর সাথে যোগাযোগের জন্য ধন্যবাদ। আপনার অনুরোধকৃত প্রিন্ট কাজের বিস্তারিত কোটেশন পত্রটি এই ইমেইলের সাথে পিডিএফ (PDF) হিসেবে সংযুক্ত করা হলো।</p>
+<div class="info-card">
+  <table>
+    <tr><td class="label">কোটেশন নং:</td><td class="value"><strong>{{quotation_number}}</strong></td></tr>
+    <tr><td class="label">প্রদানের তারিখ:</td><td class="value">{{date}}</td></tr>
+    <tr><td class="label">মেয়াদ:</td><td class="value">{{valid_until}}</td></tr>
+    <tr><td class="label">মোট মূল্য:</td><td class="value"><strong>৳ {{grand_total}}</strong></td></tr>
+  </table>
+</div>
+<p><a href="{{document_link}}" class="btn">কোটেশন বিস্তারিত দেখুন ও অনুমোদন দিন</a></p>
+<p>ধন্যবাদান্তে,<br><strong>{{company_name}}</strong></p>`,
+    whatsapp_template: `*OFFICIAL QUOTATION - {{company_name}}*
+
+Dear {{customer_name}},
+Thank you for your inquiry! Here is your official price proposal:
+
+📄 *Quotation No:* #{{quotation_number}}
+📅 *Date:* {{date}}
+⏳ *Valid Until:* {{valid_until}}
+
+📋 *Items Summary:*
+{{items_summary}}
+
+💵 *Grand Total:* ৳ {{grand_total}}
+
+🔗 *View & Approve Online:* {{document_link}}
+
+_Thank you for doing business with {{company_name}}!_`,
+    whatsapp_template_bn: `*বাণিজ্যিক দরপত্র (কোটেশন) - {{company_name}}*
+
+প্রিয় {{customer_name}},
+আমাদের সাথে যোগাযোগের জন্য ধন্যবাদ। আপনার কোটেশন বিবরণ:
+
+📄 *কোটেশন নং:* #{{quotation_number}}
+📅 *তারিখ:* {{date}}
+⏳ *মেয়াদ:* {{valid_until}} পর্যন্ত
+
+📋 *আইটেম বিবরণ:*
+{{items_summary}}
+
+💵 *সর্বমোট বিল:* ৳ {{grand_total}}
+
+🔗 *কোটেশন দেখুন ও অনুমোদন দিন:* {{document_link}}
+
+_{{company_name}}_`,
     updated_at: new Date().toISOString(),
   },
   invoice: {
@@ -68,6 +130,75 @@ export const DEFAULT_DOCUMENT_TEMPLATES: Record<DocumentType, DocumentTemplateCo
     footer_terms_bn: '১. নির্ধারিত মেয়াদের মধ্যে বিল পরিশোধযোগ্য।\n২. প্রতিষ্ঠানের ব্যাংক একাউন্টে চেক বা অনলাইন ট্রান্সফার করুন।',
     authorized_signatory_title: 'Authorized Signature',
     show_seal_box: true,
+    email_subject_template: 'Commercial Sales Invoice #{{invoice_number}} from {{company_name}} [Due: ৳ {{due_amount}}]',
+    email_subject_template_bn: 'বাণিজ্যিক ইনভয়েস #{{invoice_number}} - {{company_name}} [বকেয়া: ৳ {{due_amount}}]',
+    email_body_template: `<p>Dear <strong>{{customer_name}}</strong>,</p>
+<p>We have generated Invoice <strong>#{{invoice_number}}</strong> for your recent print production with <strong>{{company_name}}</strong>.</p>
+<div class="info-card">
+  <table>
+    <tr><td class="label">Invoice No:</td><td class="value"><strong>{{invoice_number}}</strong></td></tr>
+    <tr><td class="label">Invoice Date:</td><td class="value">{{invoice_date}}</td></tr>
+    <tr><td class="label">Grand Total:</td><td class="value">৳ {{grand_total}}</td></tr>
+    <tr><td class="label">Paid Amount:</td><td class="value" style="color:#10b981;">৳ {{paid_amount}}</td></tr>
+    <tr><td class="label">Due Balance:</td><td class="value" style="color:#ef4444;"><strong>৳ {{due_amount}}</strong></td></tr>
+    <tr><td class="label">Due Date:</td><td class="value">{{due_date}}</td></tr>
+  </table>
+</div>
+<p><strong>Item Overview:</strong><br>{{items_summary}}</p>
+<p>Please find the official tax invoice PDF attached to this email.</p>
+<p><a href="{{document_link}}" class="btn">View & Settle Invoice Online</a></p>
+<p>Thank you for choosing {{company_name}}!</p>`,
+    email_body_template_bn: `<p>প্রিয় <strong>{{customer_name}}</strong>,</p>
+<p><strong>{{company_name}}</strong> থেকে আপনার কাজের জন্য বিক্রয় চালান বিল <strong>#{{invoice_number}}</strong> প্রস্তুত করা হয়েছে। বিস্তারিত ইনভয়েস পিডিএফ ফাইল সংযুক্ত করা হলো।</p>
+<div class="info-card">
+  <table>
+    <tr><td class="label">ইনভয়েস নং:</td><td class="value"><strong>{{invoice_number}}</strong></td></tr>
+    <tr><td class="label">তারিখ:</td><td class="value">{{invoice_date}}</td></tr>
+    <tr><td class="label">মোট বিল:</td><td class="value">৳ {{grand_total}}</td></tr>
+    <tr><td class="label">পরিশোধিত:</td><td class="value">৳ {{paid_amount}}</td></tr>
+    <tr><td class="label">অবশিষ্ট বকেয়া:</td><td class="value" style="color:#ef4444;"><strong>৳ {{due_amount}}</strong></td></tr>
+  </table>
+</div>
+<p><a href="{{document_link}}" class="btn">অনলাইনে ইনভয়েস দেখুন ও পেমেন্ট করুন</a></p>
+<p>ধন্যবাদান্তে,<br><strong>{{company_name}}</strong></p>`,
+    whatsapp_template: `*COMMERCIAL INVOICE - {{company_name}}*
+
+Dear {{customer_name}},
+Your invoice has been generated for your recent print order:
+
+📄 *Invoice No:* #{{invoice_number}}
+📅 *Date:* {{invoice_date}}
+⏳ *Due Date:* {{due_date}}
+
+📋 *Items Summary:*
+{{items_summary}}
+
+💰 *Grand Total:* ৳ {{grand_total}}
+✅ *Paid Amount:* ৳ {{paid_amount}}
+⚠️ *Due Balance:* ৳ {{due_amount}}
+
+🔗 *View & Download Invoice:* {{document_link}}
+
+_Thank you for doing business with {{company_name}}!_`,
+    whatsapp_template_bn: `*বাণিজ্যিক বিক্রয় চালান বিল - {{company_name}}*
+
+প্রিয় {{customer_name}},
+আপনার সাম্প্রতিক প্রিন্ট অর্ডারের ইনভয়েস বিল প্রস্তুত করা হয়েছে:
+
+📄 *ইনভয়েস নং:* #{{invoice_number}}
+📅 *তারিখ:* {{invoice_date}}
+⏳ *পরিশোধের মেয়াদ:* {{due_date}}
+
+📋 *আইটেম বিবরণ:*
+{{items_summary}}
+
+💰 *সর্বমোট বিল:* ৳ {{grand_total}}
+✅ *জমা:* ৳ {{paid_amount}}
+⚠️ *বকেয়া:* ৳ {{due_amount}}
+
+🔗 *ইনভয়েস লিংক:* {{document_link}}
+
+_{{company_name}}_`,
     updated_at: new Date().toISOString(),
   },
   vat_mushak: {

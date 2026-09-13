@@ -25,6 +25,7 @@ export type PaymentMethod =
 export interface InvoiceItemRecord {
   id: string
   invoice_id?: string
+  item_name?: string | null
   item_description: string
   dimensions_spec?: string | null
   quantity: number
@@ -81,6 +82,7 @@ export interface InvoiceRecord {
   customer_id: string
   customer_name: string
   customer_phone: string
+  customer_email?: string | null
   customer_bin?: string | null
   customer_tin?: string | null
   customer_address?: string | null

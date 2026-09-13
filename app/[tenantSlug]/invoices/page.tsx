@@ -115,11 +115,14 @@ export default function InvoicesPage() {
     showNotification(`Invoice ${newInv.invoice_number} saved & synced to Customer Ledger!`)
   }
 
-  const handleQuickSend = async (invoiceId: string, channel: 'whatsapp' | 'email' | 'sms') => {
+  const handleQuickSend = async (invoiceId: string, channel: 'whatsapp' | 'email') => {
     showNotification(`Dispatching ${channel.toUpperCase()} message...`)
-    const res = await sendInvoiceAction({ invoiceId, channel, format: 'text' }, company?.id)
+    const res = await sendInvoiceAction({ invoiceId, channel, format: 'pdf' }, company?.id)
     if (res.success) {
       showNotification(`Invoice dispatched via ${channel.toUpperCase()} successfully!`)
+      if (channel === 'whatsapp' && res.data?.whatsappUrl) {
+        window.open(res.data.whatsappUrl, '_blank')
+      }
     } else {
       showNotification(`Failed to send via ${channel.toUpperCase()}: ${res.error}`)
     }

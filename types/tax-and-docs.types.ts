@@ -36,6 +36,13 @@ export interface DocumentTemplateConfigRecord {
   footer_terms_bn: string
   authorized_signatory_title: string
   show_seal_box: boolean
+  // Customizable Communication Templates
+  email_subject_template?: string | null
+  email_subject_template_bn?: string | null
+  email_body_template?: string | null
+  email_body_template_bn?: string | null
+  whatsapp_template?: string | null
+  whatsapp_template_bn?: string | null
   updated_at: string
 }
 

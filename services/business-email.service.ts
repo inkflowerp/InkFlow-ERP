@@ -24,6 +24,9 @@ export class BusinessEmailService {
     language?: 'en' | 'bn'
     sentBy?: string
     attachments?: EmailAttachment[]
+    customSubject?: string
+    customHtmlBody?: string
+    customTextBody?: string
   }): Promise<SendEmailResult> {
     return await EmailGatewayService.sendEmail({
       scopeType: 'TENANT',
@@ -31,6 +34,9 @@ export class BusinessEmailService {
       eventType: 'quotation_sent',
       recipient: params.recipientEmail,
       language: params.language || 'bn',
+      customSubject: params.customSubject,
+      customHtmlBody: params.customHtmlBody,
+      customTextBody: params.customTextBody,
       variables: {
         customer_name: params.customerName,
         company_name: params.companyName,
@@ -66,6 +72,9 @@ export class BusinessEmailService {
     language?: 'en' | 'bn'
     sentBy?: string
     attachments?: EmailAttachment[]
+    customSubject?: string
+    customHtmlBody?: string
+    customTextBody?: string
   }): Promise<SendEmailResult> {
     return await EmailGatewayService.sendEmail({
       scopeType: 'TENANT',
@@ -73,6 +82,9 @@ export class BusinessEmailService {
       eventType: 'invoice_created',
       recipient: params.recipientEmail,
       language: params.language || 'bn',
+      customSubject: params.customSubject,
+      customHtmlBody: params.customHtmlBody,
+      customTextBody: params.customTextBody,
       variables: {
         customer_name: params.customerName,
         company_name: params.companyName,
