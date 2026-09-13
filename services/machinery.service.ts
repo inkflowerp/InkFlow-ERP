@@ -16,6 +16,11 @@ import {
   AssignmentStatus,
   ConflictCheckResult,
   MachinerySummaryMetrics,
+  MachineEligibilityParams,
+  EligibleMachineItem,
+  EligibleMachineSummary,
+  CreateMachineryAssignmentInput,
+  ReassignBreakdownInput,
 } from '@/types/machinery.types'
 
 export class MachineryService {
@@ -175,6 +180,216 @@ export class MachineryService {
   }
 
   // ============================================================================
+  // ELIGIBILITY & SMART SELECTION ENGINE
+  // ============================================================================
+
+  /**
+   * Intelligently resolves eligible machines for a job order task / production context.
+   * Handles:
+   * - 0 machines fleet (graceful empty state)
+   * - 1 machine fleet (smart preselection if available, descriptive warning if in breakdown/maintenance)
+   * - Multi-machine fleet (matching capability scores, material & dimension validation, live availability sorting)
+   */
+  static async resolveEligibleMachines(
+    companyId: string,
+    params: MachineEligibilityParams
+  ): Promise<EligibleMachineSummary> {
+    if (!companyId) {
+      return {
+        totalFleetCount: 0,
+        eligibleCount: 0,
+        availableCount: 0,
+        smartPreselection: null,
+        singleMachineNotice: null,
+        machines: [],
+      }
+    }
+
+    // Fetch all active fleet machines for this company
+    const allFleet = await MachineryRepository.getMachineries(companyId, {
+      includeArchived: false,
+      branch_id: params.branch_id || 'all',
+    })
+
+    const totalFleetCount = allFleet.length
+
+    if (totalFleetCount === 0) {
+      return {
+        totalFleetCount: 0,
+        eligibleCount: 0,
+        availableCount: 0,
+        smartPreselection: null,
+        singleMachineNotice: null,
+        machines: [],
+      }
+    }
+
+    const evaluatedMachines: EligibleMachineItem[] = []
+
+    for (const m of allFleet) {
+      const ineligibilityReasons: string[] = []
+      let matchScore = 100
+
+      // 1. Branch Check (strictly isolate branches if specified)
+      if (params.branch_id && m.branch_id && m.branch_id !== params.branch_id) {
+        ineligibilityReasons.push(`Machine belongs to a different branch (${m.branch?.name || m.branch_id}).`)
+        matchScore -= 50
+      }
+
+      // 2. Department Check
+      if (params.department && params.department !== 'all') {
+        const deptNormalized = params.department.toLowerCase().trim()
+        if (m.department && m.department.toLowerCase().trim() !== deptNormalized) {
+          ineligibilityReasons.push(`Machine is registered under "${m.department}" department, expected "${params.department}".`)
+          matchScore -= 30
+        }
+      }
+
+      // 3. Task Type / Category / Machine Type Matching
+      if (params.task_type) {
+        const task = params.task_type.toLowerCase().trim()
+        const machineType = (m.machine_type || '').toLowerCase()
+        const category = (m.category || '').toLowerCase()
+        const suppTypes = (m.supported_production_types || []).map((t) => t.toLowerCase())
+
+        let taskMatched = false
+        if (task === 'printing' || task === 'print' || task === 'digital_printing' || task === 'offset_printing') {
+          taskMatched = category === 'printing' || machineType.includes('print') || machineType.includes('latex') || machineType.includes('solvent') || machineType.includes('uv') || suppTypes.some((t) => t.includes('print'))
+        } else if (task === 'lamination' || task === 'laminating') {
+          taskMatched = machineType.includes('laminat') || category === 'finishing' || suppTypes.some((t) => t.includes('laminat'))
+        } else if (task === 'cutting' || task === 'plotter' || task === 'laser' || task === 'cnc' || task === 'engraving') {
+          taskMatched = category === 'cutting_cnc' || machineType.includes('cut') || machineType.includes('plotter') || machineType.includes('laser') || machineType.includes('cnc') || machineType.includes('engrav') || suppTypes.some((t) => t.includes('cut') || t.includes('laser') || t.includes('cnc'))
+        } else if (task === 'fabrication' || task === 'welding' || task === 'acrylic') {
+          taskMatched = category === 'fabrication' || machineType.includes('fabricat') || machineType.includes('weld') || suppTypes.some((t) => t.includes('fabricat'))
+        } else if (task === 'finishing' || task === 'binding') {
+          taskMatched = category === 'finishing' || machineType.includes('finish') || machineType.includes('bind') || machineType.includes('laminat') || suppTypes.some((t) => t.includes('finish'))
+        } else {
+          taskMatched = machineType.includes(task) || category.includes(task) || suppTypes.some((t) => t.includes(task))
+        }
+
+        if (!taskMatched) {
+          ineligibilityReasons.push(`Machine type "${m.machine_type}" does not support task "${params.task_type}".`)
+          matchScore -= 40
+        }
+      }
+
+      // 4. Material Support Check
+      if (params.material && params.material.trim()) {
+        const reqMat = params.material.toLowerCase().trim()
+        const suppMats = (m.supported_materials || []).map((s) => s.toLowerCase().trim())
+        if (suppMats.length > 0 && !suppMats.some((s) => s.includes(reqMat) || reqMat.includes(s))) {
+          ineligibilityReasons.push(`Material "${params.material}" is not in machine's supported list (${suppMats.join(', ')}).`)
+          matchScore -= 20
+        }
+      }
+
+      // 5. Dimension / Size Capacity Checks
+      if (params.width !== undefined && params.width !== null && params.width > 0) {
+        if (m.max_width !== null && m.max_width !== undefined && m.max_width > 0 && params.width > m.max_width) {
+          ineligibilityReasons.push(`Required width (${params.width}") exceeds machine maximum width (${m.max_width}").`)
+          matchScore -= 50
+        }
+        if (m.min_width !== null && m.min_width !== undefined && m.min_width > 0 && params.width < m.min_width) {
+          ineligibilityReasons.push(`Required width (${params.width}") is below machine minimum width (${m.min_width}").`)
+          matchScore -= 20
+        }
+      }
+
+      if (params.height !== undefined && params.height !== null && params.height > 0) {
+        if (m.max_height !== null && m.max_height !== undefined && m.max_height > 0 && params.height > m.max_height) {
+          ineligibilityReasons.push(`Required height (${params.height}") exceeds machine maximum height (${m.max_height}").`)
+          matchScore -= 50
+        }
+      }
+
+      const isEligible = ineligibilityReasons.length === 0
+
+      // Determine Real-Time Availability
+      let isAvailable = isEligible
+      if (m.status === 'breakdown' || m.status === 'maintenance' || m.status === 'offline' || m.status === 'retired') {
+        isAvailable = false
+      }
+
+      // Check time window conflict if start/end provided
+      if (isAvailable && params.scheduled_start && params.scheduled_end) {
+        const conflict = await this.checkConflict(
+          m.id,
+          companyId,
+          params.scheduled_start,
+          params.scheduled_end
+        )
+        if (conflict.hasConflict) {
+          isAvailable = false
+        }
+      }
+
+      evaluatedMachines.push({
+        machine: m,
+        isEligible,
+        isAvailable,
+        ineligibilityReasons,
+        matchScore: Math.max(0, matchScore),
+      })
+    }
+
+    // Filter eligible items
+    const eligibleItems = evaluatedMachines.filter((item) => item.isEligible)
+    const availableItems = eligibleItems.filter((item) => item.isAvailable)
+
+    // Sort: Available first, then matchScore descending, then name
+    evaluatedMachines.sort((a, b) => {
+      if (a.isAvailable !== b.isAvailable) return a.isAvailable ? -1 : 1
+      if (a.isEligible !== b.isEligible) return a.isEligible ? -1 : 1
+      if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore
+      return a.machine.name.localeCompare(b.machine.name)
+    })
+
+    // Single-Machine Smart UX Determination
+    let smartPreselection: MachineryRecord | null = null
+    let singleMachineNotice: EligibleMachineSummary['singleMachineNotice'] = null
+
+    if (eligibleItems.length === 1) {
+      const single = eligibleItems[0]
+      if (single.isAvailable) {
+        smartPreselection = single.machine
+        singleMachineNotice = {
+          hasSingleMachine: true,
+          machineName: single.machine.name,
+          status: single.machine.status,
+          isAvailable: true,
+          message: `Auto-selected sole eligible machine (${single.machine.name}).`,
+        }
+      } else {
+        smartPreselection = null
+        singleMachineNotice = {
+          hasSingleMachine: true,
+          machineName: single.machine.name,
+          status: single.machine.status,
+          isAvailable: false,
+          message: `${single.machine.name} is the sole matching machine but is currently ${
+            single.machine.status === 'breakdown'
+              ? 'under repair (breakdown)'
+              : single.machine.status === 'maintenance'
+              ? 'under scheduled maintenance'
+              : single.machine.status === 'in_use'
+              ? 'currently in use'
+              : single.machine.status
+          }.`,
+        }
+      }
+    }
+
+    return {
+      totalFleetCount,
+      eligibleCount: eligibleItems.length,
+      availableCount: availableItems.length,
+      smartPreselection,
+      singleMachineNotice,
+      machines: evaluatedMachines,
+    }
+  }
+
+  // ============================================================================
   // CONFLICT DETECTION & ASSIGNMENTS
   // ============================================================================
 
@@ -297,19 +512,7 @@ export class MachineryService {
   /**
    * Assigns a machine to a job order / production task with strict conflict enforcement
    */
-  static async assignMachine(input: {
-    company_id: string
-    machine_id: string
-    job_order_id?: string | null
-    production_job_id?: string | null
-    operator_id?: string | null
-    operator_name?: string | null
-    scheduled_start: string
-    scheduled_end: string
-    notes?: string | null
-    created_by?: string | null
-    bypassConflict?: boolean
-  }): Promise<MachineryAssignmentRecord> {
+  static async assignMachine(input: CreateMachineryAssignmentInput & { company_id: string }): Promise<MachineryAssignmentRecord> {
     if (!input.company_id) throw new Error('Company ID is required')
     if (!input.machine_id) throw new Error('Machine ID is required')
     if (!input.scheduled_start || !input.scheduled_end) {
@@ -329,9 +532,12 @@ export class MachineryService {
 
     const assignment = await MachineryRepository.createAssignment({
       company_id: input.company_id,
+      branch_id: input.branch_id,
       machine_id: input.machine_id,
       job_order_id: input.job_order_id,
       production_job_id: input.production_job_id,
+      task_type: input.task_type,
+      task_name: input.task_name,
       operator_id: input.operator_id,
       operator_name: input.operator_name,
       scheduled_start: input.scheduled_start,
@@ -351,6 +557,113 @@ export class MachineryService {
     }
 
     return assignment
+  }
+
+  /**
+   * Fetches all machine assignments for a given Job Order
+   */
+  static async getAssignmentsByJobOrder(
+    jobOrderId: string,
+    companyId: string
+  ): Promise<MachineryAssignmentRecord[]> {
+    if (!jobOrderId || !companyId) return []
+    return await MachineryRepository.getAssignmentsByJobOrder(jobOrderId, companyId)
+  }
+
+  /**
+   * Reassigns an affected job order task from a broken machine to an alternate eligible machine.
+   * Preserves historical assignment record and updates status cleanly.
+   */
+  static async reassignBreakdownJob(
+    companyId: string,
+    input: ReassignBreakdownInput
+  ): Promise<MachineryAssignmentRecord> {
+    const breakdown = await MachineryRepository.getBreakdownById(input.breakdown_id, companyId)
+    if (!breakdown) {
+      throw new Error('Breakdown record not found.')
+    }
+
+    const targetMachine = await MachineryRepository.getMachineryById(input.target_machine_id, companyId)
+    if (!targetMachine) {
+      throw new Error('Target machine not found.')
+    }
+
+    if (targetMachine.status === 'breakdown' || targetMachine.status === 'maintenance' || targetMachine.status === 'retired') {
+      throw new Error(`Target machine "${targetMachine.name}" is not available (Status: ${targetMachine.status}).`)
+    }
+
+    // Find previous active assignment on the broken machine if affected_job_order_id exists
+    let previousAssignment: MachineryAssignmentRecord | null = null
+    if (breakdown.affected_job_order_id) {
+      const assignments = await MachineryRepository.getAssignmentsByJobOrder(
+        breakdown.affected_job_order_id,
+        companyId
+      )
+      previousAssignment =
+        assignments.find(
+          (a) => a.machine_id === breakdown.machine_id && (a.status === 'in_progress' || a.status === 'scheduled')
+        ) || null
+    }
+
+    const startTime = input.scheduled_start || previousAssignment?.scheduled_start || new Date().toISOString()
+    const endTime =
+      input.scheduled_end ||
+      previousAssignment?.scheduled_end ||
+      new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+
+    // Conflict check on target machine
+    const conflict = await this.checkConflict(
+      input.target_machine_id,
+      companyId,
+      startTime,
+      endTime
+    )
+    if (conflict.hasConflict) {
+      throw new Error(`Target machine conflict: ${conflict.reason}`)
+    }
+
+    // Preserve historical assignment (mark as cancelled with clear reassignment note)
+    if (previousAssignment) {
+      await MachineryRepository.updateAssignmentStatus(
+        previousAssignment.id,
+        companyId,
+        'cancelled',
+        {
+          notes: `${previousAssignment.notes || ''} [Reassigned to ${targetMachine.name} due to breakdown: ${breakdown.problem_title}]`.trim(),
+        }
+      )
+    }
+
+    // Create new assignment on target machine
+    const newAssignment = await MachineryRepository.createAssignment({
+      company_id: companyId,
+      branch_id: targetMachine.branch_id || null,
+      machine_id: input.target_machine_id,
+      job_order_id: breakdown.affected_job_order_id || previousAssignment?.job_order_id || null,
+      production_job_id: breakdown.affected_production_job_id || previousAssignment?.production_job_id || null,
+      task_type: previousAssignment?.task_type || null,
+      task_name: previousAssignment?.task_name || null,
+      operator_id: input.operator_id || previousAssignment?.operator_id || null,
+      operator_name:
+        input.operator_name ||
+        previousAssignment?.operator_name ||
+        targetMachine.default_operator_requirement ||
+        'Assigned Operator',
+      scheduled_start: startTime,
+      scheduled_end: endTime,
+      status: 'scheduled',
+      notes: input.notes || `Reassigned from broken machine (${breakdown.machine?.name || 'Previous Machine'})`,
+    })
+
+    // Update target machine status
+    await MachineryRepository.updateStatus(
+      input.target_machine_id,
+      companyId,
+      'scheduled',
+      `Job reassigned from broken machine (${breakdown.problem_title})`
+    )
+
+    return newAssignment
   }
 
   /**

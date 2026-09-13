@@ -17,6 +17,10 @@ import {
   AssignmentStatus,
   ConflictCheckResult,
   MachinerySummaryMetrics,
+  MachineEligibilityParams,
+  EligibleMachineSummary,
+  CreateMachineryAssignmentInput,
+  ReassignBreakdownInput,
 } from '@/types/machinery.types'
 
 export interface ServerActionResult<T> {
@@ -300,25 +304,15 @@ export async function checkMachineryConflictAction(
 }
 
 /**
- * Server Action: Assigns a machine to a job order
+ * Server Action: Assigns a machine to a job order / task
  */
 export async function assignMachineryAction(
-  input: {
-    machine_id: string
-    job_order_id?: string | null
-    production_job_id?: string | null
-    operator_id?: string | null
-    operator_name?: string | null
-    scheduled_start: string
-    scheduled_end: string
-    notes?: string | null
-    bypassConflict?: boolean
-  },
+  input: CreateMachineryAssignmentInput,
   requestedCompanyId?: string
 ): Promise<ServerActionResult<MachineryAssignmentRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
+    const tenant = await getCurrentTenant(requestedCompanyId || input.company_id)
+    const companyId = tenant?.companyId || requestedCompanyId || input.company_id
 
     if (!companyId) {
       return { success: false, error: 'Unauthorized: No active tenant context.' }
@@ -347,7 +341,7 @@ export async function assignMachineryAction(
       input.machine_id,
       null,
       assignment,
-      `Assigned machine to job order ${input.job_order_id || input.production_job_id || ''}`
+      `Assigned machine to job order ${input.job_order_id || input.production_job_id || ''} (Task: ${input.task_type || 'General'})`
     )
 
     if (tenant?.companySlug) {
@@ -697,3 +691,97 @@ export async function getMachineryDashboardMetricsAction(
     return { success: false, error: err.message || 'Failed to calculate summary metrics.' }
   }
 }
+
+/**
+ * Server Action: Intelligently resolves eligible machines for a job order task / production context
+ */
+export async function getEligibleMachineriesAction(
+  params: MachineEligibilityParams,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<EligibleMachineSummary>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    }
+
+    const summary = await MachineryService.resolveEligibleMachines(companyId, params)
+    return { success: true, data: summary }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to resolve eligible machineries.' }
+  }
+}
+
+/**
+ * Server Action: Fetches all machine assignments for a given Job Order
+ */
+export async function getJobOrderAssignmentsAction(
+  jobOrderId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<MachineryAssignmentRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    }
+
+    const assignments = await MachineryService.getAssignmentsByJobOrder(jobOrderId, companyId)
+    return { success: true, data: assignments }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch job order assignments.' }
+  }
+}
+
+/**
+ * Server Action: Reassigns an affected job order task from a broken machine to an alternate eligible machine
+ */
+export async function reassignBreakdownJobAction(
+  input: ReassignBreakdownInput,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<MachineryAssignmentRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    }
+
+    const isOwner = tenant?.primaryRole === 'business_owner' || tenant?.companyRole === 'business_owner'
+    const hasPerm = isOwner || tenant?.permissions.includes('machineries.assign') || tenant?.permissions.includes('production.assign') || tenant?.permissions.includes('production.edit')
+
+    if (!hasPerm) {
+      return { success: false, error: 'Permission denied: You do not have permission to reassign machinery.' }
+    }
+
+    const assignment = await MachineryService.reassignBreakdownJob(companyId, input)
+
+    // Audit log
+    await AuditService.logEvent(
+      companyId,
+      tenant?.userId || null,
+      tenant?.userEmail || null,
+      'machinery.reassign',
+      'machinery',
+      input.target_machine_id,
+      null,
+      assignment,
+      `Reassigned job from broken machine to ${assignment.machine?.name || input.target_machine_id}`
+    )
+
+    if (tenant?.companySlug) {
+      revalidatePath(`/${tenant.companySlug}/production/machineries`)
+      revalidatePath(`/${tenant.companySlug}/production/machineries/${input.target_machine_id}`)
+      revalidatePath(`/${tenant.companySlug}/production`)
+    }
+
+    return { success: true, data: assignment }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to reassign breakdown job.' }
+  }
+}
+

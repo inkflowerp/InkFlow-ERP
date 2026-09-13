@@ -117,9 +117,12 @@ export type AssignmentStatus = 'scheduled' | 'in_progress' | 'completed' | 'canc
 export interface MachineryAssignmentRecord {
   id: string
   company_id: string
+  branch_id?: string | null
   machine_id: string
   job_order_id?: string | null
   production_job_id?: string | null
+  task_type?: string | null
+  task_name?: string | null
   operator_id?: string | null
   operator_name?: string | null
   scheduled_start: string
@@ -322,9 +325,76 @@ export interface UpdateMachineryInput extends Partial<CreateMachineryInput> {
   is_archived?: boolean
 }
 
+export interface CreateMachineryAssignmentInput {
+  company_id?: string
+  branch_id?: string | null
+  machine_id: string
+  job_order_id?: string | null
+  production_job_id?: string | null
+  task_type?: string | null
+  task_name?: string | null
+  operator_id?: string | null
+  operator_name?: string | null
+  scheduled_start: string
+  scheduled_end: string
+  notes?: string | null
+  created_by?: string | null
+  bypassConflict?: boolean
+}
+
+export interface MachineEligibilityParams {
+  branch_id?: string | null
+  department?: MachineryDepartment | string | null
+  task_type?: string | null
+  machine_type?: MachineryType | string | null
+  category?: MachineryCategory | string | null
+  production_type?: string | null
+  material?: string | null
+  width?: number | null
+  height?: number | null
+  length?: number | null
+  dimension_unit?: DimensionUnit | string | null
+  scheduled_start?: string | null
+  scheduled_end?: string | null
+}
+
+export interface EligibleMachineItem {
+  machine: MachineryRecord
+  isEligible: boolean
+  isAvailable: boolean
+  ineligibilityReasons: string[]
+  matchScore: number
+}
+
+export interface EligibleMachineSummary {
+  totalFleetCount: number
+  eligibleCount: number
+  availableCount: number
+  smartPreselection?: MachineryRecord | null
+  singleMachineNotice?: {
+    hasSingleMachine: boolean
+    machineName: string
+    status: MachineryStatus
+    isAvailable: boolean
+    message: string
+  } | null
+  machines: EligibleMachineItem[]
+}
+
+export interface ReassignBreakdownInput {
+  breakdown_id: string
+  target_machine_id: string
+  scheduled_start?: string | null
+  scheduled_end?: string | null
+  operator_id?: string | null
+  operator_name?: string | null
+  notes?: string | null
+}
+
 // Convenient shorthand type aliases
 export type Machinery = MachineryRecord
 export type MachineryAssignment = MachineryAssignmentRecord
 export type MachineryMaintenance = MachineryMaintenanceRecord
 export type MachineryBreakdown = MachineryBreakdownRecord
+
 

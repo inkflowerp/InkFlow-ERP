@@ -371,9 +371,12 @@ export class MachineryRepository {
       .from('machinery_assignments')
       .insert({
         company_id: input.company_id,
+        branch_id: input.branch_id || null,
         machine_id: input.machine_id,
         job_order_id: input.job_order_id || null,
         production_job_id: input.production_job_id || null,
+        task_type: input.task_type || null,
+        task_name: input.task_name || null,
         operator_id: input.operator_id || null,
         operator_name: input.operator_name || null,
         scheduled_start: input.scheduled_start,
@@ -384,7 +387,7 @@ export class MachineryRepository {
         notes: input.notes || null,
         created_by: input.created_by || null,
       })
-      .select('*, job_order:job_orders(id, job_number, product_name, customer_name), production_job:production_jobs(id, production_job_number, product_name, customer_name)')
+      .select('*, machine:machineries(*), job_order:job_orders(id, job_number, product_name, customer_name), production_job:production_jobs(id, production_job_number, product_name, customer_name)')
       .single()
 
     if (error) {
@@ -392,6 +395,69 @@ export class MachineryRepository {
     }
 
     return data as unknown as MachineryAssignmentRecord
+  }
+
+  static async getAssignmentById(
+    id: string,
+    companyId: string
+  ): Promise<MachineryAssignmentRecord | null> {
+    const supabase = await createClient()
+    const { data, error } = await (supabase as any)
+      .from('machinery_assignments')
+      .select('*, machine:machineries(*), job_order:job_orders(id, job_number, product_name, customer_name), production_job:production_jobs(id, production_job_number, product_name, customer_name)')
+      .eq('id', id)
+      .eq('company_id', companyId)
+      .maybeSingle()
+
+    if (error) {
+      throw new Error(`Failed to fetch assignment ${id}: ${error.message}`)
+    }
+
+    return data as unknown as MachineryAssignmentRecord | null
+  }
+
+  /**
+   * Fetches all machine assignments for a given Job Order (e.g. Printing, Lamination, Cutting)
+   */
+  static async getAssignmentsByJobOrder(
+    jobOrderId: string,
+    companyId: string
+  ): Promise<MachineryAssignmentRecord[]> {
+    const supabase = await createClient()
+    const { data, error } = await (supabase as any)
+      .from('machinery_assignments')
+      .select('*, machine:machineries(*)')
+      .eq('job_order_id', jobOrderId)
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      throw new Error(`Failed to fetch assignments for job order ${jobOrderId}: ${error.message}`)
+    }
+
+    return (data || []) as unknown as MachineryAssignmentRecord[]
+  }
+
+  /**
+   * Fetches all machine assignments for a given Production Job
+   */
+  static async getAssignmentsByProductionJob(
+    productionJobId: string,
+    companyId: string
+  ): Promise<MachineryAssignmentRecord[]> {
+    const supabase = await createClient()
+    const { data, error } = await (supabase as any)
+      .from('machinery_assignments')
+      .select('*, machine:machineries(*)')
+      .eq('production_job_id', productionJobId)
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      throw new Error(`Failed to fetch assignments for production job ${productionJobId}: ${error.message}`)
+    }
+
+    return (data || []) as unknown as MachineryAssignmentRecord[]
   }
 
   static async updateAssignmentStatus(
@@ -419,7 +485,7 @@ export class MachineryRepository {
       .update(payload)
       .eq('id', id)
       .eq('company_id', companyId)
-      .select()
+      .select('*, machine:machineries(*), job_order:job_orders(id, job_number, product_name, customer_name), production_job:production_jobs(id, production_job_number, product_name, customer_name)')
       .single()
 
     if (error) {
