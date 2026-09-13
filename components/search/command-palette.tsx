@@ -21,6 +21,7 @@ import {
   Command,
   RotateCcw,
   SlidersHorizontal,
+  Cpu,
 } from 'lucide-react'
 import { SearchService } from '@/services/search.service'
 import {
@@ -51,6 +52,7 @@ const ENTITY_CONFIG: Record<
   production_job: { label: 'Production', labelBn: 'উৎপাদন', icon: Printer, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30' },
   design_job: { label: 'Design', labelBn: 'ডিজাইন', icon: Sparkles, color: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 border-violet-200 dark:border-violet-500/30' },
   challan: { label: 'Challans', labelBn: 'চালান', icon: Truck, color: 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/30' },
+  machinery: { label: 'Machineries', labelBn: 'মেশিনারি', icon: Cpu, color: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30' },
 }
 
 const COMMAND_ICONS: Record<string, React.ElementType> = {

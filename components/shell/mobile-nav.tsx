@@ -44,6 +44,7 @@ import {
   ChevronRight,
   PhoneCall,
   Radio,
+  Cpu,
 } from 'lucide-react'
 import { getNavigationConfig } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
@@ -85,6 +86,7 @@ const iconMap: Record<string, React.ElementType> = {
   UserCheck,
   QrCode,
   MapPin,
+  Cpu,
 }
 
 export function MobileNav() {
@@ -141,6 +143,7 @@ export function MobileNav() {
     if (href.includes('/products')) return can('view', 'orders') || can('view', 'inventory')
     if (href.includes('/costing')) return can('view', 'reports') || can('view', 'orders')
     if (href.includes('/design')) return can('view', 'design')
+    if (href.includes('/machineries')) return can('view', 'machineries') || can('view', 'production')
     if (href.includes('/production') || href.includes('/operator')) return can('view', 'production')
     if (href.includes('/inventory') || href.includes('/purchases') || href.includes('/suppliers'))
       return can('view', 'inventory')

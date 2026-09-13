@@ -23,6 +23,7 @@ import {
   Scissors,
   Check,
   FileCheck,
+  Cpu,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -181,11 +182,19 @@ export default function ProductionDashboardPage() {
           icon={Printer}
           iconColor="text-blue-600"
           actions={
-            <Link href={`/${slug}/orders`}>
-              <Button variant="outline" size="sm" className="text-xs bangla-text">
-                {tBilingual('View Sales Orders', 'সকল সেলস অর্ডার')}
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href={`/${slug}/production/machineries`}>
+                <Button variant="default" size="sm" className="text-xs bangla-text bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-xs">
+                  <Cpu className="h-3.5 w-3.5" />
+                  {tBilingual('Machinery Fleet', 'মেশিনারি বহর')}
+                </Button>
+              </Link>
+              <Link href={`/${slug}/orders`}>
+                <Button variant="outline" size="sm" className="text-xs bangla-text">
+                  {tBilingual('View Sales Orders', 'সকল সেলস অর্ডার')}
+                </Button>
+              </Link>
+            </div>
           }
         />
 

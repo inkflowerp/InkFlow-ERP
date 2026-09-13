@@ -43,6 +43,7 @@ export type PermissionModule =
   | 'invoices'
   | 'payments'
   | 'production'
+  | 'machineries'
   | 'delivery'
   | 'inventory'
   | 'reports'
@@ -118,6 +119,14 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
     description: 'Machine queues, stage scheduling, fabrication, finishing & QC inspection',
     actions: ['view', 'create', 'edit', 'assign', 'complete', 'cancel'],
     defaultScope: 'assigned',
+  },
+  machineries: {
+    module: 'machineries',
+    label: 'Machineries & Equipment',
+    labelBn: 'মেশিনারিজ ও যন্ত্রপাতি',
+    description: 'Machine fleet, operational status, capacity, maintenance & breakdown logs',
+    actions: ['view', 'create', 'edit', 'delete', 'assign', 'manage', 'export'],
+    defaultScope: 'company',
   },
   delivery: {
     module: 'delivery',

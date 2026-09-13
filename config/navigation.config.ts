@@ -92,6 +92,12 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           badge: 'Live',
         },
         {
+          title: 'Machineries',
+          titleBn: 'মেশিনারিজ ও ইকুইপমেন্ট',
+          href: `/${tenantSlug}/production/machineries`,
+          icon: 'Cpu',
+        },
+        {
           title: 'Pre-Press & Design',
           titleBn: 'ডিজাইন কিউ',
           href: `/${tenantSlug}/design`,

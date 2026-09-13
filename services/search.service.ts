@@ -20,6 +20,7 @@ import { ProductionJobRecord } from '@/types/production.types'
 import { DesignJobRecord } from '@/types/design.types'
 import { DeliveryChallanRecord } from '@/types/logistics.types'
 import { EmployeeRecord } from '@/types/hr.types'
+import { MachineryRecord } from '@/types/machinery.types'
 
 export const QUICK_COMMANDS: QuickCommand[] = [
   {
@@ -87,6 +88,17 @@ export const QUICK_COMMANDS: QuickCommand[] = [
     href: '/accounting?action=add-expense',
     shortcut: 'E',
     requiredPermission: 'accounting.create',
+  },
+  {
+    id: 'cmd-add-machinery',
+    title: 'Add Machinery',
+    titleBn: 'নতুন মেশিন যোগ করুন',
+    subtitle: 'Register printer, laser, CNC, or fabrication equipment',
+    subtitleBn: 'নতুন প্রিন্টার, লেজার, সিএনসি বা ফ্যাব্রিকেশন মেশিন যুক্ত করুন',
+    icon: 'Cpu',
+    href: '/production/machineries?action=new',
+    shortcut: 'M',
+    requiredPermission: 'machineries.create',
   },
 ]
 
@@ -355,6 +367,35 @@ export class SearchService {
             href: `/hr`,
             requiredPermission: 'hr.view',
             metadata: { phone: e.mobile },
+          })
+        }
+      }
+    }
+
+    // 10. Machineries & Equipment Fleet
+    if (hasPermission('machineries.view') || hasPermission('production.view')) {
+      const machineries = (PrintERPDataStore.get<MachineryRecord[]>('machineries' as any) || []).filter(
+        (m) => (!m.company_id || m.company_id === companyId) && !m.is_archived
+      )
+      for (const m of machineries) {
+        if (
+          m.name.toLowerCase().includes(q) ||
+          m.code.toLowerCase().includes(q) ||
+          (m.brand && m.brand.toLowerCase().includes(q)) ||
+          (m.model && m.model.toLowerCase().includes(q)) ||
+          (m.serial_number && m.serial_number.toLowerCase().includes(q)) ||
+          (m.machine_type && m.machine_type.toLowerCase().includes(q))
+        ) {
+          results.push({
+            id: m.id,
+            entity: 'machinery',
+            title: `${m.name} (${m.code})`,
+            subtitle: `${m.brand || ''} ${m.model || ''} • Status: ${m.status.toUpperCase()} • Dept: ${m.department}`,
+            badge: m.status,
+            status: m.status,
+            href: `/production/machineries/${m.id}`,
+            requiredPermission: 'machineries.view',
+            metadata: { code: m.code, type: m.machine_type, status: m.status },
           })
         }
       }

@@ -14,6 +14,7 @@ export type SearchEntity =
   | 'employee'
   | 'inventory'
   | 'production_job'
+  | 'machinery'
   | 'design_job'
   | 'challan'
 
