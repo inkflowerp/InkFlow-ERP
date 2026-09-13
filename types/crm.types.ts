@@ -7,6 +7,7 @@ export type CustomerCategory =
   | 'dealer'
   | 'government'
   | 'regular'
+  | 'reseller'
 
 // Legacy / alias for backwards compatibility
 export type CustomerType = CustomerCategory
@@ -85,13 +86,114 @@ export interface CustomerRecord {
   tags: string[]
   is_active: boolean
 
+  // Computed / Financial values
+  total_invoices_count?: number
+  total_invoiced_amount?: number
+  total_paid_amount?: number
   total_orders_count?: number
   total_orders_amount?: number
   total_due_balance?: number
+  last_order_date?: string | null
+  last_order_number?: string | null
+  last_payment_date?: string | null
+  last_payment_amount?: number | null
 
   created_by?: string | null
   created_at: string
   updated_at: string
+}
+
+export interface CustomerRateRecord {
+  id: string
+  company_id: string
+  customer_id: string
+  product_id: string
+  rate: number
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type RateSource = 'custom' | 'last_invoice' | 'default'
+
+export interface ResolvedProductRate {
+  productId: string
+  productName: string
+  productNameBn?: string | null
+  sku: string
+  unit: string
+  category: string
+  customerRate: number | null
+  lastInvoiceRate: number | null
+  lastInvoiceNumber?: string | null
+  lastInvoiceDate?: string | null
+  defaultRate: number
+  effectiveRate: number
+  source: RateSource
+  hasCustomRate: boolean
+}
+
+export interface CustomerFinancialSummary {
+  totalInvoices: number
+  totalInvoiceAmount: number
+  totalPaid: number
+  totalDue: number
+  lastPayment: {
+    amount: number
+    date: string
+    receiptNumber?: string | null
+    paymentMethod?: string | null
+  } | null
+  lastOrder: {
+    orderNumber: string
+    date: string
+    amount: number
+    status?: string | null
+  } | null
+}
+
+export interface CustomerProductPurchaseStat {
+  productId: string
+  productName: string
+  productNameBn?: string | null
+  unit: string
+  category?: string | null
+  totalQuantity: number
+  totalAmount: number
+  lastRate: number
+  lastPurchaseDate: string
+  invoiceCount: number
+}
+
+export interface CustomerTimelineEvent {
+  id: string
+  type:
+    | 'customer_created'
+    | 'customer_updated'
+    | 'rate_updated'
+    | 'quotation_created'
+    | 'quotation_sent'
+    | 'order_created'
+    | 'job_started'
+    | 'invoice_created'
+    | 'payment_received'
+    | 'delivery_completed'
+    | 'communication_logged'
+  title: string
+  description?: string | null
+  timestamp: string
+  amount?: number | null
+  referenceId?: string | null
+  referenceNumber?: string | null
+  actorName?: string | null
+  status?: string | null
+}
+
+export interface CustomerSummaryStatistics {
+  totalCustomers: number
+  activeCustomers: number
+  customersWithDue: number
+  totalOutstandingDue: number
 }
 
 export interface CustomerCommunication {

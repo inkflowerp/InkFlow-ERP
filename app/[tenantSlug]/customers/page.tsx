@@ -1,55 +1,131 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Users,
   Plus,
   Search,
-  Download,
-  Upload,
-  AlertCircle,
   Phone,
   MessageSquare,
   Building,
   CheckCircle2,
+  AlertCircle,
   ExternalLink,
   Filter,
-  ShieldCheck,
+  ArrowRight,
+  TrendingUp,
+  FileText,
+  CreditCard,
+  RotateCcw,
+  Loader2,
+  MoreVertical,
+  Download,
+  Edit2,
+  Receipt,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { usePermissions } from '@/hooks/use-permissions'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { ModalDialog } from '@/components/shared/modal-dialog'
-import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { EmptyState } from '@/components/shared/empty-state'
-import { PageHeader } from '@/components/shared/page-header'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
-import { CustomerRecord, CustomerType } from '@/types/crm.types'
-import { normalizeBdPhone } from '@/lib/formatters'
-import { useDataStore } from '@/hooks/use-data-store'
-import { usePermissions } from '@/hooks/use-permissions'
-import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
-import { Crown } from 'lucide-react'
+import {
+  getPaginatedCustomersAction,
+  getCustomersSummaryAction,
+} from '@/actions/customer.actions'
+import {
+  CustomerRecord,
+  CustomerSummaryStatistics,
+  CustomerCategory,
+} from '@/types/crm.types'
 import { cn } from '@/lib/utils'
-import { toBengaliDigits } from '@/hooks/use-public-plans'
 
 export default function CustomersPage() {
+  const params = useParams()
   const { company } = useTenant()
-  const { can, isReadOnly } = usePermissions()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
-  const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const { can } = usePermissions()
+  const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
+  const { tBilingual } = useI18n()
 
-  const { data: customerData, addItem: addCustomerItem } = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS)
-  const customers = Array.isArray(customerData) ? customerData : []
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+  const companyId = company?.id
 
-  const customerCheck = checkCanCreate('max_customers')
+  // State
+  const [customers, setCustomers] = useState<CustomerRecord[]>([])
+  const [summary, setSummary] = useState<CustomerSummaryStatistics>({
+    totalCustomers: 0,
+    activeCustomers: 0,
+    customersWithDue: 0,
+    totalOutstandingDue: 0,
+  })
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(25)
+
+  const [search, setSearch] = useState('')
+  const [selectedType, setSelectedType] = useState<string>('all')
+  const [selectedDueFilter, setSelectedDueFilter] = useState<'all' | 'has_due' | 'no_due'>('all')
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
+  const [errorText, setErrorText] = useState('')
+
+  // Modals
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [notification, setNotification] = useState<string | null>(null)
+
+  const showNotification = (msg: string) => {
+    setNotification(msg)
+    setTimeout(() => setNotification(null), 3500)
+  }
+
+  // Fetch summary and customers list
+  const loadData = useCallback(async () => {
+    if (!companyId) return
+    setIsLoading(true)
+    setIsError(false)
+    try {
+      const [sumRes, listRes] = await Promise.all([
+        getCustomersSummaryAction(companyId),
+        getPaginatedCustomersAction(
+          {
+            page,
+            pageSize,
+            search,
+            customerType: selectedType !== 'all' ? selectedType : undefined,
+            dueFilter: selectedDueFilter,
+          },
+          companyId
+        ),
+      ])
+
+      if (sumRes.success && sumRes.data) {
+        setSummary(sumRes.data)
+      }
+
+      if (listRes.success && listRes.data) {
+        setCustomers(listRes.data.data)
+        setTotalRecords(listRes.data.meta?.totalCount ?? listRes.data.data.length)
+      } else {
+        setIsError(true)
+        setErrorText(listRes.error || 'Failed to fetch customer directory.')
+      }
+    } catch {
+      setIsError(true)
+      setErrorText('Network error while connecting to customer database.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [companyId, page, pageSize, search, selectedType, selectedDueFilter])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleOpenAddCustomer = () => {
     const check = checkCanCreate('max_customers')
@@ -60,41 +136,27 @@ export default function CustomersPage() {
     setIsAddOpen(true)
   }
 
-
-  const [search, setSearch] = useState('')
-  const [selectedType, setSelectedType] = useState<string>('all')
-  const [selectedDueFilter, setSelectedDueFilter] = useState<string>('all')
-
-  // Modals
-  const [isAddOpen, setIsAddOpen] = useState(false)
-  const [isImportOpen, setIsImportOpen] = useState(false)
-  const [notification, setNotification] = useState<string | null>(null)
-
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
-  }
-
   const handleCustomerCreated = (created: CustomerRecord) => {
-    addCustomerItem(created)
+    showNotification(`Customer '${created.name}' registered successfully.`)
     refreshUsage()
-    showNotification(`Customer '${created.name}' added successfully.`)
+    loadData()
   }
 
-  // UTF-8 BOM CSV Export for perfect Excel rendering in Bengali
+  // UTF-8 CSV Export for Excel
   const handleExportCSV = () => {
-    const headers = ['ID', 'Customer Name', 'Bangla Name', 'Type', 'Contact Person', 'Mobile', 'Email', 'Area', 'Due Balance BDT', 'Credit Limit BDT']
+    const headers = ['ID', 'Customer Name', 'Bangla Name', 'Type', 'Company', 'Mobile', 'WhatsApp', 'Email', 'Area', 'Due Balance BDT', 'Credit Limit BDT']
     const rows = customers.map((c) => [
       c.id,
       `"${c.name}"`,
       `"${c.name_bn || ''}"`,
-      c.customer_type,
-      `"${c.contact_person || ''}"`,
+      c.customer_type || c.customer_category || 'regular',
+      `"${c.company_name || ''}"`,
       `"${c.mobile}"`,
+      `"${c.whatsapp || ''}"`,
       `"${c.email || ''}"`,
       `"${c.area || ''}"`,
       c.total_due_balance || 0,
-      c.credit_limit,
+      c.credit_limit || 0,
     ])
 
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
@@ -102,418 +164,509 @@ export default function CustomersPage() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', `PrintERP_Customers_${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute('download', `InkFlow_Customers_${new Date().toISOString().split('T')[0]}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    showNotification('Customers exported to CSV (Unicode UTF-8 with Excel BOM).')
+    showNotification('Customer directory exported to CSV.')
   }
-
-  const handleImportCSV = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsImportOpen(false)
-    refreshUsage()
-    showNotification('3 sample customers imported from CSV successfully.')
-  }
-
-  const filtered = customers.filter((c) => {
-    const matchSearch =
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      (c.name_bn && c.name_bn.includes(search)) ||
-      c.mobile.includes(search) ||
-      (c.area && c.area.toLowerCase().includes(search.toLowerCase()))
-
-    const matchType = selectedType === 'all' || c.customer_type === selectedType
-    const matchDue =
-      selectedDueFilter === 'all'
-        ? true
-        : selectedDueFilter === 'due'
-        ? (c.total_due_balance || 0) > 0
-        : (c.total_due_balance || 0) === 0
-
-    return matchSearch && matchType && matchDue
-  })
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <PageHeader
-        titleEn="Customer & Client CRM"
-        titleBn="কাস্টমার ও ক্লায়েন্ট তালিকা"
-        descriptionEn="Manage corporate accounts, design agencies, retail walk-ins, credit limits, and outstanding balances."
-        descriptionBn="কর্পোরেট ক্লায়েন্ট, বিজ্ঞাপন সংস্থা, ডিলার ও রিটেইল গ্রাহকদের সম্পূর্ণ ডাটাবেস ও বকেয়া খতিয়ান।"
-        icon={Users}
-        iconColor="text-blue-600"
-        actions={
-          <div className="flex items-center gap-2">
-            {can('export', 'customers') && (
-              <Button variant="outline" size="sm" onClick={handleExportCSV} className="text-xs bangla-text">
-                <Download className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Export List', 'এক্সপোর্ট')}
-              </Button>
-            )}
-
-            {can('create', 'customers') && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (!customerCheck.allowed) {
-                    openLimitExceededModal('max_customers')
-                    return
-                  }
-                  setIsImportOpen(true)
-                }}
-                className="text-xs bangla-text"
-              >
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Import CSV', 'ইমপোর্ট সিএসভি')}
-              </Button>
-            )}
-
-            {can('create', 'customers') && (
-              <Button
-                size="sm"
-                onClick={handleOpenAddCustomer}
-                title={!customerCheck.allowed ? customerCheck.reason : undefined}
-                className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('New Customer', 'নতুন গ্রাহক')}
-              </Button>
-            )}
-          </div>
-        }
-      />
-
-      {/* Customer Directory Quota Alert */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
-        <div className="flex items-center gap-2.5">
-          <div className={cn(
-            'p-1.5 rounded-lg text-white font-bold shrink-0',
-            customerCheck.exceeded ? 'bg-red-500' : customerCheck.warning ? 'bg-amber-500' : 'bg-cyan-600'
-          )}>
-            <Users className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="font-bold text-slate-900 dark:text-white bangla-text">
-              {customerCheck.exceeded
-                ? tBilingual(
-                    `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_customers.toLocaleString()} Customers quota (currently at ${customers.length}). Please upgrade your subscription to continue.`,
-                    `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.max_customers)} কাস্টমার কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(customers.length)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
-                  )
-                : tBilingual(
-                    `Customer Quota: ${customers.length} of ${currentPlan.max_customers.toLocaleString()} contacts registered`,
-                    `কাস্টমার কোটা: ${toBengaliDigits(currentPlan.max_customers)} জনের মধ্যে ${toBengaliDigits(customers.length)} জন নিবন্ধিত`
-                  )}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-blue-600 text-white font-bold shrink-0">
+              <Users className="h-5 w-5" />
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
-              {customerCheck.exceeded
-                ? tBilingual('Customer directory limit reached. Upgrade plan to register more clients.', 'কাস্টমার সীমা পূর্ণ হয়েছে। নতুন গ্রাহক যোগ করতে প্ল্যান আপগ্রেড করুন।')
-                : tBilingual(`Included on your ${currentPlan.name}.`, `আপনার ${currentPlan.name_bn}-এ অন্তর্ভুক্ত।`)}
-            </p>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                {tBilingual('Customers', 'গ্রাহক ও ক্লায়েন্ট তালিকা')}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                Manage customers, rates, invoices, payments and customer history.
+              </p>
+            </div>
           </div>
         </div>
 
-        {currentPlan.code !== 'enterprise' && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => openUpgradeModal('business')}
-            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 bangla-text shrink-0"
-          >
-            <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
-            {tBilingual('Expand Quota', 'কোটা বৃদ্ধি')}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {can('export', 'customers') && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="text-xs font-semibold h-9"
+            >
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+              Export
+            </Button>
+          )}
+
+          {can('create', 'customers') && (
+            <Button
+              size="sm"
+              onClick={handleOpenAddCustomer}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-9 px-4 shadow-sm"
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              + New Customer
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Read-Only Notice */}
-      {isReadOnly('customers') && (
-        <div className="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 rounded-lg text-xs font-semibold flex items-center gap-2 border border-blue-200 dark:border-blue-900 animate-in fade-in-0">
-          <ShieldCheck className="h-4 w-4 text-blue-600 shrink-0" />
-          <span>{tBilingual('View-Only Mode: You have read-only access to customer directories.', 'শুধুমাত্র দেখার অনুমতি: কাস্টমার তৈরি বা সম্পাদনার অনুমতি নেই।')}</span>
-        </div>
-      )}
-
-      {/* Notification */}
+      {/* Notification Banner */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-150">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span>{notification}</span>
         </div>
       )}
 
-      {/* Search & Filters Bar */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search by company name, বাংলা নাম, mobile, area..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 text-xs"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-            >
-              <option value="all">All Customer Types</option>
-              <option value="corporate">Corporate (কর্পোরেট)</option>
-              <option value="agency">Agency (বিজ্ঞাপনী সংস্থা)</option>
-              <option value="retail">Retail (খুচরা)</option>
-              <option value="dealer">Dealer (ডিলার)</option>
-              <option value="government">Government (সরকারি)</option>
-              <option value="regular">Regular (নিয়মিত)</option>
-            </select>
-
-            <select
-              value={selectedDueFilter}
-              onChange={(e) => setSelectedDueFilter(e.target.value)}
-              className="h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-            >
-              <option value="all">All Balances</option>
-              <option value="due">Has Due Balance (বাকি আছে)</option>
-              <option value="clear">No Due Balance (পরিশোধিত)</option>
-            </select>
-          </div>
-        </div>
-      </Card>
-
-      {/* Customers Table */}
-      <Card>
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Customers Directory ({filtered.length})</CardTitle>
-            <span className="text-xs text-slate-400">Showing all registered accounts</span>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {filtered.length === 0 ? (
-            <div className="p-6">
-              <EmptyState
-                icon={Users}
-                title="No Customers Found"
-                titleBn="কোনো গ্রাহক পাওয়া যায়নি"
-                description="Try changing your search term or filter criteria, or add a new customer."
-                descriptionBn="অন্য কোনো নাম বা মোবাইল নম্বর দিয়ে খুঁজুন অথবা নতুন গ্রাহক নিবন্ধন করুন।"
-                actionLabel="Add New Customer"
-                actionLabelBn="নতুন কাস্টমার যোগ করুন"
-                onAction={() => setIsAddOpen(true)}
-              />
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Total Customers */}
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+          <CardContent className="p-4 space-y-1">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Total Customers</span>
+              <Users className="h-4 w-4 text-blue-500" />
             </div>
-          ) : (
-            <>
-              {/* 1. Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                      <th className="py-3 px-4">Customer Name & Hub</th>
-                      <th className="py-3 px-4">Type</th>
-                      <th className="py-3 px-4">Contact Person</th>
-                      <th className="py-3 px-4">Contact Numbers</th>
-                      <th className="py-3 px-4">Credit Limit</th>
-                      <th className="py-3 px-4">Due Balance (বাকি)</th>
-                      <th className="py-3 px-4 text-right">Profile</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filtered.map((customer) => {
-                      const hasDue = (customer.total_due_balance || 0) > 0
-                      return (
-                        <tr key={customer.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <Link
-                              href={`/${slug}/customers/${customer.id}`}
-                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
-                            >
-                              <span>{customer.name}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
-                            </Link>
-                            {customer.name_bn && (
-                              <div className="text-xs text-slate-500 bangla-text">{customer.name_bn}</div>
-                            )}
-                            <div className="text-[11px] text-slate-400 mt-0.5">
-                              {customer.area || 'Dhaka Area'}
-                            </div>
-                          </td>
+            <div className="text-2xl font-black text-slate-900 dark:text-white">
+              {summary.totalCustomers}
+            </div>
+            <p className="text-[11px] text-slate-400 truncate">
+              Registered business profiles
+            </p>
+          </CardContent>
+        </Card>
 
-                          <td className="py-3.5 px-4">
-                            <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900">
-                              {customer.customer_type}
-                            </span>
-                          </td>
+        {/* Active Customers */}
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+          <CardContent className="p-4 space-y-1">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Active Customers</span>
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            </div>
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+              {summary.activeCustomers}
+            </div>
+            <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 truncate">
+              Operational accounts
+            </p>
+          </CardContent>
+        </Card>
 
-                          <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
-                            {customer.contact_person || '—'}
-                          </td>
+        {/* Customers With Due */}
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+          <CardContent className="p-4 space-y-1">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Customers With Due</span>
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+            </div>
+            <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
+              {summary.customersWithDue}
+            </div>
+            <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80 truncate">
+              Outstanding receivables
+            </p>
+          </CardContent>
+        </Card>
 
-                          <td className="py-3.5 px-4 text-xs font-mono">
-                            <div className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
-                              <Phone className="h-3 w-3 text-slate-400" />
-                              <span>{customer.mobile}</span>
-                            </div>
-                            {customer.whatsapp && (
-                              <div className="flex items-center gap-1 text-emerald-600 mt-0.5">
-                                <MessageSquare className="h-3 w-3" />
-                                <span>{customer.whatsapp}</span>
-                              </div>
-                            )}
-                          </td>
+        {/* Total Outstanding Due */}
+        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+          <CardContent className="p-4 space-y-1">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Total Due Balance</span>
+              <TrendingUp className="h-4 w-4 text-rose-500" />
+            </div>
+            <div className="text-2xl font-black text-rose-600 dark:text-rose-400 truncate">
+              ৳{summary.totalOutstandingDue.toLocaleString('en-IN')}
+            </div>
+            <p className="text-[11px] text-rose-600/80 dark:text-rose-400/80 truncate">
+              Receivable across all accounts
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
-                          <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
-                            <CurrencyDisplay amount={customer.credit_limit} />
-                          </td>
+      {/* Search & Filters Toolbar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs">
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Search by customer name, company, phone, WhatsApp or area..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 text-xs h-9 bg-slate-50/50 dark:bg-slate-900/50"
+          />
+        </div>
 
-                          <td className="py-3.5 px-4">
-                            {hasDue ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
-                                <CurrencyDisplay amount={customer.total_due_balance || 0} />
-                              </span>
-                            ) : (
-                              <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                All Clear
-                              </span>
-                            )}
-                          </td>
+        {/* Filter Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Customer Type Filter */}
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium"
+          >
+            <option value="all">All Types (সব ধরণ)</option>
+            <option value="retail">Retail (রিটেইল)</option>
+            <option value="reseller">Reseller (রিসেলার)</option>
+            <option value="corporate">Corporate (কর্পোরেট)</option>
+            <option value="agency">Agency (এজেন্সি)</option>
+            <option value="government">Government (সরকারি)</option>
+          </select>
 
-                          <td className="py-3.5 px-4 text-right">
-                            <Link
-                              href={`/${slug}/customers/${customer.id}`}
-                              className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                            >
-                              View Profile
-                            </Link>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+          {/* Due Status Filter */}
+          <select
+            value={selectedDueFilter}
+            onChange={(e) => setSelectedDueFilter(e.target.value as any)}
+            className="h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium"
+          >
+            <option value="all">All Balances (সব)</option>
+            <option value="has_due">Has Outstanding Due (বকেয়া আছে)</option>
+            <option value="no_due">No Due (বকেয়া নেই)</option>
+          </select>
 
-              {/* 2. Mobile Cards (Smartphone Touch-Friendly) */}
-              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
-                {filtered.map((customer) => {
-                  const hasDue = (customer.total_due_balance || 0) > 0
-                  return (
-                    <div
-                      key={customer.id}
-                      className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 space-y-2.5"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadData}
+            disabled={isLoading}
+            className="h-9 px-2.5 text-xs text-slate-500"
+            title="Refresh List"
+          >
+            <RotateCcw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-20 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 animate-pulse"
+            />
+          ))}
+        </div>
+      ) : isError ? (
+        /* Error State with Retry */
+        <Card className="border-rose-200 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20 p-8 text-center space-y-3">
+          <AlertCircle className="h-8 w-8 text-rose-500 mx-auto" />
+          <div className="text-sm font-bold text-rose-900 dark:text-rose-300">
+            {errorText}
+          </div>
+          <div>
+            <Button size="sm" onClick={loadData} className="text-xs bg-rose-600 hover:bg-rose-700">
+              Retry Data Load
+            </Button>
+          </div>
+        </Card>
+      ) : customers.length === 0 ? (
+        /* Empty State */
+        <Card className="border-slate-200 dark:border-slate-800 p-12 text-center space-y-4 bg-white dark:bg-slate-950">
+          <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 w-fit mx-auto">
+            <Users className="h-8 w-8" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              No Customers Found
+            </h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+              {search || selectedType !== 'all' || selectedDueFilter !== 'all'
+                ? 'No customer records matched your query. Try resetting your search filters.'
+                : 'Get started by creating your first customer profile to manage rates and invoices.'}
+            </p>
+          </div>
+          {can('create', 'customers') && (
+            <Button
+              size="sm"
+              onClick={handleOpenAddCustomer}
+              className="bg-blue-600 hover:bg-blue-700 text-xs font-bold"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              + Create First Customer
+            </Button>
+          )}
+        </Card>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-semibold">
+                  <tr>
+                    <th className="py-3 px-4">Customer</th>
+                    <th className="py-3 px-3">Company</th>
+                    <th className="py-3 px-3">Contact</th>
+                    <th className="py-3 px-3">Type</th>
+                    <th className="py-3 px-3 text-right">Total Invoiced</th>
+                    <th className="py-3 px-3 text-right">Due Balance</th>
+                    <th className="py-3 px-3 text-right">Last Order</th>
+                    <th className="py-3 px-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                  {customers.map((c) => {
+                    const hasDue = (c.total_due_balance || 0) > 0
+                    const custType = c.customer_category || c.customer_type || 'regular'
+
+                    return (
+                      <tr
+                        key={c.id}
+                        className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors group"
+                      >
+                        {/* Customer Name */}
+                        <td className="py-3.5 px-4">
                           <Link
-                            href={`/${slug}/customers/${customer.id}`}
-                            className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1"
+                            href={`/${slug}/customers/${c.id}`}
+                            className="font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5"
                           >
-                            <span>{customer.name}</span>
+                            <span>{c.name}</span>
+                            <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </Link>
-                          {customer.name_bn && (
-                            <div className="text-xs text-slate-500 bangla-text">{customer.name_bn}</div>
+                          {c.name_bn && (
+                            <div className="text-[11px] text-slate-500">{c.name_bn}</div>
                           )}
-                          <div className="text-[11px] text-slate-400">{customer.area || 'Dhaka'}</div>
-                        </div>
+                          {c.area && (
+                            <div className="text-[10px] text-slate-400 mt-0.5">{c.area}</div>
+                          )}
+                        </td>
 
-                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 shrink-0">
-                          {customer.customer_type}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                        <div>
-                          <span className="text-[10px] text-slate-400 block">Phone:</span>
-                          <a href={`tel:${customer.mobile}`} className="font-mono font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            <span>{customer.mobile}</span>
-                          </a>
-                        </div>
-
-                        <div>
-                          <span className="text-[10px] text-slate-400 block">Due Balance:</span>
-                          {hasDue ? (
-                            <span className="font-bold text-rose-600 dark:text-rose-400">
-                              <CurrencyDisplay amount={customer.total_due_balance || 0} />
-                            </span>
+                        {/* Company */}
+                        <td className="py-3.5 px-3">
+                          {c.company_name ? (
+                            <div className="font-semibold text-slate-700 dark:text-slate-300">
+                              {c.company_name}
+                            </div>
                           ) : (
-                            <span className="text-emerald-600 font-semibold text-[11px]">Paid Clear</span>
+                            <span className="text-slate-400 italic">—</span>
                           )}
-                        </div>
-                      </div>
+                        </td>
 
-                      <div className="pt-2 flex items-center justify-between border-t border-slate-200/60 dark:border-slate-800">
-                        {customer.whatsapp ? (
-                          <a
-                            href={`https://wa.me/${customer.whatsapp.replace(/\D/g, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold"
+                        {/* Contact */}
+                        <td className="py-3.5 px-3">
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={`tel:${c.mobile}`}
+                              className="font-mono text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
+                              title="Call"
+                            >
+                              <Phone className="h-3 w-3 text-slate-400" />
+                              <span>{c.mobile}</span>
+                            </a>
+                            {c.whatsapp && (
+                              <a
+                                href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-emerald-600 hover:text-emerald-700"
+                                title="Chat on WhatsApp"
+                              >
+                                <MessageSquare className="h-3.5 w-3.5" />
+                              </a>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Customer Type Badge */}
+                        <td className="py-3.5 px-3">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'text-[10px] font-semibold capitalize',
+                              custType === 'corporate' && 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300',
+                              custType === 'agency' && 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300',
+                              custType === 'reseller' && 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300',
+                              custType === 'government' && 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300',
+                              custType === 'retail' && 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300'
+                            )}
                           >
-                            <MessageSquare className="h-3.5 w-3.5" />
-                            <span>WhatsApp</span>
-                          </a>
-                        ) : <div />}
+                            {custType}
+                          </Badge>
+                        </td>
 
-                        <Link
-                          href={`/${slug}/customers/${customer.id}`}
-                          className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold dark:bg-slate-800"
-                        >
-                          View Details
-                        </Link>
+                        {/* Total Invoiced */}
+                        <td className="py-3.5 px-3 text-right font-medium text-slate-700 dark:text-slate-300">
+                          ৳{(c.total_invoiced_amount || 0).toLocaleString('en-IN')}
+                        </td>
+
+                        {/* Due Balance */}
+                        <td className="py-3.5 px-3 text-right">
+                          <span
+                            className={cn(
+                              'font-bold px-2 py-0.5 rounded-md text-xs',
+                              hasDue
+                                ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900'
+                                : 'text-slate-400'
+                            )}
+                          >
+                            ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
+                          </span>
+                        </td>
+
+                        {/* Last Order */}
+                        <td className="py-3.5 px-3 text-right text-slate-500">
+                          {c.last_order_date || c.last_order_number ? (
+                            <div>
+                              <div className="font-medium text-slate-700 dark:text-slate-300">
+                                {c.last_order_number || 'Order'}
+                              </div>
+                              <div className="text-[10px] text-slate-400">{c.last_order_date}</div>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 italic">—</span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <Link
+                              href={`/${slug}/customers/${c.id}`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 font-semibold text-xs transition-colors"
+                            >
+                              <span>360 View</span>
+                            </Link>
+
+                            <Link
+                              href={`/${slug}/billing/invoices/new?customerId=${c.id}`}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                              title="Create Invoice"
+                            >
+                              <Receipt className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="block md:hidden space-y-3">
+            {customers.map((c) => {
+              const hasDue = (c.total_due_balance || 0) > 0
+              const custType = c.customer_category || c.customer_type || 'regular'
+
+              return (
+                <Card
+                  key={c.id}
+                  className={cn(
+                    'border shadow-sm p-4 space-y-3 bg-white dark:bg-slate-950 transition-colors',
+                    hasDue
+                      ? 'border-rose-200/80 dark:border-rose-950/80'
+                      : 'border-slate-200 dark:border-slate-800'
+                  )}
+                >
+                  {/* Top: Name, Type, Due Badge */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <Link
+                        href={`/${slug}/customers/${c.id}`}
+                        className="font-bold text-base text-slate-900 dark:text-white hover:text-blue-600"
+                      >
+                        {c.name}
+                      </Link>
+                      {c.name_bn && (
+                        <div className="text-xs text-slate-500">{c.name_bn}</div>
+                      )}
+                      {c.company_name && (
+                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1 mt-0.5">
+                          <Building className="h-3 w-3 text-slate-400" />
+                          <span>{c.company_name}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge variant="outline" className="text-[10px] capitalize">
+                        {custType}
+                      </Badge>
+                      {hasDue && (
+                        <span className="text-[11px] font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-900">
+                          Due: ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Contact Actions (Call & WhatsApp) */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-900">
+                    <a
+                      href={`tel:${c.mobile}`}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 font-semibold text-xs text-slate-800 dark:text-slate-200"
+                    >
+                      <Phone className="h-3.5 w-3.5 text-blue-600" />
+                      <span>{c.mobile}</span>
+                    </a>
+
+                    {c.whatsapp && (
+                      <a
+                        href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-900"
+                        title="WhatsApp"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Financial Stats Bar */}
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 text-xs">
+                    <div>
+                      <div className="text-[10px] text-slate-400">Total Billed</div>
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        ৳{(c.total_invoiced_amount || 0).toLocaleString('en-IN')}
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+                    <div>
+                      <div className="text-[10px] text-slate-400">Due Balance</div>
+                      <div
+                        className={cn(
+                          'font-bold',
+                          hasDue ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300'
+                        )}
+                      >
+                        ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  </div>
 
-      {/* MODAL: NEW CUSTOMER */}
+                  {/* Bottom: View 360 Workspace Button */}
+                  <Link
+                    href={`/${slug}/customers/${c.id}`}
+                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs"
+                  >
+                    <span>Open Customer 360 Workspace</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </Card>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {/* New Customer Modal */}
       <NewCustomerModal
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
         onCustomerCreated={handleCustomerCreated}
-        companyId={company?.id || 'c-01'}
+        companyId={companyId}
       />
-
-      {/* MODAL: IMPORT CSV */}
-      <ModalDialog
-        open={isImportOpen}
-        onOpenChange={setIsImportOpen}
-        title="Import Customers from CSV"
-        description="Bulk upload client records from Excel or previous software."
-      >
-        <form onSubmit={handleImportCSV} className="space-y-4 pt-2">
-          <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center space-y-2 bg-slate-50 dark:bg-slate-900">
-            <Upload className="h-8 w-8 mx-auto text-slate-400" />
-            <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-              Select or drag & drop CSV file
-            </div>
-            <p className="text-[11px] text-slate-400">
-              Supported columns: Name, Name_BN, Mobile, Type, Email, Area, Credit_Limit.
-            </p>
-            <input type="file" accept=".csv" className="text-xs pt-2" />
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsImportOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
-              Upload & Import
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
     </div>
   )
 }

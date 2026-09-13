@@ -8,8 +8,19 @@ import {
   CustomerCommunication,
   SupplierRecord,
   SupplierMaterialPrice,
+  CustomerRateRecord,
+  ResolvedProductRate,
+  CustomerFinancialSummary,
+  CustomerProductPurchaseStat,
+  CustomerTimelineEvent,
+  CustomerSummaryStatistics,
+  DuplicateMatchResult,
+  DuplicateCheckResponse,
 } from '@/types/crm.types'
 import { CustomerRepository } from '@/lib/repositories/customer.repository'
+import { PaginatedResult } from '@/lib/api/pagination-helper'
+
+export type { DuplicateCheckResponse, DuplicateMatchResult }
 
 /**
  * Normalizes a Bangladeshi phone number into standard comparison form
@@ -19,18 +30,6 @@ export function normalizeBdPhone(phone: string): string {
   if (digits.startsWith('880')) return `+${digits}`
   if (digits.startsWith('01')) return `+88${digits}`
   return phone.trim()
-}
-
-export interface DuplicateMatchResult {
-  customer: CustomerRecord
-  matchReason: string
-  matchField: 'mobile' | 'whatsapp' | 'name' | 'company_name'
-  confidence: 'exact' | 'high' | 'possible'
-}
-
-export interface DuplicateCheckResponse {
-  hasDuplicate: boolean
-  matches: DuplicateMatchResult[]
 }
 
 export class CrmService {
@@ -70,6 +69,39 @@ export class CrmService {
   }
 
   /**
+   * Retrieves summary statistics for customer list
+   */
+  static async getCustomersSummary(companyId: string): Promise<CustomerSummaryStatistics> {
+    if (!companyId) {
+      return { totalCustomers: 0, activeCustomers: 0, customersWithDue: 0, totalOutstandingDue: 0 }
+    }
+    return await CustomerRepository.getCustomersSummary(companyId)
+  }
+
+  /**
+   * Paginated and filtered customers
+   */
+  static async getPaginatedCustomers(
+    companyId: string,
+    options: {
+      page?: number
+      pageSize?: number
+      search?: string
+      customerType?: string
+      dueFilter?: 'all' | 'has_due' | 'no_due'
+      activeFilter?: 'all' | 'active' | 'inactive'
+    } = {}
+  ): Promise<PaginatedResult<CustomerRecord>> {
+    if (!companyId) {
+      return {
+        data: [],
+        meta: { page: 1, pageSize: 25, totalCount: 0, totalPages: 0, hasNextPage: false, hasPreviousPage: false },
+      }
+    }
+    return await CustomerRepository.getPaginatedCustomers(companyId, options)
+  }
+
+  /**
    * Retrieves a specific customer by ID
    */
   static async getCustomerById(
@@ -105,13 +137,18 @@ export class CrmService {
       const phoneMatch =
         c.mobile.includes(q) || (cleanedQ.length >= 3 && custDigits.includes(cleanedQ))
 
+      const whatsappDigits = c.whatsapp ? this.cleanPhoneDigits(c.whatsapp) : ''
+      const whatsappMatch =
+        (c.whatsapp && c.whatsapp.includes(q)) || (cleanedQ.length >= 3 && whatsappDigits.includes(cleanedQ))
+
       return (
         nameMatch ||
         nameBnMatch ||
         companyMatch ||
         emailMatch ||
         areaMatch ||
-        phoneMatch
+        phoneMatch ||
+        whatsappMatch
       )
     })
   }
@@ -231,7 +268,7 @@ export class CrmService {
   }
 
   /**
-   * Creates a new customer with server-validated tenant isolation and PostgreSQL persistence
+   * Creates a new customer
    */
   static async createCustomer(
     data: Partial<CustomerRecord>,
@@ -285,5 +322,82 @@ export class CrmService {
   static async deleteCustomer(id: string, companyId: string): Promise<boolean> {
     if (!id || !companyId) return false
     return await CustomerRepository.deleteCustomer(id, companyId)
+  }
+
+  // ==============================================================================
+  // RATES, FINANCIALS, ANALYTICS & TIMELINE
+  // ==============================================================================
+
+  static async resolveCustomerRates(companyId: string, customerId: string): Promise<ResolvedProductRate[]> {
+    if (!companyId || !customerId) return []
+    return await CustomerRepository.resolveCustomerRates(companyId, customerId)
+  }
+
+  static async upsertCustomerRate(
+    companyId: string,
+    customerId: string,
+    productId: string,
+    rate: number,
+    notes?: string | null
+  ): Promise<CustomerRateRecord> {
+    if (!companyId || !customerId || !productId) {
+      throw new Error('Invalid arguments for saving customer rate.')
+    }
+    return await CustomerRepository.upsertCustomerRate(companyId, customerId, productId, rate, notes)
+  }
+
+  static async deleteCustomerRate(companyId: string, customerId: string, productId: string): Promise<boolean> {
+    if (!companyId || !customerId || !productId) return false
+    return await CustomerRepository.deleteCustomerRate(companyId, customerId, productId)
+  }
+
+  static async getCustomerFinancialSummary(companyId: string, customerId: string): Promise<CustomerFinancialSummary> {
+    if (!companyId || !customerId) {
+      return {
+        totalInvoices: 0,
+        totalInvoiceAmount: 0,
+        totalPaid: 0,
+        totalDue: 0,
+        lastPayment: null,
+        lastOrder: null,
+      }
+    }
+    return await CustomerRepository.getCustomerFinancialSummary(companyId, customerId)
+  }
+
+  static async getCustomerProductPurchases(
+    companyId: string,
+    customerId: string,
+    options?: {
+      timeframe?: 'week' | 'month' | 'year' | 'all' | 'custom'
+      startDate?: string
+      endDate?: string
+      sortBy?: 'quantity' | 'amount' | 'recent' | 'name'
+      sortOrder?: 'asc' | 'desc'
+    }
+  ): Promise<CustomerProductPurchaseStat[]> {
+    if (!companyId || !customerId) return []
+    return await CustomerRepository.getCustomerProductPurchases(companyId, customerId, options)
+  }
+
+  static async getCustomerTimeline(companyId: string, customerId: string): Promise<CustomerTimelineEvent[]> {
+    if (!companyId || !customerId) return []
+    return await CustomerRepository.getCustomerTimeline(companyId, customerId)
+  }
+
+  static async getCommunications(customerId: string, companyId: string): Promise<CustomerCommunication[]> {
+    if (!companyId || !customerId) return []
+    return await CustomerRepository.getCommunications(customerId, companyId)
+  }
+
+  static async addCommunication(comm: {
+    company_id: string
+    customer_id: string
+    type: 'phone_call' | 'whatsapp_message' | 'email' | 'meeting' | 'site_visit'
+    summary: string
+    details?: string | null
+    logged_by?: string | null
+  }): Promise<CustomerCommunication> {
+    return await CustomerRepository.addCommunication(comm)
   }
 }
