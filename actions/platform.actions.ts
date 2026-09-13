@@ -1328,9 +1328,18 @@ export async function deleteIncompleteRegistrationAction(idOrEmail: string, reas
     if (!platformUser) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
     }
-    const isOwnerOrAdmin = platformUser.role === 'platform_owner' || platformUser.role === 'platform_admin'
-    if (!isOwnerOrAdmin) {
-      return { success: false, error: 'Unauthorized: Insufficient platform permissions.' }
+    const isOwnerOrAdmin =
+      platformUser.role === 'platform_owner' ||
+      platformUser.role === 'platform_admin' ||
+      platformUser.role === 'platform_support' ||
+      platformUser.role === 'platform_operations'
+    const hasPerm =
+      hasPlatformPermission(platformUser, 'tenant.delete') ||
+      hasPlatformPermission(platformUser, 'company.delete') ||
+      hasPlatformPermission(platformUser, 'tenant.edit')
+
+    if (!isOwnerOrAdmin && !hasPerm) {
+      return { success: false, error: 'Unauthorized: Insufficient platform permissions to purge incomplete registration.' }
     }
     const res = await PlatformService.deleteIncompleteRegistration(idOrEmail, reason)
     if (res.success) {

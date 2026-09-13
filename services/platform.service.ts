@@ -1007,7 +1007,68 @@ export class PlatformService {
         })
       })
 
-      // 6. Check local test data store fallback
+      // 5b. Check Supabase Auth users for unconfirmed / unregistered accounts
+      try {
+        const { data: authUsersData } = await admin.auth.admin.listUsers()
+        ;(authUsersData?.users || []).forEach((u: any) => {
+          const normalizedEmail = (u.email || '').toLowerCase().trim()
+          if (!normalizedEmail) return
+
+          if (
+            completedUserIds.has(u.id) ||
+            completedEmails.has(normalizedEmail) ||
+            incompleteMap.has(normalizedEmail)
+          ) {
+            return
+          }
+
+          const isEmailConfirmed = Boolean(u.email_confirmed_at || u.confirmed_at)
+          const stage: IncompleteRegistrationStage = isEmailConfirmed
+            ? 'verified_pending_onboarding'
+            : 'pending_verification'
+
+          incompleteMap.set(normalizedEmail, {
+            id: u.id,
+            user_id: u.id,
+            email: normalizedEmail,
+            full_name: u.user_metadata?.full_name || normalizedEmail.split('@')[0],
+            phone: u.user_metadata?.phone || null,
+            stage,
+            plan: u.user_metadata?.plan || 'trial',
+            created_at: u.created_at || new Date().toISOString(),
+            updated_at: u.updated_at || u.created_at,
+            expires_at: null,
+            attempts: 0,
+            is_email_confirmed: isEmailConfirmed,
+            metadata: u.user_metadata || {},
+          })
+        })
+      } catch {}
+
+      // 6. Check local registered users store fallback
+      const registeredUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+      registeredUsers.forEach((item: any) => {
+        const normalizedEmail = (item.email || '').toLowerCase().trim()
+        if (normalizedEmail && !completedEmails.has(normalizedEmail) && !incompleteMap.has(normalizedEmail)) {
+          incompleteMap.set(normalizedEmail, {
+            id: item.id || `inc-${normalizedEmail}`,
+            user_id: item.id || item.user_id || null,
+            email: normalizedEmail,
+            full_name: item.fullName || item.full_name || normalizedEmail.split('@')[0],
+            phone: item.phone || null,
+            stage: item.is_email_confirmed ? 'verified_pending_onboarding' : 'pending_verification',
+            plan: item.plan || 'trial',
+            created_at: item.created_at || item.createdAt || new Date().toISOString(),
+            updated_at: item.updated_at || item.created_at || new Date().toISOString(),
+            expires_at: null,
+            attempts: 0,
+            is_email_confirmed: Boolean(item.is_email_confirmed),
+            metadata: item.metadata || {},
+          })
+        }
+      })
+
+      // 7. Check local test data store fallback
       const localIncomplete = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
       localIncomplete.forEach((item: any) => {
         const normalizedEmail = (item.email || '').toLowerCase().trim()
@@ -1127,45 +1188,160 @@ export class PlatformService {
   ): Promise<ApiResponse> {
     try {
       const admin = createAdminClient()
-      const normalized = idOrEmail.trim().toLowerCase()
+      const raw = (idOrEmail || '').trim()
+      const normalized = raw.toLowerCase()
+      const isEmail = normalized.includes('@')
+      const isUuid = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)
 
-      // 1. Delete from auth_verifications
-      await (admin as any)
-        .from('auth_verifications')
-        .delete()
-        .or(`id.eq.${idOrEmail},email.eq.${normalized}`)
+      let targetEmail = isEmail ? normalized : ''
+      let targetUserId: string | null = null
 
-      // 2. Resolve user ID if exists in user_profiles
-      const { data: profile } = await (admin as any)
-        .from('user_profiles')
-        .select('id')
-        .or(`id.eq.${idOrEmail},email.eq.${normalized}`)
-        .maybeSingle()
-
-      const userId = profile?.id
-
-      if (userId) {
-        // Delete user_profiles row
-        await (admin as any).from('user_profiles').delete().eq('id', userId)
-
-        // Try deleting from Supabase Auth
+      // 1. Resolve target email and target user ID from database
+      if (isUuid(raw)) {
         try {
-          await admin.auth.admin.deleteUser(userId)
+          const { data: vRecord } = await (admin as any)
+            .from('auth_verifications')
+            .select('id, user_id, email')
+            .eq('id', raw)
+            .maybeSingle()
+          if (vRecord) {
+            targetEmail = (vRecord.email || '').toLowerCase().trim()
+            if (vRecord.user_id && isUuid(vRecord.user_id)) {
+              targetUserId = vRecord.user_id
+            }
+          }
+        } catch {}
+
+        if (!targetEmail) {
+          try {
+            const { data: pRecord } = await (admin as any)
+              .from('user_profiles')
+              .select('id, email')
+              .eq('id', raw)
+              .maybeSingle()
+            if (pRecord) {
+              targetEmail = (pRecord.email || '').toLowerCase().trim()
+              targetUserId = pRecord.id
+            }
+          } catch {}
+        }
+      }
+
+      if (!targetEmail && isEmail) {
+        targetEmail = normalized
+      }
+
+      // If targetUserId is still missing, lookup user_profiles by email
+      if (targetEmail && !targetUserId) {
+        try {
+          const { data: pRecord } = await (admin as any)
+            .from('user_profiles')
+            .select('id')
+            .ilike('email', targetEmail)
+            .maybeSingle()
+          if (pRecord?.id && isUuid(pRecord.id)) {
+            targetUserId = pRecord.id
+          }
         } catch {}
       }
 
-      // Also clean from local test store if present
-      const local = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
-      const filteredLocal = local.filter(
-        (i: any) => i.id !== idOrEmail && i.email?.toLowerCase() !== normalized
+      // Also lookup Supabase Auth users to get userId if available
+      if (targetEmail && !targetUserId) {
+        try {
+          const { data: userList } = await admin.auth.admin.listUsers()
+          const found = userList?.users?.find(
+            (u) => u.email?.toLowerCase().trim() === targetEmail
+          )
+          if (found?.id) {
+            targetUserId = found.id
+          }
+        } catch {}
+      }
+
+      // 2. Delete from auth_verifications safely (avoiding UUID type mismatch on id column)
+      if (isUuid(raw)) {
+        try {
+          await (admin as any).from('auth_verifications').delete().eq('id', raw)
+        } catch {}
+      }
+      if (targetEmail) {
+        try {
+          await (admin as any).from('auth_verifications').delete().ilike('email', targetEmail)
+        } catch {}
+      }
+      if (targetUserId && isUuid(targetUserId)) {
+        try {
+          await (admin as any).from('auth_verifications').delete().eq('user_id', targetUserId)
+        } catch {}
+      }
+
+      // 3. Delete from user_profiles safely
+      if (targetUserId && isUuid(targetUserId)) {
+        try {
+          await (admin as any).from('user_profiles').delete().eq('id', targetUserId)
+        } catch {}
+      }
+      if (targetEmail) {
+        try {
+          await (admin as any).from('user_profiles').delete().ilike('email', targetEmail)
+        } catch {}
+      }
+
+      // 4. Delete user from Supabase Auth (auth.users)
+      if (targetUserId) {
+        try {
+          await admin.auth.admin.deleteUser(targetUserId)
+        } catch (authErr) {
+          console.warn('[PlatformService] deleteUser warning:', authErr)
+        }
+      }
+
+      // 5. Clean up from AuthEmailService in-memory test store & DB
+      if (targetEmail) {
+        await AuthEmailService.deleteVerificationRecords(targetEmail)
+      }
+
+      // 6. Clean from local storage data stores
+      const localIncomplete = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS) || []
+      const filteredIncomplete = localIncomplete.filter(
+        (i: any) =>
+          i.id !== raw &&
+          i.id !== targetEmail &&
+          i.email?.toLowerCase().trim() !== targetEmail
       )
-      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS, filteredLocal)
+      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_INCOMPLETE_REGISTRATIONS, filteredIncomplete)
+
+      const localRegistered = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+      const filteredRegistered = localRegistered.filter(
+        (u: any) =>
+          u.id !== raw &&
+          u.id !== targetUserId &&
+          u.email?.toLowerCase().trim() !== targetEmail
+      )
+      PrintERPDataStore.set(STORAGE_KEYS.REGISTERED_USERS, filteredRegistered)
+
+      // 7. Record Audit Log
+      try {
+        await this.recordAuditLog(
+          'registration.purge',
+          'incomplete_registration',
+          targetUserId || raw,
+          undefined,
+          undefined,
+          {
+            email: targetEmail || raw,
+            purged_at: new Date().toISOString(),
+            reason: reason || 'Abandoned registration purged by administrator',
+          }
+        )
+      } catch {}
 
       return {
         success: true,
-        message: 'Incomplete registration record purged successfully.',
+        message: `Incomplete registration for ${targetEmail || raw} has been purged.`,
       }
     } catch (err: any) {
+      console.error('[PlatformService] deleteIncompleteRegistration error:', err)
       return { success: false, error: err?.message || 'Failed to delete incomplete registration' }
     }
   }

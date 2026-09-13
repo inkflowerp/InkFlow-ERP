@@ -279,14 +279,15 @@ export default function PlatformTenantsPage() {
     if (!deleteIncompleteTarget) return
     setIsDeletingIncomplete(true)
     try {
+      const identifier = deleteIncompleteTarget.email || deleteIncompleteTarget.id
       const res = await deleteIncompleteRegistrationAction(
-        deleteIncompleteTarget.id || deleteIncompleteTarget.email,
+        identifier,
         'Abandoned incomplete registration purged by platform administrator'
       )
       if (res.success) {
-        showNotification(`Incomplete registration for ${deleteIncompleteTarget.email} has been purged.`)
+        showNotification((res as any).message || `Incomplete registration for ${deleteIncompleteTarget.email} has been purged.`)
         setDeleteIncompleteTarget(null)
-        loadData()
+        await loadData()
       } else {
         showNotification(res.error || 'Failed to delete record')
       }

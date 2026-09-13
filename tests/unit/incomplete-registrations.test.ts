@@ -138,5 +138,19 @@ describe('Incomplete Registrations Platform Management Test Suite', () => {
       assert.strictEqual(res.success, true)
       assert.ok(res.message?.includes('purged') || res.message?.includes('successfully'))
     })
+
+    it('Purges an incomplete registration by non-UUID custom identifier safely without SQL errors', async () => {
+      const customId = 'inc-prospect-nonuuid@testcorp.com'
+      const res = await PlatformService.deleteIncompleteRegistration(customId, 'Non-UUID ID purge test')
+      assert.strictEqual(res.success, true)
+      assert.ok(res.message?.includes('purged') || res.message?.includes('successfully'))
+    })
+
+    it('Purges an incomplete registration by valid UUID safely', async () => {
+      const uuid = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+      const res = await PlatformService.deleteIncompleteRegistration(uuid, 'UUID purge test')
+      assert.strictEqual(res.success, true)
+      assert.ok(res.message?.includes('purged') || res.message?.includes('successfully'))
+    })
   })
 })

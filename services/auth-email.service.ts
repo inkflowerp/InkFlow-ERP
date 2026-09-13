@@ -231,6 +231,28 @@ export class AuthEmailService {
   }
 
   /**
+   * Purges active/pending verification records for a specific email (e.g. registration abandoned/purged)
+   */
+  static async deleteVerificationRecords(email: string): Promise<void> {
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!normalizedEmail) return
+
+    // Clean test store
+    this.testStore.delete(`${normalizedEmail}:registration`)
+    this.testStore.delete(`${normalizedEmail}:password_reset`)
+
+    try {
+      const admin = createAdminClient()
+      await (admin as any)
+        .from('auth_verifications')
+        .delete()
+        .ilike('email', normalizedEmail)
+    } catch (err) {
+      console.warn('[AuthEmailService] deleteVerificationRecords DB error:', err)
+    }
+  }
+
+  /**
    * Verifies 6-digit OTP with single-use guarantee and brute-force attempt limits
    */
   static async verifyOtp(
