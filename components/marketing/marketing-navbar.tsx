@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { useI18n } from '@/i18n/context'
 import { MARKETING_NAV_ITEMS } from '@/lib/marketing/marketing-data'
 import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
@@ -121,16 +122,8 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
 
           {/* Right Action CTAs (Visible on LG 1024px+) */}
           <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-            {/* Language Switcher Button */}
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              className="nav-link-nowrap flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-lg border border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
-              title="Switch Language: English / বাংলা"
-            >
-              <Globe2 className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-              <span className="nav-link-nowrap font-bold">{getLanguageLabel()}</span>
-            </button>
+            {/* 1-Click Language Switcher */}
+            <LanguageSwitcher />
 
             {/* Login Link */}
             <Link
@@ -151,16 +144,8 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
 
           {/* Mobile / Tablet Header Bar (Visible under LG 1024px) */}
           <div className="flex items-center gap-2 lg:hidden shrink-0">
-            {/* Language Button */}
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              className="nav-link-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-xs text-slate-300 hover:text-white shrink-0 cursor-pointer"
-              aria-label="Switch Language"
-            >
-              <Globe2 className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-              <span className="font-semibold nav-link-nowrap">{getLanguageLabel()}</span>
-            </button>
+            {/* 1-Click Language Switcher */}
+            <LanguageSwitcher compact size="sm" />
 
             {/* Tablet/Mobile Sign In */}
             <Link

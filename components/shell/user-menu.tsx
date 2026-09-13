@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { LogOut, Settings, User as UserIcon, Shield, Headphones } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { LanguageSwitcher } from './language-switcher'
 import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -114,6 +115,12 @@ export function UserMenu() {
               <Headphones className="h-3.5 w-3.5 text-indigo-500" />
               <span>{tBilingual('Help & Support Desk', 'সহায়তা ও সাপোর্ট ডেস্ক')}</span>
             </button>
+          </div>
+
+          {/* Quick Language Toggle */}
+          <div className="border-t border-slate-100 px-3 py-2 flex items-center justify-between dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+            <span className="bangla-text font-medium">{tBilingual('Language', 'ভাষা')}</span>
+            <LanguageSwitcher compact size="sm" showIcon={false} />
           </div>
 
           <div className="border-t border-slate-100 pt-1 dark:border-slate-800">

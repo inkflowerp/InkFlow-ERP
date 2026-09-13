@@ -16,6 +16,7 @@ import { PageHeader } from '@/components/shared/page-header'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { PrintERPDataStore } from '@/lib/db/data-store'
 
 export default function LocalizationSettingsPage() {
@@ -73,14 +74,17 @@ export default function LocalizationSettingsPage() {
       <form onSubmit={handleSave} className="space-y-6">
         {/* Language Selection */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Languages className="h-4 w-4 text-blue-600" />
-              Default Language & Presentation Mode
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Controls invoice labels, customer receipts, and system interface language.
-            </CardDescription>
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Languages className="h-4 w-4 text-blue-600" />
+                Default Language & Presentation Mode
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Controls invoice labels, customer receipts, and system interface language.
+              </CardDescription>
+            </div>
+            <LanguageSwitcher />
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -98,9 +102,12 @@ export default function LocalizationSettingsPage() {
               ].map((item) => (
                 <div
                   key={item.id}
-                  onClick={() => setLanguageMode(item.id as typeof languageMode)}
+                  onClick={() => {
+                    setLanguageMode(item.id as typeof languageMode)
+                    setLocale(item.id as typeof languageMode)
+                  }}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                    languageMode === item.id
+                    locale === item.id || languageMode === item.id
                       ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-600/20 dark:bg-blue-950/40 dark:border-blue-500'
                       : 'border-slate-200 hover:border-slate-300 dark:border-slate-800'
                   }`}

@@ -191,7 +191,7 @@ export function TopNav() {
           <Search className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
         </button>
 
-        <div className="hidden sm:block shrink-0">
+        <div className="shrink-0">
           <LanguageSwitcher />
         </div>
 

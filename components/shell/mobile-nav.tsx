@@ -54,6 +54,7 @@ import { useI18n } from '@/i18n/context'
 import { Sheet, SheetHeader, SheetContent, SheetFooter } from '@/components/ui/sheet'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { LanguageSwitcher } from './language-switcher'
 import { cn } from '@/lib/utils'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -223,16 +224,8 @@ export function MobileNav() {
               </div>
             </Link>
 
-            {/* Language Switcher */}
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-              title="Switch Language (English / বাংলা)"
-            >
-              <Globe2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-              <span>{locale === 'en' ? 'বাংলা' : 'EN'}</span>
-            </button>
+            {/* 1-Click Language Switcher */}
+            <LanguageSwitcher compact size="sm" />
           </div>
         </SheetHeader>
 

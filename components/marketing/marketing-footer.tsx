@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { useI18n } from '@/i18n/context'
 
 export function MarketingFooter() {
@@ -149,31 +150,9 @@ export function MarketingFooter() {
 
         {/* Bottom Language & Copyright Bar */}
         <div className="pt-6 sm:pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Globe2 className="h-3.5 w-3.5 text-cyan-400" />
-              <span>Language:</span>
-            </div>
-            <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
-              <button
-                type="button"
-                onClick={() => setLocale('en')}
-                className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                  locale === 'en' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                English
-              </button>
-              <button
-                type="button"
-                onClick={() => setLocale('bn')}
-                className={`px-2 py-0.5 rounded text-xs transition-colors bangla-text ${
-                  locale === 'bn' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                বাংলা
-              </button>
-            </div>
+          <div className="flex items-center gap-3">
+            <span className="text-slate-400">Language:</span>
+            <LanguageSwitcher size="sm" />
           </div>
 
           <div className="text-slate-500 text-center sm:text-right text-[11px] sm:text-xs">
