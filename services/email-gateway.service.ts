@@ -132,8 +132,9 @@ export class EmailGatewayService {
         .from('email_gateways')
         .select('*')
         .is('tenant_id', null)
-        .eq('is_default', true)
         .eq('status', 'active')
+        .order('is_default', { ascending: false })
+        .limit(1)
         .maybeSingle()
 
       if (!platErr && platformGw) {

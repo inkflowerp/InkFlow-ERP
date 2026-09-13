@@ -739,6 +739,14 @@ export class AuthEmailService {
     const { otp, token } = recordRes
     const verificationLink = `${appUrl}/auth/verify?token=${token}&email=${encodeURIComponent(email)}&purpose=registration`
 
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('\n==================================================')
+      console.log(`🔑 [InkFlow Auth] REGISTRATION OTP: ${otp}`)
+      console.log(`📧 Recipient: ${email}`)
+      console.log(`🔗 Link: ${verificationLink}`)
+      console.log('==================================================\n')
+    }
+
     const result = await EmailGatewayService.sendEmail({
       scopeType: 'PLATFORM',
       tenantId: null,
@@ -798,6 +806,14 @@ export class AuthEmailService {
 
     const { otp, token } = recordRes
     const resetUrl = `${appUrl}/auth/verify?token=${token}&email=${encodeURIComponent(email)}&purpose=password_reset`
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('\n==================================================')
+      console.log(`🔑 [InkFlow Auth] PASSWORD RESET OTP: ${otp}`)
+      console.log(`📧 Recipient: ${email}`)
+      console.log(`🔗 Link: ${resetUrl}`)
+      console.log('==================================================\n')
+    }
 
     const result = await EmailGatewayService.sendEmail({
       scopeType,

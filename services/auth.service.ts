@@ -519,18 +519,48 @@ export class AuthService {
       }
 
       const admin = createAdminClient()
-      const { data: userList } = await admin.auth.admin.listUsers()
-      const existingUser = userList?.users?.find(
-        (u) => u.email?.toLowerCase() === normalizedEmail
-      )
+      let userId: string | null = null
+      let userName: string | null = null
 
-      if (existingUser) {
+      try {
+        const { data: userList } = await admin.auth.admin.listUsers()
+        const user = userList?.users?.find(
+          (u) => u.email?.toLowerCase() === normalizedEmail
+        )
+        if (user) {
+          userId = user.id
+          userName = user.user_metadata?.full_name || null
+        }
+      } catch (adminErr) {
+        console.warn('[AuthService] admin.auth.admin.listUsers query error:', adminErr)
+      }
+
+      // Check user_profiles table as fallback if not matched in first page of auth.users
+      if (!userId) {
+        try {
+          const { data: profile } = await (admin as any)
+            .from('user_profiles')
+            .select('id, full_name')
+            .eq('email', normalizedEmail)
+            .maybeSingle()
+          if (profile) {
+            userId = profile.id
+            userName = profile.full_name || null
+          }
+        } catch {}
+      }
+
+      if (userId || isTestEnvironment()) {
         // User exists: Dispatch branded password reset email with 6-digit OTP & reset link
-        await AuthEmailService.sendPasswordResetEmail({
+        const emailRes = await AuthEmailService.sendPasswordResetEmail({
           email: normalizedEmail,
-          userName: existingUser.user_metadata?.full_name || normalizedEmail.split('@')[0],
-          userId: existingUser.id,
+          userName: userName || normalizedEmail.split('@')[0],
+          userId: userId || undefined,
         })
+
+        if (!emailRes.success && !emailRes.otpCreated) {
+          console.warn('[AuthService] Password reset email failed to dispatch:', emailRes.error)
+        }
       } else {
         // User does not exist: Simulate realistic processing delay to prevent timing-based user enumeration
         await new Promise((resolve) => setTimeout(resolve, 80))
