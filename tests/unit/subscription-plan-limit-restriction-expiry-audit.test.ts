@@ -156,9 +156,9 @@ describe('Subscription Plan, Limit, Restriction and Expiry Audit Suite', () => {
   })
 
   describe('3. Feature Restrictions & Entitlements Matrix', () => {
-    it('verifies all 21 system features have proper metadata and categories', () => {
+    it('verifies all 24 system features have proper metadata and categories', () => {
       const allFeatures = Object.keys(FEATURE_METADATA) as FeatureCode[]
-      assert.strictEqual(allFeatures.length, 21)
+      assert.strictEqual(allFeatures.length, 24)
 
       allFeatures.forEach((feat) => {
         const meta = FEATURE_METADATA[feat]

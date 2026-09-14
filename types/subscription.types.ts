@@ -1,11 +1,26 @@
+// ==============================================================================
+// InkFlow ERP SaaS - Subscription 360 Canonical Domain Types
+// Fully typed models for Plans, Versioning, Feature Catalog, Entitlements,
+// State Machine, SaaS Invoices, Usage Metering, and Revenue Analytics.
+// ==============================================================================
+
+export const UNLIMITED_LIMIT = -1
+
+export function isUnlimited(val?: number | null): boolean {
+  if (val === undefined || val === null) return false
+  return val <= 0 || val >= 99999 || val === UNLIMITED_LIMIT
+}
+
 export type TenantAccountType = 'trial' | 'starter' | 'business' | 'enterprise'
 
 export type PlanCode = 'trial' | 'starter' | 'business' | 'enterprise'
 
 export type SubscriptionStatus =
   | 'trial'
+  | 'trialing'
   | 'active'
   | 'past_due'
+  | 'grace_period'
   | 'suspended'
   | 'cancelled'
   | 'expired'
@@ -27,10 +42,10 @@ export interface TenantAccountTypeMeta {
 }
 
 export function resolveTenantAccountType(
-  subscription?: { status?: SubscriptionStatus; plan_code?: PlanCode } | null
+  subscription?: { status?: SubscriptionStatus | string; plan_code?: PlanCode | string } | null
 ): TenantAccountType {
   if (!subscription) return 'trial'
-  if (subscription.status === 'trial' || subscription.plan_code === 'trial') return 'trial'
+  if (subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial') return 'trial'
   if (subscription.plan_code === 'enterprise') return 'enterprise'
   if (subscription.plan_code === 'business') return 'business'
   if (subscription.plan_code === 'starter') return 'starter'
@@ -47,12 +62,13 @@ export interface ResolvedSubscriptionState {
   isTrial: boolean
   isSuspended: boolean
   isPastDue: boolean
+  isGracePeriod: boolean
 }
 
 export function resolveSubscriptionPlan(
   subscription?: {
-    status?: SubscriptionStatus
-    plan_code?: PlanCode
+    status?: SubscriptionStatus | string
+    plan_code?: PlanCode | string
     plan_name?: string
     plan_name_bn?: string
     plan_id?: string
@@ -71,12 +87,14 @@ export function resolveSubscriptionPlan(
       isTrial: true,
       isSuspended: false,
       isPastDue: false,
+      isGracePeriod: false,
     }
   }
 
-  const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
+  const isTrial = subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial'
   const isSuspended = subscription.status === 'suspended'
   const isPastDue = subscription.status === 'past_due'
+  const isGracePeriod = subscription.status === 'grace_period'
 
   if (isTrial) {
     const trialPlan = plans?.find((p) => p.code === 'trial' || p.id === subscription.plan_id)
@@ -84,12 +102,13 @@ export function resolveSubscriptionPlan(
       planCode: 'trial',
       planName: subscription.plan_name || trialPlan?.name || 'Free Trial',
       planNameBn: subscription.plan_name_bn || trialPlan?.name_bn || 'ফ্রি ট্রায়াল',
-      status: subscription.status || 'trial',
+      status: (subscription.status as SubscriptionStatus) || 'trial',
       badgeTextEn: 'Trial',
       badgeTextBn: 'ফ্রি ট্রায়াল',
       isTrial: true,
       isSuspended,
       isPastDue,
+      isGracePeriod: false,
     }
   }
 
@@ -113,12 +132,13 @@ export function resolveSubscriptionPlan(
     planCode: code,
     planName: subscription.plan_name || matchedPlan?.name || names[code].en,
     planNameBn: subscription.plan_name_bn || matchedPlan?.name_bn || names[code].bn,
-    status: subscription.status || 'active',
+    status: (subscription.status as SubscriptionStatus) || 'active',
     badgeTextEn: matchedPlan?.name ? matchedPlan.name.replace(/ Plan$/i, '') : (code.charAt(0).toUpperCase() + code.slice(1)),
     badgeTextBn: subscription.plan_name_bn || matchedPlan?.name_bn || names[code].bn,
     isTrial: false,
     isSuspended,
     isPastDue,
+    isGracePeriod,
   }
 }
 
@@ -132,7 +152,21 @@ export type PaymentGatewayType =
   | 'uddoktapay'
   | 'stripe'
   | 'bank_wire'
+  | 'manual'
+  | 'credit'
   | 'mock'
+
+export type FeatureCategory =
+  | 'sales'
+  | 'production'
+  | 'inventory'
+  | 'management'
+  | 'finance'
+  | 'communication'
+  | 'advanced'
+  | 'system'
+
+export type EntitlementType = 'boolean' | 'numeric' | 'usage' | 'unlimited'
 
 export type FeatureCode =
   | 'basic_sales'
@@ -150,12 +184,30 @@ export type FeatureCode =
   | 'hr_payroll'
   | 'job_costing'
   | 'whatsapp_notifications'
+  | 'sms_notifications'
   | 'multi_branch'
+  | 'machinery'
+  | 'attendance_qr'
   | 'advanced_analytics'
   | 'advanced_permissions'
   | 'custom_workflows'
   | 'api_access'
   | 'priority_support'
+
+export interface FeatureCatalogRecord {
+  id: string
+  key: FeatureCode | string
+  name_en: string
+  name_bn: string
+  description_en?: string | null
+  description_bn?: string | null
+  category: FeatureCategory
+  entitlement_type: EntitlementType
+  is_active: boolean
+  sort_order: number
+  created_at?: string
+  updated_at?: string
+}
 
 export type ConfigurableLimitType =
   | 'max_users'
@@ -167,6 +219,8 @@ export type ConfigurableLimitType =
 
 export type CustomLimitsOverride = Partial<Record<ConfigurableLimitType, number>>
 
+export type OveragePolicy = 'block' | 'warn' | 'allow_charge'
+
 export interface SubscriptionPlanRecord {
   id: string
   code: PlanCode
@@ -175,6 +229,7 @@ export interface SubscriptionPlanRecord {
   description?: string | null
   price_monthly: number
   price_yearly: number
+  currency?: string
   max_users: number
   max_branches: number
   storage_gb: number
@@ -183,8 +238,43 @@ export interface SubscriptionPlanRecord {
   max_products: number
   features: FeatureCode[]
   trial_days?: number
+  trial_eligible?: boolean
+  setup_fee?: number
+  version?: number
+  is_latest?: boolean
+  soft_limits?: { warning_threshold_pct?: number; [key: string]: any }
+  hard_limits?: Record<string, number>
+  overage_policy?: OveragePolicy
   is_active: boolean
+  is_public?: boolean
   sort_order: number
+  created_at?: string
+  updated_at?: string
+}
+
+export interface PlanVersionRecord {
+  id: string
+  plan_id: string
+  version: number
+  code: string
+  name: string
+  name_bn?: string | null
+  price_monthly: number
+  price_yearly: number
+  currency: string
+  max_users: number
+  max_branches: number
+  storage_gb: number
+  monthly_orders: number
+  max_customers: number
+  max_products: number
+  features: string[]
+  soft_limits?: Record<string, any>
+  hard_limits?: Record<string, any>
+  overage_policy: string
+  change_summary?: string | null
+  created_by?: string | null
+  created_at: string
 }
 
 export interface CompanySubscriptionRecord {
@@ -194,6 +284,7 @@ export interface CompanySubscriptionRecord {
   plan_code: PlanCode
   plan_name?: string
   plan_name_bn?: string
+  plan_version?: number
   status: SubscriptionStatus
   billing_interval: BillingInterval
   current_period_start: string
@@ -224,10 +315,11 @@ export type SubscriptionEventType =
   | 'REACTIVATED'
   | 'EXPIRED'
   | 'SUSPENDED'
+  | 'CREDIT_ADJUSTMENT'
 
 export interface SubscriptionEventRecord {
   id: string
-  subscription_id: string
+  subscription_id?: string | null
   company_id: string
   previous_plan_code?: string | null
   new_plan_code?: string | null
@@ -240,6 +332,7 @@ export interface SubscriptionEventRecord {
   currency: string
   effective_at: string
   performed_by?: string | null
+  metadata?: Record<string, any>
   created_at: string
 }
 
@@ -265,10 +358,12 @@ export interface TenantEntitlements {
   planCode: PlanCode
   planName: string
   planNameBn: string
+  planVersion: number
   status: SubscriptionStatus
   isTrial: boolean
   isSuspended: boolean
   isPastDue: boolean
+  isGracePeriod: boolean
   isTrialExpired: boolean
   daysRemainingInTrial: number
   trialProgressPercent: number
@@ -315,6 +410,7 @@ export interface SubscriptionVerificationResult {
   paidAmount?: number
   currency?: string
   subscriptionId?: string
+  invoiceId?: string
   error?: string
 }
 
@@ -341,6 +437,7 @@ export interface CreatePlanInput {
   description: string
   price_monthly: number
   price_yearly: number
+  currency?: string
   max_users: number
   max_branches: number
   storage_gb: number
@@ -349,8 +446,65 @@ export interface CreatePlanInput {
   max_products: number
   features: FeatureCode[]
   trial_days?: number
+  trial_eligible?: boolean
+  setup_fee?: number
   is_active?: boolean
+  is_public?: boolean
   sort_order?: number
+}
+
+// -----------------------------------------------------------------------------
+// Dedicated SaaS Subscription Invoices (Strict Separation from Customer Sales Invoices)
+// -----------------------------------------------------------------------------
+
+export type SaasInvoiceStatus = 'draft' | 'unpaid' | 'paid' | 'overdue' | 'void' | 'waived'
+
+export type SaasInvoiceItemType =
+  | 'plan_fee'
+  | 'proration_credit'
+  | 'user_addon'
+  | 'branch_addon'
+  | 'storage_addon'
+  | 'discount'
+  | 'vat'
+
+export interface SaasSubscriptionInvoiceItemRecord {
+  id: string
+  invoice_id: string
+  description: string
+  item_type: SaasInvoiceItemType
+  quantity: number
+  unit_price: number
+  total_price: number
+  created_at: string
+}
+
+export interface SaasSubscriptionInvoiceRecord {
+  id: string
+  company_id: string
+  subscription_id?: string | null
+  invoice_number: string
+  plan_id?: string | null
+  plan_code: PlanCode | string
+  plan_name: string
+  plan_version: number
+  billing_interval: BillingInterval
+  billing_period_start: string
+  billing_period_end: string
+  subtotal: number
+  discount_amount: number
+  tax_amount: number
+  total_amount: number
+  currency: string
+  due_date: string
+  status: SaasInvoiceStatus
+  payment_method?: PaymentGatewayType | string | null
+  gateway_transaction_id?: string | null
+  paid_at?: string | null
+  notes?: string | null
+  items?: SaasSubscriptionInvoiceItemRecord[]
+  created_at: string
+  updated_at: string
 }
 
 export interface SubscriptionInvoiceRecord {
@@ -366,4 +520,39 @@ export interface SubscriptionInvoiceRecord {
   billing_date: string
   due_date: string
   receipt_url?: string
+}
+
+export interface SaasTenantStorageUsageRecord {
+  id: string
+  company_id: string
+  total_bytes_used: number
+  total_files_count: number
+  artwork_bytes: number
+  invoices_bytes: number
+  receipts_bytes: number
+  documents_bytes: number
+  last_calculated_at: string
+  updated_at: string
+}
+
+export interface SaasRevenueOverview {
+  mrr: number
+  arr: number
+  arpu: number
+  activeSubscriptionsCount: number
+  trialSubscriptionsCount: number
+  pastDueSubscriptionsCount: number
+  gracePeriodSubscriptionsCount: number
+  suspendedSubscriptionsCount: number
+  cancelledSubscriptionsCount: number
+  churnRatePct: number
+  trialConversionRatePct: number
+  collectionRatePct: number
+  totalRevenueBdt: number
+  planDistribution: {
+    starter: number
+    business: number
+    enterprise: number
+    trial: number
+  }
 }

@@ -10,6 +10,7 @@ import type {
   ConfigurableLimitType,
   CustomLimitsOverride,
   SubscriptionInvoiceRecord,
+  SaasSubscriptionInvoiceRecord,
   CreatePlanInput,
   SubscriptionStatus,
   TenantAccountType,
@@ -23,6 +24,7 @@ import type {
 import { resolveTenantAccountType } from '../types/subscription.types.ts'
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import { GatewayService } from './gateway.service.ts'
+import { SaasBillingService } from './saas-billing.service.ts'
 import { createPaymentProvider } from '../lib/payments/provider.factory.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import { formatDate } from '../lib/formatters.ts'
@@ -94,186 +96,8 @@ export const TENANT_ACCOUNT_TYPE_METADATA: Record<TenantAccountType, TenantAccou
   },
 }
 
-export interface FeatureMeta {
-  code: FeatureCode
-  name: string
-  name_bn: string
-  description: string
-  description_bn?: string
-  minPlan: PlanCode
-  category: 'sales' | 'production' | 'management' | 'advanced'
-}
-
-export const FEATURE_METADATA: Record<FeatureCode, FeatureMeta> = {
-  basic_sales: {
-    code: 'basic_sales',
-    name: 'Basic Sales & POS',
-    name_bn: 'মৌলিক সেলস ও ক্যাশ মেমো',
-    description: 'Create estimates, cash sales, and bill printing.',
-    minPlan: 'starter',
-    category: 'sales',
-  },
-  basic_customers: {
-    code: 'basic_customers',
-    name: 'Basic Customers Directory',
-    name_bn: 'গ্রাহক তালিকা ও লেজার',
-    description: 'Maintain customer accounts, phone numbers, and balances.',
-    minPlan: 'starter',
-    category: 'sales',
-  },
-  quotation_pdf: {
-    code: 'quotation_pdf',
-    name: 'Quotation PDF Generator',
-    name_bn: 'কোটেশন পিডিএফ প্রস্তুতকরণ',
-    description: 'Download and print formal client quotations with company branding.',
-    minPlan: 'starter',
-    category: 'sales',
-  },
-  delivery_challan: {
-    code: 'delivery_challan',
-    name: 'Delivery Challan',
-    name_bn: 'ডেলিভারি চালান ও গেটপাস',
-    description: 'Print official delivery challans for dispatched orders.',
-    minPlan: 'starter',
-    category: 'sales',
-  },
-  multi_department: {
-    code: 'multi_department',
-    name: 'Multiple Departments',
-    name_bn: 'বহু বিভাগ ব্যবস্থাপনা',
-    description: 'Separate pre-press, offset, digital, solvent, and finishing departments.',
-    minPlan: 'business',
-    category: 'production',
-  },
-  inventory: {
-    code: 'inventory',
-    name: 'Inventory & Stock Management',
-    name_bn: 'ইনভেন্টরি ও কাঁচামাল স্টক',
-    description: 'Track media rolls, sheets, inks, eyelets, and purchase orders.',
-    minPlan: 'business',
-    category: 'production',
-  },
-  inventory_rolls: {
-    code: 'inventory_rolls',
-    name: 'Roll & Sheet Stock Ledger',
-    name_bn: 'রোল ও শিট স্টক লেজার',
-    description: 'Real-time linear foot, square foot, and ream balance calculations.',
-    minPlan: 'business',
-    category: 'production',
-  },
-  production: {
-    code: 'production',
-    name: 'Shop Floor Production',
-    name_bn: 'প্রোডাকশন ফ্লোর ও শিডিউলিং',
-    description: 'Machine queue, print operators job tickets, and QA signoff.',
-    minPlan: 'business',
-    category: 'production',
-  },
-  production_kanban: {
-    code: 'production_kanban',
-    name: 'Production Kanban Board',
-    name_bn: 'প্রোডাকশন কানবান বোর্ড',
-    description: 'Live interactive drag-and-drop workflow across production stages.',
-    minPlan: 'business',
-    category: 'production',
-  },
-  reports: {
-    code: 'reports',
-    name: 'Reports & Business Analytics',
-    name_bn: 'রিপোর্ট ও ব্যবসায়িক হিসাব',
-    description: 'P&L, daily collection, sales by product, and material wastage analysis.',
-    minPlan: 'business',
-    category: 'management',
-  },
-  reports_analytics: {
-    code: 'reports_analytics',
-    name: 'Executive Financial Reports',
-    name_bn: 'নির্বাহী আর্থিক বিশ্লেষণ',
-    description: 'Consolidated profit and revenue analytics with exportable spreadsheets.',
-    minPlan: 'business',
-    category: 'management',
-  },
-  hr: {
-    code: 'hr',
-    name: 'HR & Employee Management',
-    name_bn: 'মানবসম্পদ ও কর্মী প্রশাসন',
-    description: 'Employee roster, attendance, shifts, and leave records.',
-    minPlan: 'business',
-    category: 'management',
-  },
-  hr_payroll: {
-    code: 'hr_payroll',
-    name: 'Payroll & Salary Sheets',
-    name_bn: 'বেতন ও পে-রোল প্রস্তুতকরণ',
-    description: 'Monthly payroll generation, overtime calculations, and salary payslips.',
-    minPlan: 'business',
-    category: 'management',
-  },
-  job_costing: {
-    code: 'job_costing',
-    name: 'Job Costing & Profitability',
-    name_bn: 'জব কস্টিং ও প্রকৃত লাভ নিরীক্ষা',
-    description: 'Actual ink, media, electricity, and labor cost analysis per job ticket.',
-    minPlan: 'business',
-    category: 'management',
-  },
-  whatsapp_notifications: {
-    code: 'whatsapp_notifications',
-    name: 'WhatsApp Notifications',
-    name_bn: 'হোয়াটসঅ্যাপ নোটিফিকেশন',
-    description: 'Automated order status and delivery updates directly to client phones.',
-    minPlan: 'business',
-    category: 'advanced',
-  },
-  multi_branch: {
-    code: 'multi_branch',
-    name: 'Multiple Branches & Hubs',
-    name_bn: 'মাল্টি-ব্রাঞ্চ ও শাখা নিয়ন্ত্রণ',
-    description: 'Manage separate factory floors, retail counters, and regional hubs.',
-    minPlan: 'enterprise',
-    category: 'advanced',
-  },
-  advanced_analytics: {
-    code: 'advanced_analytics',
-    name: 'Advanced Analytics & Forecasting',
-    name_bn: 'উন্নত অ্যানালিটিক্স ও পূর্বাভাস',
-    description: 'Machine efficiency benchmarking and inventory reorder forecasting.',
-    minPlan: 'enterprise',
-    category: 'advanced',
-  },
-  advanced_permissions: {
-    code: 'advanced_permissions',
-    name: 'Advanced RBAC & Granular Overrides',
-    name_bn: 'উন্নত পারমিশন ও রোল কাস্টমাইজেশন',
-    description: 'Per-user permission matrix, module masks, and action-level controls.',
-    minPlan: 'enterprise',
-    category: 'advanced',
-  },
-  custom_workflows: {
-    code: 'custom_workflows',
-    name: 'Custom Approval Workflows',
-    name_bn: 'কাস্টম অনুমোদন ওয়ার্কফ্লো',
-    description: 'Multi-stage quotation signoffs and credit limit threshold approvals.',
-    minPlan: 'enterprise',
-    category: 'advanced',
-  },
-  api_access: {
-    code: 'api_access',
-    name: 'REST API & Webhooks',
-    name_bn: 'রেস্ট এপিআই ও ওয়েবহুক অ্যাক্সেস',
-    description: 'Direct programmatic API integration with ERP, accounting, or e-commerce.',
-    minPlan: 'enterprise',
-    category: 'advanced',
-  },
-  priority_support: {
-    code: 'priority_support',
-    name: 'Dedicated 24/7 Account Manager',
-    name_bn: 'ডেডিকেটেড ২৪/৭ অ্যাকাউন্ট সাপোর্ট',
-    description: 'Direct phone & on-site priority support with 99.9% uptime SLA.',
-    minPlan: 'enterprise',
-    category: 'advanced',
-  },
-}
+import { FEATURE_METADATA, type FeatureMeta } from '../lib/subscription/subscription-constants.ts'
+export { FEATURE_METADATA, type FeatureMeta }
 
 export const DEFAULT_TRIAL_PLAN: SubscriptionPlanRecord = {
   id: 'sp-00',
@@ -778,7 +602,24 @@ export class SubscriptionService {
 
       const amountToPay = proration.finalAmount
       const internalTrxId = `SUB-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
-      const invoiceId = `INV-${Date.now().toString().slice(-6)}`
+      
+      // Generate official SaaS Subscription Invoice
+      let saasInvoice: SaasSubscriptionInvoiceRecord | null = null
+      try {
+        saasInvoice = await SaasBillingService.generateInvoice({
+          companyId,
+          planId: targetPlan.id,
+          billingInterval: interval,
+          subtotal: proration.targetPlanPrice,
+          discountAmount: proration.unusedCredit,
+          taxAmount: 0,
+          notes: `Subscription checkout for ${targetPlan.name} (${interval})`,
+        })
+      } catch (invErr) {
+        console.warn('[SubscriptionService] SaaS invoice generation notice:', invErr)
+      }
+
+      const invoiceId = saasInvoice?.invoice_number || `INV-${Date.now().toString().slice(-6)}`
 
       // 3. Resolve Gateway Integration
       const gateways = await GatewayService.listGateways({ tenantId: null, category: 'payment' })
@@ -811,6 +652,7 @@ export class SubscriptionService {
           companyId,
           planCode,
           planId: targetPlan.id,
+          saasInvoiceId: saasInvoice?.id,
           interval,
           proration,
           customerName,
@@ -829,6 +671,11 @@ export class SubscriptionService {
       if (txError) {
         console.warn('[SubscriptionService] Transaction insert warning:', txError.message)
       }
+
+      // Persist in memory store for local/test resilience
+      const memTxs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
+      const savedTx = { ...transactionPayload, id: txRecord?.id || `tx-${Date.now()}` }
+      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [savedTx, ...memTxs], false)
 
       // 5. Record Subscription Event: PAYMENT_PENDING
       await this.recordSubscriptionEvent({
@@ -939,14 +786,28 @@ export class SubscriptionService {
 
     try {
       // 1. Locate Transaction Record
+      let tx: any = null
       let query = (admin as any).from('gateway_transactions').select('*')
       if (internalTrxId) query = query.eq('internal_trx_id', internalTrxId)
       else if (providerTrxId) query = query.eq('provider_trx_id', providerTrxId)
       else if (gatewayReference) query = query.eq('provider_trx_id', gatewayReference)
       else return { success: false, status: 'failed', error: 'No transaction identifier provided.' }
 
-      const { data: tx, error: txError } = await query.maybeSingle()
-      if (txError || !tx) {
+      try {
+        const { data, error: txError } = await query.maybeSingle()
+        if (!txError && data) tx = data
+      } catch {}
+
+      if (!tx) {
+        const memTxs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
+        tx = memTxs.find((t) =>
+          (internalTrxId && t.internal_trx_id === internalTrxId) ||
+          (providerTrxId && t.provider_trx_id === providerTrxId) ||
+          (gatewayReference && t.provider_trx_id === gatewayReference)
+        )
+      }
+
+      if (!tx) {
         return { success: false, status: 'failed', error: 'Transaction record not found.' }
       }
 
@@ -1075,17 +936,35 @@ export class SubscriptionService {
       }
 
       // 4. Mark Transaction as VERIFIED and PAID
-      await (admin as any)
-        .from('gateway_transactions')
-        .update({
-          payment_status: 'paid',
-          verification_status: 'verified',
-          provider_trx_id: verifiedTrxId,
-          paid_at: now,
-          verification_payload: { ...rawMeta, verifyResponse: verifyRawResponse },
-          updated_at: now,
-        })
-        .eq('id', tx.id)
+      try {
+        await (admin as any)
+          .from('gateway_transactions')
+          .update({
+            payment_status: 'paid',
+            verification_status: 'verified',
+            provider_trx_id: verifiedTrxId,
+            paid_at: now,
+            verification_payload: { ...rawMeta, verifyResponse: verifyRawResponse },
+            updated_at: now,
+          })
+          .eq('id', tx.id)
+      } catch {}
+
+      const memTxs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.GATEWAY_TRANSACTIONS) || []
+      const updatedMemTxs = memTxs.map((t) =>
+        t.internal_trx_id === tx.internal_trx_id || t.id === tx.id
+          ? {
+              ...t,
+              payment_status: 'paid',
+              verification_status: 'verified',
+              provider_trx_id: verifiedTrxId,
+              paid_at: now,
+              verification_payload: { ...rawMeta, verifyResponse: verifyRawResponse },
+              updated_at: now,
+            }
+          : t
+      )
+      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, updatedMemTxs, false)
 
       // 5. Update Tenant Subscription Record Atomically
       const targetPlan = await this.getPlanByCode(targetPlanCode)
@@ -1096,10 +975,10 @@ export class SubscriptionService {
       const currentPeriodStart = now
       const currentPeriodEnd = new Date(Date.now() + periodDays * 86400000).toISOString()
 
-      if (companyId && isValidUuid(companyId)) {
+      if (companyId) {
         const updateData = {
           plan_id: targetPlan.id,
-          status: 'active',
+          status: 'active' as const,
           billing_interval: targetInterval,
           current_period_start: currentPeriodStart,
           current_period_end: currentPeriodEnd,
@@ -1113,13 +992,51 @@ export class SubscriptionService {
           updated_at: now,
         }
 
-        const { error: subUpdateError } = await (admin as any)
-          .from('company_subscriptions')
-          .update(updateData)
-          .eq('company_id', companyId)
+        if (isValidUuid(companyId)) {
+          const { error: subUpdateError } = await (admin as any)
+            .from('company_subscriptions')
+            .update(updateData)
+            .eq('company_id', companyId)
 
-        if (subUpdateError) {
-          console.warn('[SubscriptionService] Sub update error:', subUpdateError.message)
+          if (subUpdateError) {
+            console.warn('[SubscriptionService] Sub update error:', subUpdateError.message)
+          }
+        }
+
+        // Always update in DataStore cache
+        const subsMap = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+        subsMap[companyId] = {
+          ...(subsMap[companyId] || {}),
+          id: subsMap[companyId]?.id || `sub-${companyId}`,
+          company_id: companyId,
+          plan_code: targetPlanCode,
+          ...updateData,
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subsMap, false)
+
+        // Settle associated SaaS invoice
+        try {
+          if (rawMeta.saasInvoiceId) {
+            await SaasBillingService.settleInvoice({
+              invoiceId: rawMeta.saasInvoiceId,
+              transactionId: tx.id,
+              paymentMethod: effectiveProvider,
+              paidAmount: Number(tx.amount),
+            })
+          } else if (tx.invoice_id) {
+            const invoices = await SaasBillingService.getCompanyInvoices(companyId)
+            const matchedInv = invoices.find((i) => i.invoice_number === tx.invoice_id || i.id === tx.invoice_id)
+            if (matchedInv) {
+              await SaasBillingService.settleInvoice({
+                invoiceId: matchedInv.id,
+                transactionId: tx.id,
+                paymentMethod: effectiveProvider,
+                paidAmount: Number(tx.amount),
+              })
+            }
+          }
+        } catch (settleErr) {
+          console.warn('[SubscriptionService] Invoice settlement notice:', settleErr)
         }
 
         // 6. Record Immutable Subscription Event
@@ -1243,6 +1160,16 @@ export class SubscriptionService {
           })
         } catch (commErr) {
           console.warn('[SubscriptionService] Downgrade notification notice:', commErr)
+        }
+      }
+
+      if (companyId) {
+        const subsMap = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+        if (subsMap[companyId]) {
+          subsMap[companyId].next_plan_id = nextPlan.id
+          subsMap[companyId].change_effective_at = effectiveAt
+          subsMap[companyId].updated_at = new Date().toISOString()
+          PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subsMap, false)
         }
       }
 

@@ -208,6 +208,8 @@ export const STORAGE_KEYS = {
   USER_BRANCH_ACCESS: 'printerp_tenant_user_branch_access',
   SAVED_VIEWS: 'printerp_tenant_saved_views',
   BANK_STATEMENTS: 'printerp_tenant_bank_statements',
+  GATEWAY_TRANSACTIONS: 'printerp_gateway_transactions',
+  SAAS_INVOICES: 'printerp_saas_invoices',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -660,9 +662,13 @@ export class PrintERPDataStore {
   }
 
   /**
-   * Clears a storage key collection
+   * Clears a storage key collection, or all keys if no key provided
    */
-  static clear(key: StorageKey, tenantSlug?: string): void {
+  static clear(key?: StorageKey, tenantSlug?: string): void {
+    if (!key) {
+      this.clearAll(tenantSlug)
+      return
+    }
     this.set(key, [], true, tenantSlug, true)
   }
 

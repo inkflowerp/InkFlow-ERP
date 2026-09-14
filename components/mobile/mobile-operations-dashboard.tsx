@@ -113,7 +113,7 @@ export function MobileOperationsDashboard({ tenantSlug }: MobileOperationsDashbo
             <Sparkles className="w-5 h-5 text-indigo-400" />
             InkFlow Mobile
           </h1>
-          <p className="text-xs text-slate-400">Today's Operational Hub</p>
+          <p className="text-xs text-slate-400">Today&apos;s Operational Hub</p>
         </div>
 
         <button

@@ -1,6 +1,6 @@
 // ==============================================================================
-// PrintERP SaaS - Entitlement & Feature Gating Service
-// Authoritative server-side evaluation of plans, subscription state, features, & quotas
+// InkFlow ERP SaaS - Authoritative Entitlement & Feature Gating Service
+// Server-side evaluation of plans, subscription state, canonical features, & quotas
 // ==============================================================================
 
 import { createAdminClient } from '../lib/supabase/admin.ts'
@@ -13,6 +13,7 @@ import type {
   SubscriptionPlanRecord,
   TenantResourceUsage,
   PaymentGatewayType,
+  SubscriptionStatus,
 } from '../types/subscription.types.ts'
 import {
   DEFAULT_PLANS,
@@ -23,7 +24,6 @@ import {
   getTenantResourceUsage,
 } from '../lib/subscription/subscription-constants.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
-import { GatewayRegistry } from '../lib/gateway/gateway.registry.ts'
 
 export class EntitlementService {
   /**
@@ -136,6 +136,9 @@ export class EntitlementService {
           company_id: sub.company_id || resolvedCompanyId,
           plan_id: sub.plan_id || effectivePlan.id,
           plan_code: effectivePlan.code,
+          plan_name: effectivePlan.name,
+          plan_name_bn: effectivePlan.name_bn,
+          plan_version: sub.plan_version || effectivePlan.version || 1,
           status: sub.status,
           billing_interval: sub.billing_interval || 'monthly',
           current_period_start: sub.current_period_start || companyCreatedAt,
@@ -207,6 +210,9 @@ export class EntitlementService {
       company_id: resolvedCompanyId,
       plan_id: dbTrialPlan.id,
       plan_code: 'trial',
+      plan_name: dbTrialPlan.name,
+      plan_name_bn: dbTrialPlan.name_bn,
+      plan_version: dbTrialPlan.version || 1,
       status: 'trial',
       billing_interval: 'monthly',
       current_period_start: companyCreatedAt,
@@ -253,9 +259,10 @@ export class EntitlementService {
       }
     } catch {}
 
-    const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
+    const isTrial = subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial'
     const isSuspended = subscription.status === 'suspended'
     const isPastDue = subscription.status === 'past_due'
+    const isGracePeriod = subscription.status === 'grace_period'
     const totalTrialDays = plan.trial_days || 14
     const daysRemaining = isTrial ? getTrialDaysRemaining(subscription.trial_ends_at) : 0
     const isTrialExpired = isTrial && daysRemaining <= 0
@@ -283,10 +290,12 @@ export class EntitlementService {
       planCode: plan.code,
       planName: plan.name,
       planNameBn: plan.name_bn || plan.name,
+      planVersion: plan.version || 1,
       status: subscription.status,
       isTrial,
       isSuspended,
       isPastDue,
+      isGracePeriod,
       isTrialExpired,
       daysRemainingInTrial: daysRemaining,
       trialProgressPercent,
@@ -312,7 +321,7 @@ export class EntitlementService {
     if (subscription.status === 'suspended' || subscription.status === 'expired') return false
 
     // Expired trials lose premium feature access
-    const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
+    const isTrial = subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial'
     if (isTrial) {
       const daysRemaining = getTrialDaysRemaining(subscription.trial_ends_at)
       if (daysRemaining <= 0) return false
@@ -322,7 +331,7 @@ export class EntitlementService {
   }
 
   /**
-   * Checks resource quota limit
+   * Checks resource quota limit with PostgreSQL atomic evaluation
    */
   static async checkResourceQuota(
     companyId: string,
@@ -351,7 +360,7 @@ export class EntitlementService {
       }
     }
 
-    const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
+    const isTrial = subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial'
     if (isTrial) {
       const daysRemaining = getTrialDaysRemaining(subscription.trial_ends_at)
       if (daysRemaining <= 0 || subscription.status === 'expired') {
@@ -391,6 +400,7 @@ export class EntitlementService {
                 .from('company_users')
                 .select('*', { count: 'exact', head: true })
                 .eq('company_id', companyId)
+                .or('status.eq.active,status.eq.invited,status.eq.pending,status.is.null')
               if (!error && count !== null && count !== undefined) {
                 dbCount = count
               }
@@ -401,6 +411,7 @@ export class EntitlementService {
                 .from('branches')
                 .select('*', { count: 'exact', head: true })
                 .eq('company_id', companyId)
+                .eq('is_active', true)
               if (!error && count !== null && count !== undefined) {
                 dbCount = count
               }
@@ -436,6 +447,17 @@ export class EntitlementService {
                 .gte('created_at', startOfMonth)
               if (!error && count !== null && count !== undefined) {
                 dbCount = count
+              }
+              break
+            }
+            case 'storage_gb': {
+              const { data: storageRow } = await (admin as any)
+                .from('saas_tenant_storage_usage')
+                .select('total_bytes_used')
+                .eq('company_id', companyId)
+                .maybeSingle()
+              if (storageRow && storageRow.total_bytes_used) {
+                dbCount = Number((storageRow.total_bytes_used / (1024 * 1024 * 1024)).toFixed(2))
               }
               break
             }
@@ -519,6 +541,75 @@ export class EntitlementService {
       throw new Error(
         `Feature Access Restricted: '${feature}' is not included in your current subscription tier or your subscription is inactive. Please upgrade your plan to access this feature.`
       )
+    }
+  }
+
+  /**
+   * Resolves effective limit
+   */
+  static async getLimit(companyId: string, limitType: ConfigurableLimitType): Promise<number> {
+    const check = await this.checkResourceQuota(companyId, limitType)
+    return check.limit
+  }
+
+  /**
+   * Resolves current usage
+   */
+  static async getUsage(companyId: string, limitType: ConfigurableLimitType): Promise<number> {
+    const check = await this.checkResourceQuota(companyId, limitType)
+    return check.current
+  }
+
+  /**
+   * Resolves remaining capacity (-1 if unlimited)
+   */
+  static async getRemaining(companyId: string, limitType: ConfigurableLimitType): Promise<number> {
+    const check = await this.checkResourceQuota(companyId, limitType)
+    if (check.limit <= 0 || check.limit >= 99999 || check.limit === -1) return -1
+    return Math.max(0, check.limit - check.current)
+  }
+
+  /**
+   * Checks whether limit is unlimited
+   */
+  static async isUnlimited(companyId: string, limitType: ConfigurableLimitType): Promise<boolean> {
+    const check = await this.checkResourceQuota(companyId, limitType)
+    return check.limit <= 0 || check.limit >= 99999 || check.limit === -1
+  }
+
+  /**
+   * Authoritatively checks entitlement details
+   */
+  static async checkEntitlement(
+    companyId: string,
+    feature: FeatureCode
+  ): Promise<{
+    allowed: boolean
+    planCode: string
+    status: SubscriptionStatus
+    reason?: string
+  }> {
+    const entitlements = await this.getTenantEntitlements(companyId)
+    const allowed = await this.canUseFeature(companyId, feature)
+
+    let reason: string | undefined
+    if (!allowed) {
+      if (entitlements.isSuspended) {
+        reason = 'Account is suspended.'
+      } else if (entitlements.isTrialExpired) {
+        reason = 'Trial period has expired.'
+      } else if (entitlements.status === 'expired') {
+        reason = 'Subscription has expired.'
+      } else {
+        reason = `Feature '${feature}' is not included in ${entitlements.planName}.`
+      }
+    }
+
+    return {
+      allowed,
+      planCode: entitlements.planCode,
+      status: entitlements.status,
+      reason,
     }
   }
 }
