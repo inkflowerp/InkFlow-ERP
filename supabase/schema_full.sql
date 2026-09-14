@@ -1,9 +1,3 @@
--- ==============================================================================
--- PrintERP SaaS - Full Unified Schema (Consolidated from 30 Migrations)
--- Target: Supabase Postgres (PostgreSQL 15+)
--- ==============================================================================
-
-
 -- >>> FILE: 001_initial_schema.sql <<<
 -- ==============================================================================
 -- PrintERP SaaS - Multi-Tenant Initial Schema Migration (001)
@@ -33,8 +27,6 @@ create table if not exists public.companies (
     upazila_id integer,
     address text,
     address_bn text,
-    office_hours text default '9:00 AM - 8:00 PM (Sat - Thu)',
-    holidays text default 'Friday',
     currency text not null default 'BDT',
     default_locale text not null default 'bn',
     logo_url text,
@@ -99,78 +91,14 @@ create index if not exists idx_audit_logs_created on public.audit_logs(created_a
 -- Automatic profile creation trigger when user signs up in Supabase Auth
 create or replace function public.handle_new_user()
 returns trigger as $$
-declare
-    user_name text;
-    user_phone text;
-    user_locale text;
 begin
-    user_name := coalesce(
-        new.raw_user_meta_data->>'full_name',
-        new.raw_user_meta_data->>'name',
-        split_part(new.email, '@', 1)
-    );
-    user_phone := coalesce(
-        new.raw_user_meta_data->>'phone',
-        new.phone,
-        null
-    );
-    user_locale := coalesce(
-        new.raw_user_meta_data->>'preferred_locale',
-        new.raw_user_meta_data->>'locale',
-        'bn'
-    );
-
-    -- 1. Insert into public.user_profiles
-    insert into public.user_profiles (
-        id,
-        email,
-        full_name,
-        phone,
-        preferred_locale,
-        is_active,
-        created_at,
-        updated_at
-    )
+    insert into public.profiles (id, full_name, preferred_locale)
     values (
         new.id,
-        new.email,
-        user_name,
-        user_phone,
-        user_locale,
-        true,
-        now(),
-        now()
+        coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+        coalesce(new.raw_user_meta_data->>'preferred_locale', 'bn')
     )
-    on conflict (id) do update set
-        email = excluded.email,
-        full_name = coalesce(excluded.full_name, public.user_profiles.full_name),
-        phone = coalesce(excluded.phone, public.user_profiles.phone),
-        preferred_locale = coalesce(excluded.preferred_locale, public.user_profiles.preferred_locale),
-        updated_at = now();
-
-    -- 2. Insert into public.profiles for backwards compatibility
-    insert into public.profiles (
-        id,
-        full_name,
-        phone,
-        preferred_locale,
-        created_at,
-        updated_at
-    )
-    values (
-        new.id,
-        user_name,
-        user_phone,
-        user_locale,
-        now(),
-        now()
-    )
-    on conflict (id) do update set
-        full_name = coalesce(excluded.full_name, public.profiles.full_name),
-        phone = coalesce(excluded.phone, public.profiles.phone),
-        preferred_locale = coalesce(excluded.preferred_locale, public.profiles.preferred_locale),
-        updated_at = now();
-
+    on conflict (id) do nothing;
     return new;
 end;
 $$ language plpgsql security definer;
@@ -389,16 +317,16 @@ alter table public.upazilas enable row level security;
 
 -- 1. PUBLIC REFERENCE TABLES (Divisions, Districts, Upazilas)
 -- Read-only access for all authenticated and anon users
-drop policy if exists "Allow read access to divisions" on public.divisions;
-create policy "Allow read access to divisions" on public.divisions for select
+create policy "Allow read access to divisions"
+    on public.divisions for select
     using (true);
 
-drop policy if exists "Allow read access to districts" on public.districts;
-create policy "Allow read access to districts" on public.districts for select
+create policy "Allow read access to districts"
+    on public.districts for select
     using (true);
 
-drop policy if exists "Allow read access to upazilas" on public.upazilas;
-create policy "Allow read access to upazilas" on public.upazilas for select
+create policy "Allow read access to upazilas"
+    on public.upazilas for select
     using (true);
 
 -- 2. SECURITY HELPER FUNCTIONS
@@ -432,53 +360,53 @@ $$ language plpgsql security definer;
 
 -- 3. PROFILES POLICIES
 -- Users can view and update their own profile
-drop policy if exists "Users can view own profile" on public.profiles;
-create policy "Users can view own profile" on public.profiles for select
+create policy "Users can view own profile"
+    on public.profiles for select
     using (auth.uid() = id);
 
-drop policy if exists "Users can update own profile" on public.profiles;
-create policy "Users can update own profile" on public.profiles for update
+create policy "Users can update own profile"
+    on public.profiles for update
     using (auth.uid() = id);
 
-drop policy if exists "Users can insert own profile" on public.profiles;
-create policy "Users can insert own profile" on public.profiles for insert
+create policy "Users can insert own profile"
+    on public.profiles for insert
     with check (auth.uid() = id);
 
 -- 4. COMPANIES (TENANTS) POLICIES
 -- Users can view companies they belong to
-drop policy if exists "Members can view company details" on public.companies;
-create policy "Members can view company details" on public.companies for select
+create policy "Members can view company details"
+    on public.companies for select
     using (public.auth_user_has_company_access(id));
 
 -- Only owners and admins can update company details
-drop policy if exists "Owners and Admins can update company" on public.companies;
-create policy "Owners and Admins can update company" on public.companies for update
+create policy "Owners and Admins can update company"
+    on public.companies for update
     using (public.auth_user_get_role(id) in ('owner', 'admin'));
 
 -- Any authenticated user can create a new company (for onboarding)
-drop policy if exists "Authenticated users can create companies" on public.companies;
-create policy "Authenticated users can create companies" on public.companies for insert
+create policy "Authenticated users can create companies"
+    on public.companies for insert
     with check (auth.uid() is not null);
 
 -- 5. TENANT MEMBERSHIPS POLICIES
 -- Users can see memberships for companies they belong to
-drop policy if exists "Members can view company members" on public.tenant_memberships;
-create policy "Members can view company members" on public.tenant_memberships for select
+create policy "Members can view company members"
+    on public.tenant_memberships for select
     using (public.auth_user_has_company_access(company_id));
 
 -- Users can also see their own memberships anywhere (to list companies)
-drop policy if exists "Users can view own memberships" on public.tenant_memberships;
-create policy "Users can view own memberships" on public.tenant_memberships for select
+create policy "Users can view own memberships"
+    on public.tenant_memberships for select
     using (auth.uid() = user_id);
 
 -- Owners and Admins can manage memberships (invite, remove, update roles)
-drop policy if exists "Admins can manage company memberships" on public.tenant_memberships;
-create policy "Admins can manage company memberships" on public.tenant_memberships for all
+create policy "Admins can manage company memberships"
+    on public.tenant_memberships for all
     using (public.auth_user_get_role(company_id) in ('owner', 'admin'));
 
 -- Creator of a company can add their own owner membership
-drop policy if exists "Company creators can insert owner membership" on public.tenant_memberships;
-create policy "Company creators can insert owner membership" on public.tenant_memberships for insert
+create policy "Company creators can insert owner membership"
+    on public.tenant_memberships for insert
     with check (
         auth.uid() = user_id 
         and role = 'owner'
@@ -486,12 +414,12 @@ create policy "Company creators can insert owner membership" on public.tenant_me
 
 -- 6. AUDIT LOGS POLICIES
 -- Members can view audit logs for their company if admin/owner
-drop policy if exists "Admins can view company audit logs" on public.audit_logs;
-create policy "Admins can view company audit logs" on public.audit_logs for select
+create policy "Admins can view company audit logs"
+    on public.audit_logs for select
     using (public.auth_user_get_role(company_id) in ('owner', 'admin'));
 
-drop policy if exists "System and users can insert audit logs" on public.audit_logs;
-create policy "System and users can insert audit logs" on public.audit_logs for insert
+create policy "System and users can insert audit logs"
+    on public.audit_logs for insert
     with check (public.auth_user_has_company_access(company_id));
 
 
@@ -564,11 +492,11 @@ on conflict (code) do update set
 alter table public.business_categories enable row level security;
 alter table public.measurement_units enable row level security;
 
-drop policy if exists "Allow read access to business categories" on public.business_categories;
-create policy "Allow read access to business categories" on public.business_categories for select using (true);
+create policy "Allow read access to business categories"
+    on public.business_categories for select using (true);
 
-drop policy if exists "Allow read access to measurement units" on public.measurement_units;
-create policy "Allow read access to measurement units" on public.measurement_units for select using (true);
+create policy "Allow read access to measurement units"
+    on public.measurement_units for select using (true);
 
 
 -- >>> FILE: 005_core_multitenant_entities.sql <<<
@@ -834,27 +762,27 @@ end;
 $$ language plpgsql security definer;
 
 -- 3. RLS POLICIES FOR USER_PROFILES
-drop policy if exists "Users can view own user_profile" on public.user_profiles;
-create policy "Users can view own user_profile" on public.user_profiles for select
+create policy "Users can view own user_profile"
+    on public.user_profiles for select
     using (auth.uid() = id);
 
-drop policy if exists "Users can update own user_profile" on public.user_profiles;
-create policy "Users can update own user_profile" on public.user_profiles for update
+create policy "Users can update own user_profile"
+    on public.user_profiles for update
     using (auth.uid() = id);
 
-drop policy if exists "Users can insert own user_profile" on public.user_profiles;
-create policy "Users can insert own user_profile" on public.user_profiles for insert
+create policy "Users can insert own user_profile"
+    on public.user_profiles for insert
     with check (auth.uid() = id);
 
 -- 4. RLS POLICIES FOR COMPANY_SETTINGS
 -- Active members can view company settings
-drop policy if exists "Active members can view company settings" on public.company_settings;
-create policy "Active members can view company settings" on public.company_settings for select
+create policy "Active members can view company settings"
+    on public.company_settings for select
     using (public.auth_is_active_company_user(company_id));
 
 -- Only owners, admins, or users with settings.manage can update company settings
-drop policy if exists "Admins can update company settings" on public.company_settings;
-create policy "Admins can update company settings" on public.company_settings for update
+create policy "Admins can update company settings"
+    on public.company_settings for update
     using (
         public.auth_is_active_company_user(company_id) 
         and (
@@ -863,17 +791,17 @@ create policy "Admins can update company settings" on public.company_settings fo
         )
     );
 
-drop policy if exists "Authenticated users can insert company settings for created companies" on public.company_settings;
-create policy "Authenticated users can insert company settings for created companies" on public.company_settings for insert
+create policy "Authenticated users can insert company settings for created companies"
+    on public.company_settings for insert
     with check (auth.uid() is not null);
 
 -- 5. RLS POLICIES FOR BRANCHES
-drop policy if exists "Active members can view branches" on public.branches;
-create policy "Active members can view branches" on public.branches for select
+create policy "Active members can view branches"
+    on public.branches for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Admins can manage branches" on public.branches;
-create policy "Admins can manage branches" on public.branches for all
+create policy "Admins can manage branches"
+    on public.branches for all
     using (
         public.auth_is_active_company_user(company_id) 
         and (
@@ -884,15 +812,15 @@ create policy "Admins can manage branches" on public.branches for all
 
 -- 6. RLS POLICIES FOR COMPANY_USERS
 -- Users can view company_users in companies they are active in
-drop policy if exists "Active members can view company users" on public.company_users;
-create policy "Active members can view company users" on public.company_users for select
+create policy "Active members can view company users"
+    on public.company_users for select
     using (
         public.auth_is_active_company_user(company_id)
         or auth.uid() = user_id -- Allows users to discover which companies they belong to
     );
 
-drop policy if exists "Admins can manage company users" on public.company_users;
-create policy "Admins can manage company users" on public.company_users for all
+create policy "Admins can manage company users"
+    on public.company_users for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -902,35 +830,35 @@ create policy "Admins can manage company users" on public.company_users for all
     );
 
 -- 7. RLS POLICIES FOR ROLES & PERMISSIONS
-drop policy if exists "Anyone can read permissions catalog" on public.permissions;
-create policy "Anyone can read permissions catalog" on public.permissions for select
+create policy "Anyone can read permissions catalog"
+    on public.permissions for select
     using (true);
 
-drop policy if exists "Users can view roles available in their company" on public.roles;
-create policy "Users can view roles available in their company" on public.roles for select
+create policy "Users can view roles available in their company"
+    on public.roles for select
     using (
         company_id is null -- System roles are visible to all
         or public.auth_is_active_company_user(company_id)
     );
 
-drop policy if exists "Admins can manage custom roles" on public.roles;
-create policy "Admins can manage custom roles" on public.roles for all
+create policy "Admins can manage custom roles"
+    on public.roles for all
     using (
         company_id is not null
         and public.auth_is_active_company_user(company_id)
         and public.auth_get_user_company_role(company_id) in ('owner', 'admin')
     );
 
-drop policy if exists "Users can view role_permissions" on public.role_permissions;
-create policy "Users can view role_permissions" on public.role_permissions for select
+create policy "Users can view role_permissions"
+    on public.role_permissions for select
     using (true);
 
-drop policy if exists "Active members can view user_roles" on public.user_roles;
-create policy "Active members can view user_roles" on public.user_roles for select
+create policy "Active members can view user_roles"
+    on public.user_roles for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Admins can manage user_roles" on public.user_roles;
-create policy "Admins can manage user_roles" on public.user_roles for all
+create policy "Admins can manage user_roles"
+    on public.user_roles for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_get_user_company_role(company_id) in ('owner', 'admin')
@@ -1299,24 +1227,24 @@ end;
 $$ language plpgsql security definer;
 
 -- 10. RLS POLICIES FOR PLATFORM TABLES
-drop policy if exists "Platform owners can view and manage platform_admins" on public.platform_admins;
-create policy "Platform owners can view and manage platform_admins" on public.platform_admins for all
+create policy "Platform owners can view and manage platform_admins"
+    on public.platform_admins for all
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Platform owners can manage platform_plans" on public.platform_plans;
-create policy "Platform owners can manage platform_plans" on public.platform_plans for all
+create policy "Platform owners can manage platform_plans"
+    on public.platform_plans for all
     using (public.auth_is_platform_owner() or auth.uid() is not null);
 
-drop policy if exists "Platform owners can manage platform_feature_flags" on public.platform_feature_flags;
-create policy "Platform owners can manage platform_feature_flags" on public.platform_feature_flags for all
+create policy "Platform owners can manage platform_feature_flags"
+    on public.platform_feature_flags for all
     using (public.auth_is_platform_owner() or auth.uid() is not null);
 
-drop policy if exists "Users can view overrides in their company" on public.user_permission_overrides;
-create policy "Users can view overrides in their company" on public.user_permission_overrides for select
+create policy "Users can view overrides in their company"
+    on public.user_permission_overrides for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Admins can manage user_permission_overrides" on public.user_permission_overrides;
-create policy "Admins can manage user_permission_overrides" on public.user_permission_overrides for all
+create policy "Admins can manage user_permission_overrides"
+    on public.user_permission_overrides for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -1364,12 +1292,12 @@ create table if not exists public.document_sequences (
 create index if not exists idx_doc_sequences_company on public.document_sequences(company_id);
 alter table public.document_sequences enable row level security;
 
-drop policy if exists "Active company users can view document sequences" on public.document_sequences;
-create policy "Active company users can view document sequences" on public.document_sequences for select
+create policy "Active company users can view document sequences"
+    on public.document_sequences for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Admins can manage document sequences" on public.document_sequences;
-create policy "Admins can manage document sequences" on public.document_sequences for all
+create policy "Admins can manage document sequences"
+    on public.document_sequences for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -1446,8 +1374,8 @@ create index if not exists idx_audit_logs_company on public.audit_logs(company_i
 create index if not exists idx_audit_logs_created on public.audit_logs(created_at desc);
 alter table public.audit_logs enable row level security;
 
-drop policy if exists "Admins can view audit logs" on public.audit_logs;
-create policy "Admins can view audit logs" on public.audit_logs for select
+create policy "Admins can view audit logs"
+    on public.audit_logs for select
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -1600,45 +1528,45 @@ create index if not exists idx_supp_prices_supp on public.supplier_material_pric
 alter table public.supplier_material_prices enable row level security;
 
 -- 5. RLS POLICIES FOR CUSTOMERS & SUPPLIERS
-drop policy if exists "Active company users can view customers" on public.customers;
-create policy "Active company users can view customers" on public.customers for select
+create policy "Active company users can view customers"
+    on public.customers for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert customers" on public.customers;
-create policy "Authorized company users can insert customers" on public.customers for insert
+create policy "Authorized company users can insert customers"
+    on public.customers for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'customer.create')
     );
 
-drop policy if exists "Authorized company users can update customers" on public.customers;
-create policy "Authorized company users can update customers" on public.customers for update
+create policy "Authorized company users can update customers"
+    on public.customers for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'customer.edit')
     );
 
-drop policy if exists "Authorized company users can delete customers" on public.customers;
-create policy "Authorized company users can delete customers" on public.customers for delete
+create policy "Authorized company users can delete customers"
+    on public.customers for delete
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'customer.delete')
     );
 
-drop policy if exists "Active company users can view communications" on public.customer_communications;
-create policy "Active company users can view communications" on public.customer_communications for select
+create policy "Active company users can view communications"
+    on public.customer_communications for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Active company users can create communications" on public.customer_communications;
-create policy "Active company users can create communications" on public.customer_communications for insert
+create policy "Active company users can create communications"
+    on public.customer_communications for insert
     with check (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Active company users can view suppliers" on public.suppliers;
-create policy "Active company users can view suppliers" on public.suppliers for select
+create policy "Active company users can view suppliers"
+    on public.suppliers for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage suppliers" on public.suppliers;
-create policy "Authorized company users can manage suppliers" on public.suppliers for all
+create policy "Authorized company users can manage suppliers"
+    on public.suppliers for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -1647,12 +1575,12 @@ create policy "Authorized company users can manage suppliers" on public.supplier
         )
     );
 
-drop policy if exists "Active company users can view supplier material prices" on public.supplier_material_prices;
-create policy "Active company users can view supplier material prices" on public.supplier_material_prices for select
+create policy "Active company users can view supplier material prices"
+    on public.supplier_material_prices for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage supplier material prices" on public.supplier_material_prices;
-create policy "Authorized company users can manage supplier material prices" on public.supplier_material_prices for all
+create policy "Authorized company users can manage supplier material prices"
+    on public.supplier_material_prices for all
     using (public.auth_is_active_company_user(company_id));
 
 
@@ -1732,45 +1660,45 @@ create index if not exists idx_price_overrides_company on public.price_overrides
 alter table public.price_overrides enable row level security;
 
 -- 4. RLS POLICIES FOR PRODUCTS & PRICING
-drop policy if exists "Active company users can view products" on public.products;
-create policy "Active company users can view products" on public.products for select
+create policy "Active company users can view products"
+    on public.products for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert products" on public.products;
-create policy "Authorized company users can insert products" on public.products for insert
+create policy "Authorized company users can insert products"
+    on public.products for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'inventory.create')
     );
 
-drop policy if exists "Authorized company users can update products" on public.products;
-create policy "Authorized company users can update products" on public.products for update
+create policy "Authorized company users can update products"
+    on public.products for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'inventory.edit')
     );
 
-drop policy if exists "Authorized company users can delete products" on public.products;
-create policy "Authorized company users can delete products" on public.products for delete
+create policy "Authorized company users can delete products"
+    on public.products for delete
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'inventory.delete')
     );
 
-drop policy if exists "Active company users can view price history" on public.product_price_history;
-create policy "Active company users can view price history" on public.product_price_history for select
+create policy "Active company users can view price history"
+    on public.product_price_history for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Active company users can insert price history" on public.product_price_history;
-create policy "Active company users can insert price history" on public.product_price_history for insert
+create policy "Active company users can insert price history"
+    on public.product_price_history for insert
     with check (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Active company users can view price overrides" on public.price_overrides;
-create policy "Active company users can view price overrides" on public.price_overrides for select
+create policy "Active company users can view price overrides"
+    on public.price_overrides for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Active company users can log price overrides" on public.price_overrides;
-create policy "Active company users can log price overrides" on public.price_overrides for insert
+create policy "Active company users can log price overrides"
+    on public.price_overrides for insert
     with check (public.auth_is_active_company_user(company_id));
 
 
@@ -1867,33 +1795,33 @@ create index if not exists idx_quotation_activities_quote on public.quotation_ac
 alter table public.quotation_activities enable row level security;
 
 -- 4. RLS POLICIES FOR QUOTATIONS
-drop policy if exists "Active company users can view quotations" on public.quotations;
-create policy "Active company users can view quotations" on public.quotations for select
+create policy "Active company users can view quotations"
+    on public.quotations for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert quotations" on public.quotations;
-create policy "Authorized company users can insert quotations" on public.quotations for insert
+create policy "Authorized company users can insert quotations"
+    on public.quotations for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'quotation.create')
     );
 
-drop policy if exists "Authorized company users can update quotations" on public.quotations;
-create policy "Authorized company users can update quotations" on public.quotations for update
+create policy "Authorized company users can update quotations"
+    on public.quotations for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'quotation.edit')
     );
 
-drop policy if exists "Authorized company users can delete quotations" on public.quotations;
-create policy "Authorized company users can delete quotations" on public.quotations for delete
+create policy "Authorized company users can delete quotations"
+    on public.quotations for delete
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'quotation.delete')
     );
 
-drop policy if exists "Active company users can view quotation items" on public.quotation_items;
-create policy "Active company users can view quotation items" on public.quotation_items for select
+create policy "Active company users can view quotation items"
+    on public.quotation_items for select
     using (
         exists (
             select 1 from public.quotations q
@@ -1902,8 +1830,8 @@ create policy "Active company users can view quotation items" on public.quotatio
         )
     );
 
-drop policy if exists "Authorized company users can manage quotation items" on public.quotation_items;
-create policy "Authorized company users can manage quotation items" on public.quotation_items for all
+create policy "Authorized company users can manage quotation items"
+    on public.quotation_items for all
     using (
         exists (
             select 1 from public.quotations q
@@ -1912,8 +1840,8 @@ create policy "Authorized company users can manage quotation items" on public.qu
         )
     );
 
-drop policy if exists "Active company users can view quotation activities" on public.quotation_activities;
-create policy "Active company users can view quotation activities" on public.quotation_activities for select
+create policy "Active company users can view quotation activities"
+    on public.quotation_activities for select
     using (
         exists (
             select 1 from public.quotations q
@@ -1922,8 +1850,8 @@ create policy "Active company users can view quotation activities" on public.quo
         )
     );
 
-drop policy if exists "Active company users can insert quotation activities" on public.quotation_activities;
-create policy "Active company users can insert quotation activities" on public.quotation_activities for insert
+create policy "Active company users can insert quotation activities"
+    on public.quotation_activities for insert
     with check (
         exists (
             select 1 from public.quotations q
@@ -2052,37 +1980,37 @@ create index if not exists idx_order_timeline_order on public.order_timeline_eve
 alter table public.order_timeline_events enable row level security;
 
 -- 5. RLS POLICIES FOR ORDERS & JOBS
-drop policy if exists "Active company users can view sales orders" on public.sales_orders;
-create policy "Active company users can view sales orders" on public.sales_orders for select
+create policy "Active company users can view sales orders"
+    on public.sales_orders for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert sales orders" on public.sales_orders;
-create policy "Authorized company users can insert sales orders" on public.sales_orders for insert
+create policy "Authorized company users can insert sales orders"
+    on public.sales_orders for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'order.create')
     );
 
-drop policy if exists "Authorized company users can update sales orders" on public.sales_orders;
-create policy "Authorized company users can update sales orders" on public.sales_orders for update
+create policy "Authorized company users can update sales orders"
+    on public.sales_orders for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'order.edit')
     );
 
-drop policy if exists "Authorized company users can delete sales orders" on public.sales_orders;
-create policy "Authorized company users can delete sales orders" on public.sales_orders for delete
+create policy "Authorized company users can delete sales orders"
+    on public.sales_orders for delete
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'order.delete')
     );
 
-drop policy if exists "Active company users can view job orders" on public.job_orders;
-create policy "Active company users can view job orders" on public.job_orders for select
+create policy "Active company users can view job orders"
+    on public.job_orders for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage job orders" on public.job_orders;
-create policy "Authorized company users can manage job orders" on public.job_orders for all
+create policy "Authorized company users can manage job orders"
+    on public.job_orders for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2092,8 +2020,8 @@ create policy "Authorized company users can manage job orders" on public.job_ord
         )
     );
 
-drop policy if exists "Active company users can view timeline" on public.order_timeline_events;
-create policy "Active company users can view timeline" on public.order_timeline_events for select
+create policy "Active company users can view timeline"
+    on public.order_timeline_events for select
     using (
         exists (
             select 1 from public.sales_orders o
@@ -2102,8 +2030,8 @@ create policy "Active company users can view timeline" on public.order_timeline_
         )
     );
 
-drop policy if exists "Active company users can insert timeline" on public.order_timeline_events;
-create policy "Active company users can insert timeline" on public.order_timeline_events for insert
+create policy "Active company users can insert timeline"
+    on public.order_timeline_events for insert
     with check (
         exists (
             select 1 from public.sales_orders o
@@ -2199,12 +2127,12 @@ create index if not exists idx_design_feedback_job on public.design_feedback_log
 alter table public.design_feedback_logs enable row level security;
 
 -- 4. RLS POLICIES
-drop policy if exists "Active company users can view design jobs" on public.design_jobs;
-create policy "Active company users can view design jobs" on public.design_jobs for select
+create policy "Active company users can view design jobs"
+    on public.design_jobs for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert design jobs" on public.design_jobs;
-create policy "Authorized company users can insert design jobs" on public.design_jobs for insert
+create policy "Authorized company users can insert design jobs"
+    on public.design_jobs for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2213,15 +2141,15 @@ create policy "Authorized company users can insert design jobs" on public.design
         )
     );
 
-drop policy if exists "Authorized company users can update design jobs" on public.design_jobs;
-create policy "Authorized company users can update design jobs" on public.design_jobs for update
+create policy "Authorized company users can update design jobs"
+    on public.design_jobs for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'design.edit')
     );
 
-drop policy if exists "Active company users can view design versions" on public.design_versions;
-create policy "Active company users can view design versions" on public.design_versions for select
+create policy "Active company users can view design versions"
+    on public.design_versions for select
     using (
         exists (
             select 1 from public.design_jobs dj
@@ -2230,8 +2158,8 @@ create policy "Active company users can view design versions" on public.design_v
         )
     );
 
-drop policy if exists "Authorized company users can manage design versions" on public.design_versions;
-create policy "Authorized company users can manage design versions" on public.design_versions for all
+create policy "Authorized company users can manage design versions"
+    on public.design_versions for all
     using (
         exists (
             select 1 from public.design_jobs dj
@@ -2241,8 +2169,8 @@ create policy "Authorized company users can manage design versions" on public.de
         )
     );
 
-drop policy if exists "Active company users can view feedback" on public.design_feedback_logs;
-create policy "Active company users can view feedback" on public.design_feedback_logs for select
+create policy "Active company users can view feedback"
+    on public.design_feedback_logs for select
     using (
         exists (
             select 1 from public.design_jobs dj
@@ -2251,8 +2179,8 @@ create policy "Active company users can view feedback" on public.design_feedback
         )
     );
 
-drop policy if exists "Active company users can insert feedback" on public.design_feedback_logs;
-create policy "Active company users can insert feedback" on public.design_feedback_logs for insert
+create policy "Active company users can insert feedback"
+    on public.design_feedback_logs for insert
     with check (
         exists (
             select 1 from public.design_jobs dj
@@ -2335,12 +2263,12 @@ create index if not exists idx_production_reworks_job on public.production_rewor
 alter table public.production_reworks enable row level security;
 
 -- 3. RLS POLICIES
-drop policy if exists "Active company users can view production jobs" on public.production_jobs;
-create policy "Active company users can view production jobs" on public.production_jobs for select
+create policy "Active company users can view production jobs"
+    on public.production_jobs for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage production jobs" on public.production_jobs;
-create policy "Authorized company users can manage production jobs" on public.production_jobs for all
+create policy "Authorized company users can manage production jobs"
+    on public.production_jobs for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2350,8 +2278,8 @@ create policy "Authorized company users can manage production jobs" on public.pr
         )
     );
 
-drop policy if exists "Active company users can view reworks" on public.production_reworks;
-create policy "Active company users can view reworks" on public.production_reworks for select
+create policy "Active company users can view reworks"
+    on public.production_reworks for select
     using (
         exists (
             select 1 from public.production_jobs pj
@@ -2360,8 +2288,8 @@ create policy "Active company users can view reworks" on public.production_rewor
         )
     );
 
-drop policy if exists "Authorized company users can insert reworks" on public.production_reworks;
-create policy "Authorized company users can insert reworks" on public.production_reworks for insert
+create policy "Authorized company users can insert reworks"
+    on public.production_reworks for insert
     with check (
         exists (
             select 1 from public.production_jobs pj
@@ -2483,12 +2411,12 @@ create index if not exists idx_material_wastages_material on public.material_was
 alter table public.material_wastages enable row level security;
 
 -- 5. RLS POLICIES
-drop policy if exists "Active company users can view materials" on public.materials;
-create policy "Active company users can view materials" on public.materials for select
+create policy "Active company users can view materials"
+    on public.materials for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage materials" on public.materials;
-create policy "Authorized company users can manage materials" on public.materials for all
+create policy "Authorized company users can manage materials"
+    on public.materials for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2498,8 +2426,8 @@ create policy "Authorized company users can manage materials" on public.material
         )
     );
 
-drop policy if exists "Active company users can view inventory rolls" on public.inventory_rolls;
-create policy "Active company users can view inventory rolls" on public.inventory_rolls for select
+create policy "Active company users can view inventory rolls"
+    on public.inventory_rolls for select
     using (
         exists (
             select 1 from public.materials m
@@ -2508,8 +2436,8 @@ create policy "Active company users can view inventory rolls" on public.inventor
         )
     );
 
-drop policy if exists "Authorized company users can manage inventory rolls" on public.inventory_rolls;
-create policy "Authorized company users can manage inventory rolls" on public.inventory_rolls for all
+create policy "Authorized company users can manage inventory rolls"
+    on public.inventory_rolls for all
     using (
         exists (
             select 1 from public.materials m
@@ -2518,12 +2446,12 @@ create policy "Authorized company users can manage inventory rolls" on public.in
         )
     );
 
-drop policy if exists "Active company users can view stock ledger" on public.stock_ledger;
-create policy "Active company users can view stock ledger" on public.stock_ledger for select
+create policy "Active company users can view stock ledger"
+    on public.stock_ledger for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert stock ledger" on public.stock_ledger;
-create policy "Authorized company users can insert stock ledger" on public.stock_ledger for insert
+create policy "Authorized company users can insert stock ledger"
+    on public.stock_ledger for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2533,12 +2461,12 @@ create policy "Authorized company users can insert stock ledger" on public.stock
         )
     );
 
-drop policy if exists "Active company users can view wastages" on public.material_wastages;
-create policy "Active company users can view wastages" on public.material_wastages for select
+create policy "Active company users can view wastages"
+    on public.material_wastages for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert wastages" on public.material_wastages;
-create policy "Authorized company users can insert wastages" on public.material_wastages for insert
+create policy "Authorized company users can insert wastages"
+    on public.material_wastages for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'inventory.edit')
@@ -2667,12 +2595,12 @@ create index if not exists idx_supplier_payments_supp on public.supplier_payment
 alter table public.supplier_payments enable row level security;
 
 -- 6. RLS POLICIES
-drop policy if exists "Active company users can view purchase orders" on public.purchase_orders;
-create policy "Active company users can view purchase orders" on public.purchase_orders for select
+create policy "Active company users can view purchase orders"
+    on public.purchase_orders for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage purchase orders" on public.purchase_orders;
-create policy "Authorized company users can manage purchase orders" on public.purchase_orders for all
+create policy "Authorized company users can manage purchase orders"
+    on public.purchase_orders for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2682,8 +2610,8 @@ create policy "Authorized company users can manage purchase orders" on public.pu
         )
     );
 
-drop policy if exists "Active company users can view po items" on public.purchase_order_items;
-create policy "Active company users can view po items" on public.purchase_order_items for select
+create policy "Active company users can view po items"
+    on public.purchase_order_items for select
     using (
         exists (
             select 1 from public.purchase_orders po
@@ -2692,8 +2620,8 @@ create policy "Active company users can view po items" on public.purchase_order_
         )
     );
 
-drop policy if exists "Authorized company users can manage po items" on public.purchase_order_items;
-create policy "Authorized company users can manage po items" on public.purchase_order_items for all
+create policy "Authorized company users can manage po items"
+    on public.purchase_order_items for all
     using (
         exists (
             select 1 from public.purchase_orders po
@@ -2702,20 +2630,20 @@ create policy "Authorized company users can manage po items" on public.purchase_
         )
     );
 
-drop policy if exists "Active company users can view price history" on public.supplier_price_history;
-create policy "Active company users can view price history" on public.supplier_price_history for select
+create policy "Active company users can view price history"
+    on public.supplier_price_history for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert price history" on public.supplier_price_history;
-create policy "Authorized company users can insert price history" on public.supplier_price_history for insert
+create policy "Authorized company users can insert price history"
+    on public.supplier_price_history for insert
     with check (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Active company users can view supplier payments" on public.supplier_payments;
-create policy "Active company users can view supplier payments" on public.supplier_payments for select
+create policy "Active company users can view supplier payments"
+    on public.supplier_payments for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert supplier payments" on public.supplier_payments;
-create policy "Authorized company users can insert supplier payments" on public.supplier_payments for insert
+create policy "Authorized company users can insert supplier payments"
+    on public.supplier_payments for insert
     with check (public.auth_is_active_company_user(company_id));
 
 
@@ -2848,12 +2776,12 @@ create index if not exists idx_financial_write_offs_invoice on public.financial_
 alter table public.financial_write_offs enable row level security;
 
 -- 6. RLS POLICIES
-drop policy if exists "Active company users can view invoices" on public.invoices;
-create policy "Active company users can view invoices" on public.invoices for select
+create policy "Active company users can view invoices"
+    on public.invoices for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage invoices" on public.invoices;
-create policy "Authorized company users can manage invoices" on public.invoices for all
+create policy "Authorized company users can manage invoices"
+    on public.invoices for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2863,8 +2791,8 @@ create policy "Authorized company users can manage invoices" on public.invoices 
         )
     );
 
-drop policy if exists "Active company users can view invoice items" on public.invoice_items;
-create policy "Active company users can view invoice items" on public.invoice_items for select
+create policy "Active company users can view invoice items"
+    on public.invoice_items for select
     using (
         exists (
             select 1 from public.invoices inv
@@ -2873,8 +2801,8 @@ create policy "Active company users can view invoice items" on public.invoice_it
         )
     );
 
-drop policy if exists "Authorized company users can manage invoice items" on public.invoice_items;
-create policy "Authorized company users can manage invoice items" on public.invoice_items for all
+create policy "Authorized company users can manage invoice items"
+    on public.invoice_items for all
     using (
         exists (
             select 1 from public.invoices inv
@@ -2883,12 +2811,12 @@ create policy "Authorized company users can manage invoice items" on public.invo
         )
     );
 
-drop policy if exists "Active company users can view payments" on public.payments;
-create policy "Active company users can view payments" on public.payments for select
+create policy "Active company users can view payments"
+    on public.payments for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage payments" on public.payments;
-create policy "Authorized company users can manage payments" on public.payments for all
+create policy "Authorized company users can manage payments"
+    on public.payments for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -2897,8 +2825,8 @@ create policy "Authorized company users can manage payments" on public.payments 
         )
     );
 
-drop policy if exists "Active company users can view allocations" on public.payment_allocations;
-create policy "Active company users can view allocations" on public.payment_allocations for select
+create policy "Active company users can view allocations"
+    on public.payment_allocations for select
     using (
         exists (
             select 1 from public.payments p
@@ -2907,8 +2835,8 @@ create policy "Active company users can view allocations" on public.payment_allo
         )
     );
 
-drop policy if exists "Authorized company users can manage allocations" on public.payment_allocations;
-create policy "Authorized company users can manage allocations" on public.payment_allocations for all
+create policy "Authorized company users can manage allocations"
+    on public.payment_allocations for all
     using (
         exists (
             select 1 from public.payments p
@@ -2917,12 +2845,12 @@ create policy "Authorized company users can manage allocations" on public.paymen
         )
     );
 
-drop policy if exists "Active company users can view write offs" on public.financial_write_offs;
-create policy "Active company users can view write offs" on public.financial_write_offs for select
+create policy "Active company users can view write offs"
+    on public.financial_write_offs for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert write offs" on public.financial_write_offs;
-create policy "Authorized company users can insert write offs" on public.financial_write_offs for insert
+create policy "Authorized company users can insert write offs"
+    on public.financial_write_offs for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'billing.edit')
@@ -3032,12 +2960,12 @@ create index if not exists idx_installations_date on public.installations(compan
 alter table public.installations enable row level security;
 
 -- 4. RLS POLICIES
-drop policy if exists "Active company users can view delivery challans" on public.delivery_challans;
-create policy "Active company users can view delivery challans" on public.delivery_challans for select
+create policy "Active company users can view delivery challans"
+    on public.delivery_challans for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage delivery challans" on public.delivery_challans;
-create policy "Authorized company users can manage delivery challans" on public.delivery_challans for all
+create policy "Authorized company users can manage delivery challans"
+    on public.delivery_challans for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3047,8 +2975,8 @@ create policy "Authorized company users can manage delivery challans" on public.
         )
     );
 
-drop policy if exists "Active company users can view challan items" on public.challan_items;
-create policy "Active company users can view challan items" on public.challan_items for select
+create policy "Active company users can view challan items"
+    on public.challan_items for select
     using (
         exists (
             select 1 from public.delivery_challans ch
@@ -3057,8 +2985,8 @@ create policy "Active company users can view challan items" on public.challan_it
         )
     );
 
-drop policy if exists "Authorized company users can manage challan items" on public.challan_items;
-create policy "Authorized company users can manage challan items" on public.challan_items for all
+create policy "Authorized company users can manage challan items"
+    on public.challan_items for all
     using (
         exists (
             select 1 from public.delivery_challans ch
@@ -3067,12 +2995,12 @@ create policy "Authorized company users can manage challan items" on public.chal
         )
     );
 
-drop policy if exists "Active company users can view installations" on public.installations;
-create policy "Active company users can view installations" on public.installations for select
+create policy "Active company users can view installations"
+    on public.installations for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage installations" on public.installations;
-create policy "Authorized company users can manage installations" on public.installations for all
+create policy "Authorized company users can manage installations"
+    on public.installations for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3159,12 +3087,12 @@ create index if not exists idx_cash_book_date on public.cash_book_entries(compan
 alter table public.cash_book_entries enable row level security;
 
 -- 4. RLS POLICIES
-drop policy if exists "Active company users can view expenses" on public.expenses;
-create policy "Active company users can view expenses" on public.expenses for select
+create policy "Active company users can view expenses"
+    on public.expenses for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage expenses" on public.expenses;
-create policy "Authorized company users can manage expenses" on public.expenses for all
+create policy "Authorized company users can manage expenses"
+    on public.expenses for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3174,23 +3102,23 @@ create policy "Authorized company users can manage expenses" on public.expenses 
         )
     );
 
-drop policy if exists "Active company users can view bank accounts" on public.bank_accounts;
-create policy "Active company users can view bank accounts" on public.bank_accounts for select
+create policy "Active company users can view bank accounts"
+    on public.bank_accounts for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage bank accounts" on public.bank_accounts;
-create policy "Authorized company users can manage bank accounts" on public.bank_accounts for all
+create policy "Authorized company users can manage bank accounts"
+    on public.bank_accounts for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'accounting.edit')
     );
 
-drop policy if exists "Active company users can view cash book" on public.cash_book_entries;
-create policy "Active company users can view cash book" on public.cash_book_entries for select
+create policy "Active company users can view cash book"
+    on public.cash_book_entries for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can insert cash book" on public.cash_book_entries;
-create policy "Authorized company users can insert cash book" on public.cash_book_entries for insert
+create policy "Authorized company users can insert cash book"
+    on public.cash_book_entries for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3359,12 +3287,12 @@ create index if not exists idx_daily_labor_date on public.daily_labor_logs(compa
 alter table public.daily_labor_logs enable row level security;
 
 -- 7. RLS POLICIES
-drop policy if exists "Active company users can view employees" on public.employees;
-create policy "Active company users can view employees" on public.employees for select
+create policy "Active company users can view employees"
+    on public.employees for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage employees" on public.employees;
-create policy "Authorized company users can manage employees" on public.employees for all
+create policy "Authorized company users can manage employees"
+    on public.employees for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3374,12 +3302,12 @@ create policy "Authorized company users can manage employees" on public.employee
         )
     );
 
-drop policy if exists "Active company users can view attendances" on public.attendances;
-create policy "Active company users can view attendances" on public.attendances for select
+create policy "Active company users can view attendances"
+    on public.attendances for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage attendances" on public.attendances;
-create policy "Authorized company users can manage attendances" on public.attendances for all
+create policy "Authorized company users can manage attendances"
+    on public.attendances for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3388,19 +3316,19 @@ create policy "Authorized company users can manage attendances" on public.attend
         )
     );
 
-drop policy if exists "Active company users can view payroll periods" on public.payroll_periods;
-create policy "Active company users can view payroll periods" on public.payroll_periods for select
+create policy "Active company users can view payroll periods"
+    on public.payroll_periods for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage payroll periods" on public.payroll_periods;
-create policy "Authorized company users can manage payroll periods" on public.payroll_periods for all
+create policy "Authorized company users can manage payroll periods"
+    on public.payroll_periods for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'payroll.edit')
     );
 
-drop policy if exists "Active company users can view payroll items" on public.payroll_items;
-create policy "Active company users can view payroll items" on public.payroll_items for select
+create policy "Active company users can view payroll items"
+    on public.payroll_items for select
     using (
         exists (
             select 1 from public.payroll_periods pp
@@ -3409,8 +3337,8 @@ create policy "Active company users can view payroll items" on public.payroll_it
         )
     );
 
-drop policy if exists "Authorized company users can manage payroll items" on public.payroll_items;
-create policy "Authorized company users can manage payroll items" on public.payroll_items for all
+create policy "Authorized company users can manage payroll items"
+    on public.payroll_items for all
     using (
         exists (
             select 1 from public.payroll_periods pp
@@ -3419,12 +3347,12 @@ create policy "Authorized company users can manage payroll items" on public.payr
         )
     );
 
-drop policy if exists "Active company users can view daily labor logs" on public.daily_labor_logs;
-create policy "Active company users can view daily labor logs" on public.daily_labor_logs for select
+create policy "Active company users can view daily labor logs"
+    on public.daily_labor_logs for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage daily labor logs" on public.daily_labor_logs;
-create policy "Authorized company users can manage daily labor logs" on public.daily_labor_logs for all
+create policy "Authorized company users can manage daily labor logs"
+    on public.daily_labor_logs for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3507,12 +3435,12 @@ create index if not exists idx_job_costings_status on public.job_costings(compan
 alter table public.job_costings enable row level security;
 
 -- 2. RLS POLICIES
-drop policy if exists "Active company users can view job costings" on public.job_costings;
-create policy "Active company users can view job costings" on public.job_costings for select
+create policy "Active company users can view job costings"
+    on public.job_costings for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage job costings" on public.job_costings;
-create policy "Authorized company users can manage job costings" on public.job_costings for all
+create policy "Authorized company users can manage job costings"
+    on public.job_costings for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -3744,42 +3672,42 @@ create index if not exists idx_comm_logs_created on public.communication_logs(co
 alter table public.communication_logs enable row level security;
 
 -- 5. RLS POLICIES
-drop policy if exists "Active company users can view in-app notifications" on public.in_app_notifications;
-create policy "Active company users can view in-app notifications" on public.in_app_notifications for select
+create policy "Active company users can view in-app notifications"
+    on public.in_app_notifications for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Active company users can update their notifications" on public.in_app_notifications;
-create policy "Active company users can update their notifications" on public.in_app_notifications for update
+create policy "Active company users can update their notifications"
+    on public.in_app_notifications for update
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Active company users can view channel configs" on public.communication_channels_config;
-create policy "Active company users can view channel configs" on public.communication_channels_config for select
+create policy "Active company users can view channel configs"
+    on public.communication_channels_config for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company admins can manage channel configs" on public.communication_channels_config;
-create policy "Authorized company admins can manage channel configs" on public.communication_channels_config for all
+create policy "Authorized company admins can manage channel configs"
+    on public.communication_channels_config for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
     );
 
-drop policy if exists "Active company users can view templates" on public.message_templates;
-create policy "Active company users can view templates" on public.message_templates for select
+create policy "Active company users can view templates"
+    on public.message_templates for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company users can manage templates" on public.message_templates;
-create policy "Authorized company users can manage templates" on public.message_templates for all
+create policy "Authorized company users can manage templates"
+    on public.message_templates for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
     );
 
-drop policy if exists "Active company users can view communication logs" on public.communication_logs;
-create policy "Active company users can view communication logs" on public.communication_logs for select
+create policy "Active company users can view communication logs"
+    on public.communication_logs for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "System and authorized users can append communication logs" on public.communication_logs;
-create policy "System and authorized users can append communication logs" on public.communication_logs for insert
+create policy "System and authorized users can append communication logs"
+    on public.communication_logs for insert
     with check (public.auth_is_active_company_user(company_id));
 
 
@@ -3904,23 +3832,23 @@ end;
 $$;
 
 -- 5. RLS POLICIES
-drop policy if exists "Active company users can view tax settings" on public.company_tax_settings;
-create policy "Active company users can view tax settings" on public.company_tax_settings for select
+create policy "Active company users can view tax settings"
+    on public.company_tax_settings for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company admins can manage tax settings" on public.company_tax_settings;
-create policy "Authorized company admins can manage tax settings" on public.company_tax_settings for all
+create policy "Authorized company admins can manage tax settings"
+    on public.company_tax_settings for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
     );
 
-drop policy if exists "Active company users can view document templates" on public.document_templates_config;
-create policy "Active company users can view document templates" on public.document_templates_config for select
+create policy "Active company users can view document templates"
+    on public.document_templates_config for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company admins can manage document templates" on public.document_templates_config;
-create policy "Authorized company admins can manage document templates" on public.document_templates_config for all
+create policy "Authorized company admins can manage document templates"
+    on public.document_templates_config for all
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
@@ -4051,16 +3979,16 @@ create table if not exists public.platform_admins (
 );
 
 -- 4. RLS POLICIES
-drop policy if exists "Anyone can view active subscription plans" on public.subscription_plans;
-create policy "Anyone can view active subscription plans" on public.subscription_plans for select
+create policy "Anyone can view active subscription plans"
+    on public.subscription_plans for select
     using (is_active = true);
 
-drop policy if exists "Active company users can view their subscription" on public.company_subscriptions;
-create policy "Active company users can view their subscription" on public.company_subscriptions for select
+create policy "Active company users can view their subscription"
+    on public.company_subscriptions for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized company admins can update their subscription" on public.company_subscriptions;
-create policy "Authorized company admins can update their subscription" on public.company_subscriptions for update
+create policy "Authorized company admins can update their subscription"
+    on public.company_subscriptions for update
     using (
         public.auth_is_active_company_user(company_id)
         and public.auth_user_has_permission(company_id, 'settings.edit')
@@ -4288,36 +4216,36 @@ $$ language plpgsql security definer;
 -- 8. STRICT RLS POLICIES FOR PLATFORM TABLES
 -- These tables MUST NOT be queryable by standard tenant users. Only platform owners can query or mutate them.
 
-drop policy if exists "Platform owners can view platform audit logs" on public.platform_audit_logs;
-create policy "Platform owners can view platform audit logs" on public.platform_audit_logs for select
+create policy "Platform owners can view platform audit logs"
+    on public.platform_audit_logs for select
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Platform owners can manage platform tenant feature flags" on public.platform_tenant_feature_flags;
-create policy "Platform owners can manage platform tenant feature flags" on public.platform_tenant_feature_flags for all
+create policy "Platform owners can manage platform tenant feature flags"
+    on public.platform_tenant_feature_flags for all
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Tenant users can view their own tenant feature flags" on public.platform_tenant_feature_flags;
-create policy "Tenant users can view their own tenant feature flags" on public.platform_tenant_feature_flags for select
+create policy "Tenant users can view their own tenant feature flags"
+    on public.platform_tenant_feature_flags for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Platform owners can manage platform role templates" on public.platform_role_templates;
-create policy "Platform owners can manage platform role templates" on public.platform_role_templates for all
+create policy "Platform owners can manage platform role templates"
+    on public.platform_role_templates for all
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Authenticated users can read platform role templates" on public.platform_role_templates;
-create policy "Authenticated users can read platform role templates" on public.platform_role_templates for select
+create policy "Authenticated users can read platform role templates"
+    on public.platform_role_templates for select
     using (auth.uid() is not null);
 
-drop policy if exists "Platform owners can manage platform role template permissions" on public.platform_role_template_permissions;
-create policy "Platform owners can manage platform role template permissions" on public.platform_role_template_permissions for all
+create policy "Platform owners can manage platform role template permissions"
+    on public.platform_role_template_permissions for all
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Authenticated users can read platform role template permissions" on public.platform_role_template_permissions;
-create policy "Authenticated users can read platform role template permissions" on public.platform_role_template_permissions for select
+create policy "Authenticated users can read platform role template permissions"
+    on public.platform_role_template_permissions for select
     using (auth.uid() is not null);
 
-drop policy if exists "Platform owners can view and manage system health events" on public.platform_system_health_events;
-create policy "Platform owners can view and manage system health events" on public.platform_system_health_events for all
+create policy "Platform owners can view and manage system health events"
+    on public.platform_system_health_events for all
     using (public.auth_is_platform_owner());
 
 
@@ -4500,8 +4428,8 @@ end;
 $$ language plpgsql security definer;
 
 -- 5. ROW LEVEL SECURITY (RLS) POLICIES
-drop policy if exists "Company members can view audit logs" on public.audit_logs;
-create policy "Company members can view audit logs" on public.audit_logs for select
+create policy "Company members can view audit logs"
+    on public.audit_logs for select
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -4511,19 +4439,19 @@ create policy "Company members can view audit logs" on public.audit_logs for sel
         )
     );
 
-drop policy if exists "System and authorized users can insert audit logs" on public.audit_logs;
-create policy "System and authorized users can insert audit logs" on public.audit_logs for insert
+create policy "System and authorized users can insert audit logs"
+    on public.audit_logs for insert
     with check (
         public.auth_is_active_company_user(company_id)
         or public.auth_is_platform_owner()
     );
 
-drop policy if exists "Company members can view payment adjustments" on public.payment_adjustments;
-create policy "Company members can view payment adjustments" on public.payment_adjustments for select
+create policy "Company members can view payment adjustments"
+    on public.payment_adjustments for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized billing users can record payment adjustments" on public.payment_adjustments;
-create policy "Authorized billing users can record payment adjustments" on public.payment_adjustments for insert
+create policy "Authorized billing users can record payment adjustments"
+    on public.payment_adjustments for insert
     with check (
         public.auth_is_active_company_user(company_id)
         and (
@@ -4605,12 +4533,12 @@ create index if not exists idx_wf_exec_logs_comp on public.workflow_execution_lo
 alter table public.workflow_execution_logs enable row level security;
 
 -- 3. ROW LEVEL SECURITY (RLS) POLICIES
-drop policy if exists "Company members can view workflow rules" on public.workflow_rules;
-create policy "Company members can view workflow rules" on public.workflow_rules for select
+create policy "Company members can view workflow rules"
+    on public.workflow_rules for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "Authorized users can manage workflow rules" on public.workflow_rules;
-create policy "Authorized users can manage workflow rules" on public.workflow_rules for all
+create policy "Authorized users can manage workflow rules"
+    on public.workflow_rules for all
     using (
         public.auth_is_active_company_user(company_id)
         and (
@@ -4619,12 +4547,12 @@ create policy "Authorized users can manage workflow rules" on public.workflow_ru
         )
     );
 
-drop policy if exists "Company members can view workflow logs" on public.workflow_execution_logs;
-create policy "Company members can view workflow logs" on public.workflow_execution_logs for select
+create policy "Company members can view workflow logs"
+    on public.workflow_execution_logs for select
     using (public.auth_is_active_company_user(company_id));
 
-drop policy if exists "System can insert workflow execution logs" on public.workflow_execution_logs;
-create policy "System can insert workflow execution logs" on public.workflow_execution_logs for insert
+create policy "System can insert workflow execution logs"
+    on public.workflow_execution_logs for insert
     with check (
         public.auth_is_active_company_user(company_id)
         or public.auth_is_platform_owner()
@@ -4891,30 +4819,35 @@ create index if not exists idx_tenant_exports_comp on public.platform_tenant_exp
 alter table public.platform_tenant_exports enable row level security;
 
 -- 6. RLS POLICIES FOR PLATFORM GOVERNANCE
-drop policy if exists "Platform owners have full control on incidents" on public.platform_incidents;
-create policy "Platform owners have full control on incidents" on public.platform_incidents for all
+create policy "Platform owners have full control on incidents"
+    on public.platform_incidents for all
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Platform owners have full control on background jobs" on public.platform_background_jobs;
-create policy "Platform owners have full control on background jobs" on public.platform_background_jobs for all
+create policy "Platform owners have full control on background jobs"
+    on public.platform_background_jobs for all
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Platform owners have full control on emergency controls" on public.platform_emergency_controls;
-create policy "Platform owners have full control on emergency controls" on public.platform_emergency_controls for all
+create policy "Platform owners have full control on emergency controls"
+    on public.platform_emergency_controls for all
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Platform owners have full control on active sessions" on public.platform_active_sessions;
-create policy "Platform owners have full control on active sessions" on public.platform_active_sessions for all
+create policy "Platform owners have full control on active sessions"
+    on public.platform_active_sessions for all
     using (public.auth_is_platform_owner());
 
-drop policy if exists "Platform owners have full control on tenant exports" on public.platform_tenant_exports;
-create policy "Platform owners have full control on tenant exports" on public.platform_tenant_exports for all
+create policy "Platform owners have full control on tenant exports"
+    on public.platform_tenant_exports for all
     using (public.auth_is_platform_owner());
 
 
 -- >>> FILE: 031_platform_support_sessions_and_hardening.sql <<<
 -- ==============================================================================
 -- PrintERP / InkFlow SaaS - Migration 031: Platform Support Sessions & Control Plane Hardening
+-- Supports:
+--   1. Secure Temporary Support Sessions with Explicit Reason & Automatic TTL
+--   2. Granular Support Access Levels (read_only, config_only, full_support)
+--   3. Platform Security Definer Functions for Support Validation
+--   4. Strict RLS Policies Isolating Platform Data from Normal Tenant Users
 -- ==============================================================================
 
 -- 1. PLATFORM SUPPORT SESSIONS TABLE
@@ -4973,8 +4906,8 @@ end;
 $$ language plpgsql security definer;
 
 -- 3. RLS POLICIES FOR SUPPORT SESSIONS
-drop policy if exists "Platform owners have full control on support sessions" on public.platform_support_sessions;
-create policy "Platform owners have full control on support sessions" on public.platform_support_sessions for all
+create policy "Platform owners have full control on support sessions"
+    on public.platform_support_sessions for all
     using (public.auth_is_platform_owner());
 
 -- 4. ENSURE PLATFORM ADMIN COLUMNS
@@ -4986,8 +4919,10 @@ alter table public.platform_admins
     add column if not exists preferences jsonb not null default '{"language": "en", "timezone": "Asia/Dhaka", "date_format": "YYYY-MM-DD", "currency": "BDT"}'::jsonb;
 
 -- 5. ENSURE COMPANY STATUS CHECK CONSTRAINT SUPPORTS ALL 7 LIFECYCLE STATES
+-- Lifecycle states: 'trial', 'active', 'past_due', 'grace_period', 'suspended', 'cancelled', 'archived'
 do $$
 begin
+    -- Add suspension_reason column if missing
     alter table public.companies
         add column if not exists suspension_reason text,
         add column if not exists suspended_at timestamptz,
@@ -4997,9 +4932,4532 @@ begin
         add column if not exists archived_at timestamptz;
 end $$;
 
+
+-- >>> FILE: 032_platform_security_hardening.sql <<<
+-- ==============================================================================
+-- PrintERP / InkFlow SaaS - Migration 032: Platform Security & Root Control Plane Hardening
+-- Single Source of Truth: Supabase Auth + PostgreSQL RLS + Explicit Platform RBAC
+-- ==============================================================================
+
+-- 1. Ensure all required columns exist on platform_admins
+alter table public.platform_admins
+    add column if not exists mfa_enabled boolean not null default false,
+    add column if not exists last_login_at timestamptz,
+    add column if not exists phone text,
+    add column if not exists avatar_url text,
+    add column if not exists preferences jsonb not null default '{"language": "en", "timezone": "Asia/Dhaka", "date_format": "YYYY-MM-DD", "currency": "BDT"}'::jsonb;
+
+-- Ensure indexes on platform_admins
+create index if not exists idx_platform_admins_user on public.platform_admins(user_id);
+create index if not exists idx_platform_admins_email on public.platform_admins(email);
+create index if not exists idx_platform_admins_active on public.platform_admins(is_active);
+
+-- 2. Ensure platform_support_sessions table & constraints
+create table if not exists public.platform_support_sessions (
+    id uuid primary key default gen_random_uuid(),
+    platform_admin_id uuid not null references public.platform_admins(id) on delete cascade,
+    company_id uuid not null references public.companies(id) on delete cascade,
+    reason text not null,
+    access_level text not null default 'read_only' check (access_level in ('read_only', 'config_only', 'full_support')),
+    session_token_hash text not null unique,
+    status text not null default 'active' check (status in ('active', 'expired', 'revoked')),
+    started_at timestamptz not null default now(),
+    expires_at timestamptz not null default now() + interval '2 hours',
+    revoked_at timestamptz,
+    revoked_by uuid references public.platform_admins(id) on delete set null,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_platform_support_sessions_company on public.platform_support_sessions(company_id);
+create index if not exists idx_platform_support_sessions_admin on public.platform_support_sessions(platform_admin_id);
+create index if not exists idx_platform_support_sessions_status on public.platform_support_sessions(status);
+create index if not exists idx_platform_support_sessions_token on public.platform_support_sessions(session_token_hash);
+create index if not exists idx_platform_support_sessions_expires on public.platform_support_sessions(expires_at desc);
+
+alter table public.platform_support_sessions enable row level security;
+
+-- 3. Ensure platform_active_sessions table
+create table if not exists public.platform_active_sessions (
+    id uuid primary key default gen_random_uuid(),
+    platform_admin_id uuid not null references public.platform_admins(id) on delete cascade,
+    session_token_hash text not null unique,
+    ip_address text,
+    user_agent text,
+    device_name text,
+    location text,
+    is_revoked boolean not null default false,
+    last_seen_at timestamptz not null default now(),
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_platform_sessions_admin on public.platform_active_sessions(platform_admin_id);
+create index if not exists idx_platform_sessions_token on public.platform_active_sessions(session_token_hash);
+create index if not exists idx_platform_sessions_revoked on public.platform_active_sessions(is_revoked);
+
+alter table public.platform_active_sessions enable row level security;
+
+-- 4. Fail-Closed Platform Security Definer Functions
+
+-- Canonical check for Platform Owner
+create or replace function public.auth_is_platform_owner()
+returns boolean as $$
+begin
+    return exists (
+        select 1
+        from public.platform_admins
+        where user_id = auth.uid()
+          and is_active = true
+    );
+end;
+$$ language plpgsql security definer;
+
+-- Strict Server-Side Support Session Validator
+create or replace function public.auth_validate_support_session(
+    p_company_id uuid,
+    p_token_hash text
+)
+returns table (
+    is_valid boolean,
+    access_level text,
+    admin_id uuid,
+    admin_email text,
+    admin_name text,
+    expires_at timestamptz
+) as $$
+begin
+    return query
+    select 
+        (pss.status = 'active' and pss.expires_at > now()) as is_valid,
+        pss.access_level,
+        pa.id as admin_id,
+        pa.email as admin_email,
+        pa.full_name as admin_name,
+        pss.expires_at
+    from public.platform_support_sessions pss
+    join public.platform_admins pa on pa.id = pss.platform_admin_id
+    where pss.company_id = p_company_id
+      and pss.session_token_hash = p_token_hash
+      and pa.is_active = true
+    limit 1;
+end;
+$$ language plpgsql security definer;
+
+-- 5. RLS Policies for Platform Tables (Tenant users are completely quarantined)
+drop policy if exists "Platform owners have full control on support sessions" on public.platform_support_sessions;
+create policy "Platform owners have full control on support sessions"
+    on public.platform_support_sessions for all
+    using (public.auth_is_platform_owner());
+
+drop policy if exists "Platform owners have full control on active sessions" on public.platform_active_sessions;
+create policy "Platform owners have full control on active sessions"
+    on public.platform_active_sessions for all
+    using (public.auth_is_platform_owner());
+
+drop policy if exists "Platform owners can view and manage platform_admins" on public.platform_admins;
+create policy "Platform owners can view and manage platform_admins"
+    on public.platform_admins for all
+    using (public.auth_is_platform_owner());
+
+
+-- >>> FILE: 033_user_account_creation_and_profiles_fix.sql <<<
+-- ==============================================================================
+-- PrintERP / InkFlow SaaS - Migration 033: User Account Creation & Profiles Hardening
+-- Ensures auth.users signup trigger automatically syncs into public.user_profiles
+-- and public.profiles with metadata, and configures non-blocking RLS policies.
+-- ==============================================================================
+
+-- 1. Ensure public.user_profiles table exists with all standard columns
+create table if not exists public.user_profiles (
+    id uuid primary key references auth.users(id) on delete cascade,
+    email text not null,
+    full_name text not null,
+    full_name_bn text,
+    phone text,
+    avatar_url text,
+    preferred_locale text not null default 'bn',
+    is_active boolean not null default true,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_user_profiles_email on public.user_profiles(email);
+create index if not exists idx_user_profiles_phone on public.user_profiles(phone);
+
+-- Ensure public.profiles table exists as well for backwards compatibility
+create table if not exists public.profiles (
+    id uuid primary key references auth.users(id) on delete cascade,
+    full_name text not null,
+    full_name_bn text,
+    phone text,
+    avatar_url text,
+    preferred_locale text not null default 'bn',
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+-- 2. Enhanced handle_new_user trigger function
+create or replace function public.handle_new_user()
+returns trigger as $$
+declare
+    user_name text;
+    user_phone text;
+    user_locale text;
+begin
+    user_name := coalesce(
+        new.raw_user_meta_data->>'full_name',
+        new.raw_user_meta_data->>'name',
+        split_part(new.email, '@', 1)
+    );
+    user_phone := coalesce(
+        new.raw_user_meta_data->>'phone',
+        new.phone,
+        null
+    );
+    user_locale := coalesce(
+        new.raw_user_meta_data->>'preferred_locale',
+        new.raw_user_meta_data->>'locale',
+        'bn'
+    );
+
+    -- 1. Insert into public.user_profiles
+    insert into public.user_profiles (
+        id,
+        email,
+        full_name,
+        phone,
+        preferred_locale,
+        is_active,
+        created_at,
+        updated_at
+    )
+    values (
+        new.id,
+        new.email,
+        user_name,
+        user_phone,
+        user_locale,
+        true,
+        now(),
+        now()
+    )
+    on conflict (id) do update set
+        email = excluded.email,
+        full_name = coalesce(excluded.full_name, public.user_profiles.full_name),
+        phone = coalesce(excluded.phone, public.user_profiles.phone),
+        preferred_locale = coalesce(excluded.preferred_locale, public.user_profiles.preferred_locale),
+        updated_at = now();
+
+    -- 2. Insert into public.profiles for backwards compatibility
+    insert into public.profiles (
+        id,
+        full_name,
+        phone,
+        preferred_locale,
+        created_at,
+        updated_at
+    )
+    values (
+        new.id,
+        user_name,
+        user_phone,
+        user_locale,
+        now(),
+        now()
+    )
+    on conflict (id) do update set
+        full_name = coalesce(excluded.full_name, public.profiles.full_name),
+        phone = coalesce(excluded.phone, public.profiles.phone),
+        preferred_locale = coalesce(excluded.preferred_locale, public.profiles.preferred_locale),
+        updated_at = now();
+
+    return new;
+end;
+$$ language plpgsql security definer;
+
+-- 3. Re-bind trigger to auth.users
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+    after insert on auth.users
+    for each row execute function public.handle_new_user();
+
+-- 4. Enable RLS and verify policies on user_profiles
+alter table public.user_profiles enable row level security;
+
+drop policy if exists "Users can view own user_profile" on public.user_profiles;
+create policy "Users can view own user_profile" on public.user_profiles
+    for select using (auth.uid() = id);
+
+drop policy if exists "Users can update own user_profile" on public.user_profiles;
+create policy "Users can update own user_profile" on public.user_profiles
+    for update using (auth.uid() = id);
+
+drop policy if exists "Users can insert own user_profile" on public.user_profiles;
+create policy "Users can insert own user_profile" on public.user_profiles
+    for insert with check (auth.uid() = id);
+
+-- Allow company members to view profiles of teammates in the same company
+drop policy if exists "Members can view teammate profiles" on public.user_profiles;
+create policy "Members can view teammate profiles" on public.user_profiles
+    for select using (
+        exists (
+            select 1 from public.company_users cu1
+            join public.company_users cu2 on cu1.company_id = cu2.company_id
+            where cu1.user_id = auth.uid()
+              and cu2.user_id = public.user_profiles.id
+              and cu1.status = 'active'
+        )
+    );
+
+
+-- >>> FILE: 034_tenant_auth_and_isolation_hardening.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 034: Production Tenant Auth & Multi-Tenant Isolation Hardening
+-- Enforces PostgreSQL-level isolation, search_path protection on security definer functions,
+-- active membership verification, and row-level security across all operational tables.
+-- ==============================================================================
+
+-- 1. HARDEN SECURITY DEFINER HELPER FUNCTIONS WITH EXPLICIT SEARCH_PATH
+
+-- Check if authenticated user is an ACTIVE member of the company
+create or replace function public.auth_is_active_company_user(target_company_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    if auth.uid() is null or target_company_id is null then
+        return false;
+    end if;
+
+    return exists (
+        select 1
+        from public.company_users cu
+        join public.companies c on c.id = cu.company_id
+        where cu.company_id = target_company_id
+          and cu.user_id = auth.uid()
+          and cu.status = 'active'
+          and c.is_active = true
+    );
+end;
+$$;
+
+-- Resolves the primary role slug of the user in the company
+create or replace function public.auth_get_user_company_role(target_company_id uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    role_slug text;
+begin
+    if auth.uid() is null or target_company_id is null then
+        return null;
+    end if;
+
+    select r.slug into role_slug
+    from public.user_roles ur
+    join public.roles r on r.id = ur.role_id
+    join public.company_users cu on cu.id = ur.company_user_id
+    join public.companies c on c.id = cu.company_id
+    where cu.company_id = target_company_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
+      and c.is_active = true
+    limit 1;
+    
+    return role_slug;
+end;
+$$;
+
+-- Checks if the authenticated user has a specific permission in the company
+create or replace function public.auth_user_has_permission(target_company_id uuid, required_permission text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    user_role text;
+begin
+    if auth.uid() is null or target_company_id is null or required_permission is null then
+        return false;
+    end if;
+
+    user_role := public.auth_get_user_company_role(target_company_id);
+
+    -- Owners & Business Owners have full organizational permissions
+    if user_role in ('owner', 'business_owner', 'admin') then
+        return true;
+    end if;
+
+    -- Check if user has explicit negative override
+    if exists (
+        select 1
+        from public.user_permission_overrides upo
+        join public.company_users cu on cu.id = upo.company_user_id
+        join public.permissions p on p.id = upo.permission_id
+        where cu.company_id = target_company_id
+          and cu.user_id = auth.uid()
+          and cu.status = 'active'
+          and p.code = required_permission
+          and upo.is_granted = false
+    ) then
+        return false;
+    end if;
+
+    -- Check if user has explicit positive override
+    if exists (
+        select 1
+        from public.user_permission_overrides upo
+        join public.company_users cu on cu.id = upo.company_user_id
+        join public.permissions p on p.id = upo.permission_id
+        where cu.company_id = target_company_id
+          and cu.user_id = auth.uid()
+          and cu.status = 'active'
+          and p.code = required_permission
+          and upo.is_granted = true
+    ) then
+        return true;
+    end if;
+
+    -- Check role-based permission
+    return exists (
+        select 1
+        from public.user_roles ur
+        join public.company_users cu on cu.id = ur.company_user_id
+        join public.role_permissions rp on rp.role_id = ur.role_id
+        join public.permissions p on p.id = rp.permission_id
+        where cu.company_id = target_company_id
+          and cu.user_id = auth.uid()
+          and cu.status = 'active'
+          and (p.code = required_permission or p.code = split_part(required_permission, '.', 1) || '.full_control')
+    );
+end;
+$$;
+
+-- Legacy alias helper for backwards-compatibility
+create or replace function public.auth_user_has_company_access(target_company_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    return public.auth_is_active_company_user(target_company_id);
+end;
+$$;
+
+-- Harden handle_new_user trigger function
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    user_name text;
+    user_phone text;
+    user_locale text;
+begin
+    user_name := coalesce(
+        new.raw_user_meta_data->>'full_name',
+        new.raw_user_meta_data->>'name',
+        split_part(new.email, '@', 1)
+    );
+    user_phone := coalesce(
+        new.raw_user_meta_data->>'phone',
+        new.phone,
+        null
+    );
+    user_locale := coalesce(
+        new.raw_user_meta_data->>'preferred_locale',
+        new.raw_user_meta_data->>'locale',
+        'bn'
+    );
+
+    -- 1. Upsert into public.user_profiles
+    insert into public.user_profiles (
+        id,
+        email,
+        full_name,
+        phone,
+        preferred_locale,
+        is_active,
+        created_at,
+        updated_at
+    )
+    values (
+        new.id,
+        new.email,
+        user_name,
+        user_phone,
+        user_locale,
+        true,
+        now(),
+        now()
+    )
+    on conflict (id) do update set
+        email = excluded.email,
+        full_name = coalesce(excluded.full_name, public.user_profiles.full_name),
+        phone = coalesce(excluded.phone, public.user_profiles.phone),
+        preferred_locale = coalesce(excluded.preferred_locale, public.user_profiles.preferred_locale),
+        updated_at = now();
+
+    -- 2. Upsert into public.profiles for legacy compatibility
+    insert into public.profiles (
+        id,
+        full_name,
+        phone,
+        preferred_locale,
+        created_at,
+        updated_at
+    )
+    values (
+        new.id,
+        user_name,
+        user_phone,
+        user_locale,
+        now(),
+        now()
+    )
+    on conflict (id) do update set
+        full_name = coalesce(excluded.full_name, public.profiles.full_name),
+        phone = coalesce(excluded.phone, public.profiles.phone),
+        preferred_locale = coalesce(excluded.preferred_locale, public.profiles.preferred_locale),
+        updated_at = now();
+
+    return new;
+end;
+$$;
+
+-- 2. RE-APPLY STRICT RLS POLICIES ACROSS ALL CORE TENANT ENTITIES
+
+-- Companies
+alter table public.companies enable row level security;
+drop policy if exists "Members can view company details" on public.companies;
+create policy "Members can view company details" on public.companies
+    for select using (public.auth_is_active_company_user(id));
+
+drop policy if exists "Owners and Admins can update company" on public.companies;
+create policy "Owners and Admins can update company" on public.companies
+    for update using (public.auth_get_user_company_role(id) in ('owner', 'business_owner', 'admin'));
+
+drop policy if exists "Authenticated users can create companies" on public.companies;
+create policy "Authenticated users can create companies" on public.companies
+    for insert with check (auth.uid() is not null);
+
+-- Company Settings
+alter table public.company_settings enable row level security;
+drop policy if exists "Active members can view company settings" on public.company_settings;
+create policy "Active members can view company settings" on public.company_settings
+    for select using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Admins can update company settings" on public.company_settings;
+create policy "Admins can update company settings" on public.company_settings
+    for update using (
+        public.auth_is_active_company_user(company_id)
+        and (
+            public.auth_get_user_company_role(company_id) in ('owner', 'business_owner', 'admin')
+            or public.auth_user_has_permission(company_id, 'settings.edit')
+        )
+    );
+
+-- Branches
+alter table public.branches enable row level security;
+drop policy if exists "Active members can view branches" on public.branches;
+create policy "Active members can view branches" on public.branches
+    for select using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Admins can manage branches" on public.branches;
+create policy "Admins can manage branches" on public.branches
+    for all using (
+        public.auth_is_active_company_user(company_id)
+        and public.auth_get_user_company_role(company_id) in ('owner', 'business_owner', 'admin')
+    );
+
+-- Company Users & Memberships
+alter table public.company_users enable row level security;
+drop policy if exists "Members can view company users" on public.company_users;
+create policy "Members can view company users" on public.company_users
+    for select using (public.auth_is_active_company_user(company_id) or auth.uid() = user_id);
+
+drop policy if exists "Admins can manage company users" on public.company_users;
+create policy "Admins can manage company users" on public.company_users
+    for all using (
+        public.auth_is_active_company_user(company_id)
+        and public.auth_get_user_company_role(company_id) in ('owner', 'business_owner', 'admin')
+    );
+
+-- 3. ENSURE ESSENTIAL ISOLATION INDEXES
+create index if not exists idx_company_users_comp_user on public.company_users(company_id, user_id);
+create index if not exists idx_company_users_status on public.company_users(status);
+create index if not exists idx_user_roles_comp_user on public.user_roles(company_user_id);
+
+
+-- >>> FILE: 035_platform_control_panel_hardening.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 035: Platform Control Panel Hardening & Last-Owner Protection
+-- Supports:
+--   1. Last Active Platform Owner Protection Trigger
+--   2. Authoritative Platform Support Session Functions & Expiry Checks
+--   3. Secure Tenant Users Aggregation Definer Function (Zero Secrets Exposure)
+--   4. Strict RLS Policies Isolating Platform Data from Tenant Accounts
+--   5. High-Performance Platform Telemetry & Governance Indexes
+-- ==============================================================================
+
+-- 1. ENSURE PLATFORM_ADMINS COLUMNS & RESPONSIBILITIES ARRAY
+alter table public.platform_admins
+    add column if not exists phone text,
+    add column if not exists avatar_url text,
+    add column if not exists responsibilities jsonb not null default '["platform_owner"]'::jsonb,
+    add column if not exists mfa_enabled boolean not null default false,
+    add column if not exists last_login_at timestamptz,
+    add column if not exists preferences jsonb not null default '{"language": "en", "timezone": "Asia/Dhaka", "date_format": "YYYY-MM-DD", "currency": "BDT"}'::jsonb;
+
+-- 2. LAST PLATFORM OWNER PROTECTION TRIGGER
+create or replace function public.prevent_last_platform_owner_removal()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_active_owners_count integer;
+begin
+    -- Only check if an active platform_owner is being deactivated, deleted, or demoted
+    if (TG_OP = 'DELETE' and OLD.role = 'platform_owner' and OLD.is_active = true) or
+       (TG_OP = 'UPDATE' and OLD.role = 'platform_owner' and OLD.is_active = true and (NEW.is_active = false or NEW.role != 'platform_owner')) then
+        
+        select count(*) into v_active_owners_count
+        from public.platform_admins
+        where role = 'platform_owner'
+          and is_active = true
+          and id != OLD.id;
+
+        if v_active_owners_count < 1 then
+            raise exception 'Platform Security Violation: Cannot remove, deactivate, or demote the last active Platform Owner.';
+        end if;
+    end if;
+
+    if TG_OP = 'DELETE' then
+        return OLD;
+    else
+        return NEW;
+    end if;
+end;
+$$;
+
+drop trigger if exists trg_prevent_last_platform_owner on public.platform_admins;
+create trigger trg_prevent_last_platform_owner
+    before update or delete on public.platform_admins
+    for each row
+    execute function public.prevent_last_platform_owner_removal();
+
+-- 3. ENSURE PLATFORM ACTIVE SESSIONS TABLE
+create table if not exists public.platform_active_sessions (
+    id uuid primary key default gen_random_uuid(),
+    platform_admin_id uuid not null references public.platform_admins(id) on delete cascade,
+    session_token_hash text not null unique,
+    ip_address text,
+    user_agent text,
+    device_name text default 'Desktop Workstation',
+    location text default 'Bangladesh',
+    is_revoked boolean not null default false,
+    revoked_at timestamptz,
+    last_seen_at timestamptz not null default now(),
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_platform_sessions_admin on public.platform_active_sessions(platform_admin_id);
+create index if not exists idx_platform_sessions_revoked on public.platform_active_sessions(is_revoked);
+create index if not exists idx_platform_sessions_token on public.platform_active_sessions(session_token_hash);
+alter table public.platform_active_sessions enable row level security;
+
+-- 4. SECURE TENANT USERS AGGREGATION FUNCTION FOR PLATFORM OWNER (Zero Secrets Exposure)
+create or replace function public.get_platform_tenant_users_overview(
+    p_search text default null,
+    p_company_id uuid default null,
+    p_status text default null,
+    p_limit integer default 50,
+    p_offset integer default 0
+)
+returns table (
+    company_user_id uuid,
+    user_id uuid,
+    company_id uuid,
+    company_name text,
+    company_slug text,
+    full_name text,
+    full_name_bn text,
+    email text,
+    phone text,
+    status text,
+    primary_role text,
+    responsibilities jsonb,
+    branch_name text,
+    created_at timestamptz,
+    total_count bigint
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    -- Must be authenticated platform administrator
+    if not public.auth_is_platform_owner() then
+        raise exception 'Unauthorized: Only platform administrators can view cross-tenant user registries.';
+    end if;
+
+    return query
+    with filtered_users as (
+        select
+            cu.id as f_company_user_id,
+            cu.user_id as f_user_id,
+            cu.company_id as f_company_id,
+            c.name as f_company_name,
+            c.slug as f_company_slug,
+            coalesce(up.full_name, split_part(coalesce(up.email, 'User'), '@', 1)) as f_full_name,
+            up.full_name_bn as f_full_name_bn,
+            coalesce(up.email, 'No Email') as f_email,
+            up.phone as f_phone,
+            cu.status as f_status,
+            coalesce(
+                (select r.slug from public.user_roles ur join public.roles r on r.id = ur.role_id where ur.company_user_id = cu.id limit 1),
+                'member'
+            ) as f_primary_role,
+            coalesce(to_jsonb(cu.responsibilities), '[]'::jsonb) as f_responsibilities,
+            b.name as f_branch_name,
+            cu.created_at as f_created_at,
+            count(*) over() as f_total_count
+        from public.company_users cu
+        join public.companies c on c.id = cu.company_id
+        left join public.user_profiles up on up.id = cu.user_id
+        left join public.branches b on b.id = cu.branch_id
+        where (p_company_id is null or cu.company_id = p_company_id)
+          and (p_status is null or cu.status = p_status)
+          and (
+              p_search is null or
+              c.name ilike '%' || p_search || '%' or
+              c.slug ilike '%' || p_search || '%' or
+              up.full_name ilike '%' || p_search || '%' or
+              up.email ilike '%' || p_search || '%' or
+              up.phone ilike '%' || p_search || '%'
+          )
+        order by cu.created_at desc
+        limit p_limit
+        offset p_offset
+    )
+    select 
+        f_company_user_id,
+        f_user_id,
+        f_company_id,
+        f_company_name,
+        f_company_slug,
+        f_full_name,
+        f_full_name_bn,
+        f_email,
+        f_phone,
+        f_status,
+        f_primary_role,
+        f_responsibilities,
+        f_branch_name,
+        f_created_at,
+        f_total_count
+    from filtered_users;
+end;
+$$;
+
+-- 5. RLS POLICIES FOR PLATFORM TABLES
+create policy "Platform owners have full control on platform active sessions"
+    on public.platform_active_sessions for all
+    using (public.auth_is_platform_owner());
+
+-- 6. INDEX OPTIMIZATIONS FOR PLATFORM PERFORMANCE
+create index if not exists idx_platform_admins_user_active on public.platform_admins(user_id, is_active);
+create index if not exists idx_platform_admins_email on public.platform_admins(email);
+create index if not exists idx_companies_is_active on public.companies(is_active);
+create index if not exists idx_company_subs_status_company on public.company_subscriptions(company_id, status);
+
+
+-- >>> FILE: 036_add_department_to_company_users.sql <<<
+-- ==============================================================================
+-- PrintERP / InkFlow SaaS - Migration 036: Add Department & Custom Metadata to Company Users
+-- Adds department, responsibilities, and raw_overrides to public.company_users.
+-- ==============================================================================
+
+alter table if exists public.company_users
+    add column if not exists department text default 'General',
+    add column if not exists responsibilities text[],
+    add column if not exists raw_overrides jsonb default '{}'::jsonb;
+
+create index if not exists idx_company_users_department on public.company_users(department);
+
+
+-- >>> FILE: 037_platform_security_definer_hardening.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 037: Security Definer Hardening & Search Path Lockdown
+-- Ensures all platform security definer functions:
+--   1. Have explicit, safe search_path = public, pg_temp
+--   2. Enforce strict caller validation
+--   3. Fail-closed on missing records or unauthenticated callers
+-- ==============================================================================
+
+-- 1. Hardened auth_is_platform_owner
+create or replace function public.auth_is_platform_owner()
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_user_id uuid;
+begin
+    v_user_id := auth.uid();
+    if v_user_id is null then
+        return false;
+    end if;
+
+    return exists (
+        select 1
+        from public.platform_admins
+        where user_id = v_user_id
+          and is_active = true
+    );
+end;
+$$;
+
+-- 2. Hardened auth_validate_support_session
+create or replace function public.auth_validate_support_session(
+    p_company_id uuid,
+    p_token_hash text
+)
+returns table (
+    is_valid boolean,
+    access_level text,
+    admin_id uuid,
+    admin_email text,
+    admin_name text,
+    expires_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    if p_company_id is null or p_token_hash is null or trim(p_token_hash) = '' then
+        return;
+    end if;
+
+    return query
+    select 
+        (pss.status = 'active' and pss.expires_at > now()) as is_valid,
+        pss.access_level,
+        pa.id as admin_id,
+        pa.email as admin_email,
+        pa.full_name as admin_name,
+        pss.expires_at
+    from public.platform_support_sessions pss
+    join public.platform_admins pa on pa.id = pss.platform_admin_id
+    where pss.company_id = p_company_id
+      and pss.session_token_hash = p_token_hash
+      and pa.is_active = true
+    limit 1;
+end;
+$$;
+
+
+-- >>> FILE: 038_strict_auth_isolation_boundary.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 038: Strict Platform vs Tenant Auth Isolation & RLS Boundary
+-- Single Source of Truth & Fail-Closed Database Policies:
+--   1. Platform Users -> platform_admins (is_active = true) -> Auth Context: Platform
+--   2. Tenant Users -> company_users (status = 'active') + companies (is_active = true) -> Auth Context: Tenant
+--   3. Cross-domain queries are rejected at PostgreSQL & RLS layer
+-- ==============================================================================
+
+-- 1. HARDEN SECURITY DEFINER HELPER FUNCTIONS WITH EXPLICIT SEARCH_PATH
+create or replace function public.auth_is_platform_admin()
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_user_id uuid;
+begin
+    v_user_id := auth.uid();
+    if v_user_id is null then
+        return false;
+    end if;
+
+    return exists (
+        select 1
+        from public.platform_admins
+        where user_id = v_user_id
+          and is_active = true
+    );
+end;
+$$;
+
+create or replace function public.auth_is_platform_owner()
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_user_id uuid;
+begin
+    v_user_id := auth.uid();
+    if v_user_id is null then
+        return false;
+    end if;
+
+    return exists (
+        select 1
+        from public.platform_admins
+        where user_id = v_user_id
+          and role = 'platform_owner'
+          and is_active = true
+    );
+end;
+$$;
+
+create or replace function public.auth_is_active_company_user(target_company_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    if auth.uid() is null or target_company_id is null then
+        return false;
+    end if;
+
+    return exists (
+        select 1
+        from public.company_users cu
+        join public.companies c on c.id = cu.company_id
+        where cu.company_id = target_company_id
+          and cu.user_id = auth.uid()
+          and cu.status = 'active'
+          and c.is_active = true
+    );
+end;
+$$;
+
+-- 2. PLATFORM DATA TABLES RLS (Zero Access to Ordinary Tenant Accounts)
+alter table if exists public.platform_admins enable row level security;
+drop policy if exists "Platform admins full control on platform_admins" on public.platform_admins;
+create policy "Platform admins full control on platform_admins"
+    on public.platform_admins for all
+    using (public.auth_is_platform_admin());
+
+alter table if exists public.platform_active_sessions enable row level security;
+drop policy if exists "Platform admins view active sessions" on public.platform_active_sessions;
+create policy "Platform admins view active sessions"
+    on public.platform_active_sessions for all
+    using (public.auth_is_platform_admin());
+
+alter table if exists public.platform_support_sessions enable row level security;
+drop policy if exists "Platform admins manage support sessions" on public.platform_support_sessions;
+create policy "Platform admins manage support sessions"
+    on public.platform_support_sessions for all
+    using (public.auth_is_platform_admin());
+
+-- 3. AUDIT LOG ISOLATION
+alter table if exists public.audit_logs enable row level security;
+drop policy if exists "Active tenant users can view tenant audit logs" on public.audit_logs;
+create policy "Active tenant users can view tenant audit logs"
+    on public.audit_logs for select
+    using (public.auth_is_active_company_user(company_id));
+
+alter table if exists public.platform_audit_logs enable row level security;
+drop policy if exists "Platform admins view platform audit logs" on public.platform_audit_logs;
+create policy "Platform admins view platform audit logs"
+    on public.platform_audit_logs for all
+    using (public.auth_is_platform_admin());
+
+
+-- >>> FILE: 039_email_gateway_and_communication_system.sql <<<
+-- ==============================================================================
+-- PrintERP SaaS - Migration 039: Multi-Tenant Email Gateway System & Communication Infrastructure
+-- Supports:
+--   1. Platform-level Default Email Gateway & Configuration
+--   2. Tenant-level Custom Email Gateways (BYO SMTP / Resend / SendGrid / Amazon SES)
+--   3. Email Gateway Resolver & Fail-Closed Fallback Logic
+--   4. Standardized Bilingual Email Templates (English & বাংলা) with Variable Interpolation
+--   5. Asynchronous Email Queue with Exponential Backoff Retry Policy
+--   6. Immutable Email Transmission & Audit Logs with Strict Tenant RLS
+-- ==============================================================================
+
+-- 1. EMAIL GATEWAYS TABLE
+create table if not exists public.email_gateways (
+    id uuid primary key default gen_random_uuid(),
+    tenant_id uuid references public.companies(id) on delete cascade, -- NULL for Platform Global Gateway
+    provider text not null check (provider in ('smtp', 'resend', 'sendgrid', 'ses', 'custom', 'mock')),
+    type text not null default 'transactional' check (type in ('transactional', 'marketing', 'system')),
+    smtp_host text,
+    smtp_port integer,
+    smtp_username text,
+    encrypted_credentials text, -- AES-256-GCM encrypted password / API key / secret
+    encryption_type text check (encryption_type in ('ssl', 'tls', 'starttls', 'none')),
+    sender_name text not null,
+    sender_email text not null,
+    reply_to_email text,
+    status text not null default 'active' check (status in ('active', 'inactive', 'unverified', 'error')),
+    is_default boolean not null default false,
+    extra_settings jsonb default '{}'::jsonb, -- e.g. { aws_region, ses_config_set, custom_headers, rate_limit }
+    last_tested_at timestamptz,
+    last_test_status text,
+    last_test_error text,
+    created_by uuid references auth.users(id) on delete set null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+-- Unique index to ensure at most one default gateway per tenant (and one default platform gateway)
+create unique index if not exists idx_email_gateways_platform_default
+    on public.email_gateways(is_default)
+    where tenant_id is null and is_default = true;
+
+create unique index if not exists idx_email_gateways_tenant_default
+    on public.email_gateways(tenant_id, is_default)
+    where tenant_id is not null and is_default = true;
+
+create index if not exists idx_email_gateways_tenant on public.email_gateways(tenant_id);
+create index if not exists idx_email_gateways_status on public.email_gateways(status);
+alter table public.email_gateways enable row level security;
+
+-- 2. EMAIL TEMPLATES TABLE
+create table if not exists public.email_templates (
+    id uuid primary key default gen_random_uuid(),
+    tenant_id uuid references public.companies(id) on delete cascade, -- NULL for Platform Default Templates
+    event_type text not null, -- e.g. 'invoice_created', 'quotation_sent', 'payment_received', 'due_reminder', 'design_approval_request', 'revision_notification', 'approval_confirmation', 'job_started', 'job_completed', 'delivery_scheduled', 'delivery_completed', 'user_invitation', 'password_reset', 'security_alert', 'test_email'
+    name text not null,
+    name_bn text,
+    subject_template text not null,
+    subject_template_bn text,
+    body_template text not null,
+    body_template_bn text,
+    variables jsonb default '[]'::jsonb, -- list of supported variables e.g. ["customer_name", "invoice_number", "amount", "due_date", "company_name"]
+    status text not null default 'active' check (status in ('active', 'inactive', 'draft')),
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+-- Unique constraint for event_type per tenant (and platform level)
+create unique index if not exists idx_email_templates_platform_event
+    on public.email_templates(event_type)
+    where tenant_id is null;
+
+create unique index if not exists idx_email_templates_tenant_event
+    on public.email_templates(tenant_id, event_type)
+    where tenant_id is not null;
+
+create index if not exists idx_email_templates_tenant on public.email_templates(tenant_id);
+create index if not exists idx_email_templates_event on public.email_templates(event_type);
+alter table public.email_templates enable row level security;
+
+-- 3. EMAIL TRANSMISSION LOGS TABLE
+create table if not exists public.email_logs (
+    id uuid primary key default gen_random_uuid(),
+    tenant_id uuid references public.companies(id) on delete cascade, -- NULL for pure Platform system emails
+    gateway_id uuid references public.email_gateways(id) on delete set null,
+    event_type text not null,
+    recipient text not null,
+    subject text not null,
+    status text not null default 'queued' check (status in ('queued', 'sending', 'sent', 'failed', 'retrying')),
+    provider_message_id text,
+    error_message text,
+    retry_count integer not null default 0,
+    max_retries integer not null default 3,
+    metadata jsonb default '{}'::jsonb,
+    sent_by uuid references auth.users(id) on delete set null,
+    sent_at timestamptz,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_email_logs_tenant on public.email_logs(tenant_id);
+create index if not exists idx_email_logs_status on public.email_logs(status);
+create index if not exists idx_email_logs_created on public.email_logs(created_at desc);
+alter table public.email_logs enable row level security;
+
+-- 4. ASYNCHRONOUS EMAIL QUEUE TABLE
+create table if not exists public.email_queue (
+    id uuid primary key default gen_random_uuid(),
+    tenant_id uuid references public.companies(id) on delete cascade,
+    event_type text not null,
+    recipient text not null,
+    subject text not null,
+    html_body text not null,
+    text_body text,
+    variables jsonb default '{}'::jsonb,
+    attachments jsonb default '[]'::jsonb,
+    metadata jsonb default '{}'::jsonb,
+    status text not null default 'pending' check (status in ('pending', 'processing', 'completed', 'failed', 'cancelled')),
+    attempts integer not null default 0,
+    max_attempts integer not null default 3,
+    next_run_at timestamptz not null default now(),
+    last_error text,
+    locked_at timestamptz,
+    locked_by text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_email_queue_pending on public.email_queue(status, next_run_at)
+    where status in ('pending', 'failed');
+create index if not exists idx_email_queue_tenant on public.email_queue(tenant_id);
+alter table public.email_queue enable row level security;
+
+-- 5. ROW LEVEL SECURITY (RLS) POLICIES
+
+-- Gateways RLS
+-- Platform Admins: Full control over platform gateways (tenant_id is null)
+create policy "Platform admins manage platform email gateways"
+    on public.email_gateways for all
+    using (public.auth_is_platform_admin() and tenant_id is null);
+
+-- Active Tenant Users: Can read their own tenant gateways
+create policy "Tenant users view own email gateways"
+    on public.email_gateways for select
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+-- Authorized Tenant Admins: Can insert, update, delete their own tenant gateways
+create policy "Authorized tenant admins manage own email gateways"
+    on public.email_gateways for all
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+        and public.auth_user_has_permission(tenant_id, 'settings.edit')
+    );
+
+-- Email Templates RLS
+-- Platform Admins: Full control over platform default templates
+create policy "Platform admins manage platform email templates"
+    on public.email_templates for all
+    using (public.auth_is_platform_admin() and tenant_id is null);
+
+-- Tenant Users: Can read platform default templates (for fallback) AND their own tenant templates
+create policy "Tenant users view accessible templates"
+    on public.email_templates for select
+    using (
+        tenant_id is null -- Public / platform default templates
+        or public.auth_is_active_company_user(tenant_id) -- Tenant customized templates
+    );
+
+-- Authorized Tenant Admins: Can manage their tenant-specific templates
+create policy "Authorized tenant admins manage own email templates"
+    on public.email_templates for all
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+        and public.auth_user_has_permission(tenant_id, 'settings.edit')
+    );
+
+-- Email Logs RLS
+-- Platform Admins: View all logs / platform logs
+create policy "Platform admins view email logs"
+    on public.email_logs for select
+    using (public.auth_is_platform_admin());
+
+-- Active Tenant Users: View their own tenant logs
+create policy "Tenant users view own email logs"
+    on public.email_logs for select
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+-- Active Tenant Users / Service: Can insert logs for their tenant
+create policy "Tenant users append own email logs"
+    on public.email_logs for insert
+    with check (
+        (tenant_id is not null and public.auth_is_active_company_user(tenant_id))
+        or public.auth_is_platform_admin()
+    );
+
+-- Email Queue RLS
+create policy "Platform admins view email queue"
+    on public.email_queue for all
+    using (public.auth_is_platform_admin());
+
+create policy "Tenant users view own email queue"
+    on public.email_queue for select
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+create policy "Tenant users enqueue emails"
+    on public.email_queue for insert
+    with check (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+
+-- >>> FILE: 040_seed_trial_plan_and_repair_subscriptions.sql <<<
+-- ==============================================================================
+-- InkFlow / PrintERP SaaS - Migration 040: Seed Trial Plan & Repair Subscriptions
+-- Ensures 'trial' is a first-class citizen in subscription_plans and repairs
+-- any trial subscriptions that were linked to starter plan.
+-- ==============================================================================
+
+-- 1. Ensure trial_days column exists on subscription_plans
+alter table public.subscription_plans add column if not exists trial_days integer not null default 0;
+
+-- 2. Insert 'trial' into subscription_plans if not present
+insert into public.subscription_plans (
+    code,
+    name,
+    name_bn,
+    description,
+    price_monthly,
+    price_yearly,
+    max_users,
+    max_branches,
+    storage_gb,
+    monthly_orders,
+    max_customers,
+    max_products,
+    trial_days,
+    features,
+    is_active,
+    sort_order
+) values (
+    'trial',
+    'Free Trial (14 Days)',
+    '১৪ দিনের ফ্রি ট্রায়াল',
+    '14-day evaluation with full access to all ERP modules. No credit card required.',
+    0.00,
+    0.00,
+    5,
+    1,
+    2,
+    100,
+    200,
+    200,
+    14,
+    array[
+        'basic_sales', 'basic_customers', 'quotation_pdf', 'delivery_challan',
+        'multi_department', 'inventory', 'inventory_rolls', 'production',
+        'production_kanban', 'reports', 'reports_analytics', 'hr', 'hr_payroll',
+        'job_costing', 'whatsapp_notifications', 'multi_branch', 'advanced_analytics',
+        'advanced_permissions', 'custom_workflows', 'api_access', 'priority_support'
+    ],
+    true,
+    0
+)
+on conflict (code) do update set
+    name = excluded.name,
+    name_bn = excluded.name_bn,
+    description = excluded.description,
+    trial_days = excluded.trial_days,
+    features = excluded.features,
+    sort_order = excluded.sort_order;
+
+-- 2. Repair existing trial subscriptions:
+-- If a company subscription has status = 'trial' and currently points to a non-trial plan_id,
+-- point it to the trial plan_id.
+do $$
+declare
+    v_trial_plan_id uuid;
+begin
+    select id into v_trial_plan_id
+    from public.subscription_plans
+    where code = 'trial'
+    limit 1;
+
+    if v_trial_plan_id is not null then
+        update public.company_subscriptions
+        set plan_id = v_trial_plan_id,
+            updated_at = now()
+        where status = 'trial'
+          and plan_id != v_trial_plan_id;
+    end if;
+end;
+$$;
+
+
+-- >>> FILE: 041_platform_system_settings.sql <<<
+-- ==============================================================================
+-- Migration 041: Platform System Settings & Disaster Recovery Telemetry
+-- ==============================================================================
+
+-- 1. Create table for cluster-wide platform system settings
+create table if not exists public.platform_system_settings (
+    id text primary key default 'default',
+    session_timeout_minutes integer not null default 120,
+    mfa_required_for_admins boolean not null default false,
+    rate_limit_requests_per_minute integer not null default 120,
+    max_export_records integer not null default 10000,
+    default_trial_days integer not null default 14,
+    default_currency text not null default 'BDT',
+    default_vat_rate_pct numeric(5,2) not null default 15.00,
+    maintenance_mode_enabled boolean not null default false,
+    maintenance_message text not null default 'InkFlow is currently undergoing scheduled platform upgrades.',
+    incident_alert_webhook text,
+    backup_retention_days integer not null default 90,
+    auto_backup_enabled boolean not null default true,
+    last_backup_at timestamp with time zone not null default now(),
+    last_restore_test_at timestamp with time zone not null default now(),
+    last_restore_status text not null default 'passed',
+    updated_at timestamp with time zone not null default now(),
+    updated_by uuid references public.platform_admins(id)
+);
+
+-- 2. Enable Row Level Security (RLS)
+alter table public.platform_system_settings enable row level security;
+
+-- 3. RLS Policies
+drop policy if exists "Platform admins can read platform system settings" on public.platform_system_settings;
+create policy "Platform admins can read platform system settings"
+    on public.platform_system_settings for select
+    using (public.auth_is_platform_admin());
+
+drop policy if exists "Platform owners can modify platform system settings" on public.platform_system_settings;
+create policy "Platform owners can modify platform system settings"
+    on public.platform_system_settings for all
+    using (public.auth_is_platform_owner());
+
+-- 4. Seed default singleton record
+insert into public.platform_system_settings (
+    id,
+    session_timeout_minutes,
+    mfa_required_for_admins,
+    rate_limit_requests_per_minute,
+    max_export_records,
+    default_trial_days,
+    default_currency,
+    default_vat_rate_pct,
+    maintenance_mode_enabled,
+    maintenance_message,
+    backup_retention_days,
+    auto_backup_enabled
+) values (
+    'default',
+    120,
+    false,
+    120,
+    10000,
+    14,
+    'BDT',
+    15.00,
+    false,
+    'InkFlow is currently undergoing scheduled platform upgrades.',
+    90,
+    true
+)
+on conflict (id) do nothing;
+
+
+-- >>> FILE: 042_production_gateways_and_api_integrations.sql <<<
+-- ==============================================================================
+-- PrintERP SaaS - Migration 042: Production Gateways, API Integrations & Webhooks
+-- Supports:
+--   1. Unified Gateway Integrations Table (Email, SMS, Payment, WhatsApp, Telegram)
+--   2. Strict Platform Owner vs Tenant Isolation with RLS & Encrypted Credentials
+--   3. Financial Payment Transaction Ledger (bKash, SSLCOMMERZ, Nagad, UddoktaPay, Stripe)
+--   4. Universal Communication Logs (Email, SMS, WhatsApp, Telegram, In-App)
+--   5. Webhook Events Ledger (Signature Verification & Replay Protection)
+--   6. Gateway Security Audit Ledger (Non-secret audit trail)
+-- ==============================================================================
+
+-- 1. GATEWAY INTEGRATIONS TABLE
+create table if not exists public.gateway_integrations (
+    id uuid primary key default gen_random_uuid(),
+    tenant_id uuid references public.companies(id) on delete cascade, -- NULL for Platform Global Gateways
+    category text not null check (category in ('email', 'sms', 'payment', 'whatsapp', 'telegram')),
+    provider text not null, -- 'smtp', 'resend', 'sendgrid', 'ses', 'greenweb', 'bulksmsbd', 'ssl_wireless', 'twilio', 'bkash', 'sslcommerz', 'nagad', 'uddoktapay', 'stripe', 'meta_whatsapp', 'telegram_bot'
+    name text not null,
+    is_enabled boolean not null default false,
+    is_default boolean not null default false,
+    environment text not null default 'sandbox' check (environment in ('sandbox', 'live')),
+    encrypted_credentials text, -- AES-256-GCM encrypted JSON containing API keys, secrets, tokens, passwords
+    public_config jsonb not null default '{}'::jsonb, -- Non-sensitive configuration (hosts, ports, senders, IDs, URLs)
+    status text not null default 'not_configured' check (status in ('not_configured', 'configured', 'testing', 'connected', 'error', 'disabled')),
+    last_tested_at timestamptz,
+    last_test_status text,
+    last_test_error text,
+    last_test_latency_ms integer default 0,
+    failure_count integer not null default 0,
+    created_by uuid references auth.users(id) on delete set null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+-- Unique index to prevent duplicate provider configurations per scope (platform or tenant)
+create unique index if not exists idx_gateway_integrations_platform_provider
+    on public.gateway_integrations(provider)
+    where tenant_id is null;
+
+create unique index if not exists idx_gateway_integrations_tenant_provider
+    on public.gateway_integrations(tenant_id, provider)
+    where tenant_id is not null;
+
+create index if not exists idx_gateway_integrations_tenant on public.gateway_integrations(tenant_id);
+create index if not exists idx_gateway_integrations_category on public.gateway_integrations(category);
+create index if not exists idx_gateway_integrations_status on public.gateway_integrations(status);
+create index if not exists idx_gateway_integrations_enabled on public.gateway_integrations(is_enabled);
+alter table public.gateway_integrations enable row level security;
+
+-- 2. FINANCIAL PAYMENT TRANSACTIONS TABLE
+create table if not exists public.gateway_transactions (
+    id uuid primary key default gen_random_uuid(),
+    tenant_id uuid references public.companies(id) on delete cascade, -- NULL for Platform SaaS billing
+    gateway_id uuid references public.gateway_integrations(id) on delete set null,
+    provider text not null,
+    invoice_id text,
+    customer_id text,
+    subscription_id text,
+    amount numeric(12,2) not null,
+    currency text not null default 'BDT',
+    internal_trx_id text not null unique,
+    provider_trx_id text,
+    payment_status text not null default 'initiated' check (payment_status in ('initiated', 'pending', 'paid', 'failed', 'cancelled', 'refunded', 'expired')),
+    idempotency_key text unique,
+    payment_url text,
+    callback_payload jsonb,
+    webhook_payload jsonb,
+    verification_payload jsonb,
+    error_message text,
+    initiated_at timestamptz not null default now(),
+    completed_at timestamptz,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_gateway_tx_tenant on public.gateway_transactions(tenant_id);
+create index if not exists idx_gateway_tx_status on public.gateway_transactions(payment_status);
+create index if not exists idx_gateway_tx_internal on public.gateway_transactions(internal_trx_id);
+create index if not exists idx_gateway_tx_provider on public.gateway_transactions(provider_trx_id);
+create index if not exists idx_gateway_tx_created on public.gateway_transactions(created_at desc);
+alter table public.gateway_transactions enable row level security;
+
+-- 3. WEBHOOK EVENTS LEDGER TABLE
+create table if not exists public.gateway_webhooks (
+    id uuid primary key default gen_random_uuid(),
+    gateway_id uuid references public.gateway_integrations(id) on delete set null,
+    provider text not null,
+    event_type text not null,
+    provider_event_id text,
+    signature text,
+    is_verified boolean not null default false,
+    payload jsonb not null default '{}'::jsonb,
+    status text not null default 'received' check (status in ('received', 'processed', 'ignored', 'failed')),
+    error_message text,
+    processed_at timestamptz,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_gateway_webhooks_provider on public.gateway_webhooks(provider);
+create index if not exists idx_gateway_webhooks_status on public.gateway_webhooks(status);
+create index if not exists idx_gateway_webhooks_created on public.gateway_webhooks(created_at desc);
+alter table public.gateway_webhooks enable row level security;
+
+-- 4. GATEWAY SECURITY AUDIT LOGS TABLE
+create table if not exists public.gateway_audit_logs (
+    id uuid primary key default gen_random_uuid(),
+    tenant_id uuid references public.companies(id) on delete cascade, -- NULL for Platform owner actions
+    gateway_id uuid references public.gateway_integrations(id) on delete set null,
+    action text not null, -- 'created', 'updated', 'enabled', 'disabled', 'credentials_replaced', 'test_connection', 'test_message_sent', 'environment_switched', 'deleted'
+    details jsonb not null default '{}'::jsonb, -- Sanitized context, NEVER secrets
+    ip_address text,
+    performed_by uuid references auth.users(id) on delete set null,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_gateway_audit_tenant on public.gateway_audit_logs(tenant_id);
+create index if not exists idx_gateway_audit_created on public.gateway_audit_logs(created_at desc);
+alter table public.gateway_audit_logs enable row level security;
+
+-- 5. UPGRADE / EXPAND COMMUNICATION LOGS TABLE
+-- (Check if exists from 023/039, or ensure all columns are present)
+do $$
+begin
+    if not exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'communication_logs') then
+        create table public.communication_logs (
+            id uuid primary key default gen_random_uuid(),
+            company_id uuid references public.companies(id) on delete cascade,
+            gateway_id uuid references public.gateway_integrations(id) on delete set null,
+            channel text not null check (channel in ('in_app', 'whatsapp', 'sms', 'email', 'telegram')),
+            recipient_name text,
+            recipient_destination text not null,
+            provider_used text not null,
+            message_content text not null,
+            status text not null default 'sent' check (status in ('sent', 'delivered', 'failed', 'queued', 'cancelled')),
+            provider_message_id text,
+            error_message text,
+            retry_count integer not null default 0,
+            metadata jsonb default '{}'::jsonb,
+            sent_by uuid references auth.users(id) on delete set null,
+            sent_at timestamptz,
+            delivered_at timestamptz,
+            failed_at timestamptz,
+            created_at timestamptz not null default now()
+        );
+    else
+        -- Add any missing columns to existing communication_logs safely
+        if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'communication_logs' and column_name = 'gateway_id') then
+            alter table public.communication_logs add column gateway_id uuid references public.gateway_integrations(id) on delete set null;
+        end if;
+        if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'communication_logs' and column_name = 'provider_message_id') then
+            alter table public.communication_logs add column provider_message_id text;
+        end if;
+        if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'communication_logs' and column_name = 'retry_count') then
+            alter table public.communication_logs add column retry_count integer not null default 0;
+        end if;
+        if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'communication_logs' and column_name = 'metadata') then
+            alter table public.communication_logs add column metadata jsonb default '{}'::jsonb;
+        end if;
+        if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'communication_logs' and column_name = 'sent_by') then
+            alter table public.communication_logs add column sent_by uuid references auth.users(id) on delete set null;
+        end if;
+        if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'communication_logs' and column_name = 'sent_at') then
+            alter table public.communication_logs add column sent_at timestamptz;
+        end if;
+        if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'communication_logs' and column_name = 'delivered_at') then
+            alter table public.communication_logs add column delivered_at timestamptz;
+        end if;
+        if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'communication_logs' and column_name = 'failed_at') then
+            alter table public.communication_logs add column failed_at timestamptz;
+        end if;
+    end if;
+end $$;
+
+create index if not exists idx_comm_logs_channel on public.communication_logs(channel);
+create index if not exists idx_comm_logs_status on public.communication_logs(status);
+
+-- 6. ROW LEVEL SECURITY (RLS) POLICIES
+
+-- A. Gateway Integrations Policies
+-- Platform Admins: Complete control over Platform Integrations (tenant_id is null)
+create policy "Platform admins manage platform gateway integrations"
+    on public.gateway_integrations for all
+    using (public.auth_is_platform_admin() and tenant_id is null);
+
+-- Tenant Users: Read only their own company gateway integrations
+create policy "Tenant users view own gateway integrations"
+    on public.gateway_integrations for select
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+-- Tenant Admins: Manage their own company gateway integrations
+create policy "Authorized tenant admins manage own gateway integrations"
+    on public.gateway_integrations for all
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+        and public.auth_user_has_permission(tenant_id, 'settings.edit')
+    );
+
+-- B. Gateway Transactions Policies
+-- Platform Admins: View all transactions
+create policy "Platform admins view all gateway transactions"
+    on public.gateway_transactions for select
+    using (public.auth_is_platform_admin());
+
+-- Tenant Users: View their own company transactions
+create policy "Tenant users view own gateway transactions"
+    on public.gateway_transactions for select
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+-- System / Platform Service: Insert and Update transactions
+create policy "Service and admins insert gateway transactions"
+    on public.gateway_transactions for insert
+    with check (
+        public.auth_is_platform_admin()
+        or (tenant_id is not null and public.auth_is_active_company_user(tenant_id))
+    );
+
+create policy "Service and admins update gateway transactions"
+    on public.gateway_transactions for update
+    using (
+        public.auth_is_platform_admin()
+        or (tenant_id is not null and public.auth_is_active_company_user(tenant_id))
+    );
+
+-- C. Gateway Webhooks Policies
+-- Platform Admins: View webhook logs
+create policy "Platform admins view gateway webhooks"
+    on public.gateway_webhooks for select
+    using (public.auth_is_platform_admin());
+
+-- D. Gateway Audit Logs Policies
+-- Platform Admins: View all audit logs
+create policy "Platform admins view all gateway audit logs"
+    on public.gateway_audit_logs for select
+    using (public.auth_is_platform_admin());
+
+-- Tenant Users: View their own company audit logs
+create policy "Tenant users view own gateway audit logs"
+    on public.gateway_audit_logs for select
+    using (
+        tenant_id is not null
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+
+-- >>> FILE: 043_saas_subscription_lifecycle_and_events.sql <<<
+-- ==============================================================================
+-- InkFlow / PrintERP SaaS - Migration 043: SaaS Subscription Lifecycle & Events
+-- Comprehensive Subscription State Machine, Immutable Event Ledger, Downgrade Scheduling,
+-- and Verification Status on Financial Transactions.
+-- ==============================================================================
+
+-- 1. ENHANCE COMPANY_SUBSCRIPTIONS TABLE
+alter table public.company_subscriptions
+    add column if not exists next_plan_id uuid references public.subscription_plans(id) on delete set null,
+    add column if not exists change_effective_at timestamptz,
+    add column if not exists cancel_at_period_end boolean not null default false,
+    add column if not exists grace_period_ends_at timestamptz,
+    add column if not exists started_at timestamptz not null default now();
+
+create index if not exists idx_company_sub_next_plan on public.company_subscriptions(next_plan_id);
+create index if not exists idx_company_sub_cancel_period on public.company_subscriptions(cancel_at_period_end);
+
+-- 2. ENHANCE GATEWAY_TRANSACTIONS WITH VERIFICATION STATUS
+alter table public.gateway_transactions
+    add column if not exists verification_status text not null default 'unverified' check (
+        verification_status in ('unverified', 'verified', 'rejected')
+    );
+
+create index if not exists idx_gateway_tx_verification on public.gateway_transactions(verification_status);
+
+-- 3. CREATE IMMUTABLE SUBSCRIPTION EVENTS LEDGER
+create table if not exists public.subscription_events (
+    id uuid primary key default gen_random_uuid(),
+    subscription_id uuid references public.company_subscriptions(id) on delete cascade,
+    company_id uuid not null references public.companies(id) on delete cascade,
+    previous_plan_code text,
+    new_plan_code text,
+    previous_status text,
+    new_status text,
+    event_type text not null check (
+        event_type in (
+            'TRIAL_STARTED',
+            'TRIAL_EXTENDED',
+            'SUBSCRIPTION_CREATED',
+            'PLAN_UPGRADED',
+            'PLAN_DOWNGRADED',
+            'RENEWED',
+            'PAYMENT_PENDING',
+            'PAYMENT_VERIFIED',
+            'PAYMENT_FAILED',
+            'CANCELLED',
+            'REACTIVATED',
+            'EXPIRED',
+            'SUSPENDED'
+        )
+    ),
+    reason text,
+    transaction_id uuid references public.gateway_transactions(id) on delete set null,
+    amount numeric(12,2),
+    currency text not null default 'BDT',
+    effective_at timestamptz not null default now(),
+    performed_by uuid,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_sub_events_company on public.subscription_events(company_id);
+create index if not exists idx_sub_events_sub on public.subscription_events(subscription_id);
+create index if not exists idx_sub_events_type on public.subscription_events(event_type);
+create index if not exists idx_sub_events_created on public.subscription_events(created_at desc);
+
+alter table public.subscription_events enable row level security;
+
+-- 4. RLS POLICIES FOR SUBSCRIPTION EVENTS
+create policy "Tenant users can view their subscription events"
+    on public.subscription_events for select
+    using (public.auth_is_active_company_user(company_id));
+
+create policy "Platform super admins can view all subscription events"
+    on public.subscription_events for all
+    using (
+        exists (
+            select 1 from public.platform_admins
+            where user_id = auth.uid()
+        )
+    );
+
+
+-- >>> FILE: 044_subscription_billing_security_and_reconciliation.sql <<<
+-- ==============================================================================
+-- InkFlow / PrintERP SaaS - Migration 044: Subscription Billing Security & Reconciliation
+-- Authoritative Billing Transactions, Webhook Idempotency Constraints,
+-- Cron Performance Indexes, and Multi-Tenant Isolation Policies.
+-- ==============================================================================
+
+-- 1. ENSURE UNIQUE CONSTRAINT & INDEXES ON GATEWAY_TRANSACTIONS FOR IDEMPOTENCY
+create unique index if not exists idx_gateway_tx_internal_unique 
+    on public.gateway_transactions(internal_trx_id) 
+    where internal_trx_id is not null;
+
+create index if not exists idx_gateway_tx_provider_trx 
+    on public.gateway_transactions(provider, provider_trx_id) 
+    where provider_trx_id is not null;
+
+create index if not exists idx_gateway_tx_payment_verification 
+    on public.gateway_transactions(payment_status, verification_status);
+
+-- 2. ENSURE COMPOSITE PERFORMANCE INDEXES FOR SUBSCRIPTION LIFECYCLE CRON
+create index if not exists idx_company_sub_trial_lifecycle 
+    on public.company_subscriptions(status, trial_ends_at) 
+    where status = 'trial';
+
+create index if not exists idx_company_sub_scheduled_downgrade 
+    on public.company_subscriptions(change_effective_at) 
+    where next_plan_id is not null;
+
+create index if not exists idx_company_sub_period_cancel 
+    on public.company_subscriptions(cancel_at_period_end, current_period_end) 
+    where cancel_at_period_end = true;
+
+-- 3. ENSURE STRICT RLS POLICIES FOR SUBSCRIPTION AND BILLING TABLES
+alter table public.subscription_plans enable row level security;
+alter table public.company_subscriptions enable row level security;
+alter table public.subscription_events enable row level security;
+alter table public.gateway_transactions enable row level security;
+
+-- Ensure read access to active subscription plans
+do $$
+begin
+    if not exists (
+        select 1 from pg_policies 
+        where tablename = 'subscription_plans' and policyname = 'Public can view active subscription plans'
+    ) then
+        create policy "Public can view active subscription plans"
+            on public.subscription_plans for select
+            using (is_active = true);
+    end if;
+end;
+$$;
+
+-- Ensure platform super admins can manage subscription plans
+do $$
+begin
+    if not exists (
+        select 1 from pg_policies 
+        where tablename = 'subscription_plans' and policyname = 'Platform admins can manage subscription plans'
+    ) then
+        create policy "Platform admins can manage subscription plans"
+            on public.subscription_plans for all
+            using (
+                exists (
+                    select 1 from public.platform_admins
+                    where user_id = auth.uid()
+                )
+            );
+    end if;
+end;
+$$;
+
+
+-- >>> FILE: 045_platform_saas_subscription_and_billing.sql <<<
+-- ==============================================================================
+-- InkFlow / PrintERP SaaS - Migration 045: Platform SaaS Subscription & Billing
+-- Authoritative Platform Plans, Platform Subscriptions, Lifecycle Events,
+-- Webhook Logs, and Strict Platform/Tenant Isolation Policies.
+-- ==============================================================================
+
+-- 1. PLATFORM SAAS PLANS TABLE
+create table if not exists public.platform_saas_plans (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    slug text unique not null,
+    description text,
+    monthly_price numeric(12,2) not null,
+    yearly_price numeric(12,2) not null,
+    currency text not null default 'BDT',
+    trial_days integer not null default 14,
+    features jsonb not null default '[]'::jsonb,
+    limits jsonb not null default '{}'::jsonb,
+    is_active boolean not null default true,
+    is_public boolean not null default true,
+    sort_order integer not null default 0,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_platform_saas_plans_slug on public.platform_saas_plans(slug);
+create index if not exists idx_platform_saas_plans_active on public.platform_saas_plans(is_active, sort_order);
+
+-- 2. PLATFORM SUBSCRIPTIONS TABLE
+create table if not exists public.platform_subscriptions (
+    id uuid primary key default gen_random_uuid(),
+    platform_account_id text not null default 'platform_root',
+    plan_id uuid references public.platform_saas_plans(id) on delete restrict,
+    status text not null default 'TRIALING' check (status in ('TRIALING', 'PENDING_PAYMENT', 'ACTIVE', 'PAST_DUE', 'GRACE_PERIOD', 'CANCELLED', 'EXPIRED', 'SUSPENDED')),
+    billing_cycle text not null default 'monthly' check (billing_cycle in ('monthly', 'yearly')),
+    started_at timestamptz not null default now(),
+    current_period_start timestamptz not null default now(),
+    current_period_end timestamptz not null,
+    trial_start timestamptz not null default now(),
+    trial_end timestamptz,
+    grace_period_end timestamptz,
+    cancelled_at timestamptz,
+    cancel_at_period_end boolean not null default false,
+    previous_plan_id uuid references public.platform_saas_plans(id) on delete set null,
+    next_plan_id uuid references public.platform_saas_plans(id) on delete set null,
+    change_effective_at timestamptz,
+    provider text,
+    provider_customer_id text,
+    provider_subscription_id text,
+    metadata jsonb not null default '{}'::jsonb,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_platform_sub_account on public.platform_subscriptions(platform_account_id);
+create index if not exists idx_platform_sub_status on public.platform_subscriptions(status);
+create index if not exists idx_platform_sub_lifecycle on public.platform_subscriptions(status, current_period_end, trial_end, grace_period_end);
+
+-- 3. PLATFORM SUBSCRIPTION EVENTS TABLE
+create table if not exists public.platform_subscription_events (
+    id uuid primary key default gen_random_uuid(),
+    subscription_id uuid references public.platform_subscriptions(id) on delete cascade,
+    platform_account_id text not null,
+    event_type text not null,
+    previous_plan_id uuid,
+    new_plan_id uuid,
+    previous_status text,
+    new_status text,
+    reason text,
+    transaction_id text,
+    performed_by text,
+    effective_date timestamptz,
+    metadata jsonb not null default '{}'::jsonb,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_platform_sub_events_sub on public.platform_subscription_events(subscription_id);
+create index if not exists idx_platform_sub_events_type on public.platform_subscription_events(event_type);
+create index if not exists idx_platform_sub_events_created on public.platform_subscription_events(created_at desc);
+
+-- 4. PLATFORM WEBHOOK EVENTS TABLE
+create table if not exists public.platform_webhook_events (
+    id uuid primary key default gen_random_uuid(),
+    provider text not null,
+    event_id text,
+    event_type text not null,
+    transaction_id text,
+    billing_context text not null default 'PLATFORM',
+    verification_status text not null default 'UNVERIFIED',
+    processed boolean not null default false,
+    processed_at timestamptz,
+    failure_reason text,
+    payload jsonb not null default '{}'::jsonb,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_platform_webhook_events_provider_event on public.platform_webhook_events(provider, event_id);
+create index if not exists idx_platform_webhook_events_trx on public.platform_webhook_events(transaction_id);
+
+-- 5. EXTEND GATEWAY_TRANSACTIONS WITH BILLING CONTEXT IF NOT ALREADY PRESENT
+do $$
+begin
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'gateway_transactions' and column_name = 'billing_context') then
+        alter table public.gateway_transactions add column billing_context text not null default 'TENANT' check (billing_context in ('PLATFORM', 'TENANT'));
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'gateway_transactions' and column_name = 'platform_account_id') then
+        alter table public.gateway_transactions add column platform_account_id text;
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'gateway_transactions' and column_name = 'verification_status') then
+        alter table public.gateway_transactions add column verification_status text not null default 'UNVERIFIED' check (verification_status in ('UNVERIFIED', 'VERIFIED', 'REJECTED'));
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'gateway_transactions' and column_name = 'plan_id') then
+        alter table public.gateway_transactions add column plan_id uuid;
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'gateway_transactions' and column_name = 'transaction_type') then
+        alter table public.gateway_transactions add column transaction_type text default 'SUBSCRIPTION_PURCHASE';
+    end if;
+end;
+$$;
+
+create index if not exists idx_gateway_tx_billing_context on public.gateway_transactions(billing_context, platform_account_id);
+
+-- 6. SEED STANDARD SAAS PLATFORM PLANS
+insert into public.platform_saas_plans (id, name, slug, description, monthly_price, yearly_price, currency, trial_days, features, limits, is_active, is_public, sort_order)
+values
+(
+    '11111111-1111-1111-1111-111111111001',
+    'SaaS Starter Cluster',
+    'saas_starter',
+    'Essential cloud ERP platform infrastructure for launching localized SaaS operations.',
+    14999.00,
+    149990.00,
+    'BDT',
+    14,
+    '["multi_tenant", "basic_analytics", "automated_backups", "email_gateway", "sms_gateway"]'::jsonb,
+    '{"max_tenants": 25, "max_total_users": 150, "storage_gb": 50, "monthly_api_calls": 250000}'::jsonb,
+    true,
+    true,
+    1
+),
+(
+    '11111111-1111-1111-1111-111111111002',
+    'SaaS Growth Pro',
+    'saas_growth',
+    'High-throughput infrastructure with multi-gateway payments, WhatsApp & Telegram bots, and automated scaling.',
+    34999.00,
+    349990.00,
+    'BDT',
+    14,
+    '["multi_tenant", "advanced_analytics", "automated_backups", "email_gateway", "sms_gateway", "whatsapp_gateway", "telegram_bot", "custom_domains", "api_gateway", "audit_ledger"]'::jsonb,
+    '{"max_tenants": 100, "max_total_users": 750, "storage_gb": 250, "monthly_api_calls": 1000000}'::jsonb,
+    true,
+    true,
+    2
+),
+(
+    '11111111-1111-1111-1111-111111111003',
+    'SaaS Enterprise Scale',
+    'saas_enterprise',
+    'Full enterprise SaaS cluster with white-labeling, dedicated compute nodes, 99.9% uptime SLA, and custom domain routing.',
+    79999.00,
+    799990.00,
+    'BDT',
+    14,
+    '["multi_tenant", "advanced_analytics", "automated_backups", "email_gateway", "sms_gateway", "whatsapp_gateway", "telegram_bot", "custom_domains", "api_gateway", "audit_ledger", "white_label", "priority_sla_99_9", "dedicated_compute", "custom_billing_rules"]'::jsonb,
+    '{"max_tenants": 500, "max_total_users": 3500, "storage_gb": 1000, "monthly_api_calls": 5000000}'::jsonb,
+    true,
+    true,
+    3
+),
+(
+    '11111111-1111-1111-1111-111111111004',
+    'Dedicated Cloud Sovereign',
+    'saas_sovereign',
+    'Single-tenant isolated cloud cluster, custom database encryption, on-premise sync, and 24/7 VIP engineer escalation.',
+    149999.00,
+    1499990.00,
+    'BDT',
+    14,
+    '["multi_tenant", "advanced_analytics", "automated_backups", "email_gateway", "sms_gateway", "whatsapp_gateway", "telegram_bot", "custom_domains", "api_gateway", "audit_ledger", "white_label", "priority_sla_99_9", "dedicated_compute", "custom_billing_rules", "dedicated_database", "source_escrow", "vip_support_24_7"]'::jsonb,
+    '{"max_tenants": 2000, "max_total_users": 20000, "storage_gb": 5000, "monthly_api_calls": 25000000}'::jsonb,
+    true,
+    true,
+    4
+)
+on conflict (slug) do update set
+    name = excluded.name,
+    description = excluded.description,
+    monthly_price = excluded.monthly_price,
+    yearly_price = excluded.yearly_price,
+    features = excluded.features,
+    limits = excluded.limits,
+    is_active = excluded.is_active,
+    updated_at = now();
+
+-- 7. SEED INITIAL PLATFORM SUBSCRIPTION (TRIAL / INITIAL ACTIVE CLUSTER)
+insert into public.platform_subscriptions (
+    id,
+    platform_account_id,
+    plan_id,
+    status,
+    billing_cycle,
+    started_at,
+    current_period_start,
+    current_period_end,
+    trial_start,
+    trial_end,
+    metadata
+)
+values (
+    '00000000-0000-0000-0000-000000000001',
+    'platform_root',
+    '11111111-1111-1111-1111-111111111002', -- SaaS Growth Pro
+    'ACTIVE',
+    'yearly',
+    now() - interval '30 days',
+    now() - interval '30 days',
+    now() + interval '335 days',
+    now() - interval '30 days',
+    now() - interval '16 days',
+    '{"cluster_region": "ap-southeast-1", "edition": "production_enterprise"}'::jsonb
+)
+on conflict (id) do nothing;
+
+-- 8. ROW LEVEL SECURITY (RLS) POLICIES
+alter table public.platform_saas_plans enable row level security;
+alter table public.platform_subscriptions enable row level security;
+alter table public.platform_subscription_events enable row level security;
+alter table public.platform_webhook_events enable row level security;
+
+-- Platform Super Admin policies
+create policy "Platform owners can view platform_saas_plans"
+    on public.platform_saas_plans for select
+    using (public.auth_is_platform_owner() or auth.uid() is not null);
+
+create policy "Platform owners can manage platform_saas_plans"
+    on public.platform_saas_plans for all
+    using (public.auth_is_platform_owner());
+
+create policy "Platform owners can manage platform_subscriptions"
+    on public.platform_subscriptions for all
+    using (public.auth_is_platform_owner());
+
+create policy "Platform owners can manage platform_subscription_events"
+    on public.platform_subscription_events for all
+    using (public.auth_is_platform_owner());
+
+create policy "Platform owners can manage platform_webhook_events"
+    on public.platform_webhook_events for all
+    using (public.auth_is_platform_owner());
+
+
+-- >>> FILE: 046_enable_realtime_synchronization.sql <<<
+-- ==============================================================================
+-- Migration: 046_enable_realtime_synchronization.sql
+-- Description: Enables PostgreSQL Realtime replication for all PrintERP tables
+-- Sets REPLICA IDENTITY FULL and adds operational tables to supabase_realtime publication
+-- ==============================================================================
+
+DO $$
+BEGIN
+  -- 1. Ensure supabase_realtime publication exists
+  IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    CREATE PUBLICATION supabase_realtime;
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  tbl_name text;
+  tables text[] := ARRAY[
+    'companies',
+    'company_users',
+    'company_subscriptions',
+    'subscription_events',
+    'subscription_invoices',
+    'roles',
+    'branches',
+    'customers',
+    'customer_communications',
+    'suppliers',
+    'supplier_material_prices',
+    'sales_orders',
+    'sales_order_items',
+    'job_orders',
+    'order_timeline_events',
+    'quotations',
+    'quotation_items',
+    'quotation_activities',
+    'products',
+    'product_price_history',
+    'materials',
+    'inventory_rolls',
+    'stock_ledger',
+    'material_wastages',
+    'production_jobs',
+    'production_reworks',
+    'invoices',
+    'invoice_items',
+    'payments',
+    'payment_adjustments',
+    'expenses',
+    'bank_accounts',
+    'cash_book_entries',
+    'purchase_orders',
+    'purchase_order_items',
+    'delivery_challans',
+    'delivery_challan_items',
+    'installations',
+    'job_costings',
+    'design_jobs',
+    'design_versions',
+    'employees',
+    'attendance',
+    'salary_advances',
+    'daily_labor_logs',
+    'payroll_periods',
+    'payroll_items',
+    'in_app_notifications',
+    'communication_logs',
+    'message_templates',
+    'channel_configs',
+    'company_tax_settings',
+    'document_numbering',
+    'document_templates',
+    'notification_settings',
+    'automation_rules',
+    'audit_logs',
+    'platform_companies',
+    'platform_plans',
+    'platform_feature_flags',
+    'platform_users',
+    'platform_incidents',
+    'platform_system_settings'
+  ];
+BEGIN
+  FOREACH tbl_name IN ARRAY tables
+  LOOP
+    IF EXISTS (
+      SELECT 1 FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name = tbl_name
+    ) THEN
+      -- Enable REPLICA IDENTITY FULL so UPDATE and DELETE events include full row payloads
+      EXECUTE format('ALTER TABLE public.%I REPLICA IDENTITY FULL;', tbl_name);
+
+      -- Add table to supabase_realtime publication if not already a member
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' 
+          AND schemaname = 'public' 
+          AND tablename = tbl_name
+      ) THEN
+        EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I;', tbl_name);
+      END IF;
+    END IF;
+  END LOOP;
+END $$;
+
+
+-- >>> FILE: 047_qr_geolocation_attendance.sql <<<
+-- ==============================================================================
+-- InkFlow ERP SaaS - Migration 047: QR Code & Geolocation Attendance Engine
+-- Authoritative schema for:
+--   1. attendance_locations (Workplace geofences, branch scoping, coordinates)
+--   2. attendance_qr_tokens (Cryptographic SHA-256 hashed rotation tokens)
+--   3. attendance_records (Immutable GPS & QR verified attendance punch ledger)
+--   4. attendance_corrections (Employee request & manager approval workflow)
+--   5. attendance_audit_logs (Immutable audit trail for all QR/punch events)
+--   6. Strict Multi-Tenant Row Level Security & Realtime Publication
+-- ==============================================================================
+
+-- 1. ATTENDANCE LOCATIONS TABLE
+create table if not exists public.attendance_locations (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    branch_id uuid references public.branches(id) on delete set null,
+    name text not null,
+    address text,
+    latitude double precision not null,
+    longitude double precision not null,
+    radius_meters integer not null default 100 check (radius_meters > 0),
+    max_accuracy_meters integer not null default 100 check (max_accuracy_meters > 0),
+    is_active boolean not null default true,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_att_locations_company on public.attendance_locations(company_id);
+create index if not exists idx_att_locations_branch on public.attendance_locations(branch_id);
+create index if not exists idx_att_locations_active on public.attendance_locations(company_id, is_active);
+alter table public.attendance_locations enable row level security;
+
+-- 2. ATTENDANCE QR TOKENS TABLE (Cryptographically Hashed)
+create table if not exists public.attendance_qr_tokens (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    location_id uuid not null references public.attendance_locations(id) on delete cascade,
+    token_hash text not null unique,
+    token_prefix text not null,
+    generated_by uuid references auth.users(id) on delete set null,
+    expires_at timestamptz,
+    revoked_at timestamptz,
+    is_active boolean not null default true,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_att_qr_tokens_hash on public.attendance_qr_tokens(token_hash);
+create index if not exists idx_att_qr_tokens_location on public.attendance_qr_tokens(location_id);
+create index if not exists idx_att_qr_tokens_company on public.attendance_qr_tokens(company_id);
+create index if not exists idx_att_qr_tokens_active on public.attendance_qr_tokens(location_id, is_active);
+alter table public.attendance_qr_tokens enable row level security;
+
+-- 3. ATTENDANCE RECORDS TABLE (Verified Punch Ledger)
+create table if not exists public.attendance_records (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    employee_id uuid not null references public.employees(id) on delete cascade,
+    user_id uuid references auth.users(id) on delete set null,
+    branch_id uuid references public.branches(id) on delete set null,
+    location_id uuid references public.attendance_locations(id) on delete set null,
+    attendance_date date not null default current_date,
+    attendance_type text not null check (
+        attendance_type in ('CHECK_IN', 'CHECK_OUT', 'BREAK_START', 'BREAK_END', 'FIELD_CHECK_IN', 'FIELD_CHECK_OUT')
+    ),
+    checked_at timestamptz not null default now(),
+    latitude double precision not null,
+    longitude double precision not null,
+    gps_accuracy_meters double precision not null,
+    distance_from_location_meters double precision not null,
+    qr_token_id uuid references public.attendance_qr_tokens(id) on delete set null,
+    verification_status text not null default 'verified' check (
+        verification_status in ('verified', 'rejected', 'flagged', 'manual_override')
+    ),
+    verification_reason text,
+    device_info jsonb default '{}'::jsonb,
+    notes text,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_att_records_company on public.attendance_records(company_id);
+create index if not exists idx_att_records_employee on public.attendance_records(employee_id);
+create index if not exists idx_att_records_user on public.attendance_records(user_id);
+create index if not exists idx_att_records_date on public.attendance_records(company_id, attendance_date);
+create index if not exists idx_att_records_emp_date on public.attendance_records(employee_id, attendance_date);
+alter table public.attendance_records enable row level security;
+
+-- 4. ATTENDANCE CORRECTIONS TABLE
+create table if not exists public.attendance_corrections (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    employee_id uuid not null references public.employees(id) on delete cascade,
+    requested_by uuid references auth.users(id) on delete set null,
+    attendance_record_id uuid references public.attendance_records(id) on delete set null,
+    attendance_date date not null,
+    requested_type text not null check (requested_type in ('CHECK_IN', 'CHECK_OUT')),
+    requested_time time not null,
+    reason text not null,
+    status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+    reviewed_by uuid references auth.users(id) on delete set null,
+    reviewed_at timestamptz,
+    review_notes text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+alter table if exists public.attendance_corrections
+    add column if not exists requested_by uuid references auth.users(id) on delete set null;
+
+create index if not exists idx_att_corrections_company on public.attendance_corrections(company_id);
+create index if not exists idx_att_corrections_emp on public.attendance_corrections(employee_id);
+create index if not exists idx_att_corrections_status on public.attendance_corrections(company_id, status);
+alter table public.attendance_corrections enable row level security;
+
+-- 5. ATTENDANCE AUDIT LOGS TABLE (Immutable)
+create table if not exists public.attendance_audit_logs (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    actor_id uuid references auth.users(id) on delete set null,
+    actor_name text not null,
+    action_type text not null check (
+        action_type in (
+            'qr_generated',
+            'qr_regenerated',
+            'qr_revoked',
+            'location_created',
+            'location_updated',
+            'location_deleted',
+            'attendance_check_in',
+            'attendance_check_out',
+            'attendance_rejected',
+            'attendance_correction_requested',
+            'attendance_correction_reviewed'
+        )
+    ),
+    location_id uuid references public.attendance_locations(id) on delete set null,
+    employee_id uuid references public.employees(id) on delete set null,
+    details jsonb not null default '{}'::jsonb,
+    ip_address text,
+    user_agent text,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_att_audit_company on public.attendance_audit_logs(company_id);
+create index if not exists idx_att_audit_actor on public.attendance_audit_logs(actor_id);
+create index if not exists idx_att_audit_action on public.attendance_audit_logs(company_id, action_type);
+create index if not exists idx_att_audit_created on public.attendance_audit_logs(company_id, created_at);
+alter table public.attendance_audit_logs enable row level security;
+
+-- 6. ROW LEVEL SECURITY POLICIES
+
+-- attendance_locations RLS
+drop policy if exists "Active company users can view attendance locations" on public.attendance_locations;
+create policy "Active company users can view attendance locations"
+    on public.attendance_locations for select
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Authorized company users can manage attendance locations" on public.attendance_locations;
+create policy "Authorized company users can manage attendance locations"
+    on public.attendance_locations for all
+    using (
+        public.auth_is_active_company_user(company_id)
+        and (
+            public.auth_user_has_permission(company_id, 'settings.manage')
+            or public.auth_user_has_permission(company_id, 'hr.edit')
+            or public.auth_user_has_permission(company_id, 'hr.create')
+        )
+    );
+
+-- attendance_qr_tokens RLS
+drop policy if exists "Active company users can view attendance qr tokens metadata" on public.attendance_qr_tokens;
+create policy "Active company users can view attendance qr tokens metadata"
+    on public.attendance_qr_tokens for select
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Authorized managers can manage attendance qr tokens" on public.attendance_qr_tokens;
+create policy "Authorized managers can manage attendance qr tokens"
+    on public.attendance_qr_tokens for all
+    using (
+        public.auth_is_active_company_user(company_id)
+        and (
+            public.auth_user_has_permission(company_id, 'settings.manage')
+            or public.auth_user_has_permission(company_id, 'hr.edit')
+        )
+    );
+
+-- attendance_records RLS
+drop policy if exists "Company users can view attendance records" on public.attendance_records;
+create policy "Company users can view attendance records"
+    on public.attendance_records for select
+    using (
+        public.auth_is_active_company_user(company_id)
+        and (
+            user_id = auth.uid()
+            or public.auth_user_has_permission(company_id, 'hr.view')
+            or public.auth_user_has_permission(company_id, 'hr.edit')
+        )
+    );
+
+drop policy if exists "Authenticated users can insert own attendance records" on public.attendance_records;
+create policy "Authenticated users can insert own attendance records"
+    on public.attendance_records for insert
+    with check (
+        public.auth_is_active_company_user(company_id)
+        and (user_id = auth.uid() or user_id is null)
+    );
+
+drop policy if exists "Authorized HR users can manage attendance records" on public.attendance_records;
+create policy "Authorized HR users can manage attendance records"
+    on public.attendance_records for all
+    using (
+        public.auth_is_active_company_user(company_id)
+        and (
+            public.auth_user_has_permission(company_id, 'hr.edit')
+            or public.auth_user_has_permission(company_id, 'hr.approve')
+        )
+    );
+
+-- attendance_corrections RLS
+drop policy if exists "Company users can view own or authorized attendance corrections" on public.attendance_corrections;
+create policy "Company users can view own or authorized attendance corrections"
+    on public.attendance_corrections for select
+    using (
+        public.auth_is_active_company_user(company_id)
+        and (
+            requested_by = auth.uid()
+            or public.auth_user_has_permission(company_id, 'hr.view')
+            or public.auth_user_has_permission(company_id, 'hr.edit')
+            or public.auth_user_has_permission(company_id, 'hr.approve')
+        )
+    );
+
+drop policy if exists "Company users can create attendance corrections" on public.attendance_corrections;
+create policy "Company users can create attendance corrections"
+    on public.attendance_corrections for insert
+    with check (
+        public.auth_is_active_company_user(company_id)
+        and requested_by = auth.uid()
+    );
+
+drop policy if exists "Authorized HR users can review attendance corrections" on public.attendance_corrections;
+create policy "Authorized HR users can review attendance corrections"
+    on public.attendance_corrections for update
+    using (
+        public.auth_is_active_company_user(company_id)
+        and (
+            public.auth_user_has_permission(company_id, 'hr.edit')
+            or public.auth_user_has_permission(company_id, 'hr.approve')
+        )
+    );
+
+-- attendance_audit_logs RLS
+drop policy if exists "Authorized users can view attendance audit logs" on public.attendance_audit_logs;
+create policy "Authorized users can view attendance audit logs"
+    on public.attendance_audit_logs for select
+    using (
+        public.auth_is_active_company_user(company_id)
+        and (
+            public.auth_user_has_permission(company_id, 'settings.view')
+            or public.auth_user_has_permission(company_id, 'hr.view')
+            or public.auth_user_has_permission(company_id, 'hr.edit')
+        )
+    );
+
+drop policy if exists "System can insert attendance audit logs" on public.attendance_audit_logs;
+create policy "System can insert attendance audit logs"
+    on public.attendance_audit_logs for insert
+    with check (public.auth_is_active_company_user(company_id));
+
+-- 7. REALTIME SYNCHRONIZATION PUBLICATION
+DO $$
+DECLARE
+  tbl_name text;
+  new_tables text[] := ARRAY[
+    'attendance_locations',
+    'attendance_qr_tokens',
+    'attendance_records',
+    'attendance_corrections',
+    'attendance_audit_logs'
+  ];
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    CREATE PUBLICATION supabase_realtime;
+  END IF;
+
+  FOREACH tbl_name IN ARRAY new_tables
+  LOOP
+    IF EXISTS (
+      SELECT 1 FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name = tbl_name
+    ) THEN
+      EXECUTE format('ALTER TABLE public.%I REPLICA IDENTITY FULL;', tbl_name);
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' 
+          AND schemaname = 'public' 
+          AND tablename = tbl_name
+      ) THEN
+        EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I;', tbl_name);
+      END IF;
+    END IF;
+  END LOOP;
+END $$;
+
+
+-- >>> FILE: 048_production_performance_indexes.sql <<<
+-- ==============================================================================
+-- PrintERP / InkFlow SaaS - Migration 048: Production Performance Indexes & Scalability Hardening
+-- Adds schema-verified composite covering indexes, foreign key index coverage,
+-- and hardened server-side PL/pgSQL aggregation function for 100k+ record scalability.
+-- ==============================================================================
+
+-- 1. SALES ORDER ITEMS & TIMELINE
+CREATE INDEX IF NOT EXISTS idx_sales_order_items_order_id
+  ON public.sales_order_items (order_id);
+
+CREATE INDEX IF NOT EXISTS idx_order_timeline_events_order_id
+  ON public.order_timeline_events (order_id, created_at ASC);
+
+-- 2. JOB ORDERS & PRODUCTION
+CREATE INDEX IF NOT EXISTS idx_job_orders_company_order_status
+  ON public.job_orders (company_id, order_id, status);
+
+CREATE INDEX IF NOT EXISTS idx_production_reworks_job_id
+  ON public.production_reworks (production_job_id, created_at DESC);
+
+-- 3. CRM, CUSTOMERS & COMMUNICATIONS
+CREATE INDEX IF NOT EXISTS idx_customers_company_name
+  ON public.customers (company_id, name);
+
+CREATE INDEX IF NOT EXISTS idx_customer_comms_company_cust_created
+  ON public.customer_communications (company_id, customer_id, created_at DESC);
+
+-- 4. QUOTATIONS & ACTIVITIES
+CREATE INDEX IF NOT EXISTS idx_quotation_items_quotation_id
+  ON public.quotation_items (quotation_id);
+
+CREATE INDEX IF NOT EXISTS idx_quotation_activities_quotation_created
+  ON public.quotation_activities (quotation_id, created_at DESC);
+
+-- 5. INVOICES, PAYMENTS & BILLING
+CREATE INDEX IF NOT EXISTS idx_invoices_company_invoice_number
+  ON public.invoices (company_id, invoice_number);
+
+CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id
+  ON public.invoice_items (invoice_id);
+
+CREATE INDEX IF NOT EXISTS idx_payments_company_customer_date
+  ON public.payments (company_id, customer_id, payment_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_payment_allocations_payment_invoice
+  ON public.payment_allocations (payment_id, invoice_id);
+
+CREATE INDEX IF NOT EXISTS idx_financial_write_offs_company_invoice
+  ON public.financial_write_offs (company_id, invoice_id);
+
+-- 6. INVENTORY & STOCK LEDGER
+CREATE INDEX IF NOT EXISTS idx_materials_company_sku
+  ON public.materials (company_id, sku);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_rolls_material_status
+  ON public.inventory_rolls (material_id, status);
+
+-- 7. HR, ATTENDANCE & PAYROLL
+CREATE INDEX IF NOT EXISTS idx_attendance_records_company_employee_date
+  ON public.attendance_records (company_id, employee_id, attendance_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_attendance_records_company_date_status
+  ON public.attendance_records (company_id, attendance_date DESC, verification_status);
+
+CREATE INDEX IF NOT EXISTS idx_attendance_locations_company_active
+  ON public.attendance_locations (company_id, is_active);
+
+CREATE INDEX IF NOT EXISTS idx_payroll_items_period_employee
+  ON public.payroll_items (payroll_period_id, employee_id);
+
+-- 8. COMMUNICATIONS, GATEWAYS & LOGS
+CREATE INDEX IF NOT EXISTS idx_email_logs_tenant_status_created
+  ON public.email_logs (tenant_id, status, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_email_queue_tenant_status_attempts
+  ON public.email_queue (tenant_id, status, attempts, created_at ASC);
+
+CREATE INDEX IF NOT EXISTS idx_gateway_transactions_tenant_status_created
+  ON public.gateway_transactions (tenant_id, payment_status, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_in_app_notifications_company_user_read
+  ON public.in_app_notifications (company_id, user_id, is_read, created_at DESC);
+
+-- 9. PLATFORM & MULTI-TENANT SUBSCRIPTIONS
+CREATE INDEX IF NOT EXISTS idx_company_users_company_user_status
+  ON public.company_users (company_id, user_id, status);
+
+CREATE INDEX IF NOT EXISTS idx_company_subscriptions_company_status
+  ON public.company_subscriptions (company_id, status, plan_id);
+
+CREATE INDEX IF NOT EXISTS idx_platform_subscriptions_account_status
+  ON public.platform_subscriptions (platform_account_id, status, plan_id);
+
+CREATE INDEX IF NOT EXISTS idx_platform_subscription_events_account_created
+  ON public.platform_subscription_events (platform_account_id, event_type, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_platform_audit_logs_target_created
+  ON public.platform_audit_logs (target_company_id, created_at DESC);
+
+-- 10. OPTIMIZED SERVER-SIDE DASHBOARD AGGREGATION RPC
+CREATE OR REPLACE FUNCTION public.get_tenant_dashboard_metrics_v2(
+  p_company_id UUID
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_result JSONB;
+BEGIN
+  IF p_company_id IS NULL THEN
+    RAISE EXCEPTION 'company_id is required';
+  END IF;
+
+  -- Verify caller authorization if called from an authenticated client session
+  IF auth.role() IS NOT NULL AND auth.role() <> 'service_role' THEN
+    IF auth.uid() IS NULL THEN
+      RAISE EXCEPTION 'Authentication required';
+    END IF;
+    IF NOT (public.auth_is_active_company_user(p_company_id) OR public.auth_is_platform_admin()) THEN
+      RAISE EXCEPTION 'Unauthorized cross-tenant dashboard access denied';
+    END IF;
+  END IF;
+
+  SELECT jsonb_build_object(
+    'today_sales', COALESCE((
+      SELECT SUM(final_price)
+      FROM public.sales_orders
+      WHERE company_id = p_company_id
+        AND status NOT IN ('cancelled', 'draft')
+        AND created_at >= CURRENT_DATE
+    ), 0),
+    'today_collections', COALESCE((
+      SELECT SUM(amount)
+      FROM public.payments
+      WHERE company_id = p_company_id
+        AND payment_date >= CURRENT_DATE
+    ), 0),
+    'pending_orders_count', (
+      SELECT COUNT(*)
+      FROM public.sales_orders
+      WHERE company_id = p_company_id
+        AND status IN ('pending', 'confirmed', 'in_production')
+    ),
+    'active_jobs_count', (
+      SELECT COUNT(*)
+      FROM public.production_jobs
+      WHERE company_id = p_company_id
+        AND status IN ('queued', 'in_progress', 'printing', 'finishing')
+    ),
+    'total_receivables', COALESCE((
+      SELECT SUM(due_amount)
+      FROM public.invoices
+      WHERE company_id = p_company_id
+        AND status IN ('unpaid', 'partially_paid', 'overdue')
+    ), 0),
+    'low_stock_materials_count', (
+      SELECT COUNT(*)
+      FROM public.materials
+      WHERE company_id = p_company_id
+        AND current_stock <= min_stock_level
+    ),
+    'last_updated', NOW()
+  ) INTO v_result;
+
+  RETURN v_result;
+END;
+$$;
+
+-- Revoke default public execution & grant strictly to authenticated and service_role
+REVOKE EXECUTE ON FUNCTION public.get_tenant_dashboard_metrics_v2(UUID) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.get_tenant_dashboard_metrics_v2(UUID) FROM anon;
+GRANT EXECUTE ON FUNCTION public.get_tenant_dashboard_metrics_v2(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_tenant_dashboard_metrics_v2(UUID) TO service_role;
+
+
+
+-- >>> FILE: 049_support_chat_system.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 049: Enterprise Support Chat & Conversation System
+-- Supports:
+--   1. Tenant-isolated support conversations with human-friendly numbering (SUP-000001)
+--   2. Realtime messages with strict distinction between public replies and internal notes
+--   3. Secure attachment handling with tenant isolation
+--   4. Granular RLS policies preventing cross-tenant leakage & protecting internal notes
+--   5. Realtime replication publication and replica identity configuration
+-- ==============================================================================
+
+-- 1. SUPPORT CONVERSATIONS TABLE
+create table if not exists public.support_conversations (
+    id uuid primary key default gen_random_uuid(),
+    ticket_number text not null unique,
+    company_id uuid not null references public.companies(id) on delete cascade,
+    branch_id uuid references public.branches(id) on delete set null,
+    created_by uuid references auth.users(id) on delete set null,
+    created_by_name text not null,
+    created_by_email text not null,
+    assigned_to uuid references public.platform_admins(id) on delete set null,
+    assigned_to_name text,
+    subject text not null,
+    status text not null default 'open' check (status in ('open', 'in_progress', 'waiting_customer', 'resolved', 'closed')),
+    priority text not null default 'normal' check (priority in ('low', 'normal', 'high', 'urgent')),
+    category text not null default 'general' check (category in (
+        'account', 'billing', 'subscription', 'login', 'email', 'whatsapp', 'sms',
+        'payment', 'invoice', 'production', 'inventory', 'attendance', 'technical',
+        'bug_report', 'feature_request', 'general', 'other'
+    )),
+    source text not null default 'app' check (source in ('app', 'mobile', 'widget', 'system')),
+    context_metadata jsonb not null default '{}'::jsonb,
+    unread_tenant_count integer not null default 0,
+    unread_platform_count integer not null default 1,
+    last_message_at timestamptz not null default now(),
+    last_message_preview text,
+    last_message_by text,
+    last_message_sender_type text default 'tenant_user' check (last_message_sender_type in ('tenant_user', 'platform_support', 'system')),
+    first_response_at timestamptz,
+    resolved_at timestamptz,
+    resolved_by uuid references public.platform_admins(id) on delete set null,
+    closed_at timestamptz,
+    closed_by uuid,
+    reopened_at timestamptz,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+-- Indexes for performance
+create index if not exists idx_support_conversations_company on public.support_conversations(company_id);
+create index if not exists idx_support_conversations_status on public.support_conversations(status);
+create index if not exists idx_support_conversations_priority on public.support_conversations(priority);
+create index if not exists idx_support_conversations_assigned on public.support_conversations(assigned_to);
+create index if not exists idx_support_conversations_last_msg on public.support_conversations(last_message_at desc);
+create index if not exists idx_support_conversations_created on public.support_conversations(created_at desc);
+create index if not exists idx_support_conversations_ticket on public.support_conversations(ticket_number);
+
+-- 2. SUPPORT MESSAGES TABLE
+create table if not exists public.support_messages (
+    id uuid primary key default gen_random_uuid(),
+    conversation_id uuid not null references public.support_conversations(id) on delete cascade,
+    company_id uuid not null references public.companies(id) on delete cascade,
+    sender_user_id uuid not null,
+    sender_name text not null,
+    sender_email text,
+    sender_type text not null check (sender_type in ('tenant_user', 'platform_support', 'system')),
+    message_type text not null default 'message' check (message_type in ('message', 'support_reply', 'internal_note', 'system_event')),
+    body text not null,
+    attachments jsonb not null default '[]'::jsonb,
+    client_mutation_id text,
+    read_at timestamptz,
+    edited_at timestamptz,
+    deleted_at timestamptz,
+    created_at timestamptz not null default now()
+);
+
+-- Indexes for messages
+create index if not exists idx_support_messages_conv on public.support_messages(conversation_id, created_at asc);
+create index if not exists idx_support_messages_company on public.support_messages(company_id);
+create index if not exists idx_support_messages_type on public.support_messages(message_type);
+create index if not exists idx_support_messages_created on public.support_messages(created_at asc);
+create index if not exists idx_support_messages_mutation on public.support_messages(client_mutation_id);
+
+-- 3. SUPPORT ATTACHMENTS TABLE
+create table if not exists public.support_attachments (
+    id uuid primary key default gen_random_uuid(),
+    conversation_id uuid not null references public.support_conversations(id) on delete cascade,
+    message_id uuid references public.support_messages(id) on delete cascade,
+    company_id uuid not null references public.companies(id) on delete cascade,
+    uploaded_by uuid not null,
+    file_name text not null,
+    file_size integer not null,
+    mime_type text not null,
+    storage_path text not null,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_support_attachments_conv on public.support_attachments(conversation_id);
+create index if not exists idx_support_attachments_msg on public.support_attachments(message_id);
+create index if not exists idx_support_attachments_company on public.support_attachments(company_id);
+
+-- 4. SEQUENCE GENERATOR FOR SUPPORT TICKET NUMBERS (SUP-000001)
+create sequence if not exists public.support_ticket_number_seq start with 1 increment by 1;
+
+create or replace function public.get_next_support_ticket_number()
+returns text as $$
+declare
+    v_next_val bigint;
+begin
+    v_next_val := nextval('public.support_ticket_number_seq');
+    return 'SUP-' || lpad(v_next_val::text, 6, '0');
+end;
+$$ language plpgsql security definer;
+
+-- 5. ENABLE ROW LEVEL SECURITY
+alter table public.support_conversations enable row level security;
+alter table public.support_messages enable row level security;
+alter table public.support_attachments enable row level security;
+
+-- 6. RLS POLICIES FOR SUPPORT CONVERSATIONS
+
+-- Tenant Users: can view their company's conversations
+create policy "Tenant users can view own company conversations"
+    on public.support_conversations for select
+    using (
+        public.auth_is_active_company_user(company_id)
+        or exists (
+            select 1 from public.company_users cu
+            where cu.company_id = support_conversations.company_id
+              and cu.user_id = auth.uid()
+              and cu.status = 'active'
+        )
+    );
+
+-- Tenant Users: can insert conversations for their own company
+create policy "Tenant users can create conversations for own company"
+    on public.support_conversations for insert
+    with check (
+        public.auth_is_active_company_user(company_id)
+        or exists (
+            select 1 from public.company_users cu
+            where cu.company_id = support_conversations.company_id
+              and cu.user_id = auth.uid()
+              and cu.status = 'active'
+        )
+    );
+
+-- Tenant Users: can update own company conversations (e.g. close/reopen or update unread)
+create policy "Tenant users can update own company conversations"
+    on public.support_conversations for update
+    using (
+        public.auth_is_active_company_user(company_id)
+        or exists (
+            select 1 from public.company_users cu
+            where cu.company_id = support_conversations.company_id
+              and cu.user_id = auth.uid()
+              and cu.status = 'active'
+        )
+    );
+
+-- Platform Admins: full control over support conversations
+create policy "Platform admins have full control on support conversations"
+    on public.support_conversations for all
+    using (
+        public.auth_is_platform_owner()
+        or exists (
+            select 1 from public.platform_admins pa
+            where pa.user_id = auth.uid()
+              and pa.is_active = true
+        )
+    );
+
+-- 7. RLS POLICIES FOR SUPPORT MESSAGES
+
+-- Tenant Users: can view messages in their company's conversations EXCEPT internal notes
+create policy "Tenant users can view public messages in own conversations"
+    on public.support_messages for select
+    using (
+        message_type != 'internal_note'
+        and deleted_at is null
+        and (
+            public.auth_is_active_company_user(company_id)
+            or exists (
+                select 1 from public.company_users cu
+                where cu.company_id = support_messages.company_id
+                  and cu.user_id = auth.uid()
+                  and cu.status = 'active'
+            )
+        )
+    );
+
+-- Tenant Users: can insert customer messages into own company conversations
+create policy "Tenant users can insert messages into own conversations"
+    on public.support_messages for insert
+    with check (
+        sender_type = 'tenant_user'
+        and message_type = 'message'
+        and (
+            public.auth_is_active_company_user(company_id)
+            or exists (
+                select 1 from public.company_users cu
+                where cu.company_id = support_messages.company_id
+                  and cu.user_id = auth.uid()
+                  and cu.status = 'active'
+            )
+        )
+    );
+
+-- Platform Admins: full control on messages (including internal notes)
+create policy "Platform admins have full control on support messages"
+    on public.support_messages for all
+    using (
+        public.auth_is_platform_owner()
+        or exists (
+            select 1 from public.platform_admins pa
+            where pa.user_id = auth.uid()
+              and pa.is_active = true
+        )
+    );
+
+-- 8. RLS POLICIES FOR SUPPORT ATTACHMENTS
+
+create policy "Tenant users can view own company support attachments"
+    on public.support_attachments for select
+    using (
+        public.auth_is_active_company_user(company_id)
+        or exists (
+            select 1 from public.company_users cu
+            where cu.company_id = support_attachments.company_id
+              and cu.user_id = auth.uid()
+              and cu.status = 'active'
+        )
+    );
+
+create policy "Tenant users can insert own company support attachments"
+    on public.support_attachments for insert
+    with check (
+        public.auth_is_active_company_user(company_id)
+        or exists (
+            select 1 from public.company_users cu
+            where cu.company_id = support_attachments.company_id
+              and cu.user_id = auth.uid()
+              and cu.status = 'active'
+        )
+    );
+
+create policy "Platform admins have full control on support attachments"
+    on public.support_attachments for all
+    using (
+        public.auth_is_platform_owner()
+        or exists (
+            select 1 from public.platform_admins pa
+            where pa.user_id = auth.uid()
+              and pa.is_active = true
+        )
+    );
+
+-- 9. REALTIME SYNCHRONIZATION SETUP
+alter table public.support_conversations replica identity full;
+alter table public.support_messages replica identity full;
+alter table public.support_attachments replica identity full;
+
+do $$
+begin
+    if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+        if not exists (
+            select 1 from pg_publication_tables 
+            where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'support_conversations'
+        ) then
+            alter publication supabase_realtime add table public.support_conversations;
+        end if;
+
+        if not exists (
+            select 1 from pg_publication_tables 
+            where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'support_messages'
+        ) then
+            alter publication supabase_realtime add table public.support_messages;
+        end if;
+
+        if not exists (
+            select 1 from pg_publication_tables 
+            where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'support_attachments'
+        ) then
+            alter publication supabase_realtime add table public.support_attachments;
+        end if;
+    end if;
+end $$;
+
+
+-- >>> FILE: 050_platform_notifications_realtime.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 050: Authoritative Platform Notifications & Real-Time Replication
+-- Supports:
+--   1. Real-time Platform Notifications Ledger (Admin alerts, Telemetry, Broadcasts, Security, Support)
+--   2. Strict Row Level Security (RLS) allowing only verified platform administrators
+--   3. Complete Tenant Isolation: Tenant users cannot view or subscribe to platform notifications
+--   4. REPLICA IDENTITY FULL & supabase_realtime publication membership for live updates
+--   5. High-performance composite indexes for real-time query pagination & filtering
+-- ==============================================================================
+
+-- 1. CREATE PLATFORM NOTIFICATIONS TABLE
+CREATE TABLE IF NOT EXISTS public.platform_notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    severity TEXT NOT NULL DEFAULT 'info' CHECK (severity IN ('info', 'warning', 'critical')),
+    type TEXT NOT NULL DEFAULT 'broadcast', -- 'broadcast', 'support', 'tenant', 'tenant_lifecycle', 'billing', 'security', 'system', 'usage_warning', 'general'
+    company_id UUID REFERENCES public.companies(id) ON DELETE SET NULL,
+    company_name TEXT,
+    action_url TEXT,
+    target_audience TEXT NOT NULL DEFAULT 'all_admins', -- 'all_admins', 'all_tenants', 'specific_tenant', 'specific_user'
+    recipient_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    is_read BOOLEAN NOT NULL DEFAULT false,
+    read_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 2. CREATE PERFORMANCE INDEXES FOR REAL-TIME FILTERING & PAGINATION
+CREATE INDEX IF NOT EXISTS idx_platform_notifs_created 
+    ON public.platform_notifications(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_platform_notifs_unread 
+    ON public.platform_notifications(is_read, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_platform_notifs_type 
+    ON public.platform_notifications(type, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_platform_notifs_severity 
+    ON public.platform_notifications(severity, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_platform_notifs_recipient 
+    ON public.platform_notifications(recipient_user_id) 
+    WHERE recipient_user_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_platform_notifs_company 
+    ON public.platform_notifications(company_id) 
+    WHERE company_id IS NOT NULL;
+
+-- 3. ENABLE ROW LEVEL SECURITY (RLS)
+ALTER TABLE public.platform_notifications ENABLE ROW LEVEL SECURITY;
+
+-- 4. STRICT RLS POLICIES FOR PLATFORM NOTIFICATIONS
+-- A. SELECT: Only active platform administrators can view platform notifications.
+--    Tenant users (company_users) evaluate auth_is_platform_admin() to false and receive ZERO rows.
+DROP POLICY IF EXISTS "Active platform admins can view platform notifications" ON public.platform_notifications;
+CREATE POLICY "Active platform admins can view platform notifications"
+    ON public.platform_notifications FOR SELECT
+    USING (
+        public.auth_is_platform_admin() 
+        AND (recipient_user_id IS NULL OR recipient_user_id = auth.uid())
+    );
+
+-- B. INSERT: Platform admins or internal database service functions can insert notifications.
+DROP POLICY IF EXISTS "Authorized platform admins and service can insert platform notifications" ON public.platform_notifications;
+CREATE POLICY "Authorized platform admins and service can insert platform notifications"
+    ON public.platform_notifications FOR INSERT
+    WITH CHECK (
+        public.auth_is_platform_admin() 
+        OR auth.uid() IS NULL
+    );
+
+-- C. UPDATE: Platform admins can update their own read state or notifications.
+DROP POLICY IF EXISTS "Active platform admins can update platform notifications" ON public.platform_notifications;
+CREATE POLICY "Active platform admins can update platform notifications"
+    ON public.platform_notifications FOR UPDATE
+    USING (
+        public.auth_is_platform_admin() 
+        AND (recipient_user_id IS NULL OR recipient_user_id = auth.uid())
+    )
+    WITH CHECK (
+        public.auth_is_platform_admin()
+    );
+
+-- D. DELETE: Active platform admins can delete/dismiss platform notifications.
+DROP POLICY IF EXISTS "Active platform admins can delete platform notifications" ON public.platform_notifications;
+CREATE POLICY "Active platform admins can delete platform notifications"
+    ON public.platform_notifications FOR DELETE
+    USING (
+        public.auth_is_platform_admin()
+    );
+
+-- 5. ENABLE REPLICA IDENTITY FULL FOR SUPABASE REALTIME REPLICATION
+ALTER TABLE public.platform_notifications REPLICA IDENTITY FULL;
+
+-- 6. ADD TABLE TO supabase_realtime PUBLICATION
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime'
+    ) THEN
+        CREATE PUBLICATION supabase_realtime;
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' 
+          AND schemaname = 'public' 
+          AND tablename = 'platform_notifications'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.platform_notifications;
+    END IF;
+END $$;
+
+
+-- >>> FILE: 051_gmail_smtp_email_integration.sql <<<
+-- ==============================================================================
+-- PrintERP SaaS - Migration 051: Multi-Tenant Gmail (OAuth 2.0) + SMTP Integration & Scope Isolation
+-- Supports:
+--   1. Gmail Provider (Google OAuth 2.0 + Gmail API) and Upgraded SMTP
+--   2. Strict Platform Scope (tenant_id IS NULL) vs Tenant Scope (tenant_id IS NOT NULL)
+--   3. Fail-Closed Boundary: Zero cross-scope fallback from Tenant to Platform
+--   4. Encrypted OAuth Tokens (access_token, refresh_token, token_expires_at)
+--   5. Idempotency Key Deduplication on Email Logs
+--   6. Strict RLS Policies for Tenant and Platform Gateways & Logs
+-- ==============================================================================
+
+-- 1. UPGRADE EMAIL GATEWAYS TABLE
+-- Add 'gmail' provider and scope_type to email_gateways if not present
+do $$
+begin
+    -- Update provider check constraint to include 'gmail'
+    alter table public.email_gateways drop constraint if exists email_gateways_provider_check;
+    alter table public.email_gateways add constraint email_gateways_provider_check
+        check (provider in ('gmail', 'smtp', 'resend', 'sendgrid', 'ses', 'custom', 'mock'));
+
+    -- Add scope_type column if not exists
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_gateways' and column_name = 'scope_type') then
+        alter table public.email_gateways add column scope_type text not null default 'TENANT' check (scope_type in ('PLATFORM', 'TENANT'));
+    end if;
+
+    -- Add gmail specific columns if not exists
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_gateways' and column_name = 'gmail_account_email') then
+        alter table public.email_gateways add column gmail_account_email text;
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_gateways' and column_name = 'gmail_display_name') then
+        alter table public.email_gateways add column gmail_display_name text;
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_gateways' and column_name = 'token_expires_at') then
+        alter table public.email_gateways add column token_expires_at timestamptz;
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_gateways' and column_name = 'last_checked_at') then
+        alter table public.email_gateways add column last_checked_at timestamptz;
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_gateways' and column_name = 'last_sent_at') then
+        alter table public.email_gateways add column last_sent_at timestamptz;
+    end if;
+end $$;
+
+-- Enforce scope integrity: PLATFORM has tenant_id NULL, TENANT has tenant_id NOT NULL
+alter table public.email_gateways drop constraint if exists chk_email_gateways_scope_ownership;
+alter table public.email_gateways add constraint chk_email_gateways_scope_ownership
+    check (
+        (scope_type = 'PLATFORM' and tenant_id is null) or
+        (scope_type = 'TENANT' and tenant_id is not null)
+    );
+
+-- Set existing records scope_type accurately
+update public.email_gateways
+set scope_type = case when tenant_id is null then 'PLATFORM' else 'TENANT' end
+where scope_type is null or scope_type != case when tenant_id is null then 'PLATFORM' else 'TENANT' end;
+
+-- 2. UPGRADE EMAIL LOGS TABLE
+do $$
+begin
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_logs' and column_name = 'scope_type') then
+        alter table public.email_logs add column scope_type text not null default 'TENANT' check (scope_type in ('PLATFORM', 'TENANT'));
+    end if;
+
+    if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_logs' and column_name = 'idempotency_key') then
+        alter table public.email_logs add column idempotency_key text;
+    end if;
+end $$;
+
+-- Set existing logs scope_type accurately
+update public.email_logs
+set scope_type = case when tenant_id is null then 'PLATFORM' else 'TENANT' end
+where scope_type is null or scope_type != case when tenant_id is null then 'PLATFORM' else 'TENANT' end;
+
+-- Indexes for fast lookup and idempotency deduplication
+create index if not exists idx_email_logs_idempotency on public.email_logs(idempotency_key) where idempotency_key is not null;
+create index if not exists idx_email_logs_scope on public.email_logs(scope_type, tenant_id);
+create index if not exists idx_email_gateways_scope on public.email_gateways(scope_type, tenant_id, is_default) where is_default = true;
+
+-- 3. STRICT ROW LEVEL SECURITY (RLS) POLICIES
+-- Drop old policies to re-apply strictly
+drop policy if exists "Platform admins manage platform email gateways" on public.email_gateways;
+drop policy if exists "Tenant users view own email gateways" on public.email_gateways;
+drop policy if exists "Authorized tenant admins manage own email gateways" on public.email_gateways;
+
+-- Gateways RLS
+-- Platform Admins: Full control over PLATFORM email gateways ONLY (tenant_id IS NULL)
+create policy "Platform admins manage platform email gateways"
+    on public.email_gateways for all
+    using (
+        public.auth_is_platform_admin()
+        and tenant_id is null
+        and scope_type = 'PLATFORM'
+    )
+    with check (
+        public.auth_is_platform_admin()
+        and tenant_id is null
+        and scope_type = 'PLATFORM'
+    );
+
+-- Active Tenant Users: Can view their own tenant gateways (never platform or other tenants)
+create policy "Tenant users view own email gateways"
+    on public.email_gateways for select
+    using (
+        tenant_id is not null
+        and scope_type = 'TENANT'
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+-- Authorized Tenant Admins: Can insert, update, delete their own tenant gateways
+create policy "Authorized tenant admins manage own email gateways"
+    on public.email_gateways for all
+    using (
+        tenant_id is not null
+        and scope_type = 'TENANT'
+        and public.auth_is_active_company_user(tenant_id)
+        and public.auth_user_has_permission(tenant_id, 'settings.edit')
+    )
+    with check (
+        tenant_id is not null
+        and scope_type = 'TENANT'
+        and public.auth_is_active_company_user(tenant_id)
+        and public.auth_user_has_permission(tenant_id, 'settings.edit')
+    );
+
+-- Logs RLS
+drop policy if exists "Platform admins view email logs" on public.email_logs;
+drop policy if exists "Tenant users view own email logs" on public.email_logs;
+drop policy if exists "Tenant users append own email logs" on public.email_logs;
+
+-- Platform Admins: View platform logs and authorized audit logs
+create policy "Platform admins view email logs"
+    on public.email_logs for select
+    using (public.auth_is_platform_admin());
+
+-- Tenant Users: View their own tenant logs ONLY
+create policy "Tenant users view own email logs"
+    on public.email_logs for select
+    using (
+        tenant_id is not null
+        and scope_type = 'TENANT'
+        and public.auth_is_active_company_user(tenant_id)
+    );
+
+-- Tenant Users / Service: Can insert logs for their tenant
+create policy "Tenant users append own email logs"
+    on public.email_logs for insert
+    with check (
+        (tenant_id is not null and scope_type = 'TENANT' and public.auth_is_active_company_user(tenant_id))
+        or (public.auth_is_platform_admin() and scope_type = 'PLATFORM' and tenant_id is null)
+    );
+
+
+-- >>> FILE: 052_strict_rls_and_security_hardening.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 052: Strict RLS & Security Definer Hardening
+-- Single Source of Truth & Authoritative Isolation Boundary:
+--   1. Enforces search_path = public, pg_temp across ALL security definer functions
+--   2. Enforces caller authorization on sequence & document numbering generators
+--   3. Drops overly permissive RLS policies (auth.uid() is not null) from platform tables
+--   4. Locks down platform-wide tables strictly to active platform admins/owners
+--   5. Enforces tenant boundaries on gateway, settings, and subscription tables
+-- ==============================================================================
+
+-- 1. HARDEN SECURITY DEFINER HELPER FUNCTIONS WITH SEARCH_PATH
+create or replace function public.auth_is_platform_admin()
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_user_id uuid;
+begin
+    v_user_id := auth.uid();
+    if v_user_id is null then
+        return false;
+    end if;
+
+    return exists (
+        select 1
+        from public.platform_admins
+        where user_id = v_user_id
+          and is_active = true
+    );
+end;
+$$;
+
+create or replace function public.auth_is_platform_owner()
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_user_id uuid;
+begin
+    v_user_id := auth.uid();
+    if v_user_id is null then
+        return false;
+    end if;
+
+    return exists (
+        select 1
+        from public.platform_admins
+        where user_id = v_user_id
+          and role = 'platform_owner'
+          and is_active = true
+    );
+end;
+$$;
+
+create or replace function public.auth_is_active_company_user(target_company_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    if auth.uid() is null or target_company_id is null then
+        return false;
+    end if;
+
+    return exists (
+        select 1
+        from public.company_users cu
+        join public.companies c on c.id = cu.company_id
+        where cu.company_id = target_company_id
+          and cu.user_id = auth.uid()
+          and cu.status = 'active'
+          and c.is_active = true
+    );
+end;
+$$;
+
+create or replace function public.auth_get_user_company_role(target_company_id uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_role text;
+begin
+    if auth.uid() is null or target_company_id is null then
+        return null;
+    end if;
+
+    select r.slug into v_role
+    from public.company_users cu
+    join public.user_roles ur on ur.company_user_id = cu.id
+    join public.roles r on r.id = ur.role_id
+    where cu.company_id = target_company_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
+    order by case when r.slug in ('owner', 'business_owner') then 1 else 2 end
+    limit 1;
+
+    return v_role;
+end;
+$$;
+
+-- 2. HARDEN DOCUMENT NUMBERING & SEQUENCE FUNCTIONS
+create or replace function public.get_next_document_number(
+    p_company_id uuid,
+    p_doc_type text
+)
+returns text
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_prefix text;
+    v_next_val bigint;
+    v_padding integer;
+    v_formatted text;
+begin
+    -- Security verification: Caller must belong to the company or be an authorized platform admin
+    if auth.role() is not null and auth.role() <> 'service_role' then
+        if auth.uid() is null then
+            raise exception 'Authentication required';
+        end if;
+        if not (public.auth_is_active_company_user(p_company_id) or public.auth_is_platform_admin()) then
+            raise exception 'Unauthorized attempt to generate company sequence for unauthorized company';
+        end if;
+    end if;
+
+    -- Lock row exclusively to prevent race conditions across parallel bookings
+    select prefix, current_val + 1, padding
+    into v_prefix, v_next_val, v_padding
+    from public.document_sequences
+    where company_id = p_company_id
+      and doc_type = p_doc_type
+    for update;
+
+    -- If no sequence exists yet, initialize it
+    if v_next_val is null then
+        v_prefix := case p_doc_type
+            when 'quotation' then 'QUO'
+            when 'order' then 'ORD'
+            when 'invoice' then 'INV'
+            when 'challan' then 'CHL'
+            when 'payment' then 'PAY'
+            when 'purchase' then 'PUR'
+            else 'DOC'
+        end;
+        v_next_val := 1;
+        v_padding := 6;
+
+        insert into public.document_sequences (company_id, doc_type, prefix, current_val, padding)
+        values (p_company_id, p_doc_type, v_prefix, v_next_val, v_padding);
+    else
+        update public.document_sequences
+        set current_val = v_next_val,
+            updated_at = now()
+        where company_id = p_company_id
+          and doc_type = p_doc_type;
+    end if;
+
+    -- Return formatted number e.g. "INV-000001"
+    v_formatted := v_prefix || '-' || lpad(v_next_val::text, v_padding, '0');
+    return v_formatted;
+end;
+$$;
+
+create or replace function public.get_next_tenant_document_number(
+    p_company_id uuid,
+    p_document_type text,
+    p_prefix text default null
+)
+returns text
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_year integer := extract(year from current_date);
+    v_counter bigint;
+    v_doc_prefix text;
+    v_result text;
+begin
+    -- Security verification
+    if auth.role() is not null and auth.role() <> 'service_role' then
+        if not (public.auth_is_active_company_user(p_company_id) or public.auth_is_platform_admin()) then
+            raise exception 'Unauthorized attempt to generate company document sequence';
+        end if;
+    end if;
+
+    -- Determine prefix
+    if p_prefix is not null then
+        v_doc_prefix := p_prefix;
+    else
+        case p_document_type
+            when 'invoice' then v_doc_prefix := 'INV';
+            when 'quotation' then v_doc_prefix := 'QT';
+            when 'vat_mushak' then v_doc_prefix := 'MUSK';
+            when 'receipt' then v_doc_prefix := 'MR';
+            when 'challan' then v_doc_prefix := 'CH';
+            when 'purchase_order' then v_doc_prefix := 'PO';
+            else v_doc_prefix := 'DOC';
+        end case;
+    end if;
+
+    -- Atomic row-level lock & increment
+    insert into public.document_number_counters (company_id, document_type, year_prefix, current_counter, updated_at)
+    values (p_company_id, p_document_type, v_year, 101, now())
+    on conflict (company_id, document_type, year_prefix)
+    do update set
+        current_counter = public.document_number_counters.current_counter + 1,
+        updated_at = now()
+    returning current_counter into v_counter;
+
+    -- Format: PREFIX-YYYY-NUMBER e.g. INV-2026-000101
+    v_result := v_doc_prefix || '-' || v_year::text || '-' || lpad(v_counter::text, 6, '0');
+    return v_result;
+end;
+$$;
+
+create or replace function public.get_next_support_ticket_number()
+returns text
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_next_val bigint;
+begin
+    v_next_val := nextval('public.support_ticket_number_seq');
+    return 'SUP-' || lpad(v_next_val::text, 6, '0');
+end;
+$$;
+
+-- 3. HARDEN REPORTING & ANALYTICS FUNCTIONS
+drop function if exists public.get_tenant_sales_summary(uuid, date, date);
+drop function if exists public.get_tenant_sales_summary(uuid);
+drop function if exists public.get_tenant_sales_summary();
+drop function if exists public.get_tenant_production_summary(uuid, date, date);
+drop function if exists public.get_tenant_production_summary(uuid);
+drop function if exists public.get_tenant_production_summary();
+drop function if exists public.get_tenant_financial_summary(uuid, date, date);
+drop function if exists public.get_tenant_financial_summary(uuid);
+drop function if exists public.get_tenant_financial_summary();
+
+create or replace function public.get_tenant_sales_summary(
+    p_company_id uuid,
+    p_start_date date default current_date - interval '30 days',
+    p_end_date date default current_date
+)
+returns table (
+    total_sales numeric,
+    total_orders bigint,
+    avg_order_value numeric,
+    total_discount numeric,
+    total_vat numeric
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    if auth.role() is not null and auth.role() <> 'service_role' then
+        if not (public.auth_is_active_company_user(p_company_id) or public.auth_is_platform_admin()) then
+            raise exception 'Unauthorized access to company sales analytics';
+        end if;
+    end if;
+
+    return query
+    select
+        coalesce(sum(so.final_price), 0)::numeric as total_sales,
+        count(so.id)::bigint as total_orders,
+        coalesce(avg(so.final_price), 0)::numeric as avg_order_value,
+        coalesce(sum(so.discount_amount), 0)::numeric as total_discount,
+        coalesce(sum(so.vat_amount), 0)::numeric as total_vat
+    from public.sales_orders so
+    where so.company_id = p_company_id
+      and so.order_date between p_start_date and p_end_date;
+end;
+$$;
+
+create or replace function public.get_tenant_production_summary(
+    p_company_id uuid,
+    p_start_date date default current_date - interval '30 days',
+    p_end_date date default current_date
+)
+returns table (
+    total_jobs bigint,
+    completed_jobs bigint,
+    delayed_jobs bigint,
+    rework_count bigint,
+    rework_wastage_cost numeric
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    if auth.role() is not null and auth.role() <> 'service_role' then
+        if not (public.auth_is_active_company_user(p_company_id) or public.auth_is_platform_admin()) then
+            raise exception 'Unauthorized access to company production analytics';
+        end if;
+    end if;
+
+    return query
+    select
+        count(pj.id)::bigint as total_jobs,
+        count(pj.id) filter (where pj.status = 'completed')::bigint as completed_jobs,
+        count(pj.id) filter (where pj.due_date < current_date and pj.status not in ('completed', 'cancelled'))::bigint as delayed_jobs,
+        coalesce(sum(pj.rework_count), 0)::bigint as rework_count,
+        coalesce(sum(pj.rework_wastage_cost), 0)::numeric as rework_wastage_cost
+    from public.production_jobs pj
+    where pj.company_id = p_company_id
+      and pj.created_at::date between p_start_date and p_end_date;
+end;
+$$;
+
+create or replace function public.get_tenant_financial_summary(
+    p_company_id uuid,
+    p_start_date date default current_date - interval '30 days',
+    p_end_date date default current_date
+)
+returns table (
+    total_invoiced numeric,
+    total_collected numeric,
+    total_outstanding numeric,
+    total_expenses numeric,
+    net_cashflow numeric
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_invoiced numeric;
+    v_collected numeric;
+    v_outstanding numeric;
+    v_expenses numeric;
+begin
+    if auth.role() is not null and auth.role() <> 'service_role' then
+        if not (public.auth_is_active_company_user(p_company_id) or public.auth_is_platform_admin()) then
+            raise exception 'Unauthorized access to company financial analytics';
+        end if;
+    end if;
+
+    select coalesce(sum(i.grand_total), 0) into v_invoiced
+    from public.invoices i
+    where i.company_id = p_company_id
+      and i.invoice_date between p_start_date and p_end_date;
+
+    select coalesce(sum(p.amount), 0) into v_collected
+    from public.payments p
+    where p.company_id = p_company_id
+      and p.payment_date between p_start_date and p_end_date;
+
+    select coalesce(sum(i.due_amount), 0) into v_outstanding
+    from public.invoices i
+    where i.company_id = p_company_id
+      and i.status not in ('paid', 'cancelled');
+
+    select coalesce(sum(e.amount), 0) into v_expenses
+    from public.expenses e
+    where e.company_id = p_company_id
+      and e.expense_date between p_start_date and p_end_date;
+
+    return query select
+        v_invoiced as total_invoiced,
+        v_collected as total_collected,
+        v_outstanding as total_outstanding,
+        v_expenses as total_expenses,
+        (v_collected - v_expenses) as net_cashflow;
+end;
+$$;
+
+-- 4. HARDEN AUDIT LOGGING FUNCTIONS
+create or replace function public.log_audit_event(
+    p_company_id uuid,
+    p_entity_type text,
+    p_action text,
+    p_old_values jsonb default null,
+    p_new_values jsonb default null,
+    p_entity_id text default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_log_id uuid;
+begin
+    insert into public.audit_logs (
+        company_id,
+        user_id,
+        entity_type,
+        entity_id,
+        action,
+        old_values,
+        new_values
+    ) values (
+        p_company_id,
+        auth.uid(),
+        p_entity_type,
+        p_entity_id,
+        p_action,
+        p_old_values,
+        p_new_values
+    ) returning id into v_log_id;
+
+    return v_log_id;
+end;
+$$;
+
+create or replace function public.log_platform_audit_event(
+    p_action text,
+    p_entity text,
+    p_entity_id text default null,
+    p_details jsonb default '{}'::jsonb
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_admin_id uuid;
+    v_log_id uuid;
+begin
+    select id into v_admin_id
+    from public.platform_admins
+    where user_id = auth.uid()
+      and is_active = true
+    limit 1;
+
+    insert into public.platform_audit_logs (
+        admin_id,
+        action,
+        entity,
+        entity_id,
+        details
+    ) values (
+        v_admin_id,
+        p_action,
+        p_entity,
+        p_entity_id,
+        p_details
+    ) returning id into v_log_id;
+
+    return v_log_id;
+end;
+$$;
+
+-- 5. REPAIR RLS POLICIES ACROSS ALL PLATFORM TABLES (DROP PERMISSIVE POLICIES)
+
+-- Platform SaaS Plans
+alter table if exists public.platform_saas_plans enable row level security;
+drop policy if exists "Platform owners can view platform_saas_plans" on public.platform_saas_plans;
+drop policy if exists "Platform owners can manage platform_saas_plans" on public.platform_saas_plans;
+drop policy if exists "Anyone authenticated can view platform_saas_plans" on public.platform_saas_plans;
+
+create policy "Platform admins view platform_saas_plans"
+    on public.platform_saas_plans for select
+    using (public.auth_is_platform_admin());
+
+create policy "Platform owners manage platform_saas_plans"
+    on public.platform_saas_plans for all
+    using (public.auth_is_platform_owner());
+
+-- Platform Role Templates
+alter table if exists public.platform_role_templates enable row level security;
+drop policy if exists "Authenticated users can read platform role templates" on public.platform_role_templates;
+drop policy if exists "Platform owners can manage platform role templates" on public.platform_role_templates;
+
+create policy "Platform admins read platform role templates"
+    on public.platform_role_templates for select
+    using (public.auth_is_platform_admin());
+
+create policy "Platform owners manage platform_role_templates"
+    on public.platform_role_templates for all
+    using (public.auth_is_platform_owner());
+
+-- Platform Role Template Permissions
+alter table if exists public.platform_role_template_permissions enable row level security;
+drop policy if exists "Authenticated users can read platform role template permissions" on public.platform_role_template_permissions;
+drop policy if exists "Platform owners can manage platform role template permissions" on public.platform_role_template_permissions;
+
+create policy "Platform admins read platform role template permissions"
+    on public.platform_role_template_permissions for select
+    using (public.auth_is_platform_admin());
+
+create policy "Platform owners manage platform_role_template_permissions"
+    on public.platform_role_template_permissions for all
+    using (public.auth_is_platform_owner());
+
+-- Platform Subscriptions & Events
+alter table if exists public.platform_subscriptions enable row level security;
+drop policy if exists "Platform owners can manage platform_subscriptions" on public.platform_subscriptions;
+create policy "Platform admins manage platform_subscriptions"
+    on public.platform_subscriptions for all
+    using (public.auth_is_platform_admin());
+
+alter table if exists public.platform_subscription_events enable row level security;
+drop policy if exists "Platform owners can manage platform_subscription_events" on public.platform_subscription_events;
+create policy "Platform admins manage platform_subscription_events"
+    on public.platform_subscription_events for all
+    using (public.auth_is_platform_admin());
+
+alter table if exists public.platform_webhook_events enable row level security;
+drop policy if exists "Platform owners can manage platform_webhook_events" on public.platform_webhook_events;
+create policy "Platform admins manage platform_webhook_events"
+    on public.platform_webhook_events for all
+    using (public.auth_is_platform_admin());
+
+-- Platform System Settings & Health
+alter table if exists public.platform_system_settings enable row level security;
+drop policy if exists "Platform admins can view system settings" on public.platform_system_settings;
+drop policy if exists "Platform owners can manage system settings" on public.platform_system_settings;
+
+create policy "Platform admins view system settings"
+    on public.platform_system_settings for select
+    using (public.auth_is_platform_admin());
+
+create policy "Platform owners manage system settings"
+    on public.platform_system_settings for all
+    using (public.auth_is_platform_owner());
+
+alter table if exists public.platform_system_health_events enable row level security;
+drop policy if exists "Platform owners can view and manage system health events" on public.platform_system_health_events;
+create policy "Platform admins manage system health events"
+    on public.platform_system_health_events for all
+    using (public.auth_is_platform_admin());
+
+-- Platform Admins Table
+alter table if exists public.platform_admins enable row level security;
+drop policy if exists "Platform admins full control on platform_admins" on public.platform_admins;
+create policy "Platform admins manage platform_admins"
+    on public.platform_admins for all
+    using (public.auth_is_platform_admin());
+
+-- 6. REPAIR TENANT GATEWAY & AUDIT RLS POLICIES
+alter table if exists public.gateway_integrations enable row level security;
+drop policy if exists "Tenant isolation on gateway_integrations" on public.gateway_integrations;
+drop policy if exists "Platform owners manage global gateways" on public.gateway_integrations;
+
+create policy "Tenant users manage own gateway_integrations"
+    on public.gateway_integrations for all
+    using (
+        (tenant_id is not null and public.auth_is_active_company_user(tenant_id))
+        or (tenant_id is null and public.auth_is_platform_admin())
+    );
+
+alter table if exists public.gateway_transactions enable row level security;
+drop policy if exists "Tenant isolation on gateway_transactions" on public.gateway_transactions;
+
+create policy "Tenant users view own gateway_transactions"
+    on public.gateway_transactions for all
+    using (
+        (tenant_id is not null and public.auth_is_active_company_user(tenant_id))
+        or (tenant_id is null and public.auth_is_platform_admin())
+    );
+
+alter table if exists public.gateway_webhooks enable row level security;
+drop policy if exists "Tenant isolation on gateway_webhooks" on public.gateway_webhooks;
+drop policy if exists "Platform admins view gateway webhooks" on public.gateway_webhooks;
+drop policy if exists "Tenant users view own gateway_webhooks" on public.gateway_webhooks;
+drop policy if exists "Platform admins and gateway owners view webhooks" on public.gateway_webhooks;
+
+create policy "Platform admins and gateway owners view webhooks"
+    on public.gateway_webhooks for all
+    using (
+        public.auth_is_platform_admin()
+        or exists (
+            select 1 from public.gateway_integrations gi
+            where gi.id = gateway_webhooks.gateway_id
+              and gi.tenant_id is not null
+              and public.auth_is_active_company_user(gi.tenant_id)
+        )
+    );
+
+alter table if exists public.audit_logs enable row level security;
+drop policy if exists "Admins can view audit logs" on public.audit_logs;
+drop policy if exists "Tenant and platform isolation on audit_logs" on public.audit_logs;
+
+create policy "Tenant users and platform admins view audit logs"
+    on public.audit_logs for select
+    using (
+        public.auth_is_active_company_user(company_id)
+        or public.auth_is_platform_admin()
+    );
+
+
+-- >>> FILE: 053_final_security_and_rls_hardening.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 053: Comprehensive Production Security & RLS Hardening
+-- Single Source of Truth & Authoritative Isolation Boundary:
+--   1. Enforces search_path = public, pg_temp across ALL security definer functions
+--   2. Restricts EXECUTE permissions on privileged database functions
+--   3. Eliminates any permissive or ambiguous RLS policies
+--   4. Locks down platform-wide tables strictly to active platform admins
+--   5. Enforces strict tenant isolation across all tenant entities
+--   6. Enforces caller authorization on atomic sequence & document number generators
+-- ==============================================================================
+
+-- 1. HARDEN SECURITY DEFINER HELPER FUNCTIONS WITH EXPLICIT SEARCH PATH
+CREATE OR REPLACE FUNCTION public.auth_is_platform_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_user_id uuid;
+BEGIN
+    v_user_id := auth.uid();
+    IF v_user_id IS NULL THEN
+        RETURN false;
+    END IF;
+
+    RETURN EXISTS (
+        SELECT 1
+        FROM public.platform_admins
+        WHERE user_id = v_user_id
+          AND is_active = true
+    );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.auth_is_platform_owner()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_user_id uuid;
+BEGIN
+    v_user_id := auth.uid();
+    IF v_user_id IS NULL THEN
+        RETURN false;
+    END IF;
+
+    RETURN EXISTS (
+        SELECT 1
+        FROM public.platform_admins
+        WHERE user_id = v_user_id
+          AND role = 'platform_owner'
+          AND is_active = true
+    );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.auth_is_active_company_user(target_company_id uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+    IF auth.uid() IS NULL OR target_company_id IS NULL THEN
+        RETURN false;
+    END IF;
+
+    RETURN EXISTS (
+        SELECT 1
+        FROM public.company_users cu
+        JOIN public.companies c ON c.id = cu.company_id
+        WHERE cu.company_id = target_company_id
+          AND cu.user_id = auth.uid()
+          AND cu.status = 'active'
+          AND c.is_active = true
+    );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.auth_get_user_company_role(target_company_id uuid)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_role text;
+BEGIN
+    IF auth.uid() IS NULL OR target_company_id IS NULL THEN
+        RETURN null;
+    END IF;
+
+    SELECT r.slug INTO v_role
+    FROM public.company_users cu
+    JOIN public.user_roles ur ON ur.company_user_id = cu.id
+    JOIN public.roles r ON r.id = ur.role_id
+    WHERE cu.company_id = target_company_id
+      AND cu.user_id = auth.uid()
+      AND cu.status = 'active'
+    ORDER BY CASE WHEN r.slug IN ('owner', 'business_owner') THEN 1 ELSE 2 END
+    LIMIT 1;
+
+    RETURN v_role;
+END;
+$$;
+
+-- 2. HARDEN DOCUMENT NUMBERING & SEQUENCE GENERATORS (FAIL CLOSED)
+CREATE OR REPLACE FUNCTION public.get_next_document_number(
+    p_company_id uuid,
+    p_doc_type text
+)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_prefix text;
+    v_next_val bigint;
+    v_padding integer;
+    v_formatted text;
+BEGIN
+    -- Security verification: Caller must belong to the company or be an authorized platform admin
+    IF auth.role() IS NOT NULL AND auth.role() <> 'service_role' THEN
+        IF auth.uid() IS NULL THEN
+            RAISE EXCEPTION 'Authentication required';
+        END IF;
+        IF NOT (public.auth_is_active_company_user(p_company_id) OR public.auth_is_platform_admin()) THEN
+            RAISE EXCEPTION 'Unauthorized attempt to generate company sequence for unauthorized company';
+        END IF;
+    END IF;
+
+    -- Lock row exclusively to prevent race conditions across parallel bookings
+    SELECT prefix, current_val + 1, padding
+    INTO v_prefix, v_next_val, v_padding
+    FROM public.document_sequences
+    WHERE company_id = p_company_id
+      AND doc_type = p_doc_type
+    FOR UPDATE;
+
+    -- If no sequence exists yet, initialize it
+    IF v_next_val IS NULL THEN
+        v_prefix := CASE p_doc_type
+            WHEN 'quotation' THEN 'QUO'
+            WHEN 'order' THEN 'ORD'
+            WHEN 'invoice' THEN 'INV'
+            WHEN 'challan' THEN 'CHL'
+            WHEN 'payment' THEN 'PAY'
+            WHEN 'purchase' THEN 'PUR'
+            ELSE 'DOC'
+        END;
+        v_next_val := 1;
+        v_padding := 6;
+
+        INSERT INTO public.document_sequences (company_id, doc_type, prefix, current_val, padding)
+        VALUES (p_company_id, p_doc_type, v_prefix, v_next_val, v_padding);
+    ELSE
+        UPDATE public.document_sequences
+        SET current_val = v_next_val,
+            updated_at = now()
+        WHERE company_id = p_company_id
+          AND doc_type = p_doc_type;
+    END IF;
+
+    -- Format document number e.g. "INV-000001"
+    v_formatted := v_prefix || '-' || lpad(v_next_val::text, v_padding, '0');
+    RETURN v_formatted;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.get_next_tenant_document_number(
+    p_company_id uuid,
+    p_document_type text,
+    p_prefix text DEFAULT null
+)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_year integer := EXTRACT(year FROM CURRENT_DATE);
+    v_counter bigint;
+    v_doc_prefix text;
+    v_result text;
+BEGIN
+    -- Security verification
+    IF auth.role() IS NOT NULL AND auth.role() <> 'service_role' THEN
+        IF NOT (public.auth_is_active_company_user(p_company_id) OR public.auth_is_platform_admin()) THEN
+            RAISE EXCEPTION 'Unauthorized attempt to generate company document sequence';
+        END IF;
+    END IF;
+
+    IF p_prefix IS NOT NULL THEN
+        v_doc_prefix := p_prefix;
+    ELSE
+        CASE p_document_type
+            WHEN 'invoice' THEN v_doc_prefix := 'INV';
+            WHEN 'quotation' THEN v_doc_prefix := 'QT';
+            WHEN 'vat_mushak' THEN v_doc_prefix := 'MUSK';
+            WHEN 'receipt' THEN v_doc_prefix := 'MR';
+            WHEN 'challan' THEN v_doc_prefix := 'CH';
+            WHEN 'purchase_order' THEN v_doc_prefix := 'PO';
+            ELSE v_doc_prefix := 'DOC';
+        END CASE;
+    END IF;
+
+    -- Atomic row-level lock & increment
+    INSERT INTO public.document_number_counters (company_id, document_type, year_prefix, current_counter, updated_at)
+    VALUES (p_company_id, p_document_type, v_year, 101, now())
+    ON CONFLICT (company_id, document_type, year_prefix)
+    DO UPDATE SET
+        current_counter = public.document_number_counters.current_counter + 1,
+        updated_at = now()
+    RETURNING current_counter INTO v_counter;
+
+    -- Format: PREFIX-YYYY-NUMBER e.g. INV-2026-000101
+    v_result := v_doc_prefix || '-' || v_year::text || '-' || lpad(v_counter::text, 6, '0');
+    RETURN v_result;
+END;
+$$;
+
+-- 3. HARDEN AUDIT LOGGING & TAMPER RESISTANCE
+CREATE OR REPLACE FUNCTION public.log_audit_event(
+    p_company_id uuid,
+    p_entity_type text,
+    p_action text,
+    p_old_values jsonb DEFAULT null,
+    p_new_values jsonb DEFAULT null,
+    p_entity_id text DEFAULT null
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_log_id uuid;
+BEGIN
+    -- Actor identity derived authoritatively from authenticated session
+    INSERT INTO public.audit_logs (
+        company_id,
+        user_id,
+        entity_type,
+        entity_id,
+        action,
+        old_values,
+        new_values
+    ) VALUES (
+        p_company_id,
+        auth.uid(),
+        p_entity_type,
+        p_entity_id,
+        p_action,
+        p_old_values,
+        p_new_values
+    ) RETURNING id INTO v_log_id;
+
+    RETURN v_log_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.log_platform_audit_event(
+    p_action text,
+    p_entity text,
+    p_entity_id text DEFAULT null,
+    p_details jsonb DEFAULT '{}'::jsonb
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_admin_id uuid;
+    v_log_id uuid;
+BEGIN
+    SELECT id INTO v_admin_id
+    FROM public.platform_admins
+    WHERE user_id = auth.uid()
+      AND is_active = true
+    LIMIT 1;
+
+    INSERT INTO public.platform_audit_logs (
+        admin_id,
+        action,
+        entity,
+        entity_id,
+        details
+    ) VALUES (
+        v_admin_id,
+        p_action,
+        p_entity,
+        p_entity_id,
+        p_details
+    ) RETURNING id INTO v_log_id;
+
+    RETURN v_log_id;
+END;
+$$;
+
+-- 4. RESTRICT FUNCTION PRIVILEGES (REVOKE FROM PUBLIC, GRANT TO AUTHENTICATED)
+REVOKE ALL ON FUNCTION public.auth_is_platform_admin() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.auth_is_platform_owner() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.auth_is_active_company_user(uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.auth_get_user_company_role(uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.get_next_document_number(uuid, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.get_next_tenant_document_number(uuid, text, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.log_audit_event(uuid, text, text, jsonb, jsonb, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.log_platform_audit_event(text, text, text, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.auth_is_platform_admin() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.auth_is_platform_owner() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.auth_is_active_company_user(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.auth_get_user_company_role(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.get_next_document_number(uuid, text) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.get_next_tenant_document_number(uuid, text, text) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.log_audit_event(uuid, text, text, jsonb, jsonb, text) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.log_platform_audit_event(text, text, text, jsonb) TO authenticated, service_role;
+
+-- 5. COMPLETE RLS AUDIT & HARDENING ACROSS PLATFORM TABLES
+ALTER TABLE IF EXISTS public.platform_admins ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Platform admins full control on platform_admins" ON public.platform_admins;
+DROP POLICY IF EXISTS "Platform admins manage platform_admins" ON public.platform_admins;
+
+CREATE POLICY "Platform admins manage platform_admins"
+    ON public.platform_admins FOR ALL
+    USING (public.auth_is_platform_admin());
+
+ALTER TABLE IF EXISTS public.platform_saas_plans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Platform owners can view platform_saas_plans" ON public.platform_saas_plans;
+DROP POLICY IF EXISTS "Platform owners can manage platform_saas_plans" ON public.platform_saas_plans;
+DROP POLICY IF EXISTS "Anyone authenticated can view platform_saas_plans" ON public.platform_saas_plans;
+DROP POLICY IF EXISTS "Platform admins view platform_saas_plans" ON public.platform_saas_plans;
+DROP POLICY IF EXISTS "Platform owners manage platform_saas_plans" ON public.platform_saas_plans;
+
+CREATE POLICY "Platform admins view platform_saas_plans"
+    ON public.platform_saas_plans FOR SELECT
+    USING (public.auth_is_platform_admin());
+
+CREATE POLICY "Platform owners manage platform_saas_plans"
+    ON public.platform_saas_plans FOR ALL
+    USING (public.auth_is_platform_owner());
+
+ALTER TABLE IF EXISTS public.platform_support_sessions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Platform admins manage support sessions" ON public.platform_support_sessions;
+CREATE POLICY "Platform admins manage support sessions"
+    ON public.platform_support_sessions FOR ALL
+    USING (public.auth_is_platform_admin());
+
+-- 6. COMPLETE RLS AUDIT & HARDENING ACROSS TENANT TABLES
+ALTER TABLE IF EXISTS public.gateway_integrations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Tenant isolation on gateway_integrations" ON public.gateway_integrations;
+DROP POLICY IF EXISTS "Platform owners manage global gateways" ON public.gateway_integrations;
+DROP POLICY IF EXISTS "Tenant users manage own gateway_integrations" ON public.gateway_integrations;
+
+CREATE POLICY "Tenant users manage own gateway_integrations"
+    ON public.gateway_integrations FOR ALL
+    USING (
+        (tenant_id IS NOT NULL AND public.auth_is_active_company_user(tenant_id))
+        OR (tenant_id IS NULL AND public.auth_is_platform_admin())
+    );
+
+ALTER TABLE IF EXISTS public.gateway_transactions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Tenant isolation on gateway_transactions" ON public.gateway_transactions;
+DROP POLICY IF EXISTS "Tenant users view own gateway_transactions" ON public.gateway_transactions;
+
+CREATE POLICY "Tenant users view own gateway_transactions"
+    ON public.gateway_transactions FOR ALL
+    USING (
+        (tenant_id IS NOT NULL AND public.auth_is_active_company_user(tenant_id))
+        OR (tenant_id IS NULL AND public.auth_is_platform_admin())
+    );
+
+ALTER TABLE IF EXISTS public.audit_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can view audit logs" ON public.audit_logs;
+DROP POLICY IF EXISTS "Tenant and platform isolation on audit_logs" ON public.audit_logs;
+DROP POLICY IF EXISTS "Tenant users and platform admins view audit logs" ON public.audit_logs;
+
+CREATE POLICY "Tenant users and platform admins view audit logs"
+    ON public.audit_logs FOR SELECT
+    USING (
+        public.auth_is_active_company_user(company_id)
+        OR public.auth_is_platform_admin()
+    );
+
+-- 7. UNIQUE CONSTRAINTS FOR PAYMENT & WEBHOOK IDEMPOTENCY
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'uq_gateway_transactions_internal_trx_id'
+    ) THEN
+        ALTER TABLE IF EXISTS public.gateway_transactions
+            ADD CONSTRAINT uq_gateway_transactions_internal_trx_id UNIQUE (internal_trx_id);
+    END IF;
+EXCEPTION
+    WHEN duplicate_table OR duplicate_object THEN
+        NULL;
+END;
+$$;
+
+
+-- >>> FILE: 054_auth_pkce_and_trigger_hardening.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 054: Auth PKCE & handle_new_user Trigger Hardening
+-- Hardens auth.users trigger to prevent GoTrue 500 errors during OAuth sign-ins.
+-- ==============================================================================
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_name text;
+    v_phone text;
+    v_locale text;
+    v_email text;
+    v_avatar text;
+begin
+    -- 1. Extract and sanitize email
+    v_email := coalesce(
+        nullif(trim(lower(new.email)), ''),
+        nullif(trim(lower(new.raw_user_meta_data->>'email')), ''),
+        'user-' || new.id || '@inkflow.internal'
+    );
+
+    -- 2. Extract and sanitize full name
+    v_name := coalesce(
+        nullif(trim(new.raw_user_meta_data->>'full_name'), ''),
+        nullif(trim(new.raw_user_meta_data->>'name'), ''),
+        nullif(trim(new.raw_user_meta_data->>'user_name'), ''),
+        split_part(v_email, '@', 1),
+        'User'
+    );
+
+    -- 3. Extract phone
+    v_phone := coalesce(
+        nullif(trim(new.raw_user_meta_data->>'phone'), ''),
+        nullif(trim(new.phone), ''),
+        null
+    );
+
+    -- 4. Extract preferred locale
+    v_locale := coalesce(
+        nullif(trim(new.raw_user_meta_data->>'preferred_locale'), ''),
+        nullif(trim(new.raw_user_meta_data->>'locale'), ''),
+        'bn'
+    );
+
+    -- 5. Extract avatar url
+    v_avatar := coalesce(
+        nullif(trim(new.raw_user_meta_data->>'avatar_url'), ''),
+        nullif(trim(new.raw_user_meta_data->>'picture'), ''),
+        null
+    );
+
+    -- 6. Upsert user_profiles record safely with exception handling
+    begin
+        insert into public.user_profiles (
+            id,
+            email,
+            full_name,
+            phone,
+            avatar_url,
+            preferred_locale,
+            is_active,
+            created_at,
+            updated_at
+        )
+        values (
+            new.id,
+            v_email,
+            v_name,
+            v_phone,
+            v_avatar,
+            v_locale,
+            true,
+            now(),
+            now()
+        )
+        on conflict (id) do update set
+            email = excluded.email,
+            full_name = coalesce(excluded.full_name, public.user_profiles.full_name),
+            phone = coalesce(excluded.phone, public.user_profiles.phone),
+            avatar_url = coalesce(excluded.avatar_url, public.user_profiles.avatar_url),
+            preferred_locale = coalesce(excluded.preferred_locale, public.user_profiles.preferred_locale),
+            updated_at = now();
+    exception when others then
+        -- Catch any unforeseen errors to prevent blocking auth.users insertion
+        raise warning 'Error in handle_new_user user_profiles upsert: %', SQLERRM;
+    end;
+
+    -- 7. Upsert profiles record safely for backward compatibility
+    begin
+        insert into public.profiles (
+            id,
+            full_name,
+            phone,
+            avatar_url,
+            preferred_locale,
+            created_at,
+            updated_at
+        )
+        values (
+            new.id,
+            v_name,
+            v_phone,
+            v_avatar,
+            v_locale,
+            now(),
+            now()
+        )
+        on conflict (id) do update set
+            full_name = coalesce(excluded.full_name, public.profiles.full_name),
+            phone = coalesce(excluded.phone, public.profiles.phone),
+            avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url),
+            preferred_locale = coalesce(excluded.preferred_locale, public.profiles.preferred_locale),
+            updated_at = now();
+    exception when others then
+        raise warning 'Error in handle_new_user profiles upsert: %', SQLERRM;
+    end;
+
+    return new;
+end;
+$$;
+
+-- Ensure trigger is properly bound to auth.users
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+    after insert on auth.users
+    for each row execute function public.handle_new_user();
+
+
+-- >>> FILE: 055_email_otp_and_verification_system.sql <<<
+-- ==============================================================================
+-- PrintERP / InkFlow SaaS - Migration 055: Email OTP & Link Verification System
+-- Provides authoritative storage for 6-digit OTPs and secure single-use URL tokens
+-- for registration verification, password resets, and multi-factor security events.
+-- ==============================================================================
+
+create table if not exists public.auth_verifications (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid references auth.users(id) on delete cascade,
+    email text not null,
+    purpose text not null check (purpose in ('registration', 'password_reset', 'login_2fa')),
+    otp_hash text,
+    token_hash text,
+    expires_at timestamptz not null,
+    attempts integer not null default 0,
+    max_attempts integer not null default 5,
+    resend_available_at timestamptz not null default (now() + interval '60 seconds'),
+    is_used boolean not null default false,
+    verified_at timestamptz,
+    metadata jsonb default '{}'::jsonb,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+-- Indexes for performant lookup and rate-limiting queries
+create index if not exists idx_auth_verifications_email_purpose
+    on public.auth_verifications(email, purpose);
+
+create index if not exists idx_auth_verifications_token_hash
+    on public.auth_verifications(token_hash)
+    where token_hash is not null;
+
+create index if not exists idx_auth_verifications_otp_hash
+    on public.auth_verifications(otp_hash)
+    where otp_hash is not null;
+
+create index if not exists idx_auth_verifications_expires_at
+    on public.auth_verifications(expires_at);
+
+create index if not exists idx_auth_verifications_is_used
+    on public.auth_verifications(is_used);
+
+-- Enable Row Level Security (RLS)
+alter table public.auth_verifications enable row level security;
+
+-- Strict security policy: Only Service Role and Platform Admins can access auth_verifications
+-- Client/anonymous users cannot query or tamper with verification records directly
+create policy "Service role and platform admins manage auth verifications"
+    on public.auth_verifications for all
+    using (
+        auth.role() = 'service_role'
+        or public.auth_is_platform_admin()
+    );
+
+
+-- >>> FILE: 056_auth_verifications_hardening.sql <<<
+-- ==============================================================================
+-- PrintERP / InkFlow SaaS - Migration 056: Auth Verifications Hardening & Atomic Functions
+-- Enhances public.auth_verifications with explicit purpose support ('password_reset_auth'),
+-- atomic OTP and token verification stored procedures, and strict index optimization.
+-- ==============================================================================
+
+-- 1. Update purpose check constraint to support password_reset_auth and login_2fa
+alter table public.auth_verifications
+    drop constraint if exists auth_verifications_purpose_check;
+
+alter table public.auth_verifications
+    add constraint auth_verifications_purpose_check
+    check (purpose in ('registration', 'password_reset', 'password_reset_auth', 'login_2fa'));
+
+-- 2. Performance indexes
+create index if not exists idx_auth_verifications_active_lookup
+    on public.auth_verifications(email, purpose, is_used, expires_at);
+
+create index if not exists idx_auth_verifications_token_lookup
+    on public.auth_verifications(token_hash, is_used, expires_at)
+    where token_hash is not null;
+
+-- 3. Atomic OTP Verification Function
+-- Guarantees atomic row-locking, attempt decrementing, and single-use invalidation
+create or replace function public.verify_auth_otp_atomic(
+    p_email text,
+    p_otp_hash text,
+    p_purpose text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_record public.auth_verifications%rowtype;
+    v_now timestamptz := now();
+    v_attempts_left int;
+begin
+    -- Lock latest active verification record for this email and purpose
+    select * into v_record
+    from public.auth_verifications
+    where lower(email) = lower(p_email)
+      and purpose = p_purpose
+      and is_used = false
+    order by created_at desc
+    limit 1
+    for update;
+
+    if not found then
+        return jsonb_build_object(
+            'success', false,
+            'code', 'NOT_FOUND',
+            'error', 'No active verification code found. Please request a new code.'
+        );
+    end if;
+
+    -- Check expiration
+    if v_now > v_record.expires_at then
+        return jsonb_build_object(
+            'success', false,
+            'code', 'EXPIRED',
+            'error', 'Verification code has expired. Please request a new code.'
+        );
+    end if;
+
+    -- Check attempt lockout
+    if v_record.attempts >= v_record.max_attempts then
+        return jsonb_build_object(
+            'success', false,
+            'code', 'LOCKED_OUT',
+            'error', 'Too many incorrect attempts. Please request a new verification code.'
+        );
+    end if;
+
+    -- Compare OTP hash
+    if v_record.otp_hash is distinct from p_otp_hash then
+        -- Increment attempt count
+        update public.auth_verifications
+        set attempts = attempts + 1,
+            updated_at = v_now
+        where id = v_record.id;
+
+        v_attempts_left := v_record.max_attempts - (v_record.attempts + 1);
+
+        if v_attempts_left <= 0 then
+            return jsonb_build_object(
+                'success', false,
+                'code', 'LOCKED_OUT',
+                'attempts_left', 0,
+                'error', 'Too many incorrect attempts. Please request a new verification code.'
+            );
+        else
+            return jsonb_build_object(
+                'success', false,
+                'code', 'MISMATCH',
+                'attempts_left', v_attempts_left,
+                'error', format('Incorrect verification code. %s attempt(s) remaining.', v_attempts_left)
+            );
+        end if;
+    end if;
+
+    -- OTP Match: Mark consumed atomically
+    update public.auth_verifications
+    set is_used = true,
+        verified_at = v_now,
+        updated_at = v_now
+    where id = v_record.id;
+
+    return jsonb_build_object(
+        'success', true,
+        'code', 'SUCCESS',
+        'id', v_record.id,
+        'user_id', v_record.user_id,
+        'email', v_record.email,
+        'purpose', v_record.purpose
+    );
+end;
+$$;
+
+-- 4. Atomic Token Verification Function
+create or replace function public.verify_auth_token_atomic(
+    p_token_hash text,
+    p_purpose text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_record public.auth_verifications%rowtype;
+    v_now timestamptz := now();
+begin
+    select * into v_record
+    from public.auth_verifications
+    where token_hash = p_token_hash
+      and is_used = false
+      and (p_purpose is null or purpose = p_purpose)
+    order by created_at desc
+    limit 1
+    for update;
+
+    if not found then
+        return jsonb_build_object(
+            'success', false,
+            'code', 'NOT_FOUND',
+            'error', 'This verification link is invalid or has already been used.'
+        );
+    end if;
+
+    if v_now > v_record.expires_at then
+        return jsonb_build_object(
+            'success', false,
+            'code', 'EXPIRED',
+            'error', 'This verification link has expired. Please request a new one.'
+        );
+    end if;
+
+    -- Mark consumed atomically
+    update public.auth_verifications
+    set is_used = true,
+        verified_at = v_now,
+        updated_at = v_now
+    where id = v_record.id;
+
+    return jsonb_build_object(
+        'success', true,
+        'code', 'SUCCESS',
+        'id', v_record.id,
+        'user_id', v_record.user_id,
+        'email', v_record.email,
+        'purpose', v_record.purpose
+    );
+end;
+$$;
+
+-- 5. Function Execution Privileges
+revoke all on function public.verify_auth_otp_atomic(text, text, text) from public;
+grant execute on function public.verify_auth_otp_atomic(text, text, text) to service_role;
+
+revoke all on function public.verify_auth_token_atomic(text, text) from public;
+grant execute on function public.verify_auth_token_atomic(text, text) to service_role;
+
+
 -- >>> FILE: 057_customer_rates_and_pricing_priority.sql <<<
 -- ==============================================================================
--- PrintERP SaaS - Migration 057: Customer Rates & Pricing Priority Engine
+-- PrintERP / InkFlow SaaS - Migration 057: Customer Rates & Pricing Priority Engine
 -- Supports:
 --   1. Customer-specific product rates (customer_rates table)
 --   2. 3-Tier Pricing Priority: Custom Rate -> Last Valid Invoice Rate -> Default Rate
@@ -5008,6 +9466,7 @@ end $$;
 --   5. Strict Multi-Tenant Row Level Security
 -- ==============================================================================
 
+-- 1. CUSTOMER RATES TABLE
 create table if not exists public.customer_rates (
     id uuid primary key default gen_random_uuid(),
     company_id uuid not null references public.companies(id) on delete cascade,
@@ -5024,6 +9483,7 @@ create index if not exists idx_customer_rates_comp_cust on public.customer_rates
 create index if not exists idx_customer_rates_comp_prod on public.customer_rates(company_id, product_id);
 alter table public.customer_rates enable row level security;
 
+-- 2. ENSURE INVOICE_ITEMS HAS PRODUCT_ID REFERENCE (Non-destructive)
 do $$
 begin
     if not exists (
@@ -5039,6 +9499,7 @@ end $$;
 create index if not exists idx_invoice_items_prod on public.invoice_items(product_id);
 create index if not exists idx_invoices_cust_date on public.invoices(company_id, customer_id, invoice_date desc, created_at desc);
 
+-- 3. RLS POLICIES FOR CUSTOMER RATES
 drop policy if exists "Active company users can view customer rates" on public.customer_rates;
 create policy "Active company users can view customer rates" on public.customer_rates for select
     using (public.auth_is_active_company_user(company_id));
@@ -5075,10 +9536,17 @@ create policy "Authorized company users can delete customer rates" on public.cus
         )
     );
 
+
 -- >>> FILE: 058_add_customer_company_name.sql <<<
+-- ==============================================================================
+-- Migration 058: Add company_name and expand customer categories in customers table
+-- Authoritative schema update for Customer 360 module
+-- ==============================================================================
+
 ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS company_name TEXT;
 CREATE INDEX IF NOT EXISTS idx_customers_company_name_col ON public.customers (company_id, company_name);
 
+-- Update customer_type check constraint to include reseller
 DO $$
 BEGIN
     ALTER TABLE public.customers DROP CONSTRAINT IF EXISTS customers_customer_type_check;
@@ -5087,6 +9555,31 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
     NULL;
 END $$;
+
+
+-- >>> FILE: 059_add_tenant_company_extended_fields.sql <<<
+-- ==============================================================================
+-- PrintERP SaaS - Migration 059: Add Tenant Company Extended Fields
+-- Fields added:
+--   - legal_name: Registered Legal Entity Name (for NBR, tax & contracts)
+--   - office_hours: Business / Shop working hours (e.g. '9:00 AM - 8:00 PM (Sat - Thu)')
+--   - holidays: Weekly holidays & operational holidays (e.g. 'Friday / শুক্রবার')
+-- ==============================================================================
+
+-- 1. Ensure public.companies table contains extended company profile columns
+ALTER TABLE IF EXISTS public.companies
+    ADD COLUMN IF NOT EXISTS legal_name TEXT,
+    ADD COLUMN IF NOT EXISTS office_hours TEXT DEFAULT '9:00 AM - 8:00 PM (Sat - Thu)',
+    ADD COLUMN IF NOT EXISTS holidays TEXT DEFAULT 'Friday';
+
+-- 2. Ensure public.company_settings table contains office_hours and holidays columns
+ALTER TABLE IF EXISTS public.company_settings
+    ADD COLUMN IF NOT EXISTS office_hours TEXT DEFAULT '9:00 AM - 8:00 PM (Sat - Thu)',
+    ADD COLUMN IF NOT EXISTS holidays TEXT DEFAULT 'Friday';
+
+-- Index for searching companies by legal entity name
+CREATE INDEX IF NOT EXISTS idx_companies_legal_name ON public.companies(legal_name);
+
 
 -- >>> FILE: 060_machineries_management.sql <<<
 -- ==============================================================================
@@ -5436,6 +9929,7 @@ insert into public.role_permissions (role_id, permission_id)
 select '00000000-0000-0000-0000-000000000006', id from public.permissions
 where code in ('machineries.view')
 on conflict (role_id, permission_id) do nothing;
+
 
 -- >>> FILE: 061_machinery_production_task_integration.sql <<<
 -- ==============================================================================
@@ -6205,6 +10699,7 @@ CREATE POLICY "Active company users can view task requirements"
     ON public.production_task_material_requirements FOR SELECT
     USING (public.auth_is_active_company_user(company_id));
 
+
 -- >>> FILE: 065_products_pricing_costing.sql <<<
 -- ==============================================================================
 -- InkFlow SaaS - Migration 065: Products, Services, Advanced Formulas & Costing
@@ -6366,6 +10861,7 @@ create policy "Active company users can manage price list items"
     on public.price_list_items for all
     using (public.auth_is_active_company_user(company_id))
     with check (public.auth_is_active_company_user(company_id));
+
 
 -- >>> FILE: 066_purchasing_and_suppliers.sql <<<
 -- ==============================================================================
@@ -6654,7 +11150,22 @@ drop policy if exists "tenant_isolation_supplier_ledger_entries" on public.suppl
 create policy "tenant_isolation_supplier_ledger_entries" on public.supplier_ledger_entries for all
     using (public.auth_is_active_company_user(company_id));
 
+
 -- >>> FILE: 067_workforce_finance.sql <<<
+-- ==============================================================================
+-- InkFlow ERP SaaS - Migration 067: Workforce + Geo Attendance + Double-Entry Finance
+-- Authoritative schema for:
+--   1. Extended Employee Master (Branch, Responsibilities, Employment Types, Emergency Contacts, Wage Rates)
+--   2. Shifts & Overnight Schedule Management (Overnight shifts, Grace periods, Break times)
+--   3. Employee Shift Assignments
+--   4. Extended Attendance Records (Shift linkage, Field/Job attribution, Overtime approval, Labor costing)
+--   5. Chart of Accounts (Asset, Liability, Equity, Revenue, Expense)
+--   6. Financial Transactions & Double-Entry Journal Entry Lines (Balanced Debit = Credit)
+--   7. Account Transfers (Cash <-> Bank <-> MFS)
+--   8. Daily Cash Closings & Drawer Reconciliation
+--   9. Financial Periods (Open / Closed fiscal periods)
+--   10. Strict Multi-Tenant Row Level Security & Performance B-Tree Indexes
+-- ==============================================================================
 
 -- 1. EXTEND EMPLOYEES TABLE
 alter table if exists public.employees
@@ -6681,8 +11192,8 @@ create table if not exists public.shifts (
     branch_id uuid references public.branches(id) on delete set null,
     shift_code text not null,
     shift_name text not null,
-    start_time text not null,
-    end_time text not null,
+    start_time text not null, -- 'HH:mm' e.g. '09:00' or '22:00'
+    end_time text not null,   -- 'HH:mm' e.g. '18:00' or '06:00'
     is_overnight boolean not null default false,
     grace_period_minutes integer not null default 15,
     break_duration_minutes integer not null default 60,
@@ -6780,7 +11291,7 @@ create table if not exists public.financial_transactions (
         status in ('DRAFT', 'PENDING_APPROVAL', 'POSTED', 'REVERSED', 'CANCELLED')
     ),
     total_amount numeric(14,2) not null default 0 check (total_amount >= 0),
-    reference_type text,
+    reference_type text, -- 'INVOICE', 'PURCHASE_ORDER', 'GOODS_RECEIPT', 'EXPENSE', 'TRANSFER', 'CASH_CLOSING', 'PAYROLL'
     reference_id text,
     narration text not null,
     posted_by_id uuid references auth.users(id) on delete set null,
@@ -6889,6 +11400,7 @@ create index if not exists idx_fin_periods_comp on public.financial_periods(comp
 alter table public.financial_periods enable row level security;
 
 -- 11. ROW LEVEL SECURITY (RLS) POLICIES
+
 drop policy if exists "tenant_isolation_shifts" on public.shifts;
 create policy "tenant_isolation_shifts" on public.shifts for all
     using (public.auth_is_active_company_user(company_id));
@@ -6922,8 +11434,7 @@ create policy "tenant_isolation_financial_periods" on public.financial_periods f
     using (public.auth_is_active_company_user(company_id));
 
 
-
-
+-- >>> FILE: 068_bangladesh_localization_vat.sql <<<
 -- ==============================================================================
 -- InkFlow ERP - Migration 068: Bangladesh Localization & VAT Engine (V7)
 -- Authoritative, multi-tenant Bangladesh tax architecture & localized profile
@@ -6936,7 +11447,7 @@ create table if not exists public.tax_profiles (
     branch_id uuid references public.branches(id) on delete cascade,
     code text not null, -- e.g. 'VAT-15', 'VAT-7.5', 'VAT-5', 'VAT-ZERO', 'VAT-EXEMPT', 'VAT-NON-TAXABLE'
     name text not null, -- e.g. 'Standard VAT 15%'
-    name_bn text,       -- e.g. 'à¦†à¦¦à¦°à§à¦¶ à¦­à§à¦¯à¦¾à¦Ÿ à§§à§«%'
+    name_bn text,       -- e.g. 'আদর্শ ভ্যাট ১৫%'
     rate numeric(5,2) not null default 15.00 check (rate >= 0.00 and rate <= 100.00),
     calculation_mode text not null default 'exclusive' check (calculation_mode in ('inclusive', 'exclusive')),
     tax_type text not null default 'STANDARD' check (
@@ -7077,3 +11588,148 @@ alter table public.branches
     add column if not exists area text,
     add column if not exists full_address_bn text,
     add column if not exists is_active boolean default true;
+
+
+-- >>> FILE: 069_mobile_communication_offline.sql <<<
+-- ==============================================================================
+-- InkFlow ERP - Migration 069: Mobile + WhatsApp + SMS + Offline Sync
+-- Multi-Tenant Outbox, Idempotent Sync, Unified Communication & Client Devices
+-- ==============================================================================
+
+-- 1. SYNC OUTBOX (Client-to-Server Sync Queue with Idempotency)
+CREATE TABLE IF NOT EXISTS sync_outbox (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  branch_id UUID REFERENCES branches(id) ON DELETE SET NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  idempotency_key VARCHAR(120) NOT NULL UNIQUE,
+  device_id VARCHAR(100) NOT NULL,
+  action_type VARCHAR(60) NOT NULL,
+  entity_type VARCHAR(60) NOT NULL,
+  entity_id VARCHAR(100),
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  status VARCHAR(30) NOT NULL DEFAULT 'pending', -- pending, syncing, synced, conflict, failed, cancelled
+  retry_count INTEGER NOT NULL DEFAULT 0,
+  max_retries INTEGER NOT NULL DEFAULT 5,
+  last_error TEXT,
+  conflict_details JSONB,
+  server_version INTEGER DEFAULT 1,
+  synced_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_sync_outbox_company_status ON sync_outbox(company_id, status);
+CREATE INDEX IF NOT EXISTS idx_sync_outbox_idempotency ON sync_outbox(idempotency_key);
+CREATE INDEX IF NOT EXISTS idx_sync_outbox_device ON sync_outbox(company_id, device_id);
+
+-- 2. COMMUNICATION MESSAGES (Unified Audit Log for WhatsApp, SMS, Email & In-App)
+CREATE TABLE IF NOT EXISTS communication_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  branch_id UUID REFERENCES branches(id) ON DELETE SET NULL,
+  channel VARCHAR(30) NOT NULL, -- whatsapp, sms, email, in_app, telegram
+  recipient_name VARCHAR(150) NOT NULL,
+  recipient_destination VARCHAR(150) NOT NULL, -- phone number or email address
+  subject VARCHAR(255),
+  template_key VARCHAR(100),
+  variables JSONB DEFAULT '{}'::jsonb,
+  message_content TEXT NOT NULL,
+  attachment_url TEXT,
+  attachment_name VARCHAR(255),
+  provider VARCHAR(60) NOT NULL, -- meta_whatsapp, twilio, greenweb, bulksmsbd, ssl_wireless, gmail, resend, mock
+  provider_message_id VARCHAR(150),
+  status VARCHAR(30) NOT NULL DEFAULT 'queued', -- queued, sending, sent, delivered, read, failed
+  error_code VARCHAR(50),
+  error_message TEXT,
+  attempts INTEGER NOT NULL DEFAULT 1,
+  idempotency_key VARCHAR(120) UNIQUE,
+  sent_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  sent_at TIMESTAMPTZ,
+  delivered_at TIMESTAMPTZ,
+  read_at TIMESTAMPTZ,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_comm_messages_company ON communication_messages(company_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_comm_messages_channel ON communication_messages(company_id, channel, status);
+CREATE INDEX IF NOT EXISTS idx_comm_messages_recipient ON communication_messages(company_id, recipient_destination);
+CREATE INDEX IF NOT EXISTS idx_comm_messages_idempotency ON communication_messages(idempotency_key);
+
+-- 3. COMMUNICATION TEMPLATES (Configurable Multi-Channel Bilingual Message Templates)
+CREATE TABLE IF NOT EXISTS communication_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  template_key VARCHAR(100) NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  name_bn VARCHAR(150),
+  channel VARCHAR(30) NOT NULL DEFAULT 'all', -- all, whatsapp, sms, email, in_app
+  subject_en VARCHAR(255),
+  subject_bn VARCHAR(255),
+  body_en TEXT NOT NULL,
+  body_bn TEXT NOT NULL,
+  variables JSONB NOT NULL DEFAULT '[]'::jsonb,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_comm_template_company_key UNIQUE(company_id, template_key, channel)
+);
+
+CREATE INDEX IF NOT EXISTS idx_comm_templates_company ON communication_templates(company_id, is_active);
+
+-- 4. CLIENT DEVICES (Registered Mobile/PWA Devices & Local Cache Tracking)
+CREATE TABLE IF NOT EXISTS client_devices (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  device_id VARCHAR(100) NOT NULL,
+  device_name VARCHAR(150),
+  platform VARCHAR(50), -- android, ios, pwa, desktop_web
+  app_version VARCHAR(30),
+  push_subscription JSONB,
+  last_ip_address VARCHAR(45),
+  last_active_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_client_device_user UNIQUE(company_id, user_id, device_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_client_devices_user ON client_devices(company_id, user_id);
+
+-- 5. ENABLE ROW LEVEL SECURITY (RLS)
+ALTER TABLE sync_outbox ENABLE ROW LEVEL SECURITY;
+ALTER TABLE communication_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE communication_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE client_devices ENABLE ROW LEVEL SECURITY;
+
+-- 6. RLS POLICIES ENFORCING MULTI-TENANT ISOLATION
+
+-- sync_outbox
+DROP POLICY IF EXISTS "sync_outbox_tenant_isolation" ON sync_outbox;
+CREATE POLICY "sync_outbox_tenant_isolation" ON sync_outbox
+  FOR ALL USING (
+    public.auth_is_active_company_user(company_id)
+  );
+
+-- communication_messages
+DROP POLICY IF EXISTS "comm_messages_tenant_isolation" ON communication_messages;
+CREATE POLICY "comm_messages_tenant_isolation" ON communication_messages
+  FOR ALL USING (
+    public.auth_is_active_company_user(company_id)
+  );
+
+-- communication_templates
+DROP POLICY IF EXISTS "comm_templates_tenant_isolation" ON communication_templates;
+CREATE POLICY "comm_templates_tenant_isolation" ON communication_templates
+  FOR ALL USING (
+    public.auth_is_active_company_user(company_id)
+  );
+
+-- client_devices
+DROP POLICY IF EXISTS "client_devices_tenant_isolation" ON client_devices;
+CREATE POLICY "client_devices_tenant_isolation" ON client_devices
+  FOR ALL USING (
+    public.auth_is_active_company_user(company_id)
+  );

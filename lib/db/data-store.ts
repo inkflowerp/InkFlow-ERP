@@ -197,6 +197,10 @@ export const STORAGE_KEYS = {
   TAX_PROFILES: 'printerp_tenant_tax_profiles',
   TAX_TRANSACTION_LINES: 'printerp_tenant_tax_transaction_lines',
   LOCATIONS_MASTER: 'printerp_locations_master',
+  SYNC_OUTBOX: 'printerp_tenant_sync_outbox',
+  COMMUNICATION_MESSAGES: 'printerp_tenant_comm_messages',
+  COMMUNICATION_TEMPLATES: 'printerp_tenant_comm_templates',
+  CLIENT_DEVICES: 'printerp_tenant_client_devices',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -288,7 +292,11 @@ export function isTransactionalKey(key: string): boolean {
     key === STORAGE_KEYS.FINANCIAL_PERIODS ||
     key === STORAGE_KEYS.TAX_PROFILES ||
     key === STORAGE_KEYS.TAX_TRANSACTION_LINES ||
-    key === STORAGE_KEYS.LOCATIONS_MASTER
+    key === STORAGE_KEYS.LOCATIONS_MASTER ||
+    key === STORAGE_KEYS.SYNC_OUTBOX ||
+    key === STORAGE_KEYS.COMMUNICATION_MESSAGES ||
+    key === STORAGE_KEYS.COMMUNICATION_TEMPLATES ||
+    key === STORAGE_KEYS.CLIENT_DEVICES
   )
 }
 

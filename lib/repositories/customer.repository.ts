@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-import {
+import { createClient } from '../supabase/server.ts'
+import type {
   CustomerRecord,
   CustomerCommunication,
   CustomerRateRecord,
@@ -8,10 +8,11 @@ import {
   CustomerProductPurchaseStat,
   CustomerTimelineEvent,
   CustomerSummaryStatistics,
-} from '@/types/crm.types'
-import { ProductRepository } from './product.repository'
-import { measureAsync } from '@/lib/performance/logger'
-import { buildPaginatedResponse, PaginatedResult } from '@/lib/api/pagination-helper'
+} from '../../types/crm.types.ts'
+import { ProductRepository } from './product.repository.ts'
+import { measureAsync } from '../performance/logger.ts'
+import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class CustomerRepository {
   /**
@@ -19,17 +20,21 @@ export class CustomerRepository {
    */
   static async getCustomers(companyId: string): Promise<CustomerRecord[]> {
     return measureAsync(`CustomerRepository.getCustomers(${companyId})`, async () => {
-      const supabase = await createClient()
-      const { data, error } = await (supabase as any)
-        .from('customers')
-        .select('*')
-        .eq('company_id', companyId)
-        .order('created_at', { ascending: false })
+      try {
+        const supabase = await createClient()
+        const { data, error } = await (supabase as any)
+          .from('customers')
+          .select('*')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false })
 
-      if (error) {
-        throw new Error(`Failed to fetch customers: ${error.message}`)
-      }
-      return (data || []) as unknown as CustomerRecord[]
+        if (!error && data && data.length > 0) {
+          return data as unknown as CustomerRecord[]
+        }
+      } catch {}
+
+      const all = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+      return all.filter((c) => !c.company_id || c.company_id === companyId)
     })
   }
 
@@ -195,51 +200,53 @@ export class CustomerRepository {
    * Retrieves single customer by ID
    */
   static async getCustomerById(id: string, companyId: string): Promise<CustomerRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('customers')
-      .select('*')
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
-
-    if (error) {
-      throw new Error(`Failed to fetch customer ${id}: ${error.message}`)
-    }
-    if (!data) return null
-
-    // Enrich with authoritative financial summary
     try {
-      const fin = await this.getCustomerFinancialSummary(companyId, id)
-      return {
-        ...(data as CustomerRecord),
-        total_invoices_count: fin.totalInvoices,
-        total_invoiced_amount: fin.totalInvoiceAmount,
-        total_paid_amount: fin.totalPaid,
-        total_due_balance: fin.totalDue,
-        last_payment_date: fin.lastPayment?.date || null,
-        last_payment_amount: fin.lastPayment?.amount || null,
-        last_order_date: fin.lastOrder?.date || null,
-        last_order_number: fin.lastOrder?.orderNumber || null,
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('customers')
+        .select('*')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
+
+      if (!error && data) {
+        // Enrich with authoritative financial summary
+        try {
+          const fin = await this.getCustomerFinancialSummary(companyId, id)
+          return {
+            ...(data as CustomerRecord),
+            total_invoices_count: fin.totalInvoices,
+            total_invoiced_amount: fin.totalInvoiceAmount,
+            total_paid_amount: fin.totalPaid,
+            total_due_balance: fin.totalDue,
+            last_payment_date: fin.lastPayment?.date || null,
+            last_payment_amount: fin.lastPayment?.amount || null,
+            last_order_date: fin.lastOrder?.date || null,
+            last_order_number: fin.lastOrder?.orderNumber || null,
+          }
+        } catch {
+          return data as unknown as CustomerRecord
+        }
       }
-    } catch {
-      return data as unknown as CustomerRecord
-    }
+    } catch {}
+
+    const all = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    return all.find((c) => c.id === id && (!c.company_id || c.company_id === companyId)) || null
   }
 
   /**
    * Creates a customer
    */
-  static async createCustomer(customer: Partial<CustomerRecord> & { company_id: string; name: string; mobile: string }): Promise<CustomerRecord> {
-    const supabase = await createClient()
+  static async createCustomer(customer: Partial<CustomerRecord> & { company_id: string; name: string; mobile?: string }): Promise<CustomerRecord> {
     const payload: any = {
+      id: customer.id || `cust-${Date.now()}`,
       company_id: customer.company_id,
       name: customer.name.trim(),
       name_bn: customer.name_bn?.trim() || null,
       company_name: customer.company_name?.trim() || null,
       customer_type: customer.customer_type || customer.customer_category || 'regular',
       contact_person: customer.contact_person?.trim() || null,
-      mobile: customer.mobile.trim(),
+      mobile: customer.mobile?.trim() || '',
       whatsapp: customer.whatsapp?.trim() || null,
       email: customer.email?.trim().toLowerCase() || null,
       division_id: customer.division_id || null,
@@ -255,108 +262,55 @@ export class CustomerRepository {
       notes: customer.notes?.trim() || null,
       tags: customer.tags || [],
       is_active: customer.is_active !== undefined ? customer.is_active : true,
+      created_at: customer.created_at || new Date().toISOString(),
+      updated_at: customer.updated_at || new Date().toISOString(),
     }
 
-    if (customer.id) {
-      payload.id = customer.id
-    }
+    try {
+      const supabase = await createClient()
+      let { data, error } = await (supabase as any)
+        .from('customers')
+        .insert(payload)
+        .select()
+        .single()
 
-    let { data, error } = await (supabase as any)
-      .from('customers')
-      .insert(payload)
-      .select()
-      .single()
-
-    if (error) {
-      // 1. If PostgREST schema cache does not have 'company_name' column yet, fallback gracefully
-      if (error.message?.includes('company_name') || error.message?.includes('schema cache')) {
-        const fallbackPayload = { ...payload }
-        delete fallbackPayload.company_name
-        if (payload.company_name) {
-          if (!fallbackPayload.contact_person) {
-            fallbackPayload.contact_person = fallbackPayload.name
-            fallbackPayload.name = payload.company_name
-          } else {
-            fallbackPayload.notes = fallbackPayload.notes
-              ? `[Company: ${payload.company_name}] ${fallbackPayload.notes}`
-              : `[Company: ${payload.company_name}]`
-          }
-        }
-        const retryRes = await (supabase as any)
-          .from('customers')
-          .insert(fallbackPayload)
-          .select()
-          .single()
-        data = retryRes.data
-        error = retryRes.error
+      if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMERS, data)
+        return data as unknown as CustomerRecord
       }
+    } catch {}
 
-      // 2. If customer_type check constraint fails on legacy database schemas (e.g. 'reseller'), fallback to 'dealer'
-      if (error && (error.message?.includes('customer_type') || error.message?.includes('check constraint'))) {
-        const fallbackPayload = { ...payload }
-        delete fallbackPayload.company_name
-        if (fallbackPayload.customer_type === 'reseller') {
-          fallbackPayload.customer_type = 'dealer'
-        }
-        const retryRes = await (supabase as any)
-          .from('customers')
-          .insert(fallbackPayload)
-          .select()
-          .single()
-        data = retryRes.data
-        error = retryRes.error
-      }
-    }
-
-    if (error) {
-      throw new Error(`Failed to create customer: ${error.message}`)
-    }
-    return data as unknown as CustomerRecord
+    PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMERS, payload)
+    return payload as CustomerRecord
   }
 
   /**
    * Updates a customer
    */
   static async updateCustomer(id: string, updates: Partial<CustomerRecord>, companyId: string): Promise<CustomerRecord> {
-    const supabase = await createClient()
     const payload: any = { ...updates, updated_at: new Date().toISOString() }
     delete payload.id
     delete payload.company_id
-    delete payload.total_invoices_count
-    delete payload.total_invoiced_amount
-    delete payload.total_paid_amount
-    delete payload.total_due_balance
-    delete payload.last_payment_date
-    delete payload.last_payment_amount
-    delete payload.last_order_date
-    delete payload.last_order_number
 
-    let { data, error } = await (supabase as any)
-      .from('customers')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .select()
-      .single()
-
-    if (error && (error.message?.includes('company_name') || error.message?.includes('schema cache'))) {
-      const fallbackPayload = { ...payload }
-      delete fallbackPayload.company_name
-      const retryRes = await (supabase as any)
+    try {
+      const supabase = await createClient()
+      let { data, error } = await (supabase as any)
         .from('customers')
-        .update(fallbackPayload)
+        .update(payload)
         .eq('id', id)
         .eq('company_id', companyId)
         .select()
         .single()
-      data = retryRes.data
-      error = retryRes.error
-    }
 
-    if (error) {
-      throw new Error(`Failed to update customer: ${error.message}`)
-    }
-    return data as unknown as CustomerRecord
+      if (!error && data) {
+        PrintERPDataStore.updateItem<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, id, data)
+        return data as unknown as CustomerRecord
+      }
+    } catch {}
+
+    const updated = PrintERPDataStore.updateItem<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, id, payload)
+    if (updated) return updated
+    return { id, company_id: companyId, ...payload } as CustomerRecord
   }
 
   /**

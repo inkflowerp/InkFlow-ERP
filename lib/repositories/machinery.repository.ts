@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '../supabase/server.ts'
 import {
   MachineryRecord,
   MachineryAssignmentRecord,
@@ -11,7 +11,8 @@ import {
   AssignmentStatus,
   MaintenanceStatus,
   BreakdownStatus,
-} from '@/types/machinery.types'
+} from '../../types/machinery.types.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class MachineryRepository {
   /**
@@ -21,65 +22,63 @@ export class MachineryRepository {
     companyId: string,
     filters?: MachineryFilterOptions
   ): Promise<MachineryRecord[]> {
-    const supabase = await createClient()
-    let query = (supabase as any)
-      .from('machineries')
-      .select('*, branch:branches(id, name, code)')
-      .eq('company_id', companyId)
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('machineries')
+        .select('*, branch:branches(id, name, code)')
+        .eq('company_id', companyId)
 
-    if (!filters?.includeArchived) {
-      query = query.eq('is_archived', false)
+      if (!filters?.includeArchived) {
+        query = query.eq('is_archived', false)
+      }
+
+      if (filters?.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status)
+      }
+
+      if (filters?.machine_type && filters.machine_type !== 'all') {
+        query = query.eq('machine_type', filters.machine_type)
+      }
+
+      if (filters?.category && filters.category !== 'all') {
+        query = query.eq('category', filters.category)
+      }
+
+      if (filters?.branch_id && filters.branch_id !== 'all') {
+        query = query.eq('branch_id', filters.branch_id)
+      }
+
+      const { data, error } = await query.order('name', { ascending: true })
+
+      if (error) {
+        throw new Error(`Failed to fetch machineries: ${error.message}`)
+      }
+
+      let records = (data || []) as unknown as MachineryRecord[]
+      if (filters?.search?.trim()) {
+        const q = filters.search.toLowerCase().trim()
+        records = records.filter(
+          (m: MachineryRecord) =>
+            m.name.toLowerCase().includes(q) ||
+            m.code.toLowerCase().includes(q) ||
+            (m.brand && m.brand.toLowerCase().includes(q)) ||
+            (m.model && m.model.toLowerCase().includes(q)) ||
+            (m.serial_number && m.serial_number.toLowerCase().includes(q)) ||
+            (m.location && m.location.toLowerCase().includes(q))
+        )
+      }
+
+      return records
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      let records = all.filter((m: MachineryRecord) => m.company_id === companyId)
+      if (filters?.search?.trim()) {
+        const q = filters.search.toLowerCase().trim()
+        records = records.filter((m: MachineryRecord) => m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q))
+      }
+      return records
     }
-
-    if (filters?.status && filters.status !== 'all') {
-      query = query.eq('status', filters.status)
-    }
-
-    if (filters?.machine_type && filters.machine_type !== 'all') {
-      query = query.eq('machine_type', filters.machine_type)
-    }
-
-    if (filters?.category && filters.category !== 'all') {
-      query = query.eq('category', filters.category)
-    }
-
-    if (filters?.department && filters.department !== 'all') {
-      query = query.eq('department', filters.department)
-    }
-
-    if (filters?.branch_id && filters.branch_id !== 'all') {
-      query = query.eq('branch_id', filters.branch_id)
-    }
-
-    if (filters?.availabilityOnly) {
-      query = query.eq('status', 'available')
-    }
-
-    query = query.order('created_at', { ascending: false })
-
-    const { data, error } = await query
-
-    if (error) {
-      throw new Error(`Failed to fetch machineries: ${error.message}`)
-    }
-
-    let records = (data || []) as unknown as MachineryRecord[]
-
-    // Search query filter (client-safe pattern matching)
-    if (filters?.search && filters.search.trim()) {
-      const q = filters.search.toLowerCase().trim()
-      records = records.filter(
-        (m) =>
-          m.name.toLowerCase().includes(q) ||
-          m.code.toLowerCase().includes(q) ||
-          (m.brand && m.brand.toLowerCase().includes(q)) ||
-          (m.model && m.model.toLowerCase().includes(q)) ||
-          (m.serial_number && m.serial_number.toLowerCase().includes(q)) ||
-          (m.location && m.location.toLowerCase().includes(q))
-      )
-    }
-
-    return records
   }
 
   /**
@@ -89,62 +88,76 @@ export class MachineryRepository {
     id: string,
     companyId: string
   ): Promise<MachineryRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('machineries')
-      .select('*, branch:branches(id, name, code)')
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    let data: any = null
+    let supabase: any = null
+    try {
+      supabase = await createClient()
+      const { data: resData, error } = await (supabase as any)
+        .from('machineries')
+        .select('*, branch:branches(id, name, code)')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch machinery ${id}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch machinery ${id}: ${error.message}`)
+      }
+      data = resData
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      return all.find((m: MachineryRecord) => m.id === id && m.company_id === companyId) || null
     }
 
     if (!data) return null
 
     const machine = data as unknown as MachineryRecord
 
-    // Fetch active assignment if present
-    const { data: assignments } = await (supabase as any)
-      .from('machinery_assignments')
-      .select('*, job_order:job_orders(id, job_number, product_name, customer_name, quantity, deadline, status), production_job:production_jobs(id, production_job_number, product_name, customer_name, department, status)')
-      .eq('machine_id', id)
-      .eq('company_id', companyId)
-      .in('status', ['scheduled', 'in_progress'])
-      .order('scheduled_start', { ascending: true })
-      .limit(1)
-
-    if (assignments && assignments.length > 0) {
-      machine.current_assignment = assignments[0] as unknown as MachineryAssignmentRecord
+    if (!supabase) {
+      return machine
     }
 
-    // Fetch latest breakdown if present
-    const { data: breakdowns } = await (supabase as any)
-      .from('machinery_breakdowns')
-      .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
-      .eq('machine_id', id)
-      .eq('company_id', companyId)
-      .order('reported_at', { ascending: false })
-      .limit(1)
+    try {
+      // Fetch active assignment if present
+      const { data: assignments } = await (supabase as any)
+        .from('machinery_assignments')
+        .select('*, job_order:job_orders(id, job_number, product_name, customer_name, quantity, deadline, status), production_job:production_jobs(id, production_job_number, product_name, customer_name, department, status)')
+        .eq('machine_id', id)
+        .eq('company_id', companyId)
+        .in('status', ['scheduled', 'in_progress'])
+        .order('scheduled_start', { ascending: true })
+        .limit(1)
 
-    if (breakdowns && breakdowns.length > 0) {
-      machine.latest_breakdown = breakdowns[0] as unknown as MachineryBreakdownRecord
-    }
+      if (assignments && assignments.length > 0) {
+        machine.current_assignment = assignments[0] as unknown as MachineryAssignmentRecord
+      }
 
-    // Fetch next scheduled maintenance
-    const { data: maintenances } = await (supabase as any)
-      .from('machinery_maintenances')
-      .select('*')
-      .eq('machine_id', id)
-      .eq('company_id', companyId)
-      .eq('status', 'scheduled')
-      .order('scheduled_date', { ascending: true })
-      .limit(1)
+      // Fetch latest breakdown if present
+      const { data: breakdowns } = await (supabase as any)
+        .from('machinery_breakdowns')
+        .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
+        .eq('machine_id', id)
+        .eq('company_id', companyId)
+        .order('reported_at', { ascending: false })
+        .limit(1)
 
-    if (maintenances && maintenances.length > 0) {
-      machine.next_maintenance = maintenances[0] as unknown as MachineryMaintenanceRecord
-    }
+      if (breakdowns && breakdowns.length > 0) {
+        machine.latest_breakdown = breakdowns[0] as unknown as MachineryBreakdownRecord
+      }
+
+      // Fetch next scheduled maintenance
+      const { data: maintenances } = await (supabase as any)
+        .from('machinery_maintenances')
+        .select('*')
+        .eq('machine_id', id)
+        .eq('company_id', companyId)
+        .eq('status', 'scheduled')
+        .order('scheduled_date', { ascending: true })
+        .limit(1)
+
+      if (maintenances && maintenances.length > 0) {
+        machine.next_maintenance = maintenances[0] as unknown as MachineryMaintenanceRecord
+      }
+    } catch {}
 
     return machine
   }

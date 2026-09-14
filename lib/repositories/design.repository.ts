@@ -1,34 +1,45 @@
-import { createClient } from '@/lib/supabase/server'
-import { DesignJobRecord, DesignVersionRecord } from '@/types/design.types'
+import { createClient } from '../supabase/server.ts'
+import { DesignJobRecord, DesignVersionRecord } from '../../types/design.types.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class DesignRepository {
   static async getDesignJobs(companyId: string): Promise<DesignJobRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('design_jobs')
-      .select('*, versions:design_versions(*)')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('design_jobs')
+        .select('*, versions:design_versions(*)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch design jobs: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch design jobs: ${error.message}`)
+      }
+      return (data || []) as unknown as DesignJobRecord[]
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      return all.filter((d: DesignJobRecord) => d.company_id === companyId)
     }
-    return (data || []) as unknown as DesignJobRecord[]
   }
 
   static async getDesignJobById(id: string, companyId: string): Promise<DesignJobRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('design_jobs')
-      .select('*, versions:design_versions(*)')
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('design_jobs')
+        .select('*, versions:design_versions(*)')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch design job ${id}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch design job ${id}: ${error.message}`)
+      }
+      return (data as unknown as DesignJobRecord) || null
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      return all.find((d: DesignJobRecord) => d.id === id && d.company_id === companyId) || null
     }
-    return (data as unknown as DesignJobRecord) || null
   }
 
   static async createDesignJob(job: Partial<DesignJobRecord> & {

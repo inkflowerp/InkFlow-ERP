@@ -1,35 +1,46 @@
-import { createClient } from '@/lib/supabase/server'
-import { DeliveryChallanRecord, InstallationRecord } from '@/types/logistics.types'
-import { BillingRepository } from './billing.repository'
+import { createClient } from '../supabase/server.ts'
+import { DeliveryChallanRecord, InstallationRecord } from '../../types/logistics.types.ts'
+import { BillingRepository } from './billing.repository.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class LogisticsRepository {
   static async getChallans(companyId: string): Promise<DeliveryChallanRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('delivery_challans')
-      .select('*, items:delivery_challan_items(*)')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('delivery_challans')
+        .select('*, items:delivery_challan_items(*)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch delivery challans: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch delivery challans: ${error.message}`)
+      }
+      return (data || []) as unknown as DeliveryChallanRecord[]
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      return all.filter((c: DeliveryChallanRecord) => c.company_id === companyId)
     }
-    return (data || []) as unknown as DeliveryChallanRecord[]
   }
 
   static async getChallanById(id: string, companyId: string): Promise<DeliveryChallanRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('delivery_challans')
-      .select('*, items:delivery_challan_items(*)')
-      .or(`id.eq.${id},challan_number.eq.${id}`)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('delivery_challans')
+        .select('*, items:delivery_challan_items(*)')
+        .or(`id.eq.${id},challan_number.eq.${id}`)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch challan ${id}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch challan ${id}: ${error.message}`)
+      }
+      return (data as unknown as DeliveryChallanRecord) || null
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      return all.find((c: DeliveryChallanRecord) => (c.id === id || c.challan_number === id) && c.company_id === companyId) || null
     }
-    return (data as unknown as DeliveryChallanRecord) || null
   }
 
   static async createChallan(challan: {
@@ -118,16 +129,21 @@ export class LogisticsRepository {
   }
 
   static async getInstallations(companyId: string): Promise<InstallationRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('installations')
-      .select('*')
-      .eq('company_id', companyId)
-      .order('scheduled_date', { ascending: false })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('installations')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('scheduled_date', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch installations: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch installations: ${error.message}`)
+      }
+      return (data || []) as unknown as InstallationRecord[]
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<InstallationRecord[]>(STORAGE_KEYS.INSTALLATIONS) || []
+      return all.filter((i: InstallationRecord) => i.company_id === companyId)
     }
-    return (data || []) as unknown as InstallationRecord[]
   }
 }

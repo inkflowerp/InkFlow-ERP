@@ -1,34 +1,45 @@
-import { createClient } from '@/lib/supabase/server'
-import { ProductionJobRecord, ProductionReworkRecord } from '@/types/production.types'
+import { createClient } from '../supabase/server.ts'
+import { ProductionJobRecord, ProductionReworkRecord } from '../../types/production.types.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class ProductionRepository {
   static async getProductionJobs(companyId: string): Promise<ProductionJobRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('production_jobs')
-      .select('*, reworks:production_reworks(*)')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('production_jobs')
+        .select('*, reworks:production_reworks(*)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch production jobs: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch production jobs: ${error.message}`)
+      }
+      return (data || []) as unknown as ProductionJobRecord[]
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+      return all.filter((p: ProductionJobRecord) => p.company_id === companyId)
     }
-    return (data || []) as unknown as ProductionJobRecord[]
   }
 
   static async getProductionJobById(id: string, companyId: string): Promise<ProductionJobRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('production_jobs')
-      .select('*, reworks:production_reworks(*)')
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('production_jobs')
+        .select('*, reworks:production_reworks(*)')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch production job ${id}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch production job ${id}: ${error.message}`)
+      }
+      return (data as unknown as ProductionJobRecord) || null
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+      return all.find((p: ProductionJobRecord) => p.id === id && p.company_id === companyId) || null
     }
-    return (data as unknown as ProductionJobRecord) || null
   }
 
   static async createProductionJob(job: {

@@ -244,11 +244,12 @@ export class QuotationRepository {
       }
     })
 
+    const effectiveSubtotal = calculatedSubtotal || Number(quotation.subtotal) || Number(quotation.grand_total) || 0
     const discountAmount = Math.max(0, Number(quotation.discount_amount) || 0)
     const vatRate = typeof quotation.vat_rate === 'number' ? quotation.vat_rate : 7.5
-    const subtotalAfterDiscount = Math.max(0, calculatedSubtotal - discountAmount)
-    const vatAmount = Math.round((subtotalAfterDiscount * vatRate) / 100)
-    const grandTotal = subtotalAfterDiscount + vatAmount
+    const subtotalAfterDiscount = Math.max(0, effectiveSubtotal - discountAmount)
+    const vatAmount = quotation.vat_amount !== undefined ? Number(quotation.vat_amount) : Math.round((subtotalAfterDiscount * vatRate) / 100)
+    const grandTotal = quotation.grand_total !== undefined ? Number(quotation.grand_total) : (subtotalAfterDiscount + vatAmount)
     const marginPercent = grandTotal > 0 ? Math.round(((grandTotal - totalCost) / grandTotal) * 100) : 40
 
     const quoteId = quotation.id || `quo-${Date.now()}`

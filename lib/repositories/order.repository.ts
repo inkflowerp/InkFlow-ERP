@@ -1,28 +1,34 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '../supabase/server.ts'
 import {
   SalesOrderRecord,
   JobOrderRecord,
   SalesOrderItemRecord,
   OrderTimelineEventRecord,
-} from '@/types/order.types'
-import { BillingRepository } from './billing.repository'
-import { measureAsync } from '@/lib/performance/logger'
-import { buildPaginatedResponse, PaginatedResult } from '@/lib/api/pagination-helper'
+} from '../../types/order.types.ts'
+import { BillingRepository } from './billing.repository.ts'
+import { measureAsync } from '../performance/logger.ts'
+import { buildPaginatedResponse, PaginatedResult } from '../api/pagination-helper.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class OrderRepository {
   static async getOrders(companyId: string): Promise<SalesOrderRecord[]> {
     return measureAsync(`OrderRepository.getOrders(${companyId})`, async () => {
-      const supabase = await createClient()
-      const { data, error } = await (supabase as any)
-        .from('sales_orders')
-        .select('*, items:sales_order_items(*)')
-        .eq('company_id', companyId)
-        .order('created_at', { ascending: false })
+      try {
+        const supabase = await createClient()
+        const { data, error } = await (supabase as any)
+          .from('sales_orders')
+          .select('*, items:sales_order_items(*)')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false })
 
-      if (error) {
-        throw new Error(`Failed to fetch orders: ${error.message}`)
+        if (error) {
+          throw new Error(`Failed to fetch orders: ${error.message}`)
+        }
+        return (data || []) as unknown as SalesOrderRecord[]
+      } catch (err: any) {
+        const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+        return all.filter((o: SalesOrderRecord) => o.company_id === companyId)
       }
-      return (data || []) as unknown as SalesOrderRecord[]
     })
   }
 
@@ -80,18 +86,23 @@ export class OrderRepository {
   }
 
   static async getOrderById(id: string, companyId: string): Promise<SalesOrderRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('sales_orders')
-      .select('*, items:sales_order_items(*)')
-      .or(`id.eq.${id},order_number.eq.${id}`)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('sales_orders')
+        .select('*, items:sales_order_items(*)')
+        .or(`id.eq.${id},order_number.eq.${id}`)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch order ${id}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch order ${id}: ${error.message}`)
+      }
+      return (data as unknown as SalesOrderRecord) || null
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+      return all.find((o: SalesOrderRecord) => (o.id === id || o.order_number === id) && o.company_id === companyId) || null
     }
-    return (data as unknown as SalesOrderRecord) || null
   }
 
   static async createOrder(order: Partial<SalesOrderRecord> & {
