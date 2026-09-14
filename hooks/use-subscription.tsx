@@ -33,10 +33,14 @@ import {
   getSubscriptionTimeRemaining,
   SubscriptionExpiryCountdown,
 } from '@/lib/subscription/subscription-constants'
-import { FeatureCode } from '@/types/subscription.types'
+import {
+  SubscriptionSnapshot,
+  FeatureCode,
+} from '@/types/subscription.types'
 import { useTenant } from '@/hooks/use-tenant'
 import {
   getTenantSubscriptionAction,
+  getAuthoritativeSubscriptionSnapshotAction,
   getPublicSubscriptionPlansAction,
   initiateSubscriptionCheckoutAction,
   verifySubscriptionPaymentAction,
@@ -46,72 +50,54 @@ import {
 } from '@/actions/subscription.actions'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { triggerPopupNotification } from '@/components/shell/realtime-notification-popup'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { PlatformTenantCompany } from '@/types/platform.types'
 import { createClient } from '@/lib/supabase/client'
+import { STORAGE_KEYS } from '@/lib/db/data-store'
 
-let memoryCachedPlans: SubscriptionPlanRecord[] | null = null
-const memoryCachedSubscriptions: Record<string, CompanySubscriptionRecord> = {}
-
-function getInitialPlans(): SubscriptionPlanRecord[] {
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-      if (stored && Array.isArray(stored) && stored.length > 0) {
-        memoryCachedPlans = stored
-        return stored
-      }
-    } catch {}
-  }
-  if (memoryCachedPlans && memoryCachedPlans.length > 0) {
-    return memoryCachedPlans
-  }
-  return DEFAULT_PLANS
-}
-
-function getInitialSubscription(
-  companyId: string,
-  companySlug: string,
-  initialPlans: SubscriptionPlanRecord[]
-): CompanySubscriptionRecord {
-  if (typeof window !== 'undefined') {
-    try {
-      const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
-      if (storedSubs) {
-        const matched =
-          (companyId ? storedSubs[companyId] : null) ||
-          (companySlug ? storedSubs[companySlug] : null)
-        if (matched) {
-          memoryCachedSubscriptions[companyId] = matched
-          if (companySlug) memoryCachedSubscriptions[companySlug] = matched
-          return matched
-        }
-      }
-    } catch {}
-  }
-
-  if (memoryCachedSubscriptions[companyId]) {
-    return memoryCachedSubscriptions[companyId]
-  }
-
-  const starterPlan = initialPlans.find((p) => p.code === 'starter') || initialPlans[0] || DEFAULT_PLANS[1]
-  const createdAt = new Date().toISOString()
-
+function snapshotToSubscriptionRecord(snapshot: SubscriptionSnapshot): CompanySubscriptionRecord {
   return {
-    id: `sub-${companyId}`,
-    company_id: companyId,
-    plan_id: starterPlan.id,
-    plan_code: (starterPlan.code as PlanCode) || 'starter',
-    plan_name: starterPlan.name,
-    plan_name_bn: starterPlan.name_bn,
-    status: 'active',
-    billing_interval: 'monthly',
-    current_period_start: createdAt,
-    current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-    trial_ends_at: null,
+    id: snapshot.subscriptionId || `sub-${snapshot.tenantId}`,
+    company_id: snapshot.tenantId,
+    plan_id: snapshot.planId,
+    plan_code: (snapshot.planCode as PlanCode) || 'starter',
+    plan_name: snapshot.planName,
+    plan_name_bn: snapshot.planNameBn,
+    status: snapshot.status === 'unknown' ? 'active' : snapshot.status,
+    billing_interval: snapshot.billingInterval || 'monthly',
+    current_period_start: snapshot.currentPeriodStart || new Date().toISOString(),
+    current_period_end: snapshot.currentPeriodEnd || snapshot.trialEndsAt || new Date(Date.now() + 30 * 86400000).toISOString(),
+    trial_ends_at: snapshot.trialEndsAt,
     payment_method_type: null,
     last_payment_reference: null,
-    custom_limits_override: null,
+    custom_limits_override: snapshot.customLimitsOverride as any,
+  }
+}
+
+function snapshotToPlanRecord(snapshot: SubscriptionSnapshot): SubscriptionPlanRecord {
+  const trialDays = snapshot.planCode === 'trial'
+    ? (snapshot.trialEndsAt && snapshot.trialStartsAt
+        ? Math.max(1, Math.round((new Date(snapshot.trialEndsAt).getTime() - new Date(snapshot.trialStartsAt).getTime()) / 86400000))
+        : 30)
+    : 0
+
+  return {
+    id: snapshot.planId,
+    code: (snapshot.planCode as PlanCode) || 'starter',
+    name: snapshot.planName,
+    name_bn: snapshot.planNameBn || snapshot.planName || '',
+    description: '',
+    price_monthly: 0,
+    price_yearly: 0,
+    max_users: snapshot.limits.maxUsers,
+    max_branches: snapshot.limits.maxBranches,
+    storage_gb: snapshot.limits.storageGb,
+    monthly_orders: snapshot.limits.monthlyOrders,
+    max_customers: snapshot.limits.maxCustomers,
+    max_products: snapshot.limits.maxProducts,
+    trial_days: trialDays,
+    features: (snapshot.features || []) as FeatureCode[],
+    is_active: true,
+    sort_order: 0,
   }
 }
 
@@ -128,6 +114,7 @@ export interface LimitCheckResult {
 }
 
 interface SubscriptionContextType {
+  snapshot: SubscriptionSnapshot | null
   subscription: CompanySubscriptionRecord
   currentPlan: SubscriptionPlanRecord
   currentPlanCode: PlanCode
@@ -178,58 +165,66 @@ interface SubscriptionContextType {
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null)
 
-export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+export function SubscriptionProvider({
+  initialSnapshot,
+  children,
+}: {
+  initialSnapshot?: SubscriptionSnapshot | null
+  children: React.ReactNode
+}) {
   const { company } = useTenant()
-  const companyId = company?.id || 'default'
+  const companyId = company?.id || initialSnapshot?.tenantId || ''
   const companySlug = company?.slug || 'app'
 
-  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(getInitialPlans)
-  const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() =>
-    getInitialSubscription(companyId, companySlug, getInitialPlans())
-  )
-  const [isLoading, setIsLoading] = useState<boolean>(() => {
-    if (memoryCachedSubscriptions[companyId] || (companySlug && memoryCachedSubscriptions[companySlug])) return false
-    if (typeof window !== 'undefined') {
-      try {
-        const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS)
-        if (storedSubs && (storedSubs[companyId] || (companySlug && storedSubs[companySlug]))) {
-          return false
-        }
-      } catch {}
+  const [snapshot, setSnapshot] = useState<SubscriptionSnapshot | null>(() => initialSnapshot || null)
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => {
+    if (initialSnapshot) {
+      return [snapshotToPlanRecord(initialSnapshot)]
     }
-    return true
+    return []
   })
+  const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() => {
+    if (initialSnapshot) {
+      return snapshotToSubscriptionRecord(initialSnapshot)
+    }
+    return {
+      id: '',
+      company_id: companyId,
+      plan_id: '',
+      plan_code: 'starter',
+      plan_name: '',
+      plan_name_bn: '',
+      status: 'active',
+      billing_interval: 'monthly',
+      current_period_start: new Date().toISOString(),
+      current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+      trial_ends_at: null,
+      payment_method_type: null,
+      last_payment_reference: null,
+      custom_limits_override: null,
+    }
+  })
+  const [isLoading, setIsLoading] = useState<boolean>(() => !initialSnapshot)
 
   const refreshSubscription = useCallback(async () => {
+    if (!companyId && !companySlug) {
+      setIsLoading(false)
+      return
+    }
+
     try {
-      const [subRes, plansRes] = await Promise.all([
-        getTenantSubscriptionAction(companyId, companySlug),
+      const [snapshotRes, plansRes] = await Promise.all([
+        getAuthoritativeSubscriptionSnapshotAction(companyId, companySlug),
         getPublicSubscriptionPlansAction(),
       ])
 
       if (plansRes && plansRes.success && plansRes.data?.plans && plansRes.data.plans.length > 0) {
         setPlans(plansRes.data.plans)
-        memoryCachedPlans = plansRes.data.plans
-        if (typeof window !== 'undefined') {
-          try {
-            PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, plansRes.data.plans, false)
-          } catch {}
-        }
       }
 
-      if (subRes && subRes.success && subRes.data) {
-        setSubscription(subRes.data)
-        if (companyId) memoryCachedSubscriptions[companyId] = subRes.data
-        if (companySlug) memoryCachedSubscriptions[companySlug] = subRes.data
-        if (typeof window !== 'undefined') {
-          try {
-            const currentSubs =
-              PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
-            if (companyId) currentSubs[companyId] = subRes.data
-            if (companySlug) currentSubs[companySlug] = subRes.data
-            PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, currentSubs, false)
-          } catch {}
-        }
+      if (snapshotRes && snapshotRes.success && snapshotRes.data) {
+        setSnapshot(snapshotRes.data)
+        setSubscription(snapshotToSubscriptionRecord(snapshotRes.data))
       }
     } catch {} finally {
       setIsLoading(false)
@@ -347,6 +342,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [])
 
   const currentPlan = useMemo(() => {
+    if (snapshot) {
+      const bySnapshot = plans.find((p) => p.id === snapshot.planId || p.code === snapshot.planCode)
+      if (bySnapshot) return bySnapshot
+      return snapshotToPlanRecord(snapshot)
+    }
     if (subscription.plan_id) {
       const byId = plans.find((p) => p.id === subscription.plan_id)
       if (byId) return byId
@@ -359,17 +359,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return plans.find((p) => p.code === 'trial') || getTrialPlan(plans)
     }
     return plans.find((p) => p.code === 'starter') || DEFAULT_PLANS[1]
-  }, [plans, subscription.plan_id, subscription.plan_code, subscription.status])
+  }, [snapshot, plans, subscription.plan_id, subscription.plan_code, subscription.status])
 
   const currentPlanCode: PlanCode = useMemo(() => {
+    if (snapshot?.planCode) return snapshot.planCode as PlanCode
     if (subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial') {
       return 'trial'
     }
     if (subscription.plan_code === 'enterprise') return 'enterprise'
     if (subscription.plan_code === 'business') return 'business'
     if (subscription.plan_code === 'starter') return 'starter'
-    return 'starter'
-  }, [subscription.plan_code, subscription.status])
+    return (subscription.plan_code as PlanCode) || 'starter'
+  }, [snapshot, subscription.plan_code, subscription.status])
 
   const usage: TenantResourceUsage = useMemo(() => {
     if (typeof window === 'undefined') return DEMO_RESOURCE_USAGE
@@ -610,12 +611,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const hasFeature = useCallback(
     (feature: FeatureCode) => {
       if (isTrialExpired || isSuspended || isPlanExpired) return false
+      if (snapshot && Array.isArray(snapshot.features)) {
+        return snapshot.features.includes(feature)
+      }
       if (currentPlan && Array.isArray(currentPlan.features)) {
         return currentPlan.features.includes(feature)
       }
       return checkFeatureAccess(subscription.plan_code, feature, plans)
     },
-    [currentPlan, subscription.plan_code, plans, isTrialExpired, isSuspended, isPlanExpired]
+    [snapshot, currentPlan, subscription.plan_code, plans, isTrialExpired, isSuspended, isPlanExpired]
   )
 
   const checkCanCreate = useCallback(
@@ -775,6 +779,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   return (
     <SubscriptionContext.Provider
       value={{
+        snapshot,
         isLoading,
         subscription,
         currentPlan,
@@ -824,13 +829,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 export function useSubscription() {
   const ctx = useContext(SubscriptionContext)
   if (!ctx) {
-    const livePlans = getInitialPlans()
-    const liveTrialPlan = livePlans.find((p) => p.code === 'trial') || (livePlans.length > 0 ? livePlans[0] : DEFAULT_TRIAL_PLAN)
+    const livePlans = DEFAULT_PLANS
+    const liveTrialPlan = livePlans.find((p: SubscriptionPlanRecord) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
     const trialDays = liveTrialPlan.trial_days || 14
     const accType: TenantAccountType = 'trial'
     const trialEndsAt = new Date(Date.now() + trialDays * 86400000).toISOString()
     const timeRemaining = getSubscriptionTimeRemaining(trialEndsAt)
     return {
+      snapshot: null,
       isLoading: false,
       subscription: {
         id: 'sub-standalone',

@@ -5,9 +5,9 @@ import { getPublicSubscriptionPlansAction, PublicPlansData } from '@/actions/sub
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
 import { createClient } from '@/lib/supabase/client'
+import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 import { PAYMENT_GATEWAY_METADATA_LIST, PaymentGatewayMeta } from '@/lib/payments/types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 // Bengali numeral translation map
 const BENGALI_DIGITS: Record<string, string> = {
@@ -59,32 +59,13 @@ const DEFAULT_ACTIVE_GATEWAYS: PaymentGatewayMeta[] = PAYMENT_GATEWAY_METADATA_L
 function getInitialPublicSeed(initialData?: PublicPlansData | null): PublicPlansData {
   if (initialData) return initialData
   if (cachedPlansData) return cachedPlansData
-  let activePlans: SubscriptionPlanRecord[] = []
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-      if (stored && Array.isArray(stored) && stored.length > 0) {
-        activePlans = stored.filter((p) => p.is_active !== false)
-      }
-    } catch {}
-  }
-  if (!activePlans || activePlans.length === 0) {
-    activePlans = DEFAULT_PLANS
-  }
-
-  const trialPlan = activePlans.find((p) => p.code === 'trial') || (activePlans.length > 0 ? activePlans[0] : DEFAULT_TRIAL_PLAN)
-  const trialDays = trialPlan.trial_days || 14
-  const paidPlans = activePlans
-    .filter((p) => p.code !== 'trial')
-    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)
-  const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p) => p.price_monthly)) : 1999
 
   return {
-    plans: activePlans,
-    trialPlan,
-    trialDays,
-    paidPlans,
-    lowestPrice,
+    plans: [],
+    trialPlan: DEFAULT_TRIAL_PLAN,
+    trialDays: 30,
+    paidPlans: [],
+    lowestPrice: 1999,
     activePaymentGateways: DEFAULT_ACTIVE_GATEWAYS,
   }
 }
@@ -115,14 +96,9 @@ export function PublicPlansProvider({
 
   const applyPlansData = useCallback((data: PublicPlansData) => {
     cachedPlansData = data
-    if (typeof window !== 'undefined') {
-      try {
-        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, data.plans, false)
-      } catch {}
-    }
     setPlans(data.plans)
     setTrialPlan(data.trialPlan)
-    setTrialDays(data.trialDays || data.trialPlan?.trial_days || 14)
+    setTrialDays(data.trialDays || data.trialPlan?.trial_days || 30)
     setPaidPlans(data.paidPlans)
     setLowestPrice(data.lowestPrice || 1999)
     if (data.activePaymentGateways && data.activePaymentGateways.length > 0) {
@@ -303,7 +279,7 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
     cachedPlansData = data
     setPlans(data.plans)
     setTrialPlan(data.trialPlan)
-    setTrialDays(data.trialDays || data.trialPlan?.trial_days || 14)
+    setTrialDays(data.trialDays || data.trialPlan?.trial_days || 30)
     setPaidPlans(data.paidPlans)
     setLowestPrice(data.lowestPrice || 1999)
     if (data.activePaymentGateways && data.activePaymentGateways.length > 0) {
@@ -333,10 +309,8 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
     const handleDataSync = (e: Event) => {
       const customEvent = e as CustomEvent
       const key = customEvent.detail?.key
-      if (key === STORAGE_KEYS.PLATFORM_PLANS && customEvent.detail?.data) {
-        if (Array.isArray(customEvent.detail.data) && customEvent.detail.data.length > 0) {
-          setPlans(customEvent.detail.data)
-        }
+      if (key === 'plans' || key === 'printerp_plans_updated') {
+        fetchPlans()
       }
     }
 

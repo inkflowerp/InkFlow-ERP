@@ -85,15 +85,16 @@ export function Sidebar() {
   const { company } = useTenant()
   const { can, isOwner } = usePermissions()
   const { isSimpleMode } = useOperatorMode()
-  const { isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
+  const { hasFeature, isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { tBilingual } = useI18n()
 
   const pathSlug = pathname ? pathname.split('/')[1] : null
   const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
   const navSections = getNavigationConfig(tenantSlug)
 
-  // Explicit permission resolution based on item metadata
+  // Explicit permission and subscription feature entitlement resolution
   const isNavItemAllowed = (item: NavItem): boolean => {
+    if (item.featureGate && !hasFeature(item.featureGate)) return false
     if (isOwner) return true
     if (item.ownerOnly && !isOwner) return false
     if (!item.permission) return true

@@ -9,6 +9,7 @@ import {
   checkResourceLimit,
 } from '../../services/subscription.service.ts'
 import { EntitlementService } from '../../services/entitlement.service.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import {
   resolveTenantAccountType,
   resolveSubscriptionPlan,
@@ -250,6 +251,24 @@ describe('Authoritative Subscription, Billing & Verification System Tests', () =
       assert.strictEqual(overrideCheck.exceeded, false)
     })
     it('EntitlementService.enforceLimit throws descriptive error when quota is exceeded', async () => {
+      const starterPlan = DEFAULT_PLANS.find((p) => p.code === 'starter')!
+      PrintERPDataStore.set(
+        STORAGE_KEYS.COMPANY_SUBSCRIPTIONS,
+        {
+          'test-company-1': {
+            id: 'sub-test-company-1',
+            company_id: 'test-company-1',
+            plan_id: starterPlan.id,
+            plan_code: 'starter',
+            status: 'active',
+            billing_interval: 'monthly',
+            current_period_start: new Date().toISOString(),
+            current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+          },
+        },
+        false
+      )
+
       // Testing enforceLimit with currentCount overriding quota limit (e.g. 5 users against starter limit of 3)
       await assert.rejects(
         async () => {

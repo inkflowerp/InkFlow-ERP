@@ -15,6 +15,18 @@ describe('Subscription 360 - Full Lifecycle Integration Tests', () => {
 
   it('1. Executes end-to-end subscription lifecycle: Trial -> Checkout -> Payment -> Activation -> Downgrade', async () => {
     // Phase 1: Onboarding creates initial trial subscription
+    const trialPlan = DEFAULT_PLANS.find((p) => p.code === 'trial')!
+    const trialSub = {
+      id: 'sub-lifecycle-trial-1',
+      company_id: companyId,
+      plan_id: trialPlan.id,
+      plan_code: 'trial',
+      status: 'trial' as const,
+      trial_starts_at: new Date().toISOString(),
+      trial_ends_at: new Date(Date.now() + (trialPlan.trial_days || 30) * 86400000).toISOString(),
+    }
+    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, { [companyId]: trialSub }, false)
+
     const initialSub = await SubscriptionService.getTenantSubscription(companyId)
     assert.strictEqual(initialSub.status, 'trial')
     assert.strictEqual(initialSub.plan_code, 'trial')

@@ -99,8 +99,8 @@ export function TrialUpgradeModal() {
 
   if (!isUpgradeModalOpen) return null
 
-  const paidPlans = allPlans.filter((p) => p.code !== 'trial')
-  const targetPlanObj = allPlans.find((p) => p.code === selectedPlan) || paidPlans[1]
+  const paidPlans = allPlans.filter((p: SubscriptionPlanRecord) => p.code !== 'trial')
+  const targetPlanObj = allPlans.find((p: SubscriptionPlanRecord) => p.code === selectedPlan) || paidPlans[1]
 
   const payableAmount =
     interval === 'yearly'
@@ -265,7 +265,7 @@ export function TrialUpgradeModal() {
 
           {/* Plan Comparison Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 w-full">
-            {paidPlans.map((plan) => {
+            {paidPlans.map((plan: SubscriptionPlanRecord) => {
               const isSelected = selectedPlan === plan.code
               const isRecommended = plan.code === 'business'
               const price = interval === 'yearly' ? plan.price_yearly : plan.price_monthly

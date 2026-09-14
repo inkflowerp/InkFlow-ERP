@@ -26,6 +26,12 @@ export class SubscriptionGuard {
       )
     }
 
+    if (entitlements.status === 'unknown') {
+      throw new Error(
+        'Subscription Unavailable: Subscription information could not be verified. Please retry or contact support.'
+      )
+    }
+
     if (entitlements.status === 'expired' || entitlements.isTrialExpired) {
       throw new Error(
         'Subscription Expired: Your plan or free trial has expired. Please upgrade or renew your subscription to continue.'

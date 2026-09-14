@@ -505,18 +505,14 @@ export function getTenantResourceUsage(
       } catch {}
     }
   }
-  if (!activePlan) {
-    activePlan = DEFAULT_TRIAL_PLAN
-  }
-
   const isOverrideActive = override && override.is_active !== false && (!override.expires_at || new Date(override.expires_at).getTime() >= Date.now())
 
-  const usersLimit = (isOverrideActive && override?.max_users !== undefined) ? override.max_users : activePlan.max_users
-  const branchesLimit = (isOverrideActive && override?.max_branches !== undefined) ? override.max_branches : activePlan.max_branches
-  const storageLimit = (isOverrideActive && override?.storage_gb !== undefined) ? override.storage_gb : activePlan.storage_gb
-  const ordersLimit = (isOverrideActive && override?.monthly_orders !== undefined) ? override.monthly_orders : activePlan.monthly_orders
-  const customersLimit = (isOverrideActive && override?.max_customers !== undefined) ? override.max_customers : activePlan.max_customers
-  const productsLimit = (isOverrideActive && override?.max_products !== undefined) ? override.max_products : activePlan.max_products
+  const usersLimit = (isOverrideActive && override?.max_users !== undefined) ? override.max_users : (activePlan?.max_users ?? 0)
+  const branchesLimit = (isOverrideActive && override?.max_branches !== undefined) ? override.max_branches : (activePlan?.max_branches ?? 0)
+  const storageLimit = (isOverrideActive && override?.storage_gb !== undefined) ? override.storage_gb : (activePlan?.storage_gb ?? 0)
+  const ordersLimit = (isOverrideActive && override?.monthly_orders !== undefined) ? override.monthly_orders : (activePlan?.monthly_orders ?? 0)
+  const customersLimit = (isOverrideActive && override?.max_customers !== undefined) ? override.max_customers : (activePlan?.max_customers ?? 0)
+  const productsLimit = (isOverrideActive && override?.max_products !== undefined) ? override.max_products : (activePlan?.max_products ?? 0)
 
   return {
     users_count: usersCount,

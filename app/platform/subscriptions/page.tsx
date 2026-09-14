@@ -70,17 +70,7 @@ function broadcastSubscriptionChange(companyId?: string) {
 
 export default function PlatformSubscriptionsPage() {
   const [data, setData] = useState<PlatformSubscriptionsOverview | null>(null)
-  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-          return stored
-        }
-      } catch {}
-    }
-    return DEFAULT_PLANS
-  })
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([])
   const [loading, setLoading] = useState(true)
 
   // Filters & Search

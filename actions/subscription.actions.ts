@@ -13,6 +13,7 @@ import type {
   BillingInterval,
   PaymentGatewayType,
   CompanySubscriptionRecord,
+  SubscriptionSnapshot,
   TenantEntitlements,
   SubscriptionCheckoutInput,
   SubscriptionCheckoutResult,
@@ -38,6 +39,29 @@ export interface PublicPlansData {
 }
 
 /**
+ * Server Action: Fetches authoritative single-source SubscriptionSnapshot for a tenant
+ */
+export async function getAuthoritativeSubscriptionSnapshotAction(
+  requestedCompanyId?: string,
+  companySlug?: string
+): Promise<ServerActionResult<SubscriptionSnapshot>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
+    const companyId = requestedCompanyId || tenant?.companyId
+    const slug = companySlug || tenant?.companySlug
+
+    if (!companyId && !slug) {
+      return { success: false, error: 'Unauthorized: No valid tenant context found.' }
+    }
+
+    const snapshot = await SubscriptionService.resolveTenantSubscription(companyId || '', slug)
+    return { success: true, data: snapshot }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to resolve authoritative subscription snapshot' }
+  }
+}
+
+/**
  * Server Action: Fetches authoritative tenant subscription record
  */
 export async function getTenantSubscriptionAction(
@@ -46,10 +70,14 @@ export async function getTenantSubscriptionAction(
 ): Promise<ServerActionResult<CompanySubscriptionRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
-    const companyId = requestedCompanyId || tenant?.companyId || 'default'
+    const companyId = requestedCompanyId || tenant?.companyId
     const slug = companySlug || tenant?.companySlug
 
-    const subscription = await SubscriptionService.getTenantSubscription(companyId, slug)
+    if (!companyId && !slug) {
+      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    }
+
+    const subscription = await SubscriptionService.getTenantSubscription(companyId || '', slug)
     return { success: true, data: subscription }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch subscription' }
@@ -65,10 +93,14 @@ export async function getTenantEntitlementsAction(
 ): Promise<ServerActionResult<TenantEntitlements>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
-    const companyId = requestedCompanyId || tenant?.companyId || 'default'
+    const companyId = requestedCompanyId || tenant?.companyId
     const slug = companySlug || tenant?.companySlug
 
-    const entitlements = await EntitlementService.getTenantEntitlements(companyId, slug)
+    if (!companyId && !slug) {
+      return { success: false, error: 'Unauthorized: No valid tenant context found.' }
+    }
+
+    const entitlements = await EntitlementService.getTenantEntitlements(companyId || '', slug)
     return { success: true, data: entitlements }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch entitlements' }
@@ -383,11 +415,10 @@ export async function getActivePaymentGatewaysAction(): Promise<ServerActionResu
  */
 export async function getPublicSubscriptionPlansAction(): Promise<ServerActionResult<PublicPlansData>> {
   try {
-    const res = await PlatformService.getPlans()
-    const allPlans: SubscriptionPlanRecord[] = (res.success && res.data && res.data.length > 0) ? res.data : DEFAULT_PLANS
+    const allPlans = await SubscriptionService.getPlans()
     const activePlans = allPlans.filter((p: SubscriptionPlanRecord) => p.is_active !== false)
-    const trialPlan = activePlans.find((p: SubscriptionPlanRecord) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
-    const trialDays = trialPlan.trial_days || 14
+    const trialPlan = activePlans.find((p: SubscriptionPlanRecord) => p.code === 'trial') || activePlans[0]
+    const trialDays = trialPlan?.trial_days || 30
     const paidPlans = activePlans
       .filter((p: SubscriptionPlanRecord) => p.code !== 'trial')
       .sort((a: SubscriptionPlanRecord, b: SubscriptionPlanRecord) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)
@@ -403,7 +434,7 @@ export async function getPublicSubscriptionPlansAction(): Promise<ServerActionRe
       success: true,
       data: {
         plans: activePlans,
-        trialPlan,
+        trialPlan: trialPlan || DEFAULT_TRIAL_PLAN,
         trialDays,
         paidPlans,
         lowestPrice,
@@ -411,21 +442,9 @@ export async function getPublicSubscriptionPlansAction(): Promise<ServerActionRe
       },
     }
   } catch (err: any) {
-    const trialPlan = DEFAULT_TRIAL_PLAN
-    const paidPlans = DEFAULT_PLANS.filter((p) => p.code !== 'trial')
-    const fallbackActive = PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>
-      ['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(m.id)
-    )
     return {
-      success: true,
-      data: {
-        plans: DEFAULT_PLANS,
-        trialPlan,
-        trialDays: 14,
-        paidPlans,
-        lowestPrice: 1999,
-        activePaymentGateways: fallbackActive,
-      },
+      success: false,
+      error: err?.message || 'Failed to load subscription plans',
     }
   }
 }

@@ -32,7 +32,15 @@ const PWAInstaller = dynamic(
   { ssr: false }
 )
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+import type { SubscriptionSnapshot } from '@/types/subscription.types'
+
+export function AppShell({
+  initialSubscriptionSnapshot,
+  children,
+}: {
+  initialSubscriptionSnapshot?: SubscriptionSnapshot | null
+  children: React.ReactNode
+}) {
   const [syncDrawerOpen, setSyncDrawerOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchMode, setSearchMode] = useState<'search' | 'quick-new'>('search')
@@ -72,7 +80,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <RealtimeProvider>
-      <SubscriptionProvider>
+      <SubscriptionProvider initialSnapshot={initialSubscriptionSnapshot}>
         <ToastProvider>
           <OperatorModeProvider>
             <div className="flex h-screen max-h-screen bg-slate-50/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex-col overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-slate-900">

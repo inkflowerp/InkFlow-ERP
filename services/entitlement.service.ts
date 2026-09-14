@@ -4,6 +4,7 @@
 // ==============================================================================
 
 import { createAdminClient } from '../lib/supabase/admin.ts'
+import { SubscriptionService } from './subscription.service.ts'
 import type {
   PlanCode,
   FeatureCode,
@@ -11,6 +12,7 @@ import type {
   TenantEntitlements,
   CompanySubscriptionRecord,
   SubscriptionPlanRecord,
+  SubscriptionSnapshot,
   TenantResourceUsage,
   PaymentGatewayType,
   SubscriptionStatus,
@@ -33,218 +35,70 @@ const isValidUuid = (str?: string | null): boolean => {
 
 export class EntitlementService {
   /**
-   * Fetches authoritative tenant subscription record from database
+   * Fetches authoritative tenant subscription and plan record from database
    */
   static async getSubscription(companyId: string, companySlug?: string): Promise<{
     subscription: CompanySubscriptionRecord
     plan: SubscriptionPlanRecord
     nextPlan: SubscriptionPlanRecord | null
   }> {
-    const admin = createAdminClient()
-    const nowIso = new Date().toISOString()
-    const normId = (companyId || '').trim() || 'default'
-    let resolvedCompanyId = normId
-    let resolvedSlug = (companySlug || '').trim().toLowerCase()
-    let companyCreatedAt = nowIso
+    const snapshot = await SubscriptionService.resolveTenantSubscription(companyId, companySlug)
+    let plan: SubscriptionPlanRecord
 
-    // 1. Resolve company by ID or slug in PostgreSQL safely
-    try {
-      let compQuery = (admin as any).from('companies').select('id, slug, created_at')
-      if (isValidUuid(normId)) {
-        compQuery = compQuery.eq('id', normId)
-      } else if (resolvedSlug) {
-        compQuery = compQuery.eq('slug', resolvedSlug)
-      } else if (normId !== 'default') {
-        compQuery = compQuery.eq('slug', normId.toLowerCase())
-      } else {
-        compQuery = null
+    if (snapshot.status === 'unknown') {
+      plan = {
+        id: snapshot.planId || '',
+        code: 'unknown' as PlanCode,
+        name: snapshot.planName || 'Unknown',
+        name_bn: snapshot.planNameBn || 'অজানা',
+        description: 'Subscription plan unavailable or not found',
+        price_monthly: 0,
+        price_yearly: 0,
+        max_users: 0,
+        max_branches: 0,
+        storage_gb: 0,
+        monthly_orders: 0,
+        max_customers: 0,
+        max_products: 0,
+        trial_days: 0,
+        features: [],
+        is_active: false,
+        sort_order: 999,
       }
-
-      if (compQuery) {
-        const { data: comp } = await compQuery.maybeSingle()
-        if (comp) {
-          resolvedCompanyId = comp.id
-          if (comp.slug) resolvedSlug = comp.slug
-          if (comp.created_at) companyCreatedAt = comp.created_at
-        }
-      }
-    } catch {}
-
-    // Check store for company created_at and slug
-    try {
-      const storedCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
-      const matchedComp = storedCompanies?.find(
-        (c) => c.id === normId || c.slug === normId || (resolvedSlug && c.slug === resolvedSlug)
-      )
-      if (matchedComp) {
-        resolvedCompanyId = matchedComp.id || resolvedCompanyId
-        if (matchedComp.slug) resolvedSlug = matchedComp.slug
-        if (matchedComp.created_at) companyCreatedAt = matchedComp.created_at
-      }
-    } catch {}
-
-    // 2. Query company_subscriptions from database by resolvedCompanyId
-    if (isValidUuid(resolvedCompanyId)) {
-      try {
-        const { data: sub, error } = await (admin as any)
-          .from('company_subscriptions')
-          .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
-          .eq('company_id', resolvedCompanyId)
-          .maybeSingle()
-
-        if (!error && sub) {
-          let planRecord: SubscriptionPlanRecord | null = sub.subscription_plans
-
-          // If join didn't populate subscription_plans, fetch from subscription_plans directly
-          if (!planRecord && sub.plan_id) {
-            let pQuery = (admin as any).from('subscription_plans').select('*')
-            if (isValidUuid(sub.plan_id)) {
-              pQuery = pQuery.eq('id', sub.plan_id)
-            } else {
-              pQuery = pQuery.eq('code', sub.plan_id)
-            }
-            const { data: directPlan } = await pQuery.maybeSingle()
-            if (directPlan) planRecord = directPlan
-          }
-
-          if (!planRecord && sub.plan_code) {
-            const { data: codePlan } = await (admin as any)
-              .from('subscription_plans')
-              .select('*')
-              .eq('code', sub.plan_code)
-              .maybeSingle()
-            if (codePlan) planRecord = codePlan
-          }
-
-          // Check platform plans in data store if available
-          if (!planRecord) {
-            const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-            if (storedPlans) {
-              planRecord = storedPlans.find((p) => p.id === sub.plan_id || p.code === sub.plan_code) || null
-            }
-          }
-
-          const isTrialStatus = sub.status === 'trial' || sub.status === 'trialing' || sub.plan_code === 'trial' || planRecord?.code === 'trial'
-          const effectivePlan: SubscriptionPlanRecord = planRecord || (
-            sub.plan_code
-              ? (DEFAULT_PLANS.find((p) => p.code === sub.plan_code) || (isTrialStatus ? DEFAULT_TRIAL_PLAN : DEFAULT_PLANS[1]))
-              : (isTrialStatus ? DEFAULT_TRIAL_PLAN : DEFAULT_PLANS[1])
-          )
-
-          let nextPlanRecord: SubscriptionPlanRecord | null = null
-          if (sub.next_plan_id) {
-            let npQuery = (admin as any).from('subscription_plans').select('*')
-            if (isValidUuid(sub.next_plan_id)) {
-              npQuery = npQuery.eq('id', sub.next_plan_id)
-            } else {
-              npQuery = npQuery.eq('code', sub.next_plan_id)
-            }
-            const { data: np } = await npQuery.maybeSingle()
-            if (np) nextPlanRecord = np
-          }
-
-          const subRecord: CompanySubscriptionRecord = {
-            id: sub.id,
-            company_id: sub.company_id || resolvedCompanyId,
-            plan_id: sub.plan_id || effectivePlan.id,
-            plan_code: effectivePlan.code,
-            plan_name: effectivePlan.name,
-            plan_name_bn: effectivePlan.name_bn,
-            plan_version: sub.plan_version || effectivePlan.version || 1,
-            status: sub.status,
-            billing_interval: sub.billing_interval || 'monthly',
-            current_period_start: sub.current_period_start || companyCreatedAt,
-            current_period_end: sub.current_period_end,
-            trial_ends_at: isTrialStatus ? sub.trial_ends_at : null,
-            cancelled_at: sub.cancelled_at,
-            cancel_at_period_end: Boolean(sub.cancel_at_period_end),
-            next_plan_id: sub.next_plan_id,
-            change_effective_at: sub.change_effective_at,
-            grace_period_ends_at: sub.grace_period_ends_at,
-            started_at: sub.started_at,
-            payment_method_type: sub.payment_method_type,
-            last_payment_reference: sub.last_payment_reference,
-            custom_limits_override: sub.custom_limits_override,
-          }
-
-          return { subscription: subRecord, plan: effectivePlan, nextPlan: nextPlanRecord }
-        }
-      } catch (err) {
-        console.warn('[EntitlementService] DB subscription lookup warning:', err)
+    } else {
+      plan = await SubscriptionService.getPlanById(snapshot.planId || snapshot.planCode)
+      if (!plan || (plan.id === 'sp-00' && snapshot.planCode !== 'trial')) {
+        plan = await SubscriptionService.getPlanByCode(snapshot.planCode)
       }
     }
 
-    // 3. Fallback: check PrintERPDataStore for subscription
-    try {
-      const storedSubs = PrintERPDataStore.get<Record<string, CompanySubscriptionRecord>>(
-        STORAGE_KEYS.COMPANY_SUBSCRIPTIONS
-      )
-      if (storedSubs) {
-        const matched =
-          storedSubs[resolvedCompanyId] ||
-          storedSubs[normId] ||
-          (resolvedSlug ? storedSubs[resolvedSlug] : null)
-        if (matched) {
-          const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS) || DEFAULT_PLANS
-          const plan = storedPlans.find((p) => p.id === matched.plan_id || p.code === matched.plan_code) || DEFAULT_TRIAL_PLAN
-          return { subscription: matched, plan, nextPlan: null }
-        }
-      }
-    } catch {}
-
-    // 4. Default: fetch active trial plan from subscription_plans table / store and anchor to company created_at
-    let dbTrialPlan: SubscriptionPlanRecord = DEFAULT_TRIAL_PLAN
-
-    try {
-      const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-      const foundTrial = storedPlans?.find((p) => p.code === 'trial')
-      if (foundTrial) {
-        dbTrialPlan = foundTrial
-      }
-    } catch {}
-
-    try {
-      const { data: trialFromDb } = await (admin as any)
-        .from('subscription_plans')
-        .select('*')
-        .eq('code', 'trial')
-        .maybeSingle()
-
-      if (trialFromDb) {
-        dbTrialPlan = trialFromDb
-      }
-    } catch {}
-
-    const trialDuration = dbTrialPlan.trial_days || 14
-    const trialEndsAt = new Date(new Date(companyCreatedAt).getTime() + trialDuration * 86400000).toISOString()
-
-    const defaultTrialSub: CompanySubscriptionRecord = {
-      id: `sub-${resolvedCompanyId}`,
-      company_id: resolvedCompanyId,
-      plan_id: dbTrialPlan.id,
-      plan_code: 'trial',
-      plan_name: dbTrialPlan.name,
-      plan_name_bn: dbTrialPlan.name_bn,
-      plan_version: dbTrialPlan.version || 1,
-      status: 'trial',
-      billing_interval: 'monthly',
-      current_period_start: companyCreatedAt,
-      current_period_end: new Date(new Date(companyCreatedAt).getTime() + 30 * 86400000).toISOString(),
-      trial_ends_at: trialEndsAt,
-      cancelled_at: null,
+    const subRecord: CompanySubscriptionRecord = {
+      id: snapshot.subscriptionId || `sub-${snapshot.tenantId}`,
+      company_id: snapshot.tenantId,
+      plan_id: snapshot.planId || plan.id,
+      plan_code: (snapshot.planCode as PlanCode) || (plan.code as PlanCode),
+      plan_name: snapshot.planName || plan.name,
+      plan_name_bn: snapshot.planNameBn || plan.name_bn,
+      plan_version: plan.version || 1,
+      status: snapshot.status as SubscriptionStatus,
+      billing_interval: snapshot.billingInterval || 'monthly',
+      current_period_start: snapshot.currentPeriodStart || new Date().toISOString(),
+      current_period_end: snapshot.currentPeriodEnd || snapshot.trialEndsAt || new Date(Date.now() + 30 * 86400000).toISOString(),
+      trial_ends_at: snapshot.trialEndsAt,
+      cancelled_at: snapshot.status === 'cancelled' ? new Date().toISOString() : null,
       cancel_at_period_end: false,
       next_plan_id: null,
       change_effective_at: null,
       grace_period_ends_at: null,
-      started_at: companyCreatedAt,
+      started_at: snapshot.trialStartsAt || snapshot.currentPeriodStart || undefined,
       payment_method_type: null,
       last_payment_reference: null,
-      custom_limits_override: null,
+      custom_limits_override: snapshot.customLimitsOverride,
     }
 
     return {
-      subscription: defaultTrialSub,
-      plan: dbTrialPlan,
+      subscription: subRecord,
+      plan,
       nextPlan: null,
     }
   }
@@ -280,21 +134,24 @@ export class EntitlementService {
     const daysRemaining = isTrial ? getTrialDaysRemaining(subscription.trial_ends_at) : 0
     const isTrialExpired = isTrial && daysRemaining <= 0
 
-    const trialProgressPercent = isTrial
-      ? Math.min(100, Math.round((Math.max(0, totalTrialDays - daysRemaining) / totalTrialDays) * 100))
-      : 0
+    let trialProgressPercent = 0
+    if (isTrial && subscription.trial_ends_at) {
+      const start = new Date(subscription.started_at || subscription.current_period_start || Date.now()).getTime()
+      const end = new Date(subscription.trial_ends_at).getTime()
+      const now = Date.now()
+      if (end > start) {
+        trialProgressPercent = Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)))
+      }
+    }
 
-    // Fetch real-time usage metrics
-    const usage = getTenantResourceUsage(companyId, plan, subscription.custom_limits_override)
+    // Fetch authoritative usage metrics directly from database
+    const usage = await this.getAuthoritativeTenantResourceUsage(
+      companyId,
+      plan,
+      subscription.custom_limits_override
+    )
 
-    // Discover available enabled payment gateways dynamically
-    let availableGateways: PaymentGatewayType[] = ['bkash', 'nagad', 'sslcommerz', 'bank_wire']
-    try {
-      const { GatewayService } = await import('./gateway.service.ts')
-      const gws = await GatewayService.listGateways({ tenantId: null, category: 'payment' })
-      const enabled = gws.filter((g) => g.is_enabled).map((g) => g.provider as PaymentGatewayType)
-      if (enabled.length > 0) availableGateways = enabled
-    } catch {}
+    const availableGateways: PaymentGatewayType[] = ['bkash', 'nagad', 'rocket', 'sslcommerz', 'uddoktapay', 'bank_wire', 'manual']
 
     return {
       companyId,
@@ -330,8 +187,10 @@ export class EntitlementService {
   static async canUseFeature(companyId: string, feature: FeatureCode): Promise<boolean> {
     const { subscription, plan } = await this.getSubscription(companyId)
 
-    // Suspended or expired accounts have zero premium feature access
-    if (subscription.status === 'suspended' || subscription.status === 'expired') return false
+    // Suspended, expired, or unknown accounts have zero feature access
+    if (subscription.status === 'suspended' || subscription.status === 'expired' || subscription.status === 'unknown') {
+      return false
+    }
 
     // Expired trials lose premium feature access
     const isTrial = subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial'
@@ -341,6 +200,118 @@ export class EntitlementService {
     }
 
     return checkFeatureAccess(plan.code, feature, [plan], subscription.custom_limits_override)
+  }
+
+  /**
+   * Authoritative canonical feature entitlement resolver
+   */
+  static async hasFeatureAccess(params: {
+    tenantId: string
+    feature: FeatureCode
+  }): Promise<boolean> {
+    return await this.canUseFeature(params.tenantId, params.feature)
+  }
+
+  /**
+   * Authoritative Resource Usage Calculator from Database
+   */
+  static async getAuthoritativeTenantResourceUsage(
+    companyId: string,
+    plan?: SubscriptionPlanRecord | null,
+    override?: any
+  ): Promise<TenantResourceUsage> {
+    const admin = createAdminClient()
+    let usersCount = 0
+    let branchesCount = 0
+    let customersCount = 0
+    let productsCount = 0
+    let monthlyOrdersCount = 0
+    let storageUsedGb = 0
+
+    if (companyId && companyId !== 'default' && isValidUuid(companyId)) {
+      try {
+        const now = new Date()
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+
+        const [usersRes, branchesRes, custRes, prodRes, matRes, ordersRes, storageRes] = await Promise.all([
+          (admin as any)
+            .from('company_users')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId)
+            .or('status.eq.active,status.eq.invited,status.eq.pending,status.is.null'),
+          (admin as any)
+            .from('branches')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId)
+            .eq('is_active', true),
+          (admin as any)
+            .from('customers')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId),
+          (admin as any)
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId),
+          (admin as any)
+            .from('materials')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId),
+          (admin as any)
+            .from('sales_orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId)
+            .gte('created_at', startOfMonth)
+            .or('is_practice.is.null,is_practice.eq.false'),
+          (admin as any)
+            .from('saas_tenant_storage_usage')
+            .select('total_bytes_used')
+            .eq('company_id', companyId)
+            .maybeSingle(),
+        ])
+
+        usersCount = Math.max(1, usersRes?.count ?? 1)
+        branchesCount = Math.max(1, branchesRes?.count ?? 1)
+        customersCount = custRes?.count ?? 0
+        productsCount = (prodRes?.count ?? 0) + (matRes?.count ?? 0)
+        monthlyOrdersCount = ordersRes?.count ?? 0
+        if (storageRes?.data?.total_bytes_used) {
+          storageUsedGb = Number((storageRes.data.total_bytes_used / (1024 * 1024 * 1024)).toFixed(2))
+        } else {
+          storageUsedGb = Number(((usersCount * 0.1) + (monthlyOrdersCount * 0.002)).toFixed(2))
+        }
+      } catch {
+        const memUsage = getTenantResourceUsage(companyId, plan, override)
+        return memUsage
+      }
+    } else {
+      const memUsage = getTenantResourceUsage(companyId, plan, override)
+      return memUsage
+    }
+
+    const effectivePlan = plan || DEFAULT_TRIAL_PLAN
+    const isOverrideActive = override && override.is_active !== false && (!override.expires_at || new Date(override.expires_at).getTime() >= Date.now())
+
+    const usersLimit = (isOverrideActive && override?.max_users !== undefined) ? Number(override.max_users) : Number(effectivePlan.max_users ?? 5)
+    const branchesLimit = (isOverrideActive && override?.max_branches !== undefined) ? Number(override.max_branches) : Number(effectivePlan.max_branches ?? 1)
+    const storageLimit = (isOverrideActive && override?.storage_gb !== undefined) ? Number(override.storage_gb) : Number(effectivePlan.storage_gb ?? 2)
+    const ordersLimit = (isOverrideActive && override?.monthly_orders !== undefined) ? Number(override.monthly_orders) : Number(effectivePlan.monthly_orders ?? 100)
+    const customersLimit = (isOverrideActive && override?.max_customers !== undefined) ? Number(override.max_customers) : Number(effectivePlan.max_customers ?? 200)
+    const productsLimit = (isOverrideActive && override?.max_products !== undefined) ? Number(override.max_products) : Number(effectivePlan.max_products ?? 200)
+
+    return {
+      users_count: usersCount,
+      users_limit: usersLimit,
+      branches_count: branchesCount,
+      branches_limit: branchesLimit,
+      storage_used_gb: Math.min(storageLimit, storageUsedGb),
+      storage_limit_gb: storageLimit,
+      orders_this_month: monthlyOrdersCount,
+      orders_limit: ordersLimit,
+      customers_count: customersCount,
+      customers_limit: customersLimit,
+      products_count: productsCount,
+      products_limit: productsLimit,
+    }
   }
 
   /**
@@ -370,6 +341,18 @@ export class EntitlementService {
         warning: true,
         exceeded: true,
         reason: 'Account Suspended: Tenant account has been suspended by platform administration.',
+      }
+    }
+
+    if (subscription.status === 'unknown') {
+      return {
+        allowed: false,
+        limit: 0,
+        current: currentCountOverride !== undefined ? currentCountOverride : 0,
+        percentage: 100,
+        warning: true,
+        exceeded: true,
+        reason: 'Subscription Unavailable: Subscription information could not be verified for this tenant.',
       }
     }
 

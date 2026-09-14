@@ -70,18 +70,15 @@ import {
   deletePlanAction,
 } from '@/actions/platform.actions'
 import { PlatformTenantCompany } from '@/types/platform.types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
-function syncPlansLocally(updatedPlans: SubscriptionPlanRecord[]) {
+function notifyPlansUpdated(updatedPlans: SubscriptionPlanRecord[]) {
   if (typeof window !== 'undefined') {
     try {
-      PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_PLANS, updatedPlans, true)
       window.dispatchEvent(new CustomEvent('printerp_plans_sync', { detail: { plans: updatedPlans } }))
-      window.dispatchEvent(new CustomEvent('printerp_data_sync', { detail: { key: STORAGE_KEYS.PLATFORM_PLANS, data: updatedPlans } }))
       window.dispatchEvent(new CustomEvent('printerp_platform_plans_updated', { detail: { plans: updatedPlans } }))
       if ('BroadcastChannel' in window) {
         const bus = new BroadcastChannel('printerp_realtime_bus')
-        bus.postMessage({ type: 'PLAN_UPDATE', storageKey: STORAGE_KEYS.PLATFORM_PLANS, data: updatedPlans })
+        bus.postMessage({ type: 'PLAN_UPDATE', data: updatedPlans })
         bus.close()
       }
     } catch {}
@@ -131,19 +128,10 @@ const FEATURE_CATEGORIES = [
 ]
 
 export default function PlatformPlansPage() {
-  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-        if (stored && Array.isArray(stored) && stored.length > 0) {
-          return stored
-        }
-      } catch {}
-    }
-    return DEFAULT_PLANS
-  })
+  const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([])
   const [companies, setCompanies] = useState<PlatformTenantCompany[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -153,16 +141,7 @@ export default function PlatformPlansPage() {
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlanRecord | null>(null)
   const [editingLimitsPlan, setEditingLimitsPlan] = useState<SubscriptionPlanRecord | null>(null)
   const [editingTrialModalOpen, setEditingTrialModalOpen] = useState(false)
-  const [editingTrialPlan, setEditingTrialPlan] = useState<SubscriptionPlanRecord>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-        const found = stored?.find((p) => p.code === 'trial')
-        if (found) return found
-      } catch {}
-    }
-    return DEFAULT_TRIAL_PLAN
-  })
+  const [editingTrialPlan, setEditingTrialPlan] = useState<SubscriptionPlanRecord | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{
     type: 'archive' | 'reactivate' | 'delete'
@@ -197,6 +176,7 @@ export default function PlatformPlansPage() {
   // Load plans & tenant company distribution
   const loadData = async () => {
     setLoading(true)
+    setError(null)
     try {
       const [plansRes, compRes] = await Promise.all([
         getPlatformPlansAction(),
@@ -204,22 +184,18 @@ export default function PlatformPlansPage() {
       ])
 
       if (plansRes.success && plansRes.data && plansRes.data.length > 0) {
-        const hasTrial = plansRes.data.some((p) => p.code === 'trial')
-        if (!hasTrial) {
-          setPlans([DEFAULT_TRIAL_PLAN, ...plansRes.data])
-        } else {
-          setPlans(plansRes.data)
-        }
+        setPlans(plansRes.data)
       } else {
-        setPlans(DEFAULT_PLANS)
+        setError(plansRes.error || 'No subscription plans found in database.')
       }
 
       if (compRes.success && compRes.data) {
         setCompanies(Array.isArray(compRes.data) ? compRes.data : (compRes.data as any)?.companies || [])
       }
     } catch (err: any) {
-      showToast(err.message || 'Error loading subscription plans', 'error')
-      setPlans(DEFAULT_PLANS)
+      const msg = err.message || 'Error loading subscription plans'
+      setError(msg)
+      showToast(msg, 'error')
     } finally {
       setLoading(false)
     }
@@ -231,7 +207,7 @@ export default function PlatformPlansPage() {
 
   // Derived plan states
   const trialPlan = useMemo(() => {
-    return plans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+    return plans.find((p) => p.code === 'trial') || null
   }, [plans])
 
   const paidPlans = useMemo(() => {
@@ -242,7 +218,7 @@ export default function PlatformPlansPage() {
   const subscriberCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     companies.forEach((comp) => {
-      const planCode = comp.plan || (comp.status === 'trial' ? 'trial' : 'starter')
+      const planCode = comp.plan || (comp.status === 'trial' ? 'trial' : 'unknown')
       counts[planCode] = (counts[planCode] || 0) + 1
     })
     return counts
@@ -272,7 +248,7 @@ export default function PlatformPlansPage() {
 
     return {
       activePlansCount: plans.filter((p) => p.is_active).length,
-      trialDays: trialPlan.trial_days || 14,
+      trialDays: trialPlan?.trial_days || 14,
       minPrice: minPaidPrice,
       maxPrice: maxPaidPrice,
       totalTenants,
@@ -322,13 +298,36 @@ export default function PlatformPlansPage() {
 
   // Handle Free Trial Modal Open
   const handleOpenTrialEditor = () => {
-    setEditingTrialPlan({ ...trialPlan })
+    if (trialPlan) {
+      setEditingTrialPlan({ ...trialPlan })
+    } else {
+      setEditingTrialPlan({
+        id: '',
+        code: 'trial',
+        name: 'Free Trial',
+        name_bn: 'ফ্রি ট্রায়াল',
+        description: 'Free evaluation tier with access to ERP modules.',
+        price_monthly: 0,
+        price_yearly: 0,
+        max_users: 2,
+        max_branches: 1,
+        storage_gb: 1,
+        monthly_orders: 30,
+        max_customers: 10,
+        max_products: 20,
+        trial_days: 30,
+        features: ['basic_sales', 'basic_customers', 'quotation_pdf', 'delivery_challan'],
+        is_active: true,
+        sort_order: 0,
+      })
+    }
     setEditingTrialModalOpen(true)
   }
 
   // Save Free Trial Plan
   const handleSaveTrialPlan = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!editingTrialPlan) return
     setIsProcessing(true)
     try {
       const res = await savePlanAction({
@@ -341,11 +340,14 @@ export default function PlatformPlansPage() {
 
       if (res.success && res.data) {
         const savedData: SubscriptionPlanRecord = res.data
-        const updated = plans.map((p) => (p.code === 'trial' ? savedData : p))
+        const hasTrial = plans.some((p) => p.code === 'trial')
+        const updated = hasTrial
+          ? plans.map((p) => (p.code === 'trial' ? savedData : p))
+          : [savedData, ...plans]
         setPlans(updated)
-        syncPlansLocally(updated)
+        notifyPlansUpdated(updated)
         setEditingTrialModalOpen(false)
-        showToast(`Free Trial Plan (${savedData.trial_days || 14} days) configuration saved!`, 'success')
+        showToast(`Free Trial Plan (${savedData.trial_days || 30} days) configuration saved!`, 'success')
       } else {
         showToast(res.error || 'Failed to update trial plan', 'error')
       }
@@ -373,7 +375,7 @@ export default function PlatformPlansPage() {
         const savedData: SubscriptionPlanRecord = res.data
         const updated = plans.map((p) => (p.id === savedData.id || p.code === savedData.code ? savedData : p))
         setPlans(updated)
-        syncPlansLocally(updated)
+        notifyPlansUpdated(updated)
         setEditingPlan(null)
         showToast(`Plan "${savedData.name}" updated successfully!`, 'success')
       } else {
@@ -398,7 +400,7 @@ export default function PlatformPlansPage() {
         const savedData: SubscriptionPlanRecord = res.data
         const updated = plans.map((p) => (p.id === savedData.id ? savedData : p))
         setPlans(updated)
-        syncPlansLocally(updated)
+        notifyPlansUpdated(updated)
         setEditingLimitsPlan(null)
         showToast(`Resource limits updated for "${savedData.name}".`, 'success')
       } else {
@@ -437,7 +439,7 @@ export default function PlatformPlansPage() {
       if (res.success && res.data) {
         const updated = [...plans, res.data]
         setPlans(updated)
-        syncPlansLocally(updated)
+        notifyPlansUpdated(updated)
         setIsCreateOpen(false)
         setNewPlan(initialNewPlanState)
         showToast(`New plan "${res.data.name}" created successfully!`, 'success')
@@ -463,7 +465,7 @@ export default function PlatformPlansPage() {
         if (res.success) {
           const updated = plans.map((p) => (p.id === plan.id ? { ...p, is_active: false } : p))
           setPlans(updated)
-          syncPlansLocally(updated)
+          notifyPlansUpdated(updated)
           showToast(`Plan "${plan.name}" has been archived.`, 'success')
         } else {
           showToast(res.error || 'Failed to archive plan', 'error')
@@ -473,7 +475,7 @@ export default function PlatformPlansPage() {
         if (res.success) {
           const updated = plans.map((p) => (p.id === plan.id ? { ...p, is_active: true } : p))
           setPlans(updated)
-          syncPlansLocally(updated)
+          notifyPlansUpdated(updated)
           showToast(`Plan "${plan.name}" has been reactivated!`, 'success')
         } else {
           showToast(res.error || 'Failed to reactivate plan', 'error')
@@ -483,7 +485,7 @@ export default function PlatformPlansPage() {
         if (res.success) {
           const updated = plans.filter((p) => p.id !== plan.id)
           setPlans(updated)
-          syncPlansLocally(updated)
+          notifyPlansUpdated(updated)
           showToast(`Plan "${plan.name}" has been deleted.`, 'success')
         } else {
           showToast(res.error || 'Failed to delete plan', 'error')
@@ -607,119 +609,152 @@ export default function PlatformPlansPage() {
       )}
 
       {/* 2. TELEMETRY & STATS SUMMARY TILES */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
-          <div className="space-y-0.5">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active SaaS Tiers</div>
-            <div className="text-2xl font-black text-white">{telemetry.activePlansCount} Plans</div>
-            <div className="text-[11px] text-indigo-400">Total {plans.length} configured</div>
-          </div>
-          <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-            <Boxes className="h-5 w-5" />
-          </div>
+      {loading && plans.length === 0 ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 animate-pulse">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-4 rounded-xl bg-slate-900 border border-slate-800 h-24" />
+          ))}
         </div>
-
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
-          <div className="space-y-0.5">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Free Trial Window</div>
-            <div className="text-2xl font-black text-amber-400">{telemetry.trialDays} Days</div>
-            <div className="text-[11px] text-amber-300/70">Full module access evaluation</div>
-          </div>
-          <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-            <Clock className="h-5 w-5" />
-          </div>
+      ) : error && plans.length === 0 ? (
+        <div className="p-6 rounded-2xl bg-rose-950/40 border border-rose-800/60 text-center space-y-3">
+          <AlertCircle className="h-8 w-8 text-rose-400 mx-auto" />
+          <h3 className="text-base font-bold text-white">Subscription Plans Unavailable</h3>
+          <p className="text-xs text-rose-200/80 max-w-md mx-auto">{error}</p>
+          <Button size="sm" onClick={loadData} className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs">
+            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+            Retry Connection
+          </Button>
         </div>
-
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
-          <div className="space-y-0.5">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Commercial Pricing Range</div>
-            <div className="text-xl font-black text-emerald-400">
-              <CurrencyDisplay amount={telemetry.minPrice} /> - <CurrencyDisplay amount={telemetry.maxPrice} />
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
+            <div className="space-y-0.5">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active SaaS Tiers</div>
+              <div className="text-2xl font-black text-white">{telemetry.activePlansCount} Plans</div>
+              <div className="text-[11px] text-indigo-400">Total {plans.length} configured</div>
             </div>
-            <div className="text-[11px] text-emerald-300/70">Monthly BDT / tier</div>
-          </div>
-          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <Tag className="h-5 w-5" />
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
-          <div className="space-y-0.5">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tenant Distribution</div>
-            <div className="text-2xl font-black text-white">{telemetry.totalTenants} Tenants</div>
-            <div className="text-[11px] text-slate-400">
-              {telemetry.trialTenants} Trial · {telemetry.paidTenants} Commercial
+            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <Boxes className="h-5 w-5" />
             </div>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-            <Building2 className="h-5 w-5" />
+
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
+            <div className="space-y-0.5">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Free Trial Window</div>
+              <div className="text-2xl font-black text-amber-400">{telemetry.trialDays} Days</div>
+              <div className="text-[11px] text-amber-300/70">Full module access evaluation</div>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+              <Clock className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
+            <div className="space-y-0.5">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Commercial Pricing Range</div>
+              <div className="text-xl font-black text-emerald-400">
+                <CurrencyDisplay amount={telemetry.minPrice} /> - <CurrencyDisplay amount={telemetry.maxPrice} />
+              </div>
+              <div className="text-[11px] text-emerald-300/70">Monthly BDT / tier</div>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Tag className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
+            <div className="space-y-0.5">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tenant Distribution</div>
+              <div className="text-2xl font-black text-white">{telemetry.totalTenants} Tenants</div>
+              <div className="text-[11px] text-slate-400">
+                {telemetry.trialTenants} Trial · {telemetry.paidTenants} Commercial
+              </div>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+              <Building2 className="h-5 w-5" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 3. TABS & SEARCH BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'all'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            All Plans ({plans.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('trial')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-              activeTab === 'trial'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow'
-                : 'text-amber-400/70 hover:text-amber-300 hover:bg-slate-800/60'
-            }`}
-          >
-            <Clock className="h-3.5 w-3.5" />
-            Free Trial ({trialPlan.trial_days || 14}d)
-          </button>
-          <button
-            onClick={() => setActiveTab('paid')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'paid'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            Commercial Tiers ({paidPlans.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('matrix')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-              activeTab === 'matrix'
-                ? 'bg-purple-600 text-white shadow'
-                : 'text-purple-400/80 hover:text-purple-300 hover:bg-slate-800/60'
-            }`}
-          >
-            <FileSpreadsheet className="h-3.5 w-3.5" />
-            Comparison Matrix
-          </button>
-        </div>
-
-        {activeTab !== 'trial' && activeTab !== 'matrix' && (
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-500" />
-            <Input
-              type="text"
-              placeholder="Search plans..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 text-xs bg-slate-900 border-slate-800 text-white placeholder:text-slate-500"
-            />
+      {plans.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'all'
+                  ? 'bg-indigo-600 text-white shadow'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              All Plans ({plans.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('trial')}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === 'trial'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow'
+                  : 'text-amber-400/70 hover:text-amber-300 hover:bg-slate-800/60'
+              }`}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              Free Trial ({trialPlan?.trial_days ?? 30}d)
+            </button>
+            <button
+              onClick={() => setActiveTab('paid')}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'paid'
+                  ? 'bg-indigo-600 text-white shadow'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              Commercial Tiers ({paidPlans.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('matrix')}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === 'matrix'
+                  ? 'bg-purple-600 text-white shadow'
+                  : 'text-purple-400/80 hover:text-purple-300 hover:bg-slate-800/60'
+              }`}
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              Comparison Matrix
+            </button>
           </div>
-        )}
-      </div>
+
+          {activeTab !== 'trial' && activeTab !== 'matrix' && (
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-500" />
+              <Input
+                type="text"
+                placeholder="Search plans..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 pl-8 text-xs bg-slate-900 border-slate-800 text-white placeholder:text-slate-500"
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Loading Skeleton for Cards */}
+      {loading && plans.length === 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-96 rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-4">
+              <div className="h-6 w-1/2 bg-slate-800 rounded" />
+              <div className="h-10 w-3/4 bg-slate-800/60 rounded" />
+              <div className="h-40 bg-slate-950 rounded-xl" />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 4. FREE TRIAL PLAN HERO CARD */}
-      {(activeTab === 'all' || activeTab === 'trial') && (
+      {(activeTab === 'all' || activeTab === 'trial') && trialPlan && (
         <div className="rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-950/30 via-slate-900 to-slate-950 p-6 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 blur-3xl pointer-events-none -z-10" />
 
@@ -731,7 +766,7 @@ export default function PlatformPlansPage() {
                   Free Evaluation Tier
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-amber-200 border border-amber-500/20">
-                  {trialPlan.trial_days || 14} Days Duration
+                  {trialPlan.trial_days ?? 30} Days Duration
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   ৳0 / Evaluation
@@ -1221,7 +1256,7 @@ export default function PlatformPlansPage() {
       )}
 
       {/* 7. EDIT TRIAL PLAN MODAL */}
-      {editingTrialModalOpen && (
+      {editingTrialModalOpen && editingTrialPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in-0">
           <div className="w-full max-w-3xl bg-slate-900 border border-amber-500/40 rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -1252,7 +1287,7 @@ export default function PlatformPlansPage() {
                   <Input
                     required
                     value={editingTrialPlan.name}
-                    onChange={(e) => setEditingTrialPlan({ ...editingTrialPlan, name: e.target.value })}
+                    onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, name: e.target.value }) : null)}
                     className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
                   />
                 </div>
@@ -1260,7 +1295,7 @@ export default function PlatformPlansPage() {
                   <Label className="text-slate-300 font-semibold">Plan Name (বাংলা)</Label>
                   <Input
                     value={editingTrialPlan.name_bn || ''}
-                    onChange={(e) => setEditingTrialPlan({ ...editingTrialPlan, name_bn: e.target.value })}
+                    onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, name_bn: e.target.value }) : null)}
                     className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
                   />
                 </div>
@@ -1276,10 +1311,10 @@ export default function PlatformPlansPage() {
                     required
                     value={editingTrialPlan.trial_days || 14}
                     onChange={(e) =>
-                      setEditingTrialPlan({
-                        ...editingTrialPlan,
+                      setEditingTrialPlan((prev) => prev ? ({
+                        ...prev,
                         trial_days: Math.max(1, Number(e.target.value)),
-                      })
+                      }) : null)
                     }
                     className="bg-slate-950 border-amber-500/50 text-amber-200 mt-1 h-9 font-mono font-bold"
                   />
@@ -1291,7 +1326,7 @@ export default function PlatformPlansPage() {
                 <Label className="text-slate-300 font-semibold">Description</Label>
                 <Input
                   value={editingTrialPlan.description || ''}
-                  onChange={(e) => setEditingTrialPlan({ ...editingTrialPlan, description: e.target.value })}
+                  onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, description: e.target.value }) : null)}
                   className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
                 />
               </div>
@@ -1311,10 +1346,10 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingTrialPlan.max_users}
                       onChange={(e) =>
-                        setEditingTrialPlan({
-                          ...editingTrialPlan,
+                        setEditingTrialPlan((prev) => prev ? ({
+                          ...prev,
                           max_users: Number(e.target.value),
-                        })
+                        }) : null)
                       }
                       className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
                     />
@@ -1326,10 +1361,10 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingTrialPlan.max_branches}
                       onChange={(e) =>
-                        setEditingTrialPlan({
-                          ...editingTrialPlan,
+                        setEditingTrialPlan((prev) => prev ? ({
+                          ...prev,
                           max_branches: Number(e.target.value),
-                        })
+                        }) : null)
                       }
                       className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
                     />
@@ -1341,10 +1376,10 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingTrialPlan.storage_gb}
                       onChange={(e) =>
-                        setEditingTrialPlan({
-                          ...editingTrialPlan,
+                        setEditingTrialPlan((prev) => prev ? ({
+                          ...prev,
                           storage_gb: Number(e.target.value),
-                        })
+                        }) : null)
                       }
                       className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
                     />
@@ -1356,10 +1391,10 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingTrialPlan.monthly_orders}
                       onChange={(e) =>
-                        setEditingTrialPlan({
-                          ...editingTrialPlan,
+                        setEditingTrialPlan((prev) => prev ? ({
+                          ...prev,
                           monthly_orders: Number(e.target.value),
-                        })
+                        }) : null)
                       }
                       className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
                     />
@@ -1371,10 +1406,10 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingTrialPlan.max_customers}
                       onChange={(e) =>
-                        setEditingTrialPlan({
-                          ...editingTrialPlan,
+                        setEditingTrialPlan((prev) => prev ? ({
+                          ...prev,
                           max_customers: Number(e.target.value),
-                        })
+                        }) : null)
                       }
                       className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
                     />
@@ -1386,10 +1421,10 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingTrialPlan.max_products}
                       onChange={(e) =>
-                        setEditingTrialPlan({
-                          ...editingTrialPlan,
+                        setEditingTrialPlan((prev) => prev ? ({
+                          ...prev,
                           max_products: Number(e.target.value),
-                        })
+                        }) : null)
                       }
                       className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
                     />
@@ -1407,7 +1442,7 @@ export default function PlatformPlansPage() {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setEditingTrialPlan({ ...editingTrialPlan, features: [...ALL_FEATURES] })}
+                      onClick={() => setEditingTrialPlan((prev) => prev ? ({ ...prev, features: [...ALL_FEATURES] as FeatureCode[] }) : null)}
                       className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300"
                     >
                       Select All
@@ -1416,10 +1451,10 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setEditingTrialPlan({
-                          ...editingTrialPlan,
-                          features: ['basic_sales', 'basic_customers', 'quotation_pdf', 'delivery_challan'],
-                        })
+                        setEditingTrialPlan((prev) => prev ? ({
+                          ...prev,
+                          features: ['basic_sales', 'basic_customers', 'quotation_pdf', 'delivery_challan'] as FeatureCode[],
+                        }) : null)
                       }
                       className="text-[11px] font-semibold text-slate-400 hover:text-slate-300"
                     >
@@ -1431,7 +1466,7 @@ export default function PlatformPlansPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-slate-950 rounded-xl border border-slate-800">
                   {ALL_FEATURES.map((feat) => {
                     const meta = FEATURE_METADATA[feat]
-                    const isEnabled = editingTrialPlan.features.includes(feat)
+                    const isEnabled = editingTrialPlan?.features?.includes(feat) || false
                     return (
                       <label
                         key={feat}
@@ -1449,10 +1484,14 @@ export default function PlatformPlansPage() {
                           type="checkbox"
                           checked={isEnabled}
                           onChange={() => {
-                            const updated = isEnabled
-                              ? editingTrialPlan.features.filter((f) => f !== feat)
-                              : [...editingTrialPlan.features, feat]
-                            setEditingTrialPlan({ ...editingTrialPlan, features: updated })
+                            setEditingTrialPlan((prev) => {
+                              if (!prev) return null
+                              const currentFeats = prev.features || []
+                              const updated = isEnabled
+                                ? currentFeats.filter((f) => f !== feat)
+                                : [...currentFeats, feat]
+                              return { ...prev, features: updated as FeatureCode[] }
+                            })
                           }}
                           className="h-4 w-4 rounded border-slate-700 text-amber-500 focus:ring-amber-500 bg-slate-900 shrink-0"
                         />

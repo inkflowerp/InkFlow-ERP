@@ -53,7 +53,7 @@ export default function BillingPage() {
   const { company } = useTenant()
   const { can, isReadOnly } = usePermissions()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = company?.slug || ''
 
   const [invoices, setInvoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
   const [payments, setPayments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
@@ -92,7 +92,7 @@ export default function BillingPage() {
   const [authorizedBy, setAuthorizedBy] = useState('Chief Financial Officer')
 
   // New Invoice Form State
-  const [newCustId, setNewCustId] = useState('cust-01')
+  const [newCustId, setNewCustId] = useState('')
   const [newInvType, setNewInvType] = useState<InvoiceType>('sales_invoice')
   const [newDueDate, setNewDueDate] = useState(new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
   const [newDesc, setNewDesc] = useState('')
@@ -145,7 +145,7 @@ export default function BillingPage() {
 
     const newAuditLog: FinancialWriteOffRecord = {
       id: `wo-${Date.now()}`,
-      company_id: company?.id || 'c-01',
+      company_id: company?.id || '',
       invoice_id: selectedInvoiceForWriteOff.id,
       amount: writeOffAmount,
       reason: writeOffReason,
@@ -172,6 +172,10 @@ export default function BillingPage() {
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault()
     const customer = customerList.find((c: CustomerRecord) => c.id === newCustId) || customerList[0]
+    if (!customer) {
+      showNotification('Please select or create a customer first.')
+      return
+    }
     const invNum = newInvType === 'vat_invoice' ? `MUS-${Date.now().toString().slice(-4)}` : `INV-${Date.now().toString().slice(-4)}`
     const subtotal = newQty * newPrice
     const vatAmt = Math.round((subtotal * newVatPercent) / 100)
@@ -179,14 +183,14 @@ export default function BillingPage() {
 
     const newInv: InvoiceRecord = {
       id: `inv-${Date.now()}`,
-      company_id: 'c-01',
+      company_id: company?.id || '',
       invoice_number: invNum,
       invoice_type: newInvType,
       customer_id: customer.id,
       customer_name: customer.name,
       customer_phone: customer.mobile,
-      customer_bin: customer.bin_no || '1234567890123',
-      customer_tin: customer.tin_no || '987654321012',
+      customer_bin: customer.bin_no || undefined,
+      customer_tin: customer.tin_no || undefined,
       customer_address: customer.address,
       invoice_date: new Date().toISOString().split('T')[0],
       due_date: newDueDate,

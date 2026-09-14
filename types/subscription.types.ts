@@ -24,6 +24,51 @@ export type SubscriptionStatus =
   | 'suspended'
   | 'cancelled'
   | 'expired'
+  | 'unknown'
+
+export type SubscriptionSnapshot = {
+  tenantId: string
+  subscriptionId: string
+  planId: string
+  planCode: string
+  planName: string
+  planNameBn?: string
+
+  status:
+    | 'trial'
+    | 'active'
+    | 'past_due'
+    | 'grace_period'
+    | 'cancelled'
+    | 'expired'
+    | 'suspended'
+    | 'unknown'
+
+  billingInterval: 'monthly' | 'yearly' | null
+
+  currentPeriodStart: string | null
+  currentPeriodEnd: string | null
+
+  trialStartsAt: string | null
+  trialEndsAt: string | null
+
+  limits: {
+    maxUsers: number
+    maxBranches: number
+    storageGb: number
+    monthlyOrders: number
+    maxCustomers: number
+    maxProducts: number
+  }
+
+  features: string[]
+
+  customLimitsOverride: CustomLimitsOverride | null
+
+  source: 'database'
+
+  resolvedAt: string
+}
 
 export interface TenantAccountTypeMeta {
   type: TenantAccountType
