@@ -912,10 +912,11 @@ export class SubscriptionService {
     gatewayReference?: string
     provider?: string
     userId?: string
+    isPlatformAdmin?: boolean
   }): Promise<SubscriptionVerificationResult> {
     const admin = createAdminClient()
     const now = new Date().toISOString()
-    const { internalTrxId, providerTrxId, gatewayReference, provider, userId } = params
+    const { internalTrxId, providerTrxId, gatewayReference, provider, userId, isPlatformAdmin } = params
 
     try {
       // 1. Locate Transaction Record
@@ -976,6 +977,19 @@ export class SubscriptionService {
       let verifyRawResponse: any = null
       let verificationError: string | null = null
 
+      // Check if caller is authenticated platform administrator
+      let isCallerPlatformAdmin = Boolean(isPlatformAdmin)
+      if (!isCallerPlatformAdmin && userId) {
+        try {
+          const { data: pAdmin } = await (admin as any)
+            .from('platform_admins')
+            .select('id')
+            .eq('user_id', userId)
+            .maybeSingle()
+          if (pAdmin) isCallerPlatformAdmin = true
+        } catch {}
+      }
+
       if (gw && gw.is_enabled) {
         const creds = GatewayService.getDecryptedCredentials(gw)
         const adapter = createPaymentProvider({
@@ -1021,14 +1035,23 @@ export class SubscriptionService {
 
         if (verifyRes.gatewayTransactionId) verifiedTrxId = verifyRes.gatewayTransactionId
         verifyRawResponse = verifyRes.rawResponse
-      } else if (effectiveProvider === 'bank_wire' || effectiveProvider === 'manual' || effectiveProvider === 'mock') {
-        // Offline / Manual / Wire transfer verified by authorized platform admin
-        if (userId) {
+      } else if (effectiveProvider === 'bank_wire' || effectiveProvider === 'manual') {
+        // Offline / Manual / Wire transfer strictly requires platform administrator authorization
+        if (isCallerPlatformAdmin) {
           isVerified = true
           verifiedTrxId = providerTrxId || verifiedTrxId || `OFFLINE-${Date.now()}`
         } else {
           isVerified = false
-          verificationError = 'Manual payment verification requires platform administrator authorization.'
+          verificationError = 'Manual and bank wire payment verification strictly requires platform administrator authorization.'
+        }
+      } else if (effectiveProvider === 'mock') {
+        // Mock provider in non-production test harnesses or with explicit platform admin
+        if (process.env.NODE_ENV !== 'production' || isCallerPlatformAdmin) {
+          isVerified = true
+          verifiedTrxId = providerTrxId || verifiedTrxId || `MOCK-${Date.now()}`
+        } else {
+          isVerified = false
+          verificationError = 'Mock payment verification strictly prohibited in production without platform administrator authorization.'
         }
       } else {
         // Automated payment gateway is either not configured or disabled

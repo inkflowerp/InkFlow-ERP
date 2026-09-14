@@ -18,24 +18,18 @@ import type {
 } from '../types/platform-subscription.types.ts'
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import { cookies } from 'next/headers'
+import { getCurrentPlatformUser, hasPlatformPermission } from '../lib/auth/platform-auth.ts'
 
 /**
  * Helper to assert platform owner authorization server-side
+ * Strictly fails closed if platform user is not authenticated.
  */
 async function assertPlatformAdmin(): Promise<boolean> {
-  try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('printerp_platform_session')
-    if (sessionCookie && sessionCookie.value) {
-      return true
-    }
-    const supabase = createAdminClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user && user.app_metadata?.role === 'platform_admin') {
-      return true
-    }
-  } catch {}
-  return true // Allow fallback in local dev/demo mode
+  const platformUser = await getCurrentPlatformUser()
+  if (!platformUser) {
+    throw new Error('Unauthorized: Platform administrator session required.')
+  }
+  return true
 }
 
 export async function getPlatformSubscriptionAction(): Promise<ApiResponse<PlatformSubscriptionRecord>> {

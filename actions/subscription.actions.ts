@@ -5,6 +5,7 @@ import { SubscriptionService } from '@/services/subscription.service'
 import { EntitlementService } from '@/services/entitlement.service'
 import { PlatformService } from '@/services/platform.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
+import { getCurrentPlatformUser } from '@/lib/auth/platform-auth'
 import { GatewayService } from '@/services/gateway.service'
 import { PAYMENT_GATEWAY_METADATA_LIST, PaymentGatewayMeta } from '@/lib/payments/types'
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
@@ -129,7 +130,6 @@ export async function initiateSubscriptionCheckoutAction(
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
       tenant.primaryRole === 'business_owner' ||
-      tenant.isSupportMode ||
       tenant.permissions.includes('billing.manage') ||
       tenant.permissions.includes('settings.full_control')
 
@@ -199,7 +199,6 @@ export async function schedulePlanDowngradeAction(
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
       tenant.primaryRole === 'business_owner' ||
-      tenant.isSupportMode ||
       tenant.permissions.includes('billing.manage')
 
     if (!hasPermission) {
@@ -241,7 +240,6 @@ export async function cancelSubscriptionAction(
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
       tenant.primaryRole === 'business_owner' ||
-      tenant.isSupportMode ||
       tenant.permissions.includes('billing.manage')
 
     if (!hasPermission) {
@@ -282,7 +280,6 @@ export async function reactivateSubscriptionAction(
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
       tenant.primaryRole === 'business_owner' ||
-      tenant.isSupportMode ||
       tenant.permissions.includes('billing.manage')
 
     if (!hasPermission) {
@@ -320,6 +317,10 @@ export async function getSubscriptionEventsAction(
  */
 export async function getPlatformReconciliationAction(): Promise<ServerActionResult<any[]>> {
   try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform administrator session required.' }
+    }
     const list = await SubscriptionService.getPlatformReconciliationList()
     return { success: true, data: list }
   } catch (err: any) {
@@ -329,9 +330,14 @@ export async function getPlatformReconciliationAction(): Promise<ServerActionRes
 
 /**
  * Server Action: Triggers background lifecycle evaluation cron
+ * Strictly protected: requires Platform Admin authorization
  */
 export async function triggerLifecycleCronAction(): Promise<ServerActionResult<any>> {
   try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Platform administrator authorization required to trigger lifecycle cron.' }
+    }
     const result = await SubscriptionService.processLifecycleCron()
     revalidatePath('/', 'layout')
     return { success: true, data: result }

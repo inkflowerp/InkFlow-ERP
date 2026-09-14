@@ -192,11 +192,24 @@ export class EntitlementService {
       return false
     }
 
+    const now = Date.now()
+
     // Expired trials lose premium feature access
     const isTrial = subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial'
     if (isTrial) {
       const daysRemaining = getTrialDaysRemaining(subscription.trial_ends_at)
       if (daysRemaining <= 0) return false
+    }
+
+    // Expired paid subscriptions past grace period lose feature access immediately
+    if (subscription.status === 'active' && subscription.current_period_end) {
+      const periodEnd = new Date(subscription.current_period_end).getTime()
+      const graceEnd = subscription.grace_period_ends_at ? new Date(subscription.grace_period_ends_at).getTime() : 0
+      if (!isNaN(periodEnd) && periodEnd < now) {
+        if (!graceEnd || graceEnd < now) {
+          return false
+        }
+      }
     }
 
     return checkFeatureAccess(plan.code, feature, [plan], subscription.custom_limits_override)
