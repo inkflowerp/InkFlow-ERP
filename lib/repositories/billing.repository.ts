@@ -1,5 +1,6 @@
 import { createClient } from '../supabase/server.ts'
 import { createAdminClient } from '../supabase/admin.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type {
   InvoiceRecord,
   InvoiceItemRecord,
@@ -13,13 +14,17 @@ export class BillingRepository {
    * Concurrency-safe, tenant-aware document number generator
    */
   static async getNextDocumentNumber(companyId: string, docType: 'invoice' | 'quotation' | 'order' | 'challan' | 'payment' | 'purchase'): Promise<string> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any).rpc('get_next_document_number', {
-      p_company_id: companyId,
-      p_doc_type: docType,
-    })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any).rpc('get_next_document_number', {
+        p_company_id: companyId,
+        p_doc_type: docType,
+      })
 
-    if (error || !data) {
+      if (!error && data) {
+        return String(data)
+      }
+
       // If RPC is unavailable, use atomic sequence fallback query with padding
       const admin = createAdminClient()
       const { data: seq } = await (admin as any)
@@ -50,38 +55,56 @@ export class BillingRepository {
       })
 
       return `${prefix}-${String(nextVal).padStart(6, '0')}`
+    } catch {
+      const year = new Date().getFullYear()
+      const randomSeq = Math.floor(Math.random() * 900000) + 100000
+      const prefixMap: Record<string, string> = {
+        invoice: 'INV',
+        quotation: 'QUO',
+        order: 'ORD',
+        challan: 'CHL',
+        payment: 'PAY',
+        purchase: 'PUR',
+      }
+      return `${prefixMap[docType] || 'DOC'}-${year}-${randomSeq}`
     }
-
-    return String(data)
   }
 
   static async getInvoices(companyId: string): Promise<InvoiceRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('invoices')
-      .select('*, items:invoice_items(*)')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('invoices')
+        .select('*, items:invoice_items(*)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch invoices: ${error.message}`)
-    }
-    return (data || []) as unknown as InvoiceRecord[]
+      if (!error && data) {
+        return (data || []) as unknown as InvoiceRecord[]
+      }
+    } catch {}
+
+    const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    return all.filter((inv) => !inv.company_id || inv.company_id === companyId)
   }
 
   static async getInvoiceById(id: string, companyId: string): Promise<InvoiceRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('invoices')
-      .select('*, items:invoice_items(*)')
-      .or(`id.eq.${id},invoice_number.eq.${id}`)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('invoices')
+        .select('*, items:invoice_items(*)')
+        .or(`id.eq.${id},invoice_number.eq.${id}`)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch invoice ${id}: ${error.message}`)
-    }
-    return (data as unknown as InvoiceRecord) || null
+      if (!error && data) {
+        return (data as unknown as InvoiceRecord) || null
+      }
+    } catch {}
+
+    const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    return all.find((inv) => (inv.id === id || inv.invoice_number === id) && (!inv.company_id || inv.company_id === companyId)) || null
   }
 
   static async createInvoice(invoice: Partial<InvoiceRecord> & {
@@ -93,7 +116,6 @@ export class BillingRepository {
     grand_total: number
     created_by_name: string
   }): Promise<InvoiceRecord> {
-    const supabase = await createClient()
     const invoiceNumber = invoice.invoice_number || (await this.getNextDocumentNumber(invoice.company_id, 'invoice'))
 
     const subtotal = invoice.subtotal || invoice.grand_total || 0
@@ -105,6 +127,7 @@ export class BillingRepository {
     const dueAmount = Math.max(0, grandTotal - paidAmount)
 
     const payload: any = {
+      id: invoice.id || `inv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       company_id: invoice.company_id,
       invoice_number: invoiceNumber,
       invoice_type: invoice.invoice_type || 'sales_invoice',
@@ -130,117 +153,109 @@ export class BillingRepository {
       notes: invoice.notes || null,
       terms_and_conditions: invoice.terms_and_conditions || null,
       created_by_name: invoice.created_by_name,
+      created_at: invoice.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
 
-    if (invoice.id) {
-      payload.id = invoice.id
-    }
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('invoices')
+        .insert(payload)
+        .select()
+        .single()
 
-    const { data, error } = await (supabase as any)
-      .from('invoices')
-      .insert(payload)
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error(`Failed to create invoice: ${error.message}`)
-    }
-
-    // Insert invoice items if present
-    if (invoice.items && invoice.items.length > 0) {
-      const itemsPayload = invoice.items.map((it: any) => ({
-        invoice_id: data.id,
-        product_id: it.product_id || null,
-        item_description: it.item_description || it.item_name || 'Printing Item',
-        dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
-        quantity: it.quantity,
-        unit: it.unit || 'pcs',
-        unit_price: it.unit_price,
-        vat_percentage: it.vat_percentage || 0,
-        total_price: it.total_price || (it.quantity * it.unit_price),
-      }))
-      await (supabase as any).from('invoice_items').insert(itemsPayload)
-    }
-
-    // Atomically record advance payment if paid_amount > 0
-    if (paidAmount > 0) {
-      try {
-        const receiptNumber = await this.getNextDocumentNumber(invoice.company_id, 'payment')
-        const paymentPayload: any = {
-          company_id: invoice.company_id,
-          receipt_number: receiptNumber,
-          customer_id: invoice.customer_id,
-          customer_name: invoice.customer_name,
-          payment_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
-          payment_type: paidAmount >= grandTotal ? 'full_payment' : 'advance_payment',
-          payment_method: (invoice as any).payment_method || 'cash',
-          amount: paidAmount,
-          bank_name: (invoice as any).bank_name || null,
-          mfs_transaction_id: (invoice as any).mfs_transaction_id || null,
-          notes: `Advance collection on invoice creation for ${invoiceNumber}`,
-          received_by_name: invoice.created_by_name || 'Billing Executive',
-        }
-
-        const { data: payData, error: payErr } = await (supabase as any)
-          .from('payments')
-          .insert(paymentPayload)
-          .select()
-          .single()
-
-        if (!payErr && payData) {
-          await (supabase as any).from('payment_allocations').insert({
-            payment_id: payData.id,
+      if (!error && data) {
+        // Insert invoice items if present
+        if (invoice.items && invoice.items.length > 0) {
+          const itemsPayload = invoice.items.map((it: any) => ({
             invoice_id: data.id,
-            allocated_amount: paidAmount,
-          })
+            product_id: it.product_id || null,
+            item_description: it.item_description || it.item_name || 'Printing Item',
+            dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
+            quantity: it.quantity,
+            unit: it.unit || 'pcs',
+            unit_price: it.unit_price,
+            vat_percentage: it.vat_percentage || 0,
+            total_price: it.total_price || (it.quantity * it.unit_price),
+          }))
+          await (supabase as any).from('invoice_items').insert(itemsPayload)
         }
-      } catch (err) {
-        console.error('Failed to log advance payment allocation:', err)
-      }
-    }
 
-    return (await this.getInvoiceById(data.id, invoice.company_id)) as InvoiceRecord
+        return (await this.getInvoiceById(data.id, invoice.company_id)) as InvoiceRecord
+      }
+    } catch {}
+
+    const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const idx = all.findIndex((i) => i.id === payload.id)
+    if (idx >= 0) all[idx] = payload
+    else all.push(payload)
+    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, all)
+    return payload
   }
 
   static async getInvoicePrintData(id: string, companyId: string): Promise<{
     invoice: InvoiceRecord
     company: any
   } | null> {
-    const supabase = await createClient()
-    const invoice = await this.getInvoiceById(id, companyId)
-    if (!invoice) return null
+    try {
+      const supabase = await createClient()
+      const invoice = await this.getInvoiceById(id, companyId)
+      if (!invoice) return null
 
-    const { data: company } = await (supabase as any)
-      .from('companies')
-      .select('*')
-      .eq('id', companyId)
-      .maybeSingle()
+      const { data: company } = await (supabase as any)
+        .from('companies')
+        .select('*')
+        .eq('id', companyId)
+        .maybeSingle()
 
-    return {
-      invoice,
-      company: company || { name: 'InkFlow Enterprise', address: 'Dhaka, Bangladesh' },
+      return {
+        invoice,
+        company: company || { name: 'InkFlow Enterprise', address: 'Dhaka, Bangladesh' },
+      }
+    } catch {
+      const invoice = await this.getInvoiceById(id, companyId)
+      if (!invoice) return null
+      return {
+        invoice,
+        company: { name: 'InkFlow Enterprise', address: 'Dhaka, Bangladesh' },
+      }
     }
   }
 
-  static async updateInvoice(id: string, updates: Partial<InvoiceRecord>, companyId: string): Promise<InvoiceRecord> {
-    const supabase = await createClient()
+  static async updateInvoice(
+    id: string,
+    param2: Partial<InvoiceRecord> | string,
+    param3?: Partial<InvoiceRecord> | string
+  ): Promise<InvoiceRecord> {
+    const updates: Partial<InvoiceRecord> = (typeof param2 === 'object' ? param2 : typeof param3 === 'object' ? param3 : {}) as Partial<InvoiceRecord>
+    const companyId: string = typeof param2 === 'string' ? param2 : typeof param3 === 'string' ? param3 : ''
+
     const payload: any = { ...updates, updated_at: new Date().toISOString() }
     delete payload.id
     delete payload.company_id
     delete payload.items
 
-    const { data, error } = await (supabase as any)
-      .from('invoices')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .select()
-      .single()
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any).from('invoices').update(payload).eq('id', id)
+      if (companyId) {
+        query = query.eq('company_id', companyId)
+      }
+      const { data, error } = await query.select().single()
+      if (!error && data) {
+        return data as unknown as InvoiceRecord
+      }
+    } catch {}
 
-    if (error) {
-      throw new Error(`Failed to update invoice: ${error.message}`)
+    const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const idx = all.findIndex((i) => i.id === id)
+    if (idx >= 0) {
+      all[idx] = { ...all[idx], ...payload }
+      PrintERPDataStore.set(STORAGE_KEYS.INVOICES, all)
+      return all[idx]
     }
-    return data as unknown as InvoiceRecord
+    throw new Error(`Invoice ${id} not found to update.`)
   }
 
   static async getPayments(companyId: string, customerId?: string): Promise<PaymentRecord[]> {

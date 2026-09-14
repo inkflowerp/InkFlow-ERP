@@ -40,7 +40,11 @@ export class CostingRepository {
     } catch {}
 
     const costings = await this.getCostings(companyId)
-    return costings.find((c) => c.id === id || c.job_number === id) || null
+    return costings.find((c) => c.id === id || c.job_number === id || c.job_id === id || c.job_order_id === id) || null
+  }
+
+  static async getJobCostingByJobId(jobId: string, companyId: string): Promise<JobCostingRecord | null> {
+    return this.getCostingById(jobId, companyId)
   }
 
   static async createCosting(costing: Partial<JobCostingRecord> & {
@@ -181,6 +185,14 @@ export class CostingRepository {
 
     PrintERPDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, id, updated)
     return updated
+  }
+
+  static async createJobCosting(costing: any): Promise<JobCostingRecord> {
+    return this.createCosting(costing)
+  }
+
+  static async updateJobCosting(id: string, companyId: string, updates: Partial<JobCostingRecord>): Promise<JobCostingRecord> {
+    return this.updateCosting(id, updates, companyId)
   }
 
   static async deleteCosting(id: string, companyId: string): Promise<boolean> {

@@ -199,9 +199,9 @@ async function safeTenantRedirect(path: string): Promise<never> {
  * Throws redirect to /login if user lacks access to this tenant.
  */
 export async function requireTenantUser(requestedSlugOrId?: string): Promise<TenantContext> {
-  const tenantContext = await getCurrentTenant(requestedSlugOrId)
+  const tenant = await getCurrentTenant(requestedSlugOrId)
 
-  if (!tenantContext) {
+  if (!tenant) {
     try {
       const { cookies } = await import('next/headers')
       const cookieStore = await cookies()
@@ -219,7 +219,15 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
     throw new Error('Unauthorized tenant user')
   }
 
-  return tenantContext
+  return tenant
+}
+
+/**
+ * Resolves verified company ID for the currently authenticated tenant user.
+ */
+export async function getTenantCompanyId(requestedSlugOrId?: string): Promise<string> {
+  const tenant = await requireTenantUser(requestedSlugOrId)
+  return tenant.companyId
 }
 
 /**

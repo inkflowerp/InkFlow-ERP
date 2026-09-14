@@ -1,4 +1,11 @@
-export type EmployeeType = 'permanent' | 'contract' | 'daily_labor'
+export type EmployeeType =
+  | 'permanent'
+  | 'contract'
+  | 'daily_labor'
+  | 'daily_worker'
+  | 'temporary'
+  | 'part_time'
+  | 'field_worker'
 
 export type AttendanceStatus =
   | 'present'
@@ -17,15 +24,55 @@ export type LeaveType =
 
 export type PayrollStatus = 'draft' | 'processed' | 'locked' | 'disbursed'
 
+export interface ShiftRecord {
+  id: string
+  company_id: string
+  branch_id?: string | null
+  shift_code: string
+  shift_name: string
+  start_time: string // 'HH:mm' e.g. '09:00' or '22:00'
+  end_time: string   // 'HH:mm' e.g. '18:00' or '06:00'
+  is_overnight: boolean
+  grace_period_minutes: number
+  break_duration_minutes: number
+  working_days: string[]
+  overtime_rules: {
+    enabled: boolean
+    multiplier: number
+    min_minutes: number
+  }
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface EmployeeShiftRecord {
+  id: string
+  company_id: string
+  employee_id: string
+  shift_id: string
+  effective_from: string
+  effective_to?: string | null
+  is_active: boolean
+  created_at: string
+}
+
 export interface EmployeeRecord {
   id: string
   company_id: string
+  branch_id?: string | null
+  user_id?: string | null
   employee_id_number: string
   name: string
   name_bn?: string | null
   mobile: string
+  email?: string | null
   address?: string | null
+  emergency_contact_name?: string | null
+  emergency_contact_phone?: string | null
+  emergency_contact_relation?: string | null
   role: string
+  responsibilities?: string[]
   department:
     | 'printing'
     | 'finishing'
@@ -35,14 +82,31 @@ export interface EmployeeRecord {
     | 'accounts'
     | 'sales'
     | 'management'
+    | 'field_ops'
+    | string
   employee_type: EmployeeType
   joining_date: string
-  salary_type: 'monthly' | 'daily_rate' | 'contract'
+  salary_type: 'monthly' | 'daily_rate' | 'hourly_rate' | 'contract'
   base_salary: number
   daily_rate: number
+  hourly_rate?: number
   overtime_hourly_rate: number
   current_advance_balance: number
+  is_daily_worker?: boolean
+  bank_payment_info?: {
+    bank_name?: string
+    account_name?: string
+    account_number?: string
+    branch_name?: string
+    routing_number?: string
+  } | null
+  mfs_payment_info?: {
+    provider?: 'bkash' | 'nagad' | 'rocket' | 'other'
+    wallet_number?: string
+    account_type?: 'personal' | 'merchant' | 'agent'
+  } | null
   status: 'active' | 'on_leave' | 'terminated'
+  notes?: string | null
   created_at: string
   updated_at: string
 }
@@ -52,6 +116,8 @@ export interface AttendanceRecord {
   company_id: string
   employee_id: string
   employee_name: string
+  shift_id?: string | null
+  job_order_id?: string | null
   attendance_date: string
   status: AttendanceStatus
   leave_type?: LeaveType | null
@@ -59,6 +125,10 @@ export interface AttendanceRecord {
   check_out_time?: string | null
   late_minutes: number
   overtime_hours: number
+  overtime_minutes?: number
+  is_overtime_approved?: boolean
+  approved_overtime_hours?: number
+  workforce_labor_cost?: number
   latitude?: number | null
   longitude?: number | null
   gps_accuracy_meters?: number | null

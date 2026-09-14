@@ -70,6 +70,12 @@ export interface AttendanceRecord {
   gps_accuracy_meters: number
   distance_from_location_meters: number
   qr_token_id?: string | null
+  shift_id?: string | null
+  job_order_id?: string | null
+  overtime_minutes?: number
+  is_overtime_approved?: boolean
+  approved_overtime_hours?: number
+  workforce_labor_cost?: number
   verification_status: AttendanceVerificationStatus
   verification_reason?: string | null
   device_info?: Record<string, any> | null

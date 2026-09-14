@@ -387,21 +387,25 @@ export class SupplierRepository {
   // SUPPLIER LEDGER ENTRIES
   // ==========================================
 
-  static async getSupplierLedger(companyId: string, supplierId: string): Promise<SupplierLedgerEntryRecord[]> {
+  static async getSupplierLedger(companyId: string, supplierId?: string): Promise<SupplierLedgerEntryRecord[]> {
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('supplier_ledger_entries')
         .select('*')
         .eq('company_id', companyId)
-        .eq('supplier_id', supplierId)
         .order('created_at', { ascending: true })
 
+      if (supplierId) {
+        query = query.eq('supplier_id', supplierId)
+      }
+
+      const { data, error } = await query
       if (!error && data) return data as unknown as SupplierLedgerEntryRecord[]
     } catch {}
 
     const all = PrintERPDataStore.get<SupplierLedgerEntryRecord[]>(STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES) || []
-    return all.filter((e) => e.company_id === companyId && e.supplier_id === supplierId)
+    return all.filter((e) => (!e.company_id || e.company_id === companyId) && (!supplierId || e.supplier_id === supplierId))
   }
 
   static async recordSupplierLedgerEntry(entry: {
@@ -452,5 +456,13 @@ export class SupplierRepository {
 
     PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES, payload)
     return payload
+  }
+
+  static async recordLedgerEntry(entry: any): Promise<SupplierLedgerEntryRecord> {
+    return this.recordSupplierLedgerEntry(entry)
+  }
+
+  static async getLedgerEntries(companyId: string, supplierId?: string): Promise<SupplierLedgerEntryRecord[]> {
+    return this.getSupplierLedger(companyId, supplierId)
   }
 }

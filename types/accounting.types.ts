@@ -25,6 +25,8 @@ export interface ExpenseRecord {
   attachment_url?: string | null
   branch_name: string
   bank_account_id?: string | null
+  account_id?: string | null
+  status?: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'POSTED' | 'REJECTED'
   recorded_by_name: string
   created_at: string
 }

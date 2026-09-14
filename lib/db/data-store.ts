@@ -186,6 +186,14 @@ export const STORAGE_KEYS = {
   SUPPLIER_RETURNS: 'printerp_tenant_supplier_returns',
   SUPPLIER_RETURN_ITEMS: 'printerp_tenant_supplier_return_items',
   SUPPLIER_LEDGER_ENTRIES: 'printerp_tenant_supplier_ledger_entries',
+  SHIFTS: 'printerp_tenant_shifts',
+  EMPLOYEE_SHIFTS: 'printerp_tenant_employee_shifts',
+  ACCOUNTS: 'printerp_tenant_accounts',
+  FINANCIAL_TRANSACTIONS: 'printerp_tenant_financial_transactions',
+  JOURNAL_ENTRY_LINES: 'printerp_tenant_journal_entry_lines',
+  ACCOUNT_TRANSFERS: 'printerp_tenant_account_transfers',
+  CASH_CLOSINGS: 'printerp_tenant_cash_closings',
+  FINANCIAL_PERIODS: 'printerp_tenant_financial_periods',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -266,7 +274,15 @@ export function isTransactionalKey(key: string): boolean {
     key === STORAGE_KEYS.GOODS_RECEIVED_NOTE_ITEMS ||
     key === STORAGE_KEYS.SUPPLIER_RETURNS ||
     key === STORAGE_KEYS.SUPPLIER_RETURN_ITEMS ||
-    key === STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES
+    key === STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES ||
+    key === STORAGE_KEYS.SHIFTS ||
+    key === STORAGE_KEYS.EMPLOYEE_SHIFTS ||
+    key === STORAGE_KEYS.ACCOUNTS ||
+    key === STORAGE_KEYS.FINANCIAL_TRANSACTIONS ||
+    key === STORAGE_KEYS.JOURNAL_ENTRY_LINES ||
+    key === STORAGE_KEYS.ACCOUNT_TRANSFERS ||
+    key === STORAGE_KEYS.CASH_CLOSINGS ||
+    key === STORAGE_KEYS.FINANCIAL_PERIODS
   )
 }
 
