@@ -28,12 +28,18 @@ export default function TenantError({ error, reset }: ErrorProps) {
         {tBilingual('Operational View Encountered an Error', 'পেজ লোড করতে সমস্যা দেখা দিয়েছে')}
       </h2>
 
-      <p className="max-w-md text-xs sm:text-sm text-rose-700 dark:text-rose-300 mb-6 leading-relaxed bangla-text">
+      <p className="max-w-md text-xs sm:text-sm text-rose-700 dark:text-rose-300 mb-2 leading-relaxed bangla-text">
         {tBilingual(
           error.message || 'An unexpected error occurred while processing this operational view.',
           'তথ্য লোড করার সময় অপ্রত্যাশিত ত্রুটি ঘটেছে। পুনরায় চেষ্টা করুন।'
         )}
       </p>
+
+      {error.digest && (
+        <p className="text-[11px] font-mono text-rose-500/80 dark:text-rose-400/80 mb-5">
+          Error Digest: {error.digest}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         <Button
