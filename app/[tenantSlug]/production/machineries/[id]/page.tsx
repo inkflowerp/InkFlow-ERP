@@ -52,7 +52,6 @@ import { CompleteMaintenanceModal } from '@/components/machinery/complete-mainte
 import { ReportBreakdownModal } from '@/components/machinery/report-breakdown-modal'
 import { ResolveBreakdownModal } from '@/components/machinery/resolve-breakdown-modal'
 import { StatusChangeModal } from '@/components/machinery/status-change-modal'
-import { MachineryRepository } from '@/lib/repositories/machinery.repository'
 
 export default function MachineryDetailPage() {
   const params = useParams()

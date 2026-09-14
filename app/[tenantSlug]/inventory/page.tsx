@@ -59,11 +59,11 @@ import {
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
-import { InventoryService } from '@/services/inventory.service'
 import {
   approveMaterialRequestAction,
   rejectMaterialRequestAction,
   updateRemnantStatusAction,
+  getInventoryDashboardDataAction,
 } from '@/actions/inventory.actions'
 
 // Modals
@@ -134,25 +134,28 @@ export default function InventoryDashboardPage() {
   const loadAllData = async () => {
     setLoading(true)
     try {
-      const [matData, locData, balData, reqData, issData, remData, ledData, sumData] = await Promise.all([
-        InventoryService.getMaterials(companyId),
-        InventoryService.getLocations(companyId),
-        InventoryService.getStockBalances(companyId),
-        InventoryService.getRequests(companyId),
-        InventoryService.getIssues(companyId),
-        InventoryService.getRemnants(companyId),
-        InventoryService.getStockLedger(companyId),
-        InventoryService.getInventorySummary(companyId),
-      ])
+      const res = await getInventoryDashboardDataAction(companyId)
+      if (res.success && res.data) {
+        const {
+          materials: matData,
+          locations: locData,
+          balances: balData,
+          requests: reqData,
+          issues: issData,
+          remnants: remData,
+          ledger: ledData,
+          summary: sumData,
+        } = res.data
 
-      setMaterials(matData)
-      setLocations(locData)
-      setBalances(balData)
-      setRequests(reqData)
-      setIssues(issData)
-      setRemnants(remData)
-      setLedger(ledData)
-      setSummary(sumData)
+        setMaterials(matData)
+        setLocations(locData)
+        setBalances(balData)
+        setRequests(reqData)
+        setIssues(issData)
+        setRemnants(remData)
+        setLedger(ledData)
+        setSummary(sumData)
+      }
     } catch (err: any) {
       console.error('Failed to load inventory data:', err)
     } finally {

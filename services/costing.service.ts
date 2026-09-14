@@ -1,4 +1,5 @@
 import type { JobCostingRecord, CostHeads } from '../types/costing.types.ts'
+import { calculateNegotiationMargin } from '../types/costing.types.ts'
 import type { PricingCalculationInput, ProductRecord } from '../types/product.types.ts'
 import { CostingRepository } from '../lib/repositories/costing.repository.ts'
 import { ProductRepository } from '../lib/repositories/product.repository.ts'
@@ -7,24 +8,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type { StockLedgerRecord } from '../types/inventory.types.ts'
 import type { ProductionTaskRecord } from '../types/production.types.ts'
 
-export function calculateNegotiationMargin(
-  sellingPrice: number,
-  cost: number,
-  discountPercentage: number
-) {
-  const discountAmount = Math.round(sellingPrice * (discountPercentage / 100))
-  const finalPrice = Math.max(0, sellingPrice - discountAmount)
-  const finalProfit = finalPrice - cost
-  const finalMargin = finalPrice > 0 ? (finalProfit / finalPrice) * 100 : 0
-
-  return {
-    discountAmount,
-    finalPrice,
-    finalProfit,
-    finalMargin: Number(finalMargin.toFixed(1)),
-    isSafeMargin: finalMargin >= 15, // 15% minimum safety margin
-  }
-}
+export { calculateNegotiationMargin }
 
 export class CostingService {
   static async getCostings(companyId: string = 'c-01'): Promise<JobCostingRecord[]> {

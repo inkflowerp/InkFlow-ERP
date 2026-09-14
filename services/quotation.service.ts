@@ -4,22 +4,16 @@ import type {
   QuotationStatus,
   CreateQuotationPayload,
 } from '../types/quotation.types.ts'
+import {
+  DEFAULT_QUOTATION_TERMS,
+  DEFAULT_QUOTATION_TERMS_BN,
+} from '../types/quotation.types.ts'
 import { QuotationRepository } from '../lib/repositories/quotation.repository.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type { SalesOrderRecord } from '../types/order.types.ts'
 import type { InvoiceRecord } from '../types/billing.types.ts'
 
-export const DEFAULT_QUOTATION_TERMS = `1. Payment Terms: 50% advance with work order confirmation, balance upon delivery or invoice.
-2. Proof Approval: Color tone and typography must be approved by the client via digital soft proof before production.
-3. Delivery Timeline: Estimated delivery within 3 to 5 working days from final proof sign-off.
-4. Tax Compliance: All rates are subject to standard NBR Value Added Tax (VAT) under Mushak-6.3.
-5. Validity: This quotation remains valid for 15 days from the date of issuance.`
-
-export const DEFAULT_QUOTATION_TERMS_BN = `১. মূল্য পরিশোধ: কার্যাদেশ নিশ্চিতের সাথে ৫০% অগ্রিম এবং ডেলিভারির সময় অবশিষ্ট বিল পরিশোধযোগ্য।
-২. প্রুফ অনুমোদন: ডিজিটাল সফট প্রুফ দেখে ক্লায়েন্ট কর্তৃক বানান ও রঙের শেড নিশ্চিত করতে হবে।
-৩. ডেলিভারির সময়: চূড়ান্ত প্রুফ অনুমোদনের পরবর্তী ৩ থেকে ৫ কার্যদিবসের মধ্যে সরবরাহ করা হবে।
-৪. ট্যাক্স ও ভ্যাট: জাতীয় রাজস্ব বোর্ডের মূসক-৬.৩ চালান অনুযায়ী প্রযোজ্য ভ্যাট ধার্য করা হয়েছে।
-৫. মেয়াদের শর্ত: এই উদ্ধৃতিপত্রটি জারির তারিখ হতে পরবর্তী ১৫ দিন পর্যন্ত বলবৎ থাকবে।`
+export { DEFAULT_QUOTATION_TERMS, DEFAULT_QUOTATION_TERMS_BN }
 
 export class QuotationService {
   static async getQuotations(companyId: string = 'c-01'): Promise<QuotationRecord[]> {

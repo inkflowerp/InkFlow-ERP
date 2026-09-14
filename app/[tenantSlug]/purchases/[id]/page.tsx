@@ -33,14 +33,12 @@ import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import {
-  getSupplierPriceBenchmark,
-} from '@/services/purchase.service'
-import {
   PurchaseOrderRecord,
   PurchaseOrderStatus,
   GoodsReceivedNoteRecord,
   SupplierPaymentRecord,
   SupplierPaymentMethod,
+  getSupplierPriceBenchmark,
 } from '@/types/purchase.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'

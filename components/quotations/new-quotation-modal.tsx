@@ -53,7 +53,7 @@ import {
 } from '@/types/quotation.types'
 import { CustomerRecord, ResolvedProductRate, DuplicateCheckResponse } from '@/types/crm.types'
 import { ProductRecord } from '@/types/product.types'
-import { DEFAULT_QUOTATION_TERMS, DEFAULT_QUOTATION_TERMS_BN } from '@/services/quotation.service'
+import { DEFAULT_QUOTATION_TERMS, DEFAULT_QUOTATION_TERMS_BN } from '@/types/quotation.types'
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 

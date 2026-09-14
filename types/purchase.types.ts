@@ -305,6 +305,43 @@ export interface SupplierPriceBenchmark {
   history: SupplierPriceHistoryRecord[]
 }
 
+export function getSupplierPriceBenchmark(
+  materialId: string,
+  materialName: string,
+  history?: SupplierPriceHistoryRecord[]
+): SupplierPriceBenchmark {
+  const allHistory = history && history.length > 0 ? history : []
+  const records = allHistory.filter(
+    (h) => h.material_id === materialId || (h.material_name && h.material_name.toLowerCase().includes(materialName.toLowerCase()))
+  )
+
+  if (records.length === 0) {
+    return {
+      material_id: materialId,
+      material_name: materialName,
+      last_price: 0,
+      average_price: 0,
+      lowest_price: 0,
+      highest_price: 0,
+      history: [],
+    }
+  }
+
+  const prices = records.map((r) => r.purchase_price)
+  const total = prices.reduce((acc, p) => acc + p, 0)
+  const sorted = [...records].sort((a, b) => new Date(b.po_date).getTime() - new Date(a.po_date).getTime())
+
+  return {
+    material_id: materialId,
+    material_name: materialName,
+    last_price: sorted[0]?.purchase_price || 0,
+    average_price: Math.round(total / prices.length),
+    lowest_price: Math.min(...prices),
+    highest_price: Math.max(...prices),
+    history: sorted,
+  }
+}
+
 // ==========================================
 // 7. SUPPLIER PAYMENTS & LEDGER
 // ==========================================

@@ -679,3 +679,108 @@ export async function getCustomersAction(
   }
 }
 
+export interface CustomerFullDetails {
+  customer: CustomerRecord
+  financialSummary: CustomerFinancialSummary | null
+  rates: ResolvedProductRate[]
+  timelineEvents: CustomerTimelineEvent[]
+  invoices: any[]
+  payments: any[]
+  quotations: any[]
+  orders: any[]
+}
+
+/**
+ * Server Action: Full 360-degree Customer Details & Associated Records
+ */
+export async function getCustomerFullDetailsAction(
+  customerId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<CustomerFullDetails>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active company context found.' }
+    }
+
+    const { CustomerRepository } = await import('@/lib/repositories/customer.repository')
+    const { BillingRepository } = await import('@/lib/repositories/billing.repository')
+    const { QuotationRepository } = await import('@/lib/repositories/quotation.repository')
+    const { OrderRepository } = await import('@/lib/repositories/order.repository')
+
+    const [cust, finRes, ratesRes, timelineRes, allInvs, allPays, allQuotes, allOrds] = await Promise.all([
+      CustomerRepository.getCustomerById(customerId, companyId),
+      CrmService.getCustomerFinancialSummary(companyId, customerId).catch(() => null),
+      CrmService.resolveCustomerRates(companyId, customerId).catch(() => []),
+      CrmService.getCustomerTimeline(companyId, customerId).catch(() => []),
+      BillingRepository.getInvoices(companyId).catch(() => []),
+      BillingRepository.getPayments(companyId, customerId).catch(() => []),
+      QuotationRepository.getQuotations(companyId).catch(() => []),
+      OrderRepository.getOrders(companyId).catch(() => []),
+    ])
+
+    if (!cust) {
+      return { success: false, error: 'Customer not found.' }
+    }
+
+    return {
+      success: true,
+      data: {
+        customer: cust,
+        financialSummary: finRes,
+        rates: ratesRes || [],
+        timelineEvents: timelineRes || [],
+        invoices: (allInvs || []).filter((i: any) => i.customer_id === customerId),
+        payments: allPays || [],
+        quotations: (allQuotes || []).filter((q: any) => q.customer_id === customerId),
+        orders: (allOrds || []).filter((o: any) => o.customer_id === customerId),
+      },
+    }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch customer full details.' }
+  }
+}
+
+/**
+ * Server Action: Log Customer Communication
+ */
+export async function logCustomerCommunicationAction(
+  payload: {
+    customerId: string
+    type: string
+    summary: string
+    details?: string | null
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<any>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active company context found.' }
+    }
+
+    let mappedType: 'phone_call' | 'whatsapp_message' | 'email' | 'meeting' | 'site_visit' = 'phone_call'
+    if (payload.type === 'call' || payload.type === 'phone_call') mappedType = 'phone_call'
+    else if (payload.type === 'whatsapp' || payload.type === 'whatsapp_message') mappedType = 'whatsapp_message'
+    else if (payload.type === 'email') mappedType = 'email'
+    else if (payload.type === 'meeting') mappedType = 'meeting'
+    else if (payload.type === 'site_visit') mappedType = 'site_visit'
+
+    const comm = await CrmService.addCommunication({
+      company_id: companyId,
+      customer_id: payload.customerId,
+      type: mappedType,
+      summary: payload.summary,
+      details: payload.details || null,
+      logged_by: tenant.fullName || 'Authorized Staff',
+    })
+
+    revalidatePath(`/customers/${payload.customerId}`)
+    return { success: true, data: comm }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to log communication.' }
+  }
+}
+

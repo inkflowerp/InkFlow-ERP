@@ -40,8 +40,6 @@ import { FeatureGate } from '@/components/shared/feature-gate'
 import {
   DEFAULT_QUOTATION_TERMS,
   DEFAULT_QUOTATION_TERMS_BN,
-} from '@/services/quotation.service'
-import {
   QuotationRecord,
   QuotationStatus,
   LanguageMode,

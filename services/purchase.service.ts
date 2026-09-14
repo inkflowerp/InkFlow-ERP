@@ -21,44 +21,9 @@ import { InventoryRepository } from '../lib/repositories/inventory.repository.ts
 import { AuditService } from './audit.service.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
-export function getSupplierPriceBenchmark(
-  materialId: string,
-  materialName: string,
-  history?: SupplierPriceHistoryRecord[]
-): SupplierPriceBenchmark {
-  const allHistory = history && history.length > 0 ? history : (PrintERPDataStore.get<SupplierPriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || [])
-  const records = allHistory.filter(
-    (h) => h.material_id === materialId || (h.material_name && h.material_name.toLowerCase().includes(materialName.toLowerCase()))
-  )
+import { getSupplierPriceBenchmark } from '../types/purchase.types.ts'
 
-  if (records.length === 0) {
-    return {
-      material_id: materialId,
-      material_name: materialName,
-      last_price: 0,
-      average_price: 0,
-      lowest_price: 0,
-      highest_price: 0,
-      history: [],
-    }
-  }
-
-  const prices = records.map((r) => r.purchase_price)
-  const last_price = records[0].purchase_price
-  const lowest_price = Math.min(...prices)
-  const highest_price = Math.max(...prices)
-  const average_price = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
-
-  return {
-    material_id: materialId,
-    material_name: materialName,
-    last_price,
-    average_price,
-    lowest_price,
-    highest_price,
-    history: records,
-  }
-}
+export { getSupplierPriceBenchmark }
 
 export class PurchaseService {
   // ==========================================

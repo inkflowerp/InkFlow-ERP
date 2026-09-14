@@ -13,6 +13,27 @@ import { TenantRepository } from '../repositories/tenant.repository.ts'
 import { getCurrentPlatformUser } from './platform-auth.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
 
+async function performRedirect(url: string): Promise<never> {
+  try {
+    const nav = await import('next/navigation')
+    if (typeof nav?.redirect === 'function') {
+      nav.redirect(url)
+    }
+  } catch (error: any) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'digest' in error &&
+      typeof error.digest === 'string' &&
+      error.digest.startsWith('NEXT_REDIRECT')
+    ) {
+      throw error
+    }
+    throw new Error(`REDIRECT:${url}`)
+  }
+  throw new Error(`REDIRECT:${url}`)
+}
+
 const SUPPORT_COOKIE_NAME = 'printerp_support_tenant'
 
 /**
@@ -188,20 +209,6 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
   }
 })
 
-async function safeTenantRedirect(path: string): Promise<never> {
-  try {
-    const nextNav: any = await import('next/navigation.js').catch(() => import('next/navigation'))
-    if (nextNav && typeof nextNav.redirect === 'function') {
-      nextNav.redirect(path)
-    }
-  } catch (e: any) {
-    if (e?.digest?.startsWith?.('NEXT_REDIRECT') || e?.message?.includes?.('NEXT_REDIRECT')) {
-      throw e
-    }
-  }
-  throw new Error(`REDIRECT:${path}`)
-}
-
 /**
  * Strict server-side guard for tenant routes (e.g. /app/* or /[tenantSlug]/*).
  * Throws redirect to /login if user lacks access to this tenant.
@@ -212,18 +219,17 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
   if (!tenant) {
     let hasPlatformCookie = false
     try {
-      const { cookies } = await import('next/headers.js').catch(() => import('next/headers'))
+      const { cookies } = await import('next/headers')
       const cookieStore = await cookies()
       hasPlatformCookie = Boolean(cookieStore.get('printerp_platform_session')?.value)
     } catch {}
 
     if (hasPlatformCookie) {
-      await safeTenantRedirect('/platform')
-      throw new Error('Redirecting to platform')
+      await performRedirect('/platform')
     }
 
-    await safeTenantRedirect(`/login${requestedSlugOrId ? `?error=unauthorized&redirectTo=/${requestedSlugOrId}/dashboard` : '?error=unauthorized'}`)
-    throw new Error('Unauthorized tenant user')
+    await performRedirect(`/login${requestedSlugOrId ? `?error=unauthorized&redirectTo=/${requestedSlugOrId}/dashboard` : '?error=unauthorized'}`)
+    throw new Error('Unauthorized')
   }
 
   return tenant
@@ -255,8 +261,8 @@ export async function requireTenantPermission(
     tenant.permissions.includes(requiredPermission.split('.')[0] + '.full_control')
 
   if (!hasPerm) {
-    await safeTenantRedirect(`/403?type=tenant&missing=${requiredPermission}`)
-    throw new Error('Insufficient tenant permissions')
+    await performRedirect(`/403?type=tenant&missing=${requiredPermission}`)
+    throw new Error('Forbidden')
   }
 
   return tenant
@@ -286,8 +292,8 @@ export async function getTenantRedirectSlug(): Promise<string> {
     return tenant.companySlug
   }
 
-  await safeTenantRedirect('/login')
-  throw new Error('Redirecting to login')
+  await performRedirect('/login')
+  throw new Error('Unauthorized')
 }
 
 

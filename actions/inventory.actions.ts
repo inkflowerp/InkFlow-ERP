@@ -604,3 +604,101 @@ export async function removeTaskRequirementAction(
     return { success: false, error: error.message || 'Failed to remove requirement' }
   }
 }
+
+export interface InventoryDashboardData {
+  materials: MaterialRecord[]
+  locations: InventoryLocationRecord[]
+  balances: any[]
+  requests: MaterialRequestRecord[]
+  issues: MaterialIssueRecord[]
+  remnants: InventoryRemnantRecord[]
+  ledger: StockLedgerRecord[]
+  summary: any
+}
+
+/**
+ * Server Action: Load all inventory dashboard data
+ */
+export async function getInventoryDashboardDataAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<InventoryDashboardData>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const [matData, locData, balData, reqData, issData, remData, ledData, sumData] = await Promise.all([
+      InventoryService.getMaterials(companyId),
+      InventoryService.getLocations(companyId),
+      InventoryService.getStockBalances(companyId),
+      InventoryService.getRequests(companyId),
+      InventoryService.getIssues(companyId),
+      InventoryService.getRemnants(companyId),
+      InventoryService.getStockLedger(companyId),
+      InventoryService.getInventorySummary(companyId),
+    ])
+
+    return {
+      success: true,
+      data: {
+        materials: matData || [],
+        locations: locData || [],
+        balances: balData || [],
+        requests: reqData || [],
+        issues: issData || [],
+        remnants: remData || [],
+        ledger: ledData || [],
+        summary: sumData,
+      },
+    }
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Failed to load inventory dashboard data.' }
+  }
+}
+
+export interface MaterialFullDetails {
+  material: MaterialRecord | null
+  locations: InventoryLocationRecord[]
+  balances: any[]
+  remnants: InventoryRemnantRecord[]
+  ledger: StockLedgerRecord[]
+}
+
+/**
+ * Server Action: Load single material details
+ */
+export async function getMaterialDetailsAction(
+  materialId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<MaterialFullDetails>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const [mat, locs, bals, rems, led] = await Promise.all([
+      InventoryService.getMaterialById(materialId, companyId),
+      InventoryService.getLocations(companyId),
+      InventoryService.getStockBalances(companyId, { materialId }),
+      InventoryService.getRemnants(companyId, { materialId }),
+      InventoryService.getStockLedger(companyId, materialId),
+    ])
+
+    return {
+      success: true,
+      data: {
+        material: mat,
+        locations: locs || [],
+        balances: bals || [],
+        remnants: rems || [],
+        ledger: led || [],
+      },
+    }
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Failed to load material details.' }
+  }
+}

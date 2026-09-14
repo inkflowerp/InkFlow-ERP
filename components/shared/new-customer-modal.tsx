@@ -35,6 +35,7 @@ import {
   checkCustomerDuplicateAction,
   saveCustomerRateAction,
 } from '@/actions/customer.actions'
+import { getProductsAction } from '@/actions/product.actions'
 import {
   CustomerRecord,
   CustomerKind,
@@ -43,7 +44,6 @@ import {
   DuplicateMatchResult,
 } from '@/types/crm.types'
 import { ProductRecord } from '@/types/product.types'
-import { ProductService } from '@/services/product.service'
 import { cn } from '@/lib/utils'
 
 export interface NewCustomerModalProps {
@@ -124,9 +124,11 @@ export function NewCustomerModal({
     if (open) {
       const activeCompanyId = company?.id || companyId
       setIsLoadingProducts(true)
-      ProductService.getProducts(activeCompanyId)
-        .then((list) => {
-          setProducts(list.filter((p) => p.is_active !== false))
+      getProductsAction(activeCompanyId, true)
+        .then((res) => {
+          if (res?.data) {
+            setProducts(res.data.filter((p) => p.is_active !== false))
+          }
         })
         .catch(() => {})
         .finally(() => setIsLoadingProducts(false))

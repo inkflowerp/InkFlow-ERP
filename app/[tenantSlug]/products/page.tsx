@@ -29,7 +29,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { ProductRecord, ProductType, UnitOfMeasure } from '@/types/product.types'
-import { ProductService } from '@/services/product.service'
+import { updateProductPriceAction } from '@/actions/product.actions'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
@@ -140,12 +140,14 @@ export default function ProductsCatalogPage() {
     e.preventDefault()
     if (!editingProduct) return
 
-    await ProductService.updatePrice(
-      editingProduct.id,
-      newPrice,
-      priceReason || 'Manual catalog price adjustment',
-      'Current User'
-    )
+    try {
+      await updateProductPriceAction(
+        editingProduct.id,
+        newPrice,
+        priceReason || 'Manual catalog price adjustment',
+        company?.id
+      )
+    } catch {}
 
     PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, editingProduct.id, {
       selling_price: newPrice,

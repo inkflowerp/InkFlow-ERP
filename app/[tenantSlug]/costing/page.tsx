@@ -32,10 +32,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
-import {
-  calculateNegotiationMargin,
-} from '@/services/costing.service'
-import { JobCostingRecord } from '@/types/costing.types'
+import { JobCostingRecord, calculateNegotiationMargin } from '@/types/costing.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'

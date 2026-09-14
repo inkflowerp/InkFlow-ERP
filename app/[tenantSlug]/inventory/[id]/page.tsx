@@ -33,7 +33,7 @@ import {
   InventoryRemnantRecord,
   StockLedgerRecord,
 } from '@/types/inventory.types'
-import { InventoryService } from '@/services/inventory.service'
+import { getMaterialDetailsAction } from '@/actions/inventory.actions'
 import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
 import { StockAdjustmentModal } from '@/components/inventory/stock-adjustment-modal'
 import { cn } from '@/lib/utils'
@@ -61,19 +61,15 @@ export default function MaterialDetailPage() {
     if (!materialId || !companyId) return
     setLoading(true)
     try {
-      const [mat, locs, bals, rems, led] = await Promise.all([
-        InventoryService.getMaterialById(materialId, companyId),
-        InventoryService.getLocations(companyId),
-        InventoryService.getStockBalances(companyId, { materialId }),
-        InventoryService.getRemnants(companyId, { materialId }),
-        InventoryService.getStockLedger(companyId, materialId),
-      ])
-
-      setMaterial(mat)
-      setLocations(locs)
-      setBalances(bals)
-      setRemnants(rems)
-      setLedger(led)
+      const res = await getMaterialDetailsAction(materialId, companyId)
+      if (res.success && res.data) {
+        const { material: mat, locations: locs, balances: bals, remnants: rems, ledger: led } = res.data
+        setMaterial(mat)
+        setLocations(locs)
+        setBalances(bals)
+        setRemnants(rems)
+        setLedger(led)
+      }
     } catch (err) {
       console.error('Error loading material details:', err)
     } finally {

@@ -37,8 +37,10 @@ import {
   TRIGGER_DEFINITIONS,
   ACTION_DEFINITIONS,
 } from '@/types/workflow.types'
-import { WorkflowService } from '@/services/workflow.service'
+import { useTenant } from '@/hooks/use-tenant'
 import {
+  getWorkflowRulesAction,
+  getWorkflowExecutionLogsAction,
   toggleWorkflowRuleAction,
   saveWorkflowRuleAction,
   deleteWorkflowRuleAction,
@@ -52,6 +54,8 @@ import { Label } from '@/components/ui/label'
 export default function WorkflowAutomationsPage() {
   const params = useParams()
   const tenantSlug = (params?.tenantSlug as string) || 'my-company'
+  const { company } = useTenant()
+  const activeCompanyId = company?.id || 'c-01'
 
   const [activeTab, setActiveTab] = useState<'rules' | 'logs'>('rules')
   const [rules, setRules] = useState<WorkflowRule[]>([])
@@ -66,12 +70,12 @@ export default function WorkflowAutomationsPage() {
   const [simulationResult, setSimulationResult] = useState<string | null>(null)
 
   const loadData = async () => {
-    const rulesRes = await WorkflowService.getRules('c-01')
+    const rulesRes = await getWorkflowRulesAction(activeCompanyId)
     if (rulesRes.success && rulesRes.data) {
       setRules(rulesRes.data)
     }
 
-    const logsRes = await WorkflowService.getExecutionLogs('c-01')
+    const logsRes = await getWorkflowExecutionLogsAction(activeCompanyId)
     if (logsRes.success && logsRes.data) {
       setLogs(logsRes.data)
     }
@@ -79,20 +83,20 @@ export default function WorkflowAutomationsPage() {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [activeCompanyId])
 
   const handleToggle = async (ruleId: string, currentState: boolean) => {
     setRules((prev) =>
       prev.map((r) => (r.id === ruleId ? { ...r, is_active: !currentState } : r))
     )
-    await toggleWorkflowRuleAction('c-01', ruleId, !currentState)
+    await toggleWorkflowRuleAction(activeCompanyId, ruleId, !currentState)
   }
 
   const handleTestRun = async (ruleId: string) => {
     setSimulatingRuleId(ruleId)
     setSimulationResult(null)
 
-    const res = await testTriggerWorkflowRuleAction('c-01', ruleId)
+    const res = await testTriggerWorkflowRuleAction(activeCompanyId, ruleId)
     setSimulatingRuleId(null)
 
     if (res.success && res.data) {
@@ -126,7 +130,7 @@ export default function WorkflowAutomationsPage() {
     e.preventDefault()
     if (!editingRule?.name) return
 
-    await saveWorkflowRuleAction('c-01', editingRule)
+    await saveWorkflowRuleAction(activeCompanyId, editingRule)
     setIsModalOpen(false)
     setEditingRule(null)
     await loadData()
@@ -134,7 +138,7 @@ export default function WorkflowAutomationsPage() {
 
   const handleDeleteRule = async (ruleId: string) => {
     if (!confirm('Are you sure you want to delete this workflow rule?')) return
-    await deleteWorkflowRuleAction('c-01', ruleId)
+    await deleteWorkflowRuleAction(activeCompanyId, ruleId)
     await loadData()
   }
 

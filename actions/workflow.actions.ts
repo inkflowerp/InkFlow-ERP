@@ -48,6 +48,22 @@ export async function deleteWorkflowRuleAction(
   return res
 }
 
+export async function getWorkflowRulesAction(companyId?: string) {
+  const tenant = await getCurrentTenant(companyId)
+  if (!tenant) {
+    return { success: false, message: 'Unauthorized: Session expired or invalid.' }
+  }
+  return await WorkflowService.getRules(tenant.companyId)
+}
+
+export async function getWorkflowExecutionLogsAction(companyId?: string) {
+  const tenant = await getCurrentTenant(companyId)
+  if (!tenant) {
+    return { success: false, message: 'Unauthorized: Session expired or invalid.' }
+  }
+  return await WorkflowService.getExecutionLogs(tenant.companyId)
+}
+
 export async function testTriggerWorkflowRuleAction(
   companyId: string,
   ruleId: string

@@ -15,6 +15,27 @@ import type {
 } from './types.ts'
 import { PLATFORM_SESSION_COOKIE } from './types.ts'
 
+async function performRedirect(url: string): Promise<never> {
+  try {
+    const nav = await import('next/navigation')
+    if (typeof nav?.redirect === 'function') {
+      nav.redirect(url)
+    }
+  } catch (error: any) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'digest' in error &&
+      typeof error.digest === 'string' &&
+      error.digest.startsWith('NEXT_REDIRECT')
+    ) {
+      throw error
+    }
+    throw new Error(`REDIRECT:${url}`)
+  }
+  throw new Error(`REDIRECT:${url}`)
+}
+
 export { PLATFORM_SESSION_COOKIE }
 
 // Canonical Platform Permissions Master Registry
@@ -365,20 +386,6 @@ export const getCurrentPlatformUser = cache(async function getCurrentPlatformUse
   return null
 })
 
-async function safePlatformRedirect(path: string): Promise<never> {
-  try {
-    const nextNav: any = await import('next/navigation.js').catch(() => import('next/navigation'))
-    if (nextNav && typeof nextNav.redirect === 'function') {
-      nextNav.redirect(path)
-    }
-  } catch (e: any) {
-    if (e?.digest?.startsWith?.('NEXT_REDIRECT') || e?.message?.includes?.('NEXT_REDIRECT')) {
-      throw e
-    }
-  }
-  throw new Error(`REDIRECT:${path}`)
-}
-
 /**
  * Strict server-side platform guard.
  * Must be called in Platform Server Components and Server Actions.
@@ -388,8 +395,8 @@ export async function requirePlatformUser(): Promise<PlatformUserRecord> {
   const platformUser = await getCurrentPlatformUser()
 
   if (!platformUser || !platformUser.is_active) {
-    await safePlatformRedirect('/platform/login?error=unauthorized')
-    throw new Error('Unauthorized platform user')
+    await performRedirect('/platform/login?error=unauthorized')
+    throw new Error('Unauthorized')
   }
 
   return platformUser
@@ -402,8 +409,8 @@ export async function requirePlatformRole(allowedRoles: PlatformRole[]): Promise
   const platformUser = await requirePlatformUser()
 
   if (!allowedRoles.includes(platformUser.role)) {
-    await safePlatformRedirect('/403?type=platform')
-    throw new Error('Insufficient platform role permissions')
+    await performRedirect('/403?type=platform')
+    throw new Error('Forbidden')
   }
 
   return platformUser
@@ -444,7 +451,8 @@ export async function requirePlatformPermission(requiredAction: string): Promise
   const platformUser = await requirePlatformUser()
 
   if (!hasPlatformPermission(platformUser, requiredAction)) {
-    await safePlatformRedirect('/403?type=platform')
+    await performRedirect('/403?type=platform')
+    throw new Error('Forbidden')
   }
 
   return platformUser

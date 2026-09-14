@@ -99,3 +99,22 @@ export interface JobCostingRecord {
   created_at: string
   updated_at: string
 }
+
+export function calculateNegotiationMargin(
+  sellingPrice: number,
+  cost: number,
+  discountPercentage: number
+) {
+  const discountAmount = Math.round(sellingPrice * (discountPercentage / 100))
+  const finalPrice = Math.max(0, sellingPrice - discountAmount)
+  const finalProfit = finalPrice - cost
+  const finalMargin = finalPrice > 0 ? (finalProfit / finalPrice) * 100 : 0
+
+  return {
+    discountAmount,
+    finalPrice,
+    finalProfit,
+    finalMargin: Number(finalMargin.toFixed(1)),
+    isSafeMargin: finalMargin >= 15, // 15% minimum safety margin
+  }
+}

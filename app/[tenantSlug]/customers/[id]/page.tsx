@@ -50,11 +50,10 @@ import {
   resolveCustomerRatesAction,
   getCustomerFinancialSummaryAction,
   getCustomerTimelineAction,
+  getCustomerFullDetailsAction,
+  logCustomerCommunicationAction,
 } from '@/actions/customer.actions'
-import { CrmService } from '@/services/crm.service'
-import { BillingRepository } from '@/lib/repositories/billing.repository'
-import { OrderRepository } from '@/lib/repositories/order.repository'
-import { QuotationService } from '@/services/quotation.service'
+import { recordPaymentAction } from '@/actions/billing.actions'
 import {
   CustomerRecord,
   ResolvedProductRate,
@@ -152,22 +151,33 @@ export default function CustomerProfilePage() {
     setIsError(false)
 
     try {
-      // 1. Fetch Customer Record & Financial Summary
-      const [cust, finRes, ratesRes, timelineRes] = await Promise.all([
-        CrmService.getCustomerById(customerId, companyId),
-        getCustomerFinancialSummaryAction(customerId, companyId),
-        resolveCustomerRatesAction(customerId, companyId),
-        getCustomerTimelineAction(customerId, companyId),
-      ])
-
-      if (!cust) {
+      const res = await getCustomerFullDetailsAction(customerId, companyId)
+      if (!res.success || !res.data?.customer) {
         setIsError(true)
-        setErrorText('Customer profile not found or removed.')
+        setErrorText(res.error || 'Customer profile not found or removed.')
         setIsLoading(false)
         return
       }
 
+      const {
+        customer: cust,
+        financialSummary: fin,
+        rates: rts,
+        timelineEvents: tml,
+        invoices: invs,
+        payments: pays,
+        quotations: qts,
+        orders: ords,
+      } = res.data
+
       setCustomer(cust)
+      if (fin) setFinancialSummary(fin)
+      setRates(rts)
+      setTimelineEvents(tml)
+      setInvoices(invs)
+      setPayments(pays)
+      setQuotations(qts)
+      setOrders(ords)
 
       // Pre-fill edit form
       setEditName(cust.name)
@@ -182,35 +192,6 @@ export default function CustomerProfilePage() {
       setEditCustomerType(cust.customer_category || cust.customer_type || 'retail')
       setEditCreditLimit(cust.credit_limit || 0)
       setEditNotes(cust.notes || '')
-
-      if (finRes.success && finRes.data) {
-        setFinancialSummary(finRes.data)
-      }
-
-      if (ratesRes.success && ratesRes.data) {
-        setRates(ratesRes.data)
-      }
-
-      if (timelineRes.success && timelineRes.data) {
-        setTimelineEvents(timelineRes.data)
-      }
-
-      // 2. Fetch Invoices, Payments, Quotations, Orders
-      try {
-        const [allInvs, allPays, allQuotes, allOrds] = await Promise.all([
-          BillingRepository.getInvoices(companyId),
-          BillingRepository.getPayments(companyId, customerId),
-          QuotationService.getQuotations(companyId),
-          OrderRepository.getOrders(companyId),
-        ])
-
-        setInvoices(allInvs.filter((i) => i.customer_id === customerId))
-        setPayments(allPays)
-        setQuotations(allQuotes.filter((q) => q.customer_id === customerId))
-        setOrders(allOrds.filter((o) => o.customer_id === customerId))
-      } catch {
-        // Non-blocking for sub-collections
-      }
     } catch {
       setIsError(true)
       setErrorText('Failed to load customer profile.')
@@ -277,16 +258,22 @@ export default function CustomerProfilePage() {
     setIsRecordingPayment(true)
 
     try {
-      await BillingRepository.recordPayment({
-        company_id: companyId,
-        customer_id: customer.id,
-        customer_name: customer.name,
-        amount: amt,
-        payment_method: payMethod,
-        invoice_id: payInvoiceId || undefined,
-        notes: payNotes.trim() || null,
-        received_by_name: 'Authorized Staff',
-      })
+      const res = await recordPaymentAction(
+        {
+          customer_id: customer.id,
+          customer_name: customer.name,
+          amount: amt,
+          payment_method: payMethod as any,
+          invoice_id: payInvoiceId || undefined,
+          notes: payNotes.trim() || undefined,
+        },
+        companyId
+      )
+
+      if (!res.success) {
+        alert(res.error || 'Failed to record payment.')
+        return
+      }
 
       setIsRecordPayOpen(false)
       setPayAmount('')
@@ -307,13 +294,20 @@ export default function CustomerProfilePage() {
     setIsLoggingComm(true)
 
     try {
-      await CrmService.addCommunication({
-        company_id: companyId,
-        customer_id: customer.id,
-        type: commType,
-        summary: commSummary.trim(),
-        details: commDetails.trim() || null,
-      })
+      const res = await logCustomerCommunicationAction(
+        {
+          customerId: customer.id,
+          type: commType,
+          summary: commSummary.trim(),
+          details: commDetails.trim() || null,
+        },
+        companyId
+      )
+
+      if (!res.success) {
+        alert(res.error || 'Failed to log communication.')
+        return
+      }
 
       setIsLogCommOpen(false)
       setCommSummary('')

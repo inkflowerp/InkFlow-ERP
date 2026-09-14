@@ -11,9 +11,7 @@ import {
   WorkflowActionItem,
   WorkflowCondition,
 } from '@/types/workflow.types'
-import { ApiResponse } from '@/types/common.types'
-import { createClient } from '@/lib/supabase/client'
-import { createAdminClient } from '@/lib/supabase/admin'
+import type { ApiResponse } from '@/types/common.types'
 
 // Production workflow automation rule templates
 export const SEEDED_WORKFLOW_RULES: WorkflowRule[] = [
@@ -315,12 +313,15 @@ export class WorkflowService {
     PrintERPDataStore.set(STORAGE_KEYS.AUTOMATION_RULES, memoryRules)
 
     try {
-      const supabase = createAdminClient()
-      await (supabase as any)
-        .from('workflow_rules')
-        .update({ is_active: isActive, updated_at: rule.updated_at })
-        .eq('id', ruleId)
-        .eq('company_id', companyId)
+      if (typeof window === 'undefined') {
+        const { createAdminClient } = await import('@/lib/supabase/admin')
+        const supabase = createAdminClient()
+        await (supabase as any)
+          .from('workflow_rules')
+          .update({ is_active: isActive, updated_at: rule.updated_at })
+          .eq('id', ruleId)
+          .eq('company_id', companyId)
+      }
     } catch {
       // Local dev pass
     }
