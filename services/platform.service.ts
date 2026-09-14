@@ -62,10 +62,16 @@ import type {
 } from '../types/platform.types.ts'
 import { AuthEmailService } from './auth-email.service.ts'
 import type { PlatformRole } from '../lib/auth/types.ts'
+import type { ApiResponse } from '../types/common.types.ts'
 import type { SubscriptionPlanRecord } from '../types/subscription.types.ts'
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '../lib/subscription/subscription-constants.ts'
-import type { ApiResponse } from '../types/common.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+
+function isValidUuid(id?: string | null): boolean {
+  if (!id || typeof id !== 'string') return false
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id.trim())
+}
+
 export const DEFAULT_PLATFORM_FEATURE_FLAGS: Array<{
   key: string
   name: string
@@ -2237,11 +2243,13 @@ export class PlatformService {
       // Resolve plan if provided
       let resolvedPlan: SubscriptionPlanRecord | null = null
       if (planCodeOrId) {
-        const { data: planData } = await (admin as any)
-          .from('subscription_plans')
-          .select('*')
-          .or(`id.eq.${planCodeOrId},code.eq.${planCodeOrId}`)
-          .single()
+        let planQuery = (admin as any).from('subscription_plans').select('*')
+        if (isValidUuid(planCodeOrId)) {
+          planQuery = planQuery.eq('id', planCodeOrId)
+        } else {
+          planQuery = planQuery.eq('code', planCodeOrId.toLowerCase().trim())
+        }
+        const { data: planData } = await planQuery.maybeSingle()
         resolvedPlan = planData
       }
 
@@ -2565,13 +2573,17 @@ export class PlatformService {
     try {
       const admin = createAdminClient()
 
-      // Resolve plan
-      const { data: plan, error: planErr } = await (admin as any)
+      // Resolve plan safely
+      let planQuery = (admin as any)
         .from('subscription_plans')
         .select('*')
-        .or(`id.eq.${newPlanCodeOrId},code.eq.${newPlanCodeOrId}`)
         .eq('is_active', true)
-        .single()
+      if (isValidUuid(newPlanCodeOrId)) {
+        planQuery = planQuery.eq('id', newPlanCodeOrId)
+      } else {
+        planQuery = planQuery.eq('code', newPlanCodeOrId.toLowerCase().trim())
+      }
+      const { data: plan, error: planErr } = await planQuery.maybeSingle()
 
       if (planErr || !plan) {
         return { success: false, error: 'Target plan does not exist or is inactive.' }
@@ -2585,7 +2597,9 @@ export class PlatformService {
         .maybeSingle()
 
       const nowIso = new Date().toISOString()
-      const newStatus = plan.code === 'trial' ? 'trial' : (existingSub?.status === 'trial' ? 'active' : existingSub?.status || 'active')
+      const isTrialPlan = plan.code === 'trial'
+      const newStatus = isTrialPlan ? 'trial' : (existingSub?.status === 'trial' ? 'active' : existingSub?.status || 'active')
+      const trialEndsAt = isTrialPlan ? new Date(Date.now() + (plan.trial_days || 14) * 86400000).toISOString() : null
 
       if (!existingSub) {
         const { error: insErr } = await (admin as any)
@@ -2597,7 +2611,7 @@ export class PlatformService {
             billing_interval: 'monthly',
             current_period_start: nowIso,
             current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-            trial_ends_at: plan.code === 'trial' ? new Date(Date.now() + (plan.trial_days || 14) * 86400000).toISOString() : null,
+            trial_ends_at: trialEndsAt,
             created_at: nowIso,
             updated_at: nowIso,
           })
@@ -2611,6 +2625,7 @@ export class PlatformService {
           .update({
             plan_id: plan.id,
             status: newStatus,
+            trial_ends_at: trialEndsAt,
             updated_at: nowIso,
           })
           .eq('company_id', companyId)
@@ -5146,8 +5161,8 @@ export class PlatformService {
 
       const newTenants = companies.slice(0, 5)
       const trialsEndingSoon = companies
-        .filter((c) => c.status === 'trial')
-        .map((c) => ({
+        .filter((c: PlatformTenantCompany) => c.status === 'trial')
+        .map((c: PlatformTenantCompany) => ({
           company: c,
           trial_day: 10,
           total_days: 14,
@@ -5157,25 +5172,25 @@ export class PlatformService {
         }))
 
       const inactiveTenants = companies
-        .filter((c) => c.status === 'suspended')
-        .map((c) => ({
+        .filter((c: PlatformTenantCompany) => c.status === 'suspended')
+        .map((c: PlatformTenantCompany) => ({
           company: c,
           days_inactive: 12,
           last_meaningful_activity: c.last_activity,
         }))
 
       const atRiskTenants = companies
-        .filter((c) => c.status === 'past_due')
-        .map((c) => ({
+        .filter((c: PlatformTenantCompany) => c.status === 'past_due')
+        .map((c: PlatformTenantCompany) => ({
           company: c,
           risk_score: 75,
           reasons: ['Payment Overdue', 'Decreased order volume'],
         }))
 
       const highGrowthTenants = companies
-        .filter((c) => c.status === 'active')
+        .filter((c: PlatformTenantCompany) => c.status === 'active')
         .slice(0, 5)
-        .map((c) => ({
+        .map((c: PlatformTenantCompany) => ({
           company: c,
           growth_rate_pct: 35,
           order_volume: c.orders_this_month,

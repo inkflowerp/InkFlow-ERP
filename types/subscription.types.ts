@@ -42,13 +42,30 @@ export interface TenantAccountTypeMeta {
 }
 
 export function resolveTenantAccountType(
-  subscription?: { status?: SubscriptionStatus | string; plan_code?: PlanCode | string } | null
+  subscription?: {
+    status?: SubscriptionStatus | string
+    plan_code?: PlanCode | string
+    plan?: { code?: string; name?: string } | null
+    plan_id?: string
+  } | null
 ): TenantAccountType {
-  if (!subscription) return 'trial'
-  if (subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial') return 'trial'
-  if (subscription.plan_code === 'enterprise') return 'enterprise'
-  if (subscription.plan_code === 'business') return 'business'
-  if (subscription.plan_code === 'starter') return 'starter'
+  if (!subscription) return 'starter'
+
+  const rawCode = (
+    subscription.plan_code ||
+    subscription.plan?.code ||
+    ''
+  ).toLowerCase()
+
+  const isTrial =
+    subscription.status === 'trial' ||
+    subscription.status === 'trialing' ||
+    rawCode === 'trial'
+
+  if (isTrial) return 'trial'
+  if (rawCode === 'enterprise' || subscription.plan?.name?.toLowerCase().includes('enterprise')) return 'enterprise'
+  if (rawCode === 'business' || subscription.plan?.name?.toLowerCase().includes('business')) return 'business'
+  if (rawCode === 'starter' || subscription.plan?.name?.toLowerCase().includes('starter')) return 'starter'
   return 'starter'
 }
 
@@ -72,36 +89,68 @@ export function resolveSubscriptionPlan(
     plan_name?: string
     plan_name_bn?: string
     plan_id?: string
+    plan?: { id?: string; code?: string; name?: string; name_bn?: string } | null
   } | null,
-  plans?: SubscriptionPlanRecord[]
+  plans?: SubscriptionPlanRecord[] | SubscriptionPlanRecord
 ): ResolvedSubscriptionState {
+  const names: Record<PlanCode, { en: string; bn: string }> = {
+    trial: { en: 'Free Trial', bn: 'ফ্রি ট্রায়াল' },
+    starter: { en: 'Starter Plan', bn: 'স্টার্টার প্ল্যান' },
+    business: { en: 'Business Plan', bn: 'বিজনেস প্ল্যান' },
+    enterprise: { en: 'Enterprise Plan', bn: 'এন্টারপ্রাইজ প্ল্যান' },
+  }
+
+  const planList: SubscriptionPlanRecord[] = Array.isArray(plans)
+    ? plans
+    : plans && typeof plans === 'object' && 'code' in plans
+    ? [plans as SubscriptionPlanRecord]
+    : []
+
+  const rawCode = (
+    subscription?.plan_code ||
+    subscription?.plan?.code ||
+    (subscription?.plan_id ? planList.find((p) => p.id === subscription.plan_id)?.code : undefined) ||
+    (subscription?.plan?.name?.toLowerCase().includes('enterprise')
+      ? 'enterprise'
+      : subscription?.plan?.name?.toLowerCase().includes('business')
+      ? 'business'
+      : subscription?.plan?.name?.toLowerCase().includes('starter')
+      ? 'starter'
+      : 'starter')
+  ).toLowerCase()
+
   if (!subscription) {
-    const trialPlan = plans?.find((p) => p.code === 'trial')
+    const defaultPlan = planList.find((p) => p.code === 'trial') || planList.find((p) => p.code === 'starter') || planList[0]
+    const code: PlanCode = (defaultPlan?.code as PlanCode) || 'trial'
+    const isPlanTrial = code === 'trial'
     return {
-      planCode: 'trial',
-      planName: trialPlan?.name || 'Free Trial',
-      planNameBn: trialPlan?.name_bn || 'ফ্রি ট্রায়াল',
-      status: 'trial',
-      badgeTextEn: 'Trial',
-      badgeTextBn: 'ফ্রি ট্রায়াল',
-      isTrial: true,
+      planCode: code,
+      planName: defaultPlan?.name || names[code]?.en || (isPlanTrial ? 'Free Trial' : 'Starter Plan'),
+      planNameBn: defaultPlan?.name_bn || names[code]?.bn || (isPlanTrial ? 'ফ্রি ট্রায়াল' : 'স্টার্টার প্ল্যান'),
+      status: isPlanTrial ? 'trial' : 'active',
+      badgeTextEn: defaultPlan?.name ? (isPlanTrial ? 'Trial' : defaultPlan.name.replace(/ Plan$/i, '')) : (isPlanTrial ? 'Trial' : 'Starter'),
+      badgeTextBn: defaultPlan?.name_bn || names[code]?.bn || (isPlanTrial ? 'ফ্রি ট্রায়াল' : 'স্টার্টার'),
+      isTrial: isPlanTrial,
       isSuspended: false,
       isPastDue: false,
       isGracePeriod: false,
     }
   }
 
-  const isTrial = subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial'
+  const isTrial =
+    subscription.status === 'trial' ||
+    subscription.status === 'trialing' ||
+    rawCode === 'trial'
   const isSuspended = subscription.status === 'suspended'
   const isPastDue = subscription.status === 'past_due'
   const isGracePeriod = subscription.status === 'grace_period'
 
   if (isTrial) {
-    const trialPlan = plans?.find((p) => p.code === 'trial' || p.id === subscription.plan_id)
+    const trialPlan = planList.find((p) => p.code === 'trial' || p.id === subscription.plan_id)
     return {
       planCode: 'trial',
-      planName: subscription.plan_name || trialPlan?.name || 'Free Trial',
-      planNameBn: subscription.plan_name_bn || trialPlan?.name_bn || 'ফ্রি ট্রায়াল',
+      planName: subscription.plan_name || subscription.plan?.name || trialPlan?.name || 'Free Trial',
+      planNameBn: subscription.plan_name_bn || subscription.plan?.name_bn || trialPlan?.name_bn || 'ফ্রি ট্রায়াল',
       status: (subscription.status as SubscriptionStatus) || 'trial',
       badgeTextEn: 'Trial',
       badgeTextBn: 'ফ্রি ট্রায়াল',
@@ -113,25 +162,18 @@ export function resolveSubscriptionPlan(
   }
 
   const code: PlanCode =
-    subscription.plan_code === 'enterprise'
+    rawCode === 'enterprise'
       ? 'enterprise'
-      : subscription.plan_code === 'business'
+      : rawCode === 'business'
       ? 'business'
       : 'starter'
 
-  const matchedPlan = plans?.find((p) => p.code === code || p.id === subscription.plan_id)
-
-  const names: Record<PlanCode, { en: string; bn: string }> = {
-    trial: { en: 'Free Trial', bn: 'ফ্রি ট্রায়াল' },
-    starter: { en: 'Starter Plan', bn: 'স্টার্টার প্ল্যান' },
-    business: { en: 'Business Plan', bn: 'বিজনেস প্ল্যান' },
-    enterprise: { en: 'Enterprise Plan', bn: 'এন্টারপ্রাইজ প্ল্যান' },
-  }
+  const matchedPlan = planList.find((p) => p.code === code || p.id === subscription.plan_id)
 
   return {
     planCode: code,
-    planName: subscription.plan_name || matchedPlan?.name || names[code].en,
-    planNameBn: subscription.plan_name_bn || matchedPlan?.name_bn || names[code].bn,
+    planName: subscription.plan_name || subscription.plan?.name || matchedPlan?.name || names[code].en,
+    planNameBn: subscription.plan_name_bn || subscription.plan?.name_bn || matchedPlan?.name_bn || names[code].bn,
     status: (subscription.status as SubscriptionStatus) || 'active',
     badgeTextEn: matchedPlan?.name ? matchedPlan.name.replace(/ Plan$/i, '') : (code.charAt(0).toUpperCase() + code.slice(1)),
     badgeTextBn: subscription.plan_name_bn || matchedPlan?.name_bn || names[code].bn,

@@ -384,15 +384,15 @@ export async function getActivePaymentGatewaysAction(): Promise<ServerActionResu
 export async function getPublicSubscriptionPlansAction(): Promise<ServerActionResult<PublicPlansData>> {
   try {
     const res = await PlatformService.getPlans()
-    const allPlans = (res.success && res.data && res.data.length > 0) ? res.data : DEFAULT_PLANS
-    const activePlans = allPlans.filter((p) => p.is_active !== false)
-    const trialPlan = activePlans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
+    const allPlans: SubscriptionPlanRecord[] = (res.success && res.data && res.data.length > 0) ? res.data : DEFAULT_PLANS
+    const activePlans = allPlans.filter((p: SubscriptionPlanRecord) => p.is_active !== false)
+    const trialPlan = activePlans.find((p: SubscriptionPlanRecord) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
     const trialDays = trialPlan.trial_days || 14
     const paidPlans = activePlans
-      .filter((p) => p.code !== 'trial')
-      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)
+      .filter((p: SubscriptionPlanRecord) => p.code !== 'trial')
+      .sort((a: SubscriptionPlanRecord, b: SubscriptionPlanRecord) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_monthly - b.price_monthly)
 
-    const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p) => p.price_monthly)) : 1999
+    const lowestPrice = paidPlans.length > 0 ? Math.min(...paidPlans.map((p: SubscriptionPlanRecord) => p.price_monthly)) : 1999
 
     const gwRes = await getActivePaymentGatewaysAction()
     const activePaymentGateways = gwRes.data || PAYMENT_GATEWAY_METADATA_LIST.filter((m) =>

@@ -27,6 +27,10 @@ import {
 } from '../lib/subscription/subscription-constants.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
+const isValidUuid = (str?: string | null): boolean => {
+  return Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
+}
+
 export class EntitlementService {
   /**
    * Fetches authoritative tenant subscription record from database
@@ -38,27 +42,31 @@ export class EntitlementService {
   }> {
     const admin = createAdminClient()
     const nowIso = new Date().toISOString()
-    const normId = companyId || 'default'
+    const normId = (companyId || '').trim() || 'default'
     let resolvedCompanyId = normId
-    let resolvedSlug = companySlug || ''
+    let resolvedSlug = (companySlug || '').trim().toLowerCase()
     let companyCreatedAt = nowIso
 
-    // 1. Resolve company by ID or slug in PostgreSQL
+    // 1. Resolve company by ID or slug in PostgreSQL safely
     try {
-      const orFilter = companySlug
-        ? `id.eq.${normId},slug.eq.${normId},slug.eq.${companySlug}`
-        : `id.eq.${normId},slug.eq.${normId}`
+      let compQuery = (admin as any).from('companies').select('id, slug, created_at')
+      if (isValidUuid(normId)) {
+        compQuery = compQuery.eq('id', normId)
+      } else if (resolvedSlug) {
+        compQuery = compQuery.eq('slug', resolvedSlug)
+      } else if (normId !== 'default') {
+        compQuery = compQuery.eq('slug', normId.toLowerCase())
+      } else {
+        compQuery = null
+      }
 
-      const { data: comp } = await (admin as any)
-        .from('companies')
-        .select('id, slug, created_at')
-        .or(orFilter)
-        .maybeSingle()
-
-      if (comp) {
-        resolvedCompanyId = comp.id || resolvedCompanyId
-        if (comp.slug) resolvedSlug = comp.slug
-        if (comp.created_at) companyCreatedAt = comp.created_at
+      if (compQuery) {
+        const { data: comp } = await compQuery.maybeSingle()
+        if (comp) {
+          resolvedCompanyId = comp.id
+          if (comp.slug) resolvedSlug = comp.slug
+          if (comp.created_at) companyCreatedAt = comp.created_at
+        }
       }
     } catch {}
 
@@ -66,7 +74,7 @@ export class EntitlementService {
     try {
       const storedCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
       const matchedComp = storedCompanies?.find(
-        (c) => c.id === normId || c.slug === normId || (companySlug && c.slug === companySlug)
+        (c) => c.id === normId || c.slug === normId || (resolvedSlug && c.slug === resolvedSlug)
       )
       if (matchedComp) {
         resolvedCompanyId = matchedComp.id || resolvedCompanyId
@@ -75,92 +83,95 @@ export class EntitlementService {
       }
     } catch {}
 
-    // 2. Query company_subscriptions from database
-    try {
-      const subOrFilter = resolvedSlug && resolvedSlug !== resolvedCompanyId
-        ? `company_id.eq.${resolvedCompanyId},company_id.eq.${normId},company_id.eq.${resolvedSlug}`
-        : `company_id.eq.${resolvedCompanyId},company_id.eq.${normId}`
+    // 2. Query company_subscriptions from database by resolvedCompanyId
+    if (isValidUuid(resolvedCompanyId)) {
+      try {
+        const { data: sub, error } = await (admin as any)
+          .from('company_subscriptions')
+          .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
+          .eq('company_id', resolvedCompanyId)
+          .maybeSingle()
 
-      const { data: sub, error } = await (admin as any)
-        .from('company_subscriptions')
-        .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
-        .or(subOrFilter)
-        .maybeSingle()
+        if (!error && sub) {
+          let planRecord: SubscriptionPlanRecord | null = sub.subscription_plans
 
-      if (!error && sub) {
-        let planRecord: SubscriptionPlanRecord | null = sub.subscription_plans
-
-        // If join didn't populate subscription_plans, fetch from subscription_plans directly
-        if (!planRecord && sub.plan_id) {
-          const { data: directPlan } = await (admin as any)
-            .from('subscription_plans')
-            .select('*')
-            .eq('id', sub.plan_id)
-            .maybeSingle()
-          if (directPlan) planRecord = directPlan
-        }
-
-        if (!planRecord && sub.plan_code) {
-          const { data: codePlan } = await (admin as any)
-            .from('subscription_plans')
-            .select('*')
-            .eq('code', sub.plan_code)
-            .maybeSingle()
-          if (codePlan) planRecord = codePlan
-        }
-
-        // Check platform plans in data store if available
-        if (!planRecord) {
-          const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-          if (storedPlans) {
-            planRecord = storedPlans.find((p) => p.id === sub.plan_id || p.code === sub.plan_code) || null
+          // If join didn't populate subscription_plans, fetch from subscription_plans directly
+          if (!planRecord && sub.plan_id) {
+            let pQuery = (admin as any).from('subscription_plans').select('*')
+            if (isValidUuid(sub.plan_id)) {
+              pQuery = pQuery.eq('id', sub.plan_id)
+            } else {
+              pQuery = pQuery.eq('code', sub.plan_id)
+            }
+            const { data: directPlan } = await pQuery.maybeSingle()
+            if (directPlan) planRecord = directPlan
           }
+
+          if (!planRecord && sub.plan_code) {
+            const { data: codePlan } = await (admin as any)
+              .from('subscription_plans')
+              .select('*')
+              .eq('code', sub.plan_code)
+              .maybeSingle()
+            if (codePlan) planRecord = codePlan
+          }
+
+          // Check platform plans in data store if available
+          if (!planRecord) {
+            const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+            if (storedPlans) {
+              planRecord = storedPlans.find((p) => p.id === sub.plan_id || p.code === sub.plan_code) || null
+            }
+          }
+
+          const isTrialStatus = sub.status === 'trial' || sub.status === 'trialing' || sub.plan_code === 'trial' || planRecord?.code === 'trial'
+          const effectivePlan: SubscriptionPlanRecord = planRecord || (
+            sub.plan_code
+              ? (DEFAULT_PLANS.find((p) => p.code === sub.plan_code) || (isTrialStatus ? DEFAULT_TRIAL_PLAN : DEFAULT_PLANS[1]))
+              : (isTrialStatus ? DEFAULT_TRIAL_PLAN : DEFAULT_PLANS[1])
+          )
+
+          let nextPlanRecord: SubscriptionPlanRecord | null = null
+          if (sub.next_plan_id) {
+            let npQuery = (admin as any).from('subscription_plans').select('*')
+            if (isValidUuid(sub.next_plan_id)) {
+              npQuery = npQuery.eq('id', sub.next_plan_id)
+            } else {
+              npQuery = npQuery.eq('code', sub.next_plan_id)
+            }
+            const { data: np } = await npQuery.maybeSingle()
+            if (np) nextPlanRecord = np
+          }
+
+          const subRecord: CompanySubscriptionRecord = {
+            id: sub.id,
+            company_id: sub.company_id || resolvedCompanyId,
+            plan_id: sub.plan_id || effectivePlan.id,
+            plan_code: effectivePlan.code,
+            plan_name: effectivePlan.name,
+            plan_name_bn: effectivePlan.name_bn,
+            plan_version: sub.plan_version || effectivePlan.version || 1,
+            status: sub.status,
+            billing_interval: sub.billing_interval || 'monthly',
+            current_period_start: sub.current_period_start || companyCreatedAt,
+            current_period_end: sub.current_period_end,
+            trial_ends_at: isTrialStatus ? sub.trial_ends_at : null,
+            cancelled_at: sub.cancelled_at,
+            cancel_at_period_end: Boolean(sub.cancel_at_period_end),
+            next_plan_id: sub.next_plan_id,
+            change_effective_at: sub.change_effective_at,
+            grace_period_ends_at: sub.grace_period_ends_at,
+            started_at: sub.started_at,
+            payment_method_type: sub.payment_method_type,
+            last_payment_reference: sub.last_payment_reference,
+            custom_limits_override: sub.custom_limits_override,
+          }
+
+          return { subscription: subRecord, plan: effectivePlan, nextPlan: nextPlanRecord }
         }
-
-        const effectivePlan: SubscriptionPlanRecord = planRecord || (
-          sub.plan_code
-            ? (DEFAULT_PLANS.find((p) => p.code === sub.plan_code) || DEFAULT_TRIAL_PLAN)
-            : DEFAULT_TRIAL_PLAN
-        )
-
-        let nextPlanRecord: SubscriptionPlanRecord | null = null
-        if (sub.next_plan_id) {
-          const { data: np } = await (admin as any)
-            .from('subscription_plans')
-            .select('*')
-            .eq('id', sub.next_plan_id)
-            .maybeSingle()
-          if (np) nextPlanRecord = np
-        }
-
-        const subRecord: CompanySubscriptionRecord = {
-          id: sub.id,
-          company_id: sub.company_id || resolvedCompanyId,
-          plan_id: sub.plan_id || effectivePlan.id,
-          plan_code: effectivePlan.code,
-          plan_name: effectivePlan.name,
-          plan_name_bn: effectivePlan.name_bn,
-          plan_version: sub.plan_version || effectivePlan.version || 1,
-          status: sub.status,
-          billing_interval: sub.billing_interval || 'monthly',
-          current_period_start: sub.current_period_start || companyCreatedAt,
-          current_period_end: sub.current_period_end,
-          trial_ends_at: sub.trial_ends_at,
-          cancelled_at: sub.cancelled_at,
-          cancel_at_period_end: Boolean(sub.cancel_at_period_end),
-          next_plan_id: sub.next_plan_id,
-          change_effective_at: sub.change_effective_at,
-          grace_period_ends_at: sub.grace_period_ends_at,
-          started_at: sub.started_at,
-          payment_method_type: sub.payment_method_type,
-          last_payment_reference: sub.last_payment_reference,
-          custom_limits_override: sub.custom_limits_override,
-        }
-
-        return { subscription: subRecord, plan: effectivePlan, nextPlan: nextPlanRecord }
+      } catch (err) {
+        console.warn('[EntitlementService] DB subscription lookup warning:', err)
       }
-    } catch (err) {
-      console.warn('[EntitlementService] DB subscription lookup warning:', err)
     }
 
     // 3. Fallback: check PrintERPDataStore for subscription

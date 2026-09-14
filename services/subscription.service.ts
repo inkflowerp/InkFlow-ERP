@@ -285,15 +285,17 @@ export class SubscriptionService {
    */
   static async getPlanById(id: string): Promise<SubscriptionPlanRecord> {
     const plans = await this.getPlans()
-    const found = plans.find((p) => p.id === id)
+    const found = plans.find((p) => p.id === id || p.code === id)
     if (found) return found
     try {
       const admin = createAdminClient()
-      const { data } = await (admin as any)
-        .from('subscription_plans')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle()
+      let query = (admin as any).from('subscription_plans').select('*')
+      if (isValidUuid(id)) {
+        query = query.eq('id', id)
+      } else {
+        query = query.eq('code', id)
+      }
+      const { data } = await query.maybeSingle()
       if (data) return data as SubscriptionPlanRecord
     } catch {}
     return DEFAULT_TRIAL_PLAN
@@ -306,28 +308,32 @@ export class SubscriptionService {
     companyId: string,
     companySlug?: string
   ): Promise<CompanySubscriptionRecord> {
-    const normId = companyId || 'default'
+    const normId = (companyId || '').trim() || 'default'
     let resolvedCompanyId = normId
-    let resolvedSlug = companySlug || ''
+    let resolvedSlug = (companySlug || '').trim().toLowerCase()
     let companyCreatedAt = new Date().toISOString()
 
-    // 1. Resolve company by ID or Slug from PostgreSQL
+    // 1. Resolve company by ID or Slug from PostgreSQL safely (Strict UUID Type Checking)
     try {
       const admin = createAdminClient()
-      const orFilter = companySlug
-        ? `id.eq.${normId},slug.eq.${normId},slug.eq.${companySlug}`
-        : `id.eq.${normId},slug.eq.${normId}`
+      let compQuery = (admin as any).from('companies').select('id, slug, created_at')
+      if (isValidUuid(normId)) {
+        compQuery = compQuery.eq('id', normId)
+      } else if (resolvedSlug) {
+        compQuery = compQuery.eq('slug', resolvedSlug)
+      } else if (normId !== 'default') {
+        compQuery = compQuery.eq('slug', normId.toLowerCase())
+      } else {
+        compQuery = null
+      }
 
-      const { data: comp } = await (admin as any)
-        .from('companies')
-        .select('id, slug, created_at')
-        .or(orFilter)
-        .maybeSingle()
-
-      if (comp) {
-        resolvedCompanyId = comp.id || resolvedCompanyId
-        if (comp.slug) resolvedSlug = comp.slug
-        if (comp.created_at) companyCreatedAt = comp.created_at
+      if (compQuery) {
+        const { data: comp } = await compQuery.maybeSingle()
+        if (comp) {
+          resolvedCompanyId = comp.id
+          if (comp.slug) resolvedSlug = comp.slug
+          if (comp.created_at) companyCreatedAt = comp.created_at
+        }
       }
     } catch {}
 
@@ -335,7 +341,7 @@ export class SubscriptionService {
     try {
       const storedCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
       const matchedComp = storedCompanies?.find(
-        (c) => c.id === normId || c.slug === normId || (companySlug && c.slug === companySlug)
+        (c) => c.id === normId || c.slug === normId || (resolvedSlug && c.slug === resolvedSlug)
       )
       if (matchedComp) {
         resolvedCompanyId = matchedComp.id || resolvedCompanyId
@@ -344,70 +350,75 @@ export class SubscriptionService {
       }
     } catch {}
 
-    // 2. Query company_subscriptions in database by resolvedCompanyId, normId, or resolvedSlug
-    try {
-      const admin = createAdminClient()
-      const subOrFilter = resolvedSlug && resolvedSlug !== resolvedCompanyId
-        ? `company_id.eq.${resolvedCompanyId},company_id.eq.${normId},company_id.eq.${resolvedSlug}`
-        : `company_id.eq.${resolvedCompanyId},company_id.eq.${normId}`
+    // 2. Query company_subscriptions in database by resolvedCompanyId
+    if (isValidUuid(resolvedCompanyId)) {
+      try {
+        const admin = createAdminClient()
+        const { data: sub, error } = await (admin as any)
+          .from('company_subscriptions')
+          .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
+          .eq('company_id', resolvedCompanyId)
+          .maybeSingle()
 
-      const { data: sub, error } = await (admin as any)
-        .from('company_subscriptions')
-        .select('*, subscription_plans:subscription_plans!company_subscriptions_plan_id_fkey(*)')
-        .or(subOrFilter)
-        .maybeSingle()
+        if (!error && sub) {
+          let planRecord = sub.subscription_plans
+          if (!planRecord && sub.plan_id) {
+            let pQuery = (admin as any).from('subscription_plans').select('*')
+            if (isValidUuid(sub.plan_id)) {
+              pQuery = pQuery.eq('id', sub.plan_id)
+            } else {
+              pQuery = pQuery.eq('code', sub.plan_id)
+            }
+            const { data: directPlan } = await pQuery.maybeSingle()
+            if (directPlan) planRecord = directPlan
+          }
+          if (!planRecord && sub.plan_code) {
+            const { data: codePlan } = await (admin as any)
+              .from('subscription_plans')
+              .select('*')
+              .eq('code', sub.plan_code)
+              .maybeSingle()
+            if (codePlan) planRecord = codePlan
+          }
 
-      if (!error && sub) {
-        let planRecord = sub.subscription_plans
-        if (!planRecord && sub.plan_id) {
-          const { data: directPlan } = await (admin as any)
-            .from('subscription_plans')
-            .select('*')
-            .eq('id', sub.plan_id)
-            .maybeSingle()
-          if (directPlan) planRecord = directPlan
-        }
-        if (!planRecord && sub.plan_code) {
-          const { data: codePlan } = await (admin as any)
-            .from('subscription_plans')
-            .select('*')
-            .eq('code', sub.plan_code)
-            .maybeSingle()
-          if (codePlan) planRecord = codePlan
-        }
+          if (!planRecord) {
+            const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
+            if (storedPlans) {
+              planRecord = storedPlans.find((p) => p.id === sub.plan_id || p.code === sub.plan_code) || null
+            }
+          }
 
-        if (!planRecord) {
-          const storedPlans = PrintERPDataStore.get<SubscriptionPlanRecord[]>(STORAGE_KEYS.PLATFORM_PLANS)
-          if (storedPlans) {
-            planRecord = storedPlans.find((p) => p.id === sub.plan_id || p.code === sub.plan_code) || null
+          const isTrialStatus = sub.status === 'trial' || sub.status === 'trialing' || sub.plan_code === 'trial' || planRecord?.code === 'trial'
+          const planCode: PlanCode =
+            planRecord?.code ||
+            (sub.plan_code as PlanCode) ||
+            (isTrialStatus ? 'trial' : 'starter')
+
+          return {
+            id: sub.id,
+            company_id: sub.company_id || resolvedCompanyId,
+            plan_id: sub.plan_id || planRecord?.id || `sp-${planCode}`,
+            plan_code: planCode,
+            plan_name: planRecord?.name,
+            plan_name_bn: planRecord?.name_bn,
+            status: sub.status,
+            billing_interval: sub.billing_interval || 'monthly',
+            current_period_start: sub.current_period_start || companyCreatedAt,
+            current_period_end: sub.current_period_end,
+            trial_ends_at: isTrialStatus ? sub.trial_ends_at : null,
+            cancelled_at: sub.cancelled_at,
+            cancel_at_period_end: Boolean(sub.cancel_at_period_end),
+            next_plan_id: sub.next_plan_id,
+            change_effective_at: sub.change_effective_at,
+            grace_period_ends_at: sub.grace_period_ends_at,
+            started_at: sub.started_at,
+            payment_method_type: sub.payment_method_type,
+            last_payment_reference: sub.last_payment_reference,
+            custom_limits_override: sub.custom_limits_override,
           }
         }
-
-        const planCode = planRecord?.code || sub.plan_code || (sub.status === 'trial' ? 'trial' : 'starter')
-        return {
-          id: sub.id,
-          company_id: sub.company_id || resolvedCompanyId,
-          plan_id: sub.plan_id || planRecord?.id || `sp-${planCode}`,
-          plan_code: planCode,
-          plan_name: planRecord?.name,
-          plan_name_bn: planRecord?.name_bn,
-          status: sub.status,
-          billing_interval: sub.billing_interval || 'monthly',
-          current_period_start: sub.current_period_start || companyCreatedAt,
-          current_period_end: sub.current_period_end,
-          trial_ends_at: sub.trial_ends_at,
-          cancelled_at: sub.cancelled_at,
-          cancel_at_period_end: Boolean(sub.cancel_at_period_end),
-          next_plan_id: sub.next_plan_id,
-          change_effective_at: sub.change_effective_at,
-          grace_period_ends_at: sub.grace_period_ends_at,
-          started_at: sub.started_at,
-          payment_method_type: sub.payment_method_type,
-          last_payment_reference: sub.last_payment_reference,
-          custom_limits_override: sub.custom_limits_override,
-        }
-      }
-    } catch {}
+      } catch {}
+    }
 
     // 3. Check PrintERPDataStore fallback for stored company subscription
     try {

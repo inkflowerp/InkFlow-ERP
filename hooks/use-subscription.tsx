@@ -94,30 +94,25 @@ function getInitialSubscription(
     return memoryCachedSubscriptions[companyId]
   }
 
-  const trialPlan = initialPlans.find((p) => p.code === 'trial') || (initialPlans.length > 0 ? initialPlans[0] : DEFAULT_TRIAL_PLAN)
-  const trialDays = trialPlan.trial_days || 14
+  const starterPlan = initialPlans.find((p) => p.code === 'starter') || initialPlans[0] || DEFAULT_PLANS[1]
   const createdAt = new Date().toISOString()
-  const trialEndsAt = new Date(Date.now() + trialDays * 86400000).toISOString()
 
-  const liveSub: CompanySubscriptionRecord = {
+  return {
     id: `sub-${companyId}`,
     company_id: companyId,
-    plan_id: trialPlan.id,
-    plan_code: 'trial',
-    plan_name: trialPlan.name,
-    plan_name_bn: trialPlan.name_bn,
-    status: 'trial',
+    plan_id: starterPlan.id,
+    plan_code: (starterPlan.code as PlanCode) || 'starter',
+    plan_name: starterPlan.name,
+    plan_name_bn: starterPlan.name_bn,
+    status: 'active',
     billing_interval: 'monthly',
     current_period_start: createdAt,
     current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-    trial_ends_at: trialEndsAt,
+    trial_ends_at: null,
     payment_method_type: null,
     last_payment_reference: null,
     custom_limits_override: null,
   }
-  memoryCachedSubscriptions[companyId] = liveSub
-  if (companySlug) memoryCachedSubscriptions[companySlug] = liveSub
-  return liveSub
 }
 
 export interface LimitCheckResult {
@@ -356,17 +351,24 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       const byId = plans.find((p) => p.id === subscription.plan_id)
       if (byId) return byId
     }
-    if (subscription.plan_code === 'trial' || subscription.status === 'trial') {
+    if (subscription.plan_code) {
+      const byCode = plans.find((p) => p.code === subscription.plan_code)
+      if (byCode) return byCode
+    }
+    if (subscription.status === 'trial' || subscription.status === 'trialing') {
       return plans.find((p) => p.code === 'trial') || getTrialPlan(plans)
     }
-    return plans.find((p) => p.code === subscription.plan_code) || getTrialPlan(plans)
+    return plans.find((p) => p.code === 'starter') || DEFAULT_PLANS[1]
   }, [plans, subscription.plan_id, subscription.plan_code, subscription.status])
 
   const currentPlanCode: PlanCode = useMemo(() => {
-    if (subscription.plan_code === 'trial' || subscription.status === 'trial') {
+    if (subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial') {
       return 'trial'
     }
-    return subscription.plan_code
+    if (subscription.plan_code === 'enterprise') return 'enterprise'
+    if (subscription.plan_code === 'business') return 'business'
+    if (subscription.plan_code === 'starter') return 'starter'
+    return 'starter'
   }, [subscription.plan_code, subscription.status])
 
   const usage: TenantResourceUsage = useMemo(() => {
@@ -500,7 +502,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const isSuspended = subscription.status === 'suspended'
   const isPastDue = subscription.status === 'past_due'
-  const isTrial = subscription.status === 'trial' || subscription.plan_code === 'trial'
+  const isTrial =
+    (subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial') &&
+    subscription.status !== 'active' &&
+    subscription.status !== 'suspended' &&
+    subscription.status !== 'cancelled' &&
+    subscription.status !== 'expired' &&
+    subscription.plan_code !== 'business' &&
+    subscription.plan_code !== 'enterprise' &&
+    subscription.plan_code !== 'starter'
 
   const totalTrialDays = currentPlan?.trial_days || 14
 
