@@ -366,9 +366,17 @@ export const getCurrentPlatformUser = cache(async function getCurrentPlatformUse
 })
 
 async function safePlatformRedirect(path: string): Promise<never> {
-  const { redirect } = await import('next/navigation')
-  redirect(path)
-  throw new Error(`Redirecting to ${path}`)
+  try {
+    const nextNav: any = await import('next/navigation.js').catch(() => import('next/navigation'))
+    if (nextNav && typeof nextNav.redirect === 'function') {
+      nextNav.redirect(path)
+    }
+  } catch (e: any) {
+    if (e?.digest?.startsWith?.('NEXT_REDIRECT') || e?.message?.includes?.('NEXT_REDIRECT')) {
+      throw e
+    }
+  }
+  throw new Error(`REDIRECT:${path}`)
 }
 
 /**
@@ -395,6 +403,7 @@ export async function requirePlatformRole(allowedRoles: PlatformRole[]): Promise
 
   if (!allowedRoles.includes(platformUser.role)) {
     await safePlatformRedirect('/403?type=platform')
+    throw new Error('Insufficient platform role permissions')
   }
 
   return platformUser

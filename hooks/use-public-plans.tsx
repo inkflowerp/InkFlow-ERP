@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { getPublicSubscriptionPlansAction, PublicPlansData } from '@/actions/subscription.actions'
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '@/lib/subscription/subscription-constants'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 import { PAYMENT_GATEWAY_METADATA_LIST, PaymentGatewayMeta } from '@/lib/payments/types'
@@ -166,24 +166,26 @@ export function PublicPlansProvider({
 
     let channel: any = null
     try {
-      const supabase = createClient()
-      channel = supabase
-        .channel('public:marketing_subscription_plans')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'subscription_plans' },
-          () => {
-            fetchPlans()
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'platform_system_settings' },
-          () => {
-            fetchPlans()
-          }
-        )
-        .subscribe()
+      if (isSupabaseConfigured()) {
+        const supabase = createClient()
+        channel = supabase
+          .channel('public:marketing_subscription_plans')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'subscription_plans' },
+            () => {
+              fetchPlans()
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'platform_system_settings' },
+            () => {
+              fetchPlans()
+            }
+          )
+          .subscribe()
+      }
     } catch {}
 
     return () => {
@@ -196,7 +198,7 @@ export function PublicPlansProvider({
           busChannel.close()
         } catch {}
       }
-      if (channel) {
+      if (channel && isSupabaseConfigured()) {
         try {
           const supabase = createClient()
           supabase.removeChannel(channel)
@@ -319,23 +321,25 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
 
     let channel: any = null
     try {
-      const supabase = createClient()
-      channel = supabase
-        .channel('public_standalone_plans_sync')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'subscription_plans' },
-          () => {
-            fetchPlans()
-          }
-        )
-        .subscribe()
+      if (isSupabaseConfigured()) {
+        const supabase = createClient()
+        channel = supabase
+          .channel('public_standalone_plans_sync')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'subscription_plans' },
+            () => {
+              fetchPlans()
+            }
+          )
+          .subscribe()
+      }
     } catch {}
 
     return () => {
       window.removeEventListener('printerp_plans_sync', handlePlansSync)
       window.removeEventListener('printerp_data_sync', handleDataSync)
-      if (channel) {
+      if (channel && isSupabaseConfigured()) {
         try {
           const supabase = createClient()
           supabase.removeChannel(channel)

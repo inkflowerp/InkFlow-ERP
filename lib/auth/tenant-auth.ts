@@ -189,9 +189,17 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
 })
 
 async function safeTenantRedirect(path: string): Promise<never> {
-  const { redirect } = await import('next/navigation')
-  redirect(path)
-  throw new Error(`Redirecting to ${path}`)
+  try {
+    const nextNav: any = await import('next/navigation.js').catch(() => import('next/navigation'))
+    if (nextNav && typeof nextNav.redirect === 'function') {
+      nextNav.redirect(path)
+    }
+  } catch (e: any) {
+    if (e?.digest?.startsWith?.('NEXT_REDIRECT') || e?.message?.includes?.('NEXT_REDIRECT')) {
+      throw e
+    }
+  }
+  throw new Error(`REDIRECT:${path}`)
 }
 
 /**
@@ -202,17 +210,16 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
   const tenant = await getCurrentTenant(requestedSlugOrId)
 
   if (!tenant) {
+    let hasPlatformCookie = false
     try {
-      const { cookies } = await import('next/headers')
+      const { cookies } = await import('next/headers.js').catch(() => import('next/headers'))
       const cookieStore = await cookies()
-      const hasPlatformCookie = Boolean(cookieStore.get('printerp_platform_session')?.value)
-      if (hasPlatformCookie) {
-        await safeTenantRedirect('/platform')
-      }
-    } catch (e: any) {
-      if (e?.digest?.includes('NEXT_REDIRECT') || e?.message?.includes('NEXT_REDIRECT')) {
-        throw e
-      }
+      hasPlatformCookie = Boolean(cookieStore.get('printerp_platform_session')?.value)
+    } catch {}
+
+    if (hasPlatformCookie) {
+      await safeTenantRedirect('/platform')
+      throw new Error('Redirecting to platform')
     }
 
     await safeTenantRedirect(`/login${requestedSlugOrId ? `?error=unauthorized&redirectTo=/${requestedSlugOrId}/dashboard` : '?error=unauthorized'}`)
@@ -249,6 +256,7 @@ export async function requireTenantPermission(
 
   if (!hasPerm) {
     await safeTenantRedirect(`/403?type=tenant&missing=${requiredPermission}`)
+    throw new Error('Insufficient tenant permissions')
   }
 
   return tenant
@@ -281,4 +289,5 @@ export async function getTenantRedirectSlug(): Promise<string> {
   await safeTenantRedirect('/login')
   throw new Error('Redirecting to login')
 }
+
 

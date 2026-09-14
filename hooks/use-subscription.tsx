@@ -51,7 +51,7 @@ import {
 import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { triggerPopupNotification } from '@/components/shell/realtime-notification-popup'
 import { PlatformTenantCompany } from '@/types/platform.types'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 function snapshotToSubscriptionRecord(snapshot: SubscriptionSnapshot): CompanySubscriptionRecord {
@@ -289,31 +289,33 @@ export function SubscriptionProvider({
 
     let channel: any = null
     try {
-      const supabase = createClient()
-      channel = supabase
-        .channel(`tenant_sub_realtime:${companyId}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'subscription_plans' },
-          () => {
-            refreshSubscription()
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'company_subscriptions' },
-          () => {
-            refreshSubscription()
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'companies' },
-          () => {
-            refreshSubscription()
-          }
-        )
-        .subscribe()
+      if (isSupabaseConfigured()) {
+        const supabase = createClient()
+        channel = supabase
+          .channel(`tenant_sub_realtime:${companyId}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'subscription_plans' },
+            () => {
+              refreshSubscription()
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'company_subscriptions' },
+            () => {
+              refreshSubscription()
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'companies' },
+            () => {
+              refreshSubscription()
+            }
+          )
+          .subscribe()
+      }
     } catch {}
 
     return () => {
@@ -327,7 +329,7 @@ export function SubscriptionProvider({
           busChannel.close()
         } catch {}
       }
-      if (channel) {
+      if (channel && isSupabaseConfigured()) {
         try {
           const supabase = createClient()
           supabase.removeChannel(channel)

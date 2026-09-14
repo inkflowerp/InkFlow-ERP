@@ -7,7 +7,7 @@
 // ==============================================================================
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { playNotificationSound } from '@/lib/notifications/sound-manager'
 import { showBrowserNotification } from '@/lib/notifications/browser-notification'
 import {
@@ -163,75 +163,79 @@ export function useSupportChat({ mode, companyId, initialConversationId }: UseSu
 
     let channel: any = null
     try {
-      const supabase = createClient()
-      channel = supabase
-        .channel(`support_realtime_${mode}_${companyId || 'platform'}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'support_conversations' },
-          (payload: any) => {
-            if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-              const updated = payload.new as SupportConversationRecord
-              setConversations((prev) => {
-                const idx = prev.findIndex((c) => c.id === updated.id)
-                if (idx >= 0) {
-                  const copy = [...prev]
-                  copy[idx] = { ...copy[idx], ...updated }
-                  return copy.sort(
-                    (a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
-                  )
-                }
-                return [updated, ...prev]
-              })
+      if (isSupabaseConfigured()) {
+        const supabase = createClient()
+        channel = supabase
+          .channel(`support_realtime_${mode}_${companyId || 'platform'}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'support_conversations' },
+            (payload: any) => {
+              if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+                const updated = payload.new as SupportConversationRecord
+                setConversations((prev) => {
+                  const idx = prev.findIndex((c) => c.id === updated.id)
+                  if (idx >= 0) {
+                    const copy = [...prev]
+                    copy[idx] = { ...copy[idx], ...updated }
+                    return copy.sort(
+                      (a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
+                    )
+                  }
+                  return [updated, ...prev]
+                })
 
-              if (selectedConvIdRef.current === updated.id) {
-                setSelectedConversation((curr) => (curr ? { ...curr, ...updated } : updated))
+                if (selectedConvIdRef.current === updated.id) {
+                  setSelectedConversation((curr) => (curr ? { ...curr, ...updated } : updated))
+                }
               }
             }
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'support_messages' },
-          (payload: any) => {
-            const newMsg = payload.new as SupportMessageRecord
-            if (!newMsg) return
+          )
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'support_messages' },
+            (payload: any) => {
+              const newMsg = payload.new as SupportMessageRecord
+              if (!newMsg) return
 
-            // If tenant mode, hide internal notes
-            if (mode === 'tenant' && newMsg.message_type === 'internal_note') {
-              return
-            }
+              // If tenant mode, hide internal notes
+              if (mode === 'tenant' && newMsg.message_type === 'internal_note') {
+                return
+              }
 
-            if (selectedConvIdRef.current === newMsg.conversation_id) {
-              setMessages((prev) => {
-                if (prev.some((m) => m.id === newMsg.id || (newMsg.client_mutation_id && m.client_mutation_id === newMsg.client_mutation_id))) {
-                  return prev.map((m) => (m.client_mutation_id === newMsg.client_mutation_id ? newMsg : m))
+              if (selectedConvIdRef.current === newMsg.conversation_id) {
+                setMessages((prev) => {
+                  if (prev.some((m) => m.id === newMsg.id || (newMsg.client_mutation_id && m.client_mutation_id === newMsg.client_mutation_id))) {
+                    return prev.map((m) => (m.client_mutation_id === newMsg.client_mutation_id ? newMsg : m))
+                  }
+                  return [...prev, newMsg]
+                })
+
+                // Play subtle audio chime for incoming messages from the other party
+                if (
+                  (mode === 'tenant' && newMsg.sender_type === 'platform_support') ||
+                  (mode === 'platform' && newMsg.sender_type === 'tenant_user')
+                ) {
+                  playNotificationSound('broadcast')
+                  showBrowserNotification({
+                    title: `Support: ${newMsg.sender_name}`,
+                    body: newMsg.body.substring(0, 100),
+                    tag: newMsg.id,
+                  }).catch(() => {})
                 }
-                return [...prev, newMsg]
-              })
-
-              // Play subtle audio chime for incoming messages from the other party
-              if (
-                (mode === 'tenant' && newMsg.sender_type === 'platform_support') ||
-                (mode === 'platform' && newMsg.sender_type === 'tenant_user')
-              ) {
-                playNotificationSound('broadcast')
-                showBrowserNotification({
-                  title: `Support: ${newMsg.sender_name}`,
-                  body: newMsg.body.substring(0, 100),
-                  tag: newMsg.id,
-                }).catch(() => {})
               }
             }
-          }
-        )
-        .subscribe((status: string) => {
-          if (status === 'SUBSCRIBED') {
-            setConnectionState('connected')
-          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            setConnectionState('reconnecting')
-          }
-        })
+          )
+          .subscribe((status: string) => {
+            if (status === 'SUBSCRIBED') {
+              setConnectionState('connected')
+            } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+              setConnectionState('reconnecting')
+            }
+          })
+      } else {
+        setConnectionState('connected')
+      }
     } catch {
       setConnectionState('connected')
     }
@@ -241,8 +245,10 @@ export function useSupportChat({ mode, companyId, initialConversationId }: UseSu
         window.removeEventListener('online', handleOnline)
         window.removeEventListener('offline', handleOffline)
       }
-      if (channel) {
-        channel.unsubscribe()
+      if (channel && isSupabaseConfigured()) {
+        try {
+          channel.unsubscribe()
+        } catch {}
       }
     }
   }, [mode, companyId])
