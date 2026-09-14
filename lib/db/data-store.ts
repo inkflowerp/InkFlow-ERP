@@ -166,6 +166,26 @@ export const STORAGE_KEYS = {
   COMPANY_SUBSCRIPTIONS: 'printerp_company_subscriptions',
   SUPPORT_CONVERSATIONS: 'printerp_support_conversations',
   SUPPORT_MESSAGES: 'printerp_support_messages',
+  INVENTORY_LOCATIONS: 'printerp_tenant_inventory_locations',
+  INVENTORY_STOCK_BALANCES: 'printerp_tenant_inventory_stock_balances',
+  PRODUCTION_TASK_MATERIAL_REQUIREMENTS: 'printerp_tenant_task_material_requirements',
+  MATERIAL_REQUESTS: 'printerp_tenant_material_requests',
+  MATERIAL_ISSUES: 'printerp_tenant_material_issues',
+  INVENTORY_REMNANTS: 'printerp_tenant_inventory_remnants',
+  INVENTORY_TRANSFERS: 'printerp_tenant_inventory_transfers',
+  INVENTORY_ADJUSTMENTS: 'printerp_tenant_inventory_adjustments',
+  PRODUCT_VARIANTS: 'printerp_tenant_product_variants',
+  PRODUCT_FORMULAS: 'printerp_tenant_product_formulas',
+  PRICE_LISTS: 'printerp_tenant_price_lists',
+  PRICE_LIST_ITEMS: 'printerp_tenant_price_list_items',
+  PURCHASE_REQUESTS: 'printerp_tenant_purchase_requests',
+  PURCHASE_REQUEST_ITEMS: 'printerp_tenant_purchase_request_items',
+  SUPPLIER_ITEMS: 'printerp_tenant_supplier_items',
+  GOODS_RECEIVED_NOTES: 'printerp_tenant_goods_received_notes',
+  GOODS_RECEIVED_NOTE_ITEMS: 'printerp_tenant_grn_items',
+  SUPPLIER_RETURNS: 'printerp_tenant_supplier_returns',
+  SUPPLIER_RETURN_ITEMS: 'printerp_tenant_supplier_return_items',
+  SUPPLIER_LEDGER_ENTRIES: 'printerp_tenant_supplier_ledger_entries',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -226,7 +246,27 @@ export function isTransactionalKey(key: string): boolean {
     key === STORAGE_KEYS.PLATFORM_COMPANIES ||
     key === STORAGE_KEYS.PLATFORM_USERS ||
     key === STORAGE_KEYS.PLATFORM_INCIDENTS ||
-    key === STORAGE_KEYS.USER_OVERRIDES
+    key === STORAGE_KEYS.USER_OVERRIDES ||
+    key === STORAGE_KEYS.INVENTORY_LOCATIONS ||
+    key === STORAGE_KEYS.INVENTORY_STOCK_BALANCES ||
+    key === STORAGE_KEYS.PRODUCTION_TASK_MATERIAL_REQUIREMENTS ||
+    key === STORAGE_KEYS.MATERIAL_REQUESTS ||
+    key === STORAGE_KEYS.MATERIAL_ISSUES ||
+    key === STORAGE_KEYS.INVENTORY_REMNANTS ||
+    key === STORAGE_KEYS.INVENTORY_TRANSFERS ||
+    key === STORAGE_KEYS.INVENTORY_ADJUSTMENTS ||
+    key === STORAGE_KEYS.PRODUCT_VARIANTS ||
+    key === STORAGE_KEYS.PRODUCT_FORMULAS ||
+    key === STORAGE_KEYS.PRICE_LISTS ||
+    key === STORAGE_KEYS.PRICE_LIST_ITEMS ||
+    key === STORAGE_KEYS.PURCHASE_REQUESTS ||
+    key === STORAGE_KEYS.PURCHASE_REQUEST_ITEMS ||
+    key === STORAGE_KEYS.SUPPLIER_ITEMS ||
+    key === STORAGE_KEYS.GOODS_RECEIVED_NOTES ||
+    key === STORAGE_KEYS.GOODS_RECEIVED_NOTE_ITEMS ||
+    key === STORAGE_KEYS.SUPPLIER_RETURNS ||
+    key === STORAGE_KEYS.SUPPLIER_RETURN_ITEMS ||
+    key === STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES
   )
 }
 
@@ -607,10 +647,11 @@ export class PrintERPDataStore {
   ): T | null {
     const list = this.get<T[]>(key, tenantSlug)
     const array = Array.isArray(list) ? list : []
+    if (idOrPredicate === undefined || idOrPredicate === null) return null
     const index =
-      typeof idOrPredicate === 'string'
-        ? array.findIndex((x) => x.id === idOrPredicate)
-        : array.findIndex(idOrPredicate)
+      typeof idOrPredicate === 'function'
+        ? array.findIndex(idOrPredicate)
+        : array.findIndex((x) => x?.id === idOrPredicate)
 
     if (index === -1) return null
     const updatedItem = { ...array[index], ...updates, updated_at: new Date().toISOString() }
@@ -631,10 +672,11 @@ export class PrintERPDataStore {
   ): boolean {
     const list = this.get<T[]>(key, tenantSlug)
     const array = Array.isArray(list) ? list : []
+    if (idOrPredicate === undefined || idOrPredicate === null) return false
     const filtered =
-      typeof idOrPredicate === 'string'
-        ? array.filter((x) => x.id !== idOrPredicate)
-        : array.filter((x) => !idOrPredicate(x))
+      typeof idOrPredicate === 'function'
+        ? array.filter((x) => !idOrPredicate(x))
+        : array.filter((x) => x?.id !== idOrPredicate)
 
     if (filtered.length !== array.length) {
       this.set(key, filtered, true, tenantSlug, broadcastCrossTab)
@@ -753,6 +795,118 @@ export class PrintERPDataStore {
       updated_at: new Date().toISOString(),
     }
     this.addItem(STORAGE_KEYS.PRODUCTION_JOBS, prodJob)
+
+    // 3a. Auto-Provision V2 Production Task & V3 Material Requirement
+    const taskId = `ptask-${Date.now()}`
+    const prodTask: any = {
+      id: taskId,
+      company_id: newOrder.company_id,
+      job_order_id: newJob.id,
+      production_job_id: prodJob.id,
+      task_number: `TSK-${Date.now().toString().slice(-4)}`,
+      task_name: `Print & Finish: ${newJob.product_name}`,
+      task_type: 'printing',
+      department: 'printing',
+      sequence_order: 1,
+      description: newJob.production_instructions,
+      quantity: newJob.quantity,
+      unit: 'sft',
+      priority: newOrder.priority || 'normal',
+      estimated_duration_minutes: 45,
+      status: 'queued',
+      is_rework: false,
+      good_quantity: 0,
+      rejected_quantity: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    this.addItem(STORAGE_KEYS.PRODUCTION_TASKS, prodTask)
+
+    const matReqId = `tmr-${Date.now()}`
+    const taskMatReq: any = {
+      id: matReqId,
+      company_id: newOrder.company_id,
+      production_task_id: taskId,
+      material_id: 'mat-flex-280',
+      material_name: newJob.material_spec || 'Standard Banner Media',
+      required_quantity: Math.max(1, newJob.quantity * 10),
+      unit: 'sqft',
+      planned_waste_quantity: Math.round(newJob.quantity * 10 * 0.05 * 10) / 10,
+      notes: 'Auto-generated from order formula requirements',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    this.addItem(STORAGE_KEYS.PRODUCTION_TASK_MATERIAL_REQUIREMENTS, taskMatReq)
+
+    // 3b. Auto-Provision V4 Job Costing Record & Snapshot
+    const costingId = `cst-${Date.now()}`
+    const estBaseCost = Math.round(finalPrice * 0.6)
+    const estProfit = Math.max(0, finalPrice - estBaseCost)
+    const estMargin = finalPrice > 0 ? Math.round((estProfit / finalPrice) * 1000) / 10 : 0
+
+    const jobCosting: any = {
+      id: costingId,
+      company_id: newOrder.company_id,
+      job_order_id: newJob.id,
+      sales_order_id: newOrder.id,
+      job_number: newJob.job_number,
+      customer_id: newOrder.customer_id || 'cust-01',
+      customer_name: newOrder.customer_name,
+      item_title: newJob.product_name,
+      dimensions_spec: newJob.size_spec,
+      quantity: newJob.quantity,
+      unit: 'pcs',
+      selling_price: finalPrice,
+      est: {
+        material_cost: Math.round(estBaseCost * 0.5),
+        machine_cost: Math.round(estBaseCost * 0.25),
+        ink_cost: Math.round(estBaseCost * 0.1),
+        printing_cost: Math.round(estBaseCost * 0.1),
+        finishing_cost: Math.round(estBaseCost * 0.05),
+        labor_cost: Math.round(estBaseCost * 0.1),
+        fabrication_cost: 0,
+        installation_cost: 0,
+        transport_cost: 0,
+        other_cost: 0,
+        total_cost: estBaseCost,
+        profit: estProfit,
+        margin_percentage: estMargin,
+      },
+      act: {
+        material_cost: 0,
+        machine_cost: 0,
+        ink_cost: 0,
+        printing_cost: 0,
+        finishing_cost: 0,
+        labor_cost: 0,
+        fabrication_cost: 0,
+        installation_cost: 0,
+        transport_cost: 0,
+        other_cost: 0,
+        total_cost: 0,
+        profit: 0,
+        margin_percentage: 0,
+      },
+      variances: {
+        material_variance: 0,
+        machine_variance: 0,
+        labor_variance: 0,
+        finishing_variance: 0,
+        transport_variance: 0,
+        total_variance: 0,
+      },
+      costing_snapshot: {
+        order_number: newOrder.order_number,
+        selling_price: finalPrice,
+        base_cost: estBaseCost,
+        timestamp: new Date().toISOString(),
+      },
+      labor_cost_mode: 'hourly',
+      status: 'estimated',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    this.addItem(STORAGE_KEYS.JOB_COSTINGS, jobCosting)
 
     // 4. Create Linked Invoice in Billing
     const invoiceNum = `INV-${Date.now().toString().slice(-6)}`

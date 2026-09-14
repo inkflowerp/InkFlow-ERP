@@ -5713,3 +5713,946 @@ BEGIN
     RETURN to_jsonb(v_updated_task);
 END;
 $$;
+
+
+-- >>> FILE: 064_inventory_management.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 064: V3 Advanced Inventory Management
+-- Supports:
+--   1. Inventory Locations / Multi-Warehouse per tenant and branch
+--   2. Enhanced Material Master (SKUs, Specifications, Dimensions, Reorder Thresholds)
+--   3. Partitioned Stock Balances with Zero-Negative Database Constraints
+--   4. Material Requests & Approvals linked to Production Tasks
+--   5. Material Issuance & Production Floor Release
+--   6. Actual Consumption, Remnants, Wastage & Returns Accounting
+--   7. Discrete Reusable Remnant Tracking (W x L with barcode readiness)
+--   8. Inter-Location Stock Transfers & Stock Adjustment Counts
+--   9. Immutable Stock Ledger & Atomic PostgreSQL Concurrency Protection
+--   10. Strict Multi-Tenant Row Level Security
+-- ==============================================================================
+
+-- 1. INVENTORY LOCATIONS TABLE
+CREATE TABLE IF NOT EXISTS public.inventory_locations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    code TEXT NOT NULL,
+    description TEXT,
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_inventory_locations_company_code UNIQUE (company_id, code)
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_locations_company ON public.inventory_locations(company_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_locations_branch ON public.inventory_locations(company_id, branch_id);
+ALTER TABLE public.inventory_locations ENABLE ROW LEVEL SECURITY;
+
+-- 2. ENHANCE MATERIALS TABLE
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL;
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS brand TEXT;
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS specification TEXT;
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS color TEXT;
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS thickness NUMERIC(8,2);
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS width NUMERIC(10,2);
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS length NUMERIC(10,2);
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS dimension_unit TEXT DEFAULT 'inch';
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS base_unit TEXT DEFAULT 'pcs';
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS reorder_level NUMERIC(12,2) DEFAULT 0;
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+
+-- Remove category/unit check constraint if exists to allow flexible print/signage categories
+DO $$
+BEGIN
+    ALTER TABLE public.materials DROP CONSTRAINT IF EXISTS materials_category_check;
+    ALTER TABLE public.materials DROP CONSTRAINT IF EXISTS materials_unit_check;
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_materials_branch ON public.materials(company_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_materials_active ON public.materials(company_id, is_active);
+
+-- 3. INVENTORY STOCK BALANCES TABLE (Per Location)
+CREATE TABLE IF NOT EXISTS public.inventory_stock_balances (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    material_id UUID NOT NULL REFERENCES public.materials(id) ON DELETE CASCADE,
+    location_id UUID NOT NULL REFERENCES public.inventory_locations(id) ON DELETE CASCADE,
+    available_quantity NUMERIC(14,4) NOT NULL DEFAULT 0 CHECK (available_quantity >= 0),
+    reserved_quantity NUMERIC(14,4) NOT NULL DEFAULT 0 CHECK (reserved_quantity >= 0),
+    issued_quantity NUMERIC(14,4) NOT NULL DEFAULT 0 CHECK (issued_quantity >= 0),
+    damaged_quantity NUMERIC(14,4) NOT NULL DEFAULT 0 CHECK (damaged_quantity >= 0),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_inventory_stock_balances_loc UNIQUE (company_id, material_id, location_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_stock_balances_company ON public.inventory_stock_balances(company_id);
+CREATE INDEX IF NOT EXISTS idx_stock_balances_material ON public.inventory_stock_balances(company_id, material_id);
+CREATE INDEX IF NOT EXISTS idx_stock_balances_location ON public.inventory_stock_balances(company_id, location_id);
+ALTER TABLE public.inventory_stock_balances ENABLE ROW LEVEL SECURITY;
+
+-- 4. PRODUCTION TASK MATERIAL REQUIREMENTS TABLE
+CREATE TABLE IF NOT EXISTS public.production_task_material_requirements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    production_task_id UUID NOT NULL REFERENCES public.production_tasks(id) ON DELETE CASCADE,
+    material_id UUID REFERENCES public.materials(id) ON DELETE SET NULL,
+    material_name TEXT NOT NULL,
+    required_quantity NUMERIC(12,2) NOT NULL DEFAULT 1 CHECK (required_quantity > 0),
+    unit TEXT NOT NULL DEFAULT 'pcs',
+    width NUMERIC(10,2),
+    height NUMERIC(10,2),
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_task_mat_req_task ON public.production_task_material_requirements(company_id, production_task_id);
+ALTER TABLE public.production_task_material_requirements ENABLE ROW LEVEL SECURITY;
+
+-- 5. MATERIAL REQUESTS TABLE
+CREATE TABLE IF NOT EXISTS public.material_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    request_number TEXT NOT NULL,
+    production_task_id UUID REFERENCES public.production_tasks(id) ON DELETE SET NULL,
+    job_order_id UUID REFERENCES public.job_orders(id) ON DELETE SET NULL,
+    requested_by_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    requested_by_name TEXT NOT NULL,
+    priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'urgent', 'very_urgent')),
+    status TEXT NOT NULL DEFAULT 'requested' CHECK (
+        status IN ('draft', 'requested', 'approved', 'rejected', 'partially_issued', 'issued', 'cancelled')
+    ),
+    notes TEXT,
+    approved_by_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    approved_by_name TEXT,
+    approved_at TIMESTAMPTZ,
+    rejection_reason TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_material_requests_company_number UNIQUE (company_id, request_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_material_requests_company ON public.material_requests(company_id);
+CREATE INDEX IF NOT EXISTS idx_material_requests_status ON public.material_requests(company_id, status);
+CREATE INDEX IF NOT EXISTS idx_material_requests_task ON public.material_requests(company_id, production_task_id);
+ALTER TABLE public.material_requests ENABLE ROW LEVEL SECURITY;
+
+-- 6. MATERIAL REQUEST ITEMS TABLE
+CREATE TABLE IF NOT EXISTS public.material_request_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    request_id UUID NOT NULL REFERENCES public.material_requests(id) ON DELETE CASCADE,
+    material_id UUID NOT NULL REFERENCES public.materials(id) ON DELETE CASCADE,
+    material_name TEXT NOT NULL,
+    location_id UUID REFERENCES public.inventory_locations(id) ON DELETE SET NULL,
+    requested_quantity NUMERIC(12,2) NOT NULL CHECK (requested_quantity > 0),
+    approved_quantity NUMERIC(12,2) DEFAULT 0,
+    issued_quantity NUMERIC(12,2) DEFAULT 0,
+    unit TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (
+        status IN ('pending', 'approved', 'rejected', 'partially_issued', 'issued', 'cancelled')
+    ),
+    notes TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_material_req_items_req ON public.material_request_items(company_id, request_id);
+ALTER TABLE public.material_request_items ENABLE ROW LEVEL SECURITY;
+
+-- 7. MATERIAL ISSUES TABLE
+CREATE TABLE IF NOT EXISTS public.material_issues (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    issue_number TEXT NOT NULL,
+    request_id UUID REFERENCES public.material_requests(id) ON DELETE SET NULL,
+    production_task_id UUID REFERENCES public.production_tasks(id) ON DELETE SET NULL,
+    job_order_id UUID REFERENCES public.job_orders(id) ON DELETE SET NULL,
+    issued_by_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    issued_by_name TEXT NOT NULL,
+    issued_to_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    issued_to_name TEXT,
+    issue_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_material_issues_company_number UNIQUE (company_id, issue_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_material_issues_company ON public.material_issues(company_id);
+CREATE INDEX IF NOT EXISTS idx_material_issues_task ON public.material_issues(company_id, production_task_id);
+ALTER TABLE public.material_issues ENABLE ROW LEVEL SECURITY;
+
+-- 8. MATERIAL ISSUE ITEMS TABLE
+CREATE TABLE IF NOT EXISTS public.material_issue_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    issue_id UUID NOT NULL REFERENCES public.material_issues(id) ON DELETE CASCADE,
+    material_id UUID NOT NULL REFERENCES public.materials(id) ON DELETE CASCADE,
+    material_name TEXT NOT NULL,
+    location_id UUID REFERENCES public.inventory_locations(id) ON DELETE SET NULL,
+    issued_quantity NUMERIC(12,2) NOT NULL CHECK (issued_quantity > 0),
+    unit TEXT NOT NULL,
+    unit_cost NUMERIC(12,2) NOT NULL DEFAULT 0,
+    notes TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_material_issue_items_issue ON public.material_issue_items(company_id, issue_id);
+ALTER TABLE public.material_issue_items ENABLE ROW LEVEL SECURITY;
+
+-- 9. INVENTORY REMNANTS TABLE (Discrete Reusable Offcuts)
+CREATE TABLE IF NOT EXISTS public.inventory_remnants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    remnant_code TEXT NOT NULL,
+    material_id UUID NOT NULL REFERENCES public.materials(id) ON DELETE CASCADE,
+    material_name TEXT NOT NULL,
+    original_roll_id UUID REFERENCES public.inventory_rolls(id) ON DELETE SET NULL,
+    width NUMERIC(10,2) NOT NULL,
+    length NUMERIC(10,2) NOT NULL,
+    dimension_unit TEXT NOT NULL DEFAULT 'inch' CHECK (dimension_unit IN ('inch', 'ft', 'mm', 'cm', 'm')),
+    area_sft NUMERIC(10,2) NOT NULL DEFAULT 0,
+    location_id UUID REFERENCES public.inventory_locations(id) ON DELETE SET NULL,
+    condition TEXT NOT NULL DEFAULT 'usable' CHECK (condition IN ('prime', 'usable', 'blemished')),
+    status TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'reserved', 'consumed', 'scrapped')),
+    created_from_task_id UUID REFERENCES public.production_tasks(id) ON DELETE SET NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_inventory_remnants_code UNIQUE (company_id, remnant_code)
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_remnants_company ON public.inventory_remnants(company_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_remnants_status ON public.inventory_remnants(company_id, status);
+CREATE INDEX IF NOT EXISTS idx_inventory_remnants_mat ON public.inventory_remnants(company_id, material_id);
+ALTER TABLE public.inventory_remnants ENABLE ROW LEVEL SECURITY;
+
+-- 10. INVENTORY TRANSFERS TABLE (Dual-entry Location Transfers)
+CREATE TABLE IF NOT EXISTS public.inventory_transfers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    transfer_number TEXT NOT NULL,
+    from_location_id UUID NOT NULL REFERENCES public.inventory_locations(id) ON DELETE RESTRICT,
+    to_location_id UUID NOT NULL REFERENCES public.inventory_locations(id) ON DELETE RESTRICT,
+    from_branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    to_branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    material_id UUID NOT NULL REFERENCES public.materials(id) ON DELETE CASCADE,
+    material_name TEXT NOT NULL,
+    quantity NUMERIC(12,2) NOT NULL CHECK (quantity > 0),
+    unit TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'completed' CHECK (status IN ('pending', 'completed', 'cancelled')),
+    notes TEXT,
+    performed_by_name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_inventory_transfers_number UNIQUE (company_id, transfer_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_transfers_company ON public.inventory_transfers(company_id);
+ALTER TABLE public.inventory_transfers ENABLE ROW LEVEL SECURITY;
+
+-- 11. INVENTORY ADJUSTMENTS TABLE (Physical Count Reconciliation)
+CREATE TABLE IF NOT EXISTS public.inventory_adjustments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    adjustment_number TEXT NOT NULL,
+    material_id UUID NOT NULL REFERENCES public.materials(id) ON DELETE CASCADE,
+    location_id UUID REFERENCES public.inventory_locations(id) ON DELETE SET NULL,
+    reason_code TEXT NOT NULL CHECK (
+        reason_code IN ('physical_count_diff', 'damage_found', 'opening_correction', 'data_correction', 'other')
+    ),
+    reason_notes TEXT,
+    system_quantity_before NUMERIC(12,2) NOT NULL,
+    physical_quantity NUMERIC(12,2) NOT NULL,
+    quantity_change NUMERIC(12,2) NOT NULL,
+    unit TEXT NOT NULL,
+    authorized_by_name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_inventory_adjustments_number UNIQUE (company_id, adjustment_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_adjustments_company ON public.inventory_adjustments(company_id);
+ALTER TABLE public.inventory_adjustments ENABLE ROW LEVEL SECURITY;
+
+-- 12. ENHANCE STOCK LEDGER
+ALTER TABLE public.stock_ledger ADD COLUMN IF NOT EXISTS branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL;
+ALTER TABLE public.stock_ledger ADD COLUMN IF NOT EXISTS location_id UUID REFERENCES public.inventory_locations(id) ON DELETE SET NULL;
+ALTER TABLE public.stock_ledger ADD COLUMN IF NOT EXISTS production_task_id UUID REFERENCES public.production_tasks(id) ON DELETE SET NULL;
+ALTER TABLE public.stock_ledger ADD COLUMN IF NOT EXISTS reference_type TEXT;
+ALTER TABLE public.stock_ledger ADD COLUMN IF NOT EXISTS normalized_quantity NUMERIC(14,4);
+ALTER TABLE public.stock_ledger ADD COLUMN IF NOT EXISTS normalized_unit TEXT;
+
+-- 13. ATOMIC INVENTORY MUTATION STORED PROCEDURE WITH ROW-LEVEL LOCK
+CREATE OR REPLACE FUNCTION public.mutate_inventory_stock_atomic(
+    p_company_id UUID,
+    p_material_id UUID,
+    p_location_id UUID,
+    p_quantity_change NUMERIC,
+    p_transaction_type TEXT,
+    p_reference_id TEXT DEFAULT NULL,
+    p_reference_type TEXT DEFAULT NULL,
+    p_task_id UUID DEFAULT NULL,
+    p_unit_cost NUMERIC DEFAULT 0,
+    p_notes TEXT DEFAULT NULL,
+    p_performed_by_name TEXT DEFAULT 'System'
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_material RECORD;
+    v_new_balance NUMERIC;
+    v_loc_balance NUMERIC;
+    v_ledger_id UUID;
+    v_default_loc_id UUID;
+BEGIN
+    -- 1. Lock material record to serialize concurrent stock updates
+    SELECT * INTO v_material
+    FROM public.materials
+    WHERE id = p_material_id AND company_id = p_company_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Material not found: %', p_material_id USING ERRCODE = 'P0002';
+    END IF;
+
+    -- Calculate new total material balance
+    v_new_balance := v_material.current_stock + p_quantity_change;
+
+    -- Prevent negative stock
+    IF v_new_balance < 0 THEN
+        RAISE EXCEPTION 'Insufficient stock: Material % (%) has available stock %, cannot deduct %.',
+            v_material.name, v_material.sku, v_material.current_stock, abs(p_quantity_change)
+        USING ERRCODE = '23514';
+    END IF;
+
+    -- 2. Resolve or create default location if location_id not supplied
+    IF p_location_id IS NULL THEN
+        SELECT id INTO v_default_loc_id
+        FROM public.inventory_locations
+        WHERE company_id = p_company_id AND is_default = TRUE
+        LIMIT 1;
+
+        IF v_default_loc_id IS NULL THEN
+            SELECT id INTO v_default_loc_id
+            FROM public.inventory_locations
+            WHERE company_id = p_company_id
+            ORDER BY created_at ASC
+            LIMIT 1;
+        END IF;
+
+        IF v_default_loc_id IS NULL THEN
+            INSERT INTO public.inventory_locations (company_id, name, code, is_default, is_active)
+            values (p_company_id, 'Main Store', 'MAIN', TRUE, TRUE)
+            RETURNING id INTO v_default_loc_id;
+        END IF;
+
+        p_location_id := v_default_loc_id;
+    END IF;
+
+    -- 3. Upsert Location Stock Balance with Row Lock
+    INSERT INTO public.inventory_stock_balances (
+        company_id,
+        material_id,
+        location_id,
+        available_quantity,
+        updated_at
+    ) VALUES (
+        p_company_id,
+        p_material_id,
+        p_location_id,
+        GREATEST(0, p_quantity_change),
+        NOW()
+    )
+    ON CONFLICT (company_id, material_id, location_id)
+    DO UPDATE SET
+        available_quantity = public.inventory_stock_balances.available_quantity + p_quantity_change,
+        updated_at = NOW()
+    RETURNING available_quantity INTO v_loc_balance;
+
+    IF v_loc_balance < 0 THEN
+        RAISE EXCEPTION 'Insufficient stock in location for material %: Cannot deduct %.',
+            v_material.name, abs(p_quantity_change)
+        USING ERRCODE = '23514';
+    END IF;
+
+    -- 4. Update Material master cached current_stock
+    UPDATE public.materials
+    SET current_stock = v_new_balance,
+        updated_at = NOW()
+    WHERE id = p_material_id AND company_id = p_company_id;
+
+    -- 5. Insert immutable audit ledger record
+    INSERT INTO public.stock_ledger (
+        company_id,
+        material_id,
+        location_id,
+        production_task_id,
+        transaction_type,
+        quantity_change,
+        unit,
+        balance_after,
+        unit_cost,
+        total_cost,
+        reference_id,
+        reference_type,
+        notes,
+        performed_by_name,
+        created_at
+    ) VALUES (
+        p_company_id,
+        p_material_id,
+        p_location_id,
+        p_task_id,
+        p_transaction_type,
+        p_quantity_change,
+        v_material.unit,
+        v_new_balance,
+        p_unit_cost,
+        abs(p_quantity_change) * p_unit_cost,
+        p_reference_id,
+        p_reference_type,
+        p_notes,
+        p_performed_by_name,
+        NOW()
+    )
+    RETURNING id INTO v_ledger_id;
+
+    RETURN jsonb_build_object(
+        'success', TRUE,
+        'material_id', p_material_id,
+        'new_balance', v_new_balance,
+        'location_balance', v_loc_balance,
+        'ledger_id', v_ledger_id
+    );
+END;
+$$;
+
+-- 14. ROW LEVEL SECURITY POLICIES FOR NEW V3 TABLES
+DROP POLICY IF EXISTS "Active company users can view inventory locations" ON public.inventory_locations;
+CREATE POLICY "Active company users can view inventory locations"
+    ON public.inventory_locations FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+DROP POLICY IF EXISTS "Authorized company users can manage inventory locations" ON public.inventory_locations;
+CREATE POLICY "Authorized company users can manage inventory locations"
+    ON public.inventory_locations FOR ALL
+    USING (
+        public.auth_is_active_company_user(company_id)
+        AND (
+            public.auth_user_has_permission(company_id, 'inventory.view')
+            OR public.auth_user_has_permission(company_id, 'inventory.edit')
+            OR public.auth_user_has_permission(company_id, 'inventory.create')
+        )
+    );
+
+DROP POLICY IF EXISTS "Active company users can view stock balances" ON public.inventory_stock_balances;
+CREATE POLICY "Active company users can view stock balances"
+    ON public.inventory_stock_balances FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+DROP POLICY IF EXISTS "Active company users can view material requests" ON public.material_requests;
+CREATE POLICY "Active company users can view material requests"
+    ON public.material_requests FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+DROP POLICY IF EXISTS "Authorized company users can manage material requests" ON public.material_requests;
+CREATE POLICY "Authorized company users can manage material requests"
+    ON public.material_requests FOR ALL
+    USING (
+        public.auth_is_active_company_user(company_id)
+        AND (
+            public.auth_user_has_permission(company_id, 'inventory.view')
+            OR public.auth_user_has_permission(company_id, 'inventory.edit')
+            OR public.auth_user_has_permission(company_id, 'production.view')
+            OR public.auth_user_has_permission(company_id, 'production.edit')
+        )
+    );
+
+DROP POLICY IF EXISTS "Active company users can view material request items" ON public.material_request_items;
+CREATE POLICY "Active company users can view material request items"
+    ON public.material_request_items FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+DROP POLICY IF EXISTS "Active company users can view material issues" ON public.material_issues;
+CREATE POLICY "Active company users can view material issues"
+    ON public.material_issues FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+DROP POLICY IF EXISTS "Active company users can view remnants" ON public.inventory_remnants;
+CREATE POLICY "Active company users can view remnants"
+    ON public.inventory_remnants FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+DROP POLICY IF EXISTS "Active company users can view transfers" ON public.inventory_transfers;
+CREATE POLICY "Active company users can view transfers"
+    ON public.inventory_transfers FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+DROP POLICY IF EXISTS "Active company users can view adjustments" ON public.inventory_adjustments;
+CREATE POLICY "Active company users can view adjustments"
+    ON public.inventory_adjustments FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+DROP POLICY IF EXISTS "Active company users can view task requirements" ON public.production_task_material_requirements;
+CREATE POLICY "Active company users can view task requirements"
+    ON public.production_task_material_requirements FOR SELECT
+    USING (public.auth_is_active_company_user(company_id));
+
+-- >>> FILE: 065_products_pricing_costing.sql <<<
+-- ==============================================================================
+-- InkFlow SaaS - Migration 065: Products, Services, Advanced Formulas & Costing
+-- Supports:
+--   1. Extended Product Master with Variants & Bangladeshi Print/Signage Specs
+--   2. Structured Production Formulas (Material, Machine, Labor, Finishing, Transport)
+--   3. Multi-Tier Price Lists (Retail, Wholesale, Dealer, Corporate, VIP)
+--   4. Non-Destructive Extension of Job Costing (Snapshots, Machine Cost, Orders, Quotations)
+--   5. Strict Multi-Tenant Row Level Security & RBAC Shielding
+-- ==============================================================================
+
+-- 1. PRODUCT VARIANTS TABLE
+create table if not exists public.product_variants (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    product_id uuid not null references public.products(id) on delete cascade,
+    variant_name text not null,
+    sku_suffix text,
+    thickness_mm numeric(6,2),
+    gsm integer,
+    finish text,
+    color text,
+    size_spec text,
+    cost_adjustment numeric(12,2) not null default 0,
+    price_adjustment numeric(12,2) not null default 0,
+    is_active boolean not null default true,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_product_variants_prod on public.product_variants(company_id, product_id);
+alter table public.product_variants enable row level security;
+
+-- 2. PRODUCT FORMULAS TABLE (Versioned Production Bill of Materials & Pricing Formulas)
+create table if not exists public.product_formulas (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    product_id uuid not null references public.products(id) on delete cascade,
+    formula_name text not null default 'Default Formula',
+    version integer not null default 1,
+    model text not null check (
+        model in ('dimensional_area', 'running_length', 'unit_quantity', 'compound_signage', 'custom_formula')
+    ),
+    waste_factor_percent numeric(5,2) not null default 5.0,
+    material_requirements jsonb not null default '[]'::jsonb,
+    machine_operations jsonb not null default '[]'::jsonb,
+    labor_operations jsonb not null default '[]'::jsonb,
+    finishing_operations jsonb not null default '[]'::jsonb,
+    other_costs jsonb not null default '[]'::jsonb,
+    target_margin_percent numeric(5,2) not null default 35.0,
+    min_margin_percent numeric(5,2) not null default 15.0,
+    is_active boolean not null default true,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    constraint uk_product_formulas_prod_version unique (company_id, product_id, version)
+);
+
+create index if not exists idx_product_formulas_prod on public.product_formulas(company_id, product_id);
+alter table public.product_formulas enable row level security;
+
+-- 3. PRICE LISTS TABLE
+create table if not exists public.price_lists (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    name text not null,
+    code text not null,
+    tier_type text not null default 'retail' check (
+        tier_type in ('retail', 'wholesale', 'dealer', 'corporate', 'vip', 'custom')
+    ),
+    description text,
+    default_markup_percent numeric(5,2) not null default 0,
+    is_default boolean not null default false,
+    is_active boolean not null default true,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    constraint uk_price_lists_comp_code unique (company_id, code)
+);
+
+create index if not exists idx_price_lists_company on public.price_lists(company_id);
+alter table public.price_lists enable row level security;
+
+-- 4. PRICE LIST ITEMS TABLE
+create table if not exists public.price_list_items (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    price_list_id uuid not null references public.price_lists(id) on delete cascade,
+    product_id uuid not null references public.products(id) on delete cascade,
+    custom_rate numeric(12,2),
+    discount_percent numeric(5,2) not null default 0,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    constraint uk_price_list_items_unique unique (company_id, price_list_id, product_id)
+);
+
+create index if not exists idx_price_list_items_list on public.price_list_items(company_id, price_list_id);
+alter table public.price_list_items enable row level security;
+
+-- 5. EXTEND JOB_COSTINGS TABLE (Non-destructive)
+alter table public.job_costings add column if not exists branch_id uuid references public.branches(id) on delete set null;
+alter table public.job_costings add column if not exists job_order_id uuid references public.job_orders(id) on delete set null;
+alter table public.job_costings add column if not exists sales_order_id uuid references public.sales_orders(id) on delete set null;
+alter table public.job_costings add column if not exists quotation_id uuid references public.quotations(id) on delete set null;
+alter table public.job_costings add column if not exists product_id uuid references public.products(id) on delete set null;
+alter table public.job_costings add column if not exists item_title text default 'Custom Print & Fabrication Job';
+alter table public.job_costings add column if not exists dimensions_spec text;
+alter table public.job_costings add column if not exists quantity numeric(12,2) default 1;
+alter table public.job_costings add column if not exists unit text default 'pcs';
+alter table public.job_costings add column if not exists est_machine_cost numeric(12,2) default 0;
+alter table public.job_costings add column if not exists act_machine_cost numeric(12,2) default 0;
+alter table public.job_costings add column if not exists costing_snapshot jsonb not null default '{}'::jsonb;
+alter table public.job_costings add column if not exists created_by uuid references auth.users(id) on delete set null;
+alter table public.job_costings add column if not exists updated_at timestamptz not null default now();
+
+create index if not exists idx_job_costings_comp_job on public.job_costings(company_id, job_number);
+create index if not exists idx_job_costings_sales_order on public.job_costings(company_id, sales_order_id);
+create index if not exists idx_job_costings_status on public.job_costings(company_id, status);
+
+-- 6. ROW-LEVEL SECURITY POLICIES
+drop policy if exists "Active company users can view product variants" on public.product_variants;
+create policy "Active company users can view product variants"
+    on public.product_variants for select
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Active company users can manage product variants" on public.product_variants;
+create policy "Active company users can manage product variants"
+    on public.product_variants for all
+    using (public.auth_is_active_company_user(company_id))
+    with check (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Active company users can view product formulas" on public.product_formulas;
+create policy "Active company users can view product formulas"
+    on public.product_formulas for select
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Active company users can manage product formulas" on public.product_formulas;
+create policy "Active company users can manage product formulas"
+    on public.product_formulas for all
+    using (public.auth_is_active_company_user(company_id))
+    with check (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Active company users can view price lists" on public.price_lists;
+create policy "Active company users can view price lists"
+    on public.price_lists for select
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Active company users can manage price lists" on public.price_lists;
+create policy "Active company users can manage price lists"
+    on public.price_lists for all
+    using (public.auth_is_active_company_user(company_id))
+    with check (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Active company users can view price list items" on public.price_list_items;
+create policy "Active company users can view price list items"
+    on public.price_list_items for select
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "Active company users can manage price list items" on public.price_list_items;
+create policy "Active company users can manage price list items"
+    on public.price_list_items for all
+    using (public.auth_is_active_company_user(company_id))
+    with check (public.auth_is_active_company_user(company_id));
+
+-- >>> FILE: 066_purchasing_and_suppliers.sql <<<
+-- ==============================================================================
+-- PrintERP / InkFlow SaaS - Migration 066: Purchasing & Suppliers Management (V5)
+-- Production-Certified Multi-Tenant Procurement & Supplier Operations
+-- ==============================================================================
+
+-- 1. EXTEND EXISTING SUPPLIERS TABLE WITH V5 CAPABILITIES
+alter table public.suppliers add column if not exists supplier_code text;
+alter table public.suppliers add column if not exists name_bn text;
+alter table public.suppliers add column if not exists branch_id uuid references public.branches(id) on delete set null;
+alter table public.suppliers add column if not exists alt_phone text;
+alter table public.suppliers add column if not exists division text;
+alter table public.suppliers add column if not exists district text;
+alter table public.suppliers add column if not exists upazila text;
+alter table public.suppliers add column if not exists area text;
+alter table public.suppliers add column if not exists bin text;
+alter table public.suppliers add column if not exists tin text;
+alter table public.suppliers add column if not exists trade_license text;
+alter table public.suppliers add column if not exists website text;
+alter table public.suppliers add column if not exists credit_limit numeric(12,2) default 0;
+alter table public.suppliers add column if not exists lead_time_days integer default 3;
+alter table public.suppliers add column if not exists default_currency text default 'BDT';
+alter table public.suppliers add column if not exists created_by uuid references auth.users(id) on delete set null;
+alter table public.suppliers add column if not exists updated_by uuid references auth.users(id) on delete set null;
+
+create index if not exists idx_suppliers_code on public.suppliers(company_id, supplier_code);
+create index if not exists idx_suppliers_branch on public.suppliers(company_id, branch_id);
+
+-- 2. SUPPLIER ITEMS CATALOG (Mapping Suppliers to Materials)
+create table if not exists public.supplier_items (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    branch_id uuid references public.branches(id) on delete set null,
+    supplier_id uuid not null references public.suppliers(id) on delete cascade,
+    material_id uuid not null references public.materials(id) on delete cascade,
+    supplier_sku text,
+    supplier_item_name text,
+    purchase_unit text not null default 'unit',
+    conversion_factor numeric(10,4) not null default 1.0,
+    unit_price numeric(12,2) not null default 0,
+    currency text not null default 'BDT',
+    moq numeric(10,2) default 1,
+    lead_time_days integer default 3,
+    is_preferred boolean not null default false,
+    is_active boolean not null default true,
+    effective_date date not null default current_date,
+    notes text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    constraint uk_supplier_material unique (company_id, supplier_id, material_id)
+);
+
+create index if not exists idx_supplier_items_supp on public.supplier_items(company_id, supplier_id);
+create index if not exists idx_supplier_items_mat on public.supplier_items(company_id, material_id);
+alter table public.supplier_items enable row level security;
+
+-- 3. PURCHASE REQUESTS & ITEMS
+create table if not exists public.purchase_requests (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    branch_id uuid references public.branches(id) on delete set null,
+    pr_number text not null,
+    department text default 'Production',
+    requested_by_id uuid references auth.users(id) on delete set null,
+    requested_by_name text not null,
+    request_date date not null default current_date,
+    required_date date not null default (current_date + interval '3 days'),
+    priority text not null default 'normal' check (priority in ('low', 'normal', 'high', 'urgent')),
+    supplier_id uuid references public.suppliers(id) on delete set null,
+    reason text,
+    notes text,
+    status text not null default 'submitted' check (
+        status in ('draft', 'submitted', 'under_review', 'approved', 'rejected', 'cancelled')
+    ),
+    approved_by_id uuid references auth.users(id) on delete set null,
+    approved_by_name text,
+    approved_at timestamptz,
+    rejection_reason text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    constraint uk_purchase_requests_num unique (company_id, pr_number)
+);
+
+create index if not exists idx_purchase_requests_comp on public.purchase_requests(company_id);
+create index if not exists idx_purchase_requests_status on public.purchase_requests(company_id, status);
+alter table public.purchase_requests enable row level security;
+
+create table if not exists public.purchase_request_items (
+    id uuid primary key default gen_random_uuid(),
+    purchase_request_id uuid not null references public.purchase_requests(id) on delete cascade,
+    material_id uuid references public.materials(id) on delete set null,
+    material_name text not null,
+    quantity numeric(10,2) not null,
+    unit text not null default 'pcs',
+    required_date date,
+    estimated_unit_price numeric(12,2) default 0,
+    estimated_amount numeric(12,2) default 0,
+    preferred_supplier_id uuid references public.suppliers(id) on delete set null,
+    notes text,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_pr_items_pr on public.purchase_request_items(purchase_request_id);
+alter table public.purchase_request_items enable row level security;
+
+-- 4. EXTEND PURCHASE ORDERS & ITEMS TABLE
+alter table public.purchase_orders add column if not exists branch_id uuid references public.branches(id) on delete set null;
+alter table public.purchase_orders add column if not exists purchase_request_id uuid references public.purchase_requests(id) on delete set null;
+alter table public.purchase_orders add column if not exists supplier_reference text;
+alter table public.purchase_orders add column if not exists currency text default 'BDT';
+alter table public.purchase_orders add column if not exists payment_terms text default 'credit_15';
+alter table public.purchase_orders add column if not exists shipping_cost numeric(12,2) default 0;
+alter table public.purchase_orders add column if not exists other_charges numeric(12,2) default 0;
+alter table public.purchase_orders add column if not exists terms_and_conditions text;
+alter table public.purchase_orders add column if not exists approved_by_id uuid references auth.users(id) on delete set null;
+alter table public.purchase_orders add column if not exists approved_by_name text;
+alter table public.purchase_orders add column if not exists approved_at timestamptz;
+alter table public.purchase_orders add column if not exists sent_at timestamptz;
+alter table public.purchase_orders add column if not exists cancelled_at timestamptz;
+alter table public.purchase_orders add column if not exists cancellation_reason text;
+
+alter table public.purchase_order_items add column if not exists supplier_sku text;
+alter table public.purchase_order_items add column if not exists discount_percent numeric(5,2) default 0;
+alter table public.purchase_order_items add column if not exists tax_percent numeric(5,2) default 0;
+alter table public.purchase_order_items add column if not exists expected_date date;
+alter table public.purchase_order_items add column if not exists notes text;
+
+-- 5. EXTEND GOODS RECEIVED NOTES & ITEMS
+alter table public.goods_received_notes add column if not exists branch_id uuid references public.branches(id) on delete set null;
+alter table public.goods_received_notes add column if not exists supplier_id uuid references public.suppliers(id) on delete set null;
+alter table public.goods_received_notes add column if not exists receiving_location_id uuid references public.inventory_locations(id) on delete set null;
+alter table public.goods_received_notes add column if not exists supplier_delivery_note text;
+alter table public.goods_received_notes add column if not exists supplier_invoice_number text;
+alter table public.goods_received_notes add column if not exists status text default 'posted' check (
+    status in ('draft', 'received', 'inspected', 'quarantined', 'posted', 'cancelled')
+);
+alter table public.goods_received_notes add column if not exists accepted_total numeric(12,2) default 0;
+alter table public.goods_received_notes add column if not exists rejected_total numeric(12,2) default 0;
+alter table public.goods_received_notes add column if not exists damaged_total numeric(12,2) default 0;
+alter table public.goods_received_notes add column if not exists posted_at timestamptz default now();
+alter table public.goods_received_notes add column if not exists posted_by_id uuid references auth.users(id) on delete set null;
+alter table public.goods_received_notes add column if not exists posted_by_name text;
+
+create table if not exists public.goods_received_note_items (
+    id uuid primary key default gen_random_uuid(),
+    grn_id uuid not null references public.goods_received_notes(id) on delete cascade,
+    po_item_id uuid references public.purchase_order_items(id) on delete set null,
+    material_id uuid not null references public.materials(id) on delete cascade,
+    material_name text not null,
+    quantity_ordered numeric(10,2) not null default 0,
+    previously_received numeric(10,2) not null default 0,
+    current_received numeric(10,2) not null,
+    accepted_quantity numeric(10,2) not null,
+    rejected_quantity numeric(10,2) not null default 0,
+    damaged_quantity numeric(10,2) not null default 0,
+    unit text not null,
+    unit_cost numeric(12,2) not null,
+    total_cost numeric(12,2) not null,
+    batch_lot_number text,
+    roll_id text,
+    expiry_date date,
+    rejection_reason text,
+    notes text,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_grn_items_grn on public.goods_received_note_items(grn_id);
+create index if not exists idx_grn_items_mat on public.goods_received_note_items(material_id);
+alter table public.goods_received_note_items enable row level security;
+
+-- 6. SUPPLIER RETURNS TABLE & ITEMS
+create table if not exists public.supplier_returns (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    branch_id uuid references public.branches(id) on delete set null,
+    return_number text not null,
+    grn_id uuid references public.goods_received_notes(id) on delete set null,
+    purchase_order_id uuid references public.purchase_orders(id) on delete set null,
+    supplier_id uuid not null references public.suppliers(id) on delete cascade,
+    supplier_name text not null,
+    return_date date not null default current_date,
+    status text not null default 'draft' check (
+        status in ('draft', 'approved', 'completed', 'cancelled')
+    ),
+    reason text not null,
+    total_return_amount numeric(12,2) not null default 0,
+    approved_by_id uuid references auth.users(id) on delete set null,
+    approved_by_name text,
+    approved_at timestamptz,
+    notes text,
+    created_by_name text not null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    constraint uk_supplier_returns_num unique (company_id, return_number)
+);
+
+create index if not exists idx_supplier_returns_comp on public.supplier_returns(company_id);
+create index if not exists idx_supplier_returns_supp on public.supplier_returns(company_id, supplier_id);
+alter table public.supplier_returns enable row level security;
+
+create table if not exists public.supplier_return_items (
+    id uuid primary key default gen_random_uuid(),
+    return_id uuid not null references public.supplier_returns(id) on delete cascade,
+    grn_item_id uuid references public.goods_received_note_items(id) on delete set null,
+    material_id uuid not null references public.materials(id) on delete cascade,
+    material_name text not null,
+    return_quantity numeric(10,2) not null,
+    unit text not null,
+    unit_cost numeric(12,2) not null,
+    total_amount numeric(12,2) not null,
+    reason text,
+    location_id uuid references public.inventory_locations(id) on delete set null,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_return_items_ret on public.supplier_return_items(return_id);
+alter table public.supplier_return_items enable row level security;
+
+-- 7. SUPPLIER LEDGER ENTRIES (Procurement Balance & Liability Tracking)
+create table if not exists public.supplier_ledger_entries (
+    id uuid primary key default gen_random_uuid(),
+    company_id uuid not null references public.companies(id) on delete cascade,
+    branch_id uuid references public.branches(id) on delete set null,
+    supplier_id uuid not null references public.suppliers(id) on delete cascade,
+    entry_type text not null check (
+        entry_type in ('PURCHASE_ORDER', 'GOODS_RECEIPT', 'PAYMENT', 'RETURN', 'ADJUSTMENT')
+    ),
+    reference_type text,
+    reference_id text,
+    debit numeric(12,2) not null default 0,
+    credit numeric(12,2) not null default 0,
+    running_balance numeric(12,2) not null default 0,
+    notes text,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_supplier_ledger_supp on public.supplier_ledger_entries(company_id, supplier_id);
+create index if not exists idx_supplier_ledger_date on public.supplier_ledger_entries(company_id, created_at);
+alter table public.supplier_ledger_entries enable row level security;
+
+-- 8. ROW LEVEL SECURITY (RLS) POLICIES
+drop policy if exists "tenant_isolation_supplier_items" on public.supplier_items;
+create policy "tenant_isolation_supplier_items" on public.supplier_items for all
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "tenant_isolation_purchase_requests" on public.purchase_requests;
+create policy "tenant_isolation_purchase_requests" on public.purchase_requests for all
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "tenant_isolation_purchase_request_items" on public.purchase_request_items;
+create policy "tenant_isolation_purchase_request_items" on public.purchase_request_items for all
+    using (
+        exists (
+            select 1 from public.purchase_requests pr
+            where pr.id = purchase_request_items.purchase_request_id
+            and public.auth_is_active_company_user(pr.company_id)
+        )
+    );
+
+drop policy if exists "tenant_isolation_grn_items" on public.goods_received_note_items;
+create policy "tenant_isolation_grn_items" on public.goods_received_note_items for all
+    using (
+        exists (
+            select 1 from public.goods_received_notes grn
+            where grn.id = goods_received_note_items.grn_id
+            and public.auth_is_active_company_user(grn.company_id)
+        )
+    );
+
+drop policy if exists "tenant_isolation_supplier_returns" on public.supplier_returns;
+create policy "tenant_isolation_supplier_returns" on public.supplier_returns for all
+    using (public.auth_is_active_company_user(company_id));
+
+drop policy if exists "tenant_isolation_supplier_return_items" on public.supplier_return_items;
+create policy "tenant_isolation_supplier_return_items" on public.supplier_return_items for all
+    using (
+        exists (
+            select 1 from public.supplier_returns sr
+            where sr.id = supplier_return_items.return_id
+            and public.auth_is_active_company_user(sr.company_id)
+        )
+    );
+
+drop policy if exists "tenant_isolation_supplier_ledger_entries" on public.supplier_ledger_entries;
+create policy "tenant_isolation_supplier_ledger_entries" on public.supplier_ledger_entries for all
+    using (public.auth_is_active_company_user(company_id));
+
+
+

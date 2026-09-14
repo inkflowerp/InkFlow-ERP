@@ -39,7 +39,15 @@ export type SupplierCategory =
   | 'paper'
   | 'pvc'
   | 'aluminum'
+  | 'vinyl'
+  | 'flex'
+  | 'fabrication'
+  | 'packaging'
+  | 'finishing'
+  | 'outsourcing'
+  | 'general'
   | 'other'
+  | string
 
 export type SupplierPaymentTerms =
   | 'cash'
@@ -210,19 +218,36 @@ export interface CustomerCommunication {
 export interface SupplierRecord {
   id: string
   company_id: string
+  branch_id?: string | null
+  supplier_code?: string | null
   supplier_name: string
+  name_bn?: string | null
   company?: string | null
   contact_person?: string | null
   mobile: string
+  alt_phone?: string | null
   whatsapp?: string | null
   email?: string | null
   address?: string | null
+  division?: string | null
+  district?: string | null
+  upazila?: string | null
+  area?: string | null
+  bin?: string | null
+  tin?: string | null
+  trade_license?: string | null
+  website?: string | null
   category: SupplierCategory
   payment_terms: SupplierPaymentTerms
+  credit_limit?: number
+  lead_time_days?: number
+  default_currency?: string
   notes?: string | null
   is_active: boolean
   outstanding_balance?: number
   total_purchases_amount?: number
+  created_by?: string | null
+  updated_by?: string | null
   created_at: string
   updated_at: string
 }

@@ -124,7 +124,9 @@ export default function JobCostingPage() {
       },
       variances: {
         material_variance: matVar,
+        machine_variance: editingJob.variances?.machine_variance || 0,
         labor_variance: labVar,
+        finishing_variance: editingJob.variances?.finishing_variance || 0,
         transport_variance: trVar,
         total_variance: totVar,
       },

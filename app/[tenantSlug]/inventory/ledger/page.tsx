@@ -38,10 +38,11 @@ export default function StockLedgerPage() {
 
   const filtered = ledger.filter((entry: StockLedgerRecord) => {
     const matchType = selectedType === 'all' || entry.transaction_type === selectedType
+    const matName = entry.material_name || entry.material?.name || ''
     const matchSearch =
-      entry.material_name.toLowerCase().includes(search.toLowerCase()) ||
+      matName.toLowerCase().includes(search.toLowerCase()) ||
       (entry.reference_id && entry.reference_id.toLowerCase().includes(search.toLowerCase())) ||
-      entry.performed_by_name.toLowerCase().includes(search.toLowerCase())
+      (entry.performed_by_name && entry.performed_by_name.toLowerCase().includes(search.toLowerCase()))
 
     return matchType && matchSearch
   })

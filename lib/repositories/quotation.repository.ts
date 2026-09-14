@@ -9,7 +9,7 @@ import type {
 } from '../../types/quotation.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
 import { measureAsync } from '../performance/logger.ts'
-import { buildPaginatedResponse, PaginatedResult } from '../api/pagination-helper.ts'
+import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class QuotationRepository {
@@ -17,43 +17,42 @@ export class QuotationRepository {
    * Concurrency-safe, tenant-aware sequential quotation number generator
    */
   static async getNextQuotationNumber(companyId: string): Promise<string> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any).rpc('get_next_document_number', {
-      p_company_id: companyId,
-      p_doc_type: 'quotation',
-    })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any).rpc('get_next_document_number', {
+        p_company_id: companyId,
+        p_doc_type: 'quotation',
+      })
 
-    if (error || !data) {
-      // Fallback to document_sequences table or DataStore
-      try {
-        const admin = createAdminClient()
-        const { data: seq } = await (admin as any)
-          .from('document_sequences')
-          .select('*')
-          .eq('company_id', companyId)
-          .eq('doc_type', 'quotation')
-          .maybeSingle()
-
-        const prefix = seq?.prefix || 'QUO'
-        const nextVal = (seq?.current_val ? Number(seq.current_val) : 0) + 1
-
-        await (admin as any).from('document_sequences').upsert({
-          company_id: companyId,
-          doc_type: 'quotation',
-          prefix,
-          current_val: nextVal,
-          padding: 6,
-          updated_at: new Date().toISOString(),
-        })
-
-        return `${prefix}-${String(nextVal).padStart(6, '0')}`
-      } catch {
-        // Fallback to DataStore atomic number
-        return PrintERPDataStore.getNextDocumentNumber(companyId, 'quotation')
+      if (!error && data) {
+        return String(data)
       }
-    }
 
-    return String(data)
+      const admin = createAdminClient()
+      const { data: seq } = await (admin as any)
+        .from('document_sequences')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('doc_type', 'quotation')
+        .maybeSingle()
+
+      const prefix = seq?.prefix || 'QUO'
+      const nextVal = (seq?.current_val ? Number(seq.current_val) : 0) + 1
+
+      await (admin as any).from('document_sequences').upsert({
+        company_id: companyId,
+        doc_type: 'quotation',
+        prefix,
+        current_val: nextVal,
+        padding: 6,
+        updated_at: new Date().toISOString(),
+      })
+
+      return `${prefix}-${String(nextVal).padStart(6, '0')}`
+    } catch {
+      // Fallback to DataStore atomic number
+      return PrintERPDataStore.getNextDocumentNumber(companyId, 'quotation')
+    }
   }
 
   /**
@@ -154,20 +153,22 @@ export class QuotationRepository {
    * Retrieves a single quotation with items and activity timeline
    */
   static async getQuotationById(id: string, companyId: string): Promise<QuotationRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('quotations')
-      .select('*, items:quotation_items(*)')
-      .or(`id.eq.${id},quotation_number.eq.${id}`)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('quotations')
+        .select('*, items:quotation_items(*)')
+        .or(`id.eq.${id},quotation_number.eq.${id}`)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error || !data) {
-      const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-      return quotes.find((q) => (q.id === id || q.quotation_number === id) && (!q.company_id || q.company_id === companyId)) || null
-    }
+      if (!error && data) {
+        return data as unknown as QuotationRecord
+      }
+    } catch {}
 
-    return (data as unknown as QuotationRecord) || null
+    const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
+    return quotes.find((q) => (q.id === id || q.quotation_number === id) && (!q.company_id || q.company_id === companyId)) || null
   }
 
   /**

@@ -2,8 +2,17 @@ import { createServerClient } from '@supabase/ssr'
 import type { Database } from '../../types/database.types.ts'
 
 export async function createClient() {
-  const { cookies } = await import('next/headers')
-  const cookieStore = await cookies()
+  let cookieStore: any = {
+    getAll: () => [],
+    set: () => {},
+  }
+
+  try {
+    const { cookies } = await import('next/headers')
+    cookieStore = await cookies()
+  } catch {
+    // Standalone Node.js / test environment without Next.js headers
+  }
 
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -27,20 +36,20 @@ export async function createClient() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return typeof cookieStore.getAll === 'function' ? cookieStore.getAll() : []
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
+            if (typeof cookieStore.set === 'function') {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            }
           } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing user sessions.
+            // Ignored in server component context
           }
         },
       },
     }
   )
 }
-

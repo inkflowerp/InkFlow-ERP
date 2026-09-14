@@ -1,81 +1,43 @@
-import {
+import type {
   ProductRecord,
   PriceHistoryRecord,
-} from '@/types/product.types'
-import { ProductRepository } from '@/lib/repositories/product.repository'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+  ProductVariantRecord,
+  ProductFormulaRecord,
+  PriceListRecord,
+  PricingCalculationInput,
+  PricingCalculationOutput,
+} from '../types/product.types.ts'
+import { ProductRepository } from '../lib/repositories/product.repository.ts'
+import { calculateJobPricing } from '../lib/pricing-engine.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 export class ProductService {
-  static async getProducts(companyId: string = 'c-01'): Promise<ProductRecord[]> {
-    try {
-      return await ProductRepository.getProducts(companyId, false)
-    } catch {
-      const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
-      return prods.filter((p) => !p.company_id || p.company_id === companyId)
-    }
+  static async getProducts(companyId: string = 'c-01', activeOnly: boolean = false): Promise<ProductRecord[]> {
+    return ProductRepository.getProducts(companyId, activeOnly)
   }
 
   static async getProductById(id: string, companyId: string = 'c-01'): Promise<ProductRecord | null> {
-    try {
-      return await ProductRepository.getProductById(id, companyId)
-    } catch {
-      const prods = await this.getProducts(companyId)
-      return prods.find((p) => p.id === id || p.sku === id) || null
-    }
+    return ProductRepository.getProductById(id, companyId)
   }
 
   static async createProduct(data: Partial<ProductRecord>): Promise<ProductRecord> {
     const companyId = data.company_id || 'c-01'
-    try {
-      return await ProductRepository.createProduct({
-        ...data,
-        company_id: companyId,
-        name: data.name || 'Product',
-        sku: data.sku || `PRD-${Date.now().toString().slice(-4)}`,
-        unit: (data.unit as any) || 'sft',
-        selling_price: data.selling_price || 0,
-      })
-    } catch {
-      const id = data.id || `prd-${Date.now()}`
-      const newProduct: ProductRecord = {
-        id,
-        company_id: companyId,
-        name: data.name || 'Product',
-        name_bn: data.name_bn || null,
-        sku: data.sku || `PRD-${Date.now().toString().slice(-4)}`,
-        category: data.category || 'flex_banner',
-        product_type: data.product_type || 'print_service',
-        unit: data.unit || 'sft',
-        material_spec: data.material_spec || null,
-        description: data.description || null,
-        base_cost: data.base_cost || 0,
-        selling_price: data.selling_price || 0,
-        min_price: data.min_price || 0,
-        tax_rate: data.tax_rate || 7.5,
-        pricing_formula: data.pricing_formula || null,
-        is_active: data.is_active !== undefined ? data.is_active : true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-      PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, newProduct)
-      return newProduct
-    }
+    return ProductRepository.createProduct({
+      ...data,
+      company_id: companyId,
+      name: data.name || 'Product',
+      sku: data.sku || `PRD-${Date.now().toString().slice(-4)}`,
+      unit: (data.unit as any) || 'sft',
+      selling_price: data.selling_price || 0,
+    })
   }
 
   static async updateProduct(id: string, data: Partial<ProductRecord>, companyId: string = 'c-01'): Promise<ProductRecord | null> {
-    try {
-      return await ProductRepository.updateProduct(id, data, companyId)
-    } catch {
-      return PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, data)
-    }
+    return ProductRepository.updateProduct(id, data, companyId)
   }
 
   static async deleteProduct(id: string, companyId: string = 'c-01'): Promise<boolean> {
-    try {
-      return await ProductRepository.deleteProduct(id, companyId)
-    } catch {
-      return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id)
-    }
+    return ProductRepository.deleteProduct(id, companyId)
   }
 
   static async updatePrice(
@@ -113,5 +75,64 @@ export class ProductService {
     const history = PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || []
     if (productId) return history.filter((h) => h.product_id === productId)
     return history
+  }
+
+  // ============================================================================
+  // VARIANTS
+  // ============================================================================
+
+  static async getProductVariants(productId: string, companyId: string = 'c-01'): Promise<ProductVariantRecord[]> {
+    return ProductRepository.getProductVariants(productId, companyId)
+  }
+
+  static async createProductVariant(data: Partial<ProductVariantRecord> & {
+    company_id: string
+    product_id: string
+    variant_name: string
+  }): Promise<ProductVariantRecord> {
+    return ProductRepository.createProductVariant(data)
+  }
+
+  // ============================================================================
+  // FORMULAS
+  // ============================================================================
+
+  static async getProductFormulas(productId: string, companyId: string = 'c-01'): Promise<ProductFormulaRecord[]> {
+    return ProductRepository.getProductFormulas(productId, companyId)
+  }
+
+  static async createProductFormula(data: Partial<ProductFormulaRecord> & {
+    company_id: string
+    product_id: string
+    model: any
+  }): Promise<ProductFormulaRecord> {
+    return ProductRepository.createProductFormula(data)
+  }
+
+  // ============================================================================
+  // PRICE LISTS
+  // ============================================================================
+
+  static async getPriceLists(companyId: string = 'c-01'): Promise<PriceListRecord[]> {
+    return ProductRepository.getPriceLists(companyId)
+  }
+
+  static async createPriceList(data: Partial<PriceListRecord> & {
+    company_id: string
+    name: string
+    code: string
+  }): Promise<PriceListRecord> {
+    return ProductRepository.createPriceList(data)
+  }
+
+  // ============================================================================
+  // PRICING CALCULATION
+  // ============================================================================
+
+  static calculateProductPrice(
+    product: ProductRecord,
+    input: PricingCalculationInput
+  ): PricingCalculationOutput {
+    return calculateJobPricing(product.pricing_formula, input, product.min_price)
   }
 }

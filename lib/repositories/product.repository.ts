@@ -1,6 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
-import { ProductRecord } from '@/types/product.types'
-import { measureAsync } from '@/lib/performance/logger'
+import { createClient } from '../supabase/server.ts'
+import type {
+  ProductRecord,
+  ProductVariantRecord,
+  ProductFormulaRecord,
+  PriceListRecord,
+  PriceListItemRecord,
+} from '../../types/product.types.ts'
+import { measureAsync } from '../performance/logger.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const DEFAULT_PRINT_PRODUCTS: Omit<ProductRecord, 'id' | 'company_id' | 'created_at' | 'updated_at'>[] = [
   {
@@ -128,68 +135,63 @@ export const DEFAULT_PRINT_PRODUCTS: Omit<ProductRecord, 'id' | 'company_id' | '
 export class ProductRepository {
   static async getProducts(companyId: string, activeOnly: boolean = false): Promise<ProductRecord[]> {
     return measureAsync(`ProductRepository.getProducts(${companyId})`, async () => {
-      const supabase = await createClient()
-      let query = (supabase as any)
-        .from('products')
-        .select('*')
-        .eq('company_id', companyId)
-        .order('name', { ascending: true })
+      try {
+        const supabase = await createClient()
+        let query = (supabase as any)
+          .from('products')
+          .select('*, variants:product_variants(*), formulas:product_formulas(*)')
+          .eq('company_id', companyId)
+          .order('name', { ascending: true })
 
-      if (activeOnly) {
-        query = query.eq('is_active', true)
+        if (activeOnly) {
+          query = query.eq('is_active', true)
+        }
+
+        const { data, error } = await query
+
+        if (error) {
+          throw new Error(error.message)
+        }
+
+        const list = (data || []) as ProductRecord[]
+        if (list.length > 0) return list
+      } catch {
+        // Fallback to DataStore
       }
 
-      const { data, error } = await query
+      const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
+      const filtered = prods.filter((p) => !p.company_id || p.company_id === companyId)
+      if (filtered.length > 0) return filtered
 
-      if (error) {
-        throw new Error(`Failed to fetch products: ${error.message}`)
-      }
-
-      const list = (data || []) as ProductRecord[]
-
-      // If tenant has no products seeded yet, synthesize standard catalog items
-      if (list.length === 0) {
-        return DEFAULT_PRINT_PRODUCTS.map((p, idx) => ({
-          ...p,
-          id: `seed-prd-${companyId}-${idx + 1}`,
-          company_id: companyId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })) as ProductRecord[]
-      }
-
-      return list
+      return DEFAULT_PRINT_PRODUCTS.map((p, idx) => ({
+        ...p,
+        id: `seed-prd-${companyId}-${idx + 1}`,
+        company_id: companyId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })) as ProductRecord[]
     })
   }
 
   static async getProductById(id: string, companyId: string): Promise<ProductRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('products')
-      .select('*')
-      .or(`id.eq.${id},sku.eq.${id}`)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('products')
+        .select('*, variants:product_variants(*), formulas:product_formulas(*)')
+        .or(`id.eq.${id},sku.eq.${id}`)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch product ${id}: ${error.message}`)
-    }
-
-    if (!data) {
-      // Check default catalog
-      const foundDefault = DEFAULT_PRINT_PRODUCTS.find((p, idx) => `seed-prd-${companyId}-${idx + 1}` === id || p.sku === id)
-      if (foundDefault) {
-        return {
-          ...foundDefault,
-          id,
-          company_id: companyId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as ProductRecord
+      if (!error && data) {
+        return data as ProductRecord
       }
+    } catch {
+      // Fallback
     }
 
-    return (data as unknown as ProductRecord) || null
+    const prods = await this.getProducts(companyId)
+    return prods.find((p) => p.id === id || p.sku === id) || null
   }
 
   static async createProduct(product: Partial<ProductRecord> & {
@@ -199,8 +201,8 @@ export class ProductRepository {
     unit: any
     selling_price: number
   }): Promise<ProductRecord> {
-    const supabase = await createClient()
     const payload: any = {
+      id: product.id || `prd-${Date.now()}`,
       company_id: product.company_id,
       name: product.name.trim(),
       name_bn: product.name_bn?.trim() || null,
@@ -210,64 +212,308 @@ export class ProductRepository {
       unit: product.unit,
       material_spec: product.material_spec?.trim() || null,
       description: product.description?.trim() || null,
+      description_bn: product.description_bn?.trim() || null,
+      dimensions_spec: product.dimensions_spec || null,
       base_cost: product.base_cost || 0,
       selling_price: product.selling_price || 0,
       min_price: product.min_price || 0,
       tax_rate: product.tax_rate !== undefined ? product.tax_rate : 7.5,
       pricing_formula: product.pricing_formula || null,
       is_active: product.is_active !== undefined ? product.is_active : true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
 
-    if (product.id) {
-      payload.id = product.id
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('products')
+        .insert(payload)
+        .select()
+        .single()
+
+      if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, data)
+        return data as ProductRecord
+      }
+    } catch {
+      // DataStore fallback
     }
 
-    const { data, error } = await (supabase as any)
-      .from('products')
-      .insert(payload)
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error(`Failed to create product: ${error.message}`)
-    }
-
-    return data as unknown as ProductRecord
+    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, payload)
+    return payload as ProductRecord
   }
 
   static async updateProduct(id: string, updates: Partial<ProductRecord>, companyId: string): Promise<ProductRecord> {
-    const supabase = await createClient()
     const payload: any = { ...updates, updated_at: new Date().toISOString() }
     delete payload.id
     delete payload.company_id
 
-    const { data, error } = await (supabase as any)
-      .from('products')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .select()
-      .single()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('products')
+        .update(payload)
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .select()
+        .single()
 
-    if (error) {
-      throw new Error(`Failed to update product: ${error.message}`)
+      if (!error && data) {
+        PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, data)
+        return data as ProductRecord
+      }
+    } catch {
+      // Fallback
     }
 
-    return data as unknown as ProductRecord
+    const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload)
+    if (!updated) throw new Error(`Product ${id} not found`)
+    return updated
   }
 
   static async deleteProduct(id: string, companyId: string): Promise<boolean> {
-    const supabase = await createClient()
-    const { error } = await (supabase as any)
-      .from('products')
-      .delete()
-      .eq('id', id)
-      .eq('company_id', companyId)
-
-    if (error) {
-      throw new Error(`Failed to delete product: ${error.message}`)
+    try {
+      const supabase = await createClient()
+      await (supabase as any)
+        .from('products')
+        .delete()
+        .eq('id', id)
+        .eq('company_id', companyId)
+    } catch {
+      // Fallback
     }
 
-    return true
+    return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id)
+  }
+
+  // ============================================================================
+  // PRODUCT VARIANTS REPOSITORY
+  // ============================================================================
+
+  static async getProductVariants(productId: string, companyId: string): Promise<ProductVariantRecord[]> {
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('product_variants')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('product_id', productId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+
+      if (!error && data) return data as ProductVariantRecord[]
+    } catch {}
+
+    const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS) || []
+    return vars.filter((v) => v.product_id === productId && (!v.company_id || v.company_id === companyId))
+  }
+
+  static async createProductVariant(data: Partial<ProductVariantRecord> & {
+    company_id: string
+    product_id: string
+    variant_name: string
+  }): Promise<ProductVariantRecord> {
+    const record: ProductVariantRecord = {
+      id: data.id || `var-${Date.now()}`,
+      company_id: data.company_id,
+      product_id: data.product_id,
+      variant_name: data.variant_name.trim(),
+      sku_suffix: data.sku_suffix || null,
+      thickness_mm: data.thickness_mm || null,
+      gsm: data.gsm || null,
+      finish: data.finish || null,
+      color: data.color || null,
+      size_spec: data.size_spec || null,
+      cost_adjustment: data.cost_adjustment || 0,
+      price_adjustment: data.price_adjustment || 0,
+      is_active: data.is_active !== undefined ? data.is_active : true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    try {
+      const supabase = await createClient()
+      const { data: inserted, error } = await (supabase as any)
+        .from('product_variants')
+        .insert(record)
+        .select()
+        .single()
+      if (!error && inserted) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, inserted)
+        return inserted as ProductVariantRecord
+      }
+    } catch {}
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, record)
+    return record
+  }
+
+  // ============================================================================
+  // PRODUCT FORMULAS REPOSITORY
+  // ============================================================================
+
+  static async getProductFormulas(productId: string, companyId: string): Promise<ProductFormulaRecord[]> {
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('product_formulas')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('product_id', productId)
+        .order('version', { ascending: false })
+
+      if (!error && data) return data as ProductFormulaRecord[]
+    } catch {}
+
+    const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS) || []
+    return forms.filter((f) => f.product_id === productId && (!f.company_id || f.company_id === companyId))
+  }
+
+  static async createProductFormula(data: Partial<ProductFormulaRecord> & {
+    company_id: string
+    product_id: string
+    model: any
+  }): Promise<ProductFormulaRecord> {
+    const existing = await this.getProductFormulas(data.product_id, data.company_id)
+    const nextVersion = existing.length > 0 ? Math.max(...existing.map((e) => e.version)) + 1 : 1
+
+    const record: ProductFormulaRecord = {
+      id: data.id || `form-${Date.now()}`,
+      company_id: data.company_id,
+      product_id: data.product_id,
+      formula_name: data.formula_name || `Formula V${nextVersion}`,
+      version: nextVersion,
+      model: data.model || 'dimensional_area',
+      waste_factor_percent: data.waste_factor_percent !== undefined ? data.waste_factor_percent : 5.0,
+      material_requirements: data.material_requirements || [],
+      machine_operations: data.machine_operations || [],
+      labor_operations: data.labor_operations || [],
+      finishing_operations: data.finishing_operations || [],
+      other_costs: data.other_costs || [],
+      target_margin_percent: data.target_margin_percent !== undefined ? data.target_margin_percent : 35.0,
+      min_margin_percent: data.min_margin_percent !== undefined ? data.min_margin_percent : 15.0,
+      is_active: data.is_active !== undefined ? data.is_active : true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    try {
+      const supabase = await createClient()
+      const { data: inserted, error } = await (supabase as any)
+        .from('product_formulas')
+        .insert(record)
+        .select()
+        .single()
+      if (!error && inserted) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, inserted)
+        return inserted as ProductFormulaRecord
+      }
+    } catch {}
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, record)
+    return record
+  }
+
+  // ============================================================================
+  // PRICE LISTS REPOSITORY
+  // ============================================================================
+
+  static async getPriceLists(companyId: string): Promise<PriceListRecord[]> {
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('price_lists')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: true })
+
+      if (!error && data) return data as PriceListRecord[]
+    } catch {}
+
+    const lists = PrintERPDataStore.get<PriceListRecord[]>(STORAGE_KEYS.PRICE_LISTS) || []
+    const filtered = lists.filter((l) => !l.company_id || l.company_id === companyId)
+    if (filtered.length > 0) return filtered
+
+    // Default Price Lists for Print Shop
+    const defaultLists: PriceListRecord[] = [
+      {
+        id: `pl-ret-${companyId}`,
+        company_id: companyId,
+        name: 'Standard Retail Price List',
+        code: 'RETAIL',
+        tier_type: 'retail',
+        description: 'Standard retail walk-in customer pricing',
+        default_markup_percent: 0,
+        is_default: true,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: `pl-corp-${companyId}`,
+        company_id: companyId,
+        name: 'Corporate Contract Rates',
+        code: 'CORPORATE',
+        tier_type: 'corporate',
+        description: 'Discounted contract rates for corporate accounts',
+        default_markup_percent: -10,
+        is_default: false,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: `pl-who-${companyId}`,
+        company_id: companyId,
+        name: 'Wholesale / Agency Rates',
+        code: 'WHOLESALE',
+        tier_type: 'wholesale',
+        description: 'High volume wholesale and advertising agency partner pricing',
+        default_markup_percent: -20,
+        is_default: false,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]
+
+    return defaultLists
+  }
+
+  static async createPriceList(data: Partial<PriceListRecord> & {
+    company_id: string
+    name: string
+    code: string
+  }): Promise<PriceListRecord> {
+    const record: PriceListRecord = {
+      id: data.id || `pl-${Date.now()}`,
+      company_id: data.company_id,
+      name: data.name.trim(),
+      code: data.code.trim().toUpperCase(),
+      tier_type: data.tier_type || 'retail',
+      description: data.description || null,
+      default_markup_percent: data.default_markup_percent || 0,
+      is_default: data.is_default || false,
+      is_active: data.is_active !== undefined ? data.is_active : true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    try {
+      const supabase = await createClient()
+      const { data: inserted, error } = await (supabase as any)
+        .from('price_lists')
+        .insert(record)
+        .select()
+        .single()
+      if (!error && inserted) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, inserted)
+        return inserted as PriceListRecord
+      }
+    } catch {}
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, record)
+    return record
   }
 }

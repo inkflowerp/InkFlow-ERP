@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Package,
@@ -19,6 +19,18 @@ import {
   ExternalLink,
   ShieldCheck,
   Disc,
+  MapPin,
+  FileText,
+  Send,
+  Scissors,
+  ArrowRightLeft,
+  Check,
+  X,
+  SlidersHorizontal,
+  RefreshCw,
+  Building2,
+  AlertOctagon,
+  Boxes,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
@@ -29,935 +41,1155 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { Crown } from 'lucide-react'
 import {
   MaterialRecord,
+  InventoryLocationRecord,
+  InventoryStockBalanceRecord,
+  MaterialRequestRecord,
+  MaterialIssueRecord,
+  InventoryRemnantRecord,
+  StockLedgerRecord,
+  InventorySummaryStats,
   MaterialCategory,
   MaterialUnit,
-  InventoryTransactionType,
-  StockLedgerRecord,
-  MaterialWastageRecord,
 } from '@/types/inventory.types'
 import { formatBDT } from '@/lib/formatters'
-import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
+import { InventoryService } from '@/services/inventory.service'
+import {
+  approveMaterialRequestAction,
+  rejectMaterialRequestAction,
+  updateRemnantStatusAction,
+} from '@/actions/inventory.actions'
+
+// Modals
+import { NewMaterialModal } from '@/components/inventory/new-material-modal'
+import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
+import { MaterialRequestModal } from '@/components/inventory/material-request-modal'
+import { MaterialIssueModal } from '@/components/inventory/material-issue-modal'
+import { LogConsumptionModal } from '@/components/inventory/log-consumption-modal'
+import { StockTransferModal } from '@/components/inventory/stock-transfer-modal'
+import { StockAdjustmentModal } from '@/components/inventory/stock-adjustment-modal'
+import { NewLocationModal } from '@/components/inventory/new-location-modal'
 
 export default function InventoryDashboardPage() {
   const { company } = useTenant()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage, refreshUsage } = useSubscription()
+  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
+  const companyId = company?.id || 'default'
 
-  const [materials, setMaterials] = useDataStore<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, [])
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [activeTab, setActiveTab] = useState<
+    'materials' | 'locations' | 'requests' | 'issues' | 'remnants' | 'ledger' | 'low_stock'
+  >('materials')
+
+  // Core Data States
+  const [materials, setMaterials] = useState<MaterialRecord[]>([])
+  const [locations, setLocations] = useState<InventoryLocationRecord[]>([])
+  const [balances, setBalances] = useState<InventoryStockBalanceRecord[]>([])
+  const [requests, setRequests] = useState<MaterialRequestRecord[]>([])
+  const [issues, setIssues] = useState<MaterialIssueRecord[]>([])
+  const [remnants, setRemnants] = useState<InventoryRemnantRecord[]>([])
+  const [ledger, setLedger] = useState<StockLedgerRecord[]>([])
+  const [summary, setSummary] = useState<InventorySummaryStats>({
+    totalMaterials: 0,
+    totalAvailableStockValue: 0,
+    lowStockCount: 0,
+    pendingRequestsCount: 0,
+    totalRemnantsCount: 0,
+    totalWastageRecordsCount: 0,
+  })
+
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedLocationFilter, setSelectedLocationFilter] = useState('all')
+  const [notification, setNotification] = useState<string | null>(null)
+
+  // Modals state
+  const [isNewMaterialOpen, setIsNewMaterialOpen] = useState(false)
+  const [isReceiveStockOpen, setIsReceiveStockOpen] = useState(false)
+  const [isRequestOpen, setIsRequestOpen] = useState(false)
+  const [isIssueOpen, setIsIssueOpen] = useState(false)
+  const [isConsumptionOpen, setIsConsumptionOpen] = useState(false)
+  const [isTransferOpen, setIsTransferOpen] = useState(false)
+  const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
+  const [isNewLocationOpen, setIsNewLocationOpen] = useState(false)
+
+  // Target items for contextual actions
+  const [selectedMaterialForAction, setSelectedMaterialForAction] = useState<MaterialRecord | null>(null)
+  const [selectedRequestForIssue, setSelectedRequestForIssue] = useState<MaterialRequestRecord | null>(null)
 
   const productCheck = checkCanCreate('max_products')
 
-  const handleOpenNewMaterial = () => {
-    const check = checkCanCreate('max_products')
-    if (!check.allowed) {
-      openLimitExceededModal('max_products')
-      return
-    }
-    setIsNewOpen(true)
-  }
-
-
-  // Modals
-  const [isNewOpen, setIsNewOpen] = useState(false)
-  const [selectedMaterialForTx, setSelectedMaterialForTx] = useState<MaterialRecord | null>(null)
-  const [selectedMaterialForWastage, setSelectedMaterialForWastage] = useState<MaterialRecord | null>(null)
-  const [notification, setNotification] = useState<string | null>(null)
-
-  // Transaction Form State
-  const [txType, setTxType] = useState<InventoryTransactionType>('purchase')
-  const [txQty, setTxQty] = useState<number>(1)
-  const [txUnitCost, setTxUnitCost] = useState<number>(0)
-  const [txRef, setTxRef] = useState('')
-  const [txNotes, setTxNotes] = useState('')
-
-  // Wastage Form State
-  const [wasteExpected, setWasteExpected] = useState<number>(0)
-  const [wasteActual, setWasteActual] = useState<number>(0)
-  const [wasteReason, setWasteReason] = useState('')
-
-  // New Material Form State
-  const [newSku, setNewSku] = useState('')
-  const [newName, setNewName] = useState('')
-  const [newNameBn, setNewNameBn] = useState('')
-  const [newCat, setNewCat] = useState<MaterialCategory>('roll_media')
-  const [newUnit, setNewUnit] = useState<MaterialUnit>('roll')
-  const [newIsRoll, setNewIsRoll] = useState(true)
-  const [newWidth, setNewWidth] = useState<number>(0)
-  const [newLength, setNewLength] = useState<number>(0)
-  const [newCost, setNewCost] = useState<number>(0)
-  const [newMinStock, setNewMinStock] = useState<number>(0)
-  const [newCoverageRate, setNewCoverageRate] = useState<number>(0)
-
   const showNotification = (msg: string) => {
     setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+    setTimeout(() => setNotification(null), 4000)
   }
 
-  // Filtered materials
-  const filtered = materials.filter((m: MaterialRecord) => {
+  const loadAllData = async () => {
+    setLoading(true)
+    try {
+      const [matData, locData, balData, reqData, issData, remData, ledData, sumData] = await Promise.all([
+        InventoryService.getMaterials(companyId),
+        InventoryService.getLocations(companyId),
+        InventoryService.getStockBalances(companyId),
+        InventoryService.getRequests(companyId),
+        InventoryService.getIssues(companyId),
+        InventoryService.getRemnants(companyId),
+        InventoryService.getStockLedger(companyId),
+        InventoryService.getInventorySummary(companyId),
+      ])
+
+      setMaterials(matData)
+      setLocations(locData)
+      setBalances(balData)
+      setRequests(reqData)
+      setIssues(issData)
+      setRemnants(remData)
+      setLedger(ledData)
+      setSummary(sumData)
+    } catch (err: any) {
+      console.error('Failed to load inventory data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadAllData()
+  }, [companyId])
+
+  // Filtered Materials
+  const filteredMaterials = materials.filter((m) => {
     const matchCat = selectedCategory === 'all' || m.category === selectedCategory
     const matchSearch =
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.sku.toLowerCase().includes(search.toLowerCase()) ||
-      (m.name_bn && m.name_bn.includes(search))
-
+      (m.name_bn && m.name_bn.includes(search)) ||
+      (m.brand && m.brand.toLowerCase().includes(search.toLowerCase()))
     return matchCat && matchSearch
   })
 
-  // Executive Valuation & Analytics
-  const totalValuation = materials.reduce((acc: number, m: MaterialRecord) => acc + m.current_stock * m.average_cost, 0)
-  const lowStockCount = materials.filter((m: MaterialRecord) => m.current_stock <= m.min_stock_level).length
-  const [mountedRolls] = useDataStore<any[]>(STORAGE_KEYS.MOUNTED_ROLLS, [])
-  const totalMountedArea = mountedRolls.reduce((acc: number, r: any) => acc + (r.remaining_area_sft || 0), 0)
+  // Low stock materials
+  const lowStockMaterials = materials.filter((m) => {
+    const threshold = Number(m.reorder_level || m.min_stock_level || 0)
+    return threshold > 0 && Number(m.current_stock || 0) <= threshold
+  })
 
-  // Handle Record Transaction
-  const handleRecordTransaction = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedMaterialForTx) return
-
-    const isNegative = txType === 'consumption' || txType === 'wastage' || txType === 'return'
-    const qtyChange = isNegative ? -Math.abs(txQty) : Math.abs(txQty)
-    const newStock = Math.max(0, selectedMaterialForTx.current_stock + qtyChange)
-
-    PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, selectedMaterialForTx.id, {
-      current_stock: newStock,
-      last_purchase_price: txType === 'purchase' ? txUnitCost : selectedMaterialForTx.last_purchase_price,
-      updated_at: new Date().toISOString(),
-    })
-
-    const ledgerEntry: StockLedgerRecord = {
-      id: `stl-${Date.now()}`,
-      company_id: 'c-01',
-      material_id: selectedMaterialForTx.id,
-      material_name: selectedMaterialForTx.name,
-      transaction_type: txType,
-      quantity_change: qtyChange,
-      balance_after: newStock,
-      unit: selectedMaterialForTx.unit,
-      unit_cost: txUnitCost || selectedMaterialForTx.average_cost,
-      total_cost: (txUnitCost || selectedMaterialForTx.average_cost) * Math.abs(txQty),
-      reference_id: txRef || `TX-${Date.now().toString().slice(-4)}`,
-      performed_by_name: 'Inventory Manager',
-      notes: txNotes || `${txType.toUpperCase()} of ${Math.abs(txQty)} ${selectedMaterialForTx.unit}`,
-      created_at: new Date().toISOString(),
-    }
-    PrintERPDataStore.addItem<StockLedgerRecord>(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
-
-    setSelectedMaterialForTx(null)
-    showNotification(
-      `Transaction recorded: ${txType.toUpperCase()} of ${Math.abs(txQty)} ${
-        selectedMaterialForTx.unit
-      }. New stock balance: ${newStock}.`
+  // Filtered Ledger
+  const filteredLedger = ledger.filter((l) => {
+    if (selectedLocationFilter !== 'all' && l.location_id !== selectedLocationFilter) return false
+    if (!search) return true
+    const q = search.toLowerCase()
+    return (
+      (l.material?.name && l.material.name.toLowerCase().includes(q)) ||
+      (l.material?.sku && l.material.sku.toLowerCase().includes(q)) ||
+      (l.transaction_type && l.transaction_type.toLowerCase().includes(q)) ||
+      (l.notes && l.notes.toLowerCase().includes(q))
     )
+  })
+
+  // Handlers for Request Actions
+  const handleApproveRequest = async (id: string) => {
+    const res = await approveMaterialRequestAction(id, companyId)
+    if (res.success) {
+      showNotification('Material request approved.')
+      loadAllData()
+    } else {
+      showNotification(`Failed: ${res.error}`)
+    }
   }
 
-  // Handle Log Wastage
-  const handleLogWastage = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedMaterialForWastage) return
-
-    const wasted = Math.max(0, wasteActual - wasteExpected)
-    const newStock = Math.max(0, selectedMaterialForWastage.current_stock - 1)
-
-    PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, selectedMaterialForWastage.id, {
-      current_stock: newStock,
-      updated_at: new Date().toISOString(),
-    })
-
-    const ledgerEntry: StockLedgerRecord = {
-      id: `stl-${Date.now()}`,
-      company_id: 'c-01',
-      material_id: selectedMaterialForWastage.id,
-      material_name: selectedMaterialForWastage.name,
-      transaction_type: 'wastage',
-      quantity_change: -1,
-      balance_after: newStock,
-      unit: selectedMaterialForWastage.unit,
-      unit_cost: selectedMaterialForWastage.average_cost,
-      total_cost: selectedMaterialForWastage.average_cost * 1,
-      reference_id: `WASTE-${Date.now().toString().slice(-4)}`,
-      performed_by_name: 'Floor Operator',
-      notes: `Scrap write-off: ${wasteReason || 'Excess offcut waste'}`,
-      created_at: new Date().toISOString(),
+  const handleRejectRequest = async (id: string) => {
+    const reason = window.prompt('Enter rejection reason:')
+    if (!reason) return
+    const res = await rejectMaterialRequestAction(id, reason, companyId)
+    if (res.success) {
+      showNotification('Material request rejected.')
+      loadAllData()
+    } else {
+      showNotification(`Failed: ${res.error}`)
     }
-    PrintERPDataStore.addItem<StockLedgerRecord>(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
-
-    setSelectedMaterialForWastage(null)
-    showNotification(
-      `Material scrap registered: ${wasted} SFT logged with reason: "${wasteReason || 'Standard trim offcut'}".`
-    )
   }
 
-  // Handle Create Material
-  const handleCreateMaterial = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!productCheck.allowed) {
-      openLimitExceededModal('max_products')
-      return
+  const handleRemnantStatusChange = async (id: string, status: any) => {
+    const res = await updateRemnantStatusAction(id, status, companyId)
+    if (res.success) {
+      showNotification(`Remnant marked as ${status}.`)
+      loadAllData()
     }
-    const rollArea = newIsRoll ? newWidth * newLength : undefined
-
-    const newMat: MaterialRecord = {
-      id: `mat-${Date.now()}`,
-      company_id: 'c-01',
-      sku: newSku || `MAT-${Date.now().toString().slice(-4)}`,
-      name: newName,
-      name_bn: newNameBn,
-      category: newCat,
-      unit: newUnit,
-      is_roll: newIsRoll,
-      roll_width_ft: newIsRoll ? newWidth : undefined,
-      roll_length_ft: newIsRoll ? newLength : undefined,
-      total_roll_area_sft: rollArea,
-      current_stock: 5,
-      min_stock_level: newMinStock,
-      coverage_rate_sft_per_unit: newCat === 'ink_chemistry' ? newCoverageRate : undefined,
-      last_purchase_price: newCost,
-      average_cost: newCost,
-      manual_cost: newCost,
-      valuation_method: 'average_cost',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-
-    PrintERPDataStore.addItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, newMat)
-    refreshUsage()
-    setIsNewOpen(false)
-    setNewSku('')
-    setNewName('')
-    setNewNameBn('')
-    showNotification(`New raw material '${newMat.name}' registered into inventory.`)
   }
 
   return (
     <FeatureGate feature="inventory">
       <div className="space-y-6 max-w-7xl">
-      {/* Header */}
-      <PageHeader
-        titleEn="Inventory & Raw Materials Hub"
-        titleBn="কাঁচামাল ও স্টক ব্যবস্থাপনা"
-        descriptionEn="Roll media area accounting, configurable ink coverage rates, immutable stock ledger, and scrap auditing."
-        descriptionBn="রোল মিডিয়া স্কয়ার ফিট হিসাব, কালি ব্যবহার পর্যবেক্ষণ, অপরিবর্তনীয় স্টক লেজার ও অপচয় নিরীক্ষা।"
-        icon={Package}
-        iconColor="text-emerald-600"
-        actions={
-          <div className="flex items-center gap-2">
-            <Link href={`/${slug}/inventory/rolls`}>
-              <Button variant="outline" size="sm" className="text-xs bangla-text">
-                <Disc className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
-                {tBilingual('Active Mounted Rolls', 'মাউন্টেড রোল')}
+        {/* Header */}
+        <PageHeader
+          titleEn="Advanced Inventory Management Hub"
+          titleBn="উন্নত ইনভেন্টরি ও কাঁচামাল হাব"
+          descriptionEn="Multi-store locations, physical stock movements, requisition & issue approvals, consumption sign-off, and reusable remnants."
+          descriptionBn="মাল্টি-স্টোর লোকেশন, স্টক মুভমেন্ট, রিকুইজিশন ও ইস্যু অনুমোদন, অপচয় এবং অবশিষ্টাংশ ট্র্যাকিং।"
+          icon={Boxes}
+          iconColor="text-emerald-600"
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsTransferOpen(true)}
+                className="text-xs"
+              >
+                <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
+                Transfer
               </Button>
-            </Link>
 
-            <Link href={`/${slug}/inventory/ledger`}>
-              <Button variant="outline" size="sm" className="text-xs bangla-text">
-                <History className="mr-1.5 h-3.5 w-3.5 text-purple-600" />
-                {tBilingual('Stock Ledger', 'স্টক লেজার')}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAdjustmentOpen(true)}
+                className="text-xs"
+              >
+                <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
+                Reconcile
               </Button>
-            </Link>
 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsConsumptionOpen(true)}
+                className="text-xs"
+              >
+                <Scissors className="mr-1.5 h-3.5 w-3.5 text-purple-600" />
+                Sign-Off
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedMaterialForAction(null)
+                  setIsReceiveStockOpen(true)
+                }}
+                className="text-xs border-emerald-300 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50"
+              >
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                Receive GRN
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!productCheck.allowed) {
+                    openLimitExceededModal('max_products')
+                    return
+                  }
+                  setIsNewMaterialOpen(true)
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white"
+              >
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                Add Material
+              </Button>
+            </div>
+          }
+        />
+
+        {/* Plan Quota Alert */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div
+              className={cn(
+                'p-1.5 rounded-lg text-white font-bold shrink-0',
+                productCheck.exceeded ? 'bg-red-500' : productCheck.warning ? 'bg-amber-500' : 'bg-emerald-600'
+              )}
+            >
+              <Package className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="font-bold text-slate-900 dark:text-white">
+                Inventory Catalog Quota: {materials.length} of {currentPlan.max_products.toLocaleString()} materials registered
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Active on {currentPlan.name}. Physical stock movements are audited immutably.
+              </p>
+            </div>
+          </div>
+
+          {currentPlan.code !== 'enterprise' && (
             <Button
               size="sm"
-              onClick={handleOpenNewMaterial}
-              title={!productCheck.allowed ? productCheck.reason : undefined}
-              className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white bangla-text"
+              variant="outline"
+              onClick={() => openUpgradeModal('business')}
+              className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 shrink-0"
             >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('Add Material', 'নতুন কাঁচামাল')}
+              <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+              Expand Catalog Limit
             </Button>
-          </div>
-        }
-      />
-
-      {/* Inventory & Materials Quota Alert */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
-        <div className="flex items-center gap-2.5">
-          <div className={cn(
-            'p-1.5 rounded-lg text-white font-bold shrink-0',
-            productCheck.exceeded ? 'bg-red-500' : productCheck.warning ? 'bg-amber-500' : 'bg-emerald-600'
-          )}>
-            <Package className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="font-bold text-slate-900 dark:text-white bangla-text">
-              {productCheck.exceeded
-                ? tBilingual(
-                    `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_products.toLocaleString()} Products quota (currently at ${materials.length}). Please upgrade your subscription to continue.`,
-                    `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${toBengaliDigits(currentPlan.max_products)} প্রোডাক্ট কোটা অনুমোদিত (বর্তমানে ${toBengaliDigits(materials.length)})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
-                  )
-                : tBilingual(
-                    `Inventory SKU Quota: ${materials.length} of ${currentPlan.max_products.toLocaleString()} materials registered`,
-                    `ইনভেন্টরি আইটেম কোটা: ${toBengaliDigits(currentPlan.max_products)} টির মধ্যে ${toBengaliDigits(materials.length)} টি কাঁচামাল নিবন্ধিত`
-                  )}
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
-              {productCheck.exceeded
-                ? tBilingual('Inventory SKU capacity reached. Upgrade plan to register more materials.', 'আইটেমের ধারণক্ষমতা পূর্ণ হয়েছে। অতিরিক্ত প্রোডাক্ট যোগ করতে প্ল্যান আপগ্রেড করুন।')
-                : tBilingual(`Active on ${currentPlan.name}.`, `${currentPlan.name_bn}-এ অন্তর্ভুক্ত।`)}
-            </p>
-          </div>
+          )}
         </div>
 
-        {currentPlan.code !== 'enterprise' && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => openUpgradeModal('business')}
-            className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 bangla-text shrink-0"
-          >
-            <Crown className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
-            {tBilingual('Expand Catalog Limit', 'ক্যাটালগ বৃদ্ধি')}
-          </Button>
+        {/* Notification Alert */}
+        {notification && (
+          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>{notification}</span>
+          </div>
         )}
-      </div>
 
-      {/* Notification */}
-      {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span>{notification}</span>
+        {/* Executive Valuation & KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="p-4 border-l-4 border-l-emerald-600">
+            <span className="text-xs font-semibold text-slate-500">Total Stock Valuation</span>
+            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+              <CurrencyDisplay amount={summary.totalAvailableStockValue} />
+            </div>
+            <span className="text-[11px] text-emerald-600 font-medium">{summary.totalMaterials} Material Masters</span>
+          </Card>
+
+          <Card
+            className={cn(
+              'p-4 border-l-4 cursor-pointer hover:shadow-md transition-all',
+              summary.lowStockCount > 0 ? 'border-l-red-500 bg-red-50/20' : 'border-l-slate-300'
+            )}
+            onClick={() => setActiveTab('low_stock')}
+          >
+            <span className="text-xs font-semibold text-slate-500">Low Stock Warnings</span>
+            <div className="text-2xl font-black text-red-600 mt-1">{summary.lowStockCount}</div>
+            <span className="text-[11px] text-red-600 font-medium">Below reorder threshold</span>
+          </Card>
+
+          <Card
+            className="p-4 border-l-4 border-l-blue-500 cursor-pointer hover:shadow-md transition-all"
+            onClick={() => setActiveTab('requests')}
+          >
+            <span className="text-xs font-semibold text-slate-500">Pending Requisitions</span>
+            <div className="text-2xl font-black text-blue-600 mt-1">{summary.pendingRequestsCount}</div>
+            <span className="text-[11px] text-blue-600 font-medium">Awaiting store approval / issue</span>
+          </Card>
+
+          <Card
+            className="p-4 border-l-4 border-l-purple-500 cursor-pointer hover:shadow-md transition-all"
+            onClick={() => setActiveTab('remnants')}
+          >
+            <span className="text-xs font-semibold text-slate-500">Reusable Remnants</span>
+            <div className="text-2xl font-black text-purple-600 mt-1">{summary.totalRemnantsCount}</div>
+            <span className="text-[11px] text-purple-600 font-medium">Available offcut inventory</span>
+          </Card>
         </div>
-      )}
 
-      {/* Valuation & KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="p-4 border-l-4 border-l-emerald-600">
-          <span className="text-xs font-semibold text-slate-500">Total Inventory Asset Valuation</span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            <CurrencyDisplay amount={totalValuation} />
-          </div>
-          <span className="text-[11px] text-emerald-600 font-medium">Weighted Average Cost Method</span>
-        </Card>
-
-        <Card className="p-4 border-l-4 border-l-blue-500">
-          <span className="text-xs font-semibold text-slate-500">Mounted Rolls (Active on Presses)</span>
-          <div className="text-2xl font-black text-blue-600 mt-1">
-            {mountedRolls.length} Rolls
-          </div>
-          <span className="text-[11px] text-slate-400 font-mono">
-            {totalMountedArea} SFT remaining on presses
-          </span>
-        </Card>
-
-        <Card className={`p-4 border-l-4 ${lowStockCount > 0 ? 'border-l-red-500 bg-red-50/20 dark:bg-red-950/10' : 'border-l-slate-300'}`}>
-          <span className="text-xs font-semibold text-slate-500">Low Stock Reorder Alerts</span>
-          <div className="text-2xl font-black text-red-600 mt-1">{lowStockCount}</div>
-          <span className="text-[11px] text-red-600 font-medium">Below minimum floor threshold</span>
-        </Card>
-
-        <Card className="p-4 border-l-4 border-l-amber-500">
-          <span className="text-xs font-semibold text-slate-500">Ink Coverage Calibration</span>
-          <div className="text-2xl font-black text-amber-600 mt-1">850 SFT / L</div>
-          <span className="text-[11px] text-slate-400">Company-configured coverage</span>
-        </Card>
-      </div>
-
-      {/* Search & Category Tabs */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search by SKU, material name, Bengali description..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 text-xs"
-            />
-          </div>
-
-          <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto">
-            {[
-              { id: 'all', label: 'All Items' },
-              { id: 'roll_media', label: 'Roll Media' },
-              { id: 'rigid_sheet', label: 'Rigid Sheets' },
-              { id: 'metal_framing', label: 'Metals & Pipes' },
-              { id: 'led_electrical', label: 'LED & Power' },
-              { id: 'ink_chemistry', label: 'Inks & Solvents' },
-            ].map((tab) => (
-              <Button
-                key={tab.id}
-                size="sm"
-                variant={selectedCategory === tab.id ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(tab.id)}
-                className="text-xs h-8 px-3"
-              >
-                {tab.label}
-              </Button>
-            ))}
-          </div>
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-2">
+          {[
+            { id: 'materials', label: 'Materials Master', count: materials.length },
+            { id: 'locations', label: 'Store Balances', count: locations.length },
+            { id: 'requests', label: 'Requisitions Queue', count: requests.length },
+            { id: 'issues', label: 'Issue History', count: issues.length },
+            { id: 'remnants', label: 'Remnants Rack', count: remnants.length },
+            { id: 'ledger', label: 'Movement Ledger', count: ledger.length },
+            { id: 'low_stock', label: 'Low Stock Alerts', count: lowStockMaterials.length, alert: lowStockMaterials.length > 0 },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={cn(
+                'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap',
+                activeTab === tab.id
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              )}
+            >
+              <span>{tab.label}</span>
+              {tab.count !== undefined && (
+                <span
+                  className={cn(
+                    'px-1.5 py-0.2 rounded-full text-[10px]',
+                    tab.alert
+                      ? 'bg-red-500 text-white font-black'
+                      : activeTab === tab.id
+                      ? 'bg-slate-700 text-slate-200 dark:bg-slate-200 dark:text-slate-800'
+                      : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  )}
+                >
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
-      </Card>
 
-      {/* Materials Table */}
-      <Card>
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Materials Catalog ({filtered.length})</CardTitle>
-            <span className="text-xs text-slate-400">Active stock balances & valuation</span>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">SKU & Item Name</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Current Stock</th>
-                  <th className="py-3 px-4">Roll Area / Coverage</th>
-                  <th className="py-3 px-4">Unit Cost (Avg)</th>
-                  <th className="py-3 px-4">Asset Value</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((mat: MaterialRecord) => {
-                  const isLow = mat.current_stock <= mat.min_stock_level
-                  const valuation = mat.current_stock * mat.average_cost
+        {/* ========================================================= */}
+        {/* TAB 1: MATERIALS MASTER */}
+        {/* ========================================================= */}
+        {activeTab === 'materials' && (
+          <div className="space-y-4">
+            {/* Search & Categories Filter */}
+            <Card className="p-3.5">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                <div className="relative flex-1 w-full">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Search by SKU, material name, brand, Bengali Unicode..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 text-xs"
+                  />
+                </div>
 
-                  return (
-                    <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                      {/* SKU & Name */}
-                      <td className="py-3.5 px-4">
-                        <div className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
+                <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto">
+                  {[
+                    { id: 'all', label: 'All Categories' },
+                    { id: 'flex', label: 'Flex' },
+                    { id: 'vinyl', label: 'Vinyl' },
+                    { id: 'acrylic', label: 'Acrylic' },
+                    { id: 'pvc', label: 'PVC' },
+                    { id: 'ink', label: 'Inks' },
+                    { id: 'lamination_film', label: 'Lamination' },
+                  ].map((tab) => (
+                    <Button
+                      key={tab.id}
+                      size="sm"
+                      variant={selectedCategory === tab.id ? 'default' : 'outline'}
+                      onClick={() => setSelectedCategory(tab.id)}
+                      className="text-xs h-8 px-3"
+                    >
+                      {tab.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Materials Table */}
+            <Card>
+              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Materials Catalog ({filteredMaterials.length})</CardTitle>
+                  <Button size="sm" variant="ghost" onClick={loadAllData} className="h-7 text-xs">
+                    <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {/* Desktop View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b">
+                      <tr>
+                        <th className="py-3 px-4">SKU & Item Name</th>
+                        <th className="py-3 px-4">Category & Brand</th>
+                        <th className="py-3 px-4">Available Stock</th>
+                        <th className="py-3 px-4">Dimensions / Specs</th>
+                        <th className="py-3 px-4">Standard Cost</th>
+                        <th className="py-3 px-4">Asset Value</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {filteredMaterials.map((mat) => {
+                        const isLow =
+                          Number(mat.reorder_level || mat.min_stock_level || 0) > 0 &&
+                          Number(mat.current_stock || 0) <= Number(mat.reorder_level || mat.min_stock_level || 0)
+                        const val = (Number(mat.current_stock) || 0) * (Number(mat.average_cost) || 0)
+
+                        return (
+                          <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                            <td className="py-3.5 px-4">
+                              <Link
+                                href={`/${slug}/inventory/${mat.id}`}
+                                className="font-mono text-xs font-bold text-blue-600 hover:underline"
+                              >
+                                {mat.sku}
+                              </Link>
+                              <div className="font-bold text-slate-900 dark:text-white text-xs mt-0.5">
+                                {mat.name}
+                              </div>
+                              {mat.name_bn && (
+                                <div className="text-[11px] text-slate-400 font-normal">{mat.name_bn}</div>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-4">
+                              <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                {mat.category.replace('_', ' ')}
+                              </span>
+                              {mat.brand && <div className="text-[10px] text-slate-400 mt-0.5">{mat.brand}</div>}
+                            </td>
+
+                            <td className="py-3.5 px-4">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-sm font-black text-slate-900 dark:text-white">
+                                  {mat.current_stock} {mat.unit}
+                                </span>
+                                {isLow && (
+                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800 animate-pulse">
+                                    <AlertTriangle className="h-2.5 w-2.5" /> Low Stock
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-slate-400">
+                                Reorder: {mat.reorder_level || mat.min_stock_level || 0} {mat.unit}
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 text-xs font-mono">
+                              {mat.is_roll && mat.roll_width_ft && mat.roll_length_ft ? (
+                                <div>
+                                  <strong className="text-slate-800 dark:text-slate-200">
+                                    {mat.roll_width_ft * mat.roll_length_ft} SFT / roll
+                                  </strong>
+                                  <div className="text-[11px] text-slate-400">
+                                    ({mat.roll_width_ft}ft × {mat.roll_length_ft}ft)
+                                  </div>
+                                </div>
+                              ) : mat.thickness ? (
+                                <div>
+                                  <strong className="text-slate-800 dark:text-slate-200">{mat.thickness}</strong>
+                                  {mat.color && <span className="text-slate-400"> ({mat.color})</span>}
+                                </div>
+                              ) : (
+                                <span className="text-slate-400">Standard</span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-4 text-xs font-mono font-bold text-slate-900 dark:text-white">
+                              <CurrencyDisplay amount={mat.average_cost} />
+                            </td>
+
+                            <td className="py-3.5 px-4 font-mono font-black text-emerald-600 text-sm">
+                              <CurrencyDisplay amount={val} />
+                            </td>
+
+                            <td className="py-3.5 px-4 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedMaterialForAction(mat)
+                                    setIsReceiveStockOpen(true)
+                                  }}
+                                  className="h-7 text-[11px] px-2"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" /> Receive
+                                </Button>
+
+                                <Link href={`/${slug}/inventory/${mat.id}`}>
+                                  <Button size="sm" variant="ghost" className="h-7 text-[11px] px-2 text-blue-600">
+                                    <ExternalLink className="h-3 w-3 mr-1" /> Details
+                                  </Button>
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                  {filteredMaterials.map((mat) => (
+                    <div key={mat.id} className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Link href={`/${slug}/inventory/${mat.id}`} className="font-mono text-xs font-bold text-blue-600">
                           {mat.sku}
-                        </div>
-                        <div className="font-bold text-slate-900 dark:text-white text-xs mt-0.5">
-                          {mat.name}
-                        </div>
-                        {mat.name_bn && (
-                          <div className="text-[11px] text-slate-400 font-normal">{mat.name_bn}</div>
-                        )}
-                      </td>
-
-                      {/* Category */}
-                      <td className="py-3.5 px-4">
-                        <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        </Link>
+                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">
                           {mat.category.replace('_', ' ')}
                         </span>
-                      </td>
-
-                      {/* Current Stock */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-sm font-black text-slate-900 dark:text-white">
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm text-slate-900 dark:text-white">{mat.name}</div>
+                        {mat.name_bn && <div className="text-xs text-slate-400">{mat.name_bn}</div>}
+                      </div>
+                      <div className="flex items-center justify-between text-xs p-2.5 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block">Stock:</span>
+                          <span className="font-mono font-bold text-sm">
                             {mat.current_stock} {mat.unit}
                           </span>
-                          {isLow && (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800 border border-red-300 animate-pulse">
-                              <AlertTriangle className="h-2.5 w-2.5" /> Low Stock
-                            </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 block">Valuation:</span>
+                          <span className="font-mono font-bold text-emerald-600 text-sm">
+                            <CurrencyDisplay amount={mat.current_stock * mat.average_cost} />
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedMaterialForAction(mat)
+                            setIsReceiveStockOpen(true)
+                          }}
+                          className="flex-1 h-8 text-xs"
+                        >
+                          Receive
+                        </Button>
+                        <Link href={`/${slug}/inventory/${mat.id}`} className="flex-1">
+                          <Button size="sm" variant="outline" className="w-full h-8 text-xs text-blue-600">
+                            Details
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 2: STORE LOCATIONS & BALANCES */}
+        {/* ========================================================= */}
+        {activeTab === 'locations' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Warehouse Locations & Stock Breakdown</h3>
+              <Button size="sm" onClick={() => setIsNewLocationOpen(true)} className="h-8 text-xs bg-emerald-600 text-white">
+                <Plus className="h-3.5 w-3.5 mr-1" /> New Location
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {locations.map((loc) => {
+                const locBalances = balances.filter((b) => b.location_id === loc.id)
+                return (
+                  <Card key={loc.id} className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-emerald-600" />
+                        <div>
+                          <h4 className="font-bold text-sm text-slate-900 dark:text-white">{loc.location_name}</h4>
+                          <span className="font-mono text-[11px] text-slate-400">{loc.location_code}</span>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="capitalize text-[10px]">
+                        {loc.location_type.replace('_', ' ')}
+                      </Badge>
+                    </div>
+
+                    <div className="text-xs text-slate-500">
+                      {loc.description || 'Designated storage facility for materials.'}
+                    </div>
+
+                    <div className="border-t pt-2 space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase text-slate-400">Stock on Location ({locBalances.length})</span>
+                      {locBalances.length === 0 ? (
+                        <p className="text-[11px] text-slate-400 italic">No inventory stored in this location.</p>
+                      ) : (
+                        <div className="max-h-36 overflow-y-auto space-y-1 text-xs">
+                          {locBalances.map((bal) => (
+                            <div key={bal.id} className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                              <span className="font-medium text-slate-800 dark:text-slate-200">
+                                {bal.material?.sku} - {bal.material?.name}
+                              </span>
+                              <strong className="font-mono text-emerald-600">
+                                {bal.available_quantity} {bal.unit}
+                              </strong>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 3: MATERIAL REQUISITIONS QUEUE */}
+        {/* ========================================================= */}
+        {activeTab === 'requests' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Material Requisitions Queue</h3>
+              <Button size="sm" onClick={() => setIsRequestOpen(true)} className="h-8 text-xs bg-blue-600 text-white">
+                <Plus className="h-3.5 w-3.5 mr-1" /> New Requisition
+              </Button>
+            </div>
+
+            <Card>
+              <CardContent className="p-0">
+                {requests.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-slate-400">No active material requests in queue.</div>
+                ) : (
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {requests.map((req) => (
+                      <div key={req.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <span className="font-mono text-xs font-bold text-blue-600">{req.request_number}</span>
+                            <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                              Requested by: {req.requested_by_name}
+                              {req.production_task && ` for Task: ${req.production_task.title}`}
+                            </h4>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'text-[10px] font-bold uppercase',
+                                req.priority === 'urgent' ? 'bg-red-100 text-red-700 border-red-300' : 'bg-slate-100'
+                              )}
+                            >
+                              {req.priority}
+                            </Badge>
+                            <Badge
+                              className={cn(
+                                'text-[10px] font-bold uppercase text-white',
+                                req.status === 'approved'
+                                  ? 'bg-blue-600'
+                                  : req.status === 'issued'
+                                  ? 'bg-emerald-600'
+                                  : req.status === 'partially_issued'
+                                  ? 'bg-amber-600'
+                                  : req.status === 'rejected'
+                                  ? 'bg-red-600'
+                                  : 'bg-slate-600'
+                              )}
+                            >
+                              {req.status.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Items list */}
+                        <div className="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs space-y-1">
+                          {req.items?.map((it) => (
+                            <div key={it.id} className="flex justify-between">
+                              <span>
+                                {it.material?.sku} - {it.material?.name}
+                              </span>
+                              <span className="font-mono">
+                                Requested: <strong>{it.requested_quantity} {it.unit}</strong> | Issued:{' '}
+                                <strong className="text-emerald-600">{it.issued_quantity || 0} {it.unit}</strong>
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 pt-1">
+                          {req.status === 'requested' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRejectRequest(req.id)}
+                                className="h-8 text-xs text-red-600 border-red-200"
+                              >
+                                <X className="h-3.5 w-3.5 mr-1" /> Reject
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleApproveRequest(req.id)}
+                                className="h-8 text-xs bg-blue-600 text-white"
+                              >
+                                <Check className="h-3.5 w-3.5 mr-1" /> Approve
+                              </Button>
+                            </>
+                          )}
+
+                          {(req.status === 'approved' || req.status === 'partially_issued') && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedRequestForIssue(req)
+                                setIsIssueOpen(true)
+                              }}
+                              className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              <Send className="h-3.5 w-3.5 mr-1" /> Issue Materials
+                            </Button>
                           )}
                         </div>
-                        <div className="text-[10px] text-slate-400">Min floor: {mat.min_stock_level} {mat.unit}</div>
-                      </td>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-                      {/* Roll Area / Coverage */}
-                      <td className="py-3.5 px-4 text-xs font-mono">
-                        {mat.is_roll && mat.total_roll_area_sft ? (
+        {/* ========================================================= */}
+        {/* TAB 4: MATERIAL ISSUES HISTORY */}
+        {/* ========================================================= */}
+        {activeTab === 'issues' && (
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Material Release & Issuance History</h3>
+            <Card>
+              <CardContent className="p-0">
+                {issues.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-slate-400">No material issuance records found.</div>
+                ) : (
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {issues.map((iss) => (
+                      <div key={iss.id} className="p-4 space-y-2">
+                        <div className="flex justify-between items-center">
                           <div>
-                            <strong className="text-slate-800 dark:text-slate-200">
-                              {mat.total_roll_area_sft} SFT / roll
-                            </strong>
-                            <div className="text-[11px] text-slate-400">
-                              ({mat.roll_width_ft}ft × {mat.roll_length_ft}ft)
+                            <span className="font-mono text-xs font-bold text-emerald-600">{iss.issue_number}</span>
+                            <div className="text-xs text-slate-500">
+                              Issued by: <strong>{iss.issued_by_name}</strong> | Handed to:{' '}
+                              <strong>{iss.received_by_name || 'Floor Operator'}</strong>
                             </div>
                           </div>
-                        ) : mat.coverage_rate_sft_per_unit ? (
-                          <div>
-                            <strong className="text-amber-600">
-                              {mat.coverage_rate_sft_per_unit} SFT / {mat.unit}
-                            </strong>
-                            <div className="text-[10px] text-slate-400">Configured coverage</div>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">Standard unit</span>
-                        )}
-                      </td>
-
-                      {/* Unit Cost */}
-                      <td className="py-3.5 px-4 text-xs">
-                        <div className="font-mono font-bold text-slate-900 dark:text-white">
-                          <CurrencyDisplay amount={mat.average_cost} />
+                          <span className="text-[11px] text-slate-400">
+                            {new Date(iss.created_at).toLocaleDateString()}
+                          </span>
                         </div>
-                        <span className="text-[10px] uppercase font-semibold text-slate-400">
-                          {mat.valuation_method.replace(/_/g, ' ')}
-                        </span>
-                      </td>
 
-                      {/* Asset Value */}
-                      <td className="py-3.5 px-4 font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm">
-                        <CurrencyDisplay amount={valuation} />
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedMaterialForTx(mat)
-                              setTxUnitCost(mat.average_cost)
-                            }}
-                            className="h-7 text-[11px] px-2"
-                          >
-                            <ArrowDownUp className="h-3 w-3 mr-1" />
-                            Stock Tx
-                          </Button>
-
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelectedMaterialForWastage(mat)}
-                            className="h-7 text-[11px] px-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
-                          >
-                            <TrendingDown className="h-3 w-3 mr-1" />
-                            Wastage
-                          </Button>
+                        <div className="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs space-y-1">
+                          {iss.items?.map((it) => (
+                            <div key={it.id} className="flex justify-between">
+                              <span>
+                                {it.material?.sku} - {it.material?.name}
+                              </span>
+                              <strong className="font-mono text-emerald-600">
+                                {it.issued_quantity} {it.unit}
+                              </strong>
+                            </div>
+                          ))}
                         </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
+        )}
 
-          {/* Mobile Card List View */}
-          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-            {filtered.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-400">
-                {tBilingual('No raw materials found matching filter.', 'কোন কাঁচামাল পাওয়া যায়নি।')}
-              </div>
-            ) : (
-              filtered.map((mat: MaterialRecord) => {
-                const isLow = mat.current_stock <= mat.min_stock_level
-                const valuation = mat.current_stock * mat.average_cost
+        {/* ========================================================= */}
+        {/* TAB 5: REUSABLE REMNANTS RACK */}
+        {/* ========================================================= */}
+        {activeTab === 'remnants' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Discrete Reusable Remnants Rack</h3>
+              <Button size="sm" onClick={() => setIsConsumptionOpen(true)} className="h-8 text-xs bg-purple-600 text-white">
+                <Scissors className="h-3.5 w-3.5 mr-1" /> Log Offcut Remnant
+              </Button>
+            </div>
 
-                return (
-                  <div key={mat.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Top: SKU & Category Badge & Low Stock */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
-                          {mat.sku}
-                        </span>
-                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                          {mat.category.replace('_', ' ')}
-                        </span>
-                      </div>
-                      {isLow && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800 border border-red-300 animate-pulse shrink-0">
-                          <AlertTriangle className="h-2.5 w-2.5" /> Low Stock
-                        </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {remnants.map((rem) => (
+                <Card key={rem.id} className="p-4 space-y-3 border-purple-200 dark:border-purple-900">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-purple-700 dark:text-purple-300">
+                      {rem.remnant_code}
+                    </span>
+                    <Badge
+                      className={cn(
+                        'text-[10px] uppercase font-bold text-white',
+                        rem.status === 'available'
+                          ? 'bg-emerald-600'
+                          : rem.status === 'consumed'
+                          ? 'bg-blue-600'
+                          : 'bg-slate-600'
                       )}
-                    </div>
+                    >
+                      {rem.status}
+                    </Badge>
+                  </div>
 
-                    {/* Name & Bengali */}
-                    <div>
-                      <div className="font-bold text-sm text-slate-900 dark:text-white">{mat.name}</div>
-                      {mat.name_bn && (
-                        <div className="text-xs text-slate-400">{mat.name_bn}</div>
-                      )}
-                    </div>
-
-                    {/* Stock & Valuation Grid */}
-                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
-                      <div>
-                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Current Stock</span>
-                        <span className="font-mono font-black text-sm text-slate-900 dark:text-white">
-                          {mat.current_stock} {mat.unit}
-                        </span>
-                        <div className="text-[10px] text-slate-400">Min: {mat.min_stock_level} {mat.unit}</div>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total Valuation</span>
-                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                          <CurrencyDisplay amount={valuation} />
-                        </span>
-                        <div className="text-[10px] text-slate-400 font-mono">Avg: ৳ {formatBDT(mat.average_cost)}</div>
-                      </div>
-
-                      {mat.is_roll && mat.total_roll_area_sft && (
-                        <div className="col-span-2 pt-1 border-t border-slate-200/60 dark:border-slate-800 flex justify-between items-center text-[11px]">
-                          <span className="text-slate-400">Roll Size:</span>
-                          <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
-                            {mat.total_roll_area_sft} SFT ({mat.roll_width_ft}ft × {mat.roll_length_ft}ft)
-                          </span>
-                        </div>
-                      )}
-
-                      {mat.coverage_rate_sft_per_unit && (
-                        <div className="col-span-2 pt-1 border-t border-slate-200/60 dark:border-slate-800 flex justify-between items-center text-[11px]">
-                          <span className="text-slate-400">Yield Coverage:</span>
-                          <span className="font-mono font-semibold text-amber-600">
-                            {mat.coverage_rate_sft_per_unit} SFT / {mat.unit}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedMaterialForTx(mat)
-                          setTxUnitCost(mat.average_cost)
-                        }}
-                        className="flex-1 sm:flex-initial h-9 text-xs font-semibold"
-                      >
-                        <ArrowDownUp className="h-3.5 w-3.5 mr-1" />
-                        Stock Tx
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setSelectedMaterialForWastage(mat)}
-                        className="flex-1 sm:flex-initial h-9 text-xs font-semibold text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900"
-                      >
-                        <TrendingDown className="h-3.5 w-3.5 mr-1" />
-                        Wastage
-                      </Button>
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                      {rem.parent_material?.sku} - {rem.parent_material?.name}
+                    </h4>
+                    <div className="text-xs text-purple-700 dark:text-purple-300 font-mono font-bold mt-1">
+                      Dimensions: {rem.width} × {rem.length} {rem.dimension_unit} ({rem.area_sft || rem.width * rem.length} SFT)
                     </div>
                   </div>
-                )
-              })
+
+                  <div className="flex items-center justify-between text-xs text-slate-500 border-t pt-2">
+                    <span>Rack: {rem.location?.location_name || 'Main Staging'}</span>
+                    <span className="capitalize font-semibold">Condition: {rem.condition}</span>
+                  </div>
+
+                  {rem.status === 'available' && (
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRemnantStatusChange(rem.id, 'consumed')}
+                        className="flex-1 h-8 text-xs"
+                      >
+                        Consume
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemnantStatusChange(rem.id, 'scrapped')}
+                        className="h-8 text-xs text-red-600"
+                      >
+                        Scrap
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 6: IMMUTABLE STOCK MOVEMENT LEDGER */}
+        {/* ========================================================= */}
+        {activeTab === 'ledger' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Audited Stock Movement Ledger</h3>
+              <div className="flex items-center gap-2">
+                <select
+                  value={selectedLocationFilter}
+                  onChange={(e) => setSelectedLocationFilter(e.target.value)}
+                  className="h-8 px-2 rounded border text-xs bg-white dark:bg-slate-900"
+                >
+                  <option value="all">All Locations</option>
+                  {locations.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.location_name}
+                    </option>
+                  ))}
+                </select>
+                <Button size="sm" variant="outline" onClick={loadAllData} className="h-8 text-xs">
+                  <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+                </Button>
+              </div>
+            </div>
+
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b">
+                      <tr>
+                        <th className="py-3 px-4">Date & Time</th>
+                        <th className="py-3 px-4">Material Master</th>
+                        <th className="py-3 px-4">Event Type</th>
+                        <th className="py-3 px-4">Movement Qty</th>
+                        <th className="py-3 px-4">Balance After</th>
+                        <th className="py-3 px-4">Actor / Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {filteredLedger.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 text-xs">
+                          <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
+                            {new Date(item.created_at).toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                            {item.material?.name || item.material_id}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={cn(
+                                'font-bold uppercase text-[10px] px-2 py-0.5 rounded',
+                                item.transaction_type === 'RECEIPT' || item.transaction_type === 'opening_stock'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : item.transaction_type === 'ISSUE' || item.transaction_type === 'CONSUMPTION'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : item.transaction_type === 'WASTAGE' || item.transaction_type === 'wastage'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-slate-100 text-slate-800'
+                              )}
+                            >
+                              {item.transaction_type}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold">
+                            <span className={item.quantity_change >= 0 ? 'text-emerald-600' : 'text-red-600'}>
+                              {item.quantity_change >= 0 ? `+${item.quantity_change}` : item.quantity_change} {item.unit}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                            {item.balance_after} {item.unit}
+                          </td>
+                          <td className="py-3 px-4 text-slate-500">
+                            <div>{item.performed_by_name}</div>
+                            {item.notes && <div className="text-[10px] text-slate-400 italic">{item.notes}</div>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 7: LOW STOCK ALERTS */}
+        {/* ========================================================= */}
+        {activeTab === 'low_stock' && (
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-red-600 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" /> Low Stock Reorder Dashboard
+            </h3>
+
+            {lowStockMaterials.length === 0 ? (
+              <Card className="p-8 text-center text-xs text-slate-500">
+                <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
+                All inventory materials are currently stocked above their reorder safety thresholds.
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {lowStockMaterials.map((mat) => (
+                  <Card key={mat.id} className="p-4 space-y-3 border-l-4 border-l-red-500 bg-red-50/20">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-blue-600">{mat.sku}</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800">
+                        CRITICAL
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white">{mat.name}</h4>
+                      {mat.name_bn && <div className="text-xs text-slate-500">{mat.name_bn}</div>}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs p-2.5 bg-white dark:bg-slate-900 rounded-lg border">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Available:</span>
+                        <strong className="text-red-600 font-mono text-sm">
+                          {mat.current_stock} {mat.unit}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Reorder Floor:</span>
+                        <strong className="font-mono text-sm">
+                          {mat.reorder_level || mat.min_stock_level} {mat.unit}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setSelectedMaterialForAction(mat)
+                        setIsReceiveStockOpen(true)
+                      }}
+                      className="w-full h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Reorder / Receive GRN
+                    </Button>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* MODAL: RECORD INVENTORY TRANSACTION */}
-      <ModalDialog
-        open={Boolean(selectedMaterialForTx)}
-        onOpenChange={(open) => !open && setSelectedMaterialForTx(null)}
-        title="Record Inventory Stock Transaction"
-        description="Append an immutable transaction entry directly to the master stock ledger."
-        hideFooter
-      >
-        {selectedMaterialForTx && (
-          <form onSubmit={handleRecordTransaction} className="space-y-4 pt-1">
-            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
-              <span className="text-slate-500">Material: </span>
-              <strong>{selectedMaterialForTx.name}</strong> ({selectedMaterialForTx.sku})
-              <div className="text-emerald-600 font-mono font-bold mt-0.5">
-                Current On-Hand Balance: {selectedMaterialForTx.current_stock} {selectedMaterialForTx.unit}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="txTyp" required>Transaction Type</Label>
-                <select
-                  id="txTyp"
-                  value={txType}
-                  onChange={(e) => setTxType(e.target.value as InventoryTransactionType)}
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold capitalize"
-                >
-                  <option value="purchase">Purchase (GRN Receive +)</option>
-                  <option value="consumption">Job Consumption (-)</option>
-                  <option value="adjustment">Audit Adjustment (+/-)</option>
-                  <option value="return">Supplier Return (-)</option>
-                  <option value="wastage">Shop Floor Scrap (-)</option>
-                  <option value="transfer">Inter-Branch Transfer</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="txQ" required>Quantity ({selectedMaterialForTx.unit})</Label>
-                <Input
-                  id="txQ"
-                  type="number"
-                  step="0.1"
-                  value={txQty}
-                  onChange={(e) => setTxQty(Number(e.target.value))}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="txCost">Unit Cost (৳ BDT)</Label>
-                <Input
-                  id="txCost"
-                  type="number"
-                  value={txUnitCost}
-                  onChange={(e) => setTxUnitCost(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="txRef">Reference ID (PO / Job #)</Label>
-                <Input
-                  id="txRef"
-                  placeholder="e.g. PO-2024-099 or JOB-101-A"
-                  value={txRef}
-                  onChange={(e) => setTxRef(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="txNot">Audit Remarks</Label>
-              <Input
-                id="txNot"
-                placeholder="e.g. Physical stock count verification."
-                value={txNotes}
-                onChange={(e) => setTxNotes(e.target.value)}
-              />
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedMaterialForTx(null)} className="w-full sm:w-auto min-h-[40px]">
-                Cancel
-              </Button>
-              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
-                Log Ledger Transaction
-              </Button>
-            </div>
-          </form>
         )}
-      </ModalDialog>
 
-      {/* MODAL: LOG MATERIAL WASTAGE */}
-      <ModalDialog
-        open={Boolean(selectedMaterialForWastage)}
-        onOpenChange={(open) => !open && setSelectedMaterialForWastage(null)}
-        title="Log Material Wastage & Scrap Audit"
-        description="Record difference between job expected substrate usage vs actual consumption."
-        hideFooter
-      >
-        {selectedMaterialForWastage && (
-          <form onSubmit={handleLogWastage} className="space-y-4 pt-1">
-            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs">
-              <span className="text-red-600 font-bold">Material: </span>
-              <strong>{selectedMaterialForWastage.name}</strong>
-            </div>
+        {/* MODALS */}
+        <NewMaterialModal
+          open={isNewMaterialOpen}
+          onOpenChange={setIsNewMaterialOpen}
+          onSuccess={() => {
+            showNotification('New material registered successfully.')
+            loadAllData()
+            refreshUsage()
+          }}
+          companyId={companyId}
+        />
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="wExp" required>Expected Usage ({selectedMaterialForWastage.unit})</Label>
-                <Input
-                  id="wExp"
-                  type="number"
-                  value={wasteExpected}
-                  onChange={(e) => setWasteExpected(Number(e.target.value))}
-                  required
-                />
-              </div>
+        <ReceiveStockModal
+          open={isReceiveStockOpen}
+          onOpenChange={setIsReceiveStockOpen}
+          materials={materials}
+          locations={locations}
+          selectedMaterialId={selectedMaterialForAction?.id}
+          onSuccess={() => {
+            showNotification('Stock received and added to inventory ledger.')
+            loadAllData()
+          }}
+          companyId={companyId}
+        />
 
-              <div className="space-y-1.5">
-                <Label htmlFor="wAct" required>Actual Consumed ({selectedMaterialForWastage.unit})</Label>
-                <Input
-                  id="wAct"
-                  type="number"
-                  value={wasteActual}
-                  onChange={(e) => setWasteActual(Number(e.target.value))}
-                  required
-                />
-              </div>
-            </div>
+        <MaterialRequestModal
+          open={isRequestOpen}
+          onOpenChange={setIsRequestOpen}
+          materials={materials}
+          locations={locations}
+          onSuccess={() => {
+            showNotification('Material requisition submitted.')
+            loadAllData()
+          }}
+          companyId={companyId}
+        />
 
-            <div className="p-2.5 bg-slate-100 dark:bg-slate-900 rounded-lg text-xs font-mono flex justify-between">
-              <span>Calculated Scrap / Wastage:</span>
-              <strong className="text-red-600">
-                {Math.max(0, wasteActual - wasteExpected)} {selectedMaterialForWastage.unit}
-              </strong>
-            </div>
+        <MaterialIssueModal
+          open={isIssueOpen}
+          onOpenChange={setIsIssueOpen}
+          materials={materials}
+          locations={locations}
+          request={selectedRequestForIssue}
+          onSuccess={() => {
+            showNotification('Material issued successfully.')
+            loadAllData()
+          }}
+          companyId={companyId}
+        />
 
-            <div className="space-y-1.5">
-              <Label htmlFor="wRsn" required>Wastage Root Cause Reason</Label>
-              <textarea
-                id="wRsn"
-                rows={2}
-                placeholder="e.g. Media wrinkle during feeding; 4-pass color test strips; offcut margin trim."
-                value={wasteReason}
-                onChange={(e) => setWasteReason(e.target.value)}
-                required
-                className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
-              />
-            </div>
+        <LogConsumptionModal
+          open={isConsumptionOpen}
+          onOpenChange={setIsConsumptionOpen}
+          materials={materials}
+          locations={locations}
+          onSuccess={() => {
+            showNotification('Consumption and remnants signed off.')
+            loadAllData()
+          }}
+          companyId={companyId}
+        />
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setSelectedMaterialForWastage(null)} className="w-full sm:w-auto min-h-[40px]">
-                Cancel
-              </Button>
-              <Button type="submit" className="w-full sm:w-auto min-h-[40px] bg-red-600 hover:bg-red-700 text-white font-bold">
-                Log Wastage Entry
-              </Button>
-            </div>
-          </form>
-        )}
-      </ModalDialog>
+        <StockTransferModal
+          open={isTransferOpen}
+          onOpenChange={setIsTransferOpen}
+          materials={materials}
+          locations={locations}
+          onSuccess={() => {
+            showNotification('Stock transfer executed successfully.')
+            loadAllData()
+          }}
+          companyId={companyId}
+        />
 
-      {/* MODAL: ADD MATERIAL */}
-      <ModalDialog
-        open={isNewOpen}
-        onOpenChange={setIsNewOpen}
-        title="Add New Raw Material to Inventory"
-        description="Configure unit of measure, roll specifications, and ink coverage rates."
-        hideFooter
-      >
-        <form onSubmit={handleCreateMaterial} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="mSku" required>SKU Code</Label>
-              <Input
-                id="mSku"
-                placeholder="e.g. MAT-FLX-05"
-                value={newSku}
-                onChange={(e) => setNewSku(e.target.value)}
-                required
-              />
-            </div>
+        <StockAdjustmentModal
+          open={isAdjustmentOpen}
+          onOpenChange={setIsAdjustmentOpen}
+          materials={materials}
+          locations={locations}
+          onSuccess={() => {
+            showNotification('Physical count reconciliation applied.')
+            loadAllData()
+          }}
+          companyId={companyId}
+        />
 
-            <div className="space-y-1.5">
-              <Label htmlFor="mCat" required>Category</Label>
-              <select
-                id="mCat"
-                value={newCat}
-                onChange={(e) => {
-                  const cat = e.target.value as MaterialCategory
-                  setNewCat(cat)
-                  setNewIsRoll(cat === 'roll_media')
-                }}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="roll_media">Roll Media (Flex, Vinyl)</option>
-                <option value="rigid_sheet">Rigid Sheet (Acrylic, PVC)</option>
-                <option value="metal_framing">Metal & Framing (MS Pipe)</option>
-                <option value="led_electrical">LED & Electrical</option>
-                <option value="ink_chemistry">Inks & Chemistry</option>
-                <option value="hardware_accessories">Hardware & Fasteners</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="mName" required>Material Name</Label>
-            <Input
-              id="mName"
-              placeholder="e.g. Star Flex 380g Frontlit Solvent Roll"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="mNameBn">Bengali Name (বাংলা নাম)</Label>
-            <Input
-              id="mNameBn"
-              placeholder="e.g. স্টার ফ্লেক্স ৩৮০ গ্রাম ফ্রন্টলিট রোল"
-              value={newNameBn}
-              onChange={(e) => setNewNameBn(e.target.value)}
-            />
-          </div>
-
-          {newIsRoll && (
-            <div className="p-3 bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg space-y-2 text-xs">
-              <span className="font-bold text-blue-900 dark:text-blue-200">Roll Dimensions (SFT Accounting):</span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div>
-                  <Label htmlFor="rw">Width (ft)</Label>
-                  <Input
-                    id="rw"
-                    type="number"
-                    value={newWidth}
-                    onChange={(e) => setNewWidth(Number(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="rl">Length (ft)</Label>
-                  <Input
-                    id="rl"
-                    type="number"
-                    value={newLength}
-                    onChange={(e) => setNewLength(Number(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label>Total Area</Label>
-                  <div className="h-10 px-2 flex items-center bg-white dark:bg-slate-900 rounded border font-mono font-bold">
-                    {newWidth * newLength} SFT
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {newCat === 'ink_chemistry' && (
-            <div className="p-3 bg-amber-50/60 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg space-y-1.5 text-xs">
-              <Label htmlFor="covRate" required>Configurable Ink Coverage (SFT / Liter)</Label>
-              <Input
-                id="covRate"
-                type="number"
-                value={newCoverageRate}
-                onChange={(e) => setNewCoverageRate(Number(e.target.value))}
-              />
-              <span className="text-[11px] text-amber-700 dark:text-amber-400">
-                Company configured yield based on press pass count and droplet volume.
-              </span>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="mCost" required>Standard Cost (৳ BDT)</Label>
-              <Input
-                id="mCost"
-                type="number"
-                value={newCost}
-                onChange={(e) => setNewCost(Number(e.target.value))}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="mMin" required>Min Stock Level Alert</Label>
-              <Input
-                id="mMin"
-                type="number"
-                value={newMinStock}
-                onChange={(e) => setNewMinStock(Number(e.target.value))}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)} className="w-full sm:w-auto min-h-[40px]">
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto min-h-[40px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
-            >
-              Save Material
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
-    </div>
-  </FeatureGate>
+        <NewLocationModal
+          open={isNewLocationOpen}
+          onOpenChange={setIsNewLocationOpen}
+          onSuccess={() => {
+            showNotification('Warehouse location created.')
+            loadAllData()
+          }}
+          companyId={companyId}
+        />
+      </div>
+    </FeatureGate>
   )
 }
