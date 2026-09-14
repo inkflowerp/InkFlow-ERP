@@ -1,4 +1,4 @@
-import { Division, District, Upazila } from '@/types/geo.types'
+import type { Division, District, Upazila } from '../types/geo.types.ts'
 
 export const BD_DIVISIONS: Division[] = [
   { id: 1, name: 'Dhaka', name_bn: 'ঢাকা', code: 'DHA' },
