@@ -1,0 +1,179 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
+import { getNavigationConfig, type NavItem, type NavSection } from '../../config/navigation.config.ts'
+import {
+  DEFAULT_RESPONSIBILITY_MATRICES,
+  normalizeResponsibilitySlug,
+  normalizeModuleKey,
+} from '../../lib/auth/rbac.client.ts'
+import type { PermissionAction, PermissionModule, ResponsibilitySlug } from '../../types/rbac.types.ts'
+
+describe('Tenant Sidebar & Navigation Architecture Tests', () => {
+  const sampleSlug = 'inkflow-demo'
+  const navSections = getNavigationConfig(sampleSlug)
+
+  it('1. Navigation configuration has exactly 5 business hierarchy sections', () => {
+    assert.equal(navSections.length, 5, 'Must have exactly 5 sections: TODAY, WORK, MATERIALS, MANAGEMENT, SETTINGS')
+    const sectionIds = navSections.map((s) => s.id)
+    assert.deepEqual(sectionIds, ['today', 'work', 'materials', 'management', 'settings'])
+  })
+
+  it('2. Every navigation section and item has complete English and Bengali titles', () => {
+    for (const section of navSections) {
+      assert.ok(section.title && section.title.trim().length > 0, `Section ${section.id} must have an English title`)
+      assert.ok(section.titleBn && section.titleBn.trim().length > 0, `Section ${section.id} must have a Bengali title`)
+      assert.ok(section.items.length > 0, `Section ${section.id} must contain navigation items`)
+
+      for (const item of section.items) {
+        assert.ok(item.key && item.key.trim().length > 0, `Item in ${section.id} must have a key`)
+        assert.ok(item.title && item.title.trim().length > 0, `Item ${item.key} must have an English title`)
+        assert.ok(item.titleBn && item.titleBn.trim().length > 0, `Item ${item.key} must have a Bengali title`)
+        assert.ok(item.href && item.href.startsWith(`/${sampleSlug}`), `Item ${item.key} href must be scoped to tenantSlug`)
+        assert.ok(item.icon && item.icon.trim().length > 0, `Item ${item.key} must have an icon string`)
+      }
+    }
+  })
+
+  it('3. Route Audit: All navigation item hrefs correspond to existing application routes', () => {
+    const appDir = path.resolve(process.cwd(), 'app', '[tenantSlug]')
+
+    for (const section of navSections) {
+      for (const item of section.items) {
+        // Strip the tenant prefix: /sampleSlug/sales -> sales
+        const relativeRoute = item.href.replace(`/${sampleSlug}`, '').replace(/^\//, '')
+        const targetPath = relativeRoute ? path.join(appDir, relativeRoute) : appDir
+
+        // Check if page.tsx exists at target directory or file
+        const existsAsDir = fs.existsSync(targetPath) && fs.existsSync(path.join(targetPath, 'page.tsx'))
+        const existsAsFile = fs.existsSync(`${targetPath}.tsx`) || fs.existsSync(`${targetPath}/page.tsx`)
+
+        assert.ok(
+          existsAsDir || existsAsFile,
+          `Route target for [${item.title}] (${item.href}) does not exist on disk at: ${targetPath}`
+        )
+      }
+    }
+  })
+
+  it('4. Simple Mode: All essential employee items are explicitly flagged for Simple Mode', () => {
+    const allItems: NavItem[] = navSections.flatMap((s) => s.items)
+    const simpleItems = allItems.filter((i) => i.simpleMode)
+
+    const simpleKeys = simpleItems.map((i) => i.key)
+    const expectedSimpleKeys = [
+      'dashboard',
+      'operator',
+      'new-work',
+      'customers',
+      'sales',
+      'billing',
+      'production',
+      'delivery',
+      'inventory',
+    ]
+
+    for (const expectedKey of expectedSimpleKeys) {
+      assert.ok(
+        simpleKeys.includes(expectedKey),
+        `Essential item [${expectedKey}] must be flagged with simpleMode: true`
+      )
+    }
+
+    // + New Work must be flagged as primary action
+    const newWorkItem = allItems.find((i) => i.key === 'new-work')
+    assert.ok(newWorkItem, 'Must contain + New Work item')
+    assert.equal(newWorkItem?.isPrimaryAction, true, '+ New Work must be flagged as isPrimaryAction')
+  })
+
+  it('5. Permission Integrity: Module permissions resolve correctly for each employee responsibility', () => {
+    function isAllowedForRole(item: NavItem, role: ResponsibilitySlug): boolean {
+      if (role === 'business_owner') return true
+      if (item.ownerOnly) return false
+      if (!item.permission) return true
+
+      const matrix = DEFAULT_RESPONSIBILITY_MATRICES[role]
+      if (!matrix) return false
+
+      const mod = normalizeModuleKey(item.permission.resource) as PermissionModule
+      return Boolean(matrix[mod]?.[item.permission.action])
+    }
+
+    // A. Business Owner: full access to all items
+    const allItems = navSections.flatMap((s) => s.items)
+    for (const item of allItems) {
+      assert.equal(isAllowedForRole(item, 'business_owner'), true, `Owner must have access to ${item.key}`)
+    }
+
+    // B. Sales Manager: can access customers, sales, billing, but not settings/roles
+    const salesAllowed = allItems.filter((i) => isAllowedForRole(i, 'sales_manager')).map((i) => i.key)
+    assert.ok(salesAllowed.includes('customers'), 'Sales Manager must see Customers')
+    assert.ok(salesAllowed.includes('sales'), 'Sales Manager must see Sales')
+    assert.ok(salesAllowed.includes('billing'), 'Sales Manager must see Invoices')
+    assert.ok(!salesAllowed.includes('roles'), 'Sales Manager cannot see Permissions matrix editing')
+
+    // C. Designer: can access design Kanban and work orders
+    const designerAllowed = allItems.filter((i) => isAllowedForRole(i, 'designer')).map((i) => i.key)
+    assert.ok(designerAllowed.includes('design'), 'Designer must see Design & Approval')
+    assert.ok(!designerAllowed.includes('accounting'), 'Designer cannot see Finance')
+
+    // D. Operator: can access operator terminal and production
+    const operatorAllowed = allItems.filter((i) => isAllowedForRole(i, 'operator')).map((i) => i.key)
+    assert.ok(operatorAllowed.includes('operator'), 'Operator must see My Work terminal')
+    assert.ok(operatorAllowed.includes('production'), 'Operator must see Production')
+    assert.ok(!operatorAllowed.includes('accounting'), 'Operator cannot see Finance')
+    assert.ok(!operatorAllowed.includes('reports'), 'Operator cannot see Reports')
+
+    // E. Store Manager: can access inventory and purchases
+    const storeAllowed = allItems.filter((i) => isAllowedForRole(i, 'store_manager')).map((i) => i.key)
+    assert.ok(storeAllowed.includes('inventory'), 'Store Manager must see Inventory')
+    assert.ok(storeAllowed.includes('purchases'), 'Store Manager must see Purchasing')
+    assert.ok(storeAllowed.includes('suppliers'), 'Store Manager must see Suppliers')
+
+    // F. Accountant: can access billing and finance/accounting
+    const accountantAllowed = allItems.filter((i) => isAllowedForRole(i, 'accountant')).map((i) => i.key)
+    assert.ok(accountantAllowed.includes('billing'), 'Accountant must see Invoices & Payments')
+    assert.ok(accountantAllowed.includes('accounting'), 'Accountant must see Finance')
+    assert.ok(accountantAllowed.includes('reports'), 'Accountant must see Reports')
+  })
+
+  it('6. Icon Mapping Integrity: All icons in navigation config exist in standard Lucide icon set', () => {
+    const validIcons = [
+      'LayoutDashboard',
+      'Printer',
+      'Plus',
+      'MessageSquare',
+      'Users',
+      'Briefcase',
+      'Receipt',
+      'Palette',
+      'Truck',
+      'Package',
+      'ShoppingBag',
+      'Building2',
+      'Building',
+      'BarChart3',
+      'Calculator',
+      'Landmark',
+      'Wallet',
+      'UserCheck',
+      'Users2',
+      'Cpu',
+      'ShieldCheck',
+      'Workflow',
+      'FileCheck2',
+      'FileText',
+      'Settings',
+    ]
+
+    for (const section of navSections) {
+      for (const item of section.items) {
+        assert.ok(
+          validIcons.includes(item.icon),
+          `Navigation item [${item.key}] uses icon '${item.icon}' which is not in the recognized Lucide icon map`
+        )
+      }
+    }
+  })
+})

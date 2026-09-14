@@ -8,45 +8,40 @@ import {
   X,
   Search,
   LayoutDashboard,
-  FileSpreadsheet,
-  Briefcase,
-  Users,
   Printer,
-  Package,
-  Truck,
-  Receipt,
-  Settings,
-  ShieldCheck,
-  Palette,
-  Calculator,
-  Layers,
-  ShoppingBag,
-  Wallet,
-  Users2,
-  BarChart3,
+  Plus,
   MessageSquare,
+  Users,
+  Briefcase,
+  Receipt,
+  Palette,
+  Truck,
+  Package,
+  ShoppingBag,
+  Building2,
+  Building,
+  BarChart3,
+  Calculator,
   Landmark,
+  Wallet,
+  UserCheck,
+  Users2,
+  Cpu,
+  ShieldCheck,
+  Workflow,
+  FileCheck2,
   FileText,
+  Settings,
   Crown,
   Sparkles,
-  Smartphone,
-  Workflow,
-  UserCheck,
-  QrCode,
-  MapPin,
-  Globe2,
-  Building,
-  LogOut,
-  User as UserIcon,
-  Shield,
-  Plus,
   Zap,
+  LogOut,
+  Shield,
   ChevronRight,
+  Headphones,
   PhoneCall,
-  Radio,
-  Cpu,
 } from 'lucide-react'
-import { getNavigationConfig } from '@/config/navigation.config'
+import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
 import { useAuth } from '@/hooks/use-auth'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -60,33 +55,33 @@ import { cn } from '@/lib/utils'
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
-  FileSpreadsheet,
-  Briefcase,
-  Users,
   Printer,
-  Package,
-  Truck,
-  Receipt,
-  Settings,
-  ShieldCheck,
-  Palette,
-  Calculator,
-  Layers,
-  ShoppingBag,
-  Wallet,
-  Users2,
-  BarChart3,
+  Plus,
   MessageSquare,
+  Users,
+  Briefcase,
+  Receipt,
+  Palette,
+  Truck,
+  Package,
+  ShoppingBag,
+  Building2,
+  Building,
+  BarChart3,
+  Calculator,
   Landmark,
+  Wallet,
+  UserCheck,
+  Users2,
+  Cpu,
+  ShieldCheck,
+  Workflow,
+  FileCheck2,
   FileText,
+  Settings,
   Crown,
   Sparkles,
-  Smartphone,
-  Workflow,
-  UserCheck,
-  QrCode,
-  MapPin,
-  Cpu,
+  Zap,
 }
 
 export function MobileNav() {
@@ -131,48 +126,24 @@ export function MobileNav() {
     }
   }, [])
 
-  const isNavItemAllowed = (href: string): boolean => {
+  // Explicit permission checking
+  const isNavItemAllowed = (item: NavItem): boolean => {
     if (isOwner) return true
-    if (href.endsWith('/dashboard') || href.includes('/attendance')) return true
-
-    if (href.includes('/customers')) return can('view', 'customers')
-    if (href.includes('/quotations')) return can('view', 'quotations')
-    if (href.includes('/orders')) return can('view', 'orders')
-    if (href.includes('/sales')) return can('view', 'quotations') || can('view', 'orders') || can('view', 'customers')
-    if (href.includes('/pricing')) return can('view', 'quotations') || can('create', 'orders')
-    if (href.includes('/products')) return can('view', 'orders') || can('view', 'inventory')
-    if (href.includes('/costing')) return can('view', 'reports') || can('view', 'orders')
-    if (href.includes('/design')) return can('view', 'design')
-    if (href.includes('/machineries')) return can('view', 'machineries') || can('view', 'production')
-    if (href.includes('/production') || href.includes('/operator')) return can('view', 'production')
-    if (href.includes('/inventory') || href.includes('/purchases') || href.includes('/suppliers'))
-      return can('view', 'inventory')
-    if (href.includes('/delivery')) return can('view', 'delivery')
-    if (href.includes('/billing')) return can('view', 'invoices')
-    if (href.includes('/accounting')) return can('view', 'payments') || can('view', 'reports')
-    if (href.includes('/reports')) return can('view', 'reports')
-    if (href.includes('/settings')) return can('view', 'settings')
-    if (href.includes('/hr')) return can('view', 'settings') || can('manage', 'settings')
-
-    return true
-  }
-
-  const toggleLanguage = () => {
-    if (locale === 'en') setLocale('bn')
-    else setLocale('en')
+    if (item.ownerOnly && !isOwner) return false
+    if (!item.permission) return true
+    return can(item.permission.action, item.permission.resource)
   }
 
   const userName = currentUser?.profile?.full_name
     ? tBilingual(currentUser.profile.full_name, currentUser.profile.full_name_bn || currentUser.profile.full_name)
     : 'User'
-  const userEmail = currentUser?.profile?.email || ''
 
   // Filter sections by search query in real-time
   const filteredNavSections = useMemo(() => {
     const q = searchQuery.toLowerCase().trim()
     return navSections
       .map((section) => {
-        const allowedItems = section.items.filter((item) => isNavItemAllowed(item.href))
+        const allowedItems = section.items.filter(isNavItemAllowed)
         if (!q) return { ...section, items: allowedItems }
 
         const matchedItems = allowedItems.filter(
@@ -209,7 +180,7 @@ export function MobileNav() {
             <Link
               href={`/${tenantSlug}/dashboard`}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-2.5 group cursor-pointer"
             >
               <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-slate-900 shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform">
                 <span className="h-2 w-2 rounded-full bg-cyan-400" />
@@ -219,10 +190,10 @@ export function MobileNav() {
               </div>
               <div className="flex flex-col text-left">
                 <span className="font-black text-base text-slate-900 dark:text-white leading-tight">
-                  Print<span className="text-blue-600">ERP</span>
+                  Ink<span className="text-blue-600">Flow</span>
                 </span>
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none">
-                  BD Print SaaS
+                  Print ERP
                 </span>
               </div>
             </Link>
@@ -248,7 +219,7 @@ export function MobileNav() {
                       {userName}
                     </span>
                     <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
-                      {company?.name || 'PrintERP Workspace'}
+                      {company?.name || 'InkFlow Workspace'}
                     </span>
                   </div>
                 </div>
@@ -339,11 +310,11 @@ export function MobileNav() {
                 {tBilingual(`No modules matching "${searchQuery}"`, `"${searchQuery}" এর জন্য কোনো মেনু পাওয়া যায়নি`)}
               </div>
             ) : (
-              filteredNavSections.map((section, sIdx) => {
+              filteredNavSections.map((section) => {
                 const sectionTitle = tBilingual(section.title, section.titleBn)
 
                 return (
-                  <div key={sIdx} className="space-y-1">
+                  <div key={section.id} className="space-y-1">
                     <h4 className="px-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1 bangla-text">
                       {sectionTitle}
                     </h4>
@@ -351,17 +322,22 @@ export function MobileNav() {
                     <div className="space-y-0.5">
                       {section.items.map((item) => {
                         const Icon = iconMap[item.icon] || Sparkles
-                        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+                        const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== `/${tenantSlug}`)
                         const itemTitle = tBilingual(item.title, item.titleBn)
+                        const isPrimary = item.isPrimaryAction
 
                         return (
                           <Link
-                            key={item.href}
+                            key={item.key}
                             href={item.href}
                             onClick={() => setOpen(false)}
                             className={cn(
                               'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
-                              isActive
+                              isPrimary
+                                ? isActive
+                                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
+                                  : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold'
+                                : isActive
                                 ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
                                 : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
                             )}
@@ -369,19 +345,19 @@ export function MobileNav() {
                             <Icon
                               className={cn(
                                 'h-4 w-4 shrink-0 transition-transform group-hover:scale-110',
-                                isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                                isPrimary || isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                               )}
                             />
                             <span className="flex-1 truncate">{itemTitle}</span>
                             {item.badge && (
                               <Badge
-                                variant={isActive ? 'secondary' : 'default'}
+                                variant={isActive || isPrimary ? 'secondary' : 'default'}
                                 className={cn(
                                   'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0',
-                                  item.badge === 'Live'
-                                    ? 'bg-rose-500 text-white'
-                                    : item.badge === 'PWA'
-                                    ? 'bg-indigo-500 text-white'
+                                  item.badgeVariant === 'live'
+                                    ? 'bg-rose-500 text-white animate-pulse'
+                                    : item.badgeVariant === 'fast'
+                                    ? 'bg-emerald-400 text-slate-950 font-black'
                                     : 'bg-emerald-500 text-white'
                                 )}
                               >
@@ -431,11 +407,15 @@ export function MobileNav() {
         {/* Footer with Support Hotline and Sign Out Button */}
         <SheetFooter className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
           <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 px-1">
-            <div className="flex items-center gap-1.5">
-              <PhoneCall className="h-3.5 w-3.5 text-blue-600" />
-              <span>+880 1700-000000</span>
-            </div>
-            <span className="text-xs text-slate-400">PrintERP SaaS v2.5</span>
+            <Link
+              href={`/${tenantSlug}/support`}
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+            >
+              <Headphones className="h-3.5 w-3.5" />
+              <span>{company?.phone || 'Live Support'}</span>
+            </Link>
+            <span className="text-xs text-slate-400">InkFlow ERP</span>
           </div>
 
           <button

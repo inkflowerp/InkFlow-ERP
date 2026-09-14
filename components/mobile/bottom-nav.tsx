@@ -4,14 +4,13 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard,
+  Clock,
   Printer,
   Plus,
-  Clock,
-  Briefcase,
+  MessageSquare,
+  Menu,
   WifiOff,
   Cloud,
-  Layers,
 } from 'lucide-react'
 import { useOfflineQueue } from '@/hooks/use-offline-queue'
 import { useNetworkStatus } from '@/hooks/use-network-status'
@@ -35,82 +34,92 @@ export function MobileBottomNav() {
 
   const isDashboardActive = pathname?.endsWith('/dashboard')
   const isOperatorActive = pathname?.includes('/operator')
-  const isSalesActive = pathname?.includes('/sales') || pathname?.includes('/orders') || pathname?.includes('/billing')
-  const isProductionActive = pathname?.includes('/production')
+  const isMessagesActive = pathname?.includes('/communications')
+
+  const handleOpenMobileDrawer = () => {
+    window.dispatchEvent(new Event('inkflow_open_mobile_nav'))
+  }
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-slate-950/95 backdrop-blur-md border-t border-slate-800 pb-[env(safe-area-inset-bottom)]">
+      <nav
+        aria-label="Mobile Bottom Navigation"
+        className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-slate-950/95 backdrop-blur-md border-t border-slate-800 pb-[env(safe-area-inset-bottom)] select-none"
+      >
         <div className="grid grid-cols-5 h-16 items-center px-1">
           {/* 1. Today / Dashboard */}
           <Link
             href={`/${tenantSlug}/dashboard`}
-            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors ${
+            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isDashboardActive
                 ? 'text-blue-400 font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Clock className="h-5 w-5" />
-            <span className="text-[10px] font-semibold mt-1">আজকের কাজ</span>
+            <Clock className="h-5 w-5 shrink-0" />
+            <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
+              {tBilingual('Today', 'আজকের কাজ')}
+            </span>
           </Link>
 
           {/* 2. My Work / Operator Terminal */}
           <Link
             href={`/${tenantSlug}/operator`}
-            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors ${
+            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isOperatorActive
                 ? 'text-blue-400 font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Printer className="h-5 w-5" />
-            <span className="text-[10px] font-semibold mt-1">আমার কাজ</span>
+            <Printer className="h-5 w-5 shrink-0" />
+            <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
+              {tBilingual('My Work', 'আমার কাজ')}
+            </span>
           </Link>
 
           {/* 3. Center + New Work Floating Action */}
           <button
             type="button"
             onClick={() => setNewWorkOpen(true)}
-            className="flex flex-col items-center justify-center -mt-5 min-h-[48px] min-w-[48px] cursor-pointer"
-            aria-label="New Work Order"
+            className="flex flex-col items-center justify-center -mt-5 min-h-[48px] min-w-[48px] cursor-pointer focus:outline-none"
+            aria-label="Create New Work"
           >
             <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/40 border-2 border-slate-950 active:scale-95 transition-transform">
               <Plus className="h-6 w-6 stroke-[3]" />
             </div>
-            <span className="text-[10px] font-black text-white mt-1">+ নতুন কাজ</span>
+            <span className="text-[10px] font-black text-white mt-1 bangla-text whitespace-nowrap">
+              {tBilingual('+ New Work', '+ নতুন কাজ')}
+            </span>
           </button>
 
-          {/* 4. Sales & Billing */}
+          {/* 4. Messages / Notifications */}
           <Link
-            href={`/${tenantSlug}/sales`}
-            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors ${
-              isSalesActive
+            href={`/${tenantSlug}/communications`}
+            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
+              isMessagesActive
                 ? 'text-blue-400 font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Briefcase className="h-5 w-5" />
-            <span className="text-[10px] font-semibold mt-1">সেলস ও বিল</span>
+            <MessageSquare className="h-5 w-5 shrink-0" />
+            <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
+              {tBilingual('Messages', 'মেসেজ')}
+            </span>
           </Link>
 
-          {/* 5. Offline Sync Status */}
+          {/* 5. More (Open Drawer with All Modules & Search) */}
           <button
             type="button"
-            onClick={() => setSyncOpen(true)}
-            className="flex flex-col items-center justify-center h-full min-h-[48px] py-1 text-slate-400 hover:text-slate-200 relative cursor-pointer"
-            aria-label="Offline Sync"
+            onClick={handleOpenMobileDrawer}
+            className="flex flex-col items-center justify-center h-full min-h-[48px] py-1 text-slate-400 hover:text-slate-200 relative cursor-pointer focus:outline-none bangla-text"
+            aria-label="Open Full Menu and Modules"
           >
-            {!isOnline ? (
-              <WifiOff className="h-5 w-5 text-amber-400 animate-pulse" />
-            ) : (
-              <Cloud className="h-5 w-5" />
-            )}
-            <span className="text-[10px] font-semibold mt-1">
-              {!isOnline ? 'অফলাইন' : 'সিঙ্ক'}
+            <Menu className="h-5 w-5 shrink-0" />
+            <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
+              {tBilingual('More', 'আরও')}
             </span>
-            {pendingCount > 0 && (
-              <span className="absolute top-1.5 right-3 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-slate-950" />
+            {(!isOnline || pendingCount > 0) && (
+              <span className="absolute top-2 right-3.5 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-slate-950 animate-pulse" />
             )}
           </button>
         </div>
