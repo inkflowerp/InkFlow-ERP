@@ -478,6 +478,7 @@ export function getTenantResourceUsage(
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const monthlyOrders = orders.filter((o) => {
     if (!isCoMatch(o)) return false
+    if (o.is_practice === true) return false
     const orderDate = o.order_date || o.created_at || ''
     return orderDate >= startOfMonth || !orderDate
   })
@@ -507,12 +508,15 @@ export function getTenantResourceUsage(
   if (!activePlan) {
     activePlan = DEFAULT_TRIAL_PLAN
   }
-  const usersLimit = override?.max_users ?? activePlan.max_users
-  const branchesLimit = override?.max_branches ?? activePlan.max_branches
-  const storageLimit = override?.storage_gb ?? activePlan.storage_gb
-  const ordersLimit = override?.monthly_orders ?? activePlan.monthly_orders
-  const customersLimit = override?.max_customers ?? activePlan.max_customers
-  const productsLimit = override?.max_products ?? activePlan.max_products
+
+  const isOverrideActive = override && override.is_active !== false && (!override.expires_at || new Date(override.expires_at).getTime() >= Date.now())
+
+  const usersLimit = (isOverrideActive && override?.max_users !== undefined) ? override.max_users : activePlan.max_users
+  const branchesLimit = (isOverrideActive && override?.max_branches !== undefined) ? override.max_branches : activePlan.max_branches
+  const storageLimit = (isOverrideActive && override?.storage_gb !== undefined) ? override.storage_gb : activePlan.storage_gb
+  const ordersLimit = (isOverrideActive && override?.monthly_orders !== undefined) ? override.monthly_orders : activePlan.monthly_orders
+  const customersLimit = (isOverrideActive && override?.max_customers !== undefined) ? override.max_customers : activePlan.max_customers
+  const productsLimit = (isOverrideActive && override?.max_products !== undefined) ? override.max_products : activePlan.max_products
 
   return {
     users_count: usersCount,
@@ -533,8 +537,17 @@ export function getTenantResourceUsage(
 export function checkFeatureAccess(
   planCode: PlanCode,
   feature: FeatureCode,
-  plans: SubscriptionPlanRecord[] = DEFAULT_PLANS
+  plans: SubscriptionPlanRecord[] = DEFAULT_PLANS,
+  override?: CustomLimitsOverride | null
 ): boolean {
+  if (override?.feature_overrides && typeof override.feature_overrides[feature] === 'boolean') {
+    const featExpiry = override.feature_expires_at || override.expires_at
+    const isExpired = featExpiry ? new Date(featExpiry).getTime() < Date.now() : false
+    if (!isExpired && override.is_active !== false) {
+      return Boolean(override.feature_overrides[feature])
+    }
+  }
+
   if (planCode === 'trial') {
     const trialPlan = plans.find((p) => p.code === 'trial') || DEFAULT_TRIAL_PLAN
     return trialPlan.features.includes(feature)
@@ -712,7 +725,8 @@ export function checkResourceLimit(
   warning: boolean
   percentage: number
 } {
-  const effectiveLimit = override?.[limitType] ?? plan[limitType]
+  const isOverrideActive = override && override.is_active !== false && (!override.expires_at || new Date(override.expires_at).getTime() >= Date.now())
+  const effectiveLimit = (isOverrideActive && override?.[limitType] !== undefined) ? (override[limitType] as number) : plan[limitType]
 
   // Negative, zero, or >= 99999 represents unlimited capacity
   if (effectiveLimit <= 0 || effectiveLimit >= 99999) {

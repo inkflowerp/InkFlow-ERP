@@ -217,7 +217,44 @@ export type ConfigurableLimitType =
   | 'max_customers'
   | 'max_products'
 
-export type CustomLimitsOverride = Partial<Record<ConfigurableLimitType, number>>
+export type CustomLimitsOverride = Partial<Record<ConfigurableLimitType, number>> & {
+  expires_at?: string | null
+  reason?: string | null
+  granted_by?: string | null
+  granted_at?: string | null
+  is_active?: boolean
+  feature_overrides?: Partial<Record<FeatureCode, boolean>>
+  feature_expires_at?: string | null
+}
+
+export interface AuditableOverrideRecord {
+  id?: string
+  company_id: string
+  resource_type: ConfigurableLimitType | 'feature'
+  feature_code?: FeatureCode | null
+  original_value: number | boolean
+  overridden_value: number | boolean
+  reason: string
+  created_by?: string | null
+  created_at: string
+  expires_at?: string | null
+  is_active: boolean
+}
+
+export interface OverLimitItem {
+  resource: ConfigurableLimitType
+  label: string
+  currentUsage: number
+  allowedLimit: number
+  excessCount: number
+  remediationNote: string
+}
+
+export interface OverLimitSummary {
+  isOverLimit: boolean
+  exceededItems: OverLimitItem[]
+  suggestedAction: string
+}
 
 export type OveragePolicy = 'block' | 'warn' | 'allow_charge'
 

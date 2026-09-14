@@ -147,4 +147,18 @@ export class SubscriptionGuard {
       reason,
     }
   }
+
+  /**
+   * Checks if tenant can create an additional resource item
+   */
+  static async canCreate(companyId: string, resource: ConfigurableLimitType): Promise<boolean> {
+    return await EntitlementService.canCreate(companyId, resource)
+  }
+
+  /**
+   * Evaluates over-limit state across all metered resources
+   */
+  static async getOverLimitSummary(companyId: string) {
+    return await EntitlementService.getOverLimitSummary(companyId)
+  }
 }

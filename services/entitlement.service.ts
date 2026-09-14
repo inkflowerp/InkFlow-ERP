@@ -14,6 +14,8 @@ import type {
   TenantResourceUsage,
   PaymentGatewayType,
   SubscriptionStatus,
+  OverLimitSummary,
+  OverLimitItem,
 } from '../types/subscription.types.ts'
 import {
   DEFAULT_PLANS,
@@ -327,7 +329,7 @@ export class EntitlementService {
       if (daysRemaining <= 0) return false
     }
 
-    return checkFeatureAccess(plan.code, feature, [plan])
+    return checkFeatureAccess(plan.code, feature, [plan], subscription.custom_limits_override)
   }
 
   /**
@@ -445,6 +447,7 @@ export class EntitlementService {
                 .select('*', { count: 'exact', head: true })
                 .eq('company_id', companyId)
                 .gte('created_at', startOfMonth)
+                .or('is_practice.is.null,is_practice.eq.false')
               if (!error && count !== null && count !== undefined) {
                 dbCount = count
               }
@@ -610,6 +613,66 @@ export class EntitlementService {
       planCode: entitlements.planCode,
       status: entitlements.status,
       reason,
+    }
+  }
+
+  /**
+   * Checks if tenant can create an additional resource item
+   */
+  static async canCreate(companyId: string, resource: ConfigurableLimitType): Promise<boolean> {
+    const check = await this.checkResourceQuota(companyId, resource)
+    return check.allowed && !check.exceeded
+  }
+
+  /**
+   * Evaluates over-limit state across all metered resources (e.g. following a downgrade or override expiry)
+   * Ensures existing data is preserved while identifying resources requiring remediation.
+   */
+  static async getOverLimitSummary(companyId: string): Promise<OverLimitSummary> {
+    const resources: ConfigurableLimitType[] = [
+      'max_users',
+      'max_branches',
+      'storage_gb',
+      'monthly_orders',
+      'max_customers',
+      'max_products',
+    ]
+
+    const labels: Record<ConfigurableLimitType, string> = {
+      max_users: 'Active Users',
+      max_branches: 'Active Branches',
+      storage_gb: 'Cloud Storage (GB)',
+      monthly_orders: 'Monthly Orders',
+      max_customers: 'Customers',
+      max_products: 'Products & Materials',
+    }
+
+    const exceededItems: OverLimitItem[] = []
+
+    for (const resource of resources) {
+      const check = await this.checkResourceQuota(companyId, resource)
+      const isUnlimitedLimit = check.limit <= 0 || check.limit >= 99999 || check.limit === -1
+      if (!isUnlimitedLimit && check.current > check.limit) {
+        const excess = check.current - check.limit
+        exceededItems.push({
+          resource,
+          label: labels[resource],
+          currentUsage: check.current,
+          allowedLimit: check.limit,
+          excessCount: excess,
+          remediationNote: `Your current plan allows up to ${check.limit} ${labels[resource].toLowerCase()}, but you currently have ${check.current}. Existing data is safe, but new creations are paused until you upgrade or remediate.`,
+        })
+      }
+    }
+
+    const isOverLimit = exceededItems.length > 0
+
+    return {
+      isOverLimit,
+      exceededItems,
+      suggestedAction: isOverLimit
+        ? `Over-limit detected in ${exceededItems.length} resource(s). Upgrade your subscription tier to increase your limits.`
+        : 'All resource usages are within allowed plan limits.',
     }
   }
 }

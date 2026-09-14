@@ -234,8 +234,12 @@ begin
     -- 3. Resolve Effective Limit
     v_override_limit := null;
     if v_sub is not null and v_sub.custom_limits_override is not null then
-        if v_sub.custom_limits_override ? p_limit_type then
-            v_override_limit := (v_sub.custom_limits_override ->> p_limit_type)::integer;
+        if ((v_sub.custom_limits_override ->> 'is_active') is null or (v_sub.custom_limits_override ->> 'is_active')::boolean = true) then
+            if ((v_sub.custom_limits_override ->> 'expires_at') is null or (v_sub.custom_limits_override ->> 'expires_at')::timestamptz >= now()) then
+                if v_sub.custom_limits_override ? p_limit_type then
+                    v_override_limit := (v_sub.custom_limits_override ->> p_limit_type)::integer;
+                end if;
+            end if;
         end if;
     end if;
 
@@ -356,7 +360,8 @@ begin
     select count(*) into v_monthly_orders
     from public.sales_orders
     where company_id = p_company_id
-      and created_at >= v_start_of_month;
+      and created_at >= v_start_of_month
+      and (is_practice is null or is_practice = false);
 
     select * into v_check from public.validate_tenant_limit_atomic(p_company_id, 'monthly_orders', v_monthly_orders);
 
