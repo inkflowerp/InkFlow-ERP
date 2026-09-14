@@ -51,8 +51,16 @@ export type PermissionModule =
   | 'tasks'
   | 'notifications'
   | 'support'
+  | 'branches'
 
-export type DataScope = 'own' | 'assigned' | 'department' | 'company'
+export type DataScope =
+  | 'own'
+  | 'assigned'
+  | 'department'
+  | 'branch'
+  | 'selected_branches'
+  | 'all_branches'
+  | 'company'
 
 export interface ModuleActionSpec {
   module: PermissionModule
@@ -181,6 +189,14 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
     label: 'Support & Help Desk',
     labelBn: 'সহায়তা ও হেল্প ডেস্ক',
     description: 'Live support chat, ticket management and troubleshooting',
+    actions: ['view', 'create', 'edit', 'delete', 'manage'],
+    defaultScope: 'company',
+  },
+  branches: {
+    module: 'branches',
+    label: 'Branch Management',
+    labelBn: 'ব্রাঞ্চ ও শাখা ব্যবস্থাপনা',
+    description: 'Multi-branch operations, factory outlets, and cross-branch logistics',
     actions: ['view', 'create', 'edit', 'delete', 'manage'],
     defaultScope: 'company',
   },

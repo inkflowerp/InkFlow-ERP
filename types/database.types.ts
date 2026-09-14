@@ -169,10 +169,29 @@ export interface Database {
           name: string
           name_bn: string | null
           code: string
+          legal_name: string | null
           phone: string | null
+          email: string | null
           address: string | null
+          division_id: number | null
+          district_id: number | null
+          upazila_id: number | null
+          area: string | null
+          full_address: string | null
+          full_address_bn: string | null
           is_main: boolean
           is_active: boolean
+          status: string
+          manager_id: string | null
+          manager_name: string | null
+          operating_hours: string | null
+          timezone: string
+          document_numbering_config: Json | null
+          financial_settings: Json | null
+          production_capabilities: Json | null
+          contact_person: string | null
+          contact_phone: string | null
+          contact_email: string | null
           created_at: string
           updated_at: string
         }
@@ -182,10 +201,29 @@ export interface Database {
           name: string
           name_bn?: string | null
           code: string
+          legal_name?: string | null
           phone?: string | null
+          email?: string | null
           address?: string | null
+          division_id?: number | null
+          district_id?: number | null
+          upazila_id?: number | null
+          area?: string | null
+          full_address?: string | null
+          full_address_bn?: string | null
           is_main?: boolean
           is_active?: boolean
+          status?: string
+          manager_id?: string | null
+          manager_name?: string | null
+          operating_hours?: string | null
+          timezone?: string
+          document_numbering_config?: Json | null
+          financial_settings?: Json | null
+          production_capabilities?: Json | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          contact_email?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -195,10 +233,29 @@ export interface Database {
           name?: string
           name_bn?: string | null
           code?: string
+          legal_name?: string | null
           phone?: string | null
+          email?: string | null
           address?: string | null
+          division_id?: number | null
+          district_id?: number | null
+          upazila_id?: number | null
+          area?: string | null
+          full_address?: string | null
+          full_address_bn?: string | null
           is_main?: boolean
           is_active?: boolean
+          status?: string
+          manager_id?: string | null
+          manager_name?: string | null
+          operating_hours?: string | null
+          timezone?: string
+          document_numbering_config?: Json | null
+          financial_settings?: Json | null
+          production_capabilities?: Json | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          contact_email?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -557,6 +614,273 @@ export interface Database {
           district_id?: number
           name?: string
           name_bn?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      branch_transfer_requests: {
+        Row: {
+          id: string
+          company_id: string
+          transfer_number: string
+          from_branch_id: string
+          from_location_id: string | null
+          to_branch_id: string
+          to_location_id: string | null
+          material_id: string
+          material_name: string
+          quantity: number
+          unit: string
+          status: string
+          requested_by: string | null
+          requested_by_name: string | null
+          approved_by: string | null
+          approved_by_name: string | null
+          approved_at: string | null
+          dispatched_by: string | null
+          dispatched_by_name: string | null
+          dispatched_at: string | null
+          received_by: string | null
+          received_by_name: string | null
+          received_at: string | null
+          rejection_reason: string | null
+          notes: string | null
+          idempotency_key: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          transfer_number: string
+          from_branch_id: string
+          from_location_id?: string | null
+          to_branch_id: string
+          to_location_id?: string | null
+          material_id: string
+          material_name: string
+          quantity: number
+          unit: string
+          status?: string
+          requested_by?: string | null
+          requested_by_name?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
+          approved_at?: string | null
+          dispatched_by?: string | null
+          dispatched_by_name?: string | null
+          dispatched_at?: string | null
+          received_by?: string | null
+          received_by_name?: string | null
+          received_at?: string | null
+          rejection_reason?: string | null
+          notes?: string | null
+          idempotency_key?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          transfer_number?: string
+          from_branch_id?: string
+          from_location_id?: string | null
+          to_branch_id?: string
+          to_location_id?: string | null
+          material_id?: string
+          material_name?: string
+          quantity?: number
+          unit?: string
+          status?: string
+          requested_by?: string | null
+          requested_by_name?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
+          approved_at?: string | null
+          dispatched_by?: string | null
+          dispatched_by_name?: string | null
+          dispatched_at?: string | null
+          received_by?: string | null
+          received_by_name?: string | null
+          received_at?: string | null
+          rejection_reason?: string | null
+          notes?: string | null
+          idempotency_key?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inter_branch_financial_transfers: {
+        Row: {
+          id: string
+          company_id: string
+          transfer_number: string
+          from_branch_id: string
+          to_branch_id: string
+          from_account_id: string | null
+          to_account_id: string | null
+          amount: number
+          currency: string
+          status: string
+          requested_by: string | null
+          requested_by_name: string | null
+          approved_by: string | null
+          approved_by_name: string | null
+          approved_at: string | null
+          reference: string | null
+          notes: string | null
+          idempotency_key: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          transfer_number: string
+          from_branch_id: string
+          to_branch_id: string
+          from_account_id?: string | null
+          to_account_id?: string | null
+          amount: number
+          currency?: string
+          status?: string
+          requested_by?: string | null
+          requested_by_name?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
+          approved_at?: string | null
+          reference?: string | null
+          notes?: string | null
+          idempotency_key?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          transfer_number?: string
+          from_branch_id?: string
+          to_branch_id?: string
+          from_account_id?: string | null
+          to_account_id?: string | null
+          amount?: number
+          currency?: string
+          status?: string
+          requested_by?: string | null
+          requested_by_name?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
+          approved_at?: string | null
+          reference?: string | null
+          notes?: string | null
+          idempotency_key?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      employee_branch_assignments: {
+        Row: {
+          id: string
+          company_id: string
+          employee_id: string
+          branch_id: string
+          start_date: string
+          end_date: string | null
+          is_temporary: boolean
+          status: string
+          assigned_by: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          employee_id: string
+          branch_id: string
+          start_date: string
+          end_date?: string | null
+          is_temporary?: boolean
+          status?: string
+          assigned_by?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          employee_id?: string
+          branch_id?: string
+          start_date?: string
+          end_date?: string | null
+          is_temporary?: boolean
+          status?: string
+          assigned_by?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      workflow_configurations: {
+        Row: {
+          id: string
+          company_id: string
+          branch_id: string | null
+          workflow_type: string
+          rules: Json
+          is_active: boolean
+          updated_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          branch_id?: string | null
+          workflow_type: string
+          rules?: Json
+          is_active?: boolean
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          branch_id?: string | null
+          workflow_type?: string
+          rules?: Json
+          is_active?: boolean
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_branch_access: {
+        Row: {
+          id: string
+          company_id: string
+          user_id: string
+          branch_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          user_id: string
+          branch_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          user_id?: string
+          branch_id?: string
           created_at?: string
         }
         Relationships: []

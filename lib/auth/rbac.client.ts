@@ -66,6 +66,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     inventory: { view: true },
     reports: { view: true, export: true },
     settings: { view: true },
+    branches: { view: true },
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
@@ -84,6 +85,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     inventory: {},
     reports: {},
     settings: {},
+    branches: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
@@ -102,6 +104,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     inventory: { view: true, create: true, edit: true, approve: true },
     reports: { view: true },
     settings: {},
+    branches: { view: true },
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
@@ -120,6 +123,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     inventory: { view: true },
     reports: {},
     settings: {},
+    branches: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
@@ -138,6 +142,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     inventory: { view: true, create: true, edit: true, approve: true },
     reports: { view: true },
     settings: {},
+    branches: { view: true },
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
@@ -156,6 +161,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     inventory: { view: true },
     reports: { view: true, export: true },
     settings: {},
+    branches: { view: true },
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
@@ -174,6 +180,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     inventory: {},
     reports: {},
     settings: {},
+    branches: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
@@ -192,6 +199,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     inventory: {},
     reports: {},
     settings: {},
+    branches: {},
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
@@ -509,6 +517,7 @@ export interface ScopeCheckContext {
   userId: string
   userDepartment?: string | null
   userBranchId?: string | null
+  userAuthorizedBranchIds?: string[] | null
   recordOwnerId?: string | null
   recordAssigneeId?: string | null
   recordDepartment?: string | null
@@ -525,13 +534,22 @@ export function checkDataScopeAccess(
 ): boolean {
   if (ctx.isOwnerOrAdmin) return true
 
-  // Branch boundary check: if record is in another branch and user has branch restriction
+  // For scopes strictly limited to single branch or specific branches
   if (
+    (userScope === 'own' || userScope === 'assigned' || userScope === 'department' || userScope === 'branch') &&
     ctx.userBranchId &&
     ctx.recordBranchId &&
     ctx.userBranchId !== ctx.recordBranchId
   ) {
     return false
+  }
+
+  if (userScope === 'selected_branches' && ctx.recordBranchId) {
+    const allowed = ctx.userAuthorizedBranchIds || (ctx.userBranchId ? [ctx.userBranchId] : [])
+    if (!allowed.includes(ctx.recordBranchId)) {
+      return false
+    }
+    return true
   }
 
   switch (userScope) {
@@ -557,6 +575,14 @@ export function checkDataScopeAccess(
         (ctx.recordOwnerId && ctx.recordOwnerId === ctx.userId)
       )
 
+    case 'branch':
+      if (!ctx.recordBranchId || !ctx.userBranchId) return true
+      return ctx.recordBranchId === ctx.userBranchId
+
+    case 'selected_branches':
+      return true
+
+    case 'all_branches':
     case 'company':
       return true
 
@@ -564,4 +590,5 @@ export function checkDataScopeAccess(
       return false
   }
 }
+
 

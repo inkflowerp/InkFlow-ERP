@@ -201,6 +201,12 @@ export const STORAGE_KEYS = {
   COMMUNICATION_MESSAGES: 'printerp_tenant_comm_messages',
   COMMUNICATION_TEMPLATES: 'printerp_tenant_comm_templates',
   CLIENT_DEVICES: 'printerp_tenant_client_devices',
+  BRANCH_TRANSFERS: 'printerp_tenant_branch_transfers',
+  INTER_BRANCH_FINANCIAL_TRANSFERS: 'printerp_tenant_inter_branch_financial_transfers',
+  EMPLOYEE_BRANCH_ASSIGNMENTS: 'printerp_tenant_employee_branch_assignments',
+  WORKFLOW_CONFIGURATIONS: 'printerp_tenant_workflow_configurations',
+  USER_BRANCH_ACCESS: 'printerp_tenant_user_branch_access',
+  SAVED_VIEWS: 'printerp_tenant_saved_views',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -296,7 +302,13 @@ export function isTransactionalKey(key: string): boolean {
     key === STORAGE_KEYS.SYNC_OUTBOX ||
     key === STORAGE_KEYS.COMMUNICATION_MESSAGES ||
     key === STORAGE_KEYS.COMMUNICATION_TEMPLATES ||
-    key === STORAGE_KEYS.CLIENT_DEVICES
+    key === STORAGE_KEYS.CLIENT_DEVICES ||
+    key === STORAGE_KEYS.BRANCH_TRANSFERS ||
+    key === STORAGE_KEYS.INTER_BRANCH_FINANCIAL_TRANSFERS ||
+    key === STORAGE_KEYS.EMPLOYEE_BRANCH_ASSIGNMENTS ||
+    key === STORAGE_KEYS.WORKFLOW_CONFIGURATIONS ||
+    key === STORAGE_KEYS.USER_BRANCH_ACCESS ||
+    key === STORAGE_KEYS.SAVED_VIEWS
   )
 }
 
@@ -583,20 +595,31 @@ export class PrintERPDataStore {
    */
   static set<T = any>(
     key: StorageKey,
-    data: T,
-    emitEvent = true,
+    data: T | string,
+    emitEvent: boolean | T = true,
     tenantSlug?: string,
     broadcastCrossTab = true
   ): T {
-    const effectiveKey = this.getEffectiveKey(key, tenantSlug)
-    inMemoryStore[effectiveKey] = data
+    let actualData = data as T
+    let actualEmitEvent = typeof emitEvent === 'boolean' ? emitEvent : true
+    let actualTenantSlug = tenantSlug
+
+    // Handle overload: set(key, tenantSlug, data)
+    if (typeof data === 'string' && emitEvent !== null && typeof emitEvent !== 'boolean' && (Array.isArray(emitEvent) || typeof emitEvent === 'object')) {
+      actualTenantSlug = data
+      actualData = emitEvent as T
+      actualEmitEvent = true
+    }
+
+    const effectiveKey = this.getEffectiveKey(key, actualTenantSlug)
+    inMemoryStore[effectiveKey] = actualData
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem(effectiveKey, JSON.stringify(data))
-        if (emitEvent) {
+        localStorage.setItem(effectiveKey, JSON.stringify(actualData))
+        if (actualEmitEvent) {
           window.dispatchEvent(
             new CustomEvent('printerp_data_sync', {
-              detail: { key, effectiveKey, data, timestamp: Date.now() },
+              detail: { key, effectiveKey, data: actualData, timestamp: Date.now() },
             })
           )
           window.dispatchEvent(new Event(`${key}_updated`))
@@ -611,8 +634,8 @@ export class PrintERPDataStore {
                 mutationType: 'SET',
                 storageKey: key,
                 effectiveKey,
-                data,
-                tenantSlug,
+                data: actualData,
+                tenantSlug: actualTenantSlug,
                 senderId: CLIENT_TAB_ID,
                 timestamp: Date.now(),
               })
@@ -624,7 +647,7 @@ export class PrintERPDataStore {
         console.error(`[PrintERPDataStore] Error saving key ${effectiveKey}:`, err)
       }
     }
-    return data
+    return actualData
   }
 
   /**
@@ -640,6 +663,15 @@ export class PrintERPDataStore {
    */
   static clear(key: StorageKey, tenantSlug?: string): void {
     this.set(key, [], true, tenantSlug, true)
+  }
+
+  /**
+   * Clears all storage keys for a tenant or in-memory store
+   */
+  static clearAll(tenantSlug?: string): void {
+    for (const key of Object.values(STORAGE_KEYS)) {
+      this.clear(key as StorageKey, tenantSlug)
+    }
   }
 
   /**
