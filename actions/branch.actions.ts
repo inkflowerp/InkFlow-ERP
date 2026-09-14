@@ -28,6 +28,8 @@ export async function getBranchByIdAction(branchId: string) {
   }
 }
 
+import { SubscriptionGuard } from '../lib/subscription/subscription-guard.ts'
+
 export async function createBranchAction(payload: {
   name: string
   name_bn?: string | null
@@ -56,6 +58,7 @@ export async function createBranchAction(payload: {
 }) {
   const tenant = await requireTenantUser()
   try {
+    await SubscriptionGuard.requireLimit(tenant.companyId, 'max_branches')
     const branch = await BranchManagementService.createBranch(tenant.companyId, payload)
     return { success: true, data: branch }
   } catch (error: any) {

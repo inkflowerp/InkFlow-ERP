@@ -34,6 +34,8 @@ function checkInventoryPermission(tenant: any, requiredPerm: string): boolean {
 // MATERIAL MASTER ACTIONS
 // ==========================================
 
+import { EntitlementService } from '@/services/entitlement.service'
+
 export async function createMaterialAction(
   data: Partial<MaterialRecord> & {
     sku: string
@@ -49,6 +51,9 @@ export async function createMaterialAction(
     if (!companyId || !tenant) {
       return { success: false, error: 'Unauthorized: No active tenant context found.' }
     }
+
+    // Enforce Plan Inventory Feature Entitlement
+    await EntitlementService.enforceFeature(companyId, 'inventory')
 
     if (!checkInventoryPermission(tenant, 'inventory.create') && !checkInventoryPermission(tenant, 'inventory.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to create materials.' }

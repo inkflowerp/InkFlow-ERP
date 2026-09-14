@@ -67,6 +67,8 @@ export async function getProductByIdAction(
   }
 }
 
+import { EntitlementService } from '@/services/entitlement.service'
+
 export async function createProductAction(
   data: Partial<ProductRecord> & {
     sku: string
@@ -82,6 +84,9 @@ export async function createProductAction(
     if (!companyId || !tenant) {
       return { success: false, error: 'Unauthorized: No active tenant context found.' }
     }
+
+    // Enforce Plan Product Limit
+    await EntitlementService.enforceLimit(companyId, 'max_products')
 
     if (!checkProductPermission(tenant, 'products.create') && !checkProductPermission(tenant, 'products.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to create products.' }

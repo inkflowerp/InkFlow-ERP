@@ -77,6 +77,8 @@ export async function getMachineryByIdAction(
   }
 }
 
+import { EntitlementService } from '@/services/entitlement.service'
+
 /**
  * Server Action: Creates a new machinery record
  */
@@ -91,6 +93,9 @@ export async function createMachineryAction(
     if (!companyId) {
       return { success: false, error: 'Unauthorized: No active tenant context.' }
     }
+
+    // Enforce Plan Machinery Feature Entitlement
+    await EntitlementService.enforceFeature(companyId, 'machinery')
 
     // Permission authorization check
     const isOwner = tenant?.primaryRole === 'business_owner' || tenant?.companyRole === 'business_owner'
