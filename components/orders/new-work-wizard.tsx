@@ -965,7 +965,7 @@ export function NewWorkWizard({
       <ModalDialog
         open={isOpen}
         onOpenChange={(open) => !open && onClose?.()}
-        title={tBilingual('+ New Work Order', '+ নতুন কাজ তৈরি করুন')}
+        title={tBilingual('New Work', 'নতুন কাজ')}
         size="lg"
         hideFooter={true}
       >

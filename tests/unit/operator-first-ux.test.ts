@@ -7,10 +7,10 @@ import { ProductionRepository } from '../../lib/repositories/production.reposito
 import { ProductionTaskRepository } from '../../lib/repositories/production-task.repository.ts'
 import { evaluateDataScopeAccess } from '../../lib/auth/rbac.server.ts'
 
-describe('Operator-First UX & + New Work Workflow Tests (V9.1)', () => {
+describe('Operator-First UX & New Work Workflow Tests (V9.1)', () => {
   const companyId = 'test_v9_1_company'
 
-  test('1. Universal + New Work creates customer, invoice, and production task seamlessly', async () => {
+  test('1. Universal New Work creates customer, invoice, and production task seamlessly', async () => {
     // 1. Create or resolve customer
     const customer = await CustomerRepository.createCustomer({
       company_id: companyId,

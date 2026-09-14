@@ -68,7 +68,7 @@ export function SalesDashboard({
           className="bg-white text-blue-900 hover:bg-blue-50 text-sm font-black h-12 px-8 shadow-lg"
         >
           <Plus className="h-5 w-5 mr-1.5 stroke-[3]" />
-          {tBilingual('+ New Work Order (নতুন কাজ)', '+ নতুন কাজ যোগ করুন')}
+          {tBilingual('New Work', 'নতুন কাজ')}
         </Button>
       </div>
 

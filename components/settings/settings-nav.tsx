@@ -15,6 +15,9 @@ import {
   Users,
   ShieldCheck,
   QrCode,
+  FileText,
+  Workflow,
+  Crown,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -58,6 +61,18 @@ export function SettingsNav() {
       icon: Hash,
     },
     {
+      title: 'Document Templates',
+      titleBn: 'ডকুমেন্ট টেমপ্লেট',
+      href: `/${slug}/settings/documents`,
+      icon: FileText,
+    },
+    {
+      title: 'Workflow Automations',
+      titleBn: 'কাজের অটোমেশন',
+      href: `/${slug}/settings/automations`,
+      icon: Workflow,
+    },
+    {
       title: 'Branches & Hubs',
       titleBn: 'শাখা ও কারখানা',
       href: `/${slug}/settings/branches`,
@@ -92,6 +107,12 @@ export function SettingsNav() {
       titleBn: 'অনুমতি ম্যাট্রিক্স',
       href: `/${slug}/settings/roles`,
       icon: ShieldCheck,
+    },
+    {
+      title: 'Subscription',
+      titleBn: 'সাবস্ক্রিপশন',
+      href: `/${slug}/settings/subscription`,
+      icon: Crown,
     },
   ]
 

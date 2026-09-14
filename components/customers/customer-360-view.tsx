@@ -144,7 +144,7 @@ export function Customer360View({
             className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-9 px-5 shadow-xs"
           >
             <Plus className="h-4 w-4 mr-1" />
-            {tBilingual('+ New Work Order', '+ নতুন কাজ যোগ করুন')}
+            {tBilingual('New Work', 'নতুন কাজ')}
           </Button>
         </div>
       </div>

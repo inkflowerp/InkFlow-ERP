@@ -164,7 +164,7 @@ export function PracticeModeModal({ isOpen, onClose }: PracticeModeModalProps) {
                 অভিনন্দন! আপনি সফলভাবে প্র্যাকটিস সম্পন্ন করেছেন।
               </h4>
               <p className="text-xs text-slate-500">
-                এখন আপনি বাস্তব অর্ডারের জন্য <span className="font-bold text-blue-600">+ New Work</span> ব্যবহার করতে পারেন।
+                এখন আপনি বাস্তব অর্ডারের জন্য <span className="font-bold text-blue-600">New Work</span> ব্যবহার করতে পারেন।
               </p>
             </div>
             <div className="flex items-center justify-center gap-2 pt-2">
