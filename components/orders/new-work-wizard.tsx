@@ -33,12 +33,8 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { NextActionModal, NextActionConfig } from '@/components/shared/next-action-modal'
 import { CustomerRecord } from '@/types/crm.types'
-import { CustomerRepository } from '@/lib/repositories/customer.repository'
-import { OrderRepository } from '@/lib/repositories/order.repository'
-import { BillingRepository } from '@/lib/repositories/billing.repository'
-import { ProductionRepository } from '@/lib/repositories/production.repository'
-import { ProductionTaskRepository } from '@/lib/repositories/production-task.repository'
-import { createClient } from '@/lib/supabase/client'
+import { getCustomersAction, createCustomerAction } from '@/actions/customer.actions'
+import { createNewWorkIntakeAction } from '@/actions/order.actions'
 import { formatBDT } from '@/lib/formatters'
 
 interface WorkTypePreset {
@@ -187,8 +183,10 @@ export function NewWorkWizard({
   useEffect(() => {
     async function loadCustomers() {
       try {
-        const list = await CustomerRepository.getCustomers(companyId)
-        setCustomers(list)
+        const res = await getCustomersAction(companyId)
+        if (res.success && res.data) {
+          setCustomers(res.data)
+        }
       } catch (_) {}
     }
     loadCustomers()
@@ -232,16 +230,20 @@ export function NewWorkWizard({
     }
 
     try {
-      const created = await CustomerRepository.createCustomer({
+      const res = await createCustomerAction({
         company_id: companyId,
         name: newCustomerName.trim(),
         mobile: newCustomerPhone.trim(),
         address: newCustomerAddress.trim() || undefined,
       })
-      setSelectedCustomer(created)
-      setCustomers([created, ...customers])
-      setIsCreatingCustomer(false)
-      setErrorMessage(null)
+      if (res.success && res.data) {
+        setSelectedCustomer(res.data)
+        setCustomers((prev) => [res.data!, ...prev])
+        setIsCreatingCustomer(false)
+        setErrorMessage(null)
+      } else {
+        setErrorMessage(res.error || 'Failed to create customer')
+      }
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to create customer')
     }
@@ -261,91 +263,36 @@ export function NewWorkWizard({
     try {
       const custPhone = (selectedCustomer as any).phone || selectedCustomer.mobile || ''
 
-      // 1. Generate Document Numbers transactionally
-      const invoiceNumber = await BillingRepository.getNextDocumentNumber(companyId, 'invoice')
-      const orderNumber = await BillingRepository.getNextDocumentNumber(companyId, 'order')
-      const jobNumber = `JOB-${orderNumber.replace('ORD-', '')}`
-
-      // 2. Create Invoice
-      const invoice = await BillingRepository.createInvoice({
-        company_id: companyId,
-        customer_id: selectedCustomer.id,
-        customer_name: selectedCustomer.name,
-        customer_phone: custPhone,
-        customer_address: selectedCustomer.address || '',
-        invoice_number: invoiceNumber,
-        subtotal: totalAmount,
-        discount_amount: 0,
-        vat_amount: 0,
-        grand_total: totalAmount,
-        paid_amount: advancePaid,
-        due_amount: dueAmount,
-        status: dueAmount === 0 ? 'paid' : advancePaid > 0 ? 'partially_paid' : 'unpaid',
-        due_date: deliveryDate,
-        created_by_name: 'Workshop Operator',
-        items: [
-          {
-            id: crypto.randomUUID(),
-            invoice_id: '',
-            item_description: `${jobTitle} (${width}x${height} ${unit}) - ${materialName}`,
-            quantity: quantity,
-            unit: unit,
-            unit_price: unitRate,
-            vat_percentage: 0,
-            total_price: totalAmount,
-          },
-        ],
+      const res = await createNewWorkIntakeAction({
+        customerId: selectedCustomer.id,
+        customerName: selectedCustomer.name,
+        customerPhone: custPhone,
+        customerAddress: selectedCustomer.address || '',
+        jobTitle,
+        width,
+        height,
+        unit,
+        quantity,
+        unitRate,
+        totalAmount,
+        advancePaid,
+        dueAmount,
+        paymentMethod,
+        materialName,
+        selectedFinishings,
+        deliveryDate,
+        deliveryType,
+        notes,
+        assignedMachine,
+        priority,
+        companyId,
       })
 
-      // 3. Record Advance Payment if made
-      if (advancePaid > 0) {
-        await BillingRepository.recordPayment({
-          company_id: companyId,
-          customer_id: selectedCustomer.id,
-          customer_name: selectedCustomer.name,
-          amount: advancePaid,
-          payment_method: paymentMethod,
-          invoice_id: invoice.id,
-          notes: `Advance for ${jobTitle}`,
-          received_by_name: 'Workshop Operator',
-        })
+      if (!res.success || !res.data) {
+        throw new Error(res.error || 'Failed to create work order')
       }
 
-      // 4. Create Job Order & Production Job
-      const prodJob = await ProductionRepository.createProductionJob({
-        company_id: companyId,
-        production_job_number: jobNumber,
-        customer_name: selectedCustomer.name,
-        product_name: jobTitle,
-        department: 'printing',
-        stage: 'printing',
-        status: 'queued',
-        priority: priority,
-        deadline: deliveryDate,
-        dimensions_spec: `${width} × ${height} ${unit}`,
-        quantity: quantity,
-        material_spec: `${materialName}${selectedFinishings.length ? ' (' + selectedFinishings.join(', ') + ')' : ''}`,
-        assigned_workers: [],
-        production_instructions: notes || undefined,
-        has_rework: false,
-        rework_count: 0,
-      })
-
-      // 5. Create Production Task
-      await ProductionTaskRepository.createTask({
-        company_id: companyId,
-        production_job_id: prodJob.id,
-        task_name: `Print: ${jobTitle} (${width}x${height} ${unit})`,
-        stage_name: 'printing',
-        quantity: quantity,
-        unit: unit,
-        status: 'queued',
-        customer_name: selectedCustomer.name,
-        product_name: jobTitle,
-        job_number: jobNumber,
-        assigned_machine_name: assignedMachine,
-        estimated_duration_minutes: Math.max(15, Math.round(totalSqft * 0.5)),
-      })
+      const { invoiceNumber, jobNumber } = res.data
 
       // Prepare Next Action Dialog
       const cleanPhone = custPhone.replace(/\D/g, '')
@@ -365,7 +312,7 @@ export function NewWorkWizard({
           labelBn: 'কাস্টমারকে হোয়াটসঅ্যাপ মেসেজ পাঠান',
           onClick: () => {
             window.open(waUrl, '_blank')
-            onSuccess?.(prodJob)
+            onSuccess?.(res.data)
             onClose?.()
           },
         },
@@ -375,7 +322,7 @@ export function NewWorkWizard({
             labelBn: 'ফ্লোর টার্মিনালে যান (কাজ শুরু করুন)',
             onClick: () => {
               router.push(`/${tenantSlug}/operator`)
-              onSuccess?.(prodJob)
+              onSuccess?.(res.data)
               onClose?.()
             },
           },

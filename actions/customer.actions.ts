@@ -648,3 +648,34 @@ export async function getCustomerTimelineAction(
     }
   }
 }
+
+/**
+ * Server Action: Get all active customers for a company
+ */
+export async function getCustomersAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<CustomerRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return {
+        success: true,
+        data: [],
+      }
+    }
+
+    const { CustomerRepository } = await import('@/lib/repositories/customer.repository')
+    const list = await CustomerRepository.getCustomers(companyId)
+    return {
+      success: true,
+      data: list,
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err?.message || 'Failed to fetch customer list.',
+    }
+  }
+}
+

@@ -148,3 +148,189 @@ export async function updateOrderStatusAction(
     return { success: false, error: error.message || 'Failed to update order status' }
   }
 }
+
+export interface NewWorkIntakeInput {
+  customerId: string
+  customerName: string
+  customerPhone?: string
+  customerAddress?: string
+  jobTitle: string
+  width: number
+  height: number
+  unit: 'ft' | 'inch' | 'pcs'
+  quantity: number
+  unitRate: number
+  totalAmount: number
+  advancePaid: number
+  dueAmount: number
+  paymentMethod?: 'cash' | 'bkash' | 'nagad' | 'bank'
+  materialName: string
+  selectedFinishings?: string[]
+  deliveryDate: string
+  deliveryType?: 'pickup' | 'courier' | 'installation'
+  notes?: string
+  assignedMachine?: string
+  priority?: 'normal' | 'urgent' | 'very_urgent'
+  companyId?: string
+}
+
+export interface NewWorkIntakeResult {
+  invoiceNumber: string
+  orderNumber: string
+  jobNumber: string
+  invoiceId: string
+  productionJobId: string
+}
+
+/**
+ * Server Action: Frictionless New Work order intake, invoice generation & production task creation
+ */
+export async function createNewWorkIntakeAction(
+  input: NewWorkIntakeInput
+): Promise<ServerActionResult<NewWorkIntakeResult>> {
+  try {
+    const tenant = await getCurrentTenant(input.companyId)
+    const companyId = tenant?.companyId || input.companyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const { BillingRepository } = await import('@/lib/repositories/billing.repository')
+    const { ProductionRepository } = await import('@/lib/repositories/production.repository')
+    const { ProductionTaskRepository } = await import('@/lib/repositories/production-task.repository')
+
+    const custPhone = input.customerPhone || ''
+
+    // 1. Generate Document Numbers transactionally
+    const invoiceNumber = await BillingRepository.getNextDocumentNumber(companyId, 'invoice')
+    const orderNumber = await BillingRepository.getNextDocumentNumber(companyId, 'order')
+    const jobNumber = `JOB-${orderNumber.replace('ORD-', '')}`
+
+    // 2. Create Invoice
+    const invoice = await BillingRepository.createInvoice({
+      company_id: companyId,
+      customer_id: input.customerId,
+      customer_name: input.customerName,
+      customer_phone: custPhone,
+      customer_address: input.customerAddress || '',
+      invoice_number: invoiceNumber,
+      subtotal: input.totalAmount,
+      discount_amount: 0,
+      vat_amount: 0,
+      grand_total: input.totalAmount,
+      paid_amount: input.advancePaid,
+      due_amount: input.dueAmount,
+      status: input.dueAmount === 0 ? 'paid' : input.advancePaid > 0 ? 'partially_paid' : 'unpaid',
+      due_date: input.deliveryDate,
+      created_by_name: tenant?.fullName || 'Workshop Operator',
+      items: [
+        {
+          id: crypto.randomUUID(),
+          invoice_id: '',
+          item_description: `${input.jobTitle} (${input.width}x${input.height} ${input.unit}) - ${input.materialName}`,
+          quantity: input.quantity,
+          unit: input.unit,
+          unit_price: input.unitRate,
+          vat_percentage: 0,
+          total_price: input.totalAmount,
+        },
+      ],
+    })
+
+    // 3. Record Advance Payment if made
+    if (input.advancePaid > 0) {
+      await BillingRepository.recordPayment({
+        company_id: companyId,
+        customer_id: input.customerId,
+        customer_name: input.customerName,
+        amount: input.advancePaid,
+        payment_method: input.paymentMethod || 'cash',
+        invoice_id: invoice.id,
+        notes: `Advance for ${input.jobTitle}`,
+        received_by_name: tenant?.fullName || 'Workshop Operator',
+      })
+    }
+
+    // 4. Create Production Job
+    const finishings = input.selectedFinishings || []
+    const prodJob = await ProductionRepository.createProductionJob({
+      company_id: companyId,
+      production_job_number: jobNumber,
+      customer_name: input.customerName,
+      product_name: input.jobTitle,
+      department: 'printing',
+      stage: 'printing',
+      status: 'queued',
+      priority: input.priority || 'normal',
+      deadline: input.deliveryDate,
+      dimensions_spec: `${input.width} × ${input.height} ${input.unit}`,
+      quantity: input.quantity,
+      material_spec: `${input.materialName}${finishings.length ? ' (' + finishings.join(', ') + ')' : ''}`,
+      assigned_workers: [],
+      production_instructions: input.notes || undefined,
+      has_rework: false,
+      rework_count: 0,
+    })
+
+    // 5. Create Production Task
+    const totalSqft =
+      input.unit === 'ft'
+        ? input.width * input.height * input.quantity
+        : input.unit === 'inch'
+        ? (input.width * input.height * input.quantity) / 144
+        : input.quantity
+
+    await ProductionTaskRepository.createTask({
+      company_id: companyId,
+      production_job_id: prodJob.id,
+      task_name: `Print: ${input.jobTitle} (${input.width}x${input.height} ${input.unit})`,
+      stage_name: 'printing',
+      quantity: input.quantity,
+      unit: input.unit,
+      status: 'queued',
+      customer_name: input.customerName,
+      product_name: input.jobTitle,
+      job_number: jobNumber,
+      assigned_machine_name: input.assignedMachine || 'Large Format Eco-Solvent #1',
+      estimated_duration_minutes: Math.max(15, Math.round(totalSqft * 0.5)),
+    })
+
+    // Audit Logging
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant?.userId || 'unknown',
+        tenant?.userEmail || '',
+        'order.intake',
+        'order',
+        invoice.id,
+        null,
+        {
+          order_number: orderNumber,
+          invoice_number: invoiceNumber,
+          job_number: jobNumber,
+          customer_name: input.customerName,
+          total_amount: input.totalAmount,
+          advance_paid: input.advancePaid,
+        },
+        `Created new work order ${orderNumber} (${jobNumber}) for customer ${input.customerName}`
+      )
+    } catch {}
+
+    revalidatePath('/', 'layout')
+
+    return {
+      success: true,
+      data: {
+        invoiceNumber,
+        orderNumber,
+        jobNumber,
+        invoiceId: invoice.id,
+        productionJobId: prodJob.id,
+      },
+    }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to create work intake' }
+  }
+}
+
