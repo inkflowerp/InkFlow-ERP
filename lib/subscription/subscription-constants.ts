@@ -286,6 +286,22 @@ export const FEATURE_METADATA: Record<FeatureCode, FeatureMeta> = {
   },
 }
 
+export const PLAN_TIER_ORDER: Record<PlanCode, number> = {
+  trial: 0,
+  starter: 1,
+  business: 2,
+  enterprise: 3,
+}
+
+export function isPlanSufficient(currentPlanCode?: string | null, requiredPlanCode?: string | null): boolean {
+  if (!requiredPlanCode) return true
+  const cur = (currentPlanCode?.toLowerCase() as PlanCode) || 'starter'
+  const req = (requiredPlanCode?.toLowerCase() as PlanCode) || 'business'
+  const currentRank = PLAN_TIER_ORDER[cur] ?? 0
+  const requiredRank = PLAN_TIER_ORDER[req] ?? 2
+  return currentRank >= requiredRank
+}
+
 export const DEFAULT_TRIAL_PLAN: SubscriptionPlanRecord = {
   id: 'sp-00',
   code: 'trial',
@@ -358,6 +374,9 @@ export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
       'hr_payroll',
       'job_costing',
       'whatsapp_notifications',
+      'sms_notifications',
+      'machinery',
+      'attendance_qr',
     ],
     is_active: true,
     sort_order: 2,
@@ -393,6 +412,9 @@ export const DEFAULT_PLANS: SubscriptionPlanRecord[] = [
       'hr_payroll',
       'job_costing',
       'whatsapp_notifications',
+      'sms_notifications',
+      'machinery',
+      'attendance_qr',
       'multi_branch',
       'advanced_analytics',
       'advanced_permissions',

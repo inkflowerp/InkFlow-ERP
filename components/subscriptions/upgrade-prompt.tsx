@@ -12,8 +12,13 @@ import {
   PhoneCall,
   Crown,
 } from 'lucide-react'
-import { FeatureCode, SubscriptionPlanRecord } from '@/types/subscription.types'
-import { FEATURE_METADATA, getMinimumPlanForFeature } from '@/lib/subscription/subscription-constants'
+import { FeatureCode, PlanCode, SubscriptionPlanRecord } from '@/types/subscription.types'
+import {
+  FEATURE_METADATA,
+  getMinimumPlanForFeature,
+  PLAN_TIER_ORDER,
+  DEFAULT_PLANS,
+} from '@/lib/subscription/subscription-constants'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -37,7 +42,16 @@ export function UpgradePrompt({
   compact = false,
   className = '',
 }: UpgradePromptProps) {
-  const { currentPlan, allPlans } = useSubscription()
+  const {
+    currentPlan,
+    currentPlanCode,
+    allPlans,
+    isTrial,
+    isTrialExpired,
+    isPlanExpired,
+    isPastDue,
+    isSuspended,
+  } = useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'app'
@@ -51,9 +65,51 @@ export function UpgradePrompt({
     category: 'advanced',
   }
 
-  const requiredPlan =
+  const rawRequiredPlan =
     (allPlans && allPlans.find((p: SubscriptionPlanRecord) => p.code === meta.minPlan)) ||
-    getMinimumPlanForFeature(feature)
+    getMinimumPlanForFeature(feature, allPlans)
+
+  const currentRank = PLAN_TIER_ORDER[currentPlanCode as PlanCode] ?? 1
+  const requiredRank = PLAN_TIER_ORDER[rawRequiredPlan.code as PlanCode] ?? 2
+  const isPlanLevelSufficient = currentRank >= requiredRank
+
+  // Determine target plan for upgrade: if current plan is already sufficient, offer next tier (enterprise)
+  const targetPlan = isPlanLevelSufficient
+    ? ((allPlans && allPlans.find((p: SubscriptionPlanRecord) => p.code === 'enterprise')) || DEFAULT_PLANS[3])
+    : rawRequiredPlan
+
+  // Determine status reason
+  const isExpiredState = isTrialExpired || isPlanExpired
+  const statusTitleEn = isSuspended
+    ? 'Account Suspended'
+    : isPastDue
+    ? 'Payment Past Due'
+    : isExpiredState
+    ? (isTrial ? 'Free Trial Expired' : 'Subscription Expired')
+    : `${rawRequiredPlan.name} Required`
+  const statusTitleBn = isSuspended
+    ? 'অ্যাকাউন্ট স্থগিত'
+    : isPastDue
+    ? 'বিলিং বকেয়া রয়েছে'
+    : isExpiredState
+    ? (isTrial ? 'ফ্রি ট্রায়ালের মেয়াদ শেষ' : 'সাবস্ক্রিপশনের মেয়াদ শেষ')
+    : `${rawRequiredPlan.name_bn} প্রয়োজন`
+
+  const ctaTextEn = isSuspended
+    ? 'Contact Support'
+    : isPastDue
+    ? 'Pay Overdue Invoice'
+    : isExpiredState
+    ? (isTrial ? `Upgrade to ${targetPlan.name}` : `Renew ${currentPlan.name}`)
+    : `Upgrade to ${targetPlan.name}`
+
+  const ctaTextBn = isSuspended
+    ? 'সাপোর্টে যোগাযোগ করুন'
+    : isPastDue
+    ? 'ইনভয়েস পরিশোধ করুন'
+    : isExpiredState
+    ? (isTrial ? `${targetPlan.name_bn} এ আপগ্রেড করুন` : `${currentPlan.name_bn} নবায়ন করুন`)
+    : `${targetPlan.name_bn} এ আপগ্রেড করুন`
 
   if (compact) {
     return (
@@ -69,14 +125,14 @@ export function UpgradePrompt({
               {tBilingual(meta.name, meta.name_bn)}
             </span>
             <span className="text-slate-500 dark:text-slate-400 ml-1.5">
-              — {tBilingual(`Included in ${requiredPlan.name}`, `এটি ${requiredPlan.name_bn}-এ অন্তর্ভুক্ত`)}
+              — {tBilingual(statusTitleEn, statusTitleBn)}
             </span>
           </div>
         </div>
 
         <Link href={`/${slug}/settings/subscription`}>
           <Button size="sm" className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold bangla-text">
-            {tBilingual('Upgrade', 'আপগ্রেড')}
+            {tBilingual(isExpiredState ? 'Renew' : 'Upgrade', isExpiredState ? 'নবায়ন' : 'আপগ্রেড')}
             <ArrowRight className="ml-1 h-3 w-3" />
           </Button>
         </Link>
@@ -102,7 +158,7 @@ export function UpgradePrompt({
           <ArrowRight className="h-3 w-3 text-slate-400" />
           <Badge className="text-[11px] font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white bangla-text">
             <Crown className="h-3 w-3 mr-1" />
-            {tBilingual(`${requiredPlan.name} Required`, `${requiredPlan.name_bn} প্রয়োজন`)}
+            {tBilingual(statusTitleEn, statusTitleBn)}
           </Badge>
         </div>
 
@@ -111,7 +167,12 @@ export function UpgradePrompt({
         </CardTitle>
 
         <CardDescription className="text-sm max-w-md mx-auto text-slate-600 dark:text-slate-300 mt-1 bangla-text">
-          {tBilingual(meta.description, meta.description_bn || meta.description)}
+          {isExpiredState
+            ? tBilingual(
+                `Your ${currentPlan.name} subscription period has expired. Renew to resume using ${meta.name}.`,
+                `আপনার ${currentPlan.name_bn} এর মেয়াদ শেষ হয়েছে। ${meta.name_bn} ব্যবহার করতে সাবস্ক্রিপশন নবায়ন করুন।`
+              )
+            : tBilingual(meta.description, meta.description_bn || meta.description)}
         </CardDescription>
       </CardHeader>
 
@@ -119,43 +180,43 @@ export function UpgradePrompt({
         <div className="rounded-xl bg-slate-100/80 dark:bg-slate-800/60 p-4 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
           <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5 bangla-text">
             <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
-            {tBilingual(`Included with ${requiredPlan.name}:`, `${requiredPlan.name_bn}-এর মূল সুবিধাসমূহ:`)}
+            {tBilingual(`Included with ${targetPlan.name}:`, `${targetPlan.name_bn}-এর মূল সুবিধাসমূহ:`)}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-200 bangla-text">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
               <span>
-                {requiredPlan.max_users <= 0 || requiredPlan.max_users >= 99999
+                {targetPlan.max_users <= 0 || targetPlan.max_users >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
-                  : requiredPlan.max_users}{' '}
+                  : targetPlan.max_users}{' '}
                 {tBilingual('Team User Accounts', 'জন ব্যবহারকারী')}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
               <span>
-                {requiredPlan.max_branches <= 0 || requiredPlan.max_branches >= 99999
+                {targetPlan.max_branches <= 0 || targetPlan.max_branches >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
-                  : requiredPlan.max_branches}{' '}
+                  : targetPlan.max_branches}{' '}
                 {tBilingual('Branches & Factory Hubs', 'টি শাখা ও কারখানা')}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
               <span>
-                {requiredPlan.storage_gb <= 0 || requiredPlan.storage_gb >= 99999
+                {targetPlan.storage_gb <= 0 || targetPlan.storage_gb >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
-                  : `${requiredPlan.storage_gb} GB`}{' '}
+                  : `${targetPlan.storage_gb} GB`}{' '}
                 {tBilingual('Secure Cloud Storage', 'ক্লাউড স্টোরেজ')}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
               <span>
-                {requiredPlan.monthly_orders <= 0 || requiredPlan.monthly_orders >= 99999
+                {targetPlan.monthly_orders <= 0 || targetPlan.monthly_orders >= 99999
                   ? tBilingual('Unlimited', 'আনলিমিটেড')
-                  : requiredPlan.monthly_orders.toLocaleString()}{' '}
+                  : targetPlan.monthly_orders.toLocaleString()}{' '}
                 {tBilingual('Monthly Job Orders', 'টি মাসিক অর্ডার')}
               </span>
             </div>
@@ -167,7 +228,7 @@ export function UpgradePrompt({
             {tBilingual('Starting from ', 'শুরু মাত্র ')}
           </span>
           <span className="text-lg font-black text-slate-900 dark:text-white">
-            <CurrencyDisplay amount={requiredPlan.price_monthly} />
+            <CurrencyDisplay amount={targetPlan.price_monthly} />
           </span>
           <span className="text-xs text-slate-500 dark:text-slate-400">
             {tBilingual(' / month (৳ BDT)', ' / প্রতি মাসে')}
@@ -179,7 +240,7 @@ export function UpgradePrompt({
         <Link href={`/${slug}/settings/subscription`} className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-6 shadow-md shadow-indigo-500/20 bangla-text">
             <Zap className="mr-2 h-4 w-4" />
-            {tBilingual(`Upgrade to ${requiredPlan.name}`, `${requiredPlan.name_bn} এ আপগ্রেড করুন`)}
+            {tBilingual(ctaTextEn, ctaTextBn)}
           </Button>
         </Link>
 

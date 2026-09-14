@@ -12,6 +12,11 @@ import { useSubscription } from './use-subscription'
 
 export interface FeatureGateResult {
   hasAccess: boolean
+  isLoading: boolean
+  isTrialExpired: boolean
+  isPlanExpired: boolean
+  isPastDue: boolean
+  isSuspended: boolean
   currentPlanCode: string
   requiredPlan: {
     code: string
@@ -23,7 +28,7 @@ export interface FeatureGateResult {
 }
 
 export function useFeatureGate(feature: FeatureCode): FeatureGateResult {
-  const { currentPlanCode, allPlans, hasFeature, isTrialExpired, isSuspended } = useSubscription()
+  const { currentPlanCode, allPlans, hasFeature, isTrialExpired, isPlanExpired, isPastDue, isSuspended, isLoading } = useSubscription()
 
   return useMemo(() => {
     const hasAccess = hasFeature(feature)
@@ -39,6 +44,11 @@ export function useFeatureGate(feature: FeatureCode): FeatureGateResult {
 
     return {
       hasAccess,
+      isLoading,
+      isTrialExpired,
+      isPlanExpired,
+      isPastDue,
+      isSuspended,
       currentPlanCode,
       requiredPlan: {
         code: minPlan.code,
@@ -48,5 +58,5 @@ export function useFeatureGate(feature: FeatureCode): FeatureGateResult {
       },
       featureMeta,
     }
-  }, [currentPlanCode, feature, allPlans, hasFeature, isTrialExpired, isSuspended])
+  }, [currentPlanCode, feature, allPlans, hasFeature, isTrialExpired, isPlanExpired, isPastDue, isSuspended, isLoading])
 }
