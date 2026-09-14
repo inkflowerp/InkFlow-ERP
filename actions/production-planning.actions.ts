@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { ProductionPlanningService } from '@/services/production-planning.service'
 import { AuditService } from '@/services/audit.service'
+import { AuditRepository } from '@/lib/repositories/audit.repository'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import {
   ProductionTaskRecord,
@@ -425,3 +426,65 @@ export async function getMyAssignedTasksAction(
     return { success: false, error: err.message || 'Failed to fetch operator tasks.' }
   }
 }
+
+/**
+ * Server Action: First-Class Problem Reporting (⚠ সমস্যা হয়েছে)
+ */
+export async function reportProductionProblemAction(
+  params: {
+    task_id: string
+    reason: string
+    notes?: string
+    photo_url?: string
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<any>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    }
+
+    // 1. Hold / Pause the task
+    const updatedTask = await ProductionPlanningService.holdTask(
+      {
+        task_id: params.task_id,
+        hold_reason: (params.reason as any) || 'customer_approval',
+        hold_notes: params.notes,
+      },
+      companyId
+    )
+
+    // 2. Log Audit Event
+    await AuditRepository.logEvent({
+      companyId,
+      entity: 'production_task',
+      action: 'hold',
+      entityId: params.task_id,
+      newValue: {
+        problem_reason: params.reason,
+        notes: params.notes,
+        photo_attached: Boolean(params.photo_url),
+      },
+      userEmail: tenant?.userEmail || 'Operator',
+      userId: tenant?.userId,
+    })
+
+    revalidatePath('/production')
+    revalidatePath('/operator')
+
+    return {
+      success: true,
+      data: {
+        task: updatedTask,
+        problem_reason: params.reason,
+        notes: params.notes,
+      },
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to report production problem.' }
+  }
+}
+

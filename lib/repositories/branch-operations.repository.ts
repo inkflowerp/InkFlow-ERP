@@ -130,6 +130,13 @@ export class BranchOperationsRepository {
     companyId: string,
     payload: Partial<BranchTransferRecord>
   ): Promise<BranchTransferRecord> {
+    if (payload.idempotency_key) {
+      const existing = await this.getBranchTransferByIdempotencyKey(companyId, payload.idempotency_key)
+      if (existing) {
+        return existing
+      }
+    }
+
     const transferId = payload.id || crypto.randomUUID()
     const now = new Date().toISOString()
     const record: BranchTransferRecord = {

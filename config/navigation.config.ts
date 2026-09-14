@@ -4,31 +4,67 @@ export interface NavItem {
   href: string
   icon: string
   badge?: string
+  level?: 1 | 2 | 3 | 4
 }
 
 export interface NavSection {
   title: string
   titleBn: string
+  level: 1 | 2 | 3 | 4
   items: NavItem[]
 }
 
 export function getNavigationConfig(tenantSlug: string): NavSection[] {
   return [
     {
-      title: 'Core Operations',
-      titleBn: 'প্রধান মেনু',
+      title: 'Level 1 — Daily (আজকের কাজ)',
+      titleBn: 'দৈনন্দিন কাজ',
+      level: 1,
       items: [
         {
-          title: 'Dashboard',
-          titleBn: 'ড্যাশবোর্ড',
+          title: "Today's Work & Home",
+          titleBn: 'আজকের কাজ ও হোম',
           href: `/${tenantSlug}/dashboard`,
           icon: 'LayoutDashboard',
         },
         {
-          title: 'Quotations',
-          titleBn: 'কোটেশন সমূহ',
-          href: `/${tenantSlug}/quotations`,
-          icon: 'FileSpreadsheet',
+          title: 'My Work (Operator Terminal)',
+          titleBn: 'আমার কাজ (টার্মিনাল)',
+          href: `/${tenantSlug}/operator`,
+          icon: 'Printer',
+          badge: 'Live',
+        },
+        {
+          title: '+ New Work Order',
+          titleBn: '+ নতুন কাজ এন্ট্রি',
+          href: `/${tenantSlug}/sales/new-work`,
+          icon: 'Plus',
+          badge: 'Fast',
+        },
+        {
+          title: 'Communications & Chat',
+          titleBn: 'মেসেজ ও লাইভ চ্যাট',
+          href: `/${tenantSlug}/communications`,
+          icon: 'MessageSquare',
+        },
+      ],
+    },
+    {
+      title: 'Level 2 — Business Operations',
+      titleBn: 'ব্যবসা ও পরিচালনা',
+      level: 2,
+      items: [
+        {
+          title: 'Customers & CRM',
+          titleBn: 'কাস্টমার ও বাকি হিসাব',
+          href: `/${tenantSlug}/customers`,
+          icon: 'Users',
+        },
+        {
+          title: 'Sales & Quotations',
+          titleBn: 'সেলস ও কোটেশন',
+          href: `/${tenantSlug}/sales`,
+          icon: 'Briefcase',
         },
         {
           title: 'Invoices & Billing',
@@ -37,76 +73,9 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           icon: 'Receipt',
         },
         {
-          title: 'Customers',
-          titleBn: 'কাস্টমার তালিকা',
-          href: `/${tenantSlug}/customers`,
-          icon: 'Users',
-        },
-      ],
-    },
-    {
-      title: 'Commercial & Sales',
-      titleBn: 'সেলস ও কস্টিং',
-      items: [
-        {
-          title: 'Sales Orders',
-          titleBn: 'সেলস অর্ডার সমূহ',
-          href: `/${tenantSlug}/orders`,
-          icon: 'Layers',
-        },
-        {
-          title: 'Sales Dashboard',
-          titleBn: 'সেলস ড্যাশবোর্ড',
-          href: `/${tenantSlug}/sales`,
-          icon: 'Briefcase',
-        },
-        {
-          title: 'Pricing Estimator',
-          titleBn: 'লাইভ দর নির্ধারণ',
-          href: `/${tenantSlug}/pricing`,
-          icon: 'Calculator',
-        },
-        {
-          title: 'Products & Services',
-          titleBn: 'পণ্য ও সেবা তালিকা',
-          href: `/${tenantSlug}/products`,
-          icon: 'Package',
-        },
-        {
-          title: 'Job Costing & Profit',
-          titleBn: 'কস্টিং ও লাভ নিরীক্ষা',
-          href: `/${tenantSlug}/costing`,
-          icon: 'Calculator',
-        },
-      ],
-    },
-    {
-      title: 'Shop Floor & Production',
-      titleBn: 'ফ্লোর ও প্রোডাকশন',
-      items: [
-        {
           title: 'Production Floor',
           titleBn: 'প্রোডাকশন ফ্লোর',
           href: `/${tenantSlug}/production`,
-          icon: 'Printer',
-          badge: 'Live',
-        },
-        {
-          title: 'Machineries',
-          titleBn: 'মেশিনারিজ ও ইকুইপমেন্ট',
-          href: `/${tenantSlug}/production/machineries`,
-          icon: 'Cpu',
-        },
-        {
-          title: 'Pre-Press & Design',
-          titleBn: 'ডিজাইন কিউ',
-          href: `/${tenantSlug}/design`,
-          icon: 'Palette',
-        },
-        {
-          title: 'Operator Terminal',
-          titleBn: 'অপারেটর টার্মিনাল',
-          href: `/${tenantSlug}/operator`,
           icon: 'Printer',
         },
         {
@@ -116,114 +85,96 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           icon: 'Package',
         },
         {
-          title: 'Purchases & POs',
-          titleBn: 'ক্রয় ও সরবরাহ অর্ডার',
-          href: `/${tenantSlug}/purchases`,
-          icon: 'ShoppingBag',
-        },
-        {
-          title: 'Suppliers',
-          titleBn: 'সাপ্লায়ার ও মহাজন',
-          href: `/${tenantSlug}/suppliers`,
+          title: 'Delivery & Challans',
+          titleBn: 'ডেলিভারি ও চালান',
+          href: `/${tenantSlug}/delivery`,
           icon: 'Truck',
         },
       ],
     },
     {
-      title: 'Fulfillment & Finance',
-      titleBn: 'ডেলিভারি ও ফাইন্যান্স',
+      title: 'Level 3 — Management & Costing',
+      titleBn: 'ব্যবস্থাপনা ও কস্টিং',
+      level: 3,
       items: [
-        {
-          title: 'Delivery & Fitting',
-          titleBn: 'ডেলিভারি ও ফিটিং',
-          href: `/${tenantSlug}/delivery`,
-          icon: 'Truck',
-        },
-        {
-          title: 'Expenses & Accounting',
-          titleBn: 'খরচ ও ক্যাশ খাতা',
-          href: `/${tenantSlug}/accounting`,
-          icon: 'Wallet',
-        },
         {
           title: 'Reports & Analytics',
           titleBn: 'রিপোর্ট ও অ্যানালিটিক্স',
           href: `/${tenantSlug}/reports`,
           icon: 'BarChart3',
         },
-      ],
-    },
-    {
-      title: 'Administration',
-      titleBn: 'সেটিংস ও অ্যাডমিন',
-      items: [
         {
-          title: 'Smart Attendance',
-          titleBn: 'ডিজিটাল হাজিরা',
+          title: 'Branches & Transfers',
+          titleBn: 'ব্রাঞ্চ ও স্টক ট্রান্সফার',
+          href: `/${tenantSlug}/settings/branches`,
+          icon: 'Building',
+        },
+        {
+          title: 'Machineries & Equipment',
+          titleBn: 'মেশিনারিজ ও ইকুইপমেন্ট',
+          href: `/${tenantSlug}/production/machineries`,
+          icon: 'Cpu',
+        },
+        {
+          title: 'Workforce & Attendance',
+          titleBn: 'কর্মী ও হাজিরা',
           href: `/${tenantSlug}/attendance`,
           icon: 'UserCheck',
         },
         {
-          title: 'HR & Payroll',
-          titleBn: 'এইচআর ও বেতন',
-          href: `/${tenantSlug}/hr`,
-          icon: 'Users2',
+          title: 'Purchasing & Suppliers',
+          titleBn: 'ক্রয় ও সরবরাহকারী',
+          href: `/${tenantSlug}/purchases`,
+          icon: 'ShoppingBag',
+        },
+        {
+          title: 'Job Costing & Profit',
+          titleBn: 'কস্টিং ও লাভ নিরীক্ষা',
+          href: `/${tenantSlug}/costing`,
+          icon: 'Calculator',
+        },
+        {
+          title: 'Finance & Bank Accounts',
+          titleBn: 'ফাইন্যান্স ও ব্যাংক',
+          href: `/${tenantSlug}/accounting`,
+          icon: 'Landmark',
+        },
+      ],
+    },
+    {
+      title: 'Level 4 — Administration & Config',
+      titleBn: 'প্রশাসন ও সিস্টেম',
+      level: 4,
+      items: [
+        {
+          title: 'Permissions & Roles',
+          titleBn: 'পারমিশন ও রোল',
+          href: `/${tenantSlug}/settings/permissions`,
+          icon: 'ShieldCheck',
+        },
+        {
+          title: 'Workflow Automation',
+          titleBn: 'ওয়ার্কফ্লো অটোমেশন',
+          href: `/${tenantSlug}/automations`,
+          icon: 'Workflow',
+        },
+        {
+          title: 'VAT & Tax Rules',
+          titleBn: 'ভ্যাট ও ট্যাক্স সেটিংস',
+          href: `/${tenantSlug}/settings/tax`,
+          icon: 'Receipt',
+        },
+        {
+          title: 'Audit Logs & Security',
+          titleBn: 'অডিট লগ ও নিরাপত্তা',
+          href: `/${tenantSlug}/audit`,
+          icon: 'FileText',
         },
         {
           title: 'Company Settings',
           titleBn: 'প্রতিষ্ঠান সেটিংস',
           href: `/${tenantSlug}/settings`,
           icon: 'Settings',
-        },
-        {
-          title: 'VAT & Tax Settings',
-          titleBn: 'ভ্যাট ও কর সেটিংস',
-          href: `/${tenantSlug}/settings/tax`,
-          icon: 'Landmark',
-        },
-        {
-          title: 'Document Studio',
-          titleBn: 'ডকুমেন্ট টেমপ্লেট',
-          href: `/${tenantSlug}/settings/documents`,
-          icon: 'FileText',
-        },
-        {
-          title: 'Subscription & Plan',
-          titleBn: 'সাবস্ক্রিপশন ও বিলিং',
-          href: `/${tenantSlug}/settings/subscription`,
-          icon: 'Crown',
-        },
-        {
-          title: 'Communications & Alerts',
-          titleBn: 'মেসেজিং ও নোটিফিকেশন',
-          href: `/${tenantSlug}/communications`,
-          icon: 'MessageSquare',
-        },
-        {
-          title: 'Workflow Automation',
-          titleBn: 'ওয়ার্কফ্লো অটোমেশন',
-          href: `/${tenantSlug}/settings/automations`,
-          icon: 'Workflow',
-          badge: 'Auto',
-        },
-        {
-          title: 'Help & Support Desk',
-          titleBn: 'সহায়তা ও সাপোর্ট ডেস্ক',
-          href: `/${tenantSlug}/support`,
-          icon: 'Headphones',
-          badge: 'Live',
-        },
-        {
-          title: 'Team Members',
-          titleBn: 'টিম মেম্বার',
-          href: `/${tenantSlug}/settings/users`,
-          icon: 'Users',
-        },
-        {
-          title: 'Roles & Matrix',
-          titleBn: 'অনুমতি ম্যাট্রিক্স',
-          href: `/${tenantSlug}/settings/roles`,
-          icon: 'ShieldCheck',
         },
       ],
     },

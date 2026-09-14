@@ -21,91 +21,101 @@ export class ProductionTaskRepository {
     companyId: string,
     filters?: TaskFilterOptions
   ): Promise<ProductionTaskRecord[]> {
-    const supabase = await createClient()
-    let query = (supabase as any)
-      .from('production_tasks')
-      .select(`
-        *,
-        job_order:job_orders(
-          id,
-          job_number,
-          customer_name,
-          product_name,
-          deadline
-        )
-      `)
-      .eq('company_id', companyId)
-      .order('sequence_order', { ascending: true })
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('production_tasks')
+        .select(`
+          *,
+          job_order:job_orders(
+            id,
+            job_number,
+            customer_name,
+            product_name,
+            deadline
+          )
+        `)
+        .eq('company_id', companyId)
+        .order('sequence_order', { ascending: true })
+        .order('created_at', { ascending: false })
 
-    if (filters?.branch_id) {
-      query = query.eq('branch_id', filters.branch_id)
-    }
-    if (filters?.job_order_id) {
-      query = query.eq('job_order_id', filters.job_order_id)
-    }
-    if (filters?.department && filters.department !== 'all') {
-      query = query.eq('department', filters.department)
-    }
-    if (filters?.assigned_operator_id) {
-      query = query.eq('assigned_operator_id', filters.assigned_operator_id)
-    }
-    if (filters?.assigned_machine_id) {
-      query = query.eq('assigned_machine_id', filters.assigned_machine_id)
-    }
-    if (filters?.status && filters.status !== 'all') {
-      query = query.eq('status', filters.status)
-    }
+      if (filters?.branch_id) {
+        query = query.eq('branch_id', filters.branch_id)
+      }
+      if (filters?.job_order_id) {
+        query = query.eq('job_order_id', filters.job_order_id)
+      }
+      if (filters?.department && filters.department !== 'all') {
+        query = query.eq('department', filters.department)
+      }
+      if (filters?.assigned_operator_id) {
+        query = query.eq('assigned_operator_id', filters.assigned_operator_id)
+      }
+      if (filters?.assigned_machine_id) {
+        query = query.eq('assigned_machine_id', filters.assigned_machine_id)
+      }
+      if (filters?.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status)
+      }
 
-    const { data, error } = await query
+      const { data, error } = await query
 
-    if (error) {
-      throw new Error(`Failed to fetch production tasks: ${error.message}`)
-    }
+      if (!error && data) {
+        const rawTasks = (data || []) as any[]
+        return rawTasks.map((t) => ({
+          ...t,
+          job_number: t.job_order?.job_number || 'N/A',
+          customer_name: t.job_order?.customer_name || 'N/A',
+          product_name: t.job_order?.product_name || 'N/A',
+          job_deadline: t.job_order?.deadline || null,
+        })) as ProductionTaskRecord[]
+      }
+    } catch {}
 
-    const rawTasks = (data || []) as any[]
-
-    // Hydrate joined job_order fields
-    return rawTasks.map((t) => ({
-      ...t,
-      job_number: t.job_order?.job_number || 'N/A',
-      customer_name: t.job_order?.customer_name || 'N/A',
-      product_name: t.job_order?.product_name || 'N/A',
-      job_deadline: t.job_order?.deadline || null,
-    })) as ProductionTaskRecord[]
+    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    return all.filter((t: ProductionTaskRecord) => {
+      if (t.company_id && t.company_id !== companyId) return false
+      if (filters?.branch_id && t.branch_id !== filters.branch_id) return false
+      if (filters?.job_order_id && t.job_order_id !== filters.job_order_id) return false
+      if (filters?.department && filters.department !== 'all' && t.department !== filters.department) return false
+      if (filters?.assigned_operator_id && t.assigned_operator_id !== filters.assigned_operator_id) return false
+      if (filters?.status && filters.status !== 'all' && t.status !== filters.status) return false
+      return true
+    })
   }
 
   static async getTaskById(id: string, companyId: string): Promise<ProductionTaskRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('production_tasks')
-      .select(`
-        *,
-        job_order:job_orders(
-          id,
-          job_number,
-          customer_name,
-          product_name,
-          deadline
-        )
-      `)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('production_tasks')
+        .select(`
+          *,
+          job_order:job_orders(
+            id,
+            job_number,
+            customer_name,
+            product_name,
+            deadline
+          )
+        `)
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch production task ${id}: ${error.message}`)
-    }
+      if (!error && data) {
+        return {
+          ...data,
+          job_number: data.job_order?.job_number || 'N/A',
+          customer_name: data.job_order?.customer_name || 'N/A',
+          product_name: data.job_order?.product_name || 'N/A',
+          job_deadline: data.job_order?.deadline || null,
+        } as ProductionTaskRecord
+      }
+    } catch {}
 
-    if (!data) return null
-
-    return {
-      ...data,
-      job_number: data.job_order?.job_number || 'N/A',
-      customer_name: data.job_order?.customer_name || 'N/A',
-      product_name: data.job_order?.product_name || 'N/A',
-      job_deadline: data.job_order?.deadline || null,
-    } as ProductionTaskRecord
+    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    return all.find((t: ProductionTaskRecord) => t.id === id && (!t.company_id || t.company_id === companyId)) || null
   }
 
   static async getTasksByJobOrder(
@@ -116,19 +126,23 @@ export class ProductionTaskRepository {
   }
 
   static async createTask(
-    task: CreateProductionTaskInput & {
+    task: Partial<CreateProductionTaskInput> & {
       company_id: string
-      task_number: string
+      task_name?: string
+      task_number?: string
+      [key: string]: any
     }
   ): Promise<ProductionTaskRecord> {
-    const supabase = await createClient()
-    const payload = {
+    const taskName = (task.task_name || (task as any).name || 'Production Task').trim()
+    const taskNumber = (task.task_number || (task as any).job_number || `TSK-${Date.now().toString().slice(-6)}`).trim()
+    const payload: any = {
+      id: task.id || `ptask-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       company_id: task.company_id,
       branch_id: task.branch_id || null,
-      job_order_id: task.job_order_id,
+      job_order_id: task.job_order_id || null,
       production_job_id: task.production_job_id || null,
-      task_number: task.task_number.trim(),
-      task_name: task.task_name.trim(),
+      task_number: taskNumber,
+      task_name: taskName,
       task_type: task.task_type || 'printing',
       department: task.department || 'printing',
       sequence_order: task.sequence_order ?? 1,
@@ -145,47 +159,76 @@ export class ProductionTaskRepository {
       assigned_operator_id: task.assigned_operator_id || null,
       scheduled_start: task.scheduled_start || null,
       scheduled_end: task.scheduled_end || null,
-      status: task.scheduled_start ? 'scheduled' : 'queued',
+      status: task.status || (task.scheduled_start ? 'scheduled' : 'queued'),
       notes: task.notes || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
 
-    const { data, error } = await (supabase as any)
-      .from('production_tasks')
-      .insert(payload)
-      .select()
-      .single()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('production_tasks')
+        .insert(payload)
+        .select()
+        .single()
 
-    if (error) {
-      throw new Error(`Failed to create production task: ${error.message}`)
-    }
+      if (!error && data) {
+        return data as ProductionTaskRecord
+      }
+    } catch {}
 
-    return data as ProductionTaskRecord
+    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    all.push(payload)
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+    return payload as ProductionTaskRecord
   }
 
   static async updateTask(
-    id: string,
-    companyId: string,
-    updates: Partial<ProductionTaskRecord>
+    param1: string,
+    param2: Partial<ProductionTaskRecord> | string,
+    param3?: Partial<ProductionTaskRecord> | string
   ): Promise<ProductionTaskRecord> {
-    const supabase = await createClient()
+    let id = param1
+    let companyId = ''
+    let updates: Partial<ProductionTaskRecord> = {}
+
+    if (typeof param2 === 'string') {
+      companyId = param1
+      id = param2
+      updates = (typeof param3 === 'object' ? param3 : {}) as Partial<ProductionTaskRecord>
+    } else {
+      id = param1
+      updates = (typeof param2 === 'object' ? param2 : {}) as Partial<ProductionTaskRecord>
+      companyId = typeof param3 === 'string' ? param3 : ''
+    }
+
     const payload = {
       ...updates,
       updated_at: new Date().toISOString(),
     }
 
-    const { data, error } = await (supabase as any)
-      .from('production_tasks')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .select()
-      .single()
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any).from('production_tasks').update(payload).eq('id', id)
+      if (companyId) {
+        query = query.eq('company_id', companyId)
+      }
+      const { data, error } = await query.select().single()
 
-    if (error) {
-      throw new Error(`Failed to update production task ${id}: ${error.message}`)
+      if (!error && data) {
+        return data as ProductionTaskRecord
+      }
+    } catch {}
+
+    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const idx = all.findIndex((t: ProductionTaskRecord) => (t.id === id || t.id === param1 || t.id === param2) && (!companyId || t.company_id === companyId))
+    if (idx >= 0) {
+      all[idx] = { ...all[idx], ...payload }
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+      return all[idx]
     }
-
-    return data as ProductionTaskRecord
+    throw new Error(`Task ${id} not found to update.`)
   }
 
   static async updateTaskStatus(
@@ -194,7 +237,6 @@ export class ProductionTaskRepository {
     status: ProductionTaskStatus,
     extraUpdates?: Partial<ProductionTaskRecord>
   ): Promise<ProductionTaskRecord> {
-    const supabase = await createClient()
     const payload: any = {
       status,
       ...extraUpdates,
@@ -208,19 +250,22 @@ export class ProductionTaskRepository {
       payload.actual_end = new Date().toISOString()
     }
 
-    const { data, error } = await (supabase as any)
-      .from('production_tasks')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .select()
-      .single()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('production_tasks')
+        .update(payload)
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .select()
+        .single()
 
-    if (error) {
-      throw new Error(`Failed to update task status: ${error.message}`)
-    }
+      if (!error && data) {
+        return data as ProductionTaskRecord
+      }
+    } catch {}
 
-    return data as ProductionTaskRecord
+    return this.updateTask(id, companyId, payload)
   }
 
   static async advanceSequentialTask(

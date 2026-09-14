@@ -1,5 +1,5 @@
 import { createClient } from '../supabase/server.ts'
-import {
+import type {
   SalesOrderRecord,
   JobOrderRecord,
   SalesOrderItemRecord,
@@ -7,7 +7,8 @@ import {
 } from '../../types/order.types.ts'
 import { BillingRepository } from './billing.repository.ts'
 import { measureAsync } from '../performance/logger.ts'
-import { buildPaginatedResponse, PaginatedResult } from '../api/pagination-helper.ts'
+import { buildPaginatedResponse } from '../api/pagination-helper.ts'
+import type { PaginatedResult } from '../api/pagination-helper.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class OrderRepository {

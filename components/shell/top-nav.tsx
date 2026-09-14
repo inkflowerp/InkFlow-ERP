@@ -15,12 +15,15 @@ import {
   CreditCard,
   Users,
   Radio,
+  Sparkles,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useRealtime } from '@/components/providers/realtime-provider'
 import { useOutsideClick } from '@/hooks/use-outside-click'
+import { useOperatorMode } from '@/hooks/use-operator-mode'
+import { NewWorkWizard } from '@/components/orders/new-work-wizard'
 import { ConfigurableLimitType } from '@/types/subscription.types'
 import { cn } from '@/lib/utils'
 
@@ -29,9 +32,11 @@ export function TopNav() {
   const pathname = usePathname()
   const { t, tBilingual } = useI18n()
   const { company, currentRole, currentUser } = useTenant()
+  const { isSimpleMode, toggleSimpleMode } = useOperatorMode()
   const { isLive, status } = useRealtime()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, isTrialExpired } = useSubscription()
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false)
+  const [isNewWorkOpen, setIsNewWorkOpen] = useState(false)
   const quickActionRef = useOutsideClick<HTMLDivElement>(() => setIsQuickActionOpen(false), isQuickActionOpen)
 
   const pathSlug = pathname ? pathname.split('/')[1] : null
@@ -137,16 +142,41 @@ export function TopNav() {
           <Search className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
         </button>
 
+        {/* + New Work Universal Primary Action Button */}
+        <button
+          type="button"
+          onClick={() => setIsNewWorkOpen(true)}
+          className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-xs sm:text-sm font-black text-white hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/25 cursor-pointer transition-all active:scale-95 shrink-0 whitespace-nowrap min-h-[40px]"
+          title="Universal New Work Wizard (+ নতুন কাজ)"
+        >
+          <Plus className="h-4 w-4 stroke-[3] shrink-0" />
+          <span className="hidden sm:inline whitespace-nowrap bangla-text">{tBilingual('+ New Work', '+ নতুন কাজ')}</span>
+        </button>
+
+        {/* Simple Mode vs Advanced Mode Toggle */}
+        <button
+          type="button"
+          onClick={toggleSimpleMode}
+          className={`hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer min-h-[40px] ${
+            isSimpleMode
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+              : 'bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800'
+          }`}
+          title={isSimpleMode ? 'Currently in Simple Mode. Click to switch to Advanced Mode.' : 'Currently in Advanced Mode. Click to switch to Simple Mode.'}
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>{isSimpleMode ? tBilingual('Simple Mode', 'সহজ মোড') : tBilingual('Advanced Mode', 'অ্যাডভান্সড')}</span>
+        </button>
+
         {/* Quick Action Hub - Moved to Right after Search Bar */}
         <div ref={quickActionRef} className="relative shrink-0">
           <button
             type="button"
             onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
-            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs sm:text-sm font-bold text-white hover:bg-blue-700 shadow-sm shadow-blue-500/20 cursor-pointer transition-all active:scale-98 shrink-0 whitespace-nowrap min-h-[40px]"
+            className="flex items-center gap-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 cursor-pointer transition-all active:scale-98 shrink-0 whitespace-nowrap min-h-[40px]"
             title="Quick operational actions (+ Quotation, + Order, + Payment)"
           >
-            <Plus className="h-4 w-4 shrink-0" />
-            <span className="hidden sm:inline whitespace-nowrap bangla-text">{tBilingual('Quick Action', 'দ্রুত কাজ')}</span>
+            <span className="hidden sm:inline whitespace-nowrap bangla-text">{tBilingual('More', 'আরও')}</span>
             <ChevronDown className="h-3.5 w-3.5 opacity-80 shrink-0" />
           </button>
 
@@ -196,6 +226,16 @@ export function TopNav() {
         <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0" />
         <UserMenu />
       </div>
+
+      {/* Inline Universal New Work Modal */}
+      {isNewWorkOpen && (
+        <NewWorkWizard
+          isOpen={true}
+          isInlineModal={true}
+          onClose={() => setIsNewWorkOpen(false)}
+          onSuccess={() => setIsNewWorkOpen(false)}
+        />
+      )}
     </header>
   )
 }

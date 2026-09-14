@@ -40,6 +40,7 @@ import { getNavigationConfig } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useSubscription } from '@/hooks/use-subscription'
+import { useOperatorMode } from '@/hooks/use-operator-mode'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -80,9 +81,9 @@ export function Sidebar() {
   const pathname = usePathname()
   const { company } = useTenant()
   const { can, isOwner } = usePermissions()
+  const { isSimpleMode } = useOperatorMode()
   const { isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { tBilingual } = useI18n()
-
 
   const pathSlug = pathname ? pathname.split('/')[1] : null
   const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
@@ -90,7 +91,7 @@ export function Sidebar() {
 
   const isNavItemAllowed = (href: string): boolean => {
     if (isOwner) return true
-    if (href.endsWith('/dashboard') || href.includes('/attendance')) return true
+    if (href.endsWith('/dashboard') || href.includes('/operator') || href.includes('/attendance')) return true
 
     if (href.includes('/customers')) return can('view', 'customers')
     if (href.includes('/quotations')) return can('view', 'quotations')
@@ -163,6 +164,7 @@ export function Sidebar() {
       {/* Navigation Sections */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-6 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700">
         {navSections
+          .filter((section) => !isSimpleMode || section.level <= 2)
           .map((section) => {
             const filteredItems = section.items.filter((item) => isNavItemAllowed(item.href))
             return { ...section, items: filteredItems }

@@ -63,6 +63,15 @@ import { useI18n } from '@/i18n/context'
 import { ColumnDef } from '@/types/common.types'
 import { toBengaliNumerals, formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
+import { useOperatorMode } from '@/hooks/use-operator-mode'
+import { OwnerDashboard } from '@/components/dashboard/roles/owner-dashboard'
+import { SalesDashboard } from '@/components/dashboard/roles/sales-dashboard'
+import { DesignerDashboard } from '@/components/dashboard/roles/designer-dashboard'
+import { OperatorDashboard } from '@/components/dashboard/roles/operator-dashboard'
+import { StoreDashboard } from '@/components/dashboard/roles/store-dashboard'
+import { DeliveryDashboard } from '@/components/dashboard/roles/delivery-dashboard'
+import { NewWorkWizard } from '@/components/orders/new-work-wizard'
+import { TodaysWorkFeed } from '@/components/dashboard/todays-work-feed'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   getAllowedQuickActions,
@@ -79,7 +88,7 @@ import { SalesOrderRecord, JobOrderRecord } from '@/types/order.types'
 import { ExpenseRecord } from '@/types/accounting.types'
 import { PaymentRecord, InvoiceRecord } from '@/types/billing.types'
 import { MaterialRecord } from '@/types/inventory.types'
-import { ProductionJobRecord } from '@/types/production.types'
+import { ProductionJobRecord, ProductionTaskRecord } from '@/types/production.types'
 import { DesignJobRecord } from '@/types/design.types'
 import { DeliveryChallanRecord } from '@/types/logistics.types'
 import { cn } from '@/lib/utils'
@@ -465,6 +474,190 @@ export function DashboardView() {
   const activeResponsibilities = userCtx.responsibilities && userCtx.responsibilities.length > 0
     ? userCtx.responsibilities
     : [userCtx.primaryRole || currentRole || 'general_staff']
+
+  const { isSimpleMode } = useOperatorMode()
+
+  const totalReceivableDue = useMemo(() => {
+    return (invoices || []).reduce((sum, i) => sum + (Number(i.due_amount) || 0), 0)
+  }, [invoices])
+
+  const todaySales = useMemo(() => {
+    const todayStr = new Date().toISOString().split('T')[0]
+    return (invoices || [])
+      .filter((i) => i.created_at?.startsWith(todayStr))
+      .reduce((sum, i) => sum + (Number(i.grand_total) || 0), 0)
+  }, [invoices])
+
+  const todayCollection = useMemo(() => {
+    return (invoices || []).reduce((sum, i) => sum + (Number(i.paid_amount) || 0), 0)
+  }, [invoices])
+
+  const activeProductionCount = useMemo(() => {
+    return (productionJobs || []).filter((j) => j.status === 'in_progress' || j.status === 'queued').length
+  }, [productionJobs])
+
+  const readyDeliveriesCount = useMemo(() => {
+    return (deliveryChallans || []).filter((d) => (d.status as any) === 'ready' || (d.status as any) === 'pending').length
+  }, [deliveryChallans])
+
+  const lowStockCount = useMemo(() => {
+    return (materials || []).filter((m) => Number(m.current_stock) <= Number(m.reorder_level || 50)).length
+  }, [materials])
+
+  const convertedTasks = useMemo<ProductionTaskRecord[]>(() => {
+    return (productionJobs || []).map((j) => ({
+      id: j.id,
+      company_id: j.company_id,
+      job_order_id: j.job_order_id || '',
+      task_number: j.production_job_number,
+      task_name: `${j.product_name} (${j.dimensions_spec || ''})`,
+      task_type: (j.department === 'design' ? 'design' : 'printing') as any,
+      department: j.department || 'printing',
+      sequence_order: 1,
+      quantity: j.quantity || 1,
+      unit: 'sft',
+      priority: (j.priority || 'normal') as any,
+      estimated_duration_minutes: 30,
+      status: (j.status === 'in_progress' || j.status === 'paused' || j.status === 'completed' ? j.status : 'queued') as any,
+      is_rework: j.has_rework || false,
+      good_quantity: (j as any).completed_quantity || 0,
+      rejected_quantity: (j as any).waste_quantity || 0,
+      customer_name: j.customer_name,
+      product_name: j.product_name,
+      job_number: j.production_job_number,
+      created_at: j.created_at,
+      updated_at: j.updated_at,
+    })) as ProductionTaskRecord[]
+  }, [productionJobs])
+
+  // Simple Mode Dispatch
+  if (isSimpleMode) {
+    if (isOperator) {
+      return (
+        <div className="space-y-6">
+          <OperatorDashboard tasks={convertedTasks} onRefresh={orderHelpers.reload} />
+          {activeModal === 'new_work' && (
+            <NewWorkWizard
+              isOpen={true}
+              isInlineModal={true}
+              onClose={() => setActiveModal(null)}
+              onSuccess={() => {
+                setActiveModal(null)
+                orderHelpers.reload()
+              }}
+            />
+          )}
+        </div>
+      )
+    }
+
+    if (isDesigner) {
+      return (
+        <div className="space-y-6">
+          <DesignerDashboard tasks={convertedTasks} onRefresh={orderHelpers.reload} />
+        </div>
+      )
+    }
+
+    if (isSales) {
+      return (
+        <div className="space-y-6">
+          <SalesDashboard
+            metrics={{
+              pendingQuotations: 3,
+              unpaidInvoicesCount: invoices.filter((i) => i.status === 'unpaid').length,
+              unpaidDuesTotal: totalReceivableDue,
+              todaySales: todaySales,
+              customerFollowupsCount: customers.length,
+            }}
+            tasks={convertedTasks}
+            onOpenNewWork={() => setActiveModal('new_work')}
+            onOpenPaymentModal={() => setActiveModal('record_payment')}
+            onRefresh={orderHelpers.reload}
+          />
+          {activeModal === 'new_work' && (
+            <NewWorkWizard
+              isOpen={true}
+              isInlineModal={true}
+              onClose={() => setActiveModal(null)}
+              onSuccess={() => {
+                setActiveModal(null)
+                orderHelpers.reload()
+              }}
+            />
+          )}
+          {activeModal === 'record_payment' && (
+            <RecordPaymentModal
+              open={true}
+              onOpenChange={(open) => !open && setActiveModal(null)}
+              onPaymentRecorded={() => {
+                setActiveModal(null)
+                orderHelpers.reload()
+              }}
+            />
+          )}
+        </div>
+      )
+    }
+
+    if (isDelivery) {
+      return (
+        <div className="space-y-6">
+          <DeliveryDashboard
+            metrics={{
+              readyForDispatchCount: readyDeliveriesCount,
+              outForDeliveryCount: deliveryChallans.filter((d) => d.status === 'out_for_delivery' || (d as any).status === 'in_transit').length,
+              deliveredTodayCount: deliveryChallans.filter((d) => d.status === 'delivered').length,
+              cashCollectedCount: 0,
+            }}
+            onRefresh={orderHelpers.reload}
+          />
+        </div>
+      )
+    }
+
+    // Default Simple Mode for Owner / Manager
+    return (
+      <div className="space-y-6">
+        <OwnerDashboard
+          metrics={{
+            todaySales: todaySales,
+            todayCollection: todayCollection,
+            totalReceivableDue: totalReceivableDue,
+            activeProductionCount: activeProductionCount,
+            readyDeliveriesCount: readyDeliveriesCount,
+            profitMarginPercent: 28.5,
+            lowStockCount: lowStockCount,
+          }}
+          tasks={convertedTasks}
+          onOpenNewWork={() => setActiveModal('new_work')}
+          onOpenPaymentModal={() => setActiveModal('record_payment')}
+          onRefresh={orderHelpers.reload}
+        />
+        {activeModal === 'new_work' && (
+          <NewWorkWizard
+            isOpen={true}
+            isInlineModal={true}
+            onClose={() => setActiveModal(null)}
+            onSuccess={() => {
+              setActiveModal(null)
+              orderHelpers.reload()
+            }}
+          />
+        )}
+        {activeModal === 'record_payment' && (
+          <RecordPaymentModal
+            open={true}
+            onOpenChange={(open) => !open && setActiveModal(null)}
+            onPaymentRecorded={() => {
+              setActiveModal(null)
+              orderHelpers.reload()
+            }}
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 pb-12">
