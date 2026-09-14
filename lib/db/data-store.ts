@@ -207,6 +207,7 @@ export const STORAGE_KEYS = {
   WORKFLOW_CONFIGURATIONS: 'printerp_tenant_workflow_configurations',
   USER_BRANCH_ACCESS: 'printerp_tenant_user_branch_access',
   SAVED_VIEWS: 'printerp_tenant_saved_views',
+  BANK_STATEMENTS: 'printerp_tenant_bank_statements',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

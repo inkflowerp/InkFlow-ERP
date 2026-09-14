@@ -1,5 +1,5 @@
 // ==============================================================================
-// InkFlow ERP - Finance & Double-Entry Accounting Types (V6)
+// InkFlow ERP - Finance 360 & Double-Entry Accounting Types (V9.1)
 // ==============================================================================
 
 export type AccountType = 'ASSET' | 'LIABILITY' | 'EQUITY' | 'REVENUE' | 'EXPENSE'
@@ -190,6 +190,103 @@ export interface ProfitAndLossStatement {
   net_profit: number
 }
 
+export interface BalanceSheetAccountCategory {
+  name: string
+  total: number
+  accounts: { code: string; name: string; balance: number }[]
+}
+
+export interface BalanceSheetStatement {
+  company_id: string
+  as_of_date: string
+  assets: {
+    total: number
+    liquid_assets: BalanceSheetAccountCategory // Cash, Bank, MFS
+    receivables: BalanceSheetAccountCategory  // Accounts Receivable
+    inventory: BalanceSheetAccountCategory    // Stock
+    fixed_assets: BalanceSheetAccountCategory // Equipment
+  }
+  liabilities: {
+    total: number
+    payables: BalanceSheetAccountCategory     // Accounts Payable
+    advances: BalanceSheetAccountCategory     // Customer Advance Deposits
+    tax_payable: BalanceSheetAccountCategory  // VAT/Tax
+    other_liabilities: BalanceSheetAccountCategory
+  }
+  equity: {
+    total: number
+    capital: number
+    retained_earnings: number
+    current_period_profit: number
+    drawings: number
+  }
+  is_balanced: boolean
+  imbalance_amount: number
+}
+
+export interface CashFlowStatement {
+  company_id: string
+  start_date: string
+  end_date: string
+  opening_cash_balance: number
+  operating_activities: {
+    total: number
+    customer_receipts: number
+    supplier_payments: number
+    operating_expenses_paid: number
+  }
+  investing_activities: {
+    total: number
+    equipment_purchases: number
+  }
+  financing_activities: {
+    total: number
+    capital_injections: number
+    owner_drawings: number
+  }
+  net_cash_movement: number
+  closing_cash_balance: number
+}
+
+export interface TrialBalanceAccountItem {
+  account_id: string
+  code: string
+  name: string
+  name_bn?: string | null
+  account_type: AccountType
+  account_subtype: AccountSubtype
+  debit: number
+  credit: number
+  net_balance: number
+}
+
+export interface TrialBalanceStatement {
+  company_id: string
+  as_of_date: string
+  total_debit: number
+  total_credit: number
+  is_balanced: boolean
+  accounts: TrialBalanceAccountItem[]
+}
+
+export interface GeneralLedgerEntry {
+  id: string
+  transaction_id: string
+  transaction_number: string
+  transaction_date: string
+  transaction_type: FinancialTransactionType
+  reference_type?: string | null
+  reference_id?: string | null
+  narration: string
+  account_id: string
+  account_code: string
+  account_name: string
+  debit: number
+  credit: number
+  running_balance: number
+  posted_by_name: string
+}
+
 export interface AgingBucketItem {
   reference_id: string
   party_id: string
@@ -223,6 +320,78 @@ export interface PayablesAgingSummary {
   bucket_61_90: number
   bucket_90_plus: number
   items: AgingBucketItem[]
+}
+
+export interface BankStatementRecord {
+  id: string
+  company_id: string
+  branch_id?: string | null
+  account_id: string
+  statement_identifier: string
+  start_date: string
+  end_date: string
+  opening_balance: number
+  closing_balance: number
+  status: 'OPEN' | 'RECONCILING' | 'RECONCILED'
+  imported_by_name: string
+  lines?: BankStatementLineRecord[]
+  created_at: string
+}
+
+export interface BankStatementLineRecord {
+  id: string
+  statement_id: string
+  company_id: string
+  line_date: string
+  description: string
+  reference_number?: string | null
+  debit: number
+  credit: number
+  balance: number
+  reconciliation_status: 'UNMATCHED' | 'SUGGESTED' | 'MATCHED' | 'RECONCILED'
+  matched_transaction_id?: string | null
+  reconciled_at?: string | null
+}
+
+export interface BankReconciliationSummary {
+  statement_id: string
+  account_name: string
+  statement_balance: number
+  book_balance: number
+  difference: number
+  matched_count: number
+  unmatched_count: number
+  is_reconciled: boolean
+}
+
+export interface JobProfitabilityMetric {
+  job_id: string
+  job_number: string
+  customer_name: string
+  item_title: string
+  selling_price: number
+  material_cost: number
+  labor_cost: number
+  machine_cost: number
+  transport_cost: number
+  total_actual_cost: number
+  gross_profit: number
+  margin_percentage: number
+  status: string
+}
+
+export interface BranchProfitabilityMetric {
+  branch_id: string
+  branch_name: string
+  revenue: number
+  cogs: number
+  gross_profit: number
+  gross_margin_percent: number
+  operating_expenses: number
+  net_profit: number
+  net_margin_percent: number
+  receivables: number
+  payables: number
 }
 
 export interface FinancialDashboardMetrics {

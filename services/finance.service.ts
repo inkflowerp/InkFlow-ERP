@@ -1,12 +1,15 @@
 // ==============================================================================
-// InkFlow ERP - Authoritative Finance Service (V6)
+// InkFlow ERP - Authoritative Finance 360 Service (V9.1)
 // Double-entry accounting, General Ledger authority, Receivables & Payables reconciliation,
-// Cash Closings, Transfers, Profit & Loss reporting
+// Cash Closings, Transfers, Profit & Loss, Balance Sheet, Cash Flow, Trial Balance,
+// Job Profitability, Branch Profitability, Bank Reconciliation
 // ==============================================================================
 
 import { FinanceRepository } from '../lib/repositories/finance.repository.ts'
 import { BillingRepository } from '../lib/repositories/billing.repository.ts'
 import { SupplierRepository } from '../lib/repositories/supplier.repository.ts'
+import { CostingRepository } from '../lib/repositories/costing.repository.ts'
+import { BranchAnalyticsRepository } from '../lib/repositories/branch-analytics.repository.ts'
 import type { ExpenseCategory } from '../types/accounting.types.ts'
 import type {
   AccountRecord,
@@ -15,23 +18,22 @@ import type {
   AccountTransferRecord,
   CashClosingRecord,
   ProfitAndLossStatement,
+  BalanceSheetStatement,
+  BalanceSheetAccountCategory,
+  CashFlowStatement,
+  TrialBalanceStatement,
+  GeneralLedgerEntry,
   ReceivablesAgingSummary,
   PayablesAgingSummary,
   FinancialDashboardMetrics,
   AgingBucketItem,
+  BankStatementRecord,
+  BankReconciliationSummary,
+  JobProfitabilityMetric,
+  BranchProfitabilityMetric,
 } from '../types/finance.types.ts'
 
 export class FinanceService {
-  // ============================================================================
-  // DOCUMENT NUMBERING HELPER
-  // ============================================================================
-
-  static generateDocNumber(prefix: string): string {
-    const year = new Date().getFullYear()
-    const seq = Math.floor(Math.random() * 900000) + 100000
-    return `${prefix}-${year}-${seq}`
-  }
-
   // ============================================================================
   // 1. CHART OF ACCOUNTS
   // ============================================================================
@@ -72,20 +74,13 @@ export class FinanceService {
   // 2. CUSTOMER PAYMENTS & RECEIVABLES RECONCILIATION
   // ============================================================================
 
-  /**
-   * Records a customer payment:
-   * - Debit Cash/Bank/MFS Account
-   * - Credit Accounts Receivable (1040)
-   * - Reconciles V1 Invoice paid/due balances
-   * - Enforces anti-overpayment validation
-   */
   static async recordCustomerPayment(params: {
     companyId: string
     branchId?: string | null
     invoiceId?: string | null
     customerId: string
     customerName: string
-    paymentAccountId: string // Cash/Bank/MFS account
+    paymentAccountId: string
     amount: number
     paymentDate?: string
     paymentMethod: string
@@ -108,7 +103,6 @@ export class FinanceService {
       throw new Error('Accounts Receivable (1040) account not configured in Chart of Accounts.')
     }
 
-    // Anti-overpayment validation against invoice if invoiceId is specified
     let invoiceUpdated = false
     if (params.invoiceId) {
       const invoice = await BillingRepository.getInvoiceById(params.invoiceId, params.companyId)
@@ -132,9 +126,8 @@ export class FinanceService {
       }
     }
 
-    // Generate balanced double-entry transaction
-    const txnNumber = this.generateDocNumber('PAY')
-    const txnId = `txn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    const txnNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'PAYMENT', 'PAY')
+    const txnId = `txn-${Date.now()}-${txnNumber}`
     const now = new Date().toISOString()
     const pDate = params.paymentDate || now.split('T')[0]
 
@@ -192,12 +185,6 @@ export class FinanceService {
   // 3. SUPPLIER PAYMENTS & PAYABLES RECONCILIATION
   // ============================================================================
 
-  /**
-   * Records a supplier payment:
-   * - Debit Accounts Payable (2010)
-   * - Credit Cash/Bank/MFS Account
-   * - Synchronizes V5 supplier ledger subledger
-   */
   static async recordSupplierPayment(params: {
     companyId: string
     branchId?: string | null
@@ -225,8 +212,8 @@ export class FinanceService {
       throw new Error('Accounts Payable (2010) account not configured in Chart of Accounts.')
     }
 
-    const txnNumber = this.generateDocNumber('PAY')
-    const txnId = `txn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    const txnNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'SUPPLIER_PAYMENT', 'BILL-PAY')
+    const txnId = `txn-${Date.now()}-${txnNumber}`
     const now = new Date().toISOString()
     const pDate = params.paymentDate || now.split('T')[0]
 
@@ -278,7 +265,6 @@ export class FinanceService {
 
     const transaction = await FinanceRepository.recordTransaction(header, lines)
 
-    // Reconcile with V5 Supplier Ledger Subledger
     try {
       await SupplierRepository.recordLedgerEntry({
         company_id: params.companyId,
@@ -313,6 +299,7 @@ export class FinanceService {
     vendorName?: string | null
     description: string
     expenseDate?: string
+    attachmentUrl?: string | null
     actorName?: string
   }): Promise<FinancialTransactionRecord> {
     if (params.amount <= 0) {
@@ -330,7 +317,6 @@ export class FinanceService {
       : null
 
     if (!expenseAccount) {
-      // Find matching expense account by category
       const catUpper = String(params.category).toUpperCase()
       expenseAccount = accounts.find(
         (a) =>
@@ -340,12 +326,11 @@ export class FinanceService {
     }
 
     if (!expenseAccount) {
-      // Default to general OPEX (6070)
       expenseAccount = accounts.find((a) => a.code === '6070') || accounts.find((a) => a.account_type === 'EXPENSE')!
     }
 
-    const txnNumber = params.expenseNumber || this.generateDocNumber('EXP')
-    const txnId = `txn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    const txnNumber = params.expenseNumber || await FinanceRepository.getNextDocumentNumber(params.companyId, 'EXPENSE', 'EXP')
+    const txnId = `txn-${Date.now()}-${txnNumber}`
     const now = new Date().toISOString()
     const eDate = params.expenseDate || now.split('T')[0]
 
@@ -363,7 +348,7 @@ export class FinanceService {
       narration: `Expense: ${params.description} (${params.category}) via ${paymentAccount.name}`,
       posted_by_name: params.actorName || 'Accounts Officer',
       posted_at: now,
-      metadata: { category: params.category, vendor: params.vendorName },
+      metadata: { category: params.category, vendor: params.vendorName, attachment_url: params.attachmentUrl },
       created_at: now,
       updated_at: now,
     }
@@ -426,14 +411,13 @@ export class FinanceService {
       throw new Error('Transfer accounts not found.')
     }
 
-    const transferNum = this.generateDocNumber('TRF')
-    const txnNumber = this.generateDocNumber('TXN')
-    const txnId = `txn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    const transferNum = await FinanceRepository.getNextDocumentNumber(params.companyId, 'TRANSFER', 'TRF')
+    const txnNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'TRANSACTION', 'TXN')
+    const txnId = `txn-${Date.now()}-${txnNumber}`
     const now = new Date().toISOString()
     const tDate = params.transferDate || now.split('T')[0]
     const fee = Number(params.feeAmount || 0)
 
-    // Create journal transaction
     const header: FinancialTransactionRecord = {
       id: txnId,
       company_id: params.companyId,
@@ -499,7 +483,7 @@ export class FinanceService {
     await FinanceRepository.recordTransaction(header, lines)
 
     const transfer: AccountTransferRecord = {
-      id: `trf-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: `trf-${Date.now()}-${transferNum}`,
       company_id: params.companyId,
       branch_id: params.branchId || null,
       transfer_number: transferNum,
@@ -521,7 +505,164 @@ export class FinanceService {
   }
 
   // ============================================================================
-  // 6. DAILY CASH CLOSING
+  // 6. CUSTOMER REFUND
+  // ============================================================================
+
+  static async recordCustomerRefund(params: {
+    companyId: string
+    branchId?: string | null
+    customerId: string
+    customerName: string
+    refundAccountId: string
+    amount: number
+    refundDate?: string
+    reason?: string | null
+    actorName?: string
+  }): Promise<FinancialTransactionRecord> {
+    if (params.amount <= 0) {
+      throw new Error('Refund amount must be greater than 0.')
+    }
+
+    const accounts = await FinanceRepository.getAccounts(params.companyId)
+    const refundAccount = accounts.find((a) => a.id === params.refundAccountId)
+    if (!refundAccount) {
+      throw new Error(`Refund payment account (${params.refundAccountId}) not found.`)
+    }
+
+    const revAccount = accounts.find((a) => a.code === '4010') || accounts.find((a) => a.account_type === 'REVENUE')
+    if (!revAccount) {
+      throw new Error('Sales Revenue (4010) account not configured in Chart of Accounts.')
+    }
+
+    const refundNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'REFUND', 'REF')
+    const txnId = `txn-${Date.now()}-${refundNumber}`
+    const now = new Date().toISOString()
+    const rDate = params.refundDate || now.split('T')[0]
+
+    const header: FinancialTransactionRecord = {
+      id: txnId,
+      company_id: params.companyId,
+      branch_id: params.branchId || null,
+      transaction_number: refundNumber,
+      transaction_date: rDate,
+      transaction_type: 'REFUND',
+      status: 'POSTED',
+      total_amount: params.amount,
+      reference_type: 'CUSTOMER_REFUND',
+      reference_id: refundNumber,
+      narration: `Customer refund to ${params.customerName}: ${params.reason || 'Order adjustment'}`,
+      posted_by_name: params.actorName || 'Accounts Manager',
+      posted_at: now,
+      metadata: { customerId: params.customerId, customerName: params.customerName, reason: params.reason },
+      created_at: now,
+      updated_at: now,
+    }
+
+    const lines: JournalEntryLineRecord[] = [
+      {
+        id: `jel-${Date.now()}-1`,
+        transaction_id: txnId,
+        company_id: params.companyId,
+        account_id: revAccount.id,
+        account_code: revAccount.code,
+        account_name: revAccount.name,
+        debit: params.amount,
+        credit: 0,
+        memo: `Revenue reversal for customer refund ${refundNumber}`,
+        created_at: now,
+      },
+      {
+        id: `jel-${Date.now()}-2`,
+        transaction_id: txnId,
+        company_id: params.companyId,
+        account_id: refundAccount.id,
+        account_code: refundAccount.code,
+        account_name: refundAccount.name,
+        debit: 0,
+        credit: params.amount,
+        memo: `Refund payout via ${refundAccount.name}`,
+        created_at: now,
+      },
+    ]
+
+    return FinanceRepository.recordTransaction(header, lines)
+  }
+
+  // ============================================================================
+  // 7. FINANCIAL ADJUSTMENT (MANUAL JOURNAL ENTRY)
+  // ============================================================================
+
+  static async recordFinancialAdjustment(params: {
+    companyId: string
+    branchId?: string | null
+    lines: { accountId: string; debit: number; credit: number; memo?: string }[]
+    narration: string
+    reason: string
+    adjustmentDate?: string
+    actorName?: string
+  }): Promise<FinancialTransactionRecord> {
+    if (!params.reason || params.reason.trim().length === 0) {
+      throw new Error('Financial adjustments require an explicit reason for audit trail.')
+    }
+
+    const accounts = await FinanceRepository.getAccounts(params.companyId)
+    const accMap = new Map(accounts.map((a) => [a.id, a]))
+
+    const jvNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'JOURNAL_ENTRY', 'JV')
+    const txnId = `txn-${Date.now()}-${jvNumber}`
+    const now = new Date().toISOString()
+    const aDate = params.adjustmentDate || now.split('T')[0]
+
+    let totalAmount = 0
+    const journalLines: JournalEntryLineRecord[] = []
+
+    for (let i = 0; i < params.lines.length; i++) {
+      const line = params.lines[i]
+      const acc = accMap.get(line.accountId)
+      if (!acc) throw new Error(`Account ID ${line.accountId} not found.`)
+
+      const debit = Number(line.debit || 0)
+      const credit = Number(line.credit || 0)
+      totalAmount += debit
+
+      journalLines.push({
+        id: `jel-${Date.now()}-${i + 1}`,
+        transaction_id: txnId,
+        company_id: params.companyId,
+        account_id: acc.id,
+        account_code: acc.code,
+        account_name: acc.name,
+        debit,
+        credit,
+        memo: line.memo || params.narration,
+        created_at: now,
+      })
+    }
+
+    const header: FinancialTransactionRecord = {
+      id: txnId,
+      company_id: params.companyId,
+      branch_id: params.branchId || null,
+      transaction_number: jvNumber,
+      transaction_date: aDate,
+      transaction_type: 'JOURNAL_ADJUSTMENT',
+      status: 'POSTED',
+      total_amount: totalAmount,
+      reference_type: 'ADJUSTMENT_VOUCHER',
+      reference_id: jvNumber,
+      narration: `${params.narration} (Reason: ${params.reason})`,
+      posted_by_name: params.actorName || 'Chief Accountant',
+      posted_at: now,
+      metadata: { reason: params.reason },
+      created_at: now,
+      updated_at: now,
+    }
+
+    return FinanceRepository.recordTransaction(header, journalLines)
+  }
+
+  // ============================================================================
+  // 8. DAILY CASH CLOSING
   // ============================================================================
 
   static async submitCashClosing(params: {
@@ -541,17 +682,15 @@ export class FinanceService {
     const counted = Number(params.countedCash)
     const variance = Number((counted - currentBalance).toFixed(2))
 
-    const closingNum = this.generateDocNumber('CC')
+    const closingNum = await FinanceRepository.getNextDocumentNumber(params.companyId, 'CASH_CLOSING', 'CC')
     const now = new Date().toISOString()
-
     let adjTxnId: string | null = null
 
-    // If approved / submitted with variance, generate adjusting entry
     if (Math.abs(variance) > 0.001) {
       const accounts = await FinanceRepository.getAccounts(params.companyId)
       const adjAccount = accounts.find((a) => a.code === '6070') || accounts.find((a) => a.account_type === 'EXPENSE')!
-      const txnNumber = this.generateDocNumber('TXN')
-      adjTxnId = `txn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+      const txnNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'TRANSACTION', 'TXN')
+      adjTxnId = `txn-${Date.now()}-${txnNumber}`
 
       const header: FinancialTransactionRecord = {
         id: adjTxnId,
@@ -630,7 +769,7 @@ export class FinanceService {
     }
 
     const closing: CashClosingRecord = {
-      id: `cc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: `cc-${Date.now()}-${closingNum}`,
       company_id: params.companyId,
       branch_id: params.branchId || null,
       closing_number: closingNum,
@@ -657,13 +796,14 @@ export class FinanceService {
   }
 
   // ============================================================================
-  // 7. FINANCIAL STATEMENTS: P&L AND AGING
+  // 9. FINANCIAL STATEMENTS: P&L, BALANCE SHEET, CASH FLOW, TRIAL BALANCE
   // ============================================================================
 
-  static async getProfitAndLoss(companyId: string, startDate?: string, endDate?: string): Promise<ProfitAndLossStatement> {
+  static async getProfitAndLoss(companyId: string, startDate?: string, endDate?: string, branchId?: string): Promise<ProfitAndLossStatement> {
     const txns = await FinanceRepository.getTransactions(companyId, {
       startDate,
       endDate,
+      branchId,
       status: 'POSTED',
     })
 
@@ -748,6 +888,198 @@ export class FinanceService {
     }
   }
 
+  static async getBalanceSheet(companyId: string, asOfDate?: string, branchId?: string): Promise<BalanceSheetStatement> {
+    const accounts = await FinanceRepository.getAccounts(companyId, branchId)
+    const pnl = await this.getProfitAndLoss(companyId, undefined, asOfDate, branchId)
+
+    let liquidTotal = 0
+    const liquidAccs: { code: string; name: string; balance: number }[] = []
+
+    let recTotal = 0
+    const recAccs: { code: string; name: string; balance: number }[] = []
+
+    let invTotal = 0
+    const invAccs: { code: string; name: string; balance: number }[] = []
+
+    let faTotal = 0
+    const faAccs: { code: string; name: string; balance: number }[] = []
+
+    let payTotal = 0
+    const payAccs: { code: string; name: string; balance: number }[] = []
+
+    let advTotal = 0
+    const advAccs: { code: string; name: string; balance: number }[] = []
+
+    let taxTotal = 0
+    const taxAccs: { code: string; name: string; balance: number }[] = []
+
+    let otherLiabTotal = 0
+    const otherLiabAccs: { code: string; name: string; balance: number }[] = []
+
+    let capitalTotal = 0
+    let drawingsTotal = 0
+
+    for (const acc of accounts) {
+      const bal = Number(acc.current_balance || 0)
+      if (acc.account_type === 'ASSET') {
+        if (acc.account_subtype === 'CASH' || acc.account_subtype === 'BANK' || acc.account_subtype === 'MFS') {
+          liquidTotal += bal
+          liquidAccs.push({ code: acc.code, name: acc.name, balance: bal })
+        } else if (acc.account_subtype === 'RECEIVABLE') {
+          recTotal += bal
+          recAccs.push({ code: acc.code, name: acc.name, balance: bal })
+        } else if (acc.account_subtype === 'INVENTORY') {
+          invTotal += bal
+          invAccs.push({ code: acc.code, name: acc.name, balance: bal })
+        } else {
+          faTotal += bal
+          faAccs.push({ code: acc.code, name: acc.name, balance: bal })
+        }
+      } else if (acc.account_type === 'LIABILITY') {
+        if (acc.account_subtype === 'PAYABLE') {
+          payTotal += bal
+          payAccs.push({ code: acc.code, name: acc.name, balance: bal })
+        } else if (acc.code === '2020') {
+          advTotal += bal
+          advAccs.push({ code: acc.code, name: acc.name, balance: bal })
+        } else if (acc.code === '2030') {
+          taxTotal += bal
+          taxAccs.push({ code: acc.code, name: acc.name, balance: bal })
+        } else {
+          otherLiabTotal += bal
+          otherLiabAccs.push({ code: acc.code, name: acc.name, balance: bal })
+        }
+      } else if (acc.account_type === 'EQUITY') {
+        if (acc.code === '3010') {
+          capitalTotal += bal
+        } else if (acc.code === '3020') {
+          drawingsTotal += bal
+        }
+      }
+    }
+
+    const totalAssets = Number((liquidTotal + recTotal + invTotal + faTotal).toFixed(2))
+    const totalLiabilities = Number((payTotal + advTotal + taxTotal + otherLiabTotal).toFixed(2))
+    const currentPeriodProfit = pnl.net_profit
+    const retainedEarnings = 0
+    const totalEquity = Number((capitalTotal + retainedEarnings + currentPeriodProfit - drawingsTotal).toFixed(2))
+
+    const totalLiabilitiesAndEquity = Number((totalLiabilities + totalEquity).toFixed(2))
+    const imbalance = Number(Math.abs(totalAssets - totalLiabilitiesAndEquity).toFixed(2))
+    const isBalanced = imbalance <= 0.05
+
+    return {
+      company_id: companyId,
+      as_of_date: asOfDate || new Date().toISOString().split('T')[0],
+      assets: {
+        total: totalAssets,
+        liquid_assets: { name: 'Liquid Assets (Cash/Bank/MFS)', total: Number(liquidTotal.toFixed(2)), accounts: liquidAccs },
+        receivables: { name: 'Accounts Receivable', total: Number(recTotal.toFixed(2)), accounts: recAccs },
+        inventory: { name: 'Inventory & Materials', total: Number(invTotal.toFixed(2)), accounts: invAccs },
+        fixed_assets: { name: 'Machinery & Fixed Assets', total: Number(faTotal.toFixed(2)), accounts: faAccs },
+      },
+      liabilities: {
+        total: totalLiabilities,
+        payables: { name: 'Accounts Payable', total: Number(payTotal.toFixed(2)), accounts: payAccs },
+        advances: { name: 'Customer Advance Deposits', total: Number(advTotal.toFixed(2)), accounts: advAccs },
+        tax_payable: { name: 'VAT & Tax Payable', total: Number(taxTotal.toFixed(2)), accounts: taxAccs },
+        other_liabilities: { name: 'Other Liabilities', total: Number(otherLiabTotal.toFixed(2)), accounts: otherLiabAccs },
+      },
+      equity: {
+        total: totalEquity,
+        capital: Number(capitalTotal.toFixed(2)),
+        retained_earnings: retainedEarnings,
+        current_period_profit: currentPeriodProfit,
+        drawings: Number(drawingsTotal.toFixed(2)),
+      },
+      is_balanced: isBalanced,
+      imbalance_amount: imbalance,
+    }
+  }
+
+  static async getCashFlow(companyId: string, startDate?: string, endDate?: string, branchId?: string): Promise<CashFlowStatement> {
+    const txns = await FinanceRepository.getTransactions(companyId, {
+      startDate,
+      endDate,
+      branchId,
+      status: 'POSTED',
+    })
+
+    const accounts = await FinanceRepository.getAccounts(companyId)
+    const liquidAccIds = new Set(
+      accounts
+        .filter((a) => a.account_subtype === 'CASH' || a.account_subtype === 'BANK' || a.account_subtype === 'MFS')
+        .map((a) => a.id)
+    )
+
+    let customerReceipts = 0
+    let supplierPayments = 0
+    let opexPaid = 0
+    let equipmentPurchases = 0
+    let capitalInjections = 0
+    let ownerDrawings = 0
+
+    for (const txn of txns) {
+      if (txn.transaction_type === 'CUSTOMER_PAYMENT') {
+        customerReceipts += Number(txn.total_amount || 0)
+      } else if (txn.transaction_type === 'SUPPLIER_PAYMENT') {
+        supplierPayments += Number(txn.total_amount || 0)
+      } else if (txn.transaction_type === 'EXPENSE') {
+        opexPaid += Number(txn.total_amount || 0)
+      } else if (txn.transaction_type === 'PURCHASE_GRN') {
+        equipmentPurchases += Number(txn.total_amount || 0)
+      } else if (txn.transaction_type === 'REFUND') {
+        customerReceipts -= Number(txn.total_amount || 0)
+      }
+    }
+
+    const operatingTotal = Number((customerReceipts - supplierPayments - opexPaid).toFixed(2))
+    const investingTotal = Number((-equipmentPurchases).toFixed(2))
+    const financingTotal = Number((capitalInjections - ownerDrawings).toFixed(2))
+    const netMovement = Number((operatingTotal + investingTotal + financingTotal).toFixed(2))
+
+    let openingCash = 0
+    let closingCash = 0
+    for (const acc of accounts) {
+      if (liquidAccIds.has(acc.id)) {
+        closingCash += Number(acc.current_balance || 0)
+        openingCash += Number(acc.opening_balance || 0)
+      }
+    }
+
+    return {
+      company_id: companyId,
+      start_date: startDate || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+      end_date: endDate || new Date().toISOString().split('T')[0],
+      opening_cash_balance: Number(openingCash.toFixed(2)),
+      operating_activities: {
+        total: operatingTotal,
+        customer_receipts: Number(customerReceipts.toFixed(2)),
+        supplier_payments: Number(supplierPayments.toFixed(2)),
+        operating_expenses_paid: Number(opexPaid.toFixed(2)),
+      },
+      investing_activities: {
+        total: investingTotal,
+        equipment_purchases: Number(equipmentPurchases.toFixed(2)),
+      },
+      financing_activities: {
+        total: financingTotal,
+        capital_injections: Number(capitalInjections.toFixed(2)),
+        owner_drawings: Number(ownerDrawings.toFixed(2)),
+      },
+      net_cash_movement: netMovement,
+      closing_cash_balance: Number(closingCash.toFixed(2)),
+    }
+  }
+
+  static async getTrialBalance(companyId: string, asOfDate?: string, branchId?: string): Promise<TrialBalanceStatement> {
+    return FinanceRepository.getTrialBalance(companyId, asOfDate, branchId)
+  }
+
+  static async getGeneralLedger(companyId: string, options?: { accountId?: string; startDate?: string; endDate?: string; branchId?: string }): Promise<GeneralLedgerEntry[]> {
+    return FinanceRepository.getGeneralLedger(companyId, options)
+  }
+
   static async getReceivablesAging(companyId: string): Promise<ReceivablesAgingSummary> {
     const invoices = await BillingRepository.getInvoices(companyId)
     const openInvoices = invoices.filter((i) => i.status === 'unpaid' || i.status === 'partially_paid' || i.status === 'overdue')
@@ -825,9 +1157,7 @@ export class FinanceService {
   static async getPayablesAging(companyId: string): Promise<PayablesAgingSummary> {
     const supplierLedgers = await SupplierRepository.getLedgerEntries(companyId)
     const suppliers = await SupplierRepository.getSuppliers(companyId)
-    const suppMap = new Map(suppliers.map((s) => [s.id, s]))
 
-    // Compute balance per supplier
     let totalPayable = 0
     let currentDue = 0
     let overdueTotal = 0
@@ -845,7 +1175,7 @@ export class FinanceService {
 
       if (netDue > 0) {
         totalPayable += netDue
-        b0_30 += netDue // default bucket
+        b0_30 += netDue
         currentDue += netDue
         items.push({
           reference_id: `SUPP-${supp.supplier_code || supp.id.slice(0, 6)}`,
@@ -873,6 +1203,58 @@ export class FinanceService {
       items,
     }
   }
+
+  // ============================================================================
+  // 10. JOB & BRANCH PROFITABILITY
+  // ============================================================================
+
+  static async getJobProfitability(companyId: string): Promise<JobProfitabilityMetric[]> {
+    const costings = await CostingRepository.getCostings(companyId)
+    return costings.map((c) => {
+      const act = c.act || { material_cost: 0, labor_cost: 0, machine_cost: 0, transport_cost: 0, other_cost: 0, total_cost: 0, profit: 0, margin_percentage: 0 }
+      const totalActualCost = Number(act.total_cost || 0)
+      const sellingPrice = Number(c.selling_price || 0)
+      const grossProfit = Number((sellingPrice - totalActualCost).toFixed(2))
+      const marginPct = sellingPrice > 0 ? Number(((grossProfit / sellingPrice) * 100).toFixed(2)) : 0
+
+      return {
+        job_id: c.job_id || c.id,
+        job_number: c.job_number,
+        customer_name: c.customer_name,
+        item_title: c.item_title,
+        selling_price: sellingPrice,
+        material_cost: Number(act.material_cost || 0),
+        labor_cost: Number(act.labor_cost || 0),
+        machine_cost: Number(act.machine_cost || 0),
+        transport_cost: Number(act.transport_cost || 0),
+        total_actual_cost: totalActualCost,
+        gross_profit: grossProfit,
+        margin_percentage: marginPct,
+        status: c.status,
+      }
+    })
+  }
+
+  static async getBranchProfitability(companyId: string, period: string = 'this_month'): Promise<BranchProfitabilityMetric[]> {
+    const comparison = await BranchAnalyticsRepository.getBranchComparison(companyId, period)
+    return comparison.branches.map((b) => ({
+      branch_id: b.branch_id,
+      branch_name: b.branch_name,
+      revenue: b.revenue,
+      cogs: b.cost_of_goods_sold,
+      gross_profit: b.gross_profit,
+      gross_margin_percent: b.gross_margin_percent,
+      operating_expenses: b.operating_expenses,
+      net_profit: b.net_profit,
+      net_margin_percent: b.net_margin_percent,
+      receivables: 0,
+      payables: 0,
+    }))
+  }
+
+  // ============================================================================
+  // 11. FINANCIAL DASHBOARD
+  // ============================================================================
 
   static async getFinancialDashboard(companyId: string): Promise<FinancialDashboardMetrics> {
     const accounts = await FinanceRepository.getAccounts(companyId)
