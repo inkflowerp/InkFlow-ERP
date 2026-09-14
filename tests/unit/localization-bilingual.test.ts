@@ -6,6 +6,7 @@ import {
   formatLakhCrore,
   formatDate,
   formatTime,
+  formatDateTime,
   normalizeBdPhone,
   formatDimensions,
   getLocalDate,
@@ -45,6 +46,13 @@ describe('Localization & Bilingual Formatters Unit Tests (V7)', () => {
 
     const formattedTime = formatTime(isoDate, 'en')
     assert.strictEqual(formattedTime, '12:00 PM')
+
+    // Verify dateStyle and timeStyle options do not throw TypeError: Invalid option
+    const formattedWithStyles = formatDate(isoDate, 'en', { dateStyle: 'medium', timeStyle: 'short' } as any)
+    assert.ok(typeof formattedWithStyles === 'string' && formattedWithStyles.length > 0)
+
+    const formattedDateTimeResult = formatDateTime(isoDate, 'en')
+    assert.ok(formattedDateTimeResult.includes('2026') && formattedDateTimeResult.includes('12:00'))
   })
 
   test('formats dimensions and area calculations in English and Bengali', () => {

@@ -77,19 +77,35 @@ export function formatDate(
   const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
   if (isNaN(d.getTime())) return '—'
 
-  const defaultOptions: Intl.DateTimeFormatOptions = {
-    timeZone,
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    ...options,
-  }
+  // If caller passes dateStyle or timeStyle, mixing it with individual fields (year/month/day)
+  // triggers ECMA-402 "TypeError: Invalid option" in Intl.DateTimeFormat.
+  const hasStyle = Boolean(options && (options.dateStyle || options.timeStyle))
 
-  if (locale === 'bn') {
-    return new Intl.DateTimeFormat('bn-BD', defaultOptions).format(d)
-  }
+  const finalOptions: Intl.DateTimeFormatOptions = hasStyle
+    ? {
+        timeZone,
+        ...options,
+      }
+    : {
+        timeZone,
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        ...options,
+      }
 
-  return new Intl.DateTimeFormat('en-GB', defaultOptions).format(d)
+  try {
+    if (locale === 'bn') {
+      return new Intl.DateTimeFormat('bn-BD', finalOptions).format(d)
+    }
+    return new Intl.DateTimeFormat('en-GB', finalOptions).format(d)
+  } catch {
+    try {
+      return d.toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-GB')
+    } catch {
+      return '—'
+    }
+  }
 }
 
 /**
@@ -105,19 +121,33 @@ export function formatTime(
   const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
   if (isNaN(d.getTime())) return '—'
 
-  const defaultOptions: Intl.DateTimeFormatOptions = {
-    timeZone,
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    ...options,
-  }
+  const hasStyle = Boolean(options && (options.dateStyle || options.timeStyle))
 
-  if (locale === 'bn') {
-    return new Intl.DateTimeFormat('bn-BD', defaultOptions).format(d)
-  }
+  const finalOptions: Intl.DateTimeFormatOptions = hasStyle
+    ? {
+        timeZone,
+        ...options,
+      }
+    : {
+        timeZone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        ...options,
+      }
 
-  return new Intl.DateTimeFormat('en-US', defaultOptions).format(d)
+  try {
+    if (locale === 'bn') {
+      return new Intl.DateTimeFormat('bn-BD', finalOptions).format(d)
+    }
+    return new Intl.DateTimeFormat('en-US', finalOptions).format(d)
+  } catch {
+    try {
+      return d.toLocaleTimeString(locale === 'bn' ? 'bn-BD' : 'en-US')
+    } catch {
+      return '—'
+    }
+  }
 }
 
 /**
@@ -133,22 +163,36 @@ export function formatDateTime(
   const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
   if (isNaN(d.getTime())) return '—'
 
-  const defaultOptions: Intl.DateTimeFormatOptions = {
-    timeZone,
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    ...options,
-  }
+  const hasStyle = Boolean(options && (options.dateStyle || options.timeStyle))
 
-  if (locale === 'bn') {
-    return new Intl.DateTimeFormat('bn-BD', defaultOptions).format(d)
-  }
+  const finalOptions: Intl.DateTimeFormatOptions = hasStyle
+    ? {
+        timeZone,
+        ...options,
+      }
+    : {
+        timeZone,
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        ...options,
+      }
 
-  return new Intl.DateTimeFormat('en-GB', defaultOptions).format(d)
+  try {
+    if (locale === 'bn') {
+      return new Intl.DateTimeFormat('bn-BD', finalOptions).format(d)
+    }
+    return new Intl.DateTimeFormat('en-GB', finalOptions).format(d)
+  } catch {
+    try {
+      return d.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en-GB')
+    } catch {
+      return '—'
+    }
+  }
 }
 
 /**

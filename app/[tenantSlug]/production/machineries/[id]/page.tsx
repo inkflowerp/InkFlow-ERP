@@ -44,6 +44,7 @@ import {
   archiveMachineryAction,
   updateAssignmentStatusAction,
 } from '@/actions/machinery.actions'
+import { formatDate, formatDateTime } from '@/lib/formatters'
 import { MachineryStatusBadge } from '@/components/machinery/machinery-status-badge'
 import { MachineryFormModal } from '@/components/machinery/machinery-form-modal'
 import { AssignMachineryModal } from '@/components/machinery/assign-machinery-modal'
@@ -346,13 +347,13 @@ export default function MachineryDetailPage() {
                 <div>
                   <span className="text-slate-400 block uppercase text-[10px] font-bold">Purchase Date</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">
-                    {machine.purchase_date ? new Date(machine.purchase_date).toLocaleDateString() : '—'}
+                    {formatDate(machine.purchase_date)}
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-400 block uppercase text-[10px] font-bold">Warranty Expiry</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">
-                    {machine.warranty_expiry ? new Date(machine.warranty_expiry).toLocaleDateString() : 'Expired / None'}
+                    {machine.warranty_expiry ? formatDate(machine.warranty_expiry) : 'Expired / None'}
                   </span>
                 </div>
               </div>
@@ -450,7 +451,7 @@ export default function MachineryDetailPage() {
               {machine.next_maintenance ? (
                 <div className="p-2.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-300 space-y-1">
                   <span className="font-bold block capitalize">{machine.next_maintenance.maintenance_type} Maintenance</span>
-                  <span className="block text-[11px]">Due: {new Date(machine.next_maintenance.scheduled_date).toLocaleDateString()}</span>
+                  <span className="block text-[11px]">Due: {formatDate(machine.next_maintenance.scheduled_date)}</span>
                   <Button
                     size="sm"
                     variant="outline"
@@ -644,11 +645,11 @@ export default function MachineryDetailPage() {
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Scheduled Start</span>
-                  <span className="font-bold">{new Date(machine.current_assignment.scheduled_start).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  <span className="font-bold">{formatDateTime(machine.current_assignment.scheduled_start)}</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Expected End</span>
-                  <span className="font-bold">{new Date(machine.current_assignment.scheduled_end).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  <span className="font-bold">{formatDateTime(machine.current_assignment.scheduled_end)}</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Status</span>
@@ -688,7 +689,7 @@ export default function MachineryDetailPage() {
                   <Badge className="bg-amber-600 text-white text-[10px] font-bold mb-1">UPCOMING SERVICE</Badge>
                   <h4 className="font-bold text-sm capitalize">{machine.next_maintenance.maintenance_type} Maintenance</h4>
                   <p className="text-xs text-slate-600 dark:text-slate-400">
-                    Scheduled Date: <strong>{new Date(machine.next_maintenance.scheduled_date).toLocaleDateString()}</strong> • Technician: {machine.next_maintenance.technician_name || 'Technical Team'}
+                    Scheduled Date: <strong>{formatDate(machine.next_maintenance.scheduled_date)}</strong> • Technician: {machine.next_maintenance.technician_name || 'Technical Team'}
                   </p>
                 </div>
                 <Button

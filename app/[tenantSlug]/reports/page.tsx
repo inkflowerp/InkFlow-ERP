@@ -35,7 +35,7 @@ import {
   ReportsService,
 } from '@/services/reports.service'
 import { ReportFilterState } from '@/types/reports.types'
-import { formatBDT, formatDate } from '@/lib/formatters'
+import { formatBDT, formatDate, formatDateTime } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { SalesOrderRecord } from '@/types/order.types'
@@ -197,7 +197,7 @@ export default function ReportingAnalyticsPage() {
               Module: {activeTab.toUpperCase()}
             </div>
             <div>Period: {filters.dateRange.toUpperCase().replace('_', ' ')}</div>
-            <div>Printed: {formatDate(new Date(), 'en', { dateStyle: 'medium', timeStyle: 'short' })}</div>
+            <div>Printed: {formatDateTime(new Date(), locale)}</div>
           </div>
         </div>
       </div>
