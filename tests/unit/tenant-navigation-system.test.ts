@@ -57,34 +57,30 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     }
   })
 
-  it('4. Simple Mode: All essential employee items are explicitly flagged for Simple Mode', () => {
+  it('4. Unified Navigation: Simple Mode and Advanced Mode flags are completely absent', () => {
     const allItems: NavItem[] = navSections.flatMap((s) => s.items)
-    const simpleItems = allItems.filter((i) => i.simpleMode)
-
-    const simpleKeys = simpleItems.map((i) => i.key)
-    const expectedSimpleKeys = [
-      'dashboard',
-      'operator',
-      'new-work',
-      'customers',
-      'sales',
-      'billing',
-      'production',
-      'delivery',
-      'inventory',
-    ]
-
-    for (const expectedKey of expectedSimpleKeys) {
-      assert.ok(
-        simpleKeys.includes(expectedKey),
-        `Essential item [${expectedKey}] must be flagged with simpleMode: true`
+    
+    // Ensure no items have simpleMode or mode-specific difficulty levels
+    for (const item of allItems) {
+      assert.equal(
+        (item as unknown as Record<string, unknown>).simpleMode,
+        undefined,
+        `Item [${item.key}] should not have simpleMode property`
+      )
+      assert.equal(
+        (item as unknown as Record<string, unknown>).level,
+        undefined,
+        `Item [${item.key}] should not have level property`
       )
     }
 
-    // + New Work must be flagged as primary action
+    // New Work must be flagged as primary action with exact label "New Work" (no "+" in label)
     const newWorkItem = allItems.find((i) => i.key === 'new-work')
-    assert.ok(newWorkItem, 'Must contain + New Work item')
-    assert.equal(newWorkItem?.isPrimaryAction, true, '+ New Work must be flagged as isPrimaryAction')
+    assert.ok(newWorkItem, 'Must contain New Work item')
+    assert.equal(newWorkItem?.isPrimaryAction, true, 'New Work must be flagged as isPrimaryAction')
+    assert.equal(newWorkItem?.title, 'New Work', 'New Work title must be exactly "New Work"')
+    assert.equal(newWorkItem?.titleBn, 'নতুন কাজ', 'New Work titleBn must be "নতুন কাজ"')
+    assert.ok(!newWorkItem?.title.includes('+'), 'New Work title must not contain "+" symbol')
   })
 
   it('5. Permission Integrity: Module permissions resolve correctly for each employee responsibility', () => {
@@ -109,13 +105,13 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     // B. Sales Manager: can access customers, sales, billing, but not settings/roles
     const salesAllowed = allItems.filter((i) => isAllowedForRole(i, 'sales_manager')).map((i) => i.key)
     assert.ok(salesAllowed.includes('customers'), 'Sales Manager must see Customers')
-    assert.ok(salesAllowed.includes('sales'), 'Sales Manager must see Sales')
-    assert.ok(salesAllowed.includes('billing'), 'Sales Manager must see Invoices')
-    assert.ok(!salesAllowed.includes('roles'), 'Sales Manager cannot see Permissions matrix editing')
+    assert.ok(salesAllowed.includes('sales'), 'Sales Manager must see Sales & Quotes')
+    assert.ok(salesAllowed.includes('billing'), 'Sales Manager must see Invoices & Payments')
+    assert.ok(!salesAllowed.includes('users'), 'Sales Manager cannot see Users & Permissions')
 
     // C. Designer: can access design Kanban and work orders
     const designerAllowed = allItems.filter((i) => isAllowedForRole(i, 'designer')).map((i) => i.key)
-    assert.ok(designerAllowed.includes('design'), 'Designer must see Design & Approval')
+    assert.ok(designerAllowed.includes('design'), 'Designer must see Design')
     assert.ok(!designerAllowed.includes('accounting'), 'Designer cannot see Finance')
 
     // D. Operator: can access operator terminal and production
@@ -128,7 +124,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     // E. Store Manager: can access inventory and purchases
     const storeAllowed = allItems.filter((i) => isAllowedForRole(i, 'store_manager')).map((i) => i.key)
     assert.ok(storeAllowed.includes('inventory'), 'Store Manager must see Inventory')
-    assert.ok(storeAllowed.includes('purchases'), 'Store Manager must see Purchasing')
+    assert.ok(storeAllowed.includes('purchases'), 'Store Manager must see Purchases')
     assert.ok(storeAllowed.includes('suppliers'), 'Store Manager must see Suppliers')
 
     // F. Accountant: can access billing and finance/accounting
@@ -143,7 +139,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       'LayoutDashboard',
       'Printer',
       'Plus',
-      'MessageSquare',
+      'Bell',
       'Users',
       'Briefcase',
       'Receipt',

@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   Menu,
   X,
@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Printer,
   Plus,
+  Bell,
   MessageSquare,
   Users,
   Briefcase,
@@ -37,9 +38,9 @@ import {
   Zap,
   LogOut,
   Shield,
+  ChevronDown,
   ChevronRight,
   Headphones,
-  PhoneCall,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
@@ -57,6 +58,7 @@ const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
   Printer,
   Plus,
+  Bell,
   MessageSquare,
   Users,
   Briefcase,
@@ -87,17 +89,24 @@ const iconMap: Record<string, React.ElementType> = {
 export function MobileNav() {
   const [open, setOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    today: true,
+    work: true,
+    materials: true,
+    management: true,
+    settings: true,
+  })
+
   const pathname = usePathname()
-  const router = useRouter()
   const { signOut } = useAuth()
   const { company, currentRole, currentBranch, currentUser } = useTenant()
   const { can, isOwner } = usePermissions()
   const { isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
-  const { locale, setLocale, tBilingual } = useI18n()
+  const { tBilingual } = useI18n()
 
   const pathSlug = pathname ? pathname.split('/')[1] : null
   const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
-  const navSections = getNavigationConfig(tenantSlug)
+  const navSections = useMemo(() => getNavigationConfig(tenantSlug), [tenantSlug])
 
   // Close drawer automatically on route navigation
   useEffect(() => {
@@ -127,16 +136,21 @@ export function MobileNav() {
   }, [])
 
   // Explicit permission checking
-  const isNavItemAllowed = (item: NavItem): boolean => {
+  const isNavItemAllowed = useCallback((item: NavItem): boolean => {
     if (isOwner) return true
     if (item.ownerOnly && !isOwner) return false
     if (!item.permission) return true
     return can(item.permission.action, item.permission.resource)
-  }
+  }, [isOwner, can])
 
   const userName = currentUser?.profile?.full_name
     ? tBilingual(currentUser.profile.full_name, currentUser.profile.full_name_bn || currentUser.profile.full_name)
     : 'User'
+
+  // Toggle group expansion
+  const toggleGroup = useCallback((groupId: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }))
+  }, [])
 
   // Filter sections by search query in real-time
   const filteredNavSections = useMemo(() => {
@@ -157,7 +171,7 @@ export function MobileNav() {
         return { ...section, items: matchedItems }
       })
       .filter((section) => section.items.length > 0)
-  }, [navSections, searchQuery, isOwner, can])
+  }, [navSections, searchQuery, isNavItemAllowed])
 
   return (
     <div className="lg:hidden">
@@ -233,12 +247,12 @@ export function MobileNav() {
                 </Badge>
               </div>
 
-              {/* Status / Trial Badge */}
+              {/* Status / Plan Badge */}
               <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-xs">
                 <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                   <Building className="h-3.5 w-3.5 text-blue-600" />
                   <span className="font-medium text-xs truncate max-w-[140px]">
-                    {currentBranch ? currentBranch.name.split('(')[0].trim() : currentPlan.name}
+                    {currentBranch ? currentBranch.name.split('(')[0].trim() : currentPlan?.name || 'Main Branch'}
                   </span>
                 </div>
                 {isTrial ? (
@@ -246,10 +260,12 @@ export function MobileNav() {
                     {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d trial`}
                   </Badge>
                 ) : (
-                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    {currentPlan.name}
-                  </span>
+                  currentPlan && (
+                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      {tBilingual(currentPlan.name, currentPlan.name_bn)}
+                    </span>
+                  )
                 )}
               </div>
             </div>
@@ -257,20 +273,20 @@ export function MobileNav() {
             {/* Quick Actions Shortcuts Chips */}
             <div className="grid grid-cols-3 gap-1.5">
               <Link
-                href={`/${tenantSlug}/quotations`}
+                href={`/${tenantSlug}/sales`}
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 transition-colors min-h-[38px] bangla-text"
               >
                 <Plus className="h-3.5 w-3.5 text-blue-600" />
-                <span>{tBilingual('Quote', 'কোটেশন')}</span>
+                <span>{tBilingual('Quotes', 'কোটেশন')}</span>
               </Link>
               <Link
-                href={`/${tenantSlug}/orders`}
+                href={`/${tenantSlug}/sales/new-work`}
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 transition-colors min-h-[38px] bangla-text"
               >
                 <Plus className="h-3.5 w-3.5 text-indigo-600" />
-                <span>{tBilingual('Order', 'অর্ডার')}</span>
+                <span>{tBilingual('New Work', 'নতুন কাজ')}</span>
               </Link>
               <Link
                 href={`/${tenantSlug}/production`}
@@ -312,62 +328,74 @@ export function MobileNav() {
             ) : (
               filteredNavSections.map((section) => {
                 const sectionTitle = tBilingual(section.title, section.titleBn)
+                const isExpanded = searchQuery ? true : (expandedGroups[section.id] ?? true)
 
                 return (
                   <div key={section.id} className="space-y-1">
-                    <h4 className="px-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1 bangla-text">
-                      {sectionTitle}
-                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(section.id)}
+                      className="w-full flex items-center justify-between px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer bangla-text"
+                    >
+                      <span>{sectionTitle}</span>
+                      {isExpanded ? (
+                        <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                      )}
+                    </button>
 
-                    <div className="space-y-0.5">
-                      {section.items.map((item) => {
-                        const Icon = iconMap[item.icon] || Sparkles
-                        const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== `/${tenantSlug}`)
-                        const itemTitle = tBilingual(item.title, item.titleBn)
-                        const isPrimary = item.isPrimaryAction
+                    {isExpanded && (
+                      <div className="space-y-0.5">
+                        {section.items.map((item) => {
+                          const Icon = iconMap[item.icon] || Sparkles
+                          const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== `/${tenantSlug}`)
+                          const itemTitle = tBilingual(item.title, item.titleBn)
+                          const isPrimary = item.isPrimaryAction
 
-                        return (
-                          <Link
-                            key={item.key}
-                            href={item.href}
-                            onClick={() => setOpen(false)}
-                            className={cn(
-                              'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
-                              isPrimary
-                                ? isActive
-                                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
-                                  : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold'
-                                : isActive
-                                ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
-                                : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
-                            )}
-                          >
-                            <Icon
+                          return (
+                            <Link
+                              key={item.key}
+                              href={item.href}
+                              onClick={() => setOpen(false)}
                               className={cn(
-                                'h-4 w-4 shrink-0 transition-transform group-hover:scale-110',
-                                isPrimary || isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                                'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
+                                isPrimary
+                                  ? isActive
+                                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
+                                    : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold'
+                                  : isActive
+                                  ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
+                                  : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
                               )}
-                            />
-                            <span className="flex-1 truncate">{itemTitle}</span>
-                            {item.badge && (
-                              <Badge
-                                variant={isActive || isPrimary ? 'secondary' : 'default'}
+                            >
+                              <Icon
                                 className={cn(
-                                  'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0',
-                                  item.badgeVariant === 'live'
-                                    ? 'bg-rose-500 text-white animate-pulse'
-                                    : item.badgeVariant === 'fast'
-                                    ? 'bg-emerald-400 text-slate-950 font-black'
-                                    : 'bg-emerald-500 text-white'
+                                  'h-4 w-4 shrink-0 transition-transform group-hover:scale-110',
+                                  isPrimary || isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                                 )}
-                              >
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </Link>
-                        )
-                      })}
-                    </div>
+                              />
+                              <span className="flex-1 truncate">{itemTitle}</span>
+                              {item.badge && (
+                                <Badge
+                                  variant={isActive || isPrimary ? 'secondary' : 'default'}
+                                  className={cn(
+                                    'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0',
+                                    item.badgeVariant === 'live'
+                                      ? 'bg-rose-500 text-white animate-pulse'
+                                      : item.badgeVariant === 'fast'
+                                      ? 'bg-emerald-400 text-slate-950 font-black'
+                                      : 'bg-emerald-500 text-white'
+                                  )}
+                                >
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )
               })
@@ -404,7 +432,7 @@ export function MobileNav() {
           </div>
         </SheetContent>
 
-        {/* Footer with Support Hotline and Sign Out Button */}
+        {/* Footer with Support Desk and Sign Out Button */}
         <SheetFooter className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
           <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 px-1">
             <Link
@@ -413,7 +441,7 @@ export function MobileNav() {
               className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline"
             >
               <Headphones className="h-3.5 w-3.5" />
-              <span>{company?.phone || 'Live Support'}</span>
+              <span>{company?.phone || '24/7 Live Desk'}</span>
             </Link>
             <span className="text-xs text-slate-400">InkFlow ERP</span>
           </div>

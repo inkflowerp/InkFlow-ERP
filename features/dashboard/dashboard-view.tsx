@@ -63,7 +63,6 @@ import { useI18n } from '@/i18n/context'
 import { ColumnDef } from '@/types/common.types'
 import { toBengaliNumerals, formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
-import { useOperatorMode } from '@/hooks/use-operator-mode'
 import { OwnerDashboard } from '@/components/dashboard/roles/owner-dashboard'
 import { SalesDashboard } from '@/components/dashboard/roles/sales-dashboard'
 import { DesignerDashboard } from '@/components/dashboard/roles/designer-dashboard'
@@ -475,63 +474,45 @@ export function DashboardView() {
     ? userCtx.responsibilities
     : [userCtx.primaryRole || currentRole || 'general_staff']
 
-  const { isSimpleMode } = useOperatorMode()
+  const convertedTasks: ProductionTaskRecord[] = useMemo(() => {
+    return (productionJobs || []).map((job) => ({
+      id: job.id,
+      company_id: job.company_id || '',
+      task_number: job.production_job_number,
+      production_job_id: job.id,
+      task_type: (job.department as any) || 'printing',
+      task_name: job.product_name,
+      status: (job.status as any) || 'queued',
+      priority: (job.priority as any) || 'normal',
+      assigned_to: job.assigned_workers?.[0] || '',
+      assigned_to_name: job.assigned_workers?.[0] || 'Unassigned',
+      target_quantity: job.quantity,
+      completed_quantity: job.status === 'completed' ? job.quantity : 0,
+      material_spec: job.material_spec,
+      dimensions_spec: job.dimensions_spec,
+      created_at: job.created_at,
+      updated_at: job.updated_at,
+      deadline: job.deadline,
+    } as unknown as ProductionTaskRecord))
+  }, [productionJobs])
 
   const totalReceivableDue = useMemo(() => {
-    return (invoices || []).reduce((sum, i) => sum + (Number(i.due_amount) || 0), 0)
+    return (invoices || []).reduce((sum, inv) => sum + (inv.due_amount || 0), 0)
   }, [invoices])
 
   const todaySales = useMemo(() => {
     const todayStr = new Date().toISOString().split('T')[0]
-    return (invoices || [])
-      .filter((i) => i.created_at?.startsWith(todayStr))
-      .reduce((sum, i) => sum + (Number(i.grand_total) || 0), 0)
-  }, [invoices])
-
-  const todayCollection = useMemo(() => {
-    return (invoices || []).reduce((sum, i) => sum + (Number(i.paid_amount) || 0), 0)
-  }, [invoices])
-
-  const activeProductionCount = useMemo(() => {
-    return (productionJobs || []).filter((j) => j.status === 'in_progress' || j.status === 'queued').length
-  }, [productionJobs])
+    return (orders || [])
+      .filter((o) => o.created_at?.startsWith(todayStr))
+      .reduce((sum, o) => sum + (o.final_price || 0), 0)
+  }, [orders])
 
   const readyDeliveriesCount = useMemo(() => {
-    return (deliveryChallans || []).filter((d) => (d.status as any) === 'ready' || (d.status as any) === 'pending').length
+    return (deliveryChallans || []).filter((d) => d.status === 'scheduled' || d.status === 'assigned').length
   }, [deliveryChallans])
 
-  const lowStockCount = useMemo(() => {
-    return (materials || []).filter((m) => Number(m.current_stock) <= Number(m.reorder_level || 50)).length
-  }, [materials])
-
-  const convertedTasks = useMemo<ProductionTaskRecord[]>(() => {
-    return (productionJobs || []).map((j) => ({
-      id: j.id,
-      company_id: j.company_id,
-      job_order_id: j.job_order_id || '',
-      task_number: j.production_job_number,
-      task_name: `${j.product_name} (${j.dimensions_spec || ''})`,
-      task_type: (j.department === 'design' ? 'design' : 'printing') as any,
-      department: j.department || 'printing',
-      sequence_order: 1,
-      quantity: j.quantity || 1,
-      unit: 'sft',
-      priority: (j.priority || 'normal') as any,
-      estimated_duration_minutes: 30,
-      status: (j.status === 'in_progress' || j.status === 'paused' || j.status === 'completed' ? j.status : 'queued') as any,
-      is_rework: j.has_rework || false,
-      good_quantity: (j as any).completed_quantity || 0,
-      rejected_quantity: (j as any).waste_quantity || 0,
-      customer_name: j.customer_name,
-      product_name: j.product_name,
-      job_number: j.production_job_number,
-      created_at: j.created_at,
-      updated_at: j.updated_at,
-    })) as ProductionTaskRecord[]
-  }, [productionJobs])
-
-  // Simple Mode Dispatch
-  if (isSimpleMode) {
+  // Role-Specific Operational Dashboard Dispatch for Specialized Staff
+  if (!isOwner) {
     if (isOperator) {
       return (
         <div className="space-y-6">
@@ -615,48 +596,6 @@ export function DashboardView() {
         </div>
       )
     }
-
-    // Default Simple Mode for Owner / Manager
-    return (
-      <div className="space-y-6">
-        <OwnerDashboard
-          metrics={{
-            todaySales: todaySales,
-            todayCollection: todayCollection,
-            totalReceivableDue: totalReceivableDue,
-            activeProductionCount: activeProductionCount,
-            readyDeliveriesCount: readyDeliveriesCount,
-            profitMarginPercent: 28.5,
-            lowStockCount: lowStockCount,
-          }}
-          tasks={convertedTasks}
-          onOpenNewWork={() => setActiveModal('new_work')}
-          onOpenPaymentModal={() => setActiveModal('record_payment')}
-          onRefresh={orderHelpers.reload}
-        />
-        {activeModal === 'new_work' && (
-          <NewWorkWizard
-            isOpen={true}
-            isInlineModal={true}
-            onClose={() => setActiveModal(null)}
-            onSuccess={() => {
-              setActiveModal(null)
-              orderHelpers.reload()
-            }}
-          />
-        )}
-        {activeModal === 'record_payment' && (
-          <RecordPaymentModal
-            open={true}
-            onOpenChange={(open) => !open && setActiveModal(null)}
-            onPaymentRecorded={() => {
-              setActiveModal(null)
-              orderHelpers.reload()
-            }}
-          />
-        )}
-      </div>
-    )
   }
 
   return (

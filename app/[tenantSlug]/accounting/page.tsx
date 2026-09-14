@@ -34,7 +34,6 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
-import { useOperatorMode } from '@/hooks/use-operator-mode'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -96,7 +95,6 @@ import {
 export default function AccountingPage() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const { isSimpleMode, toggleSimpleMode } = useOperatorMode()
   const slug = company?.slug || 'my-company'
 
   // Data State
@@ -309,29 +307,18 @@ export default function AccountingPage() {
         </div>
       )}
 
-      {/* Page Header with Mode Toggle */}
+      {/* Page Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <Landmark className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-              <span>{tBilingual('Finance 360', 'ফাইন্যান্স ৩৬০ ও হিসাব ব্যবস্থাপনা')}</span>
-            </h1>
-            <Badge
-              className={`text-[11px] font-semibold cursor-pointer select-none transition-all ${
-                isSimpleMode
-                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-                  : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300'
-              }`}
-              onClick={toggleSimpleMode}
-            >
-              {isSimpleMode ? tBilingual('Simple Mode (সহজ মোড)', 'সহজ মোড') : tBilingual('Advanced Mode (হিসাব নিরীক্ষা)', 'অ্যাকাউন্টিং মোড')}
-            </Badge>
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Landmark className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            <span>{tBilingual('Finance 360', 'ফাইন্যান্স ৩৬০ ও হিসাব ব্যবস্থাপনা')}</span>
+          </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {isSimpleMode
-              ? tBilingual('Operator-first money management, cash receipts, and daily drawer reconciliation.', 'দৈনন্দিন টাকা গ্রহণ, খরচ এন্ট্রি এবং ড্রয়ার ক্যাশ ক্লোজিং।')
-              : tBilingual('Full double-entry general ledger, Balance Sheet, Trial Balance, Cash Flow, and Job Profitability.', 'সম্পূর্ণ দ্বি-তরফা দাখিলা খতিয়ান, ব্যালেন্স শিট, রেওয়ামিল ও আর্থিক বিবরণী।')}
+            {tBilingual(
+              'Money management, cash closing, General Ledger, Balance Sheet, Trial Balance, and Profitability.',
+              'দৈনন্দিন টাকা গ্রহণ, খরচ এন্ট্রি, সাধারণ খতিয়ান, ব্যালেন্স শিট, রেওয়ামিল ও আর্থিক বিবরণী।'
+            )}
           </p>
         </div>
 
@@ -418,114 +405,98 @@ export default function AccountingPage() {
         onCustomerRefund={() => setIsRefundModalOpen(true)}
         onCashClosing={() => setIsCashClosingModalOpen(true)}
         onRecordAdjustment={() => setIsAdjustmentModalOpen(true)}
-        isSimpleMode={isSimpleMode}
       />
 
       {/* Tabs Navigation */}
       <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 pb-2">
-        {isSimpleMode ? (
-          <>
-            <Button
-              variant={activeTab === 'overview' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('overview')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Money Overview (সারসংক্ষেপ)', 'সারসংক্ষেপ')}
-            </Button>
-            <Button
-              variant={activeTab === 'receivables' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('receivables')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Customer Due (গ্রাহকের বাকি)', 'গ্রাহকের বাকি')}
-            </Button>
-            <Button
-              variant={activeTab === 'payables' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('payables')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Supplier Due (পাওনাদার)', 'পাওনাদার')}
-            </Button>
-            <Button
-              variant={activeTab === 'closings' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('closings')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Cash Closings (ড্রয়ার হিস্ট্রি)', 'ক্যাশ হিস্ট্রি')}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              variant={activeTab === 'overview' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('overview')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Dashboard', 'ড্যাশবোর্ড')}
-            </Button>
-            <Button
-              variant={activeTab === 'ledger' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('ledger')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('General Ledger (খতিয়ান)', 'খতিয়ান')}
-            </Button>
-            <Button
-              variant={activeTab === 'pnl' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('pnl')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('P&L Statement (লাভ-ক্ষতি)', 'লাভ-ক্ষতি')}
-            </Button>
-            <Button
-              variant={activeTab === 'balance_sheet' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('balance_sheet')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Balance Sheet (উদ্বৃত্তপত্র)', 'ব্যালেন্স শিট')}
-            </Button>
-            <Button
-              variant={activeTab === 'cash_flow' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('cash_flow')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Cash Flow (নগদ প্রবাহ)', 'ক্যাশ ফ্লো')}
-            </Button>
-            <Button
-              variant={activeTab === 'trial_balance' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('trial_balance')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Trial Balance (রেওয়ামিল)', 'রেওয়ামিল')}
-            </Button>
-            <Button
-              variant={activeTab === 'job_profitability' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('job_profitability')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Job Profitability (কস্টিং লাভ)', 'কস্টিং লাভ')}
-            </Button>
-            <Button
-              variant={activeTab === 'accounts' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('accounts')}
-              className="rounded-xl text-xs"
-            >
-              {tBilingual('Chart of Accounts', 'হিসাব তালিকা')}
-            </Button>
-          </>
-        )}
+        <Button
+          variant={activeTab === 'overview' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('overview')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Dashboard', 'ড্যাশবোর্ড')}
+        </Button>
+        <Button
+          variant={activeTab === 'receivables' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('receivables')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Customer Due', 'গ্রাহকের বাকি')}
+        </Button>
+        <Button
+          variant={activeTab === 'payables' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('payables')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Supplier Due', 'পাওনাদার')}
+        </Button>
+        <Button
+          variant={activeTab === 'closings' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('closings')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Cash Closings', 'ক্যাশ হিস্ট্রি')}
+        </Button>
+        <Button
+          variant={activeTab === 'ledger' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('ledger')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('General Ledger', 'খতিয়ান')}
+        </Button>
+        <Button
+          variant={activeTab === 'pnl' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('pnl')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('P&L Statement', 'লাভ-ক্ষতি')}
+        </Button>
+        <Button
+          variant={activeTab === 'balance_sheet' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('balance_sheet')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Balance Sheet', 'ব্যালেন্স শিট')}
+        </Button>
+        <Button
+          variant={activeTab === 'cash_flow' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('cash_flow')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Cash Flow', 'ক্যাশ ফ্লো')}
+        </Button>
+        <Button
+          variant={activeTab === 'trial_balance' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('trial_balance')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Trial Balance', 'রেওয়ামিল')}
+        </Button>
+        <Button
+          variant={activeTab === 'job_profitability' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('job_profitability')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Job Profitability', 'কস্টিং লাভ')}
+        </Button>
+        <Button
+          variant={activeTab === 'accounts' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('accounts')}
+          className="rounded-xl text-xs"
+        >
+          {tBilingual('Chart of Accounts', 'হিসাব তালিকা')}
+        </Button>
       </div>
 
       {/* Main Tab Views */}

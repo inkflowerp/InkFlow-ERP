@@ -21,7 +21,6 @@ interface FinanceQuickActionsProps {
   onCustomerRefund: () => void
   onCashClosing: () => void
   onRecordAdjustment?: () => void
-  isSimpleMode?: boolean
 }
 
 export function FinanceQuickActions({
@@ -32,7 +31,6 @@ export function FinanceQuickActions({
   onCustomerRefund,
   onCashClosing,
   onRecordAdjustment,
-  isSimpleMode = false,
 }: FinanceQuickActionsProps) {
   const { tBilingual } = useI18n()
 
@@ -91,7 +89,7 @@ export function FinanceQuickActions({
         <span>{tBilingual('Refund', 'টাকা ফেরত')}</span>
       </Button>
 
-      {!isSimpleMode && onRecordAdjustment && (
+      {onRecordAdjustment && (
         <Button
           onClick={onRecordAdjustment}
           variant="ghost"

@@ -77,7 +77,7 @@ export function MobileBottomNav() {
             </span>
           </Link>
 
-          {/* 3. Center + New Work Floating Action */}
+          {/* 3. Center New Work Floating Action */}
           <button
             type="button"
             onClick={() => setNewWorkOpen(true)}
@@ -88,7 +88,7 @@ export function MobileBottomNav() {
               <Plus className="h-6 w-6 stroke-[3]" />
             </div>
             <span className="text-[10px] font-black text-white mt-1 bangla-text whitespace-nowrap">
-              {tBilingual('+ New Work', '+ নতুন কাজ')}
+              {tBilingual('New Work', 'নতুন কাজ')}
             </span>
           </button>
 

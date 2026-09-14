@@ -25,7 +25,6 @@ import {
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
-import { useOperatorMode } from '@/hooks/use-operator-mode'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -131,7 +130,6 @@ export function NewWorkWizard({
 }: NewWorkWizardProps) {
   const { tBilingual } = useI18n()
   const { company } = useTenant()
-  const { isSimpleMode } = useOperatorMode()
   const router = useRouter()
   const companyId = company?.id || 'demo-company'
   const tenantSlug = company?.slug || 'my-company'
@@ -172,8 +170,8 @@ export function NewWorkWizard({
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'courier' | 'installation'>('pickup')
   const [notes, setNotes] = useState('')
 
-  // Advanced Mode Options (Progressive Disclosure)
-  const [showAdvanced, setShowAdvanced] = useState(!isSimpleMode)
+  // Advanced Options (Progressive Disclosure)
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const [assignedMachine, setAssignedMachine] = useState('Large Format Eco-Solvent #1')
   const [colorProfile, setColorProfile] = useState('CMYK Standard')
   const [priority, setPriority] = useState<'normal' | 'urgent' | 'very_urgent'>('normal')

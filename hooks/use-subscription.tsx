@@ -179,9 +179,10 @@ export function SubscriptionProvider({
   const [snapshot, setSnapshot] = useState<SubscriptionSnapshot | null>(() => initialSnapshot || null)
   const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => {
     if (initialSnapshot) {
-      return [snapshotToPlanRecord(initialSnapshot)]
+      const snapPlan = snapshotToPlanRecord(initialSnapshot)
+      return [snapPlan, ...DEFAULT_PLANS.filter((p) => p.code !== snapPlan.code)]
     }
-    return []
+    return DEFAULT_PLANS
   })
   const [subscription, setSubscription] = useState<CompanySubscriptionRecord>(() => {
     if (initialSnapshot) {
@@ -470,8 +471,14 @@ export function SubscriptionProvider({
   }, [])
 
   const accountType: TenantAccountType = useMemo(() => {
+    if (snapshot?.planCode) {
+      if (snapshot.planCode === 'enterprise') return 'enterprise'
+      if (snapshot.planCode === 'business') return 'business'
+      if (snapshot.planCode === 'starter') return 'starter'
+      if (snapshot.planCode === 'trial' || snapshot.status === 'trial') return 'trial'
+    }
     return resolveTenantAccountType(subscription)
-  }, [subscription])
+  }, [snapshot, subscription])
 
   const accountTypeMeta: TenantAccountTypeMeta = useMemo(() => {
     const base = TENANT_ACCOUNT_TYPE_METADATA[accountType] || TENANT_ACCOUNT_TYPE_METADATA.trial
@@ -503,15 +510,17 @@ export function SubscriptionProvider({
 
   const isSuspended = subscription.status === 'suspended'
   const isPastDue = subscription.status === 'past_due'
-  const isTrial =
-    (subscription.status === 'trial' || subscription.status === 'trialing' || subscription.plan_code === 'trial') &&
-    subscription.status !== 'active' &&
-    subscription.status !== 'suspended' &&
-    subscription.status !== 'cancelled' &&
-    subscription.status !== 'expired' &&
-    subscription.plan_code !== 'business' &&
-    subscription.plan_code !== 'enterprise' &&
-    subscription.plan_code !== 'starter'
+  const isTrial = useMemo(() => {
+    const effCode = snapshot?.planCode || subscription.plan_code
+    const effStatus = snapshot?.status || subscription.status
+    if (effCode === 'business' || effCode === 'enterprise' || effCode === 'starter') {
+      return false
+    }
+    if (effStatus === 'active' || effStatus === 'suspended' || effStatus === 'cancelled' || effStatus === 'expired') {
+      return false
+    }
+    return effStatus === 'trial' || effStatus === 'trialing' || effCode === 'trial'
+  }, [snapshot?.planCode, snapshot?.status, subscription.plan_code, subscription.status])
 
   const totalTrialDays = currentPlan?.trial_days || 14
 

@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   Printer,
   Plus,
+  Bell,
   MessageSquare,
   Users,
   Briefcase,
@@ -34,15 +35,13 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  ChevronUp,
   Headphones,
   Zap,
 } from 'lucide-react'
-import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
+import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useSubscription } from '@/hooks/use-subscription'
-import { useOperatorMode } from '@/hooks/use-operator-mode'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -51,6 +50,7 @@ const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
   Printer,
   Plus,
+  Bell,
   MessageSquare,
   Users,
   Briefcase,
@@ -78,55 +78,111 @@ const iconMap: Record<string, React.ElementType> = {
   Zap,
 }
 
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'inkflow_sidebar_collapsed'
+const EXPANDED_GROUPS_STORAGE_KEY = 'inkflow_nav_expanded_groups'
+
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
-  const [showMoreInSimpleMode, setShowMoreInSimpleMode] = useState(false)
   const pathname = usePathname()
   const { company } = useTenant()
   const { can, isOwner } = usePermissions()
-  const { isSimpleMode } = useOperatorMode()
   const { hasFeature, isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { tBilingual } = useI18n()
 
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+
+  // State of expanded group IDs (e.g. ['today', 'work', 'materials', 'management', 'settings'])
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') {
+      return { today: true, work: true, materials: true, management: true, settings: true }
+    }
+    try {
+      const saved = localStorage.getItem(EXPANDED_GROUPS_STORAGE_KEY)
+      if (saved) {
+        return JSON.parse(saved)
+      }
+    } catch {}
+    return { today: true, work: true, materials: true, management: true, settings: true }
+  })
+
   const pathSlug = pathname ? pathname.split('/')[1] : null
   const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
-  const navSections = getNavigationConfig(tenantSlug)
+  const navSections = useMemo(() => getNavigationConfig(tenantSlug), [tenantSlug])
 
-  // Explicit permission and subscription feature entitlement resolution
-  const isNavItemAllowed = (item: NavItem): boolean => {
+  // Explicit permission and feature entitlement filtering
+  const isNavItemAllowed = useCallback((item: NavItem): boolean => {
     if (item.featureGate && !hasFeature(item.featureGate)) return false
     if (isOwner) return true
     if (item.ownerOnly && !isOwner) return false
     if (!item.permission) return true
     return can(item.permission.action, item.permission.resource)
-  }
+  }, [hasFeature, isOwner, can])
 
-  // Filter sections and items based on permissions and Simple Mode
-  const processedSections = navSections
-    .map((section) => {
-      const allowedItems = section.items.filter(isNavItemAllowed)
-      return { ...section, items: allowedItems }
+  // Filter sections by permissions
+  const processedSections = useMemo(() => {
+    return navSections
+      .map((section) => {
+        const allowedItems = section.items.filter(isNavItemAllowed)
+        return { ...section, items: allowedItems }
+      })
+      .filter((section) => section.items.length > 0)
+  }, [navSections, isNavItemAllowed])
+
+  // Persist sidebar collapsed state
+  const handleToggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(next))
+      } catch {}
+      return next
     })
-    .filter((section) => section.items.length > 0)
+  }, [])
 
-  // In Simple Mode: separate daily essential items from advanced items
-  const simpleSections = processedSections
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) => item.simpleMode),
-    }))
-    .filter((section) => section.items.length > 0)
+  // Persist group expansion state
+  const toggleGroup = useCallback((groupId: string) => {
+    setExpandedGroups((prev) => {
+      const next = { ...prev, [groupId]: !prev[groupId] }
+      try {
+        localStorage.setItem(EXPANDED_GROUPS_STORAGE_KEY, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }, [])
 
-  const advancedSections = processedSections
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) => !item.simpleMode),
-    }))
-    .filter((section) => section.items.length > 0)
+  // Check whether an item is active
+  const isItemActive = useCallback((itemHref: string) => {
+    if (!pathname) return false
+    if (pathname === itemHref) return true
+    // Nested route matching, excluding root tenant slug
+    if (pathname.startsWith(`${itemHref}/`) && itemHref !== `/${tenantSlug}`) {
+      return true
+    }
+    return false
+  }, [pathname, tenantSlug])
 
-  const activeSectionsToRender = !isSimpleMode || showMoreInSimpleMode
-    ? processedSections
-    : simpleSections
+  // Automatically ensure active route's parent group is expanded
+  useEffect(() => {
+    if (!pathname) return
+    for (const section of processedSections) {
+      const hasActive = section.items.some((item) => isItemActive(item.href))
+      if (hasActive && !expandedGroups[section.id]) {
+        setExpandedGroups((prev) => {
+          const next = { ...prev, [section.id]: true }
+          try {
+            localStorage.setItem(EXPANDED_GROUPS_STORAGE_KEY, JSON.stringify(next))
+          } catch {}
+          return next
+        })
+      }
+    }
+  }, [pathname, processedSections, isItemActive])
 
   return (
     <aside
@@ -174,7 +230,7 @@ export function Sidebar() {
 
         <button
           type="button"
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={handleToggleCollapsed}
           className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
           title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
@@ -184,113 +240,132 @@ export function Sidebar() {
       </div>
 
       {/* Navigation Sections */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-5 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700">
-        {activeSectionsToRender.map((section) => {
+      <nav
+        aria-label="Sidebar Menu"
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-3 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700"
+      >
+        {processedSections.map((section) => {
+          const isExpanded = expandedGroups[section.id] ?? true
           const sectionTitle = tBilingual(section.title, section.titleBn)
 
           return (
             <div key={section.id} className="space-y-1">
-              {!collapsed && (
-                <h4 className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5 bangla-text">
-                  {sectionTitle}
-                </h4>
+              {!collapsed ? (
+                /* Collapsible Group Header Button (Expanded Sidebar) */
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(section.id)}
+                  aria-expanded={isExpanded}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 cursor-pointer bangla-text group"
+                >
+                  <span className="truncate">{sectionTitle}</span>
+                  {isExpanded ? (
+                    <ChevronDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
+                  )}
+                </button>
+              ) : (
+                /* Subtle Divider in Collapsed Sidebar */
+                <div className="h-px bg-slate-100 dark:bg-slate-800/80 my-1.5 mx-2" />
               )}
 
-              <div className="space-y-0.5">
-                {section.items.map((item) => {
-                  const Icon = iconMap[item.icon] || Sparkles
-                  const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== `/${tenantSlug}`)
-                  const itemTitle = tBilingual(item.title, item.titleBn)
-                  const isPrimary = item.isPrimaryAction
+              {/* Items List (Toggled in expanded sidebar, always accessible via icons in collapsed sidebar) */}
+              {(!collapsed ? isExpanded : true) && (
+                <div className="space-y-0.5 transition-all">
+                  {section.items.map((item) => {
+                    const Icon = iconMap[item.icon] || Sparkles
+                    const isActive = isItemActive(item.href)
+                    const itemTitle = tBilingual(item.title, item.titleBn)
+                    const isPrimary = item.isPrimaryAction
 
-                  return (
-                    <Link
-                      key={item.key}
-                      href={item.href}
-                      title={collapsed ? `${item.title} (${item.titleBn})` : undefined}
-                      aria-label={`${item.title} - ${item.titleBn}`}
-                      className={cn(
-                        'group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text min-h-[38px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-                        isPrimary
-                          ? isActive
-                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
-                            : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold hover:from-blue-600 hover:to-indigo-600 shadow-sm shadow-blue-500/20 active:scale-98'
-                          : isActive
-                          ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
-                          : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
-                        collapsed && 'justify-center px-2'
-                      )}
-                    >
-                      <Icon
-                        className={cn(
-                          'h-4 w-4 shrink-0 transition-transform group-hover:scale-105',
-                          isPrimary || isActive
-                            ? 'text-white'
-                            : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'
-                        )}
-                      />
-
-                      {!collapsed && (
-                        <div className="flex flex-1 items-center justify-between truncate min-w-0">
-                          <span className="truncate">{itemTitle}</span>
-                          {item.badge && (
-                            <Badge
-                              variant={isActive || isPrimary ? 'secondary' : 'default'}
-                              className={cn(
-                                'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5',
-                                item.badgeVariant === 'live'
-                                  ? 'bg-rose-500 text-white animate-pulse'
-                                  : item.badgeVariant === 'fast'
-                                  ? 'bg-emerald-400 text-slate-950 font-black'
-                                  : item.badgeVariant === 'pro'
-                                  ? 'bg-amber-500 text-white'
-                                  : 'bg-emerald-500 text-white'
-                              )}
-                            >
-                              {item.badge}
-                            </Badge>
+                    return (
+                      <div key={item.key} className="relative group/nav">
+                        <Link
+                          href={item.href}
+                          aria-label={`${item.title} - ${item.titleBn}`}
+                          className={cn(
+                            'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text min-h-[38px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                            isPrimary
+                              ? isActive
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
+                                : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold hover:from-blue-600 hover:to-indigo-600 shadow-sm shadow-blue-500/20 active:scale-98'
+                              : isActive
+                              ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
+                              : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+                            collapsed && 'justify-center px-2'
                           )}
-                        </div>
-                      )}
-                    </Link>
-                  )
-                })}
-              </div>
+                        >
+                          <Icon
+                            className={cn(
+                              'h-4 w-4 shrink-0 transition-transform group-hover/nav:scale-105',
+                              isPrimary || isActive
+                                ? 'text-white'
+                                : 'text-slate-400 group-hover/nav:text-slate-600 dark:group-hover/nav:text-slate-200'
+                            )}
+                          />
+
+                          {!collapsed ? (
+                            <div className="flex flex-1 items-center justify-between truncate min-w-0">
+                              <span className="truncate">{itemTitle}</span>
+                              {item.badge && (
+                                <Badge
+                                  variant={isActive || isPrimary ? 'secondary' : 'default'}
+                                  className={cn(
+                                    'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5',
+                                    item.badgeVariant === 'live'
+                                      ? 'bg-rose-500 text-white animate-pulse'
+                                      : item.badgeVariant === 'fast'
+                                      ? 'bg-emerald-400 text-slate-950 font-black'
+                                      : item.badgeVariant === 'pro'
+                                      ? 'bg-amber-500 text-white'
+                                      : 'bg-emerald-500 text-white'
+                                  )}
+                                >
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </div>
+                          ) : (
+                            /* Collapsed Badges (Live pulse dot) */
+                            item.badge && (
+                              <span
+                                className={cn(
+                                  'absolute top-1.5 right-1.5 h-2 w-2 rounded-full',
+                                  item.badgeVariant === 'live' ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
+                                )}
+                              />
+                            )
+                          )}
+                        </Link>
+
+                        {/* Collapsed Hover Tooltip */}
+                        {collapsed && (
+                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden group-hover/nav:flex items-center z-50 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-150">
+                            <div className="rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs font-semibold shadow-xl whitespace-nowrap dark:bg-slate-800 dark:border dark:border-slate-700 bangla-text flex items-center gap-2">
+                              <span>{itemTitle}</span>
+                              {item.badge && (
+                                <span className="px-1.5 py-0.2 rounded bg-white/20 text-2xs font-bold uppercase">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )
         })}
+      </nav>
 
-        {/* Simple Mode "More / Advanced" Expansion Toggle */}
-        {isSimpleMode && !collapsed && advancedSections.length > 0 && (
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
-            <button
-              type="button"
-              onClick={() => setShowMoreInSimpleMode(!showMoreInSimpleMode)}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all cursor-pointer bangla-text min-h-[36px]"
-              aria-expanded={showMoreInSimpleMode}
-            >
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
-                <span>
-                  {showMoreInSimpleMode
-                    ? tBilingual('Show Less', 'কম মেনু দেখুন')
-                    : tBilingual('More Modules', 'আরও মেনু দেখুন')}
-                </span>
-              </div>
-              {showMoreInSimpleMode ? (
-                <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
-              )}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Footer / Support Hotline & Trial Upgrade Widget */}
+      {/* Footer / Support Desk & Subscription Upgrade Area */}
       {!collapsed && (
         <div className="shrink-0 border-t border-slate-100 p-3 dark:border-slate-800 space-y-2">
-          {/* Trial / Plan Upgrade Box */}
+          {/* Plan / Upgrade Box */}
           {isTrial ? (
             <div className="rounded-xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-blue-500/10 p-2.5 border border-indigo-200/80 dark:border-indigo-800/60 space-y-1.5">
               <div className="flex items-center justify-between">
@@ -315,21 +390,25 @@ export function Sidebar() {
               </button>
             </div>
           ) : (
-            currentPlan.code !== 'enterprise' && (
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 p-2 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+            currentPlan && (
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 p-2.5 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <Sparkles className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate bangla-text">
-                    {tBilingual(currentPlan.name, currentPlan.name_bn)}
-                  </span>
+                  <div className="truncate">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block truncate bangla-text">
+                      {tBilingual(currentPlan.name, currentPlan.name_bn)}
+                    </span>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => openUpgradeModal('enterprise')}
-                  className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline bangla-text cursor-pointer shrink-0"
-                >
-                  {tBilingual('Upgrade', 'আপগ্রেড')}
-                </button>
+                {currentPlan.code !== 'enterprise' && (
+                  <button
+                    type="button"
+                    onClick={() => openUpgradeModal('enterprise')}
+                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline bangla-text cursor-pointer shrink-0 ml-1.5"
+                  >
+                    {tBilingual('Upgrade', 'আপগ্রেড')}
+                  </button>
+                )}
               </div>
             )
           )}
