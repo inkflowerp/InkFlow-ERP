@@ -89,7 +89,7 @@ export class EntitlementService {
       cancel_at_period_end: false,
       next_plan_id: null,
       change_effective_at: null,
-      grace_period_ends_at: null,
+      grace_period_ends_at: snapshot.gracePeriodEndsAt || null,
       started_at: snapshot.trialStartsAt || snapshot.currentPeriodStart || undefined,
       payment_method_type: null,
       last_payment_reference: null,
@@ -201,8 +201,8 @@ export class EntitlementService {
       if (daysRemaining <= 0) return false
     }
 
-    // Expired paid subscriptions past grace period lose feature access immediately
-    if (subscription.status === 'active' && subscription.current_period_end) {
+    // Expired paid or cancelled subscriptions past period end / grace period lose feature access immediately
+    if ((subscription.status === 'active' || subscription.status === 'cancelled' || subscription.status === 'past_due' || subscription.status === 'grace_period') && subscription.current_period_end) {
       const periodEnd = new Date(subscription.current_period_end).getTime()
       const graceEnd = subscription.grace_period_ends_at ? new Date(subscription.grace_period_ends_at).getTime() : 0
       if (!isNaN(periodEnd) && periodEnd < now) {

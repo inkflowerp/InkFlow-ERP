@@ -51,6 +51,7 @@ export type SubscriptionSnapshot = {
 
   trialStartsAt: string | null
   trialEndsAt: string | null
+  gracePeriodEndsAt?: string | null
 
   limits: {
     maxUsers: number

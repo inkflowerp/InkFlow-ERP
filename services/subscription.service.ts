@@ -501,6 +501,7 @@ export class SubscriptionService {
       currentPeriodEnd: sub.current_period_end || null,
       trialStartsAt: sub.started_at || sub.current_period_start || null,
       trialEndsAt: sub.trial_ends_at || null,
+      gracePeriodEndsAt: sub.grace_period_ends_at || null,
       limits,
       features,
       customLimitsOverride: sub.custom_limits_override || null,

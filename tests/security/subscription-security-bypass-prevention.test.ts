@@ -6,7 +6,7 @@ import { SubscriptionGuard } from '../../lib/subscription/subscription-guard.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { CompanySubscriptionRecord, SubscriptionPlanRecord } from '../../types/subscription.types.ts'
 
-describe('Subscription Security & Bypass Prevention Test Suite', () => {
+describe('Subscription Security & Bypass Prevention Test Suite (Adversarial Certification)', () => {
   const tenantA = 'tenant-sec-a'
   const tenantB = 'tenant-sec-b'
 
@@ -55,7 +55,6 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
   // ============================================================================
   describe('1. Absolute Business Rule (Path 1: Payment, Path 2: Admin Only)', () => {
     test('Tenant cannot self-verify manual or bank_wire payment without platform admin session', async () => {
-      // Create a pending manual transaction in the data store
       const pendingTx = {
         id: 'tx-manual-1',
         tenant_id: tenantA,
@@ -73,7 +72,6 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
       }
       PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [pendingTx], false)
 
-      // Attempt verification without platform admin privileges (as normal user)
       const res = await SubscriptionService.verifyPaymentAndActivateSubscription({
         internalTrxId: 'SUB-MANUAL-1001',
         userId: 'regular-tenant-user-uuid',
@@ -83,7 +81,6 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
       assert.strictEqual(res.success, false, 'Manual payment verification must fail for non-admin')
       assert.match(res.error || '', /platform administrator authorization/i)
 
-      // Verify that tenantA is still on starter plan (no unauthorized upgrade)
       const sub = await SubscriptionService.getTenantSubscription(tenantA)
       assert.strictEqual(sub.plan_code, 'starter', 'Tenant plan must remain starter after rejected verification')
     })
@@ -106,7 +103,6 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
       }
       PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [pendingTx], false)
 
-      // Authorized platform admin verifies the wire transfer
       const res = await SubscriptionService.verifyPaymentAndActivateSubscription({
         internalTrxId: 'SUB-WIRE-2002',
         userId: 'admin-user-uuid',
@@ -116,7 +112,6 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
       assert.strictEqual(res.success, true, 'Manual payment verification must succeed for platform admin')
       assert.strictEqual(res.status, 'paid')
 
-      // Verify upgrade is effective
       const sub = await SubscriptionService.getTenantSubscription(tenantA)
       assert.strictEqual(sub.plan_code, 'business', 'Tenant plan must be upgraded to business')
     })
@@ -129,6 +124,33 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
 
       assert.strictEqual(res.success, false)
       assert.match(res.error || '', /not found/i)
+    })
+
+    test('Replaying already verified transaction returns idempotent success without corrupting state', async () => {
+      const tx = {
+        id: 'tx-idempotent-1',
+        tenant_id: tenantA,
+        provider: 'mock',
+        internal_trx_id: 'SUB-IDEMPOTENT-100',
+        amount: 4999,
+        currency: 'BDT',
+        payment_status: 'paid',
+        verification_status: 'verified',
+        verification_payload: {
+          companyId: tenantA,
+          planCode: 'business',
+          interval: 'monthly',
+        },
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [tx], false)
+
+      const res = await SubscriptionService.verifyPaymentAndActivateSubscription({
+        internalTrxId: 'SUB-IDEMPOTENT-100',
+        userId: 'user-owner',
+      })
+
+      assert.strictEqual(res.success, true)
+      assert.strictEqual(res.status, 'paid')
     })
   })
 
@@ -149,7 +171,7 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
         billing_interval: 'monthly',
         current_period_start: new Date(Date.now() - 30 * 86400000).toISOString(),
         current_period_end: new Date(Date.now() - 16 * 86400000).toISOString(),
-        trial_ends_at: new Date(Date.now() - 16 * 86400000).toISOString(), // 16 days ago
+        trial_ends_at: new Date(Date.now() - 16 * 86400000).toISOString(),
         payment_method_type: null,
         last_payment_reference: null,
       }
@@ -165,6 +187,53 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
         /Subscription Expired|Feature Access Restricted/i,
         'SubscriptionGuard must throw error on expired trial'
       )
+    })
+
+    test('Expired active subscription past grace period is denied feature access', async () => {
+      const expiredActiveCompany = 'tenant-expired-active'
+      const subs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+      subs[expiredActiveCompany] = {
+        id: 'sub-expired-active',
+        company_id: expiredActiveCompany,
+        plan_id: 'sp-02',
+        plan_code: 'business',
+        plan_name: 'Business Plan',
+        status: 'active',
+        billing_interval: 'monthly',
+        current_period_start: new Date(Date.now() - 60 * 86400000).toISOString(),
+        current_period_end: new Date(Date.now() - 10 * 86400000).toISOString(),
+        grace_period_ends_at: new Date(Date.now() - 3 * 86400000).toISOString(),
+        trial_ends_at: null,
+        payment_method_type: 'bkash',
+        last_payment_reference: 'TRX-OLD-999',
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+
+      const canAccess = await EntitlementService.canUseFeature(expiredActiveCompany, 'inventory_rolls')
+      assert.strictEqual(canAccess, false, 'Expired active subscription past grace period must lose access')
+    })
+
+    test('Cancelled subscription past current_period_end is denied feature access', async () => {
+      const cancelledCompany = 'tenant-cancelled-past-period'
+      const subs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+      subs[cancelledCompany] = {
+        id: 'sub-cancelled-1',
+        company_id: cancelledCompany,
+        plan_id: 'sp-02',
+        plan_code: 'business',
+        plan_name: 'Business Plan',
+        status: 'cancelled',
+        billing_interval: 'monthly',
+        current_period_start: new Date(Date.now() - 60 * 86400000).toISOString(),
+        current_period_end: new Date(Date.now() - 5 * 86400000).toISOString(),
+        trial_ends_at: null,
+        payment_method_type: null,
+        last_payment_reference: null,
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+
+      const canAccess = await EntitlementService.canUseFeature(cancelledCompany, 'inventory_rolls')
+      assert.strictEqual(canAccess, false, 'Cancelled subscription past period end must have zero feature access')
     })
 
     test('Unknown or missing company fails closed with 0 quotas and 0 features', async () => {
@@ -238,12 +307,43 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
     })
 
     test('enforceLimit throws Quota Exceeded error when limit is breached', async () => {
-      // Starter limit is 3 users
       await assert.rejects(
         async () => {
           await EntitlementService.enforceLimit(tenantA, 'max_users', 4)
         },
         /Plan Limit Reached|quota/i
+      )
+    })
+
+    test('Expired custom overrides automatically stop granting elevated limits', async () => {
+      const overrideTenant = 'tenant-override-exp'
+      const subs = PrintERPDataStore.get<Record<string, any>>(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS) || {}
+      subs[overrideTenant] = {
+        id: 'sub-override-1',
+        company_id: overrideTenant,
+        plan_id: 'sp-01',
+        plan_code: 'starter',
+        plan_name: 'Starter Plan',
+        status: 'active',
+        billing_interval: 'monthly',
+        current_period_start: new Date(Date.now() - 5 * 86400000).toISOString(),
+        current_period_end: new Date(Date.now() + 25 * 86400000).toISOString(),
+        trial_ends_at: null,
+        custom_limits_override: {
+          max_users: 10,
+          is_active: true,
+          expires_at: new Date(Date.now() - 1 * 86400000).toISOString(), // Expired yesterday
+        },
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.COMPANY_SUBSCRIPTIONS, subs, false)
+
+      // Base Starter limit is 3. Attempting 5 users with expired override of 10 must fail
+      await assert.rejects(
+        async () => {
+          await EntitlementService.enforceLimit(overrideTenant, 'max_users', 5)
+        },
+        /Plan Limit Reached|quota/i,
+        'Expired override must not grant quota'
       )
     })
   })
@@ -253,7 +353,6 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
   // ============================================================================
   describe('4. Multi-Tenant Isolation & IDOR Protection', () => {
     test('Cross-tenant payment consumption is blocked', async () => {
-      // Transaction belongs to tenantB
       const txB = {
         id: 'tx-sec-b-1',
         tenant_id: tenantB,
@@ -271,13 +370,11 @@ describe('Subscription Security & Bypass Prevention Test Suite', () => {
       }
       PrintERPDataStore.set(STORAGE_KEYS.GATEWAY_TRANSACTIONS, [txB], false)
 
-      // Tenant A tries to activate using Tenant B's transaction
       const res = await SubscriptionService.verifyPaymentAndActivateSubscription({
         internalTrxId: 'SUB-MOCK-B001',
         userId: 'user-tenant-a',
       })
 
-      // Verification succeeds for the transaction itself, but activates for tenantB, NOT tenantA
       const subA = await SubscriptionService.getTenantSubscription(tenantA)
       assert.strictEqual(subA.plan_code, 'starter', 'Tenant A must not be upgraded by Tenant B transaction')
 
