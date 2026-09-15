@@ -444,13 +444,12 @@ export default function BillingPage() {
           <div className="flex items-center gap-2.5">
             <Button
               size="sm"
-              variant="outline"
               onClick={() => {
                 setSelectedCustomerIdForPayment(undefined)
                 setSelectedInvoiceIdForPayment(undefined)
                 setIsReceivePaymentOpen(true)
               }}
-              className="text-xs font-bold h-9 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1.5 cursor-pointer"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
               <DollarSign className="h-4 w-4" />
               <span>+ Receive Payment</span>
@@ -458,8 +457,9 @@ export default function BillingPage() {
 
             <Button
               size="sm"
+              variant="outline"
               onClick={() => setIsNewInvoiceOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white shadow-xs h-9 gap-1.5 cursor-pointer"
+              className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
               <Plus className="h-4 w-4" />
               <span>+ New Invoice</span>
@@ -523,7 +523,7 @@ export default function BillingPage() {
               Total Invoiced
             </div>
             <div className="text-lg font-black font-mono text-slate-900 dark:text-white mt-1">
-              ৳ {formatBDT(overviewMetrics?.salesAmount || 0)}
+              {formatBDT(overviewMetrics?.salesAmount || 0)}
             </div>
             <div className="text-[10px] text-slate-400 font-mono mt-0.5">
               {overviewMetrics?.salesCount || 0} Bills Generated
@@ -536,7 +536,7 @@ export default function BillingPage() {
               Collected
             </div>
             <div className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400 mt-1">
-              ৳ {formatBDT(overviewMetrics?.collectionAmount || 0)}
+              {formatBDT(overviewMetrics?.collectionAmount || 0)}
             </div>
             <div className="text-[10px] text-emerald-600/80 font-mono mt-0.5">
               {overviewMetrics?.collectionCount || 0} Payments Received
@@ -549,7 +549,7 @@ export default function BillingPage() {
               Outstanding Due
             </div>
             <div className="text-lg font-black font-mono text-amber-600 dark:text-amber-400 mt-1">
-              ৳ {formatBDT(overviewMetrics?.dueTodayAmount || 0)}
+              {formatBDT(overviewMetrics?.dueTodayAmount || 0)}
             </div>
             <div className="text-[10px] text-amber-600/80 font-mono mt-0.5">
               {overviewMetrics?.dueTodayCount || 0} Bills Maturing
@@ -565,7 +565,7 @@ export default function BillingPage() {
               )}
             </div>
             <div className="text-lg font-black font-mono text-rose-600 dark:text-rose-400 mt-1">
-              ৳ {formatBDT(overviewMetrics?.overdueAmount || 0)}
+              {formatBDT(overviewMetrics?.overdueAmount || 0)}
             </div>
             <div className="text-[10px] text-rose-600/80 font-mono mt-0.5">
               {overviewMetrics?.overdueCount || 0} Overdue Bills
@@ -578,7 +578,7 @@ export default function BillingPage() {
               Total Receivable
             </div>
             <div className="text-lg font-black font-mono text-slate-900 dark:text-white mt-1">
-              ৳ {formatBDT(overviewMetrics?.totalReceivables || 0)}
+              {formatBDT(overviewMetrics?.totalReceivables || 0)}
             </div>
             <div className="text-[10px] text-slate-400 font-mono mt-0.5">All Ledger Balance</div>
           </Card>
@@ -743,7 +743,7 @@ export default function BillingPage() {
                           <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
                             <span>Phone: <strong className="text-slate-700 dark:text-slate-300">{item.customerPhone}</strong></span>
                             <span>Due Date: {item.dueDate}</span>
-                            <span>Total: ৳{formatBDT(item.grandTotal)}</span>
+                            <span>Total: {formatBDT(item.grandTotal)}</span>
                           </div>
                         </div>
 
@@ -751,7 +751,7 @@ export default function BillingPage() {
                         <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
                           <div className="text-right">
                             <div className="font-mono font-black text-rose-600 dark:text-rose-400 text-sm">
-                              ৳ {formatBDT(item.dueAmount)} DUE
+                              {formatBDT(item.dueAmount)} DUE
                             </div>
                             {item.daysOverdue > 0 ? (
                               <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
@@ -824,7 +824,7 @@ export default function BillingPage() {
                         <span className="font-semibold text-slate-700 dark:text-slate-300 uppercase">{pm.label || pm.method}</span>
                         <div className="flex items-center gap-2 font-mono">
                           <span className="text-slate-500 text-[11px]">{pm.transactionCount || 0} txns</span>
-                          <strong className="text-emerald-600 font-black">৳ {formatBDT(pm.totalAmount)}</strong>
+                          <strong className="text-emerald-600 font-black">{formatBDT(pm.totalAmount)}</strong>
                         </div>
                       </div>
                     ))
@@ -848,8 +848,8 @@ export default function BillingPage() {
                           <span className="text-[10px] text-slate-400 block font-mono">{sp.customerCount || 0} Accounts</span>
                         </div>
                         <div className="text-right font-mono">
-                          <div className="text-emerald-600 font-bold">৳ {formatBDT(sp.totalCollected)}</div>
-                          <div className="text-[10px] text-rose-500">Due: ৳{formatBDT(sp.outstandingDue)}</div>
+                          <div className="text-emerald-600 font-bold">{formatBDT(sp.totalCollected)}</div>
+                          <div className="text-[10px] text-rose-500">Due: {formatBDT(sp.outstandingDue)}</div>
                         </div>
                       </div>
                     ))
@@ -961,13 +961,13 @@ export default function BillingPage() {
                           <td className="p-3 font-mono text-slate-500">{inv.invoice_date}</td>
                           <td className="p-3 font-mono text-slate-500">{inv.due_date}</td>
                           <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
-                            ৳ {formatBDT(inv.grand_total)}
+                            {formatBDT(inv.grand_total)}
                           </td>
                           <td className="p-3 text-right font-mono text-emerald-600 font-bold">
-                            ৳ {formatBDT(inv.paid_amount || 0)}
+                            {formatBDT(inv.paid_amount || 0)}
                           </td>
                           <td className="p-3 text-right font-mono font-black text-rose-600 dark:text-rose-400">
-                            ৳ {formatBDT(inv.due_amount || 0)}
+                            {formatBDT(inv.due_amount || 0)}
                           </td>
                           <td className="p-3 text-center">
                             {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
@@ -1064,15 +1064,15 @@ export default function BillingPage() {
                       <div className="grid grid-cols-3 gap-2 text-center font-mono text-xs bg-slate-50 dark:bg-slate-900 p-2 rounded-lg">
                         <div>
                           <span className="text-[10px] text-slate-400 block">Total</span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">৳{formatBDT(inv.grand_total)}</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{formatBDT(inv.grand_total)}</span>
                         </div>
                         <div>
                           <span className="text-[10px] text-emerald-600 block">Paid</span>
-                          <span className="font-bold text-emerald-600">৳{formatBDT(inv.paid_amount || 0)}</span>
+                          <span className="font-bold text-emerald-600">{formatBDT(inv.paid_amount || 0)}</span>
                         </div>
                         <div>
                           <span className="text-[10px] text-rose-600 block">Due</span>
-                          <span className="font-black text-rose-600">৳{formatBDT(inv.due_amount || 0)}</span>
+                          <span className="font-black text-rose-600">{formatBDT(inv.due_amount || 0)}</span>
                         </div>
                       </div>
 
@@ -1131,7 +1131,7 @@ export default function BillingPage() {
 
             {/* Payments Table */}
             <Card className="border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
                     <tr>
@@ -1171,7 +1171,7 @@ export default function BillingPage() {
                             {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name || '—'}
                           </td>
                           <td className="p-3 text-right font-mono font-black text-emerald-600 text-sm">
-                            ৳ {formatBDT(pay.amount)}
+                            {formatBDT(pay.amount)}
                           </td>
                           <td className="p-3 text-slate-600 dark:text-slate-300">
                             {pay.received_by_name || 'Cashier'}
@@ -1196,6 +1196,64 @@ export default function BillingPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Card List View for Payments */}
+              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredPayments.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-slate-500">
+                    No payment records found.
+                  </div>
+                ) : (
+                  filteredPayments.map((pay) => (
+                    <div key={pay.id} className="p-3.5 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                          {pay.receipt_number}
+                        </span>
+                        <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-[10px]">
+                          {pay.payment_method}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-white">
+                            {pay.customer_name || 'Walk-in Customer'}
+                          </div>
+                          <div className="text-[11px] text-slate-400 font-mono">
+                            {pay.payment_date} • By: {pay.received_by_name || 'Cashier'}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-mono font-black text-emerald-600 text-base">
+                            {formatBDT(pay.amount)}
+                          </div>
+                          {(pay.mfs_transaction_id || pay.cheque_number || pay.bank_name) && (
+                            <span className="text-[10px] text-slate-400 font-mono block">
+                              Ref: {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedPaymentForReceipt(pay)
+                            setIsReceiptModalOpen(true)
+                          }}
+                          className="h-8 text-xs font-semibold gap-1.5 text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"
+                        >
+                          <Receipt className="h-3.5 w-3.5" />
+                          <span>View Receipt</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </Card>
           </div>
         )}
@@ -1214,7 +1272,7 @@ export default function BillingPage() {
                       {b.label}
                     </span>
                     <div className="text-base font-black font-mono text-slate-900 dark:text-white mt-1">
-                      ৳ {formatBDT(b.amount || 0)}
+                      {formatBDT(b.amount || 0)}
                     </div>
                     <span className="text-[10px] text-slate-400 font-mono">
                       {b.invoiceCount || 0} Bills • {b.customerCount || 0} Cust
@@ -1227,7 +1285,7 @@ export default function BillingPage() {
                     Total Overdue
                   </span>
                   <div className="text-base font-black font-mono text-rose-600 dark:text-rose-400 mt-1">
-                    ৳ {formatBDT(receivablesAging.totalOverdue || 0)}
+                    {formatBDT(receivablesAging.totalOverdue || 0)}
                   </div>
                   <span className="text-[10px] text-rose-600/80 font-mono">Overdue Total</span>
                 </Card>
@@ -1237,7 +1295,7 @@ export default function BillingPage() {
                     Total Receivables
                   </span>
                   <div className="text-base font-black font-mono text-slate-900 dark:text-white mt-1">
-                    ৳ {formatBDT(receivablesAging.totalReceivables || 0)}
+                    {formatBDT(receivablesAging.totalReceivables || 0)}
                   </div>
                   <span className="text-[10px] text-slate-500 font-mono">All Open Accounts</span>
                 </Card>
@@ -1268,7 +1326,7 @@ export default function BillingPage() {
               </CardHeader>
 
               <CardContent className="p-0">
-                <div className="overflow-x-auto">
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
                       <tr>
@@ -1311,7 +1369,7 @@ export default function BillingPage() {
                               )}
                             </td>
                             <td className="p-3 text-right font-mono font-black text-rose-600 dark:text-rose-400 text-sm">
-                              ৳ {formatBDT(c.totalDue)}
+                              {formatBDT(c.totalDue)}
                             </td>
                             <td className="p-3 text-right">
                               <Button
@@ -1331,6 +1389,64 @@ export default function BillingPage() {
                       )}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile Card List View for Receivables */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                  {customerReceivables.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-slate-500">
+                      No customers with outstanding due balances.
+                    </div>
+                  ) : (
+                    customerReceivables.map((c) => (
+                      <div key={c.customerId || c.customerName} className="p-3.5 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-sm text-slate-900 dark:text-white">
+                            {c.customerName}
+                          </span>
+                          {c.maxDaysOverdue > 0 ? (
+                            <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 font-bold text-[10px]">
+                              {c.maxDaysOverdue}d Overdue
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 text-[10px]">
+                              Due Soon
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <span className="text-slate-500">Phone: {c.customerPhone || '—'}</span>
+                          <span className="text-blue-600 font-bold">{c.unpaidCount} Bills</span>
+                        </div>
+
+                        <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg">
+                          <div>
+                            <span className="text-[10px] text-slate-400 block font-mono">Oldest Due Date</span>
+                            <span className="text-xs font-mono text-slate-700 dark:text-slate-300">{c.oldestDueDate}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] text-slate-400 block font-mono">Total Outstanding</span>
+                            <span className="font-mono font-black text-rose-600 text-sm">{formatBDT(c.totalDue)}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end pt-1">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setSelectedCustomerIdForPayment(c.customerId || undefined)
+                              setSelectedInvoiceIdForPayment(c.invoices[0]?.id)
+                              setIsReceivePaymentOpen(true)
+                            }}
+                            className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs px-3 cursor-pointer"
+                          >
+                            Receive Payment
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1384,7 +1500,7 @@ export default function BillingPage() {
           <form onSubmit={handleConfirmWriteOff} className="space-y-4 pt-1">
             <div className="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-xl border border-purple-200 dark:border-purple-900/60 text-xs text-purple-900 dark:text-purple-200 space-y-1">
               <div>Customer: <strong>{selectedInvoiceForWriteOff.customer_name}</strong></div>
-              <div>Current Due: <strong className="font-mono">৳{formatBDT(selectedInvoiceForWriteOff.due_amount)}</strong></div>
+              <div>Current Due: <strong className="font-mono">{formatBDT(selectedInvoiceForWriteOff.due_amount)}</strong></div>
             </div>
 
             <div className="space-y-1">

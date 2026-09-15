@@ -802,18 +802,18 @@ export function NewInvoiceModal({
             <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs animate-in fade-in-0">
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">Outstanding Balance</span>
-                <span className="font-mono font-bold text-rose-600 text-sm">৳ {formatBDT(customerOutstanding)}</span>
+                <span className="font-mono font-bold text-rose-600 text-sm">{formatBDT(customerOutstanding)}</span>
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">Credit Limit</span>
                 <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-sm">
-                  {customerCreditLimit > 0 ? `৳ ${formatBDT(customerCreditLimit)}` : 'No Limit'}
+                  {customerCreditLimit > 0 ? `${formatBDT(customerCreditLimit)}` : 'No Limit'}
                 </span>
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">Available Credit</span>
                 <span className={cn('font-mono font-bold text-sm', availableCredit > 0 ? 'text-emerald-600' : 'text-rose-600')}>
-                  {customerCreditLimit > 0 ? `৳ ${formatBDT(Math.max(0, availableCredit))}` : 'Unlimited'}
+                  {customerCreditLimit > 0 ? `${formatBDT(Math.max(0, availableCredit))}` : 'Unlimited'}
                 </span>
               </div>
               <div>
@@ -833,10 +833,10 @@ export function NewInvoiceModal({
                 <span>Credit Limit Warning: Projected Outstanding Exceeds Credit Limit</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
-                <div>Outstanding: <strong>৳{formatBDT(customerOutstanding)}</strong></div>
-                <div>New Due: <strong>৳{formatBDT(dueAmount)}</strong></div>
-                <div>Limit: <strong>৳{formatBDT(customerCreditLimit)}</strong></div>
-                <div className="text-rose-600 font-bold">Exceeds By: <strong>৳{formatBDT(creditExceededBy)}</strong></div>
+                <div>Outstanding: <strong>{formatBDT(customerOutstanding)}</strong></div>
+                <div>New Due: <strong>{formatBDT(dueAmount)}</strong></div>
+                <div>Limit: <strong>{formatBDT(customerCreditLimit)}</strong></div>
+                <div className="text-rose-600 font-bold">Exceeds By: <strong>{formatBDT(creditExceededBy)}</strong></div>
               </div>
               <div className="pt-2 border-t border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <label className="flex items-center gap-2 font-bold cursor-pointer select-none">
@@ -914,7 +914,7 @@ export function NewInvoiceModal({
 
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-sm text-slate-900 dark:text-white">
-                        ৳ {formatBDT(calc?.lineTotal || 0)}
+                        {formatBDT(calc?.lineTotal || 0)}
                       </span>
                       {items.length > 1 && (
                         <button
@@ -1040,7 +1040,7 @@ export function NewInvoiceModal({
             <div>
               <Label className="text-xs font-semibold mb-1 block">Subtotal</Label>
               <div className="h-9 px-3 flex items-center bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-bold text-slate-900 dark:text-white">
-                ৳ {formatBDT(subtotal)}
+                {formatBDT(subtotal)}
               </div>
             </div>
 
@@ -1072,7 +1072,7 @@ export function NewInvoiceModal({
             <div>
               <Label className="text-xs font-semibold mb-1 block">Grand Total</Label>
               <div className="h-9 px-3 flex items-center bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md font-mono font-black text-blue-700 dark:text-blue-300 text-sm">
-                ৳ {formatBDT(grandTotal)}
+                {formatBDT(grandTotal)}
               </div>
             </div>
 
@@ -1097,7 +1097,7 @@ export function NewInvoiceModal({
                   ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
                   : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
               )}>
-                ৳ {formatBDT(dueAmount)}
+                {formatBDT(dueAmount)}
               </div>
             </div>
 

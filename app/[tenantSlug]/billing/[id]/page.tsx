@@ -385,11 +385,11 @@ export default function InvoiceCockpitPage() {
                     <td className="p-2 border border-slate-300 dark:border-slate-700 font-bold">{item.item_description}</td>
                     <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{item.dimensions_spec || 'N/A'}</td>
                     <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{item.quantity} {item.unit}</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">৳ {formatBDT(item.unit_price)}</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">৳ {formatBDT(item.total_price)}</td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(item.unit_price)}</td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(item.total_price)}</td>
                     <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{item.vat_percentage}%</td>
                     <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono font-bold">
-                      ৳ {formatBDT(Math.round((item.total_price * item.vat_percentage) / 100))}
+                      {formatBDT(Math.round((item.total_price * item.vat_percentage) / 100))}
                     </td>
                   </tr>
                 ))}
@@ -397,14 +397,14 @@ export default function InvoiceCockpitPage() {
               <tfoot>
                 <tr className="bg-slate-50 dark:bg-slate-900 font-bold">
                   <td colSpan={5} className="p-2 border border-slate-300 dark:border-slate-700 text-right">সর্বমোট (Total):</td>
-                  <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">৳ {formatBDT(invoice.subtotal)}</td>
+                  <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(invoice.subtotal)}</td>
                   <td className="p-2 border border-slate-300 dark:border-slate-700 text-right">{invoice.vat_percentage}%</td>
-                  <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">৳ {formatBDT(invoice.vat_amount)}</td>
+                  <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(invoice.vat_amount)}</td>
                 </tr>
                 <tr className="bg-purple-100 dark:bg-purple-950/40 font-black text-sm">
                   <td colSpan={7} className="p-2 border border-slate-300 dark:border-slate-700 text-right">করসহ সর্বমোট প্রদেয় মূল্য (Grand Total Payable):</td>
                   <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono text-purple-900 dark:text-purple-300">
-                    ৳ {formatBDT(invoice.grand_total)}
+                    {formatBDT(invoice.grand_total)}
                   </td>
                 </tr>
               </tfoot>
@@ -475,9 +475,9 @@ export default function InvoiceCockpitPage() {
                     <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white">{item.item_description}</td>
                     <td className="py-3 px-3 text-center font-mono text-slate-500">{item.dimensions_spec || '—'}</td>
                     <td className="py-3 px-3 text-center font-mono font-bold">{item.quantity} {item.unit}</td>
-                    <td className="py-3 px-3 text-right font-mono">৳ {formatBDT(item.unit_price)}</td>
+                    <td className="py-3 px-3 text-right font-mono">{formatBDT(item.unit_price)}</td>
                     <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
-                      ৳ {formatBDT(item.total_price)}
+                      {formatBDT(item.total_price)}
                     </td>
                   </tr>
                 ))}
@@ -489,37 +489,37 @@ export default function InvoiceCockpitPage() {
               <div className="w-64 space-y-1.5 font-mono text-xs">
                 <div className="flex justify-between text-slate-500">
                   <span>Subtotal:</span>
-                  <span>৳ {formatBDT(invoice.subtotal)}</span>
+                  <span>{formatBDT(invoice.subtotal)}</span>
                 </div>
                 {invoice.discount_amount > 0 && (
                   <div className="flex justify-between text-amber-600 font-medium">
                     <span>Discount:</span>
-                    <span>- ৳ {formatBDT(invoice.discount_amount)}</span>
+                    <span>- {formatBDT(invoice.discount_amount)}</span>
                   </div>
                 )}
                 {invoice.vat_amount > 0 && (
                   <div className="flex justify-between text-slate-500">
                     <span>VAT ({invoice.vat_percentage}%):</span>
-                    <span>+ ৳ {formatBDT(invoice.vat_amount)}</span>
+                    <span>+ {formatBDT(invoice.vat_amount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-sm text-slate-900 dark:text-white pt-1 border-t">
                   <span>Grand Total:</span>
-                  <span>৳ {formatBDT(invoice.grand_total)}</span>
+                  <span>{formatBDT(invoice.grand_total)}</span>
                 </div>
                 <div className="flex justify-between text-emerald-600 font-bold">
                   <span>Paid Amount:</span>
-                  <span>৳ {formatBDT(invoice.paid_amount)}</span>
+                  <span>{formatBDT(invoice.paid_amount)}</span>
                 </div>
                 {invoice.write_off_amount > 0 && (
                   <div className="flex justify-between text-slate-400 line-through">
                     <span>Adjustment/Waiver:</span>
-                    <span>৳ {formatBDT(invoice.write_off_amount)}</span>
+                    <span>{formatBDT(invoice.write_off_amount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-black text-sm text-red-600 pt-1 border-t">
                   <span>Due Balance:</span>
-                  <span>৳ {formatBDT(invoice.due_amount)}</span>
+                  <span>{formatBDT(invoice.due_amount)}</span>
                 </div>
               </div>
             </div>
@@ -580,7 +580,7 @@ export default function InvoiceCockpitPage() {
               <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 font-mono">
                 <span className="text-[10px] text-slate-500 block">Total Amount Collected</span>
                 <div className="text-xl font-black text-emerald-700 dark:text-emerald-300">
-                  ৳ {formatBDT(invoice.paid_amount || invoice.grand_total)}
+                  {formatBDT(invoice.paid_amount || invoice.grand_total)}
                 </div>
               </div>
 
@@ -611,7 +611,7 @@ export default function InvoiceCockpitPage() {
                     <div className="text-[10px] text-slate-400">{p.created_at || p.payment_date}</div>
                   </div>
                   <div className="text-right font-mono font-bold text-sm">
-                    ৳ {formatBDT(p.allocated_amount || p.amount)}
+                    {formatBDT(p.allocated_amount || p.amount)}
                   </div>
                 </div>
               ))
@@ -634,7 +634,7 @@ export default function InvoiceCockpitPage() {
               invoice.write_offs.map((wo: any) => (
                 <div key={wo.id} className="p-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50/30 dark:bg-red-950/20 space-y-1">
                   <div className="flex justify-between font-bold">
-                    <span className="text-red-600 font-mono">Waiver: ৳ {formatBDT(wo.amount)}</span>
+                    <span className="text-red-600 font-mono">Waiver: {formatBDT(wo.amount)}</span>
                     <span className="text-slate-400 text-[10px]">{wo.created_at}</span>
                   </div>
                   <div className="text-slate-700 dark:text-slate-300 font-medium">

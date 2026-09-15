@@ -80,7 +80,7 @@ export function MoneyReceiptModal({
       `📄 *Receipt No:* ${receiptNo}\n` +
       `📅 *Date:* ${date}\n` +
       `💳 *Payment Mode:* ${method}\n` +
-      `💵 *Amount Received:* ৳ ${amount} (${numberToWordsBDT(payment.amount)})\n` +
+      `💵 *Amount Received:* ${amount} (${numberToWordsBDT(payment.amount)})\n` +
       (payment.mfs_transaction_id ? `🔢 *TrxID:* ${payment.mfs_transaction_id}\n` : '') +
       (payment.cheque_number ? `📝 *Cheque No:* ${payment.cheque_number} (${payment.bank_name || 'Bank'})\n` : '') +
       `\nThank you for doing business with us!\n` +
@@ -132,7 +132,7 @@ export function MoneyReceiptModal({
             <div className="flex flex-wrap items-center gap-3 font-mono">
               <div>
                 <span className="text-emerald-700 dark:text-emerald-400 font-bold block text-[10px] uppercase">Payment Received</span>
-                <strong className="text-emerald-800 dark:text-emerald-200 text-sm font-black">৳ {formatBDT(payment.amount)}</strong>
+                <strong className="text-emerald-800 dark:text-emerald-200 text-sm font-black">{formatBDT(payment.amount)}</strong>
               </div>
               {invoices.length > 0 && invoices[0] && (
                 <>
@@ -152,7 +152,7 @@ export function MoneyReceiptModal({
                       </strong>
                     ) : (
                       <strong className="text-rose-600 dark:text-rose-400 font-black flex items-center gap-1">
-                        ৳ {formatBDT(Math.max(0, (invoices[0].due_amount || 0) - payment.amount))}
+                        {formatBDT(Math.max(0, (invoices[0].due_amount || 0) - payment.amount))}
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 font-bold">Partially Paid</span>
                       </strong>
                     )}
@@ -328,7 +328,7 @@ export function MoneyReceiptModal({
                           {alloc.invoice_number || alloc.invoice_id}
                         </td>
                         <td className="p-2 font-mono font-bold text-right text-emerald-700 dark:text-emerald-400">
-                          ৳ {formatBDT(alloc.allocated_amount)}
+                          {formatBDT(alloc.allocated_amount)}
                         </td>
                       </tr>
                     ))}
@@ -343,7 +343,7 @@ export function MoneyReceiptModal({
             <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-mono shadow-sm min-w-[200px]">
               <span className="text-[10px] uppercase font-bold text-emerald-100 block">Total Amount Received</span>
               <div className="text-2xl font-black tracking-tight">
-                ৳ {formatBDT(payment.amount)}
+                {formatBDT(payment.amount)}
               </div>
             </div>
 

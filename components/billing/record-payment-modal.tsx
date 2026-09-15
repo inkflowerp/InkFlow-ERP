@@ -231,7 +231,7 @@ export function RecordPaymentModal({
     }
 
     if (isOverpaid) {
-      setSubmitError(`Payment amount (৳${formatBDT(numericAmount)}) cannot exceed outstanding due (৳${formatBDT(invoiceDue)}).`)
+      setSubmitError(`Payment amount (${formatBDT(numericAmount)}) cannot exceed outstanding due (${formatBDT(invoiceDue)}).`)
       return
     }
 
@@ -398,15 +398,15 @@ export function RecordPaymentModal({
                             </div>
                             <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-x-3 font-mono">
                               <span>Date: {inv.invoice_date}</span>
-                              <span>Total: ৳{formatBDT(inv.grand_total)}</span>
-                              <span>Paid: ৳{formatBDT(inv.paid_amount || 0)}</span>
+                              <span>Total: {formatBDT(inv.grand_total)}</span>
+                              <span>Paid: {formatBDT(inv.paid_amount || 0)}</span>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0 flex items-center gap-3">
                             <div>
                               <div className="font-mono font-black text-rose-600 dark:text-rose-400 text-sm">
-                                ৳ {formatBDT(inv.due_amount)} DUE
+                                {formatBDT(inv.due_amount)} DUE
                               </div>
                               {daysOverdue > 0 ? (
                                 <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider block">
@@ -475,7 +475,7 @@ export function RecordPaymentModal({
                       Invoice Total
                     </span>
                     <strong className="text-xs font-bold text-slate-900 dark:text-white">
-                      ৳ {formatBDT(invoiceTotal)}
+                      {formatBDT(invoiceTotal)}
                     </strong>
                   </div>
 
@@ -484,7 +484,7 @@ export function RecordPaymentModal({
                       Paid
                     </span>
                     <strong className="text-xs font-bold text-emerald-600">
-                      ৳ {formatBDT(invoicePaid)}
+                      {formatBDT(invoicePaid)}
                     </strong>
                   </div>
 
@@ -493,7 +493,7 @@ export function RecordPaymentModal({
                       Outstanding Due
                     </span>
                     <strong className="text-sm font-black text-rose-600 dark:text-rose-400">
-                      ৳ {formatBDT(invoiceDue)}
+                      {formatBDT(invoiceDue)}
                     </strong>
                   </div>
                 </div>
@@ -515,7 +515,7 @@ export function RecordPaymentModal({
                       onClick={handleSetFullDue}
                       className="h-7 text-xs px-3 font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
                     >
-                      Collect Full Due (৳{formatBDT(invoiceDue)})
+                      Collect Full Due ({formatBDT(invoiceDue)})
                     </Button>
                   </div>
                 </div>
@@ -537,6 +537,7 @@ export function RecordPaymentModal({
                       setAmount(val)
                       setSubmitError(null)
                     }}
+                    onWheel={(e) => (e.target as HTMLElement).blur()}
                     className={cn(
                       'h-12 pl-8 text-lg font-black font-mono rounded-xl',
                       isOverpaid && 'border-rose-500 focus-visible:ring-rose-500',
@@ -557,16 +558,16 @@ export function RecordPaymentModal({
               <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
                 <div className="flex items-center justify-between font-mono">
                   <span className="text-slate-500 font-medium">Outstanding Due:</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">৳ {formatBDT(invoiceDue)}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatBDT(invoiceDue)}</span>
                 </div>
                 <div className="flex items-center justify-between font-mono">
                   <span className="text-emerald-700 dark:text-emerald-400 font-bold">Collecting Now:</span>
-                  <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">৳ {formatBDT(numericAmount)}</span>
+                  <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">{formatBDT(numericAmount)}</span>
                 </div>
                 <div className="flex items-center justify-between font-mono pt-1.5 border-t border-slate-200 dark:border-slate-800">
                   <span className="font-bold text-slate-900 dark:text-white">Remaining Due:</span>
                   <span className={cn('font-black text-sm', remainingDue === 0 ? 'text-emerald-600' : 'text-rose-600')}>
-                    ৳ {formatBDT(remainingDue)}
+                    {formatBDT(remainingDue)}
                   </span>
                 </div>
 
@@ -708,7 +709,7 @@ export function RecordPaymentModal({
                       <CheckCircle2 className="h-4 w-4" />
                       <span>
                         {numericAmount > 0
-                          ? `Collect ৳${formatBDT(numericAmount)}`
+                          ? `Collect ${formatBDT(numericAmount)}`
                           : 'Enter Payment Amount'}
                       </span>
                     </>
