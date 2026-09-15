@@ -120,7 +120,7 @@ export function NeedsAttentionPanel({
             const reason = getAttentionReason(q)
             const cleanPhone = (q.customer_whatsapp || q.customer_phone || '').replace(/\D/g, '')
             const waText = encodeURIComponent(
-              `Hello ${q.customer_name},\nRegarding quotation #${q.quotation_number} (৳${formatBDT(q.grand_total)}) from ${companyName}. Please let us know if you'd like us to proceed with production.`
+              `Hello ${q.customer_name},\nRegarding quotation #${q.quotation_number} (${formatBDT(q.grand_total)}) from ${companyName}. Please let us know if you'd like us to proceed with production.`
             )
             const waUrl = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('880') ? cleanPhone : `880${cleanPhone.replace(/^0/, '')}`}?text=${waText}` : '#'
 
@@ -139,7 +139,7 @@ export function NeedsAttentionPanel({
                       <span>{q.quotation_number}</span>
                     </Link>
                     <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">
-                      ৳ {formatBDT(q.grand_total)}
+                      {formatBDT(q.grand_total)}
                     </span>
                   </div>
 

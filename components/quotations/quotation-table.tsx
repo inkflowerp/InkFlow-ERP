@@ -171,7 +171,7 @@ export function QuotationTable({
                     </div>
                     {q.discount_amount > 0 && (
                       <div className="text-[10px] text-rose-600">
-                        -৳{formatBDT(q.discount_amount)} disc
+                        -{formatBDT(q.discount_amount)} disc
                       </div>
                     )}
                   </td>
@@ -230,7 +230,7 @@ export function QuotationTable({
           const primaryItem = q.items?.[0]
           const cleanPhone = (q.customer_whatsapp || q.customer_phone || '').replace(/\D/g, '')
           const waText = encodeURIComponent(
-            `Hello ${q.customer_name},\nRegarding quotation #${q.quotation_number} (৳${formatBDT(q.grand_total)}) from ${companyName}. Please let us know if you'd like us to proceed.`
+            `Hello ${q.customer_name},\nRegarding quotation #${q.quotation_number} (${formatBDT(q.grand_total)}) from ${companyName}. Please let us know if you'd like us to proceed.`
           )
           const waUrl = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('880') ? cleanPhone : `880${cleanPhone.replace(/^0/, '')}`}?text=${waText}` : '#'
 
@@ -265,7 +265,7 @@ export function QuotationTable({
                 <div className="text-right shrink-0">
                   <span className="text-[10px] uppercase font-semibold text-slate-400 block">Grand Total</span>
                   <span className="text-base font-black text-slate-900 dark:text-white font-mono">
-                    ৳ {formatBDT(q.grand_total)}
+                    {formatBDT(q.grand_total)}
                   </span>
                 </div>
               </div>

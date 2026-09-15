@@ -55,7 +55,12 @@ import {
   convertQuotationToInvoiceAction,
   sendQuotationAction,
 } from '@/actions/quotation.actions'
-import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
+import {
+  formatBDT,
+  toBengaliNumerals,
+  numberToWordsBDT,
+  numberToWordsBangla,
+} from '@/lib/formatters'
 import { QuotationService } from '@/services/quotation.service'
 import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NegotiationModal } from '@/components/quotations/negotiation-modal'
@@ -310,7 +315,7 @@ export default function QuotationDetailPage() {
       : `880${cleanPhone}`
 
     const text = encodeURIComponent(
-      `Hello ${quote.customer_name},\nHere is your official quotation #${quote.quotation_number} from ${company?.name || 'InkFlow'}.\nGrand Total: ৳${formatBDT(quote.grand_total)} (Valid until ${quote.valid_until}).\nPlease review and let us know your confirmation.`
+      `Hello ${quote.customer_name},\nHere is your official quotation #${quote.quotation_number} from ${company?.name || 'InkFlow'}.\nGrand Total: ${formatBDT(quote.grand_total)} (Valid until ${quote.valid_until}).\nPlease review and let us know your confirmation.`
     )
     window.open(`https://wa.me/${formattedPhone}?text=${text}`, '_blank')
 
@@ -736,10 +741,10 @@ export default function QuotationDetailPage() {
                       {item.area_sft > 0 ? `${item.area_sft} sft` : `${item.quantity} ${item.unit}`}
                     </td>
                     <td className="py-3 px-3 text-right font-mono font-medium">
-                      ৳ {formatBDT(item.unit_rate)}
+                      {formatBDT(item.unit_rate)}
                     </td>
                     <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
-                      ৳ {formatBDT(item.item_total)}
+                      {formatBDT(item.item_total)}
                     </td>
                   </tr>
                 ))}
@@ -770,30 +775,30 @@ export default function QuotationDetailPage() {
             <div className="space-y-2 text-xs border border-slate-200 rounded-xl p-4 bg-slate-50">
               <div className="flex justify-between py-1 text-slate-600">
                 <span>{languageMode === 'bn' ? 'উপমোট (Subtotal):' : 'Subtotal:'}</span>
-                <span className="font-mono font-semibold">৳ {formatBDT(quote.subtotal)}</span>
+                <span className="font-mono font-semibold">{formatBDT(quote.subtotal)}</span>
               </div>
 
               {quote.discount_amount > 0 && (
                 <div className="flex justify-between py-1 text-red-600 font-semibold">
                   <span>{languageMode === 'bn' ? 'বিশেষ ছাড় (Special Discount):' : 'Negotiated Discount:'}</span>
-                  <span className="font-mono">- ৳ {formatBDT(quote.discount_amount)}</span>
+                  <span className="font-mono">- {formatBDT(quote.discount_amount)}</span>
                 </div>
               )}
 
               <div className="flex justify-between py-1 text-slate-600">
                 <span>{languageMode === 'bn' ? `ভ্যাট / মূসক (${quote.vat_rate}%):` : `NBR VAT (${quote.vat_rate}%):`}</span>
-                <span className="font-mono">+ ৳ {formatBDT(quote.vat_amount)}</span>
+                <span className="font-mono">+ {formatBDT(quote.vat_amount)}</span>
               </div>
 
               <div className="flex justify-between py-2 border-t-2 border-slate-900 font-black text-sm text-slate-900">
                 <span>{languageMode === 'bn' ? 'সর্বমোট মূল্য (Grand Total):' : 'Grand Total (BDT):'}</span>
-                <span className="font-mono text-base text-blue-700">৳ {formatBDT(quote.grand_total)}</span>
+                <span className="font-mono text-base text-blue-700">{formatBDT(quote.grand_total)}</span>
               </div>
 
               <div className="text-[11px] text-slate-500 pt-1 italic">
                 {languageMode === 'bn'
-                  ? `কথায়: ${toBengaliNumerals(quote.grand_total)} টাকা মাত্র।`
-                  : `In Words: Bangladeshi Taka ${formatBDT(quote.grand_total)} Only.`}
+                  ? `কথায়: ${numberToWordsBangla(quote.grand_total)}`
+                  : `In Words: ${numberToWordsBDT(quote.grand_total)}`}
               </div>
             </div>
           </div>

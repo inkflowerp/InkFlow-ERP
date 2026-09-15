@@ -140,7 +140,7 @@ export function FollowUpModal({
               #{quotation.quotation_number}
             </span>
             <span className="font-mono font-black text-sm text-emerald-400">
-              ৳ {formatBDT(quotation.grand_total)}
+              {formatBDT(quotation.grand_total)}
             </span>
           </div>
           <div className="text-slate-300 font-semibold truncate">

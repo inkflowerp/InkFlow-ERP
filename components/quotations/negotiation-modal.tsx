@@ -125,7 +125,7 @@ export function NegotiationModal({
         <div className="p-4 rounded-xl bg-slate-900 text-white space-y-2.5 text-xs shadow-md">
           <div className="flex justify-between items-center text-slate-400">
             <span>List Quoted Subtotal:</span>
-            <span className="font-mono font-bold text-slate-200">৳ {formatBDT(subtotal)}</span>
+            <span className="font-mono font-bold text-slate-200">{formatBDT(subtotal)}</span>
           </div>
 
           <div className="flex justify-between items-center text-slate-400">
@@ -133,7 +133,7 @@ export function NegotiationModal({
               Estimated Internal Cost:
               <span className="text-[10px] bg-white/10 px-1.5 py-0.2 rounded text-slate-300">Staff Shielded</span>
             </span>
-            <span className="font-mono font-bold text-amber-400">৳ {formatBDT(totalCost)}</span>
+            <span className="font-mono font-bold text-amber-400">{formatBDT(totalCost)}</span>
           </div>
 
           <div className="border-t border-slate-800 pt-2 grid grid-cols-2 gap-3">
@@ -144,7 +144,7 @@ export function NegotiationModal({
                   calculated.grossProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
                 }`}
               >
-                ৳ {formatBDT(calculated.grossProfit)}
+                {formatBDT(calculated.grossProfit)}
               </span>
             </div>
 
@@ -184,45 +184,47 @@ export function NegotiationModal({
           </div>
         )}
 
-        {/* Discount Input */}
-        <div>
-          <Label htmlFor="negDiscountInput" className="text-xs font-semibold mb-1 block">
-            Negotiated Concession Discount (৳ BDT)
-          </Label>
-          <Input
-            id="negDiscountInput"
-            type="number"
-            min="0"
-            max={subtotal}
-            step="10"
-            value={discountAmount || ''}
-            onChange={(e) => setDiscountAmount(Math.max(0, parseFloat(e.target.value) || 0))}
-            className="text-xs h-9 font-mono font-bold"
-            placeholder="0"
-            required
-          />
-        </div>
+        {/* Form Inputs */}
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="discAmt" className="text-xs font-semibold mb-1 block">
+              Negotiated Concession Discount (৳ BDT)
+            </Label>
+            <Input
+              id="discAmt"
+              type="number"
+              min={0}
+              max={subtotal}
+              value={discountAmount || ''}
+              onChange={(e) => setDiscountAmount(parseFloat(e.target.value) || 0)}
+              className="text-xs h-9 font-mono"
+              placeholder="Enter discount in Taka..."
+            />
+            <span className="text-[11px] text-slate-400 mt-1 block">
+              Maximum allowed: {formatBDT(subtotal)}
+            </span>
+          </div>
 
-        {/* Remarks */}
-        <div>
-          <Label htmlFor="negRemarks" className="text-xs font-semibold mb-1 block">
-            Negotiation Remarks / Concession Reason
-          </Label>
-          <Input
-            id="negRemarks"
-            placeholder="e.g. Client agreed to pay 70% advance in exchange for ৳1,500 concession."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="text-xs h-9"
-          />
-        </div>
+          <div>
+            <Label htmlFor="negRemarks" className="text-xs font-semibold mb-1 block">
+              Negotiation Rationale / Owner Remarks
+            </Label>
+            <Input
+              id="negRemarks"
+              placeholder="e.g. Client agreed to pay 70% advance in exchange for ৳1,500 concession."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="text-xs h-9"
+            />
+          </div>
 
-        {/* Result Preview */}
-        <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs flex items-center justify-between">
-          <span className="text-slate-600 dark:text-slate-400">Revised Grand Total (with VAT):</span>
-          <span className="text-sm font-black font-mono text-slate-900 dark:text-white">
-            ৳ {formatBDT(calculated.grandTotal)}
-          </span>
+          {/* Result Preview */}
+          <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs flex items-center justify-between">
+            <span className="text-slate-600 dark:text-slate-400">Revised Grand Total (with VAT):</span>
+            <span className="text-sm font-black font-mono text-slate-900 dark:text-white">
+              {formatBDT(calculated.grandTotal)}
+            </span>
+          </div>
         </div>
 
         {/* Footer */}
