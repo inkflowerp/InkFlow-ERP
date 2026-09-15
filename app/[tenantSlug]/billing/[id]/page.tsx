@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import {
@@ -20,6 +20,12 @@ import {
   FileText,
   BadgePercent,
   Sparkles,
+  Send,
+  MessageSquare,
+  Mail,
+  Truck,
+  Layers,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -35,6 +41,7 @@ import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
+import { getInvoicesAction, sendInvoiceAction, sendPaymentReminderAction } from '@/actions/billing.actions'
 
 export default function InvoiceCockpitPage() {
   const params = useParams()
@@ -42,11 +49,91 @@ export default function InvoiceCockpitPage() {
   const { company } = useTenant()
   const { locale } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+  const companyId = company?.id || 'comp-default'
 
-  const [invoices, setInvoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
-  const invoice = invoices.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
-  const [docMode, setDocMode] = useState<InvoiceType>(invoice?.invoice_type || 'sales_invoice')
+  const [invoice, setInvoice] = useState<InvoiceRecord | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [docMode, setDocMode] = useState<InvoiceType>('sales_invoice')
   const [isRecordPayOpen, setIsRecordPayOpen] = useState(false)
+  const [notification, setNotification] = useState<string | null>(null)
+
+  const loadInvoice = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const res = await getInvoicesAction(undefined, companyId)
+      if (res.success && res.data) {
+        const found = res.data.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
+        if (found) {
+          setInvoice(found)
+          setDocMode(found.invoice_type || 'sales_invoice')
+          return
+        }
+      }
+      // Local fallback
+      const local = PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || []
+      const foundLocal = local.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
+      if (foundLocal) {
+        setInvoice(foundLocal)
+        setDocMode(foundLocal.invoice_type || 'sales_invoice')
+      }
+    } catch {
+      const local = PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || []
+      const foundLocal = local.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
+      if (foundLocal) {
+        setInvoice(foundLocal)
+        setDocMode(foundLocal.invoice_type || 'sales_invoice')
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [invId, companyId])
+
+  useEffect(() => {
+    loadInvoice()
+  }, [loadInvoice])
+
+  const showNotification = (msg: string) => {
+    setNotification(msg)
+    setTimeout(() => setNotification(null), 3500)
+  }
+
+  const handleQuickSend = async (channel: 'whatsapp' | 'email') => {
+    if (!invoice) return
+    showNotification(`Dispatching ${channel.toUpperCase()} message...`)
+    const res = await sendInvoiceAction({ invoiceId: invoice.id, channel, format: 'pdf' }, companyId)
+    if (res.success) {
+      showNotification(`Invoice dispatched via ${channel.toUpperCase()} successfully!`)
+      if (channel === 'whatsapp' && res.data?.whatsappUrl) {
+        window.open(res.data.whatsappUrl, '_blank')
+      }
+    } else {
+      showNotification(`Failed to send via ${channel.toUpperCase()}: ${res.error}`)
+    }
+  }
+
+  const handleSendReminder = async () => {
+    if (!invoice) return
+    showNotification('Dispatching WhatsApp payment reminder...')
+    const res = await sendPaymentReminderAction(invoice.id, 'whatsapp', companyId)
+    if (res.success) {
+      showNotification('Payment reminder dispatched to customer via WhatsApp!')
+      if (res.data?.whatsappUrl) {
+        window.open(res.data.whatsappUrl, '_blank')
+      }
+    } else {
+      showNotification(`Reminder error: ${res.error}`)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-5xl">
+        <div className="p-12 text-center text-sm font-semibold text-slate-500">
+          Loading invoice details...
+        </div>
+      </div>
+    )
+  }
 
   if (!invoice) {
     return (
@@ -80,7 +167,15 @@ export default function InvoiceCockpitPage() {
   const isOverdue = invoice.due_amount > 0 && daysOverdue > 0
 
   return (
-    <div className="space-y-6 max-w-5xl print:max-w-none print:m-0 print:p-0">
+    <div className="space-y-6 max-w-5xl print:max-w-none print:m-0 print:p-0 pb-12">
+      {/* Notification */}
+      {notification && (
+        <div className="print:hidden p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          <span>{notification}</span>
+        </div>
+      )}
+
       {/* Non-Print Action Bar */}
       <div className="print:hidden space-y-3">
         <Link
@@ -88,7 +183,7 @@ export default function InvoiceCockpitPage() {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Billing Hub
+          Back to Billing & Collections Hub
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -128,28 +223,109 @@ export default function InvoiceCockpitPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {invoice.due_amount > 0 && (
-              <Button
-                size="sm"
-                onClick={() => setIsRecordPayOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white font-bold gap-1"
-              >
-                <DollarSign className="h-3.5 w-3.5" />
-                Collect Payment (MR)
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => setIsRecordPayOpen(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white font-bold gap-1 h-9"
+                >
+                  <DollarSign className="h-3.5 w-3.5" />
+                  Receive Payment (MR)
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSendReminder}
+                  className="h-9 text-xs font-bold text-amber-700 border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                >
+                  <MessageSquare className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
+                  Remind on WhatsApp
+                </Button>
+              </>
             )}
 
             <Button
               size="sm"
+              variant="outline"
+              onClick={() => handleQuickSend('whatsapp')}
+              className="h-9 text-xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+            >
+              <Send className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
+              WhatsApp
+            </Button>
+
+            <Button
+              size="sm"
               onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 text-xs text-white"
+              className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-9 font-bold"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
-              Print / Save PDF
+              Print / PDF
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Operational Traceability Flow (Quotation -> Sales Order -> Job Order -> Production -> Delivery -> Invoice -> Payment) */}
+      <div className="print:hidden">
+        <Card className="p-4 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            Commercial & Operational Lifecycle Traceability
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs">
+            <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
+              <span className="text-[10px] text-slate-400 block font-semibold">1. Quotation</span>
+              <strong className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                {invoice.notes?.includes('QUO-') ? 'Linked' : 'Direct'}
+              </strong>
+            </div>
+
+            <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
+              <span className="text-[10px] text-slate-400 block font-semibold">2. Sales Order</span>
+              <strong className="font-mono font-bold text-blue-600">
+                {invoice.order_number || 'SO-Direct'}
+              </strong>
+            </div>
+
+            <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
+              <span className="text-[10px] text-slate-400 block font-semibold">3. Job Order</span>
+              <strong className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                Job-{invoice.invoice_number.replace('INV-', '')}
+              </strong>
+            </div>
+
+            <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
+              <span className="text-[10px] text-slate-400 block font-semibold">4. Production</span>
+              <strong className="font-bold text-emerald-600 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Ready / Done
+              </strong>
+            </div>
+
+            <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
+              <span className="text-[10px] text-slate-400 block font-semibold">5. Delivery</span>
+              <strong className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                <Truck className="h-3 w-3" /> Dispatched
+              </strong>
+            </div>
+
+            <div className="p-2.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/30">
+              <span className="text-[10px] text-blue-600 dark:text-blue-400 block font-bold">6. Invoice</span>
+              <strong className="font-mono font-black text-blue-700 dark:text-blue-300">
+                {invoice.invoice_number}
+              </strong>
+            </div>
+
+            <div className={`p-2.5 rounded-lg border ${invoice.due_amount === 0 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30' : 'border-amber-400 bg-amber-50 dark:bg-amber-950/30'}`}>
+              <span className="text-[10px] text-slate-500 block font-semibold">7. Payment</span>
+              <strong className={`font-bold ${invoice.due_amount === 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
+                {invoice.due_amount === 0 ? 'Fully Settled' : `Due ৳${formatBDT(invoice.due_amount)}`}
+              </strong>
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* =========================================================================
@@ -320,10 +496,16 @@ export default function InvoiceCockpitPage() {
                   <span>Subtotal:</span>
                   <span>৳ {formatBDT(invoice.subtotal)}</span>
                 </div>
+                {invoice.discount_amount > 0 && (
+                  <div className="flex justify-between text-amber-600 font-medium">
+                    <span>Discount:</span>
+                    <span>- ৳ {formatBDT(invoice.discount_amount)}</span>
+                  </div>
+                )}
                 {invoice.vat_amount > 0 && (
                   <div className="flex justify-between text-slate-500">
                     <span>VAT ({invoice.vat_percentage}%):</span>
-                    <span>৳ {formatBDT(invoice.vat_amount)}</span>
+                    <span>+ ৳ {formatBDT(invoice.vat_amount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-sm text-slate-900 dark:text-white pt-1 border-t">
@@ -362,7 +544,7 @@ export default function InvoiceCockpitPage() {
             {/* Header */}
             <div className="text-center space-y-1 pb-4 border-b-2 border-emerald-600">
               <h1 className="text-xl font-black">{company?.name || 'Printing & Signage Solutions'}</h1>
-              <div className="text-slate-500">42/1 Motijheel C/A, Dhaka-1000 • Phone: +8801712000000</div>
+              <div className="text-slate-500">{company?.address || 'Dhaka, Bangladesh'}{company?.phone ? ` • Phone: ${company.phone}` : ''}</div>
               <div className="inline-block mt-2 px-4 py-1 rounded-full bg-emerald-100 text-emerald-900 font-black text-sm tracking-wider uppercase">
                 Official Money Receipt (মানি রিসিট)
               </div>
@@ -370,7 +552,7 @@ export default function InvoiceCockpitPage() {
 
             {/* Receipt Meta */}
             <div className="flex justify-between items-center font-mono">
-              <div>Receipt No: <strong className="text-emerald-700 dark:text-emerald-400 text-sm">MR-2024-001</strong></div>
+              <div>Receipt Ref: <strong className="text-emerald-700 dark:text-emerald-400 text-sm">MR-{invoice.invoice_number.replace('INV-', '')}</strong></div>
               <div>Date: <strong>{invoice.invoice_date}</strong></div>
             </div>
 
@@ -394,14 +576,14 @@ export default function InvoiceCockpitPage() {
 
               <div className="flex">
                 <span className="text-slate-500 w-44 shrink-0">Payment Mode:</span>
-                <strong className="uppercase">Bank Transfer / Cheque / bKash</strong>
+                <strong className="uppercase">Cash / Bank / MFS / Cheque</strong>
               </div>
             </div>
 
             {/* Cash Box */}
             <div className="flex justify-between items-center pt-4">
               <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 font-mono">
-                <span className="text-[10px] text-slate-500 block">Total Amount Paid</span>
+                <span className="text-[10px] text-slate-500 block">Total Amount Collected</span>
                 <div className="text-xl font-black text-emerald-700 dark:text-emerald-300">
                   ৳ {formatBDT(invoice.paid_amount || invoice.grand_total)}
                 </div>
@@ -430,11 +612,11 @@ export default function InvoiceCockpitPage() {
               invoice.payments.map((p: any) => (
                 <div key={p.id} className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex justify-between items-center">
                   <div>
-                    <span className="font-mono font-bold text-emerald-600">{p.payment_id}</span>
-                    <div className="text-[10px] text-slate-400">{p.created_at}</div>
+                    <span className="font-mono font-bold text-emerald-600">{p.payment_id || p.id}</span>
+                    <div className="text-[10px] text-slate-400">{p.created_at || p.payment_date}</div>
                   </div>
                   <div className="text-right font-mono font-bold text-sm">
-                    ৳ {formatBDT(p.allocated_amount)}
+                    ৳ {formatBDT(p.allocated_amount || p.amount)}
                   </div>
                 </div>
               ))
@@ -482,7 +664,8 @@ export default function InvoiceCockpitPage() {
         preselectedInvoiceId={invoice.id}
         preselectedCustomerId={invoice.customer_id}
         onPaymentRecorded={() => {
-          setInvoices(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || [])
+          showNotification('Payment recorded & invoice updated successfully!')
+          loadInvoice()
         }}
       />
     </div>

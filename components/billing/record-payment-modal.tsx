@@ -41,6 +41,11 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { notify } from '@/lib/notifications/notification-bus'
 import { MoneyReceiptModal } from './money-receipt-modal'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
+import {
+  recordMultiInvoicePaymentAction,
+  searchInvoiceCustomersAction,
+  getInvoicesAction,
+} from '@/actions/billing.actions'
 
 export interface RecordPaymentModalProps {
   open: boolean
@@ -69,13 +74,14 @@ export function RecordPaymentModal({
   const { company } = useTenant()
   const { locale } = useI18n()
 
-  // Data lists from store
+  // Data lists
   const [customers, setCustomers] = useState<CustomerRecord[]>([])
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([])
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false)
 
   // Customer Autocomplete / Selection
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null)
   const [customerSearchQuery, setCustomerSearchQuery] = useState('')
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
   const customerSearchRef = useRef<HTMLDivElement>(null)
@@ -84,7 +90,6 @@ export function RecordPaymentModal({
   const [amount, setAmount] = useState<number | ''>('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
   const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0])
-  const [receiptNumber, setReceiptNumber] = useState<string>('')
   const [receivedByName, setReceivedByName] = useState('Cashier / Accountant')
   const [notes, setNotes] = useState('')
 
@@ -113,30 +118,53 @@ export function RecordPaymentModal({
   // Load Customers & Invoices on open
   useEffect(() => {
     if (open) {
-      const custList = PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS) || []
-      const invList = PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || []
-      setCustomers(custList)
-      setInvoices(invList)
       setSubmitError(null)
 
-      const targetCustId = preselectedCustomerId || (preselectedInvoiceId ? invList.find((i: InvoiceRecord) => i.id === preselectedInvoiceId)?.customer_id : '') || custList[0]?.id || ''
-      setSelectedCustomerId(targetCustId)
-
-      // Auto generate receipt number
-      const autoReceipt = PrintERPDataStore.getNextDocumentNumber(company?.id || 'default', 'receipt')
-      setReceiptNumber(autoReceipt)
-
-      // If preselected invoice, preset amount to its due
-      if (preselectedInvoiceId) {
-        const targetInv = invList.find((i: InvoiceRecord) => i.id === preselectedInvoiceId)
-        if (targetInv && targetInv.due_amount > 0) {
-          setAmount(targetInv.due_amount)
-          setCustomAllocations({ [targetInv.id]: targetInv.due_amount })
-          setAllocationMode('custom')
+      // Fetch customers & invoices
+      searchInvoiceCustomersAction('', company?.id).then((res) => {
+        if (res.success && res.data) {
+          setCustomers(res.data)
+        } else {
+          const custList = PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS) || []
+          setCustomers(custList)
         }
+      })
+
+      getInvoicesAction({ status: 'unpaid' }, company?.id).then((res) => {
+        if (res.success && res.data) {
+          setInvoices(res.data)
+        } else {
+          const invList = PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || []
+          setInvoices(invList)
+        }
+      })
+
+      if (preselectedCustomerId) {
+        setSelectedCustomerId(preselectedCustomerId)
+        searchInvoiceCustomersAction(preselectedCustomerId, company?.id).then((res) => {
+          if (res.success && res.data && res.data.length > 0) {
+            setSelectedCustomer(res.data[0])
+          }
+        })
       }
     }
-  }, [open, preselectedCustomerId, preselectedInvoiceId, company?.id])
+  }, [open, preselectedCustomerId, company?.id])
+
+  // If preselected invoice, preset amount to its due
+  useEffect(() => {
+    if (open && preselectedInvoiceId && invoices.length > 0) {
+      const targetInv = invoices.find((i) => i.id === preselectedInvoiceId)
+      if (targetInv && targetInv.due_amount > 0) {
+        setSelectedCustomerId(targetInv.customer_id)
+        setAmount(targetInv.due_amount)
+        setCustomAllocations({ [targetInv.id]: targetInv.due_amount })
+        setAllocationMode('custom')
+
+        const cust = customers.find((c) => c.id === targetInv.customer_id)
+        if (cust) setSelectedCustomer(cust)
+      }
+    }
+  }, [open, preselectedInvoiceId, invoices, customers])
 
   // Click outside to close customer dropdown
   useEffect(() => {
@@ -149,17 +177,12 @@ export function RecordPaymentModal({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Selected Customer Record
-  const selectedCustomer = useMemo(() => {
-    return customers.find(c => c.id === selectedCustomerId) || null
-  }, [customers, selectedCustomerId])
-
   // Customer Filter for Autocomplete
   const filteredCustomers = useMemo(() => {
     if (!customerSearchQuery.trim()) return customers.slice(0, 8)
     const q = customerSearchQuery.toLowerCase()
     return customers.filter(
-      c =>
+      (c) =>
         c.name.toLowerCase().includes(q) ||
         (c.company_name && c.company_name.toLowerCase().includes(q)) ||
         c.mobile.includes(q)
@@ -170,37 +193,36 @@ export function RecordPaymentModal({
   const customerUnpaidInvoices = useMemo(() => {
     if (!selectedCustomerId) return []
     return invoices
-      .filter(i => i.customer_id === selectedCustomerId && (Number(i.due_amount) || 0) > 0)
+      .filter((i) => i.customer_id === selectedCustomerId && Number(i.due_amount || 0) > 0 && i.status !== 'cancelled')
       .sort((a, b) => new Date(a.invoice_date).getTime() - new Date(b.invoice_date).getTime())
   }, [invoices, selectedCustomerId])
 
   // Total Customer Outstanding Due
   const totalCustomerDue = useMemo(() => {
-    return customerUnpaidInvoices.reduce((sum, inv) => sum + (Number(inv.due_amount) || 0), 0)
+    return customerUnpaidInvoices.reduce((sum, inv) => sum + Number(inv.due_amount || 0), 0)
   }, [customerUnpaidInvoices])
 
-  // Auto-calculated allocation breakdown preview
+  // Allocation Breakdown
   const allocationBreakdown = useMemo(() => {
     const payAmt = Number(amount) || 0
-    if (payAmt <= 0) return []
 
     if (allocationMode === 'custom') {
-      return customerUnpaidInvoices.map(inv => {
-        const alloc = customAllocations[inv.id] || 0
+      return customerUnpaidInvoices.map((inv) => {
         const invDue = Number(inv.due_amount) || 0
-        const remaining = Math.max(0, invDue - alloc)
+        const customAlloc = Math.min(Number(customAllocations[inv.id]) || 0, invDue)
+        const remaining = Math.max(0, invDue - customAlloc)
         return {
           invoice: inv,
-          allocated: alloc,
+          allocated: customAlloc,
           remaining,
-          isFullySettled: remaining === 0 && alloc > 0,
+          isFullySettled: remaining === 0 && customAlloc > 0,
         }
       })
     }
 
     // FIFO Mode
     let remainingPay = payAmt
-    return customerUnpaidInvoices.map(inv => {
+    return customerUnpaidInvoices.map((inv) => {
       const invDue = Number(inv.due_amount) || 0
       const alloc = Math.min(remainingPay, invDue)
       const remaining = Math.max(0, invDue - alloc)
@@ -235,7 +257,7 @@ export function RecordPaymentModal({
   }
 
   const handleCustomAllocChange = (invId: string, value: number) => {
-    setCustomAllocations(prev => ({
+    setCustomAllocations((prev) => ({
       ...prev,
       [invId]: Math.max(0, value),
     }))
@@ -243,12 +265,14 @@ export function RecordPaymentModal({
 
   const handleSelectCustomer = (cust: CustomerRecord) => {
     setSelectedCustomerId(cust.id)
+    setSelectedCustomer(cust)
     setCustomerSearchQuery('')
     setShowCustomerDropdown(false)
   }
 
   const handleClearCustomer = () => {
     setSelectedCustomerId('')
+    setSelectedCustomer(null)
     setCustomerSearchQuery('')
   }
 
@@ -260,8 +284,6 @@ export function RecordPaymentModal({
     setChequeNumber('')
     setSavedPayment(null)
     setSubmitError(null)
-    const autoReceipt = PrintERPDataStore.getNextDocumentNumber(company?.id || 'default', 'receipt')
-    setReceiptNumber(autoReceipt)
   }
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -282,35 +304,46 @@ export function RecordPaymentModal({
     setIsSubmitting(true)
 
     try {
-      // Build allocation payload
-      const explicitAllocations = allocationMode === 'custom'
-        ? Object.entries(customAllocations)
-            .filter(([_, amt]) => amt > 0)
-            .map(([invId, amt]) => ({ invoiceId: invId, amount: amt }))
-        : allocationBreakdown
-            .filter(a => a.allocated > 0)
-            .map(a => ({ invoiceId: a.invoice.id, amount: a.allocated }))
+      const explicitAllocations =
+        allocationMode === 'custom'
+          ? Object.entries(customAllocations)
+              .filter(([_, amt]) => amt > 0)
+              .map(([invId, amt]) => ({ invoiceId: invId, amount: amt }))
+          : allocationBreakdown
+              .filter((a) => a.allocated > 0)
+              .map((a) => ({ invoiceId: a.invoice.id, amount: a.allocated }))
 
-      // 1. Record payment collection in persistent store
-      const payment = PrintERPDataStore.recordPaymentCollection({
-        customerId: selectedCustomerId,
-        companyId: company?.id || 'default',
-        amount: payAmount,
-        paymentMethod,
-        receiptNumber: receiptNumber || undefined,
-        paymentDate,
-        bankName: paymentMethod === 'bank' || paymentMethod === 'cheque' ? bankName : null,
-        chequeNumber: paymentMethod === 'cheque' ? chequeNumber : null,
-        chequeDate: paymentMethod === 'cheque' ? chequeDate : null,
-        mfsTrxId: paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'other_mfs' ? mfsTrxId : null,
-        notes: notes || `Payment received from ${selectedCustomer?.name || 'Customer'} via ${paymentMethod.toUpperCase()}`,
-        receivedByName,
-        allocations: explicitAllocations,
-      })
+      const res = await recordMultiInvoicePaymentAction(
+        {
+          customerId: selectedCustomerId,
+          customerName: selectedCustomer?.name || 'Customer',
+          amount: payAmount,
+          paymentMethod,
+          paymentDate,
+          bankName: paymentMethod === 'bank' || paymentMethod === 'cheque' ? bankName : null,
+          chequeNumber: paymentMethod === 'cheque' ? chequeNumber : null,
+          chequeDate: paymentMethod === 'cheque' ? chequeDate : null,
+          mfsTransactionId:
+            paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'other_mfs'
+              ? mfsTrxId
+              : null,
+          notes: notes || `Payment received from ${selectedCustomer?.name || 'Customer'} via ${paymentMethod.toUpperCase()}`,
+          receivedByName,
+          allocations: explicitAllocations,
+        },
+        company?.id
+      )
+
+      if (!res.success || !res.data) {
+        setSubmitError(res.error || 'Failed to record payment.')
+        return
+      }
+
+      const payment = res.data
 
       notify({
         title: 'Payment Recorded (টাকা জমা সম্পন্ন)',
-        message: `৳ ${formatBDT(payAmount)} received from ${selectedCustomer?.name || 'Customer'} (MR: ${payment.receipt_number})`,
+        message: `৳ ${formatBDT(payAmount)} received from ${selectedCustomer?.name || 'Customer'} (Receipt: ${payment.receipt_number})`,
         type: 'payment',
       })
 
@@ -320,7 +353,6 @@ export function RecordPaymentModal({
         onPaymentRecorded(payment)
       }
 
-      // If auto open receipt is checked, show official Money Receipt modal
       if (autoOpenReceipt) {
         setIsReceiptModalOpen(true)
       }
@@ -347,24 +379,24 @@ export function RecordPaymentModal({
             </div>
             <div>
               <h2 className="text-base font-black text-slate-900 dark:text-white">
-                {locale === 'bn' ? 'কাস্টমার পেমেন্ট ও মানি রিসিট (MR)' : 'Record Customer Payment & Money Receipt (MR)'}
+                {locale === 'bn' ? 'কাস্টমার পেমেন্ট ও মানি রিসিট (MR)' : 'Receive Customer Payment & Money Receipt'}
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Easier than Excel • Faster than paper • More organized than WhatsApp
+                Easier than Excel • Faster than paper • Transactional Settlement
               </p>
             </div>
           </div>
         }
         hideFooter
       >
-        <div className="space-y-5 pt-1 pb-4 max-h-[80vh] overflow-y-auto pr-1">
+        <div className="space-y-4 pt-1 pb-4 max-h-[80vh] overflow-y-auto pr-1">
           {/* SUCCESS BANNER */}
           {savedPayment && (
             <div className="rounded-xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-900 dark:text-emerald-200 animate-in fade-in-0">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                 <span>
-                  <strong>Money Receipt #{savedPayment.receipt_number} Created!</strong> Received: ৳{formatBDT(savedPayment.amount)} from {savedPayment.customer_name}
+                  <strong>Money Receipt #{savedPayment.receipt_number} Generated!</strong> Received: ৳{formatBDT(savedPayment.amount)} from {savedPayment.customer_name}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -393,15 +425,14 @@ export function RecordPaymentModal({
           {submitError && (
             <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 p-3.5 flex items-start gap-2.5 text-xs text-rose-900 dark:text-rose-200 animate-in fade-in-0">
               <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <span className="font-bold">Validation Error</span>
-                <p>{submitError}</p>
+              <div>
+                <span className="font-bold">Validation Error:</span> {submitError}
               </div>
             </div>
           )}
 
           {/* =========================================================================
-              SECTION 1: CUSTOMER INFORMATION & RECEIVABLES
+              SECTION 1: CUSTOMER SELECTION & RECEIVABLES
              ========================================================================= */}
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
             <div className="flex items-center justify-between">
@@ -410,7 +441,7 @@ export function RecordPaymentModal({
                   1
                 </div>
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Customer & Receivables Overview
+                  Customer & Balance
                 </h3>
               </div>
 
@@ -419,7 +450,7 @@ export function RecordPaymentModal({
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
                       <UserCheck className="h-3.5 w-3.5" />
-                      Existing Customer Linked
+                      {selectedCustomer.name}
                     </span>
                     <button
                       type="button"
@@ -443,53 +474,42 @@ export function RecordPaymentModal({
               </div>
             </div>
 
-            {/* Unified Customer Search & Autocomplete */}
+            {/* Customer Search & Autocomplete */}
             {!selectedCustomer ? (
               <div className="relative" ref={customerSearchRef}>
-                <Label htmlFor="custSearchInput" className="text-xs font-semibold mb-1 block">
+                <Label className="text-xs font-semibold mb-1 block">
                   Search & Select Customer <span className="text-rose-500">*</span>
                 </Label>
                 <div className="relative">
                   <Input
-                    id="custSearchInput"
-                    placeholder="Search by name, company name, or mobile number..."
+                    placeholder="Search by name, company, or mobile number..."
                     value={customerSearchQuery}
                     onChange={(e) => {
                       setCustomerSearchQuery(e.target.value)
                       setShowCustomerDropdown(true)
                     }}
                     onFocus={() => setShowCustomerDropdown(true)}
-                    className="text-xs h-9 pr-8 font-medium border-slate-300 dark:border-slate-700 focus:border-emerald-500"
+                    className="text-xs h-9 pr-8"
                   />
                   <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400" />
                 </div>
 
-                {/* Dropdown list */}
                 {showCustomerDropdown && filteredCustomers.length > 0 && (
                   <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredCustomers.map((cust) => (
                       <div
                         key={cust.id}
                         onClick={() => handleSelectCustomer(cust)}
-                        className="p-3 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 cursor-pointer transition-colors flex items-center justify-between text-xs"
+                        className="p-3 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 cursor-pointer text-xs flex items-center justify-between"
                       >
                         <div>
-                          <div className="font-bold text-slate-900 dark:text-slate-100">
-                            {cust.name} {cust.name_bn && <span className="font-normal text-slate-500">({cust.name_bn})</span>}
-                          </div>
-                          {cust.company_name && (
-                            <div className="text-[11px] text-slate-500 font-medium">🏢 {cust.company_name}</div>
-                          )}
-                          <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
-                            📞 {cust.mobile}
-                          </div>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{cust.name}</div>
+                          {cust.company_name && <div className="text-[11px] text-slate-500">🏢 {cust.company_name}</div>}
+                          <div className="text-[11px] font-mono text-emerald-600">📞 {cust.mobile}</div>
                         </div>
                         <div className="text-right">
                           <span className="text-[10px] text-slate-400 block font-semibold">Total Due</span>
-                          <span className={cn(
-                            "font-mono font-bold text-xs",
-                            (cust.total_due_balance || 0) > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
-                          )}>
+                          <span className="font-mono font-bold text-xs text-rose-600">
                             ৳ {formatBDT(cust.total_due_balance || 0)}
                           </span>
                         </div>
@@ -499,34 +519,24 @@ export function RecordPaymentModal({
                 )}
               </div>
             ) : (
-              /* Selected Customer Profile Summary */
               <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="space-y-0.5">
+                <div>
                   <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
                     <span>{selectedCustomer.name}</span>
                     {selectedCustomer.company_name && (
                       <span className="font-normal text-slate-500">({selectedCustomer.company_name})</span>
                     )}
-                    {selectedCustomer.customer_type && (
-                      <Badge variant="outline" className="text-[10px] uppercase font-bold py-0 h-4">
-                        {selectedCustomer.customer_type}
-                      </Badge>
-                    )}
                   </div>
-                  <div className="text-slate-500 dark:text-slate-400 text-[11px]">
-                    Phone: <strong className="font-mono text-slate-700 dark:text-slate-300">{selectedCustomer.mobile}</strong>
-                    {selectedCustomer.address ? ` • ${selectedCustomer.address}` : ''}
+                  <div className="text-slate-500 text-[11px] font-mono">
+                    Phone: {selectedCustomer.mobile} {selectedCustomer.address ? `• ${selectedCustomer.address}` : ''}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Due Balance</span>
-                    <span className={cn(
-                      "text-sm font-black font-mono",
-                      totalCustomerDue > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
-                    )}>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Outstanding Due</span>
+                    <span className="text-sm font-black font-mono text-rose-600">
                       ৳ {formatBDT(totalCustomerDue)}
                     </span>
                   </div>
@@ -551,7 +561,7 @@ export function RecordPaymentModal({
               </h3>
             </div>
 
-            {/* Amount Received with Quick Presets */}
+            {/* Amount with Quick Presets */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="payAmount" className="text-xs font-semibold">
@@ -598,7 +608,7 @@ export function RecordPaymentModal({
               )}
             </div>
 
-            {/* Payment Channel / Method Selector */}
+            {/* Payment Channel */}
             <div className="space-y-2">
               <Label className="text-xs font-semibold block">
                 Payment Channel <span className="text-rose-500">*</span>
@@ -633,11 +643,10 @@ export function RecordPaymentModal({
             {(paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'other_mfs') && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="space-y-1">
-                  <Label htmlFor="trxId" className="text-xs font-semibold">
+                  <Label className="text-xs font-semibold">
                     MFS Transaction ID (TrxID) <span className="text-rose-500">*</span>
                   </Label>
                   <Input
-                    id="trxId"
                     placeholder="e.g. 9J48KL21"
                     value={mfsTrxId}
                     onChange={(e) => setMfsTrxId(e.target.value)}
@@ -646,11 +655,8 @@ export function RecordPaymentModal({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="mfsPhone" className="text-xs font-semibold">
-                    Sender Mobile Number (Optional)
-                  </Label>
+                  <Label className="text-xs font-semibold">Sender Mobile Number (Optional)</Label>
                   <Input
-                    id="mfsPhone"
                     placeholder="01XXXXXXXXX"
                     value={mfsSenderNumber}
                     onChange={(e) => setMfsSenderNumber(e.target.value)}
@@ -663,11 +669,10 @@ export function RecordPaymentModal({
             {(paymentMethod === 'bank' || paymentMethod === 'cheque') && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="space-y-1">
-                  <Label htmlFor="bankName" className="text-xs font-semibold">
+                  <Label className="text-xs font-semibold">
                     Bank Name <span className="text-rose-500">*</span>
                   </Label>
                   <Input
-                    id="bankName"
                     placeholder="e.g. Islami Bank, DBBL, BRAC Bank"
                     value={bankName}
                     onChange={(e) => setBankName(e.target.value)}
@@ -678,11 +683,8 @@ export function RecordPaymentModal({
 
                 {paymentMethod === 'bank' && (
                   <div className="space-y-1">
-                    <Label htmlFor="bankBranch" className="text-xs font-semibold">
-                      Branch / Deposit Slip Reference
-                    </Label>
+                    <Label className="text-xs font-semibold">Branch / Deposit Slip Reference</Label>
                     <Input
-                      id="bankBranch"
                       placeholder="e.g. Motijheel Branch / Slip #889"
                       value={bankBranch}
                       onChange={(e) => setBankBranch(e.target.value)}
@@ -694,11 +696,10 @@ export function RecordPaymentModal({
                 {paymentMethod === 'cheque' && (
                   <>
                     <div className="space-y-1">
-                      <Label htmlFor="chequeNo" className="text-xs font-semibold">
+                      <Label className="text-xs font-semibold">
                         Cheque Number <span className="text-rose-500">*</span>
                       </Label>
                       <Input
-                        id="chequeNo"
                         placeholder="e.g. CQ-9948210"
                         value={chequeNumber}
                         onChange={(e) => setChequeNumber(e.target.value)}
@@ -707,11 +708,8 @@ export function RecordPaymentModal({
                       />
                     </div>
                     <div className="space-y-1 sm:col-span-2">
-                      <Label htmlFor="chequeDate" className="text-xs font-semibold">
-                        Cheque Date
-                      </Label>
+                      <Label className="text-xs font-semibold">Cheque Date</Label>
                       <Input
-                        id="chequeDate"
                         type="date"
                         value={chequeDate}
                         onChange={(e) => setChequeDate(e.target.value)}
@@ -726,11 +724,10 @@ export function RecordPaymentModal({
             {/* Date & Received By */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="payDate" className="text-xs font-semibold">
+                <Label className="text-xs font-semibold">
                   Payment Collection Date <span className="text-rose-500">*</span>
                 </Label>
                 <Input
-                  id="payDate"
                   type="date"
                   value={paymentDate}
                   onChange={(e) => setPaymentDate(e.target.value)}
@@ -739,11 +736,10 @@ export function RecordPaymentModal({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="recBy" className="text-xs font-semibold">
+                <Label className="text-xs font-semibold">
                   Received / Collected By <span className="text-rose-500">*</span>
                 </Label>
                 <Input
-                  id="recBy"
                   value={receivedByName}
                   onChange={(e) => setReceivedByName(e.target.value)}
                   className="h-9 text-xs"
@@ -825,9 +821,7 @@ export function RecordPaymentModal({
                           <td className="p-2.5 font-mono font-bold text-blue-600 dark:text-blue-400">
                             {invoice.invoice_number}
                           </td>
-                          <td className="p-2.5 text-slate-500 text-[11px]">
-                            {invoice.invoice_date}
-                          </td>
+                          <td className="p-2.5 text-slate-500 text-[11px]">{invoice.invoice_date}</td>
                           <td className="p-2.5 text-right font-mono font-bold text-slate-900 dark:text-white">
                             ৳ {formatBDT(invoice.due_amount)}
                           </td>
@@ -863,7 +857,6 @@ export function RecordPaymentModal({
                   </table>
                 </div>
 
-                {/* Surplus Advance Notice */}
                 {unallocatedSurplus > 0 && (
                   <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
@@ -877,7 +870,7 @@ export function RecordPaymentModal({
           </div>
 
           {/* =========================================================================
-              SECTION 4: MONEY RECEIPT (MR) OPTIONS & REMARKS
+              SECTION 4: REMARKS & POST-ACTIONS
              ========================================================================= */}
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
             <div className="flex items-center gap-2">
@@ -885,39 +878,20 @@ export function RecordPaymentModal({
                 4
               </div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Money Receipt (MR) & Remarks
+                Remarks & Post-Actions
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="mrNo" className="text-xs font-semibold">
-                  Money Receipt Number (MR #)
-                </Label>
-                <Input
-                  id="mrNo"
-                  value={receiptNumber}
-                  onChange={(e) => setReceiptNumber(e.target.value)}
-                  className="h-9 text-xs font-mono font-bold"
-                  placeholder="e.g. MR-2026-0042"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="payNotes" className="text-xs font-semibold">
-                  Purpose / Remarks (On Account of)
-                </Label>
-                <Input
-                  id="payNotes"
-                  placeholder="e.g. Full settlement of banner print orders"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="h-9 text-xs"
-                />
-              </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Purpose / Remarks (On Account of)</Label>
+              <Input
+                placeholder="e.g. Settlement of banner print bill"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="h-9 text-xs"
+              />
             </div>
 
-            {/* Notification Checkboxes */}
             <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
@@ -939,7 +913,7 @@ export function RecordPaymentModal({
                   className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4"
                 />
                 <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  Send WhatsApp / SMS payment confirmation to customer ({selectedCustomer?.mobile || 'Customer'})
+                  Generate WhatsApp payment confirmation for customer ({selectedCustomer?.mobile || 'Customer'})
                 </span>
               </label>
             </div>
@@ -947,7 +921,7 @@ export function RecordPaymentModal({
         </div>
 
         {/* =========================================================================
-            STANDARDIZED MODAL BOTTOM ACTION BAR (MATCHING INVOICE & QUOTATION MODALS)
+            STANDARDIZED MODAL BOTTOM ACTION BAR
            ========================================================================= */}
         <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           <Button
@@ -964,7 +938,6 @@ export function RecordPaymentModal({
           </Button>
 
           <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
-            {/* Direct MR Preview Trigger if payment already recorded */}
             {savedPayment && (
               <Button
                 type="button"
@@ -977,7 +950,6 @@ export function RecordPaymentModal({
               </Button>
             )}
 
-            {/* Primary Save & Issue Money Receipt Button */}
             <Button
               type="button"
               onClick={() => handleSubmit()}
@@ -1005,8 +977,9 @@ export function RecordPaymentModal({
         open={isCustomerModalOpen}
         onOpenChange={setIsCustomerModalOpen}
         onCustomerCreated={(newCust) => {
-          setCustomers(prev => [newCust, ...prev])
+          setCustomers((prev) => [newCust, ...prev])
           setSelectedCustomerId(newCust.id)
+          setSelectedCustomer(newCust)
         }}
       />
 

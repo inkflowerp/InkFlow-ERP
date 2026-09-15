@@ -245,10 +245,21 @@ export function normalizeBdPhone(phone: string): string {
  * Calculates days overdue from a due date ISO string
  */
 export function calculateDaysOverdue(dueDateStr: string): number {
-  const dueDate = new Date(dueDateStr)
-  const today = new Date()
-  const diffTime = today.getTime() - dueDate.getTime()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  if (!dueDateStr) return 0
+  const cleanDue = dueDateStr.split('T')[0]
+  const [dYear, dMonth, dDay] = cleanDue.split('-').map(Number)
+  if (!dYear || !dMonth || !dDay) return 0
+
+  const now = new Date()
+  const nowYear = now.getFullYear()
+  const nowMonth = now.getMonth() + 1
+  const nowDay = now.getDate()
+
+  const dueUtc = Date.UTC(dYear, dMonth - 1, dDay)
+  const nowUtc = Date.UTC(nowYear, nowMonth - 1, nowDay)
+
+  const diffTime = nowUtc - dueUtc
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
   return Math.max(0, diffDays)
 }
 

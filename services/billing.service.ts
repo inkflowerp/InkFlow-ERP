@@ -9,6 +9,14 @@ import type {
   PaymentRecord,
   PaymentAllocationRecord,
   FinancialWriteOffRecord,
+  BillingPeriod,
+  BillingOverviewMetrics,
+  CollectionPriorityItem,
+  ReceivablesAgingSummary,
+  SalespersonCollectionStat,
+  PaymentMethodSummaryItem,
+  MultiInvoicePaymentInput,
+  CreditLimitWarningInfo,
 } from '../types/billing.types.ts'
 import { BillingRepository } from '../lib/repositories/billing.repository.ts'
 import { PdfGeneratorService } from './pdf-generator.service.ts'
@@ -18,6 +26,8 @@ import { BusinessEmailService } from './business-email.service.ts'
 export function calculateDaysOverdue(dueDateStr: string): number {
   const dueDate = new Date(dueDateStr)
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  dueDate.setHours(0, 0, 0, 0)
   const diffTime = today.getTime() - dueDate.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   return Math.max(0, diffDays)
@@ -63,9 +73,18 @@ export function numberToWordsBDT(amount: number): string {
 }
 
 export class BillingService {
-  static async getInvoices(companyId: string): Promise<InvoiceRecord[]> {
+  static async getInvoices(
+    companyId: string,
+    filters?: {
+      status?: string
+      customerId?: string
+      search?: string
+      startDate?: string
+      endDate?: string
+    }
+  ): Promise<InvoiceRecord[]> {
     if (!companyId) return []
-    return await BillingRepository.getInvoices(companyId)
+    return await BillingRepository.getInvoices(companyId, filters)
   }
 
   static async getInvoiceById(id: string, companyId: string): Promise<InvoiceRecord | null> {
@@ -97,10 +116,13 @@ export class BillingService {
   }
 
   static async deleteInvoice(id: string, companyId: string): Promise<boolean> {
-    // Financial records prefer voiding/cancelling rather than direct delete
     if (!id || !companyId) return false
-    await BillingRepository.updateInvoice(id, { status: 'cancelled' }, companyId)
-    return true
+    return await BillingRepository.cancelInvoice(id, 'Deleted by user', 'User', companyId)
+  }
+
+  static async cancelInvoice(id: string, reason: string, actorName: string, companyId: string): Promise<boolean> {
+    if (!id || !companyId) return false
+    return await BillingRepository.cancelInvoice(id, reason, actorName, companyId)
   }
 
   static async getPayments(companyId: string, customerId?: string): Promise<PaymentRecord[]> {
@@ -115,7 +137,11 @@ export class BillingService {
     amount: number
     paymentMethod: 'cash' | 'bank' | 'cheque' | 'bkash' | 'nagad' | 'other_mfs'
     invoiceId?: string
-    notes?: string
+    bankName?: string | null
+    chequeNumber?: string | null
+    chequeDate?: string | null
+    mfsTransactionId?: string | null
+    notes?: string | null
     receivedByName: string
   }): Promise<PaymentRecord> {
     if (!params.companyId) {
@@ -132,14 +158,121 @@ export class BillingService {
       amount: params.amount,
       payment_method: params.paymentMethod,
       invoice_id: params.invoiceId,
+      bank_name: params.bankName,
+      cheque_number: params.chequeNumber,
+      cheque_date: params.chequeDate,
+      mfs_transaction_id: params.mfsTransactionId,
       notes: params.notes,
       received_by_name: params.receivedByName,
     })
   }
 
+  static async recordMultiInvoicePayment(params: MultiInvoicePaymentInput & { companyId: string; receivedByName: string }): Promise<PaymentRecord> {
+    if (!params.companyId) {
+      throw new Error('Company context is required to record payment.')
+    }
+    if (params.amount <= 0) {
+      throw new Error('Payment amount must be greater than zero.')
+    }
+    return await BillingRepository.recordMultiInvoicePayment(params)
+  }
+
+  static async recordWriteOff(writeOff: {
+    company_id: string
+    invoice_id: string
+    amount: number
+    reason: string
+    authorized_by_name: string
+  }): Promise<FinancialWriteOffRecord> {
+    if (!writeOff.company_id || !writeOff.invoice_id) {
+      throw new Error('Company ID and Invoice ID are required for write-off.')
+    }
+    if (writeOff.amount <= 0) {
+      throw new Error('Write-off amount must be greater than zero.')
+    }
+    return await BillingRepository.recordWriteOff(writeOff)
+  }
+
+  static async checkCustomerCreditLimit(companyId: string, customerId: string, newInvoiceAmount: number): Promise<CreditLimitWarningInfo> {
+    return await BillingRepository.checkCustomerCreditLimit(companyId, customerId, newInvoiceAmount)
+  }
+
+  static async getBillingOverview(
+    companyId: string,
+    period: BillingPeriod = 'today',
+    customRange?: { start: string; end: string }
+  ): Promise<{
+    metrics: BillingOverviewMetrics
+    priorityItems: CollectionPriorityItem[]
+    paymentMethods: PaymentMethodSummaryItem[]
+    salespersonStats: SalespersonCollectionStat[]
+  }> {
+    if (!companyId) {
+      throw new Error('Company context is required for billing overview.')
+    }
+    return await BillingRepository.getBillingOverview(companyId, period, customRange)
+  }
+
+  static async getReceivablesAging(companyId: string): Promise<ReceivablesAgingSummary> {
+    if (!companyId) {
+      throw new Error('Company context is required for receivables aging.')
+    }
+    return await BillingRepository.getReceivablesAging(companyId)
+  }
+
   static async getInvoicePrintData(id: string, companyId: string) {
     if (!id || !companyId) return null
     return await BillingRepository.getInvoicePrintData(id, companyId)
+  }
+
+  static async sendPaymentReminder(params: {
+    companyId: string
+    invoiceId: string
+    actorName?: string
+    companyName?: string
+    tenantSlug?: string
+  }): Promise<{ success: boolean; whatsappUrl?: string; error?: string }> {
+    const { companyId, invoiceId, companyName } = params
+    const invoice = await this.getInvoiceById(invoiceId, companyId)
+    if (!invoice) {
+      return { success: false, error: 'Invoice not found in company context.' }
+    }
+
+    const waPhone = invoice.customer_phone
+    if (!waPhone) {
+      return { success: false, error: 'Customer phone/WhatsApp number is missing.' }
+    }
+
+    const compName = companyName || 'InkFlow'
+    const daysOverdue = calculateDaysOverdue(invoice.due_date)
+    const overdueNotice = daysOverdue > 0 ? ` (${daysOverdue} days overdue)` : ''
+
+    const reminderText =
+      `*PAYMENT REMINDER / বকেয়া বিল তাগাদা — ${compName}*\n\n` +
+      `Dear ${invoice.customer_name},\n` +
+      `This is a gentle reminder regarding Invoice #${invoice.invoice_number}.\n\n` +
+      `📄 *Invoice No:* ${invoice.invoice_number}\n` +
+      `📅 *Invoice Date:* ${invoice.invoice_date}\n` +
+      `⏰ *Due Date:* ${invoice.due_date}${overdueNotice}\n` +
+      `💵 *Total Bill:* ৳ ${invoice.grand_total.toLocaleString()}\n` +
+      `✅ *Paid Amount:* ৳ ${invoice.paid_amount.toLocaleString()}\n` +
+      `❗ *Outstanding Due:* ৳ ${invoice.due_amount.toLocaleString()}\n\n` +
+      `We kindly request you to settle the outstanding due amount at your earliest convenience.\n\n` +
+      `Thank you,\n` +
+      `_${compName}_`
+
+    const cleanPhone = waPhone.replace(/\D/g, '')
+    const formattedPhone = cleanPhone.startsWith('880')
+      ? cleanPhone
+      : cleanPhone.startsWith('0')
+      ? `88${cleanPhone}`
+      : `880${cleanPhone}`
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(reminderText)}`
+
+    return {
+      success: true,
+      whatsappUrl,
+    }
   }
 
   static async sendInvoice(params: {

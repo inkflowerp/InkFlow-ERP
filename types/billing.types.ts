@@ -25,6 +25,7 @@ export type PaymentMethod =
 export interface InvoiceItemRecord {
   id: string
   invoice_id?: string
+  product_id?: string | null
   item_name?: string | null
   item_description: string
   dimensions_spec?: string | null
@@ -33,13 +34,14 @@ export interface InvoiceItemRecord {
   unit_price: number
   vat_percentage: number
   total_price: number
+  finishing?: string | null
 }
 
 export interface PaymentAllocationRecord {
   id: string
   payment_id: string
   invoice_id: string
-  invoice_number: string
+  invoice_number?: string
   allocated_amount: number
   created_at: string
 }
@@ -57,6 +59,7 @@ export interface FinancialWriteOffRecord {
 export interface PaymentRecord {
   id: string
   company_id: string
+  branch_id?: string | null
   receipt_number: string
   customer_id: string
   customer_name: string
@@ -64,6 +67,7 @@ export interface PaymentRecord {
   payment_type: PaymentType
   payment_method: PaymentMethod
   amount: number
+  unallocated_amount?: number
   bank_name?: string | null
   cheque_number?: string | null
   cheque_date?: string | null
@@ -77,6 +81,7 @@ export interface PaymentRecord {
 export interface InvoiceRecord {
   id: string
   company_id: string
+  branch_id?: string | null
   invoice_number: string
   invoice_type: InvoiceType
   customer_id: string
@@ -86,8 +91,14 @@ export interface InvoiceRecord {
   customer_bin?: string | null
   customer_tin?: string | null
   customer_address?: string | null
+  quotation_id?: string | null
+  quotation_number?: string | null
   sales_order_id?: string | null
   order_number?: string | null
+  job_order_id?: string | null
+  job_number?: string | null
+  salesperson_id?: string | null
+  salesperson_name?: string | null
   invoice_date: string
   due_date: string
   status: InvoiceStatus
@@ -107,4 +118,135 @@ export interface InvoiceRecord {
   write_offs?: FinancialWriteOffRecord[]
   created_at: string
   updated_at: string
+}
+
+export type BillingPeriod = 'today' | 'this_week' | 'this_month' | 'custom'
+
+export interface BillingOverviewMetrics {
+  period: BillingPeriod
+  periodLabel: string
+  startDate?: string
+  endDate?: string
+  salesAmount: number
+  salesCount: number
+  collectionAmount: number
+  collectionCount: number
+  dueTodayAmount: number
+  dueTodayCount: number
+  overdueAmount: number
+  overdueCount: number
+  totalReceivables: number
+  collectionRate: number
+}
+
+export type CollectionPriorityType = 'due_today' | 'overdue' | 'high_value' | 'near_credit_limit'
+
+export interface CollectionPriorityItem {
+  id: string
+  invoiceId: string
+  invoiceNumber: string
+  customerId: string
+  customerName: string
+  customerPhone: string
+  customerCompany?: string | null
+  invoiceDate: string
+  dueDate: string
+  grandTotal: number
+  paidAmount: number
+  dueAmount: number
+  daysOverdue: number
+  salespersonName?: string | null
+  status: InvoiceStatus
+  priorityReason: CollectionPriorityType
+  creditLimit?: number
+  currentOutstanding?: number
+  lastPaymentDate?: string | null
+}
+
+export interface ReceivablesAgingBucket {
+  bucket: 'current' | '1_7' | '8_30' | '31_60' | '61_90' | '90_plus'
+  label: string
+  labelBn: string
+  amount: number
+  invoiceCount: number
+  customerCount: number
+}
+
+export interface CustomerReceivablesAging {
+  customerId: string
+  customerName: string
+  customerPhone: string
+  companyName?: string | null
+  creditLimit: number
+  currentOutstanding: number
+  totalOverdue: number
+  current: number
+  days1_7: number
+  days8_30: number
+  days31_60: number
+  days61_90: number
+  days90Plus: number
+  oldestDueDays: number
+  invoiceCount: number
+}
+
+export interface ReceivablesAgingSummary {
+  buckets: ReceivablesAgingBucket[]
+  customerAging: CustomerReceivablesAging[]
+  totalReceivables: number
+  totalOverdue: number
+}
+
+export interface SalespersonCollectionStat {
+  salespersonId?: string | null
+  salespersonName: string
+  totalBilled: number
+  totalCollected: number
+  outstandingDue: number
+  overdueAmount: number
+  customerCount: number
+  oldestDueDays: number
+}
+
+export interface PaymentMethodSummaryItem {
+  method: PaymentMethod
+  label: string
+  labelBn: string
+  icon: string
+  totalAmount: number
+  transactionCount: number
+}
+
+export interface MultiInvoiceAllocationItem {
+  invoiceId: string
+  amount: number
+}
+
+export interface MultiInvoicePaymentInput {
+  companyId?: string
+  branchId?: string
+  customerId: string
+  customerName: string
+  amount: number
+  paymentMethod: PaymentMethod
+  paymentDate?: string
+  bankName?: string | null
+  chequeNumber?: string | null
+  chequeDate?: string | null
+  mfsTransactionId?: string | null
+  notes?: string | null
+  receivedByName?: string
+  allocations?: MultiInvoiceAllocationItem[]
+}
+
+export interface CreditLimitWarningInfo {
+  customerId: string
+  customerName: string
+  creditLimit: number
+  currentOutstanding: number
+  newInvoiceAmount: number
+  projectedOutstanding: number
+  exceededBy: number
+  isExceeded: boolean
+  warningMessage: string
 }

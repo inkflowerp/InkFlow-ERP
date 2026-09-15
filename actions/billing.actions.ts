@@ -7,7 +7,19 @@ import { CustomerRepository } from '@/lib/repositories/customer.repository'
 import { ProductRepository } from '@/lib/repositories/product.repository'
 import { CrmService } from '@/services/crm.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
+import {
+  InvoiceRecord,
+  PaymentRecord,
+  FinancialWriteOffRecord,
+  BillingPeriod,
+  BillingOverviewMetrics,
+  CollectionPriorityItem,
+  ReceivablesAgingSummary,
+  SalespersonCollectionStat,
+  PaymentMethodSummaryItem,
+  MultiInvoicePaymentInput,
+  CreditLimitWarningInfo,
+} from '@/types/billing.types'
 import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
 
 export interface ServerActionResult<T> {
@@ -49,14 +61,19 @@ export interface CreateInvoicePayload {
   customer_address?: string
   customer_email?: string
   customer_type?: string
-  invoice_type?: 'sales_invoice' | 'vat_invoice' | 'service_bill'
+  invoice_type?: 'sales_invoice' | 'vat_invoice' | 'payment_receipt'
   invoice_date?: string
   due_date?: string
   discount_amount?: number
   vat_percentage?: number
   advance_amount?: number
-  payment_method?: 'cash' | 'bkash' | 'nagad' | 'bank' | 'cheque'
+  payment_method?: 'cash' | 'bkash' | 'nagad' | 'bank' | 'cheque' | 'other_mfs'
   notes?: string
+  terms_and_conditions?: string
+  quotation_id?: string
+  sales_order_id?: string
+  job_order_id?: string
+  credit_override_reason?: string
   items: CreateInvoiceItemInput[]
 }
 
@@ -123,6 +140,28 @@ export async function getInvoiceProductsAction(
 }
 
 /**
+ * Server Action: Check customer credit limit before issuing an invoice
+ */
+export async function checkCustomerCreditLimitAction(
+  customerId: string,
+  newInvoiceAmount: number,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<CreditLimitWarningInfo>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const info = await BillingService.checkCustomerCreditLimit(companyId, customerId, newInvoiceAmount)
+    return { success: true, data: info }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to check customer credit limit.' }
+  }
+}
+
+/**
  * Server Action: Securely creates an invoice in PostgreSQL with full Save-First guarantees
  */
 export async function createInvoiceAction(
@@ -140,6 +179,7 @@ export async function createInvoiceAction(
       tenant.companyRole === 'business_owner' ||
       tenant.permissions.includes('invoice.create') ||
       tenant.permissions.includes('invoices.create') ||
+      tenant.permissions.includes('billing.create') ||
       tenant.permissions.includes('commercial.manage')
 
     if (!hasPermission) {
@@ -155,6 +195,7 @@ export async function createInvoiceAction(
     let customerName = payload.customer_name || ''
     let customerPhone = payload.customer_phone || ''
     let customerAddress = payload.customer_address || ''
+    let customerEmail = payload.customer_email || null
     let customerBin = payload.customer_email || null
 
     if (!resolvedCustomerId && payload.new_customer) {
@@ -169,9 +210,7 @@ export async function createInvoiceAction(
         return { success: false, error: 'Address is required.' }
       }
 
-      // If save_customer is checked (default), create customer record
       if (newCust.save_customer !== false) {
-        // Duplicate check
         const dupCheck = await CrmService.findDuplicates(
           {
             mobile: newCust.mobile,
@@ -188,6 +227,7 @@ export async function createInvoiceAction(
           customerName = exactMatch.name
           customerPhone = exactMatch.mobile
           customerAddress = exactMatch.address || newCust.address
+          customerEmail = exactMatch.email || newCust.email || null
         } else {
           const createdCust = await CustomerRepository.createCustomer({
             company_id: companyId,
@@ -203,12 +243,13 @@ export async function createInvoiceAction(
           customerName = createdCust.name
           customerPhone = createdCust.mobile
           customerAddress = createdCust.address || ''
+          customerEmail = createdCust.email || null
         }
       } else {
-        // Unsaved customer snapshot
         customerName = newCust.name.trim()
         customerPhone = newCust.mobile.trim()
         customerAddress = newCust.address.trim()
+        customerEmail = newCust.email || null
       }
     }
 
@@ -218,15 +259,15 @@ export async function createInvoiceAction(
 
     // 2. Calculate line items and totals server-side
     let calculatedSubtotal = 0
-    const mappedItems = payload.items.map((it, idx) => {
+    const mappedItems = payload.items.map((it) => {
       const qty = Math.max(0.01, Number(it.quantity) || 1)
       const rate = Math.max(0, Number(it.unit_price) || 0)
       const w = Number(it.width) || 0
       const h = Number(it.height) || 0
-      
+
       let lineTotal = 0
       if (w > 0 && h > 0 && (it.unit === 'sft' || it.unit === 'sqft' || it.unit === 'sqin')) {
-        const area = it.unit === 'sqin' ? (w * h) / 144 : (w * h)
+        const area = it.unit === 'sqin' ? (w * h) / 144 : w * h
         lineTotal = Math.round(area * qty * rate)
       } else {
         lineTotal = Math.round(qty * rate)
@@ -246,6 +287,7 @@ export async function createInvoiceAction(
         unit_price: rate,
         vat_percentage: 0,
         total_price: lineTotal,
+        finishing: it.finishing || null,
       }
     })
 
@@ -260,14 +302,21 @@ export async function createInvoiceAction(
     // 3. Persist Invoice in PostgreSQL
     const createdInvoice = await BillingService.createInvoice({
       company_id: companyId,
+      branch_id: tenant.branchId || null,
       customer_id: resolvedCustomerId || '00000000-0000-0000-0000-000000000000',
       customer_name: customerName,
       customer_phone: customerPhone,
+      customer_email: customerEmail,
       customer_address: customerAddress,
       customer_bin: customerBin,
       invoice_type: payload.invoice_type || 'sales_invoice',
       invoice_date: payload.invoice_date || new Date().toISOString().split('T')[0],
       due_date: payload.due_date || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+      quotation_id: payload.quotation_id || null,
+      sales_order_id: payload.sales_order_id || null,
+      job_order_id: payload.job_order_id || null,
+      salesperson_id: tenant.userId,
+      salesperson_name: tenant.fullName,
       subtotal: calculatedSubtotal,
       discount_amount: discountAmt,
       vat_percentage: vatPct,
@@ -275,7 +324,8 @@ export async function createInvoiceAction(
       grand_total: grandTotal,
       paid_amount: advanceAmt,
       due_amount: dueAmount,
-      notes: payload.notes || null,
+      notes: payload.notes || (payload.credit_override_reason ? `[Credit Override: ${payload.credit_override_reason}]` : null),
+      terms_and_conditions: payload.terms_and_conditions || null,
       payment_method: payload.payment_method || 'cash',
       items: mappedItems as any,
       created_by_name: tenant.fullName || 'Commercial Executive',
@@ -296,6 +346,328 @@ export async function createInvoiceAction(
     return { success: true, data: createdInvoice }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create invoice' }
+  }
+}
+
+/**
+ * Server Action: Fetch period-aware billing & collections overview metrics
+ */
+export async function getBillingOverviewAction(
+  period: BillingPeriod = 'today',
+  customRange?: { start: string; end: string },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<{
+  metrics: BillingOverviewMetrics
+  priorityItems: CollectionPriorityItem[]
+  paymentMethods: PaymentMethodSummaryItem[]
+  salespersonStats: SalespersonCollectionStat[]
+}>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const overview = await BillingService.getBillingOverview(companyId, period, customRange)
+    return { success: true, data: overview }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch billing overview.' }
+  }
+}
+
+/**
+ * Server Action: Fetch invoices list with flexible filters
+ */
+export async function getInvoicesAction(
+  filters?: {
+    status?: string
+    customerId?: string
+    search?: string
+    startDate?: string
+    endDate?: string
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<InvoiceRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const invoices = await BillingService.getInvoices(companyId, filters)
+    return { success: true, data: invoices }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch invoices.' }
+  }
+}
+
+/**
+ * Server Action: Fetch payment records
+ */
+export async function getPaymentsAction(
+  customerId?: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<PaymentRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const payments = await BillingService.getPayments(companyId, customerId)
+    return { success: true, data: payments }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch payments.' }
+  }
+}
+
+/**
+ * Server Action: Fetch Receivables Aging summary
+ */
+export async function getReceivablesAgingAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<ReceivablesAgingSummary>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const aging = await BillingService.getReceivablesAging(companyId)
+    return { success: true, data: aging }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch receivables aging.' }
+  }
+}
+
+/**
+ * Server Action: Securely records a multi-invoice payment allocation
+ */
+export async function recordMultiInvoicePaymentAction(
+  payload: MultiInvoicePaymentInput,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<PaymentRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.permissions.includes('payment.create') ||
+      tenant.permissions.includes('payments.create') ||
+      tenant.permissions.includes('billing.create')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: You do not have permission to record payments.' }
+    }
+
+    if (!payload.amount || payload.amount <= 0) {
+      return { success: false, error: 'Payment amount must be greater than 0.' }
+    }
+
+    const payment = await BillingService.recordMultiInvoicePayment({
+      ...payload,
+      companyId,
+      branchId: tenant.branchId || undefined,
+      receivedByName: payload.receivedByName || tenant.fullName || 'Cashier',
+    })
+
+    await AuditService.trackPayment(
+      companyId,
+      tenant.userId,
+      tenant.userEmail,
+      payment.id,
+      payment.receipt_number,
+      payment.amount,
+      payment.payment_method
+    )
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: payment }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to record multi-invoice payment.' }
+  }
+}
+
+/**
+ * Server Action: Records single payment (backwards-compatible wrapper)
+ */
+export async function recordPaymentAction(
+  data: {
+    invoiceId?: string
+    invoice_id?: string
+    customerId?: string
+    customer_id?: string
+    customerName?: string
+    customer_name?: string
+    amount: number
+    paymentMethod?: 'cash' | 'bank' | 'cheque' | 'bkash' | 'nagad' | 'other_mfs'
+    payment_method?: 'cash' | 'bank' | 'cheque' | 'bkash' | 'nagad' | 'other_mfs'
+    bankName?: string | null
+    bank_name?: string | null
+    chequeNumber?: string | null
+    cheque_number?: string | null
+    chequeDate?: string | null
+    cheque_date?: string | null
+    mfsTransactionId?: string | null
+    mfs_transaction_id?: string | null
+    notes?: string | null
+    receivedByName?: string
+    received_by_name?: string
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<PaymentRecord>> {
+  const customerId = data.customerId || data.customer_id || ''
+  const customerName = data.customerName || data.customer_name || ''
+  const paymentMethod = data.paymentMethod || data.payment_method || 'cash'
+  const invoiceId = data.invoiceId || data.invoice_id
+
+  return await recordMultiInvoicePaymentAction(
+    {
+      customerId,
+      customerName,
+      amount: data.amount,
+      paymentMethod,
+      bankName: data.bankName || data.bank_name,
+      chequeNumber: data.chequeNumber || data.cheque_number,
+      chequeDate: data.chequeDate || data.cheque_date,
+      mfsTransactionId: data.mfsTransactionId || data.mfs_transaction_id,
+      notes: data.notes,
+      receivedByName: data.receivedByName || data.received_by_name,
+      allocations: invoiceId ? [{ invoiceId, amount: data.amount }] : [],
+    },
+    requestedCompanyId
+  )
+}
+
+/**
+ * Server Action: Records financial write-off / waiver with non-destructive audit logging
+ */
+export async function recordWriteOffAction(
+  writeOffData: {
+    invoice_id: string
+    amount: number
+    reason: string
+    authorized_by_name?: string
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<FinancialWriteOffRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.permissions.includes('invoices.edit') ||
+      tenant.permissions.includes('billing.edit') ||
+      tenant.permissions.includes('finance.writeoff')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: You do not have permission to authorize financial write-offs.' }
+    }
+
+    if (!writeOffData.amount || writeOffData.amount <= 0) {
+      return { success: false, error: 'Write-off amount must be greater than 0.' }
+    }
+    if (!writeOffData.reason || !writeOffData.reason.trim()) {
+      return { success: false, error: 'A valid business reason is required for financial write-off.' }
+    }
+
+    const writeOff = await BillingService.recordWriteOff({
+      company_id: companyId,
+      invoice_id: writeOffData.invoice_id,
+      amount: writeOffData.amount,
+      reason: writeOffData.reason.trim(),
+      authorized_by_name: writeOffData.authorized_by_name || tenant.fullName || 'Authorized Manager',
+    })
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: writeOff }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to record financial write-off.' }
+  }
+}
+
+/**
+ * Server Action: Voids / cancels an invoice
+ */
+export async function cancelInvoiceAction(
+  invoiceId: string,
+  reason: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<boolean>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.permissions.includes('invoices.cancel') ||
+      tenant.permissions.includes('invoices.delete') ||
+      tenant.permissions.includes('billing.edit')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: You do not have permission to cancel invoices.' }
+    }
+
+    const success = await BillingService.cancelInvoice(
+      invoiceId,
+      reason || 'Cancelled by business owner',
+      tenant.fullName || 'Authorized Manager',
+      companyId
+    )
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: success }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to cancel invoice.' }
+  }
+}
+
+/**
+ * Server Action: Generates payment reminder WhatsApp link
+ */
+export async function sendPaymentReminderAction(
+  invoiceId: string,
+  channelOrCompanyId?: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<{ whatsappUrl?: string }>> {
+  try {
+    const effectiveCompanyId = requestedCompanyId || (channelOrCompanyId?.startsWith('comp-') ? channelOrCompanyId : undefined)
+    const tenant = await getCurrentTenant(effectiveCompanyId)
+    const companyId = tenant?.companyId || effectiveCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const res = await BillingService.sendPaymentReminder({
+      companyId,
+      invoiceId,
+      actorName: tenant.fullName || 'Authorized Officer',
+      companyName: tenant.companyName,
+      tenantSlug: tenant.companySlug,
+    })
+
+    if (!res.success) {
+      return { success: false, error: res.error || 'Failed to generate payment reminder.' }
+    }
+
+    return { success: true, data: { whatsappUrl: res.whatsappUrl } }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to dispatch payment reminder.' }
   }
 }
 
@@ -349,74 +721,3 @@ export async function sendInvoiceAction(
     return { success: false, error: error.message || 'Communication dispatch error' }
   }
 }
-
-/**
- * Server Action: Securely records an atomic payment collection
- */
-export async function recordPaymentAction(
-  paymentData: {
-    invoice_id?: string
-    customer_id: string
-    customer_name: string
-    amount: number
-    payment_method: 'cash' | 'bkash' | 'nagad' | 'bank_transfer' | 'cheque'
-    payment_date?: string
-    notes?: string
-    bank_name?: string
-    cheque_number?: string
-  },
-  requestedCompanyId?: string
-): Promise<ServerActionResult<PaymentRecord>> {
-  try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
-    }
-
-    const hasPermission =
-      tenant.companyRole === 'business_owner' ||
-      tenant.permissions.includes('payment.create') ||
-      tenant.permissions.includes('payments.create')
-
-    if (!hasPermission) {
-      return { success: false, error: 'Unauthorized: You do not have permission to record payments.' }
-    }
-
-    if (!paymentData.amount || paymentData.amount <= 0) {
-      return { success: false, error: 'Payment amount must be greater than 0.' }
-    }
-
-    const mappedPaymentMethod =
-      paymentData.payment_method === 'bank_transfer'
-        ? 'bank'
-        : paymentData.payment_method
-
-    const payment = await BillingService.recordPayment({
-      companyId: companyId,
-      customerId: paymentData.customer_id,
-      customerName: paymentData.customer_name,
-      amount: paymentData.amount,
-      paymentMethod: mappedPaymentMethod as any,
-      invoiceId: paymentData.invoice_id,
-      notes: paymentData.notes,
-      receivedByName: tenant.fullName || 'Cashier',
-    })
-
-    await AuditService.trackPayment(
-      companyId,
-      tenant.userId,
-      tenant.userEmail,
-      payment.id,
-      payment.receipt_number,
-      payment.amount,
-      payment.payment_method
-    )
-
-    revalidatePath('/', 'layout')
-    return { success: true, data: payment }
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to record payment' }
-  }
-}
-
