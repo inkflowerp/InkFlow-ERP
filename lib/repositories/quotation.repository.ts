@@ -68,8 +68,26 @@ export class QuotationRepository {
           .eq('company_id', companyId)
           .order('created_at', { ascending: false })
 
-        if (!error && data && data.length > 0) {
-          return data as unknown as QuotationRecord[]
+        if (!error && data) {
+          const dbQuotes = data as unknown as QuotationRecord[]
+          const localQuotes = (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
+            (q) => !q.company_id || q.company_id === companyId
+          )
+
+          if (localQuotes.length === 0) {
+            return dbQuotes
+          }
+
+          const map = new Map<string, QuotationRecord>()
+          for (const q of localQuotes) {
+            if (q.id || q.quotation_number) map.set(q.id || q.quotation_number, q)
+          }
+          for (const q of dbQuotes) {
+            if (q.id || q.quotation_number) map.set(q.id || q.quotation_number, q)
+          }
+          return Array.from(map.values()).sort(
+            (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+          )
         }
       } catch {
         // Safe fallback to client/mock datastore

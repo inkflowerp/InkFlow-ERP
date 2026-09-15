@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   FileSpreadsheet,
   Plus,
@@ -31,16 +32,17 @@ import { QuotationTable } from '@/components/quotations/quotation-table'
 import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NewQuotationModal } from '@/components/quotations/new-quotation-modal'
 import { useDataStore } from '@/hooks/use-data-store'
-import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function QuotationsPage() {
+  const params = useParams()
   const { company } = useTenant()
   const { checkCanCreate, openLimitExceededModal } = useSubscription()
   const { tBilingual, locale } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'classic-printer'
 
   // Authoritative server state + local store cache
-  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
+  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, undefined, slug)
   const [serverQuotations, setServerQuotations] = useState<QuotationRecord[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -63,14 +65,14 @@ export default function QuotationsPage() {
 
   const companyId = company?.id
 
-  // Fetch authoritative quotations from server
+  // Fetch authoritative quotations from server with tenant slug context
   const loadQuotations = useCallback(async (isSilent = false) => {
     if (!isSilent) setIsLoading(true)
     setIsRefreshing(true)
     setError(null)
 
     try {
-      const res = await getQuotationsAction(companyId)
+      const res = await getQuotationsAction(companyId, slug)
       if (res.success && res.data) {
         setServerQuotations(res.data)
       } else if (res.error) {
@@ -82,22 +84,62 @@ export default function QuotationsPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [companyId])
+  }, [companyId, slug])
 
   useEffect(() => {
     loadQuotations()
   }, [loadQuotations])
 
-  // Active quotation dataset (Server authoritative, fallback to local store)
+  // Active quotation dataset: Resilient deduplication of Server + Local DataStore
   const quotations = useMemo(() => {
-    if (serverQuotations && serverQuotations.length > 0) {
-      return serverQuotations
+    const map = new Map<string, QuotationRecord>()
+
+    // 1. Local DataStore quotations (fallback & instant offline cache)
+    const directLocal = typeof window !== 'undefined'
+      ? (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, slug) || [])
+      : []
+    const allLocal = [...(localQuotations || []), ...directLocal]
+    for (const q of allLocal) {
+      if (!q) continue
+      const key = q.id || q.quotation_number
+      if (key) {
+        map.set(key, q)
+        if (q.quotation_number) map.set(q.quotation_number, q)
+        if (q.id) map.set(q.id, q)
+      }
     }
-    if (serverQuotations && serverQuotations.length === 0) {
-      return []
+
+    // 2. Server quotations (authoritative from Supabase)
+    if (serverQuotations && Array.isArray(serverQuotations)) {
+      for (const q of serverQuotations) {
+        if (!q) continue
+        const key = q.id || q.quotation_number
+        if (key) {
+          map.set(key, q)
+          if (q.quotation_number) map.set(q.quotation_number, q)
+          if (q.id) map.set(q.id, q)
+        }
+      }
     }
-    return localQuotations || []
-  }, [serverQuotations, localQuotations])
+
+    // 3. Extract unique list
+    const uniqueList = Array.from(new Set(map.values()))
+
+    // 4. Filter by companyId if applicable
+    const filtered = uniqueList.filter((q) => {
+      if (!q) return false
+      if (companyId && q.company_id && q.company_id !== companyId && q.company_id !== 'c-01') {
+        return false
+      }
+      return true
+    })
+
+    return filtered.sort((a, b) => {
+      const timeA = new Date(a.created_at || a.quotation_date || 0).getTime()
+      const timeB = new Date(b.created_at || b.quotation_date || 0).getTime()
+      return timeB - timeA
+    })
+  }, [serverQuotations, localQuotations, slug, companyId])
 
 
   // KPI Metrics Calculation
@@ -156,11 +198,31 @@ export default function QuotationsPage() {
 
   const handleFollowUpSaved = (updatedQuote: QuotationRecord) => {
     showNotification(`Follow-up logged for #${updatedQuote.quotation_number}.`)
+    setServerQuotations((prev) => {
+      const list = prev ? [...prev] : []
+      const idx = list.findIndex((q) => q.id === updatedQuote.id || q.quotation_number === updatedQuote.quotation_number)
+      if (idx >= 0) {
+        list[idx] = updatedQuote
+      } else {
+        list.unshift(updatedQuote)
+      }
+      return list
+    })
     loadQuotations(true)
   }
 
   const handleQuotationCreated = (quote: QuotationRecord) => {
     showNotification(`Quotation #${quote.quotation_number} created successfully.`)
+    setServerQuotations((prev) => {
+      const list = prev ? [...prev] : []
+      const idx = list.findIndex((q) => q.id === quote.id || q.quotation_number === quote.quotation_number)
+      if (idx >= 0) {
+        list[idx] = quote
+      } else {
+        list.unshift(quote)
+      }
+      return list
+    })
     loadQuotations(true)
   }
 

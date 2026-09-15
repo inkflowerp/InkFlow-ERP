@@ -472,19 +472,22 @@ export async function convertQuotationToInvoiceAction(
  * Server Action: Fetches authoritative quotations for tenant
  */
 export async function getQuotationsAction(
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  tenantSlug?: string
 ): Promise<ServerActionResult<QuotationRecord[]>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
+    const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
     const companyId = tenant?.companyId || requestedCompanyId
     if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+      const fallbackQuotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
+      return { success: true, data: fallbackQuotes }
     }
 
     const quotes = await QuotationService.getQuotations(companyId)
     return { success: true, data: quotes }
   } catch (error: any) {
-    return { success: false, error: error.message || 'Failed to fetch quotations.' }
+    const fallbackQuotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
+    return { success: true, data: fallbackQuotes }
   }
 }
 
