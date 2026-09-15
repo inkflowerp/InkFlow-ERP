@@ -327,6 +327,7 @@ export async function createInvoiceAction(
       notes: payload.notes || (payload.credit_override_reason ? `[Credit Override: ${payload.credit_override_reason}]` : null),
       terms_and_conditions: payload.terms_and_conditions || null,
       payment_method: payload.payment_method || 'cash',
+      idempotency_key: (payload as any).idempotency_key || (payload as any).idempotencyKey || undefined,
       items: mappedItems as any,
       created_by_name: tenant.fullName || 'Commercial Executive',
     } as any)
@@ -445,6 +446,28 @@ export async function getReceivablesAgingAction(
 }
 
 /**
+ * Server Action: Reconciles customer debt balances against invoices, payments, and write-offs
+ */
+export async function reconcileCustomerBalancesAction(
+  customerId?: string,
+  autoFix: boolean = false,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<any>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const report = await BillingService.reconcileCustomerBalances(companyId, customerId, autoFix)
+    return { success: true, data: report }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to reconcile customer balances.' }
+  }
+}
+
+/**
  * Server Action: Securely records a multi-invoice payment allocation
  */
 export async function recordMultiInvoicePaymentAction(
@@ -477,6 +500,7 @@ export async function recordMultiInvoicePaymentAction(
       companyId,
       branchId: tenant.branchId || undefined,
       receivedByName: payload.receivedByName || tenant.fullName || 'Cashier',
+      actorUserId: tenant.userId,
     })
 
     await AuditService.trackPayment(
@@ -521,6 +545,8 @@ export async function recordPaymentAction(
     notes?: string | null
     receivedByName?: string
     received_by_name?: string
+    idempotencyKey?: string
+    idempotency_key?: string
   },
   requestedCompanyId?: string
 ): Promise<ServerActionResult<PaymentRecord>> {
@@ -528,6 +554,7 @@ export async function recordPaymentAction(
   const customerName = data.customerName || data.customer_name || ''
   const paymentMethod = data.paymentMethod || data.payment_method || 'cash'
   const invoiceId = data.invoiceId || data.invoice_id
+  const idempotencyKey = data.idempotencyKey || data.idempotency_key
 
   return await recordMultiInvoicePaymentAction(
     {
@@ -541,6 +568,7 @@ export async function recordPaymentAction(
       mfsTransactionId: data.mfsTransactionId || data.mfs_transaction_id,
       notes: data.notes,
       receivedByName: data.receivedByName || data.received_by_name,
+      idempotencyKey,
       allocations: invoiceId ? [{ invoiceId, amount: data.amount }] : [],
     },
     requestedCompanyId
@@ -589,6 +617,7 @@ export async function recordWriteOffAction(
       amount: writeOffData.amount,
       reason: writeOffData.reason.trim(),
       authorized_by_name: writeOffData.authorized_by_name || tenant.fullName || 'Authorized Manager',
+      actor_user_id: tenant.userId,
     })
 
     revalidatePath('/', 'layout')
@@ -627,7 +656,8 @@ export async function cancelInvoiceAction(
       invoiceId,
       reason || 'Cancelled by business owner',
       tenant.fullName || 'Authorized Manager',
-      companyId
+      companyId,
+      tenant.userId
     )
 
     revalidatePath('/', 'layout')

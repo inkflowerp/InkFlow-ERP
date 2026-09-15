@@ -17,8 +17,31 @@ import type {
   PaymentMethodSummaryItem,
   MultiInvoicePaymentInput,
   CreditLimitWarningInfo,
+  FinancialPersistenceMode,
+  CustomerReconciliationReport,
+  CustomerBalanceReconciliationItem,
 } from '../../types/billing.types.ts'
 import type { CustomerRecord } from '../../types/crm.types.ts'
+
+export function isSupabaseConfigured(): boolean {
+  return !!(
+    (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL) &&
+    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY)
+  )
+}
+
+export function getFinancialPersistenceMode(): FinancialPersistenceMode {
+  if (process.env.FINANCIAL_PERSISTENCE_MODE) {
+    return process.env.FINANCIAL_PERSISTENCE_MODE as FinancialPersistenceMode
+  }
+  if (process.env.NODE_ENV === 'test') {
+    return 'test'
+  }
+  if (!isSupabaseConfigured()) {
+    return 'test'
+  }
+  return 'production'
+}
 
 export function calculateDaysOverdue(dueDateStr: string): number {
   if (!dueDateStr) return 0
@@ -26,10 +49,8 @@ export function calculateDaysOverdue(dueDateStr: string): number {
   const [dYear, dMonth, dDay] = cleanDue.split('-').map(Number)
   if (!dYear || !dMonth || !dDay) return 0
 
-  const now = new Date()
-  const nowYear = now.getFullYear()
-  const nowMonth = now.getMonth() + 1
-  const nowDay = now.getDate()
+  const todayStr = getTodayDateString()
+  const [nowYear, nowMonth, nowDay] = todayStr.split('-').map(Number)
 
   const dueUtc = Date.UTC(dYear, dMonth - 1, dDay)
   const nowUtc = Date.UTC(nowYear, nowMonth - 1, nowDay)
@@ -40,8 +61,18 @@ export function calculateDaysOverdue(dueDateStr: string): number {
 }
 
 export function getTodayDateString(): string {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Dhaka',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    return formatter.format(new Date())
+  } catch {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
 }
 
 export class BillingRepository {
@@ -54,6 +85,8 @@ export class BillingRepository {
     companyId: string,
     docType: 'invoice' | 'quotation' | 'order' | 'challan' | 'payment' | 'purchase'
   ): Promise<string> {
+    const mode = getFinancialPersistenceMode()
+
     try {
       const supabase = await createClient()
       const { data, error } = await (supabase as any).rpc('get_next_document_number', {
@@ -95,8 +128,12 @@ export class BillingRepository {
       })
 
       return `${prefix}-${String(nextVal).padStart(6, '0')}`
-    } catch {
-      // Offline/Test in-memory sequence store (deterministic, concurrency-safe)
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Database sequence generator failed for ${docType}: ${err.message || 'Supabase unreachable'}`)
+      }
+
+      // Offline/Test in-memory sequence store (deterministic, concurrency-safe simulation)
       const seqKey = `${companyId}:${docType}`
       const current = (BillingRepository.memorySequences.get(seqKey) || 0) + 1
       BillingRepository.memorySequences.set(seqKey, current)
@@ -122,8 +159,12 @@ export class BillingRepository {
       search?: string
       startDate?: string
       endDate?: string
+      limit?: number
+      offset?: number
     }
   ): Promise<InvoiceRecord[]> {
+    const mode = getFinancialPersistenceMode()
+
     try {
       const supabase = await createClient()
       let query = (supabase as any)
@@ -134,7 +175,7 @@ export class BillingRepository {
 
       if (filters?.status && filters.status !== 'all') {
         if (filters.status === 'overdue') {
-          query = query.gt('due_amount', 0).lt('due_date', new Date().toISOString().split('T')[0])
+          query = query.gt('due_amount', 0).lt('due_date', getTodayDateString())
         } else if (filters.status === 'unpaid') {
           query = query.in('status', ['unpaid', 'partially_paid']).gt('due_amount', 0)
         } else if (filters.status === 'vat') {
@@ -155,11 +196,25 @@ export class BillingRepository {
         query = query.lte('invoice_date', filters.endDate)
       }
 
+      if (filters?.limit) {
+        query = query.limit(filters.limit)
+      }
+      if (filters?.offset) {
+        query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1)
+      }
+
       const { data, error } = await query
       if (!error && data) {
         return (data || []) as unknown as InvoiceRecord[]
       }
-    } catch {}
+      if (error && mode === 'production') {
+        throw new Error(`Failed to query invoices from database: ${error.message}`)
+      }
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Failed to retrieve invoices: ${err.message}`)
+      }
+    }
 
     const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     let list = all.filter((inv) => !inv.company_id || inv.company_id === companyId)
@@ -202,6 +257,8 @@ export class BillingRepository {
   }
 
   static async getInvoiceById(id: string, companyId: string): Promise<InvoiceRecord | null> {
+    const mode = getFinancialPersistenceMode()
+
     try {
       const supabase = await createClient()
       const { data, error } = await (supabase as any)
@@ -214,7 +271,14 @@ export class BillingRepository {
       if (!error && data) {
         return (data as unknown as InvoiceRecord) || null
       }
-    } catch {}
+      if (error && mode === 'production') {
+        throw new Error(`Failed to retrieve invoice ${id}: ${error.message}`)
+      }
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Failed to retrieve invoice: ${err.message}`)
+      }
+    }
 
     const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     return (
@@ -234,7 +298,9 @@ export class BillingRepository {
     due_date: string
     grand_total: number
     created_by_name: string
+    idempotency_key?: string | null
   }): Promise<InvoiceRecord> {
+    const mode = getFinancialPersistenceMode()
     const invoiceNumber =
       invoice.invoice_number || (await this.getNextDocumentNumber(invoice.company_id, 'invoice'))
 
@@ -267,7 +333,7 @@ export class BillingRepository {
       job_number: invoice.job_number || null,
       salesperson_id: invoice.salesperson_id || null,
       salesperson_name: invoice.salesperson_name || null,
-      invoice_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
+      invoice_date: invoice.invoice_date || getTodayDateString(),
       due_date: invoice.due_date,
       status: paidAmount >= grandTotal ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'unpaid',
       subtotal,
@@ -281,19 +347,38 @@ export class BillingRepository {
       notes: invoice.notes || null,
       terms_and_conditions: invoice.terms_and_conditions || null,
       created_by_name: invoice.created_by_name,
+      idempotency_key: invoice.idempotency_key || null,
       created_at: invoice.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
 
     try {
       const supabase = await createClient()
+
+      // Idempotency check in database
+      if (payload.idempotency_key) {
+        const { data: existing } = await (supabase as any)
+          .from('invoices')
+          .select('*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
+          .eq('company_id', invoice.company_id)
+          .eq('idempotency_key', payload.idempotency_key)
+          .maybeSingle()
+        if (existing) {
+          return existing as unknown as InvoiceRecord
+        }
+      }
+
       const { data, error } = await (supabase as any)
         .from('invoices')
         .insert(payload)
         .select()
         .single()
 
-      if (!error && data) {
+      if (error) {
+        throw new Error(`Database insert failed for invoice: ${error.message}`)
+      }
+
+      if (data) {
         // Insert invoice items if present
         if (invoice.items && invoice.items.length > 0) {
           const itemsPayload = invoice.items.map((it: any) => ({
@@ -310,7 +395,10 @@ export class BillingRepository {
             total_price: Number(it.total_price) || (Number(it.quantity) * Number(it.unit_price)),
             finishing: it.finishing || null,
           }))
-          await (supabase as any).from('invoice_items').insert(itemsPayload)
+          const { error: itemsErr } = await (supabase as any).from('invoice_items').insert(itemsPayload)
+          if (itemsErr) {
+            throw new Error(`Failed to save line items: ${itemsErr.message}`)
+          }
         }
 
         // Update customer total due balance in PostgreSQL
@@ -322,7 +410,6 @@ export class BillingRepository {
               p_invoiced_delta: grandTotal,
             })
           } catch {
-            // Direct query update fallback
             const { data: cust } = await (supabase as any)
               .from('customers')
               .select('total_due_balance, total_invoiced_amount')
@@ -343,8 +430,13 @@ export class BillingRepository {
 
         return (await this.getInvoiceById(data.id, invoice.company_id)) as InvoiceRecord
       }
-    } catch {}
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Invoice transaction failed: ${err.message}`)
+      }
+    }
 
+    // In-memory simulation only for explicit test/training mode
     const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     const idx = all.findIndex((i) => i.id === payload.id)
     if (idx >= 0) all[idx] = payload
@@ -375,6 +467,7 @@ export class BillingRepository {
     param2: Partial<InvoiceRecord> | string,
     param3?: Partial<InvoiceRecord> | string
   ): Promise<InvoiceRecord> {
+    const mode = getFinancialPersistenceMode()
     const updates: Partial<InvoiceRecord> = (typeof param2 === 'object' ? param2 : typeof param3 === 'object' ? param3 : {}) as Partial<InvoiceRecord>
     const companyId: string = typeof param2 === 'string' ? param2 : typeof param3 === 'string' ? param3 : ''
 
@@ -393,7 +486,14 @@ export class BillingRepository {
       if (!error && data) {
         return data as unknown as InvoiceRecord
       }
-    } catch {}
+      if (error && mode === 'production') {
+        throw new Error(`Failed to update invoice ${id}: ${error.message}`)
+      }
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Invoice update failed: ${err.message}`)
+      }
+    }
 
     const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     const idx = all.findIndex((i) => i.id === id)
@@ -406,6 +506,8 @@ export class BillingRepository {
   }
 
   static async getPayments(companyId: string, customerId?: string): Promise<PaymentRecord[]> {
+    const mode = getFinancialPersistenceMode()
+
     try {
       const supabase = await createClient()
       let query = (supabase as any)
@@ -422,7 +524,14 @@ export class BillingRepository {
       if (!error && data) {
         return (data || []) as unknown as PaymentRecord[]
       }
-    } catch {}
+      if (error && mode === 'production') {
+        throw new Error(`Failed to query payments: ${error.message}`)
+      }
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Payments query failed: ${err.message}`)
+      }
+    }
 
     const all = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
     return all
@@ -434,6 +543,8 @@ export class BillingRepository {
    * Authoritative multi-invoice payment allocation & recording
    */
   static async recordMultiInvoicePayment(params: MultiInvoicePaymentInput & { companyId: string; receivedByName: string }): Promise<PaymentRecord> {
+    const mode = getFinancialPersistenceMode()
+
     if (!params.companyId) {
       throw new Error('Company context is required to record payment.')
     }
@@ -449,7 +560,7 @@ export class BillingRepository {
         p_customer_name: params.customerName,
         p_amount: params.amount,
         p_payment_method: params.paymentMethod,
-        p_payment_date: params.paymentDate || new Date().toISOString().split('T')[0],
+        p_payment_date: params.paymentDate || getTodayDateString(),
         p_bank_name: params.bankName || null,
         p_cheque_number: params.chequeNumber || null,
         p_cheque_date: params.chequeDate || null,
@@ -458,9 +569,15 @@ export class BillingRepository {
         p_received_by_name: params.receivedByName,
         p_allocations: params.allocations || [],
         p_branch_id: params.branchId || null,
+        p_idempotency_key: params.idempotencyKey || null,
+        p_actor_user_id: params.actorUserId || null,
       })
 
-      if (!error && data && data.success) {
+      if (error) {
+        throw new Error(`Payment transaction rolled back in PostgreSQL: ${error.message}`)
+      }
+
+      if (data && data.success) {
         const { data: payRecord } = await (supabase as any)
           .from('payments')
           .select('*, allocations:payment_allocations(*)')
@@ -468,9 +585,13 @@ export class BillingRepository {
           .maybeSingle()
         if (payRecord) return payRecord as PaymentRecord
       }
-    } catch {}
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Could not record payment. Transaction was rolled back: ${err.message}`)
+      }
+    }
 
-    // Fallback in-memory store simulation
+    // In-memory simulation only for explicit test/training mode
     const receiptNumber = await this.getNextDocumentNumber(params.companyId, 'payment')
     const paymentId = `pay-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
 
@@ -485,6 +606,10 @@ export class BillingRepository {
           const invIdx = allInvoices.findIndex((i) => i.id === alloc.invoiceId)
           if (invIdx >= 0) {
             const inv = allInvoices[invIdx]
+            if (inv.status === 'cancelled') {
+              throw new Error(`Cannot allocate payment to cancelled invoice ${inv.invoice_number}`)
+            }
+
             const allocAmt = Math.min(alloc.amount, inv.due_amount)
             const newPaid = Number(inv.paid_amount || 0) + allocAmt
             const newDue = Math.max(0, Number(inv.grand_total) - newPaid - Number(inv.write_off_amount || 0))
@@ -561,7 +686,7 @@ export class BillingRepository {
       receipt_number: receiptNumber,
       customer_id: params.customerId,
       customer_name: params.customerName,
-      payment_date: params.paymentDate || new Date().toISOString().split('T')[0],
+      payment_date: params.paymentDate || getTodayDateString(),
       payment_type: params.allocations && params.allocations.length > 0 ? 'due_payment' : 'advance_payment',
       payment_method: params.paymentMethod,
       amount: params.amount,
@@ -572,6 +697,8 @@ export class BillingRepository {
       mfs_transaction_id: params.mfsTransactionId || null,
       notes: params.notes || null,
       received_by_name: params.receivedByName,
+      idempotency_key: params.idempotencyKey || null,
+      actor_user_id: params.actorUserId || null,
       allocations: allocationRecords,
       created_at: new Date().toISOString(),
     }
@@ -580,7 +707,7 @@ export class BillingRepository {
     allPayments.push(paymentRecord)
     PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, allPayments)
 
-    // Update customer balance
+    // Update customer balance in mock store
     const allCustomers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
     const cIdx = allCustomers.findIndex((c) => c.id === params.customerId)
     if (cIdx >= 0) {
@@ -611,6 +738,8 @@ export class BillingRepository {
     mfs_transaction_id?: string | null
     notes?: string | null
     received_by_name: string
+    idempotency_key?: string
+    actor_user_id?: string
   }): Promise<PaymentRecord> {
     const allocations = params.invoice_id ? [{ invoiceId: params.invoice_id, amount: params.amount }] : []
     return await this.recordMultiInvoicePayment({
@@ -626,6 +755,8 @@ export class BillingRepository {
       mfsTransactionId: params.mfs_transaction_id,
       notes: params.notes,
       receivedByName: params.received_by_name,
+      idempotencyKey: params.idempotency_key,
+      actorUserId: params.actor_user_id,
       allocations,
     } as any)
   }
@@ -636,7 +767,17 @@ export class BillingRepository {
     amount: number
     reason: string
     authorized_by_name: string
+    actor_user_id?: string
   }): Promise<FinancialWriteOffRecord> {
+    const mode = getFinancialPersistenceMode()
+
+    if (writeOff.amount <= 0) {
+      throw new Error('Write-off amount must be greater than zero.')
+    }
+    if (!writeOff.reason || !writeOff.reason.trim()) {
+      throw new Error('A valid reason is required for financial write-off.')
+    }
+
     try {
       const supabase = await createClient()
       const { data, error } = await (supabase as any).rpc('record_financial_write_off_atomic', {
@@ -645,9 +786,14 @@ export class BillingRepository {
         p_amount: writeOff.amount,
         p_reason: writeOff.reason,
         p_authorized_by_name: writeOff.authorized_by_name,
+        p_actor_user_id: writeOff.actor_user_id || null,
       })
 
-      if (!error && data && data.success) {
+      if (error) {
+        throw new Error(`Write-off transaction failed in PostgreSQL: ${error.message}`)
+      }
+
+      if (data && data.success) {
         return {
           id: data.write_off_id,
           company_id: writeOff.company_id,
@@ -655,53 +801,74 @@ export class BillingRepository {
           amount: writeOff.amount,
           reason: writeOff.reason,
           authorized_by_name: writeOff.authorized_by_name,
+          actor_user_id: writeOff.actor_user_id || null,
           created_at: new Date().toISOString(),
         }
       }
-    } catch {}
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Financial write-off failed: ${err.message}`)
+      }
+    }
+
+    // In-memory simulation for test/training mode
+    const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const invIdx = allInvoices.findIndex((i) => i.id === writeOff.invoice_id)
+    if (invIdx < 0) {
+      throw new Error(`Invoice not found for write-off`)
+    }
+
+    const inv = allInvoices[invIdx]
+    if (inv.status === 'cancelled') {
+      throw new Error(`Cannot write off cancelled invoice ${inv.invoice_number}`)
+    }
+    if (inv.due_amount <= 0) {
+      throw new Error(`Invoice ${inv.invoice_number} has no remaining due to write off`)
+    }
+    if (writeOff.amount > inv.due_amount) {
+      throw new Error(`Write-off amount (৳${writeOff.amount}) cannot exceed due balance (৳${inv.due_amount})`)
+    }
 
     const payload: FinancialWriteOffRecord = {
       id: `wo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       ...writeOff,
+      actor_user_id: writeOff.actor_user_id || null,
       created_at: new Date().toISOString(),
     }
 
-    const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    const invIdx = allInvoices.findIndex((i) => i.id === writeOff.invoice_id)
-    if (invIdx >= 0) {
-      const inv = allInvoices[invIdx]
-      const newWriteOff = Number(inv.write_off_amount || 0) + writeOff.amount
-      const newDue = Math.max(0, Number(inv.grand_total) - Number(inv.paid_amount || 0) - newWriteOff)
-      const newStatus = newDue <= 0 ? 'written_off' : inv.status
+    const newWriteOff = Number(inv.write_off_amount || 0) + writeOff.amount
+    const newDue = Math.max(0, Number(inv.grand_total) - Number(inv.paid_amount || 0) - newWriteOff)
+    const newStatus = newDue <= 0 ? 'written_off' : inv.status
 
-      allInvoices[invIdx] = {
-        ...inv,
-        write_off_amount: newWriteOff,
-        due_amount: newDue,
-        status: newStatus,
-        write_offs: [...(inv.write_offs || []), payload],
-        updated_at: new Date().toISOString(),
-      }
-      PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+    allInvoices[invIdx] = {
+      ...inv,
+      write_off_amount: newWriteOff,
+      due_amount: newDue,
+      status: newStatus,
+      write_offs: [...(inv.write_offs || []), payload],
+      updated_at: new Date().toISOString(),
+    }
+    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
 
-      if (inv.customer_id) {
-        const allCust = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
-        const cIdx = allCust.findIndex((c) => c.id === inv.customer_id)
-        if (cIdx >= 0) {
-          allCust[cIdx] = {
-            ...allCust[cIdx],
-            total_due_balance: Math.max(0, (Number(allCust[cIdx].total_due_balance) || 0) - writeOff.amount),
-            updated_at: new Date().toISOString(),
-          }
-          PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
+    if (inv.customer_id) {
+      const allCust = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+      const cIdx = allCust.findIndex((c) => c.id === inv.customer_id)
+      if (cIdx >= 0) {
+        allCust[cIdx] = {
+          ...allCust[cIdx],
+          total_due_balance: Math.max(0, (Number(allCust[cIdx].total_due_balance) || 0) - writeOff.amount),
+          updated_at: new Date().toISOString(),
         }
+        PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
       }
     }
 
     return payload
   }
 
-  static async cancelInvoice(invoiceId: string, reason: string, actorName: string, companyId: string): Promise<boolean> {
+  static async cancelInvoice(invoiceId: string, reason: string, actorName: string, companyId: string, actorUserId?: string): Promise<boolean> {
+    const mode = getFinancialPersistenceMode()
+
     try {
       const supabase = await createClient()
       const { data, error } = await (supabase as any).rpc('cancel_invoice_atomic', {
@@ -709,17 +876,40 @@ export class BillingRepository {
         p_invoice_id: invoiceId,
         p_reason: reason,
         p_actor_name: actorName,
+        p_actor_user_id: actorUserId || null,
       })
 
-      if (!error && data && data.success) {
+      if (error) {
+        throw new Error(`Cancellation failed in PostgreSQL: ${error.message}`)
+      }
+
+      if (data && data.success) {
         return true
       }
-    } catch {}
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Invoice cancellation failed: ${err.message}`)
+      }
+    }
 
+    // In-memory simulation for test/training mode
     const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
     const idx = allInvoices.findIndex((i) => i.id === invoiceId)
     if (idx >= 0) {
       const inv = allInvoices[idx]
+      if (inv.status === 'cancelled') {
+        throw new Error('Invoice is already cancelled')
+      }
+      if (inv.status === 'paid') {
+        throw new Error('Paid invoices cannot be cancelled directly. Please perform an authorized payment refund/reversal.')
+      }
+      if (Number(inv.paid_amount || 0) > 0) {
+        throw new Error(`Partially paid invoices (Paid: ৳${inv.paid_amount}) cannot be cancelled directly.`)
+      }
+      if (inv.status === 'written_off') {
+        throw new Error('Written-off invoices cannot be cancelled.')
+      }
+
       const releasedDue = inv.due_amount
       allInvoices[idx] = {
         ...inv,
@@ -805,7 +995,6 @@ export class BillingRepository {
     paymentMethods: PaymentMethodSummaryItem[]
     salespersonStats: SalespersonCollectionStat[]
   }> {
-    const now = new Date()
     const todayStr = getTodayDateString()
 
     let startDate = todayStr
@@ -813,9 +1002,10 @@ export class BillingRepository {
     let periodLabel = "Today's"
 
     if (period === 'this_week') {
-      const day = now.getDay()
-      const diff = now.getDate() - day + (day === 0 ? -6 : 1) // Monday
-      const mon = new Date(now.setDate(diff))
+      const d = new Date()
+      const day = d.getDay()
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Monday
+      const mon = new Date(d.setDate(diff))
       startDate = mon.toISOString().split('T')[0]
       endDate = todayStr
       periodLabel = 'This Week'
@@ -1117,6 +1307,111 @@ export class BillingRepository {
       customerAging: customerAgingList,
       totalReceivables,
       totalOverdue,
+    }
+  }
+
+  /**
+   * Diagnostic & Reconciliation Tool: Validates and reconciles customer debt balance
+   */
+  static async reconcileCustomerBalances(
+    companyId: string,
+    customerId?: string,
+    autoFix: boolean = false
+  ): Promise<CustomerReconciliationReport> {
+    const invoices = await this.getInvoices(companyId, { customerId })
+    const payments = await this.getPayments(companyId, customerId)
+
+    // Group invoices by customer
+    const custMap = new Map<string, { name: string; totalInvoiced: number; totalAllocated: number; totalWriteOffs: number; calculatedDue: number }>()
+
+    for (const inv of invoices) {
+      if (inv.status === 'cancelled') continue
+      const cId = inv.customer_id
+      if (!cId) continue
+
+      const existing = custMap.get(cId) || {
+        name: inv.customer_name,
+        totalInvoiced: 0,
+        totalAllocated: 0,
+        totalWriteOffs: 0,
+        calculatedDue: 0,
+      }
+
+      existing.totalInvoiced += Number(inv.grand_total) || 0
+      existing.totalAllocated += Number(inv.paid_amount) || 0
+      existing.totalWriteOffs += Number(inv.write_off_amount) || 0
+      existing.calculatedDue += Number(inv.due_amount) || 0
+      custMap.set(cId, existing)
+    }
+
+    // Check against stored customer balances
+    const customers = await (async () => {
+      try {
+        const supabase = await createClient()
+        let query = (supabase as any).from('customers').select('*').eq('company_id', companyId)
+        if (customerId) query = query.eq('id', customerId)
+        const { data } = await query
+        if (data) return data as CustomerRecord[]
+      } catch {}
+      const all = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+      return all.filter((c) => (!c.company_id || c.company_id === companyId) && (!customerId || c.id === customerId))
+    })()
+
+    const items: CustomerBalanceReconciliationItem[] = []
+    let totalStored = 0
+    let totalCalculated = 0
+    let mismatched = 0
+
+    for (const cust of customers) {
+      const stats = custMap.get(cust.id) || {
+        name: cust.name,
+        totalInvoiced: Number(cust.total_invoiced_amount) || 0,
+        totalAllocated: Number(cust.total_paid_amount) || 0,
+        totalWriteOffs: 0,
+        calculatedDue: 0,
+      }
+
+      const storedDue = Number(cust.total_due_balance) || 0
+      const diff = Math.abs(storedDue - stats.calculatedDue)
+      const isBalanced = diff < 0.01
+
+      if (!isBalanced) mismatched += 1
+      totalStored += storedDue
+      totalCalculated += stats.calculatedDue
+
+      items.push({
+        customerId: cust.id,
+        customerName: cust.name,
+        storedDueBalance: storedDue,
+        calculatedDueBalance: stats.calculatedDue,
+        difference: storedDue - stats.calculatedDue,
+        totalInvoiced: stats.totalInvoiced,
+        totalAllocatedPaid: stats.totalAllocated,
+        totalWriteOffs: stats.totalWriteOffs,
+        isBalanced,
+      })
+    }
+
+    if (autoFix && mismatched > 0) {
+      try {
+        const supabase = await createClient()
+        await (supabase as any).rpc('reconcile_customer_balance_atomic', {
+          p_company_id: companyId,
+          p_customer_id: customerId || null,
+        })
+      } catch {}
+    }
+
+    return {
+      companyId,
+      generatedAt: new Date().toISOString(),
+      totalCustomers: customers.length,
+      balancedCustomers: customers.length - mismatched,
+      mismatchedCustomers: mismatched,
+      totalStoredDue: totalStored,
+      totalCalculatedDue: totalCalculated,
+      reconciled: mismatched === 0,
+      items,
     }
   }
 

@@ -15,7 +15,7 @@ interface PageHeaderProps {
   titleBn: string
   descriptionEn?: string
   descriptionBn?: string
-  icon?: LucideIcon
+  icon?: LucideIcon | React.ReactNode
   iconColor?: string
   actions?: React.ReactNode
   badge?: React.ReactNode
@@ -27,7 +27,7 @@ export function PageHeader({
   titleBn,
   descriptionEn,
   descriptionBn,
-  icon: Icon,
+  icon,
   iconColor = 'text-blue-600 dark:text-blue-400',
   actions,
   badge,
@@ -50,9 +50,13 @@ export function PageHeader({
     >
       <div className="space-y-1 min-w-0">
         <div className="flex items-center gap-2.5 flex-wrap">
-          {Icon && (
+          {icon && (
             <div className="h-9 w-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200/80 dark:border-blue-500/20 flex items-center justify-center shrink-0 shadow-xs">
-              <Icon className={cn('h-5 w-5', iconColor)} />
+              {React.isValidElement(icon) ? (
+                icon
+              ) : typeof icon === 'function' ? (
+                React.createElement(icon as any, { className: cn('h-5 w-5', iconColor) })
+              ) : null}
             </div>
           )}
           <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white bangla-text truncate">

@@ -329,6 +329,7 @@ export function RecordPaymentModal({
               : null,
           notes: notes || `Payment received from ${selectedCustomer?.name || 'Customer'} via ${paymentMethod.toUpperCase()}`,
           receivedByName,
+          idempotencyKey: `pay-${selectedCustomerId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           allocations: explicitAllocations,
         },
         company?.id

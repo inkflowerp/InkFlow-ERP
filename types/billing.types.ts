@@ -37,6 +37,8 @@ export interface InvoiceItemRecord {
   finishing?: string | null
 }
 
+export type FinancialPersistenceMode = 'production' | 'training' | 'test'
+
 export interface PaymentAllocationRecord {
   id: string
   payment_id: string
@@ -53,6 +55,7 @@ export interface FinancialWriteOffRecord {
   amount: number
   reason: string
   authorized_by_name: string
+  actor_user_id?: string | null
   created_at: string
 }
 
@@ -74,6 +77,8 @@ export interface PaymentRecord {
   mfs_transaction_id?: string | null
   notes?: string | null
   received_by_name: string
+  idempotency_key?: string | null
+  actor_user_id?: string | null
   allocations?: PaymentAllocationRecord[]
   created_at: string
 }
@@ -113,6 +118,7 @@ export interface InvoiceRecord {
   notes?: string | null
   terms_and_conditions?: string | null
   created_by_name: string
+  idempotency_key?: string | null
   items: InvoiceItemRecord[]
   payments?: PaymentAllocationRecord[]
   write_offs?: FinancialWriteOffRecord[]
@@ -236,6 +242,8 @@ export interface MultiInvoicePaymentInput {
   mfsTransactionId?: string | null
   notes?: string | null
   receivedByName?: string
+  idempotencyKey?: string
+  actorUserId?: string
   allocations?: MultiInvoiceAllocationItem[]
 }
 
@@ -249,4 +257,28 @@ export interface CreditLimitWarningInfo {
   exceededBy: number
   isExceeded: boolean
   warningMessage: string
+}
+
+export interface CustomerBalanceReconciliationItem {
+  customerId: string
+  customerName: string
+  storedDueBalance: number
+  calculatedDueBalance: number
+  difference: number
+  totalInvoiced: number
+  totalAllocatedPaid: number
+  totalWriteOffs: number
+  isBalanced: boolean
+}
+
+export interface CustomerReconciliationReport {
+  companyId: string
+  generatedAt: string
+  totalCustomers: number
+  balancedCustomers: number
+  mismatchedCustomers: number
+  totalStoredDue: number
+  totalCalculatedDue: number
+  reconciled: boolean
+  items: CustomerBalanceReconciliationItem[]
 }

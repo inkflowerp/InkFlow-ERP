@@ -115,14 +115,14 @@ export class BillingService {
     return await BillingRepository.updateInvoice(id, data, companyId)
   }
 
-  static async deleteInvoice(id: string, companyId: string): Promise<boolean> {
+  static async deleteInvoice(id: string, companyId: string, actorName: string = 'User', actorUserId?: string): Promise<boolean> {
     if (!id || !companyId) return false
-    return await BillingRepository.cancelInvoice(id, 'Deleted by user', 'User', companyId)
+    return await BillingRepository.cancelInvoice(id, 'Deleted by user', actorName, companyId, actorUserId)
   }
 
-  static async cancelInvoice(id: string, reason: string, actorName: string, companyId: string): Promise<boolean> {
+  static async cancelInvoice(id: string, reason: string, actorName: string, companyId: string, actorUserId?: string): Promise<boolean> {
     if (!id || !companyId) return false
-    return await BillingRepository.cancelInvoice(id, reason, actorName, companyId)
+    return await BillingRepository.cancelInvoice(id, reason, actorName, companyId, actorUserId)
   }
 
   static async getPayments(companyId: string, customerId?: string): Promise<PaymentRecord[]> {
@@ -143,6 +143,8 @@ export class BillingService {
     mfsTransactionId?: string | null
     notes?: string | null
     receivedByName: string
+    idempotencyKey?: string
+    actorUserId?: string
   }): Promise<PaymentRecord> {
     if (!params.companyId) {
       throw new Error('Company context is required to record payment.')
@@ -164,6 +166,8 @@ export class BillingService {
       mfs_transaction_id: params.mfsTransactionId,
       notes: params.notes,
       received_by_name: params.receivedByName,
+      idempotency_key: params.idempotencyKey,
+      actor_user_id: params.actorUserId,
     })
   }
 
@@ -183,6 +187,7 @@ export class BillingService {
     amount: number
     reason: string
     authorized_by_name: string
+    actor_user_id?: string
   }): Promise<FinancialWriteOffRecord> {
     if (!writeOff.company_id || !writeOff.invoice_id) {
       throw new Error('Company ID and Invoice ID are required for write-off.')
@@ -191,6 +196,13 @@ export class BillingService {
       throw new Error('Write-off amount must be greater than zero.')
     }
     return await BillingRepository.recordWriteOff(writeOff)
+  }
+
+  static async reconcileCustomerBalances(companyId: string, customerId?: string, autoFix: boolean = false) {
+    if (!companyId) {
+      throw new Error('Company context is required for balance reconciliation.')
+    }
+    return await BillingRepository.reconcileCustomerBalances(companyId, customerId, autoFix)
   }
 
   static async checkCustomerCreditLimit(companyId: string, customerId: string, newInvoiceAmount: number): Promise<CreditLimitWarningInfo> {
