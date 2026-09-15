@@ -196,11 +196,12 @@ export function OwnerDashboard({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. DEDICATED QUICK ACTIONS BAR (1-Click Operational Shortcuts)            */}
+      {/* 2. DEDICATED QUICK ACTIONS BAR (1-Click Operational Direct Modals)        */}
       {/* ========================================================================= */}
       <QuickActionsBar
         onOpenPaymentModal={onOpenPaymentModal}
         onOpenNewWork={onOpenNewWork}
+        onRefresh={onRefresh}
       />
 
       {/* ========================================================================= */}
