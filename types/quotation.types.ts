@@ -392,3 +392,150 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
   }
 }
 
+/**
+ * Recursively inspects any arbitrary JSON/array/object/draft/sync payload to extract quotation objects.
+ */
+export function extractQuotationsFromAny(input: any): any[] {
+  if (!input) return []
+  let parsed = input
+  if (typeof input === 'string') {
+    const trimmed = input.trim()
+    if (!trimmed || (trimmed[0] !== '{' && trimmed[0] !== '[')) return []
+    try {
+      parsed = JSON.parse(trimmed)
+    } catch {
+      return []
+    }
+  }
+
+  const results: any[] = []
+
+  const inspect = (item: any) => {
+    if (!item || typeof item !== 'object') return
+
+    // Case A: Offline draft
+    if ((item.formType === 'quotation' || item.type === 'quotation') && item.data && typeof item.data === 'object') {
+      inspect(item.data)
+      return
+    }
+
+    // Case B: Sync queue / Outbox payload
+    if ((item.entity_type === 'quotation' || item.entityType === 'quotation') && item.payload && typeof item.payload === 'object') {
+      inspect(item.payload)
+      return
+    }
+
+    // Case C: Array wrappers (.data, .quotations, .quotes, .list, .items, .records)
+    if (Array.isArray(item.data)) {
+      item.data.forEach(inspect)
+      return
+    }
+    if (Array.isArray(item.quotations)) {
+      item.quotations.forEach(inspect)
+      return
+    }
+    if (Array.isArray(item.quotes)) {
+      item.quotes.forEach(inspect)
+      return
+    }
+    if (Array.isArray(item.list)) {
+      item.list.forEach(inspect)
+      return
+    }
+    if (Array.isArray(item.records)) {
+      item.records.forEach(inspect)
+      return
+    }
+    if (item.state && typeof item.state === 'object') {
+      inspect(item.state)
+      return
+    }
+
+    // Case D: Direct quotation record
+    const hasQuotationField =
+      item.quotation_number ||
+      item.quote_number ||
+      item.quotationNo ||
+      item.number ||
+      item.valid_until ||
+      item.validUntil ||
+      item.expiry_date ||
+      (item.customer_name && (item.items || item.subtotal !== undefined || item.grand_total !== undefined)) ||
+      (typeof item.id === 'string' && (item.id.startsWith('quo-') || item.id.startsWith('quote-') || item.id.startsWith('q-')))
+
+    if (hasQuotationField) {
+      results.push(item)
+    }
+  }
+
+  if (Array.isArray(parsed)) {
+    parsed.forEach(inspect)
+  } else if (parsed && typeof parsed === 'object') {
+    inspect(parsed)
+  }
+
+  return results
+}
+
+/**
+ * Deduplicates and normalizes a collection of quotation records by canonical ID and quotation number.
+ */
+export function deduplicateQuotations(rawList: any[], targetCompanyId?: string): QuotationRecord[] {
+  const byCanonicalKey = new Map<string, QuotationRecord>()
+
+  for (const raw of rawList) {
+    if (!raw || typeof raw !== 'object') continue
+    const norm = normalizeQuotationRecord(raw)
+    if (!norm) continue
+
+    // Tenant isolation check: if targetCompanyId is specified and strict tenant boundary applies
+    if (targetCompanyId && targetCompanyId !== 'c-01' && targetCompanyId !== 'default') {
+      const cId = norm.company_id
+      const isAllowed = !cId || cId === targetCompanyId || cId === 'c-01' || cId === 'default' || cId === ''
+      if (!isAllowed) continue
+    }
+
+    const qNumKey = norm.quotation_number ? norm.quotation_number.toLowerCase().trim() : null
+    const idKey = norm.id ? norm.id.toLowerCase().trim() : null
+
+    let existingKey: string | null = null
+    if (qNumKey && byCanonicalKey.has(qNumKey)) {
+      existingKey = qNumKey
+    } else if (idKey && byCanonicalKey.has(idKey)) {
+      existingKey = idKey
+    }
+
+    if (existingKey) {
+      const existing = byCanonicalKey.get(existingKey)!
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(norm.id)
+      const existingIsUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(existing.id)
+
+      const timeNorm = new Date(norm.updated_at || norm.created_at || 0).getTime()
+      const timeExisting = new Date(existing.updated_at || existing.created_at || 0).getTime()
+
+      let preferred = existing
+      if ((isUUID && !existingIsUUID) || ((norm.items?.length || 0) > (existing.items?.length || 0)) || (timeNorm > timeExisting)) {
+        preferred = {
+          ...existing,
+          ...norm,
+          id: isUUID ? norm.id : (existingIsUUID ? existing.id : norm.id),
+          items: (norm.items?.length || 0) >= (existing.items?.length || 0) ? norm.items : existing.items,
+        }
+      }
+
+      byCanonicalKey.set(existingKey, preferred)
+      if (qNumKey) byCanonicalKey.set(qNumKey, preferred)
+      if (idKey) byCanonicalKey.set(idKey, preferred)
+    } else {
+      const primary = qNumKey || idKey || `quote-${Math.random()}`
+      byCanonicalKey.set(primary, norm)
+      if (qNumKey) byCanonicalKey.set(qNumKey, norm)
+      if (idKey) byCanonicalKey.set(idKey, norm)
+    }
+  }
+
+  return Array.from(new Set(byCanonicalKey.values())).sort(
+    (a, b) => new Date(b.created_at || b.quotation_date || 0).getTime() - new Date(a.created_at || a.quotation_date || 0).getTime()
+  )
+}
+

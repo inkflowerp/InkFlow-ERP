@@ -21,7 +21,12 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { QuotationRecord, normalizeQuotationRecord } from '@/types/quotation.types'
+import {
+  QuotationRecord,
+  normalizeQuotationRecord,
+  extractQuotationsFromAny,
+  deduplicateQuotations,
+} from '@/types/quotation.types'
 import { SalesOrderRecord } from '@/types/order.types'
 import { formatBDT } from '@/lib/formatters'
 import { getQuotationsAction } from '@/actions/quotation.actions'
@@ -53,57 +58,51 @@ export default function SalesManagerPage() {
 
   // Resiliently merge all quotation sources
   const quotations = React.useMemo(() => {
-    const map = new Map<string, QuotationRecord>()
+    const rawList: any[] = []
 
     if (typeof window !== 'undefined') {
       try {
         for (let i = 0; i < window.localStorage.length; i++) {
           const k = window.localStorage.key(i)
           if (!k) continue
+          const raw = window.localStorage.getItem(k)
+          if (!raw) continue
+
           if (
             k.startsWith('printerp_tenant_quotations') ||
             k.startsWith('printerp_quotations') ||
             k.includes('quotation') ||
-            k.includes('quotes')
+            k.includes('quotes') ||
+            k.includes('draft') ||
+            k.includes('outbox') ||
+            k.includes('inkflow')
           ) {
-            const raw = window.localStorage.getItem(k)
-            if (raw) {
-              const parsed = JSON.parse(raw)
-              if (Array.isArray(parsed)) {
-                for (const q of parsed) {
-                  if (q && typeof q === 'object') {
-                    const norm = normalizeQuotationRecord(q)
-                    const key = (norm.id || norm.quotation_number).toLowerCase().trim()
-                    map.set(key, norm)
-                  }
-                }
-              }
+            const extracted = extractQuotationsFromAny(raw)
+            if (extracted.length > 0) {
+              rawList.push(...extracted)
             }
           }
         }
       } catch {}
     }
 
+    // Direct DataStore reads
+    const dsTenant = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, slug) || []
+    if (Array.isArray(dsTenant)) rawList.push(...dsTenant)
+
+    const dsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+    if (Array.isArray(dsGlobal)) rawList.push(...dsGlobal)
+
     if (localQuotations && Array.isArray(localQuotations)) {
-      for (const q of localQuotations) {
-        if (!q || typeof q !== 'object') continue
-        const norm = normalizeQuotationRecord(q)
-        map.set((norm.id || norm.quotation_number).toLowerCase().trim(), norm)
-      }
+      rawList.push(...localQuotations)
     }
 
     if (serverQuotations && Array.isArray(serverQuotations)) {
-      for (const q of serverQuotations) {
-        if (!q || typeof q !== 'object') continue
-        const norm = normalizeQuotationRecord(q)
-        map.set((norm.id || norm.quotation_number).toLowerCase().trim(), norm)
-      }
+      rawList.push(...serverQuotations)
     }
 
-    return Array.from(map.values()).sort(
-      (a, b) => new Date(b.created_at || b.quotation_date || 0).getTime() - new Date(a.created_at || a.quotation_date || 0).getTime()
-    )
-  }, [serverQuotations, localQuotations])
+    return deduplicateQuotations(rawList, companyId)
+  }, [serverQuotations, localQuotations, slug, companyId])
 
   const showNotification = (msg: string) => {
     setNotification(msg)

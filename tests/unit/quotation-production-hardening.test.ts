@@ -417,4 +417,73 @@ describe('Quotation Production Hardening & Sales-Control Center Test Suite', () 
       assert.strictEqual(retrievedFlexible.id, customId)
     })
   })
+
+  describe('9. Deep Extraction & Deduplication from Legacy Wrapped Structures', () => {
+    it('should extract quotations from offline drafts, sync outbox, wrapped JSON and unpartitioned stores', async () => {
+      const { extractQuotationsFromAny, deduplicateQuotations } = await import('../../types/quotation.types.ts')
+
+      // 1. Array wrapper format: { data: [ ... ] }
+      const wrappedJson = JSON.stringify({
+        data: [
+          {
+            id: 'q-wrap-1',
+            quotation_number: 'QUO-WRAP-01',
+            customer_name: 'Wrapped Client',
+            grand_total: 12000,
+          },
+        ],
+      })
+      const extractedWrapped = extractQuotationsFromAny(wrappedJson)
+      assert.strictEqual(extractedWrapped.length, 1)
+      assert.strictEqual(extractedWrapped[0].quotation_number, 'QUO-WRAP-01')
+
+      // 2. Offline draft format: [ { formType: 'quotation', data: { ... } } ]
+      const draftList = [
+        {
+          id: 'draft-991',
+          formType: 'quotation',
+          data: {
+            id: 'q-draft-1',
+            quotation_number: 'QUO-DRAFT-01',
+            customer_name: 'Offline Field Rep Client',
+            grand_total: 5400,
+          },
+        },
+      ]
+      const extractedDraft = extractQuotationsFromAny(draftList)
+      assert.strictEqual(extractedDraft.length, 1)
+      assert.strictEqual(extractedDraft[0].quotation_number, 'QUO-DRAFT-01')
+
+      // 3. Sync outbox format: [ { entity_type: 'quotation', payload: { ... } } ]
+      const outboxList = [
+        {
+          action_type: 'create',
+          entity_type: 'quotation',
+          payload: {
+            id: 'q-outbox-1',
+            quotation_number: 'QUO-SYNC-01',
+            customer_name: 'Sync Outbox Client',
+            grand_total: 8900,
+          },
+        },
+      ]
+      const extractedOutbox = extractQuotationsFromAny(outboxList)
+      assert.strictEqual(extractedOutbox.length, 1)
+      assert.strictEqual(extractedOutbox[0].quotation_number, 'QUO-SYNC-01')
+
+      // 4. Test deduplication across multiple candidate sources
+      const allRaw = [...extractedWrapped, ...extractedDraft, ...extractedOutbox, {
+        id: 'q-wrap-1-dup',
+        quotation_number: 'QUO-WRAP-01', // duplicate by quotation_number
+        customer_name: 'Wrapped Client Updated',
+        grand_total: 12500,
+      }]
+
+      const deduplicated = deduplicateQuotations(allRaw)
+      assert.strictEqual(deduplicated.length, 3)
+      assert.ok(deduplicated.some((q) => q.quotation_number === 'QUO-WRAP-01'))
+      assert.ok(deduplicated.some((q) => q.quotation_number === 'QUO-DRAFT-01'))
+      assert.ok(deduplicated.some((q) => q.quotation_number === 'QUO-SYNC-01'))
+    })
+  })
 })

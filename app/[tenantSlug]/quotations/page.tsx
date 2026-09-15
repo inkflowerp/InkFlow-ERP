@@ -23,7 +23,13 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { FeatureGate } from '@/components/shared/feature-gate'
-import { QuotationRecord, QuotationStatus, normalizeQuotationRecord } from '@/types/quotation.types'
+import {
+  QuotationRecord,
+  QuotationStatus,
+  normalizeQuotationRecord,
+  extractQuotationsFromAny,
+  deduplicateQuotations,
+} from '@/types/quotation.types'
 import { QuotationService } from '@/services/quotation.service'
 import { getQuotationsAction } from '@/actions/quotation.actions'
 import { QuotationKpiBar } from '@/components/quotations/quotation-kpi-bar'
@@ -47,6 +53,7 @@ export default function QuotationsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [localTick, setLocalTick] = useState(0)
 
   // Filtering & Search
   const [search, setSearch] = useState('')
@@ -76,10 +83,10 @@ export default function QuotationsPage() {
       if (res.success && res.data) {
         setServerQuotations(res.data)
       } else if (res.error) {
-        setError(res.error)
+        console.warn('[Quotations] Server fetch warning:', res.error)
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to load quotations.')
+      console.warn('[Quotations] Server fetch exception:', err)
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
@@ -88,44 +95,46 @@ export default function QuotationsPage() {
 
   useEffect(() => {
     loadQuotations()
+
+    // Listen for storage, sync, or offline draft updates
+    const handleSync = () => setLocalTick((t) => t + 1)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleSync)
+      window.addEventListener('printerp_datastore_sync', handleSync)
+      window.addEventListener('printerp_drafts_updated', handleSync)
+      return () => {
+        window.removeEventListener('storage', handleSync)
+        window.removeEventListener('printerp_datastore_sync', handleSync)
+        window.removeEventListener('printerp_drafts_updated', handleSync)
+      }
+    }
   }, [loadQuotations])
 
-  // Active quotation dataset: Resilient deduplication of Server + Local DataStore
+  // Active quotation dataset: Resilient extraction and deduplication of Server + Local DataStore + Drafts
   const quotations = useMemo(() => {
-    const map = new Map<string, QuotationRecord>()
+    const rawList: any[] = []
 
-    // 1. Deep scan ALL browser localStorage keys for any stored quotations
+    // 1. Deep scan ALL browser localStorage keys
     if (typeof window !== 'undefined') {
       try {
         for (let i = 0; i < window.localStorage.length; i++) {
           const k = window.localStorage.key(i)
           if (!k) continue
+          const raw = window.localStorage.getItem(k)
+          if (!raw) continue
+
           if (
             k.startsWith('printerp_tenant_quotations') ||
             k.startsWith('printerp_quotations') ||
             k.includes('quotation') ||
-            k.includes('quotes')
+            k.includes('quotes') ||
+            k.includes('draft') ||
+            k.includes('outbox') ||
+            k.includes('inkflow')
           ) {
-            const raw = window.localStorage.getItem(k)
-            if (raw) {
-              const parsed = JSON.parse(raw)
-              if (Array.isArray(parsed)) {
-                for (const q of parsed) {
-                  if (q && typeof q === 'object') {
-                    const norm = normalizeQuotationRecord(q)
-                    const key = (norm.id || norm.quotation_number).toLowerCase().trim()
-                    map.set(key, norm)
-                    if (norm.quotation_number) map.set(norm.quotation_number.toLowerCase().trim(), norm)
-                    if (norm.id) map.set(norm.id.toLowerCase().trim(), norm)
-                  }
-                }
-              } else if (parsed && typeof parsed === 'object') {
-                const norm = normalizeQuotationRecord(parsed)
-                const key = (norm.id || norm.quotation_number).toLowerCase().trim()
-                map.set(key, norm)
-                if (norm.quotation_number) map.set(norm.quotation_number.toLowerCase().trim(), norm)
-                if (norm.id) map.set(norm.id.toLowerCase().trim(), norm)
-              }
+            const extracted = extractQuotationsFromAny(raw)
+            if (extracted.length > 0) {
+              rawList.push(...extracted)
             }
           }
         }
@@ -134,39 +143,29 @@ export default function QuotationsPage() {
       }
     }
 
-    // 2. Also incorporate localQuotations from useDataStore hook
+    // 2. DataStore direct reads for partitioned & unpartitioned keys
+    const dsTenant = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, slug) || []
+    if (Array.isArray(dsTenant)) rawList.push(...dsTenant)
+
+    const dsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+    if (Array.isArray(dsGlobal)) rawList.push(...dsGlobal)
+
+    const dsDefault = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, 'default') || []
+    if (Array.isArray(dsDefault)) rawList.push(...dsDefault)
+
+    // 3. LocalQuotations from useDataStore hook
     if (localQuotations && Array.isArray(localQuotations)) {
-      for (const q of localQuotations) {
-        if (!q || typeof q !== 'object') continue
-        const norm = normalizeQuotationRecord(q)
-        const key = (norm.id || norm.quotation_number).toLowerCase().trim()
-        map.set(key, norm)
-        if (norm.quotation_number) map.set(norm.quotation_number.toLowerCase().trim(), norm)
-        if (norm.id) map.set(norm.id.toLowerCase().trim(), norm)
-      }
+      rawList.push(...localQuotations)
     }
 
-    // 3. Server quotations (authoritative from Supabase)
+    // 4. Server quotations (authoritative from Supabase)
     if (serverQuotations && Array.isArray(serverQuotations)) {
-      for (const q of serverQuotations) {
-        if (!q || typeof q !== 'object') continue
-        const norm = normalizeQuotationRecord(q)
-        const key = (norm.id || norm.quotation_number).toLowerCase().trim()
-        map.set(key, norm)
-        if (norm.quotation_number) map.set(norm.quotation_number.toLowerCase().trim(), norm)
-        if (norm.id) map.set(norm.id.toLowerCase().trim(), norm)
-      }
+      rawList.push(...serverQuotations)
     }
 
-    // 4. Extract unique list
-    const uniqueList = Array.from(new Set(map.values()))
-
-    return uniqueList.sort((a, b) => {
-      const timeA = new Date(b.created_at || b.quotation_date || 0).getTime()
-      const timeB = new Date(a.created_at || a.quotation_date || 0).getTime()
-      return timeA - timeB
-    })
-  }, [serverQuotations, localQuotations, slug, companyId])
+    // 5. Clean, deduplicate and sort
+    return deduplicateQuotations(rawList, companyId)
+  }, [serverQuotations, localQuotations, slug, companyId, localTick])
 
 
   // KPI Metrics Calculation

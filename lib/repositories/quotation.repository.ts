@@ -7,7 +7,11 @@ import type {
   QuotationStatus,
   CreateQuotationItemInput,
 } from '../../types/quotation.types.ts'
-import { normalizeQuotationRecord } from '../../types/quotation.types.ts'
+import {
+  normalizeQuotationRecord,
+  extractQuotationsFromAny,
+  deduplicateQuotations,
+} from '../../types/quotation.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
@@ -38,16 +42,28 @@ export class QuotationRepository {
         .maybeSingle()
 
       const prefix = seq?.prefix || 'QUO'
-      const nextVal = (seq?.current_val ? Number(seq.current_val) : 0) + 1
+      let nextVal = seq?.current_value || 1
+      if (!seq) {
+        await (admin as any).from('document_sequences').insert({
+          company_id: companyId,
+          doc_type: 'quotation',
+          prefix,
+          current_value: 1,
+        })
+      } else {
+        nextVal += 1
+        await (admin as any)
+          .from('document_sequences')
+          .update({ current_value: nextVal, updated_at: new Date().toISOString() })
+          .eq('id', seq.id)
+      }
 
-      await (admin as any).from('document_sequences').upsert({
-        company_id: companyId,
-        doc_type: 'quotation',
-        prefix,
-        current_val: nextVal,
-        padding: 6,
-        updated_at: new Date().toISOString(),
-      })
+      const { data: quoteSeq } = await (supabase as any)
+        .from('quotations')
+        .select('quotation_number')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
+        .limit(1)
 
       return `${prefix}-${String(nextVal).padStart(6, '0')}`
     } catch {
@@ -61,7 +77,7 @@ export class QuotationRepository {
    */
   static async getQuotations(companyId: string): Promise<QuotationRecord[]> {
     return measureAsync(`QuotationRepository.getQuotations(${companyId})`, async () => {
-      let dbQuotes: any[] = []
+      const rawCandidates: any[] = []
 
       // 1. Try standard Supabase Client
       try {
@@ -71,14 +87,14 @@ export class QuotationRepository {
           .select('*, items:quotation_items(*)')
         
         if (companyId && companyId !== 'c-01' && companyId !== 'default') {
-          query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.is.null`)
+          query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.eq.default,company_id.is.null`)
         } else if (companyId) {
-          query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+          query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.eq.default,company_id.is.null`)
         }
 
         const { data, error } = await query.order('created_at', { ascending: false })
         if (!error && data && data.length > 0) {
-          dbQuotes = data
+          rawCandidates.push(...data)
         } else if (error) {
           // If nested relation quotation_items failed on legacy DB, fallback to flat query
           const { data: flatData, error: flatErr } = await (supabase as any)
@@ -86,7 +102,7 @@ export class QuotationRepository {
             .select('*')
             .order('created_at', { ascending: false })
           if (!flatErr && flatData && flatData.length > 0) {
-            dbQuotes = flatData
+            rawCandidates.push(...flatData)
           }
         }
       } catch {
@@ -94,7 +110,7 @@ export class QuotationRepository {
       }
 
       // 2. Try Admin Client if on server and no quotes found yet
-      if (dbQuotes.length === 0 && typeof window === 'undefined') {
+      if (rawCandidates.length === 0 && typeof window === 'undefined') {
         try {
           const { createAdminClient } = await import('@/lib/supabase/admin')
           const admin = createAdminClient()
@@ -103,32 +119,34 @@ export class QuotationRepository {
             .select('*, items:quotation_items(*)')
 
           if (companyId && companyId !== 'c-01' && companyId !== 'default') {
-            query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.is.null`)
+            query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.eq.default,company_id.is.null`)
           } else if (companyId) {
-            query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+            query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.eq.default,company_id.is.null`)
           }
 
           const { data, error } = await query.order('created_at', { ascending: false })
           if (!error && data && data.length > 0) {
-            dbQuotes = data
+            rawCandidates.push(...data)
           } else if (error) {
             const { data: flatData, error: flatErr } = await (admin as any)
               .from('quotations')
               .select('*')
               .order('created_at', { ascending: false })
             if (!flatErr && flatData && flatData.length > 0) {
-              dbQuotes = flatData
+              rawCandidates.push(...flatData)
             }
           }
         } catch {}
       }
 
       // 3. Merge with local data store and deep scan browser storage for any historical quotations
-      const localQuotes: any[] = []
-      
       const rawStored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
       if (Array.isArray(rawStored)) {
-        localQuotes.push(...rawStored)
+        rawCandidates.push(...rawStored)
+      }
+      const rawStoredDefault = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, 'default') || []
+      if (Array.isArray(rawStoredDefault)) {
+        rawCandidates.push(...rawStoredDefault)
       }
 
       if (typeof window !== 'undefined') {
@@ -136,20 +154,21 @@ export class QuotationRepository {
           for (let i = 0; i < window.localStorage.length; i++) {
             const k = window.localStorage.key(i)
             if (!k) continue
+            const raw = window.localStorage.getItem(k)
+            if (!raw) continue
+
             if (
               k.startsWith('printerp_tenant_quotations') ||
               k.startsWith('printerp_quotations') ||
               k.includes('quotation') ||
-              k.includes('quotes')
+              k.includes('quotes') ||
+              k.includes('draft') ||
+              k.includes('outbox') ||
+              k.includes('inkflow')
             ) {
-              const raw = window.localStorage.getItem(k)
-              if (raw) {
-                const parsed = JSON.parse(raw)
-                if (Array.isArray(parsed)) {
-                  localQuotes.push(...parsed)
-                } else if (parsed && typeof parsed === 'object') {
-                  localQuotes.push(parsed)
-                }
+              const extracted = extractQuotationsFromAny(raw)
+              if (extracted.length > 0) {
+                rawCandidates.push(...extracted)
               }
             }
           }
@@ -157,48 +176,7 @@ export class QuotationRepository {
       }
 
       // 4. Deduplicate and normalize
-      const map = new Map<string, QuotationRecord>()
-
-      for (const item of localQuotes) {
-        if (!item || typeof item !== 'object') continue
-        const norm = normalizeQuotationRecord(item)
-        if (norm) {
-          const canonicalKey = (norm.id || norm.quotation_number).toLowerCase().trim()
-          map.set(canonicalKey, norm)
-          if (norm.quotation_number) {
-            map.set(norm.quotation_number.toLowerCase().trim(), norm)
-          }
-          if (norm.id) {
-            map.set(norm.id.toLowerCase().trim(), norm)
-          }
-        }
-      }
-
-      for (const item of dbQuotes) {
-        if (!item || typeof item !== 'object') continue
-        const norm = normalizeQuotationRecord(item)
-        if (norm) {
-          const canonicalKey = (norm.id || norm.quotation_number).toLowerCase().trim()
-          map.set(canonicalKey, norm)
-          if (norm.quotation_number) {
-            map.set(norm.quotation_number.toLowerCase().trim(), norm)
-          }
-          if (norm.id) {
-            map.set(norm.id.toLowerCase().trim(), norm)
-          }
-        }
-      }
-
-      const allNormalized = Array.from(new Set(map.values()))
-
-      const filtered = allNormalized.filter((q) => {
-        if (!companyId || companyId === 'c-01' || companyId === 'default') return true
-        return !q.company_id || q.company_id === companyId || q.company_id === 'c-01' || q.company_id === 'default'
-      })
-
-      return filtered.sort(
-        (a, b) => new Date(b.created_at || b.quotation_date || 0).getTime() - new Date(a.created_at || a.quotation_date || 0).getTime()
-      )
+      return deduplicateQuotations(rawCandidates, companyId)
     })
   }
 
