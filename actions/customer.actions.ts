@@ -724,6 +724,22 @@ export async function getCustomerFullDetailsAction(
       return { success: false, error: 'Customer not found.' }
     }
 
+    const cleanCustMobile = (cust.mobile || (cust as any).phone || '').replace(/\D/g, '')
+    const cleanCustName = (cust.name || '').toLowerCase().trim()
+
+    const matchedQuotes = (allQuotes || []).filter((q: any) => {
+      if (q.customer_id && q.customer_id === customerId) return true
+      const qPhone = (q.customer_phone || q.phone || '').replace(/\D/g, '')
+      if (cleanCustMobile && qPhone && (qPhone === cleanCustMobile || qPhone.endsWith(cleanCustMobile) || cleanCustMobile.endsWith(qPhone))) {
+        return true
+      }
+      const qName = (q.customer_name || '').toLowerCase().trim()
+      if (cleanCustName && qName && qName === cleanCustName) {
+        return true
+      }
+      return false
+    })
+
     return {
       success: true,
       data: {
@@ -733,7 +749,7 @@ export async function getCustomerFullDetailsAction(
         timelineEvents: timelineRes || [],
         invoices: (allInvs || []).filter((i: any) => i.customer_id === customerId),
         payments: allPays || [],
-        quotations: (allQuotes || []).filter((q: any) => q.customer_id === customerId),
+        quotations: matchedQuotes,
         orders: (allOrds || []).filter((o: any) => o.customer_id === customerId),
       },
     }

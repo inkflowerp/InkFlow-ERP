@@ -482,7 +482,9 @@ export async function getQuotationsAction(
     const quotes = await QuotationService.getQuotations(companyId)
     return { success: true, data: quotes }
   } catch (error: any) {
-    const fallbackQuotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
+    const fallbackQuotes = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).map((q) =>
+      normalizeQuotationRecord(q)
+    )
     return { success: true, data: fallbackQuotes }
   }
 }
@@ -498,27 +500,23 @@ export async function getQuotationDetailAction(
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
     const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      // Resilient fallback for preview/print tabs when tenant session is hydrating
-      const fallbackQuote = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS)?.find(
-        (q: QuotationRecord) => q.id === id || q.quotation_number === id
-      )
-      if (fallbackQuote) {
-        const activities = (PrintERPDataStore.get<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES) || []).filter(
-          (a: QuotationActivityRecord) => a.quotation_id === fallbackQuote.id || a.quotation_id === id
-        )
-        return { success: true, data: { quotation: fallbackQuote, activities } }
-      }
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+
+    let quote = companyId ? await QuotationService.getQuotationById(id, companyId) : await QuotationService.getQuotationById(id)
+    if (!quote && companyId) {
+      quote = await QuotationService.getQuotationById(id)
     }
 
-    let quote = await QuotationService.getQuotationById(id, companyId)
     if (!quote) {
-      const fallbackQuote = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS)?.find(
-        (q: QuotationRecord) => (q.id === id || q.quotation_number === id) && (!q.company_id || q.company_id === companyId)
+      const allLocal = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).map((q) => normalizeQuotationRecord(q))
+      const found = allLocal.find(
+        (q: QuotationRecord) =>
+          q.id === id ||
+          q.quotation_number === id ||
+          q.id?.toLowerCase() === id.toLowerCase() ||
+          q.quotation_number?.toLowerCase() === id.toLowerCase()
       )
-      if (fallbackQuote) {
-        quote = fallbackQuote
+      if (found) {
+        quote = found
       }
     }
 
@@ -526,7 +524,7 @@ export async function getQuotationDetailAction(
       return { success: false, error: 'Quotation not found.' }
     }
 
-    const activities = await QuotationService.getActivities(quote.id, companyId)
+    const activities = await QuotationService.getActivities(quote.id, quote.company_id || companyId || 'c-01')
     return { success: true, data: { quotation: quote, activities } }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch quotation details.' }

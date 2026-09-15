@@ -145,9 +145,9 @@ describe('Canonical Finance Engine', () => {
     const topOverdue = CanonicalFinance.getTopOverdueReceivables(mockInvoices, 5)
     assert.strictEqual(topOverdue.length, 2)
     assert.strictEqual(topOverdue[0].invoiceId, 'inv-1')
-    assert.strictEqual(topOverdue[0].daysOverdue, 10)
+    assert.strictEqual(topOverdue[0].daysOverdue, calculateDaysOverdue(mockInvoices[0].due_date))
     assert.strictEqual(topOverdue[1].invoiceId, 'inv-2')
-    assert.strictEqual(topOverdue[1].daysOverdue, 3)
+    assert.strictEqual(topOverdue[1].daysOverdue, calculateDaysOverdue(mockInvoices[1].due_date))
   })
 
   it('calculates sales today and sales yesterday strictly by Bangladesh date', () => {

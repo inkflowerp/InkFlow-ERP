@@ -7,6 +7,7 @@ import type {
   QuotationStatus,
   CreateQuotationItemInput,
 } from '../../types/quotation.types.ts'
+import { normalizeQuotationRecord } from '../../types/quotation.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
@@ -56,11 +57,11 @@ export class QuotationRepository {
   }
 
   /**
-   * Retrieves all quotations for a tenant
+   * Retrieves all quotations for a tenant with resilient legacy data recovery and normalization
    */
   static async getQuotations(companyId: string): Promise<QuotationRecord[]> {
     return measureAsync(`QuotationRepository.getQuotations(${companyId})`, async () => {
-      let dbQuotes: QuotationRecord[] = []
+      let dbQuotes: any[] = []
 
       // 1. Try standard Supabase Client
       try {
@@ -68,12 +69,25 @@ export class QuotationRepository {
         let query = (supabase as any)
           .from('quotations')
           .select('*, items:quotation_items(*)')
-          .eq('company_id', companyId)
-          .order('created_at', { ascending: false })
+        
+        if (companyId && companyId !== 'c-01' && companyId !== 'default') {
+          query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.is.null`)
+        } else if (companyId) {
+          query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+        }
 
-        const { data, error } = await query
+        const { data, error } = await query.order('created_at', { ascending: false })
         if (!error && data && data.length > 0) {
-          dbQuotes = data as unknown as QuotationRecord[]
+          dbQuotes = data
+        } else if (error) {
+          // If nested relation quotation_items failed on legacy DB, fallback to flat query
+          const { data: flatData, error: flatErr } = await (supabase as any)
+            .from('quotations')
+            .select('*')
+            .order('created_at', { ascending: false })
+          if (!flatErr && flatData && flatData.length > 0) {
+            dbQuotes = flatData
+          }
         }
       } catch {
         // Fallback
@@ -87,42 +101,102 @@ export class QuotationRepository {
           let query = (admin as any)
             .from('quotations')
             .select('*, items:quotation_items(*)')
-            .eq('company_id', companyId)
-            .order('created_at', { ascending: false })
 
-          const { data, error } = await query
+          if (companyId && companyId !== 'c-01' && companyId !== 'default') {
+            query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.is.null`)
+          } else if (companyId) {
+            query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+          }
+
+          const { data, error } = await query.order('created_at', { ascending: false })
           if (!error && data && data.length > 0) {
-            dbQuotes = data as unknown as QuotationRecord[]
+            dbQuotes = data
+          } else if (error) {
+            const { data: flatData, error: flatErr } = await (admin as any)
+              .from('quotations')
+              .select('*')
+              .order('created_at', { ascending: false })
+            if (!flatErr && flatData && flatData.length > 0) {
+              dbQuotes = flatData
+            }
           }
         } catch {}
       }
 
-      // 3. Merge with local data store filtered by companyId
-      const localQuotes = (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
-        (q) => !q.company_id || q.company_id === companyId
-      )
+      // 3. Merge with local data store and deep scan browser storage for any historical quotations
+      const localQuotes: any[] = []
+      
+      const rawStored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+      if (Array.isArray(rawStored)) {
+        localQuotes.push(...rawStored)
+      }
 
+      if (typeof window !== 'undefined') {
+        try {
+          for (let i = 0; i < window.localStorage.length; i++) {
+            const k = window.localStorage.key(i)
+            if (!k) continue
+            if (
+              k.startsWith('printerp_tenant_quotations') ||
+              k.startsWith('printerp_quotations') ||
+              k.includes('quotation') ||
+              k.includes('quotes')
+            ) {
+              const raw = window.localStorage.getItem(k)
+              if (raw) {
+                const parsed = JSON.parse(raw)
+                if (Array.isArray(parsed)) {
+                  localQuotes.push(...parsed)
+                } else if (parsed && typeof parsed === 'object') {
+                  localQuotes.push(parsed)
+                }
+              }
+            }
+          }
+        } catch {}
+      }
+
+      // 4. Deduplicate and normalize
       const map = new Map<string, QuotationRecord>()
-      for (const q of localQuotes) {
-        if (!q) continue
-        const key = q.id || q.quotation_number
-        if (key) {
-          map.set(key, q)
-          if (q.quotation_number) map.set(q.quotation_number, q)
-          if (q.id) map.set(q.id, q)
-        }
-      }
-      for (const q of dbQuotes) {
-        if (!q) continue
-        const key = q.id || q.quotation_number
-        if (key) {
-          map.set(key, q)
-          if (q.quotation_number) map.set(q.quotation_number, q)
-          if (q.id) map.set(q.id, q)
+
+      for (const item of localQuotes) {
+        if (!item || typeof item !== 'object') continue
+        const norm = normalizeQuotationRecord(item)
+        if (norm) {
+          const canonicalKey = (norm.id || norm.quotation_number).toLowerCase().trim()
+          map.set(canonicalKey, norm)
+          if (norm.quotation_number) {
+            map.set(norm.quotation_number.toLowerCase().trim(), norm)
+          }
+          if (norm.id) {
+            map.set(norm.id.toLowerCase().trim(), norm)
+          }
         }
       }
 
-      return Array.from(new Set(map.values())).sort(
+      for (const item of dbQuotes) {
+        if (!item || typeof item !== 'object') continue
+        const norm = normalizeQuotationRecord(item)
+        if (norm) {
+          const canonicalKey = (norm.id || norm.quotation_number).toLowerCase().trim()
+          map.set(canonicalKey, norm)
+          if (norm.quotation_number) {
+            map.set(norm.quotation_number.toLowerCase().trim(), norm)
+          }
+          if (norm.id) {
+            map.set(norm.id.toLowerCase().trim(), norm)
+          }
+        }
+      }
+
+      const allNormalized = Array.from(new Set(map.values()))
+
+      const filtered = allNormalized.filter((q) => {
+        if (!companyId || companyId === 'c-01' || companyId === 'default') return true
+        return !q.company_id || q.company_id === companyId || q.company_id === 'c-01' || q.company_id === 'default'
+      })
+
+      return filtered.sort(
         (a, b) => new Date(b.created_at || b.quotation_date || 0).getTime() - new Date(a.created_at || a.quotation_date || 0).getTime()
       )
     })
@@ -145,49 +219,53 @@ export class QuotationRepository {
       const pageSize = Math.min(100, Math.max(1, options.pageSize || 25))
       const offset = (page - 1) * pageSize
 
-      const supabase = await createClient()
-      let query = (supabase as any)
-        .from('quotations')
-        .select('*, items:quotation_items(*)', { count: 'exact' })
-        .eq('company_id', companyId)
+      try {
+        const supabase = await createClient()
+        let query = (supabase as any)
+          .from('quotations')
+          .select('*, items:quotation_items(*)', { count: 'exact' })
 
-      if (options.status && options.status !== 'all') {
-        query = query.eq('status', options.status)
-      }
+        if (companyId && companyId !== 'c-01' && companyId !== 'default') {
+          query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.is.null`)
+        } else if (companyId) {
+          query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+        }
 
-      if (options.search?.trim()) {
-        const term = `%${options.search.trim()}%`
-        query = query.or(`quotation_number.ilike.${term},customer_name.ilike.${term},customer_phone.ilike.${term}`)
-      }
+        if (options.status && options.status !== 'all') {
+          query = query.eq('status', options.status)
+        }
 
-      query = query
-        .order('created_at', { ascending: false })
-        .range(offset, offset + pageSize - 1)
+        if (options.search?.trim()) {
+          const term = `%${options.search.trim()}%`
+          query = query.or(`quotation_number.ilike.${term},customer_name.ilike.${term},customer_phone.ilike.${term}`)
+        }
 
-      const { data, count, error } = await query
+        query = query
+          .order('created_at', { ascending: false })
+          .range(offset, offset + pageSize - 1)
 
-      if (error) {
-        const all = await this.getQuotations(companyId)
-        const filtered = all.filter((q) => {
-          const matchSearch =
-            !options.search ||
-            q.quotation_number.toLowerCase().includes(options.search.toLowerCase()) ||
-            q.customer_name.toLowerCase().includes(options.search.toLowerCase()) ||
-            q.customer_phone.includes(options.search)
-          const matchStatus = !options.status || options.status === 'all' || q.status === options.status
-          return matchSearch && matchStatus
-        })
-        return buildPaginatedResponse(
-          filtered.slice(offset, offset + pageSize),
-          filtered.length,
-          page,
-          pageSize
-        )
-      }
+        const { data, count, error } = await query
 
+        if (!error && data && data.length > 0) {
+          const normalizedRows = data.map((d: any) => normalizeQuotationRecord(d))
+          return buildPaginatedResponse(normalizedRows, count || normalizedRows.length, page, pageSize)
+        }
+      } catch {}
+
+      // Fallback
+      const all = await this.getQuotations(companyId)
+      const filtered = all.filter((q) => {
+        const matchSearch =
+          !options.search ||
+          (q.quotation_number || '').toLowerCase().includes(options.search.toLowerCase()) ||
+          (q.customer_name || '').toLowerCase().includes(options.search.toLowerCase()) ||
+          (q.customer_phone || '').includes(options.search)
+        const matchStatus = !options.status || options.status === 'all' || q.status === options.status
+        return matchSearch && matchStatus
+      })
       return buildPaginatedResponse(
-        (data || []) as unknown as QuotationRecord[],
-        count || 0,
+        filtered.slice(offset, offset + pageSize),
+        filtered.length,
         page,
         pageSize
       )
@@ -198,39 +276,102 @@ export class QuotationRepository {
    * Retrieves a single quotation with items and activity timeline
    */
   static async getQuotationById(id: string, companyId?: string): Promise<QuotationRecord | null> {
+    const cleanId = String(id || '').trim()
+    if (!cleanId) return null
+
+    const isAllowedTenant = (recordCompanyId: string | null | undefined): boolean => {
+      if (!companyId || companyId === 'c-01' || companyId === 'default') return true
+      return !recordCompanyId || recordCompanyId === companyId || recordCompanyId === 'c-01' || recordCompanyId === 'default'
+    }
+
     try {
       const supabase = await createClient()
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId)
       
       let query = (supabase as any)
         .from('quotations')
         .select('*, items:quotation_items(*)')
 
-      if (companyId) {
-        query = query.eq('company_id', companyId)
-      }
-
       if (isUUID) {
-        query = query.or(`id.eq.${id},quotation_number.eq.${id}`)
+        query = query.or(`id.eq.${cleanId},quotation_number.eq.${cleanId}`)
       } else {
-        query = query.eq('quotation_number', id)
+        query = query.eq('quotation_number', cleanId)
       }
 
       const { data, error } = await query.maybeSingle()
 
       if (!error && data) {
-        return data as unknown as QuotationRecord
+        if (isAllowedTenant(data.company_id)) {
+          return normalizeQuotationRecord(data)
+        }
+        return null
+      }
+
+      // Try Admin client if on server
+      if (typeof window === 'undefined') {
+        const { createAdminClient } = await import('@/lib/supabase/admin')
+        const admin = createAdminClient()
+        let adminQuery = (admin as any)
+          .from('quotations')
+          .select('*, items:quotation_items(*)')
+        
+        if (isUUID) {
+          adminQuery = adminQuery.or(`id.eq.${cleanId},quotation_number.eq.${cleanId}`)
+        } else {
+          adminQuery = adminQuery.eq('quotation_number', cleanId)
+        }
+
+        const { data: adminData } = await adminQuery.maybeSingle()
+        if (adminData) {
+          if (isAllowedTenant(adminData.company_id)) {
+            return normalizeQuotationRecord(adminData)
+          }
+          return null
+        }
       }
     } catch {}
 
-    const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-    return (
-      quotes.find(
-        (q) =>
-          (q.id === id || q.quotation_number === id) &&
-          (!companyId || !q.company_id || q.company_id === companyId)
-      ) || null
-    )
+    // Fallback: check DataStore & localStorage
+    const localQuotes = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+    const allCandidates: any[] = [...localQuotes]
+
+    if (typeof window !== 'undefined') {
+      try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i)
+          if (!k) continue
+          if (
+            k.startsWith('printerp_tenant_quotations') ||
+            k.startsWith('printerp_quotations') ||
+            k.includes('quotation') ||
+            k.includes('quotes')
+          ) {
+            const raw = window.localStorage.getItem(k)
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              if (Array.isArray(parsed)) allCandidates.push(...parsed)
+              else if (parsed && typeof parsed === 'object') allCandidates.push(parsed)
+            }
+          }
+        }
+      } catch {}
+    }
+
+    const found = allCandidates.find((q) => {
+      if (!q || typeof q !== 'object') return false
+      const qId = String(q.id || '').toLowerCase()
+      const qNo = String(q.quotation_number || q.quote_number || q.number || '').toLowerCase()
+      const target = cleanId.toLowerCase()
+      const matchesId = qId === target || qNo === target
+      if (!matchesId) return false
+      return isAllowedTenant(q.company_id)
+    })
+
+    if (found) {
+      return normalizeQuotationRecord(found)
+    }
+
+    return null
   }
 
   /**
@@ -520,17 +661,19 @@ export class QuotationRepository {
       throw new Error(`Quotation ${quotationId} not found in company context.`)
     }
 
+    const effectiveCompanyId = (companyId && companyId !== 'c-01' ? companyId : quote.company_id) || companyId || 'c-01'
+
     if (quote.status === 'converted' && quote.converted_invoice_id) {
       throw new Error(`Quotation #${quote.quotation_number} has already been converted to an Invoice.`)
     }
 
     const dueDate = options?.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
-    const invNumber = PrintERPDataStore.getNextDocumentNumber(companyId, 'invoice')
+    const invNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'invoice')
     const invoiceId = `inv-${Date.now()}`
 
     const invoice: InvoiceRecord = {
       id: invoiceId,
-      company_id: companyId,
+      company_id: effectiveCompanyId,
       invoice_number: invNumber,
       customer_id: quote.customer_id || '00000000-0000-0000-0000-000000000000',
       customer_name: quote.customer_name,
@@ -558,12 +701,19 @@ export class QuotationRepository {
         invoice_id: invoiceId,
         product_id: it.product_id || null,
         item_description: it.description,
-        dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit}` : null,
+        description: it.description,
+        dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : null,
+        width: it.width,
+        height: it.height,
+        dimension_unit: it.dimension_unit,
+        area_sft: it.area_sft,
         quantity: it.quantity,
         unit: it.unit,
         unit_price: it.unit_rate, // PRESERVED QUOTED RATE
-        vat_percentage: 0,
+        unit_rate: it.unit_rate,
+        vat_percentage: quote.vat_rate || 0,
         total_price: it.item_total,
+        item_total: it.item_total,
       })),
     }
 
@@ -574,15 +724,15 @@ export class QuotationRepository {
     await this.updateQuotation(quote.id, {
       status: 'converted',
       converted_invoice_id: invoice.id,
-    }, companyId)
+    }, effectiveCompanyId)
 
     // Log Activity
     const activity: QuotationActivityRecord = {
       id: `qa-${Date.now()}`,
       quotation_id: quote.id,
       action: 'converted',
-      details: `Converted to Invoice #${invoice.invoice_number} (Grand Total: ৳${quote.grand_total})`,
-      actor_name: options?.createdByName || 'Sales Staff',
+      details: `Converted to Invoice #${invoice.invoice_number} (Total: ৳${quote.grand_total})`,
+      actor_name: options?.createdByName || 'Commercial Executive',
       created_at: new Date().toISOString(),
     }
     await this.addActivity(activity)
@@ -591,7 +741,7 @@ export class QuotationRepository {
   }
 
   /**
-   * Converts a quotation to a formal Production Job Order, strictly preserving all item specs & quoted prices
+   * Converts a quotation to a formal Job Order, strictly preserving all item specs & quoted prices
    */
   static async convertQuotationToJobOrder(
     quotationId: string,
@@ -606,11 +756,13 @@ export class QuotationRepository {
       throw new Error(`Quotation ${quotationId} not found in company context.`)
     }
 
+    const effectiveCompanyId = (companyId && companyId !== 'c-01' ? companyId : quote.company_id) || companyId || 'c-01'
+
     if (quote.status === 'converted' && quote.converted_order_id) {
       throw new Error(`Quotation #${quote.quotation_number} has already been converted to a Job Order.`)
     }
 
-    const orderNumber = PrintERPDataStore.getNextDocumentNumber(companyId, 'order')
+    const orderNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'order')
     const orderId = `ord-${Date.now()}`
 
     const advance = Math.max(0, Number(options?.advanceAmount) || 0)
@@ -618,7 +770,7 @@ export class QuotationRepository {
 
     const salesOrder = {
       id: orderId,
-      company_id: companyId,
+      company_id: effectiveCompanyId,
       order_number: orderNumber,
       customer_id: quote.customer_id || '00000000-0000-0000-0000-000000000000',
       customer_name: quote.customer_name,
@@ -659,14 +811,14 @@ export class QuotationRepository {
       })),
     }
 
-    // Persist to DataStore
-    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, salesOrder)
+    // Persist to DataStore with all integrated downstream records (job order, prod tasks, mat reqs, costing)
+    PrintERPDataStore.createSalesOrderWithIntegrations(salesOrder as any)
 
     // Update Quotation Status to Converted
     await this.updateQuotation(quote.id, {
       status: 'converted',
       converted_order_id: salesOrder.order_number,
-    }, companyId)
+    }, effectiveCompanyId)
 
     // Log Activity
     const activity: QuotationActivityRecord = {

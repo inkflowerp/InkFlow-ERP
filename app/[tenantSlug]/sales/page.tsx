@@ -21,20 +21,89 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { QuotationRecord } from '@/types/quotation.types'
+import { QuotationRecord, normalizeQuotationRecord } from '@/types/quotation.types'
 import { SalesOrderRecord } from '@/types/order.types'
 import { formatBDT } from '@/lib/formatters'
+import { getQuotationsAction } from '@/actions/quotation.actions'
 
 export default function SalesManagerPage() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
+  const companyId = company?.id
 
-  const [quotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
-  const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
+  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [], slug)
+  const [serverQuotations, setServerQuotations] = useState<QuotationRecord[] | null>(null)
+  const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [], slug)
 
   const [activeTab, setActiveTab] = useState<'quotations' | 'orders' | 'leads'>('quotations')
   const [notification, setNotification] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await getQuotationsAction(companyId, slug)
+        if (res.success && res.data) {
+          setServerQuotations(res.data)
+        }
+      } catch {}
+    }
+    load()
+  }, [companyId, slug])
+
+  // Resiliently merge all quotation sources
+  const quotations = React.useMemo(() => {
+    const map = new Map<string, QuotationRecord>()
+
+    if (typeof window !== 'undefined') {
+      try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i)
+          if (!k) continue
+          if (
+            k.startsWith('printerp_tenant_quotations') ||
+            k.startsWith('printerp_quotations') ||
+            k.includes('quotation') ||
+            k.includes('quotes')
+          ) {
+            const raw = window.localStorage.getItem(k)
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              if (Array.isArray(parsed)) {
+                for (const q of parsed) {
+                  if (q && typeof q === 'object') {
+                    const norm = normalizeQuotationRecord(q)
+                    const key = (norm.id || norm.quotation_number).toLowerCase().trim()
+                    map.set(key, norm)
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+
+    if (localQuotations && Array.isArray(localQuotations)) {
+      for (const q of localQuotations) {
+        if (!q || typeof q !== 'object') continue
+        const norm = normalizeQuotationRecord(q)
+        map.set((norm.id || norm.quotation_number).toLowerCase().trim(), norm)
+      }
+    }
+
+    if (serverQuotations && Array.isArray(serverQuotations)) {
+      for (const q of serverQuotations) {
+        if (!q || typeof q !== 'object') continue
+        const norm = normalizeQuotationRecord(q)
+        map.set((norm.id || norm.quotation_number).toLowerCase().trim(), norm)
+      }
+    }
+
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(b.created_at || b.quotation_date || 0).getTime() - new Date(a.created_at || a.quotation_date || 0).getTime()
+    )
+  }, [serverQuotations, localQuotations])
 
   const showNotification = (msg: string) => {
     setNotification(msg)

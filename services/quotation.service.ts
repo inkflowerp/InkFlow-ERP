@@ -125,8 +125,10 @@ export class QuotationService {
   static parseDateSafe(dateInput: string | Date | null | undefined): Date {
     if (!dateInput) return new Date()
     if (typeof dateInput === 'string') {
-      const parts = dateInput.split('T')[0].split('-')
-      if (parts.length === 3) {
+      const trimmed = dateInput.trim()
+      // Plain YYYY-MM-DD date format
+      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+        const parts = trimmed.split('-')
         const year = parseInt(parts[0], 10)
         const month = parseInt(parts[1], 10) - 1
         const day = parseInt(parts[2], 10)
@@ -134,9 +136,15 @@ export class QuotationService {
           return new Date(year, month, day)
         }
       }
+      // ISO timestamp with time or timezone
+      const d = new Date(trimmed)
+      if (!isNaN(d.getTime())) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+      }
+    } else if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
+      return new Date(dateInput.getFullYear(), dateInput.getMonth(), dateInput.getDate())
     }
-    const d = new Date(dateInput)
-    return isNaN(d.getTime()) ? new Date() : d
+    return new Date()
   }
 
   /**
@@ -148,34 +156,52 @@ export class QuotationService {
     daysLeft: number
   } {
     if (!validUntil) return { label: 'No validity date', urgency: 'normal', daysLeft: 999 }
-    
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    const target = this.parseDateSafe(validUntil)
-    target.setHours(0, 0, 0, 0)
-    
-    const diffTime = target.getTime() - today.getTime()
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
 
-    if (diffDays < 0) {
-      const pastDays = Math.abs(diffDays)
-      return {
-        label: pastDays === 1 ? 'Expired yesterday' : `Expired ${pastDays} days ago`,
-        urgency: 'expired',
-        daysLeft: diffDays,
+    try {
+      const trimmed = String(validUntil).trim()
+      let targetDateStr = ''
+      if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
+        targetDateStr = trimmed.slice(0, 10)
+      } else {
+        const d = new Date(trimmed)
+        if (isNaN(d.getTime())) {
+          return { label: 'No validity date', urgency: 'normal', daysLeft: 999 }
+        }
+        targetDateStr = d.toISOString().split('T')[0]
       }
+
+      const todayStr = new Date().toISOString().split('T')[0]
+      const targetUtc = new Date(targetDateStr + 'T00:00:00Z')
+      const todayUtc = new Date(todayStr + 'T00:00:00Z')
+
+      if (isNaN(targetUtc.getTime()) || isNaN(todayUtc.getTime())) {
+        return { label: 'No validity date', urgency: 'normal', daysLeft: 999 }
+      }
+
+      const diffTime = targetUtc.getTime() - todayUtc.getTime()
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+
+      if (diffDays < 0) {
+        const pastDays = Math.abs(diffDays)
+        return {
+          label: pastDays === 1 ? 'Expired yesterday' : `Expired ${pastDays} days ago`,
+          urgency: 'expired',
+          daysLeft: diffDays,
+        }
+      }
+      if (diffDays === 0) {
+        return { label: 'Expires today', urgency: 'critical', daysLeft: 0 }
+      }
+      if (diffDays === 1) {
+        return { label: 'Expires tomorrow', urgency: 'critical', daysLeft: 1 }
+      }
+      if (diffDays <= 3) {
+        return { label: `Expires in ${diffDays} days`, urgency: 'warning', daysLeft: diffDays }
+      }
+      return { label: `Expires in ${diffDays} days`, urgency: 'normal', daysLeft: diffDays }
+    } catch {
+      return { label: 'No validity date', urgency: 'normal', daysLeft: 999 }
     }
-    if (diffDays === 0) {
-      return { label: 'Expires today', urgency: 'critical', daysLeft: 0 }
-    }
-    if (diffDays === 1) {
-      return { label: 'Expires tomorrow', urgency: 'critical', daysLeft: 1 }
-    }
-    if (diffDays <= 3) {
-      return { label: `Expires in ${diffDays} days`, urgency: 'warning', daysLeft: diffDays }
-    }
-    return { label: `Expires in ${diffDays} days`, urgency: 'normal', daysLeft: diffDays }
   }
 
   /**

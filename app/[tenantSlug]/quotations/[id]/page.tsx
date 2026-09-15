@@ -47,6 +47,7 @@ import {
   QuotationStatus,
   LanguageMode,
   QuotationActivityRecord,
+  normalizeQuotationRecord,
 } from '@/types/quotation.types'
 import {
   getQuotationDetailAction,
@@ -83,9 +84,47 @@ export default function QuotationDetailPage() {
   const [localActivities] = useDataStore<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
 
   const [quote, setQuote] = useState<QuotationRecord | null>(() => {
-    if (typeof window !== 'undefined') {
-      const allLocal = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-      return allLocal.find((q) => q.id === quoteId || q.quotation_number === quoteId) || null
+    if (typeof window !== 'undefined' && quoteId) {
+      const allLocal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+      const found = allLocal.find((q) => q && (q.id === quoteId || q.quotation_number === quoteId))
+      if (found) return normalizeQuotationRecord(found)
+
+      try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i)
+          if (!k) continue
+          if (
+            k.startsWith('printerp_tenant_quotations') ||
+            k.startsWith('printerp_quotations') ||
+            k.includes('quotation') ||
+            k.includes('quotes')
+          ) {
+            const raw = window.localStorage.getItem(k)
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              if (Array.isArray(parsed)) {
+                const f = parsed.find(
+                  (item: any) =>
+                    item &&
+                    (item.id === quoteId ||
+                      item.quotation_number === quoteId ||
+                      String(item.id).toLowerCase() === quoteId.toLowerCase() ||
+                      String(item.quotation_number).toLowerCase() === quoteId.toLowerCase())
+                )
+                if (f) return normalizeQuotationRecord(f)
+              } else if (
+                parsed &&
+                (parsed.id === quoteId ||
+                  parsed.quotation_number === quoteId ||
+                  String(parsed.id).toLowerCase() === quoteId.toLowerCase() ||
+                  String(parsed.quotation_number).toLowerCase() === quoteId.toLowerCase())
+              ) {
+                return normalizeQuotationRecord(parsed)
+              }
+            }
+          }
+        }
+      } catch {}
     }
     return null
   })
@@ -115,6 +154,50 @@ export default function QuotationDetailPage() {
   const localActivitiesRef = React.useRef(localActivities)
   localActivitiesRef.current = localActivities
 
+  // Helper to find quotation across local storage keys
+  const findQuoteLocally = useCallback(() => {
+    if (!quoteId) return null
+    const fromRef = localQuotationsRef.current?.find((q) => q && (q.id === quoteId || q.quotation_number === quoteId))
+    if (fromRef) return normalizeQuotationRecord(fromRef)
+
+    if (typeof window !== 'undefined') {
+      try {
+        const fromStore = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
+          (q) => q && (q.id === quoteId || q.quotation_number === quoteId)
+        )
+        if (fromStore) return normalizeQuotationRecord(fromStore)
+
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i)
+          if (!k) continue
+          if (
+            k.startsWith('printerp_tenant_quotations') ||
+            k.startsWith('printerp_quotations') ||
+            k.includes('quotation') ||
+            k.includes('quotes')
+          ) {
+            const raw = window.localStorage.getItem(k)
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              if (Array.isArray(parsed)) {
+                const f = parsed.find(
+                  (item: any) =>
+                    item &&
+                    (item.id === quoteId ||
+                      item.quotation_number === quoteId ||
+                      String(item.id).toLowerCase() === quoteId.toLowerCase() ||
+                      String(item.quotation_number).toLowerCase() === quoteId.toLowerCase())
+                )
+                if (f) return normalizeQuotationRecord(f)
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+    return null
+  }, [quoteId])
+
   // Authoritative server fetch
   const fetchQuotationDetail = useCallback(async (isSilent = false) => {
     if (!quoteId) return
@@ -124,27 +207,22 @@ export default function QuotationDetailPage() {
     try {
       const res = await getQuotationDetailAction(quoteId, company?.id, slug)
       if (res.success && res.data) {
-        setQuote(res.data.quotation)
+        const norm = normalizeQuotationRecord(res.data.quotation)
+        setQuote(norm)
         setActivities(res.data.activities || [])
         setError(null)
-        if (res.data.quotation.language_mode) {
-          setLanguageMode(res.data.quotation.language_mode)
+        if (norm.language_mode) {
+          setLanguageMode(norm.language_mode)
         }
       } else {
         // Fallback to local store
-        const fallbackQuote =
-          localQuotationsRef.current.find((q) => q.id === quoteId || q.quotation_number === quoteId) ||
-          (typeof window !== 'undefined'
-            ? (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
-                (q) => q.id === quoteId || q.quotation_number === quoteId
-              )
-            : null)
+        const fallbackQuote = findQuoteLocally()
 
         if (fallbackQuote) {
           setQuote(fallbackQuote)
           setError(null)
           const fallbackActs =
-            localActivitiesRef.current.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId) ||
+            localActivitiesRef.current?.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId) ||
             []
           setActivities(fallbackActs)
         } else if (!isTenantLoading) {
@@ -152,13 +230,7 @@ export default function QuotationDetailPage() {
         }
       }
     } catch (err: any) {
-      const fallbackQuote =
-        localQuotationsRef.current.find((q) => q.id === quoteId || q.quotation_number === quoteId) ||
-        (typeof window !== 'undefined'
-          ? (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
-              (q) => q.id === quoteId || q.quotation_number === quoteId
-            )
-          : null)
+      const fallbackQuote = findQuoteLocally()
 
       if (fallbackQuote) {
         setQuote(fallbackQuote)
@@ -170,7 +242,7 @@ export default function QuotationDetailPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [quoteId, company?.id, slug, isTenantLoading, quote])
+  }, [quoteId, company?.id, slug, isTenantLoading, quote, findQuoteLocally])
 
   useEffect(() => {
     fetchQuotationDetail()

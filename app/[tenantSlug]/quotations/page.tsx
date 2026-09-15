@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { FeatureGate } from '@/components/shared/feature-gate'
-import { QuotationRecord, QuotationStatus } from '@/types/quotation.types'
+import { QuotationRecord, QuotationStatus, normalizeQuotationRecord } from '@/types/quotation.types'
 import { QuotationService } from '@/services/quotation.service'
 import { getQuotationsAction } from '@/actions/quotation.actions'
 import { QuotationKpiBar } from '@/components/quotations/quotation-kpi-bar'
@@ -100,24 +100,31 @@ export default function QuotationsPage() {
         for (let i = 0; i < window.localStorage.length; i++) {
           const k = window.localStorage.key(i)
           if (!k) continue
-          if (k.startsWith('printerp_tenant_quotations') || k.includes('quotation')) {
+          if (
+            k.startsWith('printerp_tenant_quotations') ||
+            k.startsWith('printerp_quotations') ||
+            k.includes('quotation') ||
+            k.includes('quotes')
+          ) {
             const raw = window.localStorage.getItem(k)
             if (raw) {
               const parsed = JSON.parse(raw)
               if (Array.isArray(parsed)) {
                 for (const q of parsed) {
-                  if (q && (q.id || q.quotation_number)) {
-                    const key = q.id || q.quotation_number
-                    map.set(key, q)
-                    if (q.quotation_number) map.set(q.quotation_number, q)
-                    if (q.id) map.set(q.id, q)
+                  if (q && typeof q === 'object') {
+                    const norm = normalizeQuotationRecord(q)
+                    const key = (norm.id || norm.quotation_number).toLowerCase().trim()
+                    map.set(key, norm)
+                    if (norm.quotation_number) map.set(norm.quotation_number.toLowerCase().trim(), norm)
+                    if (norm.id) map.set(norm.id.toLowerCase().trim(), norm)
                   }
                 }
-              } else if (parsed && typeof parsed === 'object' && (parsed.id || parsed.quotation_number)) {
-                const key = parsed.id || parsed.quotation_number
-                map.set(key, parsed)
-                if (parsed.quotation_number) map.set(parsed.quotation_number, parsed)
-                if (parsed.id) map.set(parsed.id, parsed)
+              } else if (parsed && typeof parsed === 'object') {
+                const norm = normalizeQuotationRecord(parsed)
+                const key = (norm.id || norm.quotation_number).toLowerCase().trim()
+                map.set(key, norm)
+                if (norm.quotation_number) map.set(norm.quotation_number.toLowerCase().trim(), norm)
+                if (norm.id) map.set(norm.id.toLowerCase().trim(), norm)
               }
             }
           }
@@ -130,26 +137,24 @@ export default function QuotationsPage() {
     // 2. Also incorporate localQuotations from useDataStore hook
     if (localQuotations && Array.isArray(localQuotations)) {
       for (const q of localQuotations) {
-        if (!q) continue
-        const key = q.id || q.quotation_number
-        if (key) {
-          map.set(key, q)
-          if (q.quotation_number) map.set(q.quotation_number, q)
-          if (q.id) map.set(q.id, q)
-        }
+        if (!q || typeof q !== 'object') continue
+        const norm = normalizeQuotationRecord(q)
+        const key = (norm.id || norm.quotation_number).toLowerCase().trim()
+        map.set(key, norm)
+        if (norm.quotation_number) map.set(norm.quotation_number.toLowerCase().trim(), norm)
+        if (norm.id) map.set(norm.id.toLowerCase().trim(), norm)
       }
     }
 
     // 3. Server quotations (authoritative from Supabase)
     if (serverQuotations && Array.isArray(serverQuotations)) {
       for (const q of serverQuotations) {
-        if (!q) continue
-        const key = q.id || q.quotation_number
-        if (key) {
-          map.set(key, q)
-          if (q.quotation_number) map.set(q.quotation_number, q)
-          if (q.id) map.set(q.id, q)
-        }
+        if (!q || typeof q !== 'object') continue
+        const norm = normalizeQuotationRecord(q)
+        const key = (norm.id || norm.quotation_number).toLowerCase().trim()
+        map.set(key, norm)
+        if (norm.quotation_number) map.set(norm.quotation_number.toLowerCase().trim(), norm)
+        if (norm.id) map.set(norm.id.toLowerCase().trim(), norm)
       }
     }
 
@@ -175,16 +180,21 @@ export default function QuotationsPage() {
     today.setHours(0, 0, 0, 0)
 
     return quotations.filter((q) => {
-      // 1. Search filter
+      // 1. Search filter with null-safe defensive checks
       const term = search.toLowerCase().trim()
+      const qNum = (q.quotation_number || '').toLowerCase()
+      const qCust = (q.customer_name || '').toLowerCase()
+      const qComp = (q.customer_company || '').toLowerCase()
+      const qSales = (q.salesperson_name || '').toLowerCase()
+      const qPhone = q.customer_phone || ''
       const matchSearch =
         !term ||
-        q.quotation_number.toLowerCase().includes(term) ||
-        q.customer_name.toLowerCase().includes(term) ||
-        (q.customer_company && q.customer_company.toLowerCase().includes(term)) ||
-        (q.salesperson_name && q.salesperson_name.toLowerCase().includes(term)) ||
-        (q.customer_phone && q.customer_phone.includes(term)) ||
-        (q.items && q.items.some((it) => it.description.toLowerCase().includes(term)))
+        qNum.includes(term) ||
+        qCust.includes(term) ||
+        qComp.includes(term) ||
+        qSales.includes(term) ||
+        qPhone.includes(term) ||
+        (Array.isArray(q.items) && q.items.some((it) => (it?.description || '').toLowerCase().includes(term)))
 
       if (!matchSearch) return false
 
@@ -195,7 +205,7 @@ export default function QuotationsPage() {
       }
       if (selectedFilter === 'follow_up_today') {
         if (q.follow_up_date) {
-          const d = new Date(q.follow_up_date)
+          const d = QuotationService.parseDateSafe(q.follow_up_date)
           d.setHours(0, 0, 0, 0)
           return d <= today
         }
