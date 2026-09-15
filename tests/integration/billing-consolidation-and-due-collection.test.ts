@@ -404,4 +404,155 @@ describe('Consolidated Billing & Simple Due Collection Engine (Integration & Fin
     assert.ok(aging)
     assert.ok(aging.totalReceivables >= 5000)
   })
+
+  it('SCENARIO 12 — PAID INVOICE CANNOT RECEIVE ANOTHER PAYMENT: due ৳0 invoice rejects or ignores over-collection', async () => {
+    // 1. Create and fully pay an invoice
+    const invoice = await BillingRepository.createInvoice({
+      company_id: companyId,
+      customer_id: 'cust-settled-01',
+      customer_name: 'Settled Press Ltd.',
+      customer_phone: '+8801700991122',
+      due_date: '2026-10-15',
+      subtotal: 10000,
+      grand_total: 10000,
+      paid_amount: 10000,
+      due_amount: 0,
+      status: 'paid',
+      created_by_name: 'Accountant',
+    })
+
+    assert.strictEqual(invoice.due_amount, 0)
+    assert.strictEqual(invoice.status, 'paid')
+
+    // 2. Attempting to allocate payment to already paid invoice must not increase invoice paid_amount above grand_total
+    await BillingRepository.recordMultiInvoicePayment({
+      companyId,
+      customerId: 'cust-settled-01',
+      customerName: 'Settled Press Ltd.',
+      amount: 5000,
+      paymentMethod: 'cash',
+      receivedByName: 'Cashier',
+      allocations: [{ invoiceId: invoice.id, amount: 5000 }],
+    })
+
+    const checkedInv = await BillingRepository.getInvoiceById(invoice.id, companyId)
+    assert.ok(checkedInv)
+    assert.strictEqual(checkedInv.paid_amount, 10000) // Unchanged
+    assert.strictEqual(checkedInv.due_amount, 0)
+    assert.strictEqual(checkedInv.status, 'paid')
+  })
+
+  it('SCENARIO 13 — USER SCENARIO PROGRESSION: ৳50k total, ৳30k paid, ৳20k due -> collect ৳5k -> rem ৳15k (Partially Paid) -> collect ৳15k -> rem ৳0 (Paid)', async () => {
+    // Create invoice matching user prompt example: Total ৳50,000, Paid ৳30,000, Due ৳20,000
+    const invoice = await BillingRepository.createInvoice({
+      company_id: companyId,
+      customer_id: 'cust-exact-spec',
+      customer_name: 'ABC Printing',
+      customer_phone: '+8801700000001',
+      due_date: '2026-10-20',
+      subtotal: 50000,
+      grand_total: 50000,
+      paid_amount: 30000,
+      due_amount: 20000,
+      status: 'partially_paid',
+      created_by_name: 'Owner',
+    })
+
+    assert.strictEqual(invoice.grand_total, 50000)
+    assert.strictEqual(invoice.paid_amount, 30000)
+    assert.strictEqual(invoice.due_amount, 20000)
+
+    // Step 1: Customer pays ৳5,000 -> Remaining Due ৳15,000 -> Partially Paid
+    await BillingRepository.recordMultiInvoicePayment({
+      companyId,
+      customerId: 'cust-exact-spec',
+      customerName: 'ABC Printing',
+      amount: 5000,
+      paymentMethod: 'cash',
+      receivedByName: 'Cashier',
+      allocations: [{ invoiceId: invoice.id, amount: 5000 }],
+    })
+
+    let currentInv = await BillingRepository.getInvoiceById(invoice.id, companyId)
+    assert.ok(currentInv)
+    assert.strictEqual(currentInv.paid_amount, 35000)
+    assert.strictEqual(currentInv.due_amount, 15000)
+    assert.strictEqual(currentInv.status, 'partially_paid')
+
+    // Step 2: Customer pays remaining ৳15,000 -> Remaining Due ৳0 -> Paid
+    await BillingRepository.recordMultiInvoicePayment({
+      companyId,
+      customerId: 'cust-exact-spec',
+      customerName: 'ABC Printing',
+      amount: 15000,
+      paymentMethod: 'bkash',
+      mfsTransactionId: 'TRX-FULL-SETTLE',
+      receivedByName: 'Cashier',
+      allocations: [{ invoiceId: invoice.id, amount: 15000 }],
+    })
+
+    currentInv = await BillingRepository.getInvoiceById(invoice.id, companyId)
+    assert.ok(currentInv)
+    assert.strictEqual(currentInv.paid_amount, 50000)
+    assert.strictEqual(currentInv.due_amount, 0)
+    assert.strictEqual(currentInv.status, 'paid')
+  })
+
+  it('SCENARIO 14 — CUSTOMER BALANCE RECONCILIATION: balances reconcile correctly after multiple partial collections', async () => {
+    const custId = 'cust-reconcile-test'
+    // Create 2 invoices
+    const inv1 = await BillingRepository.createInvoice({
+      company_id: companyId,
+      customer_id: custId,
+      customer_name: 'Reconciliation Press',
+      customer_phone: '+8801700998811',
+      due_date: '2026-10-10',
+      subtotal: 30000,
+      grand_total: 30000,
+      paid_amount: 0,
+      due_amount: 30000,
+      status: 'unpaid',
+      created_by_name: 'Accountant',
+    })
+
+    const inv2 = await BillingRepository.createInvoice({
+      company_id: companyId,
+      customer_id: custId,
+      customer_name: 'Reconciliation Press',
+      customer_phone: '+8801700998811',
+      due_date: '2026-10-12',
+      subtotal: 20000,
+      grand_total: 20000,
+      paid_amount: 0,
+      due_amount: 20000,
+      status: 'unpaid',
+      created_by_name: 'Accountant',
+    })
+
+    // Collect ৳15,000 on inv1 and ৳10,000 on inv2
+    await BillingRepository.recordMultiInvoicePayment({
+      companyId,
+      customerId: custId,
+      customerName: 'Reconciliation Press',
+      amount: 25000,
+      paymentMethod: 'bank',
+      bankName: 'BRAC Bank',
+      receivedByName: 'Cashier',
+      allocations: [
+        { invoiceId: inv1.id, amount: 15000 },
+        { invoiceId: inv2.id, amount: 10000 },
+      ],
+    })
+
+    const check1 = await BillingRepository.getInvoiceById(inv1.id, companyId)
+    const check2 = await BillingRepository.getInvoiceById(inv2.id, companyId)
+
+    assert.ok(check1)
+    assert.ok(check2)
+    assert.strictEqual(check1.due_amount, 15000)
+    assert.strictEqual(check2.due_amount, 10000)
+
+    const totalRemainingDue = check1.due_amount + check2.due_amount
+    assert.strictEqual(totalRemainingDue, 25000)
+  })
 })

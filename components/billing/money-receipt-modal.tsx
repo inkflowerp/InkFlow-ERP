@@ -146,9 +146,16 @@ export function MoneyReceiptModal({
                   </div>
                   <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
                     <span className="text-slate-500 block text-[10px] uppercase">Remaining Due</span>
-                    <strong className="text-rose-600 dark:text-rose-400 font-black">
-                      ৳ {formatBDT(Math.max(0, (invoices[0].due_amount || 0) - payment.amount))}
-                    </strong>
+                    {Math.max(0, (invoices[0].due_amount || 0) - payment.amount) === 0 ? (
+                      <strong className="text-emerald-600 dark:text-emerald-400 font-black flex items-center gap-1">
+                        ৳ 0 <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Paid</span>
+                      </strong>
+                    ) : (
+                      <strong className="text-rose-600 dark:text-rose-400 font-black flex items-center gap-1">
+                        ৳ {formatBDT(Math.max(0, (invoices[0].due_amount || 0) - payment.amount))}
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 font-bold">Partially Paid</span>
+                      </strong>
+                    )}
                   </div>
                 </>
               )}
@@ -160,7 +167,7 @@ export function MoneyReceiptModal({
                 variant="outline"
                 size="sm"
                 onClick={handleCopyText}
-                className="h-8 text-xs gap-1 font-semibold"
+                className="h-8 text-xs gap-1 font-semibold cursor-pointer"
               >
                 {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? 'Copied' : 'Copy'}
@@ -171,7 +178,7 @@ export function MoneyReceiptModal({
                 variant="outline"
                 size="sm"
                 onClick={handleShareWhatsApp}
-                className="h-8 text-xs gap-1 font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400"
+                className="h-8 text-xs gap-1 font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 cursor-pointer"
               >
                 <MessageSquare className="h-3.5 w-3.5" />
                 WhatsApp
@@ -186,7 +193,7 @@ export function MoneyReceiptModal({
                   const body = encodeURIComponent(generateWhatsAppText())
                   window.open(`mailto:${customer?.email || ''}?subject=${subject}&body=${body}`, '_blank')
                 }}
-                className="h-8 text-xs gap-1 font-semibold text-slate-700 dark:text-slate-300"
+                className="h-8 text-xs gap-1 font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
               >
                 <Mail className="h-3.5 w-3.5" />
                 Email
@@ -194,9 +201,20 @@ export function MoneyReceiptModal({
 
               <Button
                 type="button"
+                variant="outline"
                 size="sm"
                 onClick={handlePrint}
-                className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                className="h-8 text-xs gap-1.5 font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Download PDF
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={handlePrint}
+                className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer shadow-xs"
               >
                 <Printer className="h-3.5 w-3.5" />
                 Print
@@ -355,15 +373,24 @@ export function MoneyReceiptModal({
               type="button"
               variant="outline"
               onClick={handleShareWhatsApp}
-              className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 gap-1.5"
+              className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 gap-1.5 cursor-pointer"
             >
               <MessageSquare className="h-4 w-4" />
               WhatsApp Share
             </Button>
             <Button
               type="button"
+              variant="outline"
               onClick={handlePrint}
-              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 shadow-xs"
+              className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+            >
+              <Download className="h-4 w-4" />
+              Download PDF
+            </Button>
+            <Button
+              type="button"
+              onClick={handlePrint}
+              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 shadow-xs cursor-pointer"
             >
               <Printer className="h-4 w-4" />
               Print Receipt

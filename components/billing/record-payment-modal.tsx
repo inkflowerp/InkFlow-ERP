@@ -154,10 +154,10 @@ export function RecordPaymentModal({
     }
   }, [open, preselectedInvoiceId, preselectedCustomerId, invoices, company?.id])
 
-  // Filtered Invoices matching search query
+  // Filtered Invoices matching search query (only actionable unpaid invoices with due > 0)
   const matchingInvoices = useMemo(() => {
-    const activeUnpaid = invoices.filter((inv) => inv.due_amount > 0 && inv.status !== 'cancelled')
-    if (!searchQuery.trim()) return activeUnpaid.slice(0, 10)
+    const activeUnpaid = invoices.filter((inv) => (inv.due_amount || 0) > 0.01 && inv.status !== 'cancelled' && inv.status !== 'paid')
+    if (!searchQuery.trim()) return activeUnpaid.slice(0, 15)
 
     const q = searchQuery.toLowerCase().trim()
     return activeUnpaid.filter((inv) => {
@@ -166,7 +166,8 @@ export function RecordPaymentModal({
       const matchPhone = inv.customer_phone ? inv.customer_phone.includes(q) : false
       const matchOrder = inv.order_number ? inv.order_number.toLowerCase().includes(q) : false
       const matchCustId = inv.customer_id ? inv.customer_id.toLowerCase().includes(q) : false
-      return matchInvNo || matchCust || matchPhone || matchOrder || matchCustId
+      const matchId = inv.id ? inv.id.toLowerCase().includes(q) : false
+      return matchInvNo || matchCust || matchPhone || matchOrder || matchCustId || matchId
     })
   }, [invoices, searchQuery])
 
@@ -184,19 +185,10 @@ export function RecordPaymentModal({
     setSubmitError(null)
   }
 
-  // Quick Action: Set Full Due
+  // Quick Action: Set Full Due (Only shortcut allowed)
   const handleSetFullDue = () => {
     if (selectedInvoice && selectedInvoice.due_amount > 0) {
       setAmount(selectedInvoice.due_amount)
-      setSubmitError(null)
-    }
-  }
-
-  // Quick Action: Set Half Due (50%)
-  const handleSetHalfDue = () => {
-    if (selectedInvoice && selectedInvoice.due_amount > 0) {
-      const half = Math.round((selectedInvoice.due_amount / 2) * 100) / 100
-      setAmount(half)
       setSubmitError(null)
     }
   }
@@ -515,22 +507,13 @@ export function RecordPaymentModal({
                     <span>Payment Amount (টাকার পরিমাণ)*</span>
                   </Label>
 
-                  {/* Quick Preset Buttons */}
+                  {/* Quick Preset: Only Collect Full Due */}
                   <div className="flex items-center gap-1.5">
                     <Button
                       type="button"
                       size="sm"
-                      variant="outline"
-                      onClick={handleSetHalfDue}
-                      className="h-6 text-[11px] px-2 font-bold text-slate-600 hover:text-slate-900"
-                    >
-                      50% Due (৳{formatBDT(Math.round(invoiceDue / 2))})
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
                       onClick={handleSetFullDue}
-                      className="h-6 text-[11px] px-2.5 font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="h-7 text-xs px-3 font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
                     >
                       Collect Full Due (৳{formatBDT(invoiceDue)})
                     </Button>
@@ -547,7 +530,7 @@ export function RecordPaymentModal({
                     min="0.01"
                     max={invoiceDue}
                     inputMode="decimal"
-                    placeholder="Enter amount (partial or full)"
+                    placeholder="Enter amount actually received"
                     value={amount}
                     onChange={(e) => {
                       const val = e.target.value === '' ? '' : Number(e.target.value)
@@ -555,7 +538,7 @@ export function RecordPaymentModal({
                       setSubmitError(null)
                     }}
                     className={cn(
-                      'h-11 pl-8 text-base font-black font-mono rounded-xl',
+                      'h-12 pl-8 text-lg font-black font-mono rounded-xl',
                       isOverpaid && 'border-rose-500 focus-visible:ring-rose-500',
                       !isOverpaid && numericAmount > 0 && 'border-emerald-500 focus-visible:ring-emerald-500'
                     )}
@@ -570,40 +553,40 @@ export function RecordPaymentModal({
                 )}
               </div>
 
-              {/* LIVE PAYMENT PREVIEW & PROJECTED INVOICE STATUS */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+              {/* LIVE PAYMENT BREAKDOWN & PROJECTED INVOICE STATUS */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
                 <div className="flex items-center justify-between font-mono">
-                  <span className="text-slate-500">Outstanding Due:</span>
-                  <span className="font-bold text-slate-700 dark:text-slate-300">৳ {formatBDT(invoiceDue)}</span>
+                  <span className="text-slate-500 font-medium">Outstanding Due:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">৳ {formatBDT(invoiceDue)}</span>
                 </div>
                 <div className="flex items-center justify-between font-mono">
-                  <span className="text-emerald-600 font-bold">Collecting Now:</span>
-                  <span className="font-black text-emerald-600">৳ {formatBDT(numericAmount)}</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-bold">Collecting Now:</span>
+                  <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">৳ {formatBDT(numericAmount)}</span>
                 </div>
-                <div className="flex items-center justify-between font-mono pt-1 border-t border-slate-200 dark:border-slate-800">
-                  <span className="font-bold text-slate-900 dark:text-white">Remaining Due After Payment:</span>
+                <div className="flex items-center justify-between font-mono pt-1.5 border-t border-slate-200 dark:border-slate-800">
+                  <span className="font-bold text-slate-900 dark:text-white">Remaining Due:</span>
                   <span className={cn('font-black text-sm', remainingDue === 0 ? 'text-emerald-600' : 'text-rose-600')}>
                     ৳ {formatBDT(remainingDue)}
                   </span>
                 </div>
 
-                {/* Status Indicator */}
-                <div className="pt-1 flex items-center justify-between text-[11px] font-bold">
-                  <span>Projected Status:</span>
+                {/* Projected Status Indicator */}
+                <div className="pt-1 flex items-center justify-between text-xs font-bold">
+                  <span className="text-slate-500 font-normal">Projected Status:</span>
                   {isOverpaid ? (
                     <span className="text-rose-600 flex items-center gap-1">
-                      <AlertTriangle className="h-3.5 w-3.5" /> Amount exceeds due balance!
+                      <AlertTriangle className="h-3.5 w-3.5" /> Amount exceeds outstanding due!
                     </span>
                   ) : isFullySettled ? (
-                    <span className="text-emerald-600 flex items-center gap-1">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Invoice will become Paid
+                    <span className="text-emerald-600 flex items-center gap-1 font-bold">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Paid
                     </span>
                   ) : numericAmount > 0 ? (
-                    <span className="text-blue-600 flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-blue-600" /> Invoice will remain Partially Paid (৳{formatBDT(remainingDue)} due)
+                    <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1 font-bold">
+                      <Clock className="h-3.5 w-3.5" /> Partially Paid
                     </span>
                   ) : (
-                    <span className="text-slate-400">Enter amount above</span>
+                    <span className="text-slate-400">Enter amount received</span>
                   )}
                 </div>
               </div>
@@ -622,14 +605,14 @@ export function RecordPaymentModal({
                         type="button"
                         onClick={() => setPaymentMethod(m.id)}
                         className={cn(
-                          'p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-center justify-center gap-1 text-center',
+                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-center justify-center gap-1 text-center',
                           isSelected
                             ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-xs'
                             : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300'
                         )}
                       >
                         <span className="text-base">{m.icon}</span>
-                        <span className="text-[10px] leading-tight">
+                        <span className="text-[10px] leading-tight font-medium">
                           {locale === 'bn' ? m.labelBn : m.labelEn}
                         </span>
                       </button>
@@ -648,7 +631,7 @@ export function RecordPaymentModal({
                     type="date"
                     value={paymentDate}
                     onChange={(e) => setPaymentDate(e.target.value)}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-10 text-xs rounded-xl"
                     required
                   />
                 </div>
@@ -673,7 +656,7 @@ export function RecordPaymentModal({
                     }
                     value={referenceNo}
                     onChange={(e) => setReferenceNo(e.target.value)}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-10 text-xs rounded-xl"
                   />
                 </div>
               </div>
@@ -687,7 +670,7 @@ export function RecordPaymentModal({
                   placeholder="e.g. Collected by cashier at desk / Received advance payment"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="h-8 text-xs rounded-lg"
+                  className="h-9 text-xs rounded-xl"
                 />
               </div>
 
@@ -698,7 +681,7 @@ export function RecordPaymentModal({
                   variant="outline"
                   size="sm"
                   onClick={() => onOpenChange(false)}
-                  className="h-10 text-xs px-4"
+                  className="h-11 text-xs px-5 rounded-xl cursor-pointer"
                   disabled={isSubmitting}
                 >
                   Cancel
@@ -709,7 +692,7 @@ export function RecordPaymentModal({
                   size="sm"
                   disabled={isSubmitting || isZeroOrNegative || isOverpaid}
                   className={cn(
-                    'h-10 text-xs font-black text-white px-6 shadow-md gap-2 rounded-xl transition-all',
+                    'h-11 text-sm font-black text-white px-7 shadow-md gap-2 rounded-xl transition-all cursor-pointer',
                     isFullySettled
                       ? 'bg-emerald-600 hover:bg-emerald-700'
                       : 'bg-blue-600 hover:bg-blue-700'
@@ -718,7 +701,7 @@ export function RecordPaymentModal({
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Recording Payment...</span>
+                      <span>Collecting...</span>
                     </>
                   ) : (
                     <>
