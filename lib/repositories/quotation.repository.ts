@@ -302,13 +302,17 @@ export class QuotationRepository {
         customer_id: quoteRecord.customer_id || null,
         customer_name: quoteRecord.customer_name,
         customer_name_bn: quoteRecord.customer_name_bn,
+        customer_company: quoteRecord.customer_company,
         customer_phone: quoteRecord.customer_phone,
+        customer_whatsapp: quoteRecord.customer_whatsapp,
         customer_email: quoteRecord.customer_email,
         customer_address: quoteRecord.customer_address,
         customer_bin: quoteRecord.customer_bin,
+        customer_type: quoteRecord.customer_type,
         status: quoteRecord.status,
         quotation_date: quoteRecord.quotation_date,
         valid_until: quoteRecord.valid_until,
+        reference_no: quoteRecord.reference_no,
         salesperson_id: quoteRecord.salesperson_id,
         salesperson_name: quoteRecord.salesperson_name,
         subtotal: quoteRecord.subtotal,
@@ -319,8 +323,22 @@ export class QuotationRepository {
         total_cost: quoteRecord.total_cost,
         margin_percent: quoteRecord.margin_percent,
         language_mode: quoteRecord.language_mode,
+        delivery_date: quoteRecord.delivery_date,
+        delivery_location: quoteRecord.delivery_location,
+        delivery_method: quoteRecord.delivery_method,
+        installation_required: quoteRecord.installation_required,
         notes: quoteRecord.notes,
         terms_and_conditions: quoteRecord.terms_and_conditions,
+        internal_notes: quoteRecord.internal_notes,
+        follow_up_date: quoteRecord.follow_up_date || null,
+        follow_up_status: quoteRecord.follow_up_status || 'none',
+        last_follow_up_method: quoteRecord.last_follow_up_method || null,
+        last_follow_up_at: quoteRecord.last_follow_up_at || null,
+        last_follow_up_note: quoteRecord.last_follow_up_note || null,
+        next_action: quoteRecord.next_action || null,
+        follow_up_count: quoteRecord.follow_up_count || 0,
+        converted_order_id: quoteRecord.converted_order_id || null,
+        converted_invoice_id: quoteRecord.converted_invoice_id || null,
         created_at: quoteRecord.created_at,
         updated_at: quoteRecord.updated_at,
       }
@@ -352,6 +370,11 @@ export class QuotationRepository {
           quantity: item.quantity,
           unit: item.unit,
           unit_rate: item.unit_rate,
+          rate_source: item.rate_source || 'default',
+          finishing: item.finishing || null,
+          color_spec: item.color_spec || null,
+          artwork_required: item.artwork_required || false,
+          installation_required: item.installation_required || false,
           material_cost: item.material_cost,
           labor_cost: item.labor_cost,
           finishing_cost: item.finishing_cost,
@@ -432,8 +455,11 @@ export class QuotationRepository {
       throw new Error(`Quotation ${quotationId} not found in company context.`)
     }
 
-    const dueDate = options?.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+    if (quote.status === 'converted' && quote.converted_invoice_id) {
+      throw new Error(`Quotation #${quote.quotation_number} has already been converted to an Invoice.`)
+    }
 
+    const dueDate = options?.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
     const invNumber = PrintERPDataStore.getNextDocumentNumber(companyId, 'invoice')
     const invoiceId = `inv-${Date.now()}`
 
@@ -490,11 +516,11 @@ export class QuotationRepository {
       id: `qa-${Date.now()}`,
       quotation_id: quote.id,
       action: 'converted',
-      details: `Converted to Invoice #${invoice.invoice_number}`,
+      details: `Converted to Invoice #${invoice.invoice_number} (Grand Total: ৳${quote.grand_total})`,
       actor_name: options?.createdByName || 'Sales Staff',
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
+    await this.addActivity(activity)
 
     return invoice
   }
@@ -515,8 +541,8 @@ export class QuotationRepository {
       throw new Error(`Quotation ${quotationId} not found in company context.`)
     }
 
-    if (quote.status === 'converted' && (quote.converted_order_id || quote.converted_invoice_id)) {
-      throw new Error(`Quotation ${quote.quotation_number} has already been converted.`)
+    if (quote.status === 'converted' && quote.converted_order_id) {
+      throw new Error(`Quotation #${quote.quotation_number} has already been converted to a Job Order.`)
     }
 
     const orderNumber = PrintERPDataStore.getNextDocumentNumber(companyId, 'order')
@@ -586,7 +612,7 @@ export class QuotationRepository {
       actor_name: options?.createdByName || 'Sales Staff',
       created_at: new Date().toISOString(),
     }
-    PrintERPDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
+    await this.addActivity(activity)
 
     return salesOrder
   }
@@ -665,6 +691,10 @@ export class QuotationRepository {
     const quote = await this.getQuotationById(quotationId, companyId)
     if (!quote) return null
 
+    if (quote.status === 'converted') {
+      throw new Error(`Cannot negotiate price for an already converted quotation (#${quote.quotation_number}).`)
+    }
+
     const safeDiscount = Math.max(0, Math.min(quote.subtotal, Number(discountAmount) || 0))
     const subtotalAfterDisc = Math.max(0, quote.subtotal - safeDiscount)
     const newVat = Math.round((subtotalAfterDisc * quote.vat_rate) / 100)
@@ -698,7 +728,7 @@ export class QuotationRepository {
   }
 
   /**
-   * Updates quotation status safely with activity log
+   * Updates quotation status safely with activity log and state machine validation
    */
   static async updateStatus(
     quotationId: string,
@@ -710,9 +740,23 @@ export class QuotationRepository {
     const quote = await this.getQuotationById(quotationId, companyId)
     if (!quote) return null
 
-    // Safe transition validation
     if (quote.status === 'converted' && newStatus !== 'converted') {
-      throw new Error('Cannot change status of a converted quotation.')
+      throw new Error(`Cannot change status of a converted quotation (#${quote.quotation_number}).`)
+    }
+
+    const validTransitions: Record<QuotationStatus, QuotationStatus[]> = {
+      draft: ['sent', 'negotiation', 'approved', 'rejected', 'expired'],
+      sent: ['viewed', 'negotiation', 'approved', 'rejected', 'expired'],
+      viewed: ['negotiation', 'approved', 'rejected', 'expired'],
+      negotiation: ['approved', 'rejected', 'expired', 'sent'],
+      approved: ['converted', 'negotiation', 'rejected'],
+      rejected: ['draft', 'negotiation'],
+      expired: ['draft', 'negotiation'],
+      converted: [],
+    }
+
+    if (quote.status !== newStatus && !validTransitions[quote.status]?.includes(newStatus)) {
+      throw new Error(`Invalid status transition from ${quote.status.toUpperCase()} to ${newStatus.toUpperCase()}.`)
     }
 
     await this.updateQuotation(quote.id, { status: newStatus }, companyId)

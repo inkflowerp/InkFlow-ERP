@@ -120,6 +120,26 @@ export class QuotationService {
   }
 
   /**
+   * Timezone-safe local date parser preventing UTC midnight offset shifts
+   */
+  static parseDateSafe(dateInput: string | Date | null | undefined): Date {
+    if (!dateInput) return new Date()
+    if (typeof dateInput === 'string') {
+      const parts = dateInput.split('T')[0].split('-')
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10)
+        const month = parseInt(parts[1], 10) - 1
+        const day = parseInt(parts[2], 10)
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+          return new Date(year, month, day)
+        }
+      }
+    }
+    const d = new Date(dateInput)
+    return isNaN(d.getTime()) ? new Date() : d
+  }
+
+  /**
    * Translates validity date into business meaning and visual urgency
    */
   static calculateExpiryUrgency(validUntil: string): {
@@ -132,7 +152,7 @@ export class QuotationService {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     
-    const target = new Date(validUntil)
+    const target = this.parseDateSafe(validUntil)
     target.setHours(0, 0, 0, 0)
     
     const diffTime = target.getTime() - today.getTime()
@@ -186,7 +206,7 @@ export class QuotationService {
     }
 
     if (quote.follow_up_date) {
-      const fDate = new Date(quote.follow_up_date)
+      const fDate = this.parseDateSafe(quote.follow_up_date)
       fDate.setHours(0, 0, 0, 0)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
@@ -231,10 +251,10 @@ export class QuotationService {
     // 2. ACTIVE QUOTATIONS count
     const activeCount = activeQuotes.length
 
-    // 3. FOLLOW-UP TODAY (Quotes with follow-up scheduled for today or overdue, or in sent status for >2 days)
+    // 3. FOLLOW-UP TODAY (Quotes with follow-up scheduled for today or overdue)
     const followUpToday = activeQuotes.filter((q) => {
       if (q.follow_up_date) {
-        const d = new Date(q.follow_up_date)
+        const d = this.parseDateSafe(q.follow_up_date)
         d.setHours(0, 0, 0, 0)
         return d <= today
       }
@@ -279,7 +299,7 @@ export class QuotationService {
 
         // 2. Follow-up scheduled today or overdue
         if (q.follow_up_date) {
-          const fDate = new Date(q.follow_up_date)
+          const fDate = this.parseDateSafe(q.follow_up_date)
           fDate.setHours(0, 0, 0, 0)
           if (fDate <= today) return true
         }
@@ -290,7 +310,7 @@ export class QuotationService {
 
         // 4. Sent for > 2 days with no follow up recorded
         if (q.status === 'sent' && !q.last_follow_up_at) {
-          const sentDate = new Date(q.quotation_date || q.created_at)
+          const sentDate = this.parseDateSafe(q.quotation_date || q.created_at)
           const daysOld = (today.getTime() - sentDate.getTime()) / (1000 * 60 * 60 * 24)
           if (daysOld >= 2) return true
         }
