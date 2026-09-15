@@ -117,10 +117,10 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {/* 1. UPGRADED EXECUTIVE CONTROL CENTER HEADER (Vibrant Gradient + Identity) */}
       {/* ========================================================================= */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-400/20 dark:border-blue-500/20 bg-gradient-to-r from-[#315BEF] via-[#5145E5] to-[#29334F] p-6 sm:p-7 md:p-8 shadow-md text-white">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-400/20 dark:border-blue-500/20 bg-gradient-to-r from-[#1E5AF6] via-[#1642B5] to-[#0A1633] p-6 sm:p-7 md:p-8 shadow-md text-white">
         {/* Ambient Subtle Accent Highlights */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-60 w-60 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 -bottom-16 h-60 w-60 rounded-full bg-indigo-300/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-60 w-60 rounded-full bg-blue-400/5 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 -bottom-16 h-60 w-60 rounded-full bg-blue-300/15 blur-3xl" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* LEFT: Business Identity + Context Badge + Dynamic Greeting + Date */}
@@ -196,13 +196,113 @@ export function OwnerDashboard({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. DEDICATED QUICK ACTIONS BAR (1-Click Operational Direct Modals)        */}
+      {/* 2. TWO-COLUMN DASHBOARD SECTION: QUICK ACTIONS + NEEDS YOUR ATTENTION     */}
       {/* ========================================================================= */}
-      <QuickActionsBar
-        onOpenPaymentModal={onOpenPaymentModal}
-        onOpenNewWork={onOpenNewWork}
-        onRefresh={onRefresh}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+        {/* LEFT COLUMN: Quick Actions */}
+        <QuickActionsBar
+          onOpenPaymentModal={onOpenPaymentModal}
+          onOpenNewWork={onOpenNewWork}
+          onRefresh={onRefresh}
+          className="h-full"
+        />
+
+        {/* RIGHT COLUMN: Needs Your Attention */}
+        <Card className="p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between h-full">
+          <div>
+            {/* Header Label Row */}
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 shrink-0">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                </span>
+                <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 bangla-text">
+                  {tBilingual('Needs Your Attention', 'জরুরি মনোযোগ প্রয়োজন')}
+                </h2>
+              </div>
+              <Badge
+                variant="outline"
+                className={`text-xs font-mono font-bold ${
+                  data.attentionItems.length > 0
+                    ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
+                    : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                }`}
+              >
+                {data.attentionItems.length} {tBilingual('Items', 'টি সমস্যা')}
+              </Badge>
+            </div>
+
+            {/* Content Area */}
+            {data.attentionItems.length === 0 ? (
+              <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl sm:rounded-2xl flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                <div>
+                  <div className="text-xs font-bold text-emerald-900 dark:text-emerald-100 bangla-text">
+                    {tBilingual('Operations are healthy and on track!', 'ব্যবসার সকল কার্যক্রম স্বাভাবিক ও নিয়মতান্ত্রিকভাবে চলছে!')}
+                  </div>
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-300 bangla-text mt-0.5">
+                    {tBilingual('No overdue invoices, delayed jobs, or pending customer proof blocks.', 'কোনো বিলম্বিত কাজ, বকেয়া বিল বা আটকে থাকা আর্টওয়ার্ক নেই।')}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-0.5">
+                {data.attentionItems.map((item) => {
+                  const isUrgent = item.severity === 'urgent'
+                  return (
+                    <div
+                      key={item.id}
+                      className={`p-3 rounded-xl sm:rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs transition-all ${
+                        isUrgent
+                          ? 'bg-rose-50/70 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/60'
+                          : 'bg-amber-50/70 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60'
+                      }`}
+                    >
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`h-2 w-2 rounded-full shrink-0 ${isUrgent ? 'bg-rose-600' : 'bg-amber-500'}`} />
+                          <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text truncate">
+                            {tBilingual(item.titleEn, item.titleBn)}
+                          </h3>
+                        </div>
+
+                        <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text pl-4 line-clamp-2">
+                          {tBilingual(item.subtitleEn, item.subtitleBn)}
+                        </p>
+
+                        {item.recordCode && (
+                          <div className="pl-4 flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                            <span className="font-bold text-blue-600">{item.recordCode}</span>
+                            {item.status && <span>• {item.status}</span>}
+                            {item.ageOrDeadline && <span>• {item.ageOrDeadline}</span>}
+                          </div>
+                        )}
+                      </div>
+
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (item.actionType === 'route') {
+                            router.push(`/${slug}${item.actionTarget}`)
+                          }
+                        }}
+                        className={`h-8 sm:h-9 px-3 text-xs font-bold shrink-0 bangla-text cursor-pointer self-start sm:self-center ${
+                          isUrgent
+                            ? 'bg-rose-600 text-white hover:bg-rose-700 border-rose-600'
+                            : 'bg-amber-600 text-white hover:bg-amber-700 border-amber-600'
+                        }`}
+                      >
+                        <span>{tBilingual(item.actionLabelEn, item.actionLabelBn)}</span>
+                        <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                      </Button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
 
       {/* ========================================================================= */}
       {/* 3. BUSINESS TODAY (4 Canonical Core KPIs)                                 */}
@@ -351,98 +451,6 @@ export function OwnerDashboard({
               </Card>
             )}
           </KpiGrid>
-        )}
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 3. NEEDS YOUR ATTENTION (Actionable Exceptions Only)                       */}
-      {/* ========================================================================= */}
-      <div className="space-y-2.5">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
-              {tBilingual('Needs Your Attention', 'জরুরি মনোযোগ প্রয়োজন')}
-            </h2>
-          </div>
-          <Badge
-            variant="outline"
-            className={`text-xs font-mono font-bold ${
-              data.attentionItems.length > 0
-                ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
-                : 'bg-emerald-50 text-emerald-800 border-emerald-300'
-            }`}
-          >
-            {data.attentionItems.length} {tBilingual('Items', 'টি সমস্যা')}
-          </Badge>
-        </div>
-
-        {data.attentionItems.length === 0 ? (
-          <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-            <div>
-              <div className="text-xs font-bold text-emerald-900 dark:text-emerald-100 bangla-text">
-                {tBilingual('Operations are healthy and on track!', 'ব্যবসার সকল কার্যক্রম স্বাভাবিক ও নিয়মতান্ত্রিকভাবে চলছে!')}
-              </div>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-300 bangla-text">
-                {tBilingual('No overdue invoices, delayed jobs, or pending customer proof blocks.', 'কোনো বিলম্বিত কাজ, বকেয়া বিল বা আটকে থাকা আর্টওয়ার্ক নেই।')}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {data.attentionItems.map((item) => {
-              const isUrgent = item.severity === 'urgent'
-              return (
-                <div
-                  key={item.id}
-                  className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs transition-all ${
-                    isUrgent
-                      ? 'bg-rose-50/70 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/60'
-                      : 'bg-amber-50/70 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60'
-                  }`}
-                >
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2 w-2 rounded-full shrink-0 ${isUrgent ? 'bg-rose-600' : 'bg-amber-500'}`} />
-                      <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text truncate">
-                        {tBilingual(item.titleEn, item.titleBn)}
-                      </h3>
-                    </div>
-
-                    <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text pl-4 line-clamp-2">
-                      {tBilingual(item.subtitleEn, item.subtitleBn)}
-                    </p>
-
-                    {item.recordCode && (
-                      <div className="pl-4 flex items-center gap-2 text-[11px] text-slate-500 font-mono">
-                        <span className="font-bold text-blue-600">{item.recordCode}</span>
-                        {item.status && <span>• {item.status}</span>}
-                        {item.ageOrDeadline && <span>• {item.ageOrDeadline}</span>}
-                      </div>
-                    )}
-                  </div>
-
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (item.actionType === 'route') {
-                        router.push(`/${slug}${item.actionTarget}`)
-                      }
-                    }}
-                    className={`h-9 px-3.5 text-xs font-bold shrink-0 min-h-[36px] bangla-text cursor-pointer ${
-                      isUrgent
-                        ? 'bg-rose-600 text-white hover:bg-rose-700 border-rose-600'
-                        : 'bg-amber-600 text-white hover:bg-amber-700 border-amber-600'
-                    }`}
-                  >
-                    <span>{tBilingual(item.actionLabelEn, item.actionLabelBn)}</span>
-                    <ChevronRight className="h-3.5 w-3.5 ml-1" />
-                  </Button>
-                </div>
-              )
-            })}
-          </div>
         )}
       </div>
 

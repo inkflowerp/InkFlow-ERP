@@ -1,88 +1,32 @@
+'use client'
+
 import React, { useState } from 'react'
-import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { CompanySelector } from './company-selector'
 import { Breadcrumbs } from './breadcrumbs'
 import { NotificationsDropdown } from './notifications-dropdown'
 import { UserMenu } from './user-menu'
 import { MobileNav } from './mobile-nav'
-import {
-  Search,
-  ChevronDown,
-  Plus,
-  FileSpreadsheet,
-  ShoppingBag,
-  CreditCard,
-  Users,
-  Radio,
-  Sparkles,
-} from 'lucide-react'
+import { Search, Clock } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
-import { useSubscription } from '@/hooks/use-subscription'
 import { useRealtime } from '@/components/providers/realtime-provider'
-import { useOutsideClick } from '@/hooks/use-outside-click'
-import { NewWorkWizard } from '@/components/orders/new-work-wizard'
-import { ConfigurableLimitType } from '@/types/subscription.types'
-import { cn } from '@/lib/utils'
+import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
 
 export function TopNav() {
   const router = useRouter()
   const pathname = usePathname()
   const { t, tBilingual } = useI18n()
-  const { company, currentRole, currentUser } = useTenant()
+  const { company } = useTenant()
   const { isLive, status } = useRealtime()
-  const { checkCanCreate, openLimitExceededModal, openUpgradeModal, isTrialExpired } = useSubscription()
-  const [isQuickActionOpen, setIsQuickActionOpen] = useState(false)
-  const [isNewWorkOpen, setIsNewWorkOpen] = useState(false)
-  const quickActionRef = useOutsideClick<HTMLDivElement>(() => setIsQuickActionOpen(false), isQuickActionOpen)
+  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false)
 
   const pathSlug = pathname ? pathname.split('/')[1] : null
   const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
 
-  const quickActions: Array<{
-    titleEn: string
-    titleBn: string
-    icon: any
-    href: string
-    color: string
-    limitType?: ConfigurableLimitType
-  }> = [
-    {
-      titleEn: 'New Quotation',
-      titleBn: 'নতুন কোটেশন তৈরি',
-      icon: FileSpreadsheet,
-      href: `/${slug}/quotations`,
-      color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/50',
-      limitType: 'monthly_orders',
-    },
-    {
-      titleEn: 'New Job Order',
-      titleBn: 'নতুন জব অর্ডার',
-      icon: ShoppingBag,
-      href: `/${slug}/orders`,
-      color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/50',
-      limitType: 'monthly_orders',
-    },
-    {
-      titleEn: 'Record Payment (MR)',
-      titleBn: 'পেমেন্ট রিসিট (মানি রিসিট)',
-      icon: CreditCard,
-      href: `/${slug}/billing`,
-      color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/50',
-    },
-    {
-      titleEn: 'New Customer Profile',
-      titleBn: 'নতুন কাস্টমার যোগ',
-      icon: Users,
-      href: `/${slug}/customers`,
-      color: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-950/50',
-      limitType: 'max_customers',
-    },
-  ]
-
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-2 sm:gap-4">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2.5 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-2 sm:gap-4">
+      {/* LEFT: Mobile Nav Drawer + Company Selector + Breadcrumbs */}
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
         <MobileNav />
         <CompanySelector />
@@ -91,9 +35,10 @@ export function TopNav() {
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+      {/* RIGHT: Live Status + Flexible Search + Attendance/Punch + Notifications + User Avatar */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink-0">
         {/* Realtime Live Sync Health Indicator */}
-        <div className="hidden lg:flex items-center mr-1" suppressHydrationWarning>
+        <div className="hidden lg:flex items-center mr-0.5 shrink-0" suppressHydrationWarning>
           {isLive ? (
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/80"
@@ -113,19 +58,19 @@ export function TopNav() {
           )}
         </div>
 
-        {/* Search Bar - Moved to Left & Increased Width */}
+        {/* Global Search Bar - Responsive Width */}
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
-          className="hidden sm:flex items-center justify-between gap-3 w-48 md:w-64 lg:w-80 xl:w-96 rounded-xl border border-slate-200/90 bg-slate-100/70 hover:bg-slate-100 px-3.5 py-2 text-xs sm:text-sm text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200 cursor-pointer shrink-0 transition-all min-h-[40px] shadow-2xs"
+          className="hidden sm:flex items-center justify-between gap-2 sm:gap-3 w-36 md:w-52 lg:w-64 xl:w-80 rounded-xl border border-slate-200/90 bg-slate-100/70 hover:bg-slate-100 px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200 cursor-pointer shrink transition-all min-h-[38px] shadow-2xs"
           title="Global Search (⌘K or /)"
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <Search className="h-4 w-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
             <span className="truncate bangla-text font-medium text-slate-500 dark:text-slate-400">{t('common.search')}</span>
           </div>
-          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-xs font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-900 font-mono shrink-0 shadow-2xs">
-            ⌘K /
+          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-900 font-mono shrink-0 shadow-2xs">
+            ⌘K
           </kbd>
         </button>
 
@@ -140,83 +85,32 @@ export function TopNav() {
           <Search className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
         </button>
 
-        {/* New Work Universal Primary Action Button */}
+        {/* Dedicated Employee Attendance & Shift Punch Action */}
         <button
           type="button"
-          onClick={() => setIsNewWorkOpen(true)}
-          className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-xs sm:text-sm font-black text-white hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/25 cursor-pointer transition-all active:scale-95 shrink-0 whitespace-nowrap min-h-[40px]"
-          title="Universal New Work Wizard (নতুন কাজ)"
+          onClick={() => setIsAttendanceOpen(true)}
+          className="relative rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/40 active:scale-95 shrink-0"
+          title={tBilingual('Employee Attendance & Shift Punch', 'হাজিরা ও শিফট পাঞ্চ')}
+          aria-label={tBilingual('Employee Attendance & Shift Punch', 'হাজিরা ও শিফট পাঞ্চ')}
         >
-          <Plus className="h-4 w-4 stroke-[3] shrink-0" />
-          <span className="hidden sm:inline whitespace-nowrap bangla-text">{tBilingual('New Work', 'নতুন কাজ')}</span>
+          <Clock className="h-4 w-4" />
         </button>
 
-        {/* Quick Action Hub - Moved to Right after Search Bar */}
-        <div ref={quickActionRef} className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
-            className="flex items-center gap-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 cursor-pointer transition-all active:scale-98 shrink-0 whitespace-nowrap min-h-[40px]"
-            title="Quick operational actions (+ Quotation, + Order, + Payment)"
-          >
-            <span className="hidden sm:inline whitespace-nowrap bangla-text">{tBilingual('More', 'আরও')}</span>
-            <ChevronDown className="h-3.5 w-3.5 opacity-80 shrink-0" />
-          </button>
-
-          {isQuickActionOpen && (
-            <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 p-2 z-50 animate-in fade-in-0 zoom-in-95">
-              <div className="px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                <span className="bangla-text">{tBilingual('Quick Operations', 'দ্রুত অপারেশন')}</span>
-                <span className="font-mono text-2xs bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md font-bold">Hotkey: N</span>
-              </div>
-              <div className="space-y-1 mt-1">
-                {quickActions.map((qa) => {
-                  const Icon = qa.icon
-                  const limitCheck = qa.limitType ? checkCanCreate(qa.limitType) : { allowed: !isTrialExpired }
-                  const isBlocked = !limitCheck.allowed || isTrialExpired
-
-                  return (
-                    <button
-                      key={qa.titleEn}
-                      type="button"
-                      onClick={() => {
-                        setIsQuickActionOpen(false)
-                        if (isBlocked) {
-                          if (qa.limitType) {
-                            openLimitExceededModal(qa.limitType)
-                          } else {
-                            openUpgradeModal('business')
-                          }
-                          return
-                        }
-                        router.push(qa.href)
-                      }}
-                      className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-xl text-xs sm:text-sm text-left transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 min-h-[44px] cursor-pointer bangla-text"
-                    >
-                      <div className={cn('p-1.5 rounded-lg', qa.color)}>
-                        <Icon className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="font-semibold">{tBilingual(qa.titleEn, qa.titleBn)}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
+        {/* Notifications Dropdown */}
         <NotificationsDropdown />
+
         <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0" />
+
+        {/* User Profile Menu */}
         <UserMenu />
       </div>
 
-      {/* Inline Universal New Work Modal */}
-      {isNewWorkOpen && (
-        <NewWorkWizard
-          isOpen={true}
-          isInlineModal={true}
-          onClose={() => setIsNewWorkOpen(false)}
-          onSuccess={() => setIsNewWorkOpen(false)}
+      {/* Direct Attendance Punch Modal */}
+      {isAttendanceOpen && (
+        <AttendancePunchModal
+          open={isAttendanceOpen}
+          onClose={() => setIsAttendanceOpen(false)}
+          tenantSlug={slug}
         />
       )}
     </header>

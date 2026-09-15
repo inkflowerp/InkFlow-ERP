@@ -220,8 +220,8 @@ export function QuickActionsBar({
   const actions = [
     {
       id: 'new-quotation',
-      labelEn: '+ New Quotation',
-      labelBn: '+ নতুন কোটেশন',
+      labelEn: 'New Quotation',
+      labelBn: 'নতুন কোটেশন',
       subEn: 'Estimate & Pricing',
       subBn: 'দরপত্র ও প্রাক্কলন',
       icon: FileText,
@@ -231,8 +231,8 @@ export function QuickActionsBar({
     },
     {
       id: 'new-invoice',
-      labelEn: '+ New Invoice',
-      labelBn: '+ নতুন ইনভয়েস',
+      labelEn: 'New Invoice',
+      labelBn: 'নতুন ইনভয়েস',
       subEn: 'Sales & Billing',
       subBn: 'বিক্রয় ও বিল তৈরি',
       icon: Receipt,
@@ -242,8 +242,8 @@ export function QuickActionsBar({
     },
     {
       id: 'new-customer',
-      labelEn: '+ New Customer',
-      labelBn: '+ নতুন কাস্টমার',
+      labelEn: 'New Customer',
+      labelBn: 'নতুন কাস্টমার',
       subEn: 'CRM & Client Profile',
       subBn: 'ক্লায়েন্ট প্রোফাইল যুক্ত',
       icon: UserPlus,
@@ -253,8 +253,8 @@ export function QuickActionsBar({
     },
     {
       id: 'new-purchase',
-      labelEn: '+ New Purchase',
-      labelBn: '+ নতুন ক্রয়',
+      labelEn: 'New Purchase',
+      labelBn: 'নতুন ক্রয়',
       subEn: 'Vendor PO / Materials',
       subBn: 'কাঁচামাল ও সাপ্লায়ার PO',
       icon: Package,
@@ -264,8 +264,8 @@ export function QuickActionsBar({
     },
     {
       id: 'new-expense',
-      labelEn: '+ New Expenses',
-      labelBn: '+ নতুন খরচ',
+      labelEn: 'New Expense',
+      labelBn: 'নতুন খরচ',
       subEn: 'Spend Money / Expense',
       subBn: 'ভাউচার ও খরচ এন্ট্রি',
       icon: CreditCard,
@@ -299,7 +299,7 @@ export function QuickActionsBar({
 
   return (
     <>
-      <Card className={cn('p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs', className)}>
+      <Card className={cn('p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between', className)}>
         {/* Header Label Row */}
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
@@ -316,7 +316,7 @@ export function QuickActionsBar({
         </div>
 
         {/* 6-Action Clickable Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-3 flex-1">
           {visibleActions.map((action) => {
             const Icon = action.icon
             return (
