@@ -69,19 +69,23 @@ export default function QuotationDetailPage() {
   const quoteId = (params?.id as string) || ''
   const shouldAutoPrint = searchParams?.get('print') === 'true'
 
-  const { company, currentUser } = useTenant()
+  const { company, currentUser, isLoading: isTenantLoading } = useTenant()
   const { tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'classic-printer'
 
   // Local datastore fallback
   const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
   const [localActivities] = useDataStore<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
 
   const [quote, setQuote] = useState<QuotationRecord | null>(() => {
-    return localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId) || null
+    if (typeof window !== 'undefined') {
+      const allLocal = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
+      return allLocal.find((q) => q.id === quoteId || q.quotation_number === quoteId) || null
+    }
+    return null
   })
   const [activities, setActivities] = useState<QuotationActivityRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!quote)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -101,7 +105,6 @@ export default function QuotationDetailPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const companyId = company?.id
   const localQuotationsRef = React.useRef(localQuotations)
   localQuotationsRef.current = localQuotations
   const localActivitiesRef = React.useRef(localActivities)
@@ -109,55 +112,85 @@ export default function QuotationDetailPage() {
 
   // Authoritative server fetch
   const fetchQuotationDetail = useCallback(async (isSilent = false) => {
-    if (!isSilent) setIsLoading(true)
+    if (!quoteId) return
+    if (!isSilent && !quote) setIsLoading(true)
     setIsRefreshing(true)
-    setError(null)
 
     try {
-      const res = await getQuotationDetailAction(quoteId, companyId)
+      const res = await getQuotationDetailAction(quoteId, company?.id, slug)
       if (res.success && res.data) {
         setQuote(res.data.quotation)
         setActivities(res.data.activities || [])
+        setError(null)
         if (res.data.quotation.language_mode) {
           setLanguageMode(res.data.quotation.language_mode)
         }
       } else {
         // Fallback to local store
-        const fallbackQuote = localQuotationsRef.current.find((q) => q.id === quoteId || q.quotation_number === quoteId)
+        const fallbackQuote =
+          localQuotationsRef.current.find((q) => q.id === quoteId || q.quotation_number === quoteId) ||
+          (typeof window !== 'undefined'
+            ? (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
+                (q) => q.id === quoteId || q.quotation_number === quoteId
+              )
+            : null)
+
         if (fallbackQuote) {
           setQuote(fallbackQuote)
-          const fallbackActs = localActivitiesRef.current.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId)
+          setError(null)
+          const fallbackActs =
+            localActivitiesRef.current.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId) ||
+            []
           setActivities(fallbackActs)
-        } else {
+        } else if (!isTenantLoading) {
           setError(res.error || 'Quotation not found.')
         }
       }
     } catch (err: any) {
-      const fallbackQuote = localQuotationsRef.current.find((q) => q.id === quoteId || q.quotation_number === quoteId)
+      const fallbackQuote =
+        localQuotationsRef.current.find((q) => q.id === quoteId || q.quotation_number === quoteId) ||
+        (typeof window !== 'undefined'
+          ? (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).find(
+              (q) => q.id === quoteId || q.quotation_number === quoteId
+            )
+          : null)
+
       if (fallbackQuote) {
         setQuote(fallbackQuote)
-      } else {
+        setError(null)
+      } else if (!isTenantLoading) {
         setError(err?.message || 'Failed to load quotation.')
       }
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [quoteId, companyId])
+  }, [quoteId, company?.id, slug, isTenantLoading, quote])
 
   useEffect(() => {
     fetchQuotationDetail()
-  }, [fetchQuotationDetail])
+  }, [quoteId, company?.id, slug])
 
+  // Sync if localQuotations becomes populated
+  useEffect(() => {
+    if (!quote && localQuotations && localQuotations.length > 0) {
+      const found = localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId)
+      if (found) {
+        setQuote(found)
+        setError(null)
+      }
+    }
+  }, [quote, localQuotations, quoteId])
 
   // Auto-print on load if query param present
   useEffect(() => {
-    if (shouldAutoPrint && quote) {
-      setTimeout(() => {
+    if (shouldAutoPrint && quote && !isLoading) {
+      const timer = setTimeout(() => {
         window.print()
       }, 500)
+      return () => clearTimeout(timer)
     }
-  }, [shouldAutoPrint, quote])
+  }, [shouldAutoPrint, quote, isLoading])
 
   if (isLoading && !quote) {
     return (

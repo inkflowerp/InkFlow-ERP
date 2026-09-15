@@ -21,6 +21,7 @@ import {
 import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
 import { InvoiceRecord } from '@/types/billing.types'
 import { SalesOrderRecord } from '@/types/order.types'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -492,16 +493,36 @@ export async function getQuotationsAction(
  */
 export async function getQuotationDetailAction(
   id: string,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  tenantSlug?: string
 ): Promise<ServerActionResult<{ quotation: QuotationRecord; activities: QuotationActivityRecord[] }>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
+    const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
     const companyId = tenant?.companyId || requestedCompanyId
     if (!companyId) {
+      // Resilient fallback for preview/print tabs when tenant session is hydrating
+      const fallbackQuote = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS)?.find(
+        (q: QuotationRecord) => q.id === id || q.quotation_number === id
+      )
+      if (fallbackQuote) {
+        const activities = (PrintERPDataStore.get<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES) || []).filter(
+          (a: QuotationActivityRecord) => a.quotation_id === fallbackQuote.id || a.quotation_id === id
+        )
+        return { success: true, data: { quotation: fallbackQuote, activities } }
+      }
       return { success: false, error: 'Unauthorized: No active tenant context found.' }
     }
 
-    const quote = await QuotationService.getQuotationById(id, companyId)
+    let quote = await QuotationService.getQuotationById(id, companyId)
+    if (!quote) {
+      const fallbackQuote = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS)?.find(
+        (q: QuotationRecord) => (q.id === id || q.quotation_number === id) && (!q.company_id || q.company_id === companyId)
+      )
+      if (fallbackQuote) {
+        quote = fallbackQuote
+      }
+    }
+
     if (!quote) {
       return { success: false, error: 'Quotation not found.' }
     }

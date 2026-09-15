@@ -386,4 +386,35 @@ describe('Quotation Production Hardening & Sales-Control Center Test Suite', () 
       )
     })
   })
+
+  describe('8. Non-UUID & Direct Navigation Lookup Resilience', () => {
+    it('should safely retrieve quotations by timestamp ID or quotation number without UUID syntax crash', async () => {
+      const customId = `quo-${Date.now()}`
+      const quote = await QuotationRepository.createQuotation({
+        id: customId,
+        company_id: companyA,
+        customer_name: 'Direct Link Client',
+        customer_phone: '01711223344',
+        valid_until: '2026-10-30',
+        salesperson_name: 'Direct Sales',
+        items: [{ description: 'Rollup Standee', quantity: 2, unit_rate: 1500 }],
+      })
+
+      // 1. Lookup by non-UUID custom timestamp ID
+      const retrievedById = await QuotationRepository.getQuotationById(customId, companyA)
+      assert.ok(retrievedById)
+      assert.strictEqual(retrievedById.id, customId)
+      assert.strictEqual(retrievedById.customer_name, 'Direct Link Client')
+
+      // 2. Lookup by quotation_number (e.g. QUO-2026-XXXX)
+      const retrievedByNumber = await QuotationRepository.getQuotationById(quote.quotation_number, companyA)
+      assert.ok(retrievedByNumber)
+      assert.strictEqual(retrievedByNumber.id, customId)
+
+      // 3. Lookup with optional companyId omitted
+      const retrievedFlexible = await QuotationRepository.getQuotationById(customId)
+      assert.ok(retrievedFlexible)
+      assert.strictEqual(retrievedFlexible.id, customId)
+    })
+  })
 })

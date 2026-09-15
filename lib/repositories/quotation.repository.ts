@@ -149,15 +149,26 @@ export class QuotationRepository {
   /**
    * Retrieves a single quotation with items and activity timeline
    */
-  static async getQuotationById(id: string, companyId: string): Promise<QuotationRecord | null> {
+  static async getQuotationById(id: string, companyId?: string): Promise<QuotationRecord | null> {
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      
+      let query = (supabase as any)
         .from('quotations')
         .select('*, items:quotation_items(*)')
-        .or(`id.eq.${id},quotation_number.eq.${id}`)
-        .eq('company_id', companyId)
-        .maybeSingle()
+
+      if (companyId) {
+        query = query.eq('company_id', companyId)
+      }
+
+      if (isUUID) {
+        query = query.or(`id.eq.${id},quotation_number.eq.${id}`)
+      } else {
+        query = query.eq('quotation_number', id)
+      }
+
+      const { data, error } = await query.maybeSingle()
 
       if (!error && data) {
         return data as unknown as QuotationRecord
@@ -165,7 +176,13 @@ export class QuotationRepository {
     } catch {}
 
     const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-    return quotes.find((q) => (q.id === id || q.quotation_number === id) && (!q.company_id || q.company_id === companyId)) || null
+    return (
+      quotes.find(
+        (q) =>
+          (q.id === id || q.quotation_number === id) &&
+          (!companyId || !q.company_id || q.company_id === companyId)
+      ) || null
+    )
   }
 
   /**

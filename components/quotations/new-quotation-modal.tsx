@@ -56,6 +56,7 @@ import { ProductRecord } from '@/types/product.types'
 import { DEFAULT_QUOTATION_TERMS, DEFAULT_QUOTATION_TERMS_BN } from '@/types/quotation.types'
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { PrintERPDataStore } from '@/lib/db/data-store'
 
 export interface NewQuotationModalProps {
   open: boolean
@@ -620,6 +621,14 @@ export function NewQuotationModal({
     }
   }
 
+  // Handle Save and Close Modal
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave()
+    if (saved) {
+      onOpenChange(false)
+    }
+  }
+
   // Handle Print Action (Saves first)
   const handlePrint = async () => {
     let quoteToPrint = saveSuccessQuote
@@ -628,7 +637,7 @@ export function NewQuotationModal({
     }
     if (!quoteToPrint) return
 
-    const slug = company?.slug || 'app'
+    const slug = company?.slug || PrintERPDataStore.getActiveTenantSlug() || 'classic-printer'
     window.open(`/${slug}/quotations/${quoteToPrint.id}?print=true`, '_blank')
   }
 
@@ -1602,7 +1611,7 @@ export function NewQuotationModal({
             {/* Save Quotation Primary Button */}
             <Button
               type="button"
-              onClick={handleSave}
+              onClick={handleSaveAndClose}
               disabled={isSubmitting || isSending}
               className="flex-1 sm:flex-initial text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 shadow-sm cursor-pointer"
             >
