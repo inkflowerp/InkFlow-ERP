@@ -40,6 +40,14 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           icon: 'LayoutDashboard',
         },
         {
+          key: 'quotations',
+          title: 'Quotations',
+          titleBn: 'কোটেশন',
+          href: `/${tenantSlug}/quotations`,
+          icon: 'FileSpreadsheet',
+          permission: { action: 'view', resource: 'quotations' },
+        },
+        {
           key: 'operator',
           title: 'My Work',
           titleBn: 'আমার কাজ',

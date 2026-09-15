@@ -160,6 +160,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       'Workflow',
       'FileCheck2',
       'FileText',
+      'FileSpreadsheet',
       'Settings',
     ]
 
