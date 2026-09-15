@@ -126,49 +126,82 @@ export function MoneyReceiptModal({
       hideFooter
     >
       <div className="space-y-4 pt-1 pb-2">
-        {/* ACTION BAR (NON-PRINT) */}
-        <div className="print:hidden flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              Receipt: <strong className="font-mono text-emerald-600 dark:text-emerald-400">{payment.receipt_number}</strong>
-            </span>
-            <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-300 font-bold">
-              Paid: ৳ {formatBDT(payment.amount)}
-            </Badge>
-          </div>
+        {/* ACTION BAR & PAYMENT HIGHLIGHT (NON-PRINT) */}
+        <div className="print:hidden space-y-3">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex flex-wrap items-center gap-3 font-mono">
+              <div>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold block text-[10px] uppercase">Payment Received</span>
+                <strong className="text-emerald-800 dark:text-emerald-200 text-sm font-black">৳ {formatBDT(payment.amount)}</strong>
+              </div>
+              {invoices.length > 0 && invoices[0] && (
+                <>
+                  <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
+                    <span className="text-slate-500 block text-[10px] uppercase">Invoice</span>
+                    <strong className="text-blue-600 dark:text-blue-400 font-bold">#{invoices[0].invoice_number}</strong>
+                  </div>
+                  <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
+                    <span className="text-slate-500 block text-[10px] uppercase">Customer</span>
+                    <strong className="text-slate-800 dark:text-slate-200 font-bold">{payment.customer_name || invoices[0].customer_name}</strong>
+                  </div>
+                  <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
+                    <span className="text-slate-500 block text-[10px] uppercase">Remaining Due</span>
+                    <strong className="text-rose-600 dark:text-rose-400 font-black">
+                      ৳ {formatBDT(Math.max(0, (invoices[0].due_amount || 0) - payment.amount))}
+                    </strong>
+                  </div>
+                </>
+              )}
+            </div>
 
-          <div className="flex items-center gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleCopyText}
-              className="h-8 text-xs gap-1 font-semibold"
-            >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? 'Copied' : 'Copy Text'}
-            </Button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCopyText}
+                className="h-8 text-xs gap-1 font-semibold"
+              >
+                {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? 'Copied' : 'Copy'}
+              </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleShareWhatsApp}
-              className="h-8 text-xs gap-1 font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400"
-            >
-              <MessageSquare className="h-3.5 w-3.5" />
-              WhatsApp
-            </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleShareWhatsApp}
+                className="h-8 text-xs gap-1 font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                WhatsApp
+              </Button>
 
-            <Button
-              type="button"
-              size="sm"
-              onClick={handlePrint}
-              className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-            >
-              <Printer className="h-3.5 w-3.5" />
-              Print Receipt
-            </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const subject = encodeURIComponent(`Money Receipt #${payment.receipt_number} from ${company?.name || 'Printing Solutions'}`)
+                  const body = encodeURIComponent(generateWhatsAppText())
+                  window.open(`mailto:${customer?.email || ''}?subject=${subject}&body=${body}`, '_blank')
+                }}
+                className="h-8 text-xs gap-1 font-semibold text-slate-700 dark:text-slate-300"
+              >
+                <Mail className="h-3.5 w-3.5" />
+                Email
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={handlePrint}
+                className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Print
+              </Button>
+            </div>
           </div>
         </div>
 
