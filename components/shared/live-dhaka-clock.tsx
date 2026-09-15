@@ -7,6 +7,8 @@ import { toBengaliNumerals } from '@/lib/formatters'
 
 export interface LiveDhakaClockProps {
   className?: string
+  timeClassName?: string
+  iconClassName?: string
   showSeconds?: boolean
   showIcon?: boolean
 }
@@ -16,6 +18,8 @@ export interface LiveDhakaClockProps {
  */
 export function LiveDhakaClock({
   className = 'inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-600 dark:text-slate-300',
+  timeClassName,
+  iconClassName = 'h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0',
   showSeconds = true,
   showIcon = true,
 }: LiveDhakaClockProps) {
@@ -48,9 +52,9 @@ export function LiveDhakaClock({
 
   return (
     <span className={className} suppressHydrationWarning>
-      {showIcon && <Clock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0" />}
-      <span suppressHydrationWarning>
-        {mounted && timeString ? timeString : '--:-- --'}
+      {showIcon && <Clock className={iconClassName} />}
+      <span className={timeClassName} suppressHydrationWarning>
+        {mounted && timeString ? timeString : '--:--:-- --'}
       </span>
     </span>
   )

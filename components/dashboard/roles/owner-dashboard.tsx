@@ -115,105 +115,82 @@ export function OwnerDashboard({
   return (
     <div className="space-y-6 pb-16">
       {/* ========================================================================= */}
-      {/* 1. UPGRADED EXECUTIVE CONTROL CENTER HEADER                               */}
+      {/* 1. UPGRADED EXECUTIVE CONTROL CENTER HEADER (Vibrant Gradient + Identity) */}
       {/* ========================================================================= */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-gradient-to-br from-slate-50/95 via-sky-50/30 to-blue-50/40 dark:from-slate-900 dark:via-slate-900/95 dark:to-blue-950/20 p-5 sm:p-7 shadow-xs">
-        {/* Ambient Soft Decorative Sheen */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-3xl" />
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-400/20 dark:border-blue-500/20 bg-gradient-to-r from-[#315BEF] via-[#5145E5] to-[#29334F] p-6 sm:p-7 md:p-8 shadow-md text-white">
+        {/* Ambient Subtle Accent Highlights */}
+        <div className="pointer-events-none absolute -right-16 -top-16 h-60 w-60 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 -bottom-16 h-60 w-60 rounded-full bg-indigo-300/10 blur-3xl" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* LEFT: Business Identity + Context Badge + Dynamic Greeting + Date */}
           <div className="space-y-2 min-w-0">
-            {/* Top Context Row: Organization + Context Badge + Branch */}
+            {/* Top Context Row */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-white drop-shadow-2xs">
                 {company ? tBilingual(company.name, company.name_bn || company.name) : 'InkFlow Business'}
               </span>
 
               <Badge
                 variant="outline"
-                className="bg-blue-50/90 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-blue-200 dark:border-blue-900 text-[11px] py-0.5 px-2 font-bold shadow-2xs flex items-center gap-1.5"
+                className="bg-white/15 text-white border-white/25 backdrop-blur-xs font-bold text-[11px] sm:text-xs py-0.5 px-2.5 rounded-full flex items-center gap-1.5 shadow-2xs"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>{tBilingual('Business Control Center', 'ব্যবসায়িক নিয়ন্ত্রণ কেন্দ্র')}</span>
               </Badge>
 
               {currentBranch && (
-                <Badge variant="outline" className="bg-slate-100/80 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700 text-[11px] py-0.5">
-                  <Building className="h-3 w-3 mr-1 text-slate-500" />
+                <Badge variant="outline" className="bg-white/10 text-blue-100 border-white/20 text-[11px] py-0.5 px-2 rounded-full">
+                  <Building className="h-3 w-3 mr-1 text-blue-200" />
                   {currentBranch.name.split('(')[0].trim()}
                 </Badge>
               )}
             </div>
 
             {/* Main Greeting */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white bangla-text leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white bangla-text leading-tight drop-shadow-2xs">
               {tBilingual(`${greeting.en}, ${userFirstName}`, `${greeting.bn}, ${userFirstName}`)}
             </h1>
 
-            {/* Date + Live Asia/Dhaka Clock + Sync Status */}
-            <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
-              <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                <span>
-                  {formatBangladeshDate(new Date(), locale as 'en' | 'bn', {
-                    weekday: 'long',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </span>
+            {/* Business Date */}
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-100/90 font-medium pt-0.5">
+              <Calendar className="h-4 w-4 text-blue-200 shrink-0" />
+              <span suppressHydrationWarning>
+                {formatBangladeshDate(new Date(), locale as 'en' | 'bn', {
+                  weekday: 'long',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
               </span>
-
-              <span className="text-slate-300 dark:text-slate-700 font-bold">·</span>
-
-              <LiveDhakaClock
-                showSeconds={true}
-                showIcon={true}
-                className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-slate-800/70 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700/60 shadow-2xs"
-              />
-
-              {isUpdating && (
-                <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold animate-pulse bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-900 text-[11px]">
-                  <RefreshCw className="h-3 w-3 animate-spin" />
-                  <span>{tBilingual('Syncing...', 'সিঙ্ক হচ্ছে...')}</span>
-                </span>
-              )}
             </div>
           </div>
 
-          {/* Header Actions: Refresh + Receive Payment + New Work Primary CTA (Min 44px Touch Targets) */}
-          <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onRefresh}
-              disabled={isUpdating}
-              className="h-11 px-3.5 text-xs font-semibold border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 shadow-2xs cursor-pointer min-h-[44px] shrink-0"
-              title={tBilingual('Refresh Live Data', 'ডাটা রিফ্রেশ করুন')}
-              aria-label={tBilingual('Refresh Live Data', 'ডাটা রিফ্রেশ করুন')}
-            >
-              <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin text-blue-600' : 'text-slate-600 dark:text-slate-300'}`} />
-            </Button>
+          {/* RIGHT: Time/Status Focal Area (Large Clock + Current Time) */}
+          <div className="flex flex-col md:items-end justify-center shrink-0 pt-3 md:pt-0 border-t border-white/10 md:border-t-0">
+            <div className="flex items-center gap-2 md:justify-end text-blue-100/90 mb-1">
+              <Clock className="h-4 w-4 text-blue-200 shrink-0" />
+              <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-blue-200">
+                {tBilingual('Current Time', 'বর্তমান সময়')}
+              </span>
+              {isUpdating && (
+                <span className="flex items-center gap-1 text-[11px] font-bold text-cyan-200 bg-white/20 px-2 py-0.5 rounded-full border border-white/25 animate-pulse">
+                  <RefreshCw className="h-2.5 w-2.5 animate-spin" />
+                  <span>{tBilingual('Syncing', 'সিঙ্ক হচ্ছে')}</span>
+                </span>
+              )}
+            </div>
 
-            <Button
-              type="button"
-              onClick={() => onOpenPaymentModal()}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-11 px-4 sm:px-5 shadow-xs cursor-pointer min-h-[44px] shrink-0 transition-all"
-            >
-              <DollarSign className="h-4 w-4 mr-1 stroke-[2.5]" />
-              <span>{tBilingual('Receive Payment', 'পেমেন্ট গ্রহণ')}</span>
-            </Button>
+            <LiveDhakaClock
+              showSeconds={true}
+              showIcon={false}
+              className="inline-flex items-center"
+              timeClassName="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-white drop-shadow-sm leading-none"
+            />
 
-            <Button
-              type="button"
-              onClick={onOpenNewWork}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black h-11 px-5 sm:px-7 shadow-md hover:shadow-lg transition-all cursor-pointer min-h-[44px] shrink-0"
-            >
-              <Plus className="h-4 w-4 mr-1.5 stroke-[3]" />
-              <span>{tBilingual('+ New Work', '+ নতুন কাজ')}</span>
-            </Button>
+            <span className="text-[11px] text-blue-200/80 font-semibold mt-1">
+              {tBilingual('Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময় (Asia/Dhaka)')}
+            </span>
           </div>
         </div>
       </div>
