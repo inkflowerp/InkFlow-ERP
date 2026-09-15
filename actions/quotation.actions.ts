@@ -17,6 +17,9 @@ import {
   SendQuotationPayload,
   RecordFollowUpPayload,
   ApplyNegotiationPayload,
+  normalizeQuotationRecord,
+  extractQuotationsFromAny,
+  deduplicateQuotations,
 } from '@/types/quotation.types'
 import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
 import { InvoiceRecord } from '@/types/billing.types'
