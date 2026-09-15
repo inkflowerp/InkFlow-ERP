@@ -56,7 +56,7 @@ import { ProductRecord } from '@/types/product.types'
 import { DEFAULT_QUOTATION_TERMS, DEFAULT_QUOTATION_TERMS_BN } from '@/types/quotation.types'
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
-import { PrintERPDataStore } from '@/lib/db/data-store'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface NewQuotationModalProps {
   open: boolean
@@ -609,6 +609,11 @@ export function NewQuotationModal({
       const savedQuote = res.data
       setSaveSuccessQuote(savedQuote)
       refreshUsage()
+      if (typeof window !== 'undefined') {
+        const activeSlug = company?.slug || PrintERPDataStore.getActiveTenantSlug() || 'classic-printer'
+        PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, savedQuote, activeSlug)
+        PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, savedQuote)
+      }
       if (onQuotationCreated) {
         onQuotationCreated(savedQuote)
       }

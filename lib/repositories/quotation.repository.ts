@@ -60,41 +60,71 @@ export class QuotationRepository {
    */
   static async getQuotations(companyId: string): Promise<QuotationRecord[]> {
     return measureAsync(`QuotationRepository.getQuotations(${companyId})`, async () => {
+      let dbQuotes: QuotationRecord[] = []
+
+      // 1. Try standard Supabase Client
       try {
         const supabase = await createClient()
-        const { data, error } = await (supabase as any)
+        let query = (supabase as any)
           .from('quotations')
           .select('*, items:quotation_items(*)')
           .eq('company_id', companyId)
           .order('created_at', { ascending: false })
 
-        if (!error && data) {
-          const dbQuotes = data as unknown as QuotationRecord[]
-          const localQuotes = (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
-            (q) => !q.company_id || q.company_id === companyId
-          )
-
-          if (localQuotes.length === 0) {
-            return dbQuotes
-          }
-
-          const map = new Map<string, QuotationRecord>()
-          for (const q of localQuotes) {
-            if (q.id || q.quotation_number) map.set(q.id || q.quotation_number, q)
-          }
-          for (const q of dbQuotes) {
-            if (q.id || q.quotation_number) map.set(q.id || q.quotation_number, q)
-          }
-          return Array.from(map.values()).sort(
-            (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-          )
+        const { data, error } = await query
+        if (!error && data && data.length > 0) {
+          dbQuotes = data as unknown as QuotationRecord[]
         }
       } catch {
-        // Safe fallback to client/mock datastore
+        // Fallback
       }
 
-      const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-      return quotes.filter((q) => !q.company_id || q.company_id === companyId)
+      // 2. Try Admin Client if on server and no quotes found yet
+      if (dbQuotes.length === 0 && typeof window === 'undefined') {
+        try {
+          const { createAdminClient } = await import('@/lib/supabase/admin')
+          const admin = createAdminClient()
+          let query = (admin as any)
+            .from('quotations')
+            .select('*, items:quotation_items(*)')
+            .eq('company_id', companyId)
+            .order('created_at', { ascending: false })
+
+          const { data, error } = await query
+          if (!error && data && data.length > 0) {
+            dbQuotes = data as unknown as QuotationRecord[]
+          }
+        } catch {}
+      }
+
+      // 3. Merge with local data store filtered by companyId
+      const localQuotes = (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
+        (q) => !q.company_id || q.company_id === companyId
+      )
+
+      const map = new Map<string, QuotationRecord>()
+      for (const q of localQuotes) {
+        if (!q) continue
+        const key = q.id || q.quotation_number
+        if (key) {
+          map.set(key, q)
+          if (q.quotation_number) map.set(q.quotation_number, q)
+          if (q.id) map.set(q.id, q)
+        }
+      }
+      for (const q of dbQuotes) {
+        if (!q) continue
+        const key = q.id || q.quotation_number
+        if (key) {
+          map.set(key, q)
+          if (q.quotation_number) map.set(q.quotation_number, q)
+          if (q.id) map.set(q.id, q)
+        }
+      }
+
+      return Array.from(new Set(map.values())).sort(
+        (a, b) => new Date(b.created_at || b.quotation_date || 0).getTime() - new Date(a.created_at || a.quotation_date || 0).getTime()
+      )
     })
   }
 

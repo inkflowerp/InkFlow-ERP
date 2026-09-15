@@ -94,22 +94,53 @@ export default function QuotationsPage() {
   const quotations = useMemo(() => {
     const map = new Map<string, QuotationRecord>()
 
-    // 1. Local DataStore quotations (fallback & instant offline cache)
-    const directLocal = typeof window !== 'undefined'
-      ? (PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, slug) || [])
-      : []
-    const allLocal = [...(localQuotations || []), ...directLocal]
-    for (const q of allLocal) {
-      if (!q) continue
-      const key = q.id || q.quotation_number
-      if (key) {
-        map.set(key, q)
-        if (q.quotation_number) map.set(q.quotation_number, q)
-        if (q.id) map.set(q.id, q)
+    // 1. Deep scan ALL browser localStorage keys for any stored quotations
+    if (typeof window !== 'undefined') {
+      try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i)
+          if (!k) continue
+          if (k.startsWith('printerp_tenant_quotations') || k.includes('quotation')) {
+            const raw = window.localStorage.getItem(k)
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              if (Array.isArray(parsed)) {
+                for (const q of parsed) {
+                  if (q && (q.id || q.quotation_number)) {
+                    const key = q.id || q.quotation_number
+                    map.set(key, q)
+                    if (q.quotation_number) map.set(q.quotation_number, q)
+                    if (q.id) map.set(q.id, q)
+                  }
+                }
+              } else if (parsed && typeof parsed === 'object' && (parsed.id || parsed.quotation_number)) {
+                const key = parsed.id || parsed.quotation_number
+                map.set(key, parsed)
+                if (parsed.quotation_number) map.set(parsed.quotation_number, parsed)
+                if (parsed.id) map.set(parsed.id, parsed)
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[Quotations] Error reading localStorage:', err)
       }
     }
 
-    // 2. Server quotations (authoritative from Supabase)
+    // 2. Also incorporate localQuotations from useDataStore hook
+    if (localQuotations && Array.isArray(localQuotations)) {
+      for (const q of localQuotations) {
+        if (!q) continue
+        const key = q.id || q.quotation_number
+        if (key) {
+          map.set(key, q)
+          if (q.quotation_number) map.set(q.quotation_number, q)
+          if (q.id) map.set(q.id, q)
+        }
+      }
+    }
+
+    // 3. Server quotations (authoritative from Supabase)
     if (serverQuotations && Array.isArray(serverQuotations)) {
       for (const q of serverQuotations) {
         if (!q) continue
@@ -122,22 +153,13 @@ export default function QuotationsPage() {
       }
     }
 
-    // 3. Extract unique list
+    // 4. Extract unique list
     const uniqueList = Array.from(new Set(map.values()))
 
-    // 4. Filter by companyId if applicable
-    const filtered = uniqueList.filter((q) => {
-      if (!q) return false
-      if (companyId && q.company_id && q.company_id !== companyId && q.company_id !== 'c-01') {
-        return false
-      }
-      return true
-    })
-
-    return filtered.sort((a, b) => {
-      const timeA = new Date(a.created_at || a.quotation_date || 0).getTime()
-      const timeB = new Date(b.created_at || b.quotation_date || 0).getTime()
-      return timeB - timeA
+    return uniqueList.sort((a, b) => {
+      const timeA = new Date(b.created_at || b.quotation_date || 0).getTime()
+      const timeB = new Date(a.created_at || a.quotation_date || 0).getTime()
+      return timeA - timeB
     })
   }, [serverQuotations, localQuotations, slug, companyId])
 

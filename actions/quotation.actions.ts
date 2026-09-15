@@ -477,11 +477,7 @@ export async function getQuotationsAction(
 ): Promise<ServerActionResult<QuotationRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      const fallbackQuotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-      return { success: true, data: fallbackQuotes }
-    }
+    const companyId = tenant?.companyId || requestedCompanyId || 'c-01'
 
     const quotes = await QuotationService.getQuotations(companyId)
     return { success: true, data: quotes }
