@@ -447,7 +447,7 @@ export default function InvoicesPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => {
-                                setPreselectedCustomerId(inv.customer_id)
+                                setPreselectedCustomerId(inv.customer_id || undefined)
                                 setPreselectedInvoiceId(inv.id)
                                 setIsRecordPaymentOpen(true)
                               }}
@@ -559,7 +559,7 @@ export default function InvoicesPage() {
                       <Button
                         size="sm"
                         onClick={() => {
-                          setPreselectedCustomerId(inv.customer_id)
+                          setPreselectedCustomerId(inv.customer_id || undefined)
                           setPreselectedInvoiceId(inv.id)
                           setIsRecordPaymentOpen(true)
                         }}

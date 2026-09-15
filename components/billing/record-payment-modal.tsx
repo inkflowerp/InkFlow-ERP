@@ -155,7 +155,7 @@ export function RecordPaymentModal({
     if (open && preselectedInvoiceId && invoices.length > 0) {
       const targetInv = invoices.find((i) => i.id === preselectedInvoiceId)
       if (targetInv && targetInv.due_amount > 0) {
-        setSelectedCustomerId(targetInv.customer_id)
+        setSelectedCustomerId(targetInv.customer_id || '')
         setAmount(targetInv.due_amount)
         setCustomAllocations({ [targetInv.id]: targetInv.due_amount })
         setAllocationMode('custom')

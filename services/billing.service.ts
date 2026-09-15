@@ -94,7 +94,7 @@ export class BillingService {
 
   static async createInvoice(data: Partial<InvoiceRecord> & {
     company_id: string
-    customer_id: string
+    customer_id?: string | null
     customer_name: string
     customer_phone: string
     due_date: string
@@ -103,9 +103,6 @@ export class BillingService {
   }): Promise<InvoiceRecord> {
     if (!data.company_id) {
       throw new Error('Company context is required to create an invoice.')
-    }
-    if (!data.customer_id) {
-      throw new Error('Customer ID is required to create an invoice.')
     }
     return await BillingRepository.createInvoice(data)
   }

@@ -670,7 +670,7 @@ export default function InvoiceCockpitPage() {
         open={isRecordPayOpen}
         onOpenChange={setIsRecordPayOpen}
         preselectedInvoiceId={invoice.id}
-        preselectedCustomerId={invoice.customer_id}
+        preselectedCustomerId={invoice.customer_id || undefined}
         onPaymentRecorded={() => {
           showNotification('Payment recorded & invoice updated successfully!')
           loadInvoice()

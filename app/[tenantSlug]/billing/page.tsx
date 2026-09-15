@@ -814,7 +814,7 @@ export default function BillingPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    setSelectedCustomerIdForPayment(inv.customer_id)
+                                    setSelectedCustomerIdForPayment(inv.customer_id || undefined)
                                     setSelectedInvoiceIdForPayment(inv.id)
                                     setIsRecordPaymentOpen(true)
                                   }}
@@ -914,7 +914,7 @@ export default function BillingPage() {
                           <Button
                             size="sm"
                             onClick={() => {
-                              setSelectedCustomerIdForPayment(inv.customer_id)
+                              setSelectedCustomerIdForPayment(inv.customer_id || undefined)
                               setSelectedInvoiceIdForPayment(inv.id)
                               setIsRecordPaymentOpen(true)
                             }}

@@ -64,7 +64,7 @@ export interface PaymentRecord {
   company_id: string
   branch_id?: string | null
   receipt_number: string
-  customer_id: string
+  customer_id?: string | null
   customer_name: string
   payment_date: string
   payment_type: PaymentType
@@ -89,7 +89,7 @@ export interface InvoiceRecord {
   branch_id?: string | null
   invoice_number: string
   invoice_type: InvoiceType
-  customer_id: string
+  customer_id?: string | null
   customer_name: string
   customer_phone: string
   customer_email?: string | null
@@ -231,7 +231,7 @@ export interface MultiInvoiceAllocationItem {
 export interface MultiInvoicePaymentInput {
   companyId?: string
   branchId?: string
-  customerId: string
+  customerId?: string | null
   customerName: string
   amount: number
   paymentMethod: PaymentMethod

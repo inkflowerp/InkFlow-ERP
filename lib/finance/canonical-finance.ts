@@ -453,7 +453,7 @@ export class CanonicalFinance {
       overdueList.push({
         invoiceId: inv.id,
         invoiceNumber: inv.invoice_number || inv.id.slice(0, 8).toUpperCase(),
-        customerId: inv.customer_id,
+        customerId: inv.customer_id || '',
         customerName: inv.customer_name || 'Customer',
         customerPhone: inv.customer_phone,
         dueAmount: due,

@@ -44,16 +44,24 @@ BEGIN
     ) THEN
         ALTER TABLE public.financial_write_offs ADD COLUMN actor_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
     END IF;
+
+    -- Financial balance columns on customers
+    ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS total_invoiced_amount NUMERIC DEFAULT 0;
+    ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS total_paid_amount NUMERIC DEFAULT 0;
+    ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS total_due_balance NUMERIC DEFAULT 0;
+    ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS current_balance NUMERIC DEFAULT 0;
+    ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS last_payment_date DATE DEFAULT NULL;
+    ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS last_payment_amount NUMERIC DEFAULT NULL;
 END $$;
 
 
 -- 2. HARDENED ATOMIC RPC: RECORD MULTI-INVOICE PAYMENT ALLOCATION
 CREATE OR REPLACE FUNCTION public.record_multi_invoice_payment_atomic(
     p_company_id UUID,
-    p_customer_id UUID,
-    p_customer_name TEXT,
-    p_amount NUMERIC,
-    p_payment_method TEXT,
+    p_customer_id UUID DEFAULT NULL,
+    p_customer_name TEXT DEFAULT 'Walk-in Customer',
+    p_amount NUMERIC DEFAULT 0,
+    p_payment_method TEXT DEFAULT 'cash',
     p_payment_date DATE DEFAULT CURRENT_DATE,
     p_bank_name TEXT DEFAULT NULL,
     p_cheque_number TEXT DEFAULT NULL,
@@ -83,8 +91,8 @@ DECLARE
     v_auth_uid UUID;
     v_has_access BOOLEAN := true;
 BEGIN
-    IF p_company_id IS NULL OR p_customer_id IS NULL THEN
-        RAISE EXCEPTION 'Company ID and Customer ID are required';
+    IF p_company_id IS NULL THEN
+        RAISE EXCEPTION 'Company ID is required';
     END IF;
 
     IF p_amount <= 0 THEN
