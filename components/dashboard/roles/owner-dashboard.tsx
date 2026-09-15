@@ -198,56 +198,59 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {/* 2. TWO-COLUMN DASHBOARD SECTION: QUICK ACTIONS + NEEDS YOUR ATTENTION     */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-        {/* LEFT COLUMN: Quick Actions */}
-        <QuickActionsBar
-          onOpenPaymentModal={onOpenPaymentModal}
-          onOpenNewWork={onOpenNewWork}
-          onRefresh={onRefresh}
-          className="h-full"
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        {/* LEFT COLUMN: Quick Actions (7 cols on desktop for comfortable 3x2 cards) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <QuickActionsBar
+            onOpenPaymentModal={onOpenPaymentModal}
+            onOpenNewWork={onOpenNewWork}
+            onRefresh={onRefresh}
+            className="h-full"
+          />
+        </div>
 
-        {/* RIGHT COLUMN: Needs Your Attention */}
-        <Card className="p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between h-full">
-          <div>
-            {/* Header Label Row */}
-            <div className="flex items-center justify-between mb-3 px-1">
-              <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 shrink-0">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                </span>
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 bangla-text">
-                  {tBilingual('Needs Your Attention', 'জরুরি মনোযোগ প্রয়োজন')}
-                </h2>
-              </div>
-              <Badge
-                variant="outline"
-                className={`text-xs font-mono font-bold ${
-                  data.attentionItems.length > 0
-                    ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
-                    : 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                }`}
-              >
-                {data.attentionItems.length} {tBilingual('Items', 'টি সমস্যা')}
-              </Badge>
-            </div>
-
-            {/* Content Area */}
-            {data.attentionItems.length === 0 ? (
-              <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl sm:rounded-2xl flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-                <div>
-                  <div className="text-xs font-bold text-emerald-900 dark:text-emerald-100 bangla-text">
-                    {tBilingual('Operations are healthy and on track!', 'ব্যবসার সকল কার্যক্রম স্বাভাবিক ও নিয়মতান্ত্রিকভাবে চলছে!')}
-                  </div>
-                  <p className="text-[11px] text-emerald-700 dark:text-emerald-300 bangla-text mt-0.5">
-                    {tBilingual('No overdue invoices, delayed jobs, or pending customer proof blocks.', 'কোনো বিলম্বিত কাজ, বকেয়া বিল বা আটকে থাকা আর্টওয়ার্ক নেই।')}
-                  </p>
+        {/* RIGHT COLUMN: Needs Your Attention (5 cols on desktop) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <Card className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between h-full">
+            <div>
+              {/* Header Label Row */}
+              <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 shrink-0">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                  </span>
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 bangla-text">
+                    {tBilingual('Needs Your Attention', 'জরুরি মনোযোগ প্রয়োজন')}
+                  </h2>
                 </div>
+                <Badge
+                  variant="outline"
+                  className={`text-xs font-mono font-bold ${
+                    data.attentionItems.length > 0
+                      ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
+                      : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  }`}
+                >
+                  {data.attentionItems.length} {tBilingual('Items', 'টি সমস্যা')}
+                </Badge>
               </div>
-            ) : (
-              <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-0.5">
-                {data.attentionItems.map((item) => {
+
+              {/* Content Area */}
+              {data.attentionItems.length === 0 ? (
+                <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl sm:rounded-2xl flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <div className="text-xs font-bold text-emerald-900 dark:text-emerald-100 bangla-text">
+                      {tBilingual('Operations are healthy and on track!', 'ব্যবসার সকল কার্যক্রম স্বাভাবিক ও নিয়মতান্ত্রিকভাবে চলছে!')}
+                    </div>
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-300 bangla-text mt-0.5">
+                      {tBilingual('No overdue invoices, delayed jobs, or pending customer proof blocks.', 'কোনো বিলম্বিত কাজ, বকেয়া বিল বা আটকে থাকা আর্টওয়ার্ক নেই।')}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-0.5">
+                  {data.attentionItems.map((item) => {
                   const isUrgent = item.severity === 'urgent'
                   return (
                     <div
@@ -302,6 +305,7 @@ export function OwnerDashboard({
             )}
           </div>
         </Card>
+        </div>
       </div>
 
       {/* ========================================================================= */}

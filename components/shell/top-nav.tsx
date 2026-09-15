@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { CompanySelector } from './company-selector'
 import { Breadcrumbs } from './breadcrumbs'
 import { NotificationsDropdown } from './notifications-dropdown'
 import { UserMenu } from './user-menu'
 import { MobileNav } from './mobile-nav'
-import { Search, Clock } from 'lucide-react'
+import { Search, QrCode } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { useRealtime } from '@/components/providers/realtime-provider'
@@ -20,6 +20,27 @@ export function TopNav() {
   const { company } = useTenant()
   const { isLive, status } = useRealtime()
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(false)
+
+  // Listen for global attendance punch triggers across components
+  useEffect(() => {
+    const handleOpen = () => setIsAttendanceOpen(true)
+    const handleClose = () => setIsAttendanceOpen(false)
+    const handleToggle = () => setIsAttendanceOpen((prev) => !prev)
+
+    window.addEventListener('printerp_open_attendance_modal', handleOpen)
+    window.addEventListener('printerp_open_attendance_punch', handleOpen)
+    window.addEventListener('printerp_close_attendance_modal', handleClose)
+    window.addEventListener('printerp_toggle_attendance_modal', handleToggle)
+    window.addEventListener('inkflow_open_attendance_punch', handleOpen)
+
+    return () => {
+      window.removeEventListener('printerp_open_attendance_modal', handleOpen)
+      window.removeEventListener('printerp_open_attendance_punch', handleOpen)
+      window.removeEventListener('printerp_close_attendance_modal', handleClose)
+      window.removeEventListener('printerp_toggle_attendance_modal', handleToggle)
+      window.removeEventListener('inkflow_open_attendance_punch', handleOpen)
+    }
+  }, [])
 
   const pathSlug = pathname ? pathname.split('/')[1] : null
   const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
@@ -90,10 +111,10 @@ export function TopNav() {
           type="button"
           onClick={() => setIsAttendanceOpen(true)}
           className="relative rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/40 active:scale-95 shrink-0"
-          title={tBilingual('Employee Attendance & Shift Punch', 'হাজিরা ও শিফট পাঞ্চ')}
-          aria-label={tBilingual('Employee Attendance & Shift Punch', 'হাজিরা ও শিফট পাঞ্চ')}
+          title={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
+          aria-label={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
         >
-          <Clock className="h-4 w-4" />
+          <QrCode className="h-4 w-4" />
         </button>
 
         {/* Notifications Dropdown */}

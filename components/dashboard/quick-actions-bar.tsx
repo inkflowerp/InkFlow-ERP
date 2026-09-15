@@ -222,7 +222,7 @@ export function QuickActionsBar({
       id: 'new-quotation',
       labelEn: 'New Quotation',
       labelBn: 'নতুন কোটেশন',
-      subEn: 'Estimate & Pricing',
+      subEn: 'Create quotation',
       subBn: 'দরপত্র ও প্রাক্কলন',
       icon: FileText,
       iconColor: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800',
@@ -280,7 +280,7 @@ export function QuickActionsBar({
       id: 'record-payment',
       labelEn: 'Record Payment',
       labelBn: 'পেমেন্ট গ্রহণ',
-      subEn: 'Money Receipt / Collection',
+      subEn: 'Money Receipt / Payment',
       subBn: 'নগদ বা ডিজিটাল আদায়',
       icon: DollarSign,
       iconColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800',
@@ -299,7 +299,7 @@ export function QuickActionsBar({
 
   return (
     <>
-      <Card className={cn('p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between', className)}>
+      <Card className={cn('p-3.5 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between', className)}>
         {/* Header Label Row */}
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
@@ -315,8 +315,8 @@ export function QuickActionsBar({
           </span>
         </div>
 
-        {/* 6-Action Clickable Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-3 flex-1">
+        {/* 6-Action Clickable Cards Grid (Compact 3x2 on desktop) */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-2.5 flex-1">
           {visibleActions.map((action) => {
             const Icon = action.icon
             return (
@@ -324,31 +324,26 @@ export function QuickActionsBar({
                 key={action.id}
                 type="button"
                 onClick={action.onClick}
-                className="group relative flex items-center gap-3 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md active:scale-[0.98] transition-all duration-200 cursor-pointer text-left min-h-[56px] select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/40"
+                className="group relative flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer text-left min-h-[56px] select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/40"
               >
                 {/* Visual Icon Container */}
                 <div
                   className={cn(
-                    'h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border transition-transform duration-200 group-hover:scale-105 shadow-2xs',
+                    'h-9 w-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform duration-200 group-hover:scale-105 shadow-2xs',
                     action.iconColor
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4.5 w-4.5" />
                 </div>
 
                 {/* Title & Subtitle */}
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate bangla-text">
+                  <div className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight bangla-text break-words">
                     {tBilingual(action.labelEn, action.labelBn)}
                   </div>
-                  <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate bangla-text mt-0.5">
+                  <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate bangla-text mt-0.5 leading-tight">
                     {tBilingual(action.subEn, action.subBn)}
                   </div>
-                </div>
-
-                {/* Subtle Action Arrow Cue */}
-                <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 group-hover:text-blue-600 shrink-0">
-                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </div>
               </button>
             )

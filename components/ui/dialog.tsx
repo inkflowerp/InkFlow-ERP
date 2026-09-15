@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -14,6 +15,12 @@ interface DialogProps {
 }
 
 export function Dialog({ open, onOpenChange, children, className, maxWidth, style }: DialogProps) {
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && open) {
@@ -32,10 +39,10 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
     }
   }, [open, onOpenChange])
 
-  if (!open) return null
+  if (!open || !mounted) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 xs:p-3 sm:p-4 overflow-y-auto">
+  const modalNode = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 xs:p-3 sm:p-4 overflow-y-auto">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in-0"
@@ -45,7 +52,7 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
       <div
         style={style}
         className={cn(
-          'relative z-50 w-full my-auto max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
+          'relative z-[100] w-full my-auto max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
           maxWidth || 'max-w-lg',
           className
         )}
@@ -54,6 +61,8 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
       </div>
     </div>
   )
+
+  return createPortal(modalNode, document.body)
 }
 
 export function DialogContent({

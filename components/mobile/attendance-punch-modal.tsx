@@ -151,11 +151,11 @@ export function AttendancePunchModal({
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30">
-              <UserCheck className="h-5 w-5" />
+              <QrCode className="h-5 w-5" />
             </div>
             <div>
               <DialogTitle className="text-slate-900 dark:text-white text-base font-bold">
-                {tBilingual('Smart Attendance Punch', 'ডিজিটাল উপস্থিতি হাজিরা')}
+                {tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
               </DialogTitle>
               <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs">
                 {tBilingual('Authoritative QR & GPS Geofence Verification', 'কিউআর কোড ও জিপিএস জিওফেন্স যাচাইকরণ')}

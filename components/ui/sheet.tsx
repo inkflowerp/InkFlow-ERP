@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -13,6 +14,12 @@ interface SheetProps {
 }
 
 export function Sheet({ open, onOpenChange, children, side = 'right', className }: SheetProps) {
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   React.useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden'
@@ -24,10 +31,10 @@ export function Sheet({ open, onOpenChange, children, side = 'right', className 
     }
   }, [open])
 
-  if (!open) return null
+  if (!open || !mounted) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex">
+  const sheetNode = (
+    <div className="fixed inset-0 z-[100] flex">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in-0 duration-200"
@@ -37,7 +44,7 @@ export function Sheet({ open, onOpenChange, children, side = 'right', className 
       {/* Sheet panel */}
       <div
         className={cn(
-          'fixed inset-y-0 z-50 flex h-full h-[100dvh] max-h-screen w-[88vw] sm:w-80 max-w-sm flex-col min-h-0 border-slate-200 bg-white shadow-2xl transition-transform animate-in duration-300 dark:border-slate-800 dark:bg-slate-900 overflow-hidden',
+          'fixed inset-y-0 z-[100] flex h-full h-[100dvh] max-h-screen w-[88vw] sm:w-80 max-w-sm flex-col min-h-0 border-slate-200 bg-white shadow-2xl transition-transform animate-in duration-300 dark:border-slate-800 dark:bg-slate-900 overflow-hidden',
           side === 'left' ? 'left-0 border-r slide-in-from-left' : 'right-0 border-l slide-in-from-right',
           className
         )}
@@ -46,6 +53,8 @@ export function Sheet({ open, onOpenChange, children, side = 'right', className 
       </div>
     </div>
   )
+
+  return createPortal(sheetNode, document.body)
 }
 
 export function SheetHeader({
