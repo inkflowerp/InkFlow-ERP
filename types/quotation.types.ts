@@ -393,6 +393,91 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
 }
 
 /**
+ * Purged test/sample quotation numbers (QUO-000001 to QUO-000008)
+ */
+export const PURGED_QUOTATION_IDENTIFIERS = new Set<string>([
+  'QUO-000001',
+  'QUO-000002',
+  'QUO-000003',
+  'QUO-000004',
+  'QUO-000005',
+  'QUO-000006',
+  'QUO-000007',
+  'QUO-000008',
+  'QUO-00001',
+  'QUO-00002',
+  'QUO-00003',
+  'QUO-00004',
+  'QUO-00005',
+  'QUO-00006',
+  'QUO-00007',
+  'QUO-00008',
+  'QUO-0001',
+  'QUO-0002',
+  'QUO-0003',
+  'QUO-0004',
+  'QUO-0005',
+  'QUO-0006',
+  'QUO-0007',
+  'QUO-0008',
+  'QUO-001',
+  'QUO-002',
+  'QUO-003',
+  'QUO-004',
+  'QUO-005',
+  'QUO-006',
+  'QUO-007',
+  'QUO-008',
+  'QUO-01',
+  'QUO-02',
+  'QUO-03',
+  'QUO-04',
+  'QUO-05',
+  'QUO-06',
+  'QUO-07',
+  'QUO-08',
+  'QUO-1',
+  'QUO-2',
+  'QUO-3',
+  'QUO-4',
+  'QUO-5',
+  'QUO-6',
+  'QUO-7',
+  'QUO-8',
+])
+
+export function isPurgedQuotation(recordOrNumber: any): boolean {
+  if (!recordOrNumber) return false
+  if (typeof recordOrNumber === 'string') {
+    const upper = recordOrNumber.trim().toUpperCase()
+    if (!upper) return false
+    if (PURGED_QUOTATION_IDENTIFIERS.has(upper)) return true
+    if (/^QUO-0*([1-8])$/i.test(upper)) return true
+    return false
+  }
+
+  if (typeof recordOrNumber === 'object') {
+    const candidates = [
+      recordOrNumber.quotation_number,
+      recordOrNumber.quote_number,
+      recordOrNumber.quotationNo,
+      recordOrNumber.number,
+      recordOrNumber.id,
+      recordOrNumber.reference_no,
+    ]
+    for (const c of candidates) {
+      if (c && typeof c === 'string') {
+        const upper = c.trim().toUpperCase()
+        if (PURGED_QUOTATION_IDENTIFIERS.has(upper)) return true
+        if (/^QUO-0*([1-8])$/i.test(upper)) return true
+      }
+    }
+  }
+
+  return false
+}
+
+/**
  * Recursively inspects any arbitrary JSON/array/object/draft/sync payload to extract quotation objects.
  */
 export function extractQuotationsFromAny(input: any): any[] {
@@ -412,6 +497,7 @@ export function extractQuotationsFromAny(input: any): any[] {
 
   const inspect = (item: any) => {
     if (!item || typeof item !== 'object') return
+    if (isPurgedQuotation(item)) return
 
     // Case A: Offline draft
     if ((item.formType === 'quotation' || item.type === 'quotation') && item.data && typeof item.data === 'object') {
@@ -463,7 +549,7 @@ export function extractQuotationsFromAny(input: any): any[] {
       (item.customer_name && (item.items || item.subtotal !== undefined || item.grand_total !== undefined)) ||
       (typeof item.id === 'string' && (item.id.startsWith('quo-') || item.id.startsWith('quote-') || item.id.startsWith('q-')))
 
-    if (hasQuotationField) {
+    if (hasQuotationField && !isPurgedQuotation(item)) {
       results.push(item)
     }
   }
@@ -481,12 +567,16 @@ export function extractQuotationsFromAny(input: any): any[] {
  * Deduplicates and normalizes a collection of quotation records by canonical ID and quotation number.
  */
 export function deduplicateQuotations(rawList: any[], targetCompanyId?: string): QuotationRecord[] {
-  const byCanonicalKey = new Map<string, QuotationRecord>()
+  const quoteMap = new Map<string, QuotationRecord>()
+  const keyAliases = new Map<string, string>()
 
   for (const raw of rawList) {
     if (!raw || typeof raw !== 'object') continue
+    if (isPurgedQuotation(raw)) continue
+
     const norm = normalizeQuotationRecord(raw)
     if (!norm) continue
+    if (isPurgedQuotation(norm)) continue
 
     // Tenant isolation check: if targetCompanyId is specified and strict tenant boundary applies
     if (targetCompanyId && targetCompanyId !== 'c-01' && targetCompanyId !== 'default') {
@@ -498,15 +588,16 @@ export function deduplicateQuotations(rawList: any[], targetCompanyId?: string):
     const qNumKey = norm.quotation_number ? norm.quotation_number.toLowerCase().trim() : null
     const idKey = norm.id ? norm.id.toLowerCase().trim() : null
 
-    let existingKey: string | null = null
-    if (qNumKey && byCanonicalKey.has(qNumKey)) {
-      existingKey = qNumKey
-    } else if (idKey && byCanonicalKey.has(idKey)) {
-      existingKey = idKey
+    // Find if either key is already registered to a canonical record
+    let canonicalKey: string | null = null
+    if (qNumKey && keyAliases.has(qNumKey)) {
+      canonicalKey = keyAliases.get(qNumKey)!
+    } else if (idKey && keyAliases.has(idKey)) {
+      canonicalKey = keyAliases.get(idKey)!
     }
 
-    if (existingKey) {
-      const existing = byCanonicalKey.get(existingKey)!
+    if (canonicalKey && quoteMap.has(canonicalKey)) {
+      const existing = quoteMap.get(canonicalKey)!
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(norm.id)
       const existingIsUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(existing.id)
 
@@ -514,7 +605,7 @@ export function deduplicateQuotations(rawList: any[], targetCompanyId?: string):
       const timeExisting = new Date(existing.updated_at || existing.created_at || 0).getTime()
 
       let preferred = existing
-      if ((isUUID && !existingIsUUID) || ((norm.items?.length || 0) > (existing.items?.length || 0)) || (timeNorm > timeExisting)) {
+      if ((isUUID && !existingIsUUID) || ((norm.items?.length || 0) > (existing.items?.length || 0)) || (timeNorm >= timeExisting)) {
         preferred = {
           ...existing,
           ...norm,
@@ -523,19 +614,22 @@ export function deduplicateQuotations(rawList: any[], targetCompanyId?: string):
         }
       }
 
-      byCanonicalKey.set(existingKey, preferred)
-      if (qNumKey) byCanonicalKey.set(qNumKey, preferred)
-      if (idKey) byCanonicalKey.set(idKey, preferred)
+      quoteMap.set(canonicalKey, preferred)
+      if (qNumKey) keyAliases.set(qNumKey, canonicalKey)
+      if (idKey) keyAliases.set(idKey, canonicalKey)
     } else {
-      const primary = qNumKey || idKey || `quote-${Math.random()}`
-      byCanonicalKey.set(primary, norm)
-      if (qNumKey) byCanonicalKey.set(qNumKey, norm)
-      if (idKey) byCanonicalKey.set(idKey, norm)
+      const newCanonical = qNumKey || idKey || `quote-${Math.random()}`
+      quoteMap.set(newCanonical, norm)
+      if (qNumKey) keyAliases.set(qNumKey, newCanonical)
+      if (idKey) keyAliases.set(idKey, newCanonical)
     }
   }
 
-  return Array.from(new Set(byCanonicalKey.values())).sort(
-    (a, b) => new Date(b.created_at || b.quotation_date || 0).getTime() - new Date(a.created_at || a.quotation_date || 0).getTime()
-  )
+  return Array.from(quoteMap.values())
+    .filter((q) => !isPurgedQuotation(q))
+    .sort(
+      (a, b) => new Date(b.created_at || b.quotation_date || 0).getTime() - new Date(a.created_at || a.quotation_date || 0).getTime()
+    )
 }
+
 

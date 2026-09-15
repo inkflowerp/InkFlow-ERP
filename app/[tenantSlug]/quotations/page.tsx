@@ -94,6 +94,11 @@ export default function QuotationsPage() {
   }, [companyId, slug])
 
   useEffect(() => {
+    // Purge test quotations QUO-000001 to QUO-000008 from all local storage partitions
+    if (typeof window !== 'undefined') {
+      PrintERPDataStore.purgeQuotationsByNumbers()
+    }
+
     loadQuotations()
 
     // Listen for storage, sync, or offline draft updates

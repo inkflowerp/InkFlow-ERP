@@ -770,6 +770,91 @@ export class PrintERPDataStore {
     return array.find(idOrPredicate) || null
   }
 
+  /**
+   * Purges specific quotation numbers across all localStorage partitions, in-memory caches, drafts, and outbox queues
+   */
+  static purgeQuotationsByNumbers(targetNumbers?: string[]): number {
+    const defaultTargets = [
+      'QUO-000001', 'QUO-000002', 'QUO-000003', 'QUO-000004',
+      'QUO-000005', 'QUO-000006', 'QUO-000007', 'QUO-000008',
+    ]
+    const targets = new Set((targetNumbers && targetNumbers.length > 0 ? targetNumbers : defaultTargets).map((n) => n.trim().toUpperCase()))
+    let purgedCount = 0
+
+    const isMatch = (q: any): boolean => {
+      if (!q || typeof q !== 'object') return false
+      const qNum = String(q.quotation_number || q.quote_number || q.quotationNo || q.number || q.id || '').toUpperCase().trim()
+      if (targets.has(qNum)) return true
+      if (/^QUO-0*([1-8])$/i.test(qNum)) return true
+      for (const t of targets) {
+        if (qNum === t || qNum.endsWith(t)) return true
+      }
+      return false
+    }
+
+    // 1. In-memory store sweep
+    for (const k of Object.keys(inMemoryStore)) {
+      if (k.includes('quotation') || k.includes('quotes')) {
+        const val = inMemoryStore[k]
+        if (Array.isArray(val)) {
+          const filtered = val.filter((item) => !isMatch(item))
+          if (filtered.length !== val.length) {
+            purgedCount += val.length - filtered.length
+            inMemoryStore[k] = filtered
+          }
+        }
+      }
+    }
+
+    // 2. Browser localStorage sweep
+    if (typeof window !== 'undefined') {
+      try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i)
+          if (!k) continue
+          const raw = window.localStorage.getItem(k)
+          if (!raw) continue
+
+          if (
+            k.startsWith('printerp_tenant_quotations') ||
+            k.startsWith('printerp_quotations') ||
+            k.includes('quotation') ||
+            k.includes('quotes')
+          ) {
+            try {
+              const parsed = JSON.parse(raw)
+              if (Array.isArray(parsed)) {
+                const filtered = parsed.filter((item) => !isMatch(item))
+                if (filtered.length !== parsed.length) {
+                  purgedCount += parsed.length - filtered.length
+                  window.localStorage.setItem(k, JSON.stringify(filtered))
+                }
+              }
+            } catch {}
+          } else if (k === 'printerp_offline_drafts') {
+            try {
+              const drafts = JSON.parse(raw)
+              if (Array.isArray(drafts)) {
+                const filtered = drafts.filter((d) => !(d.formType === 'quotation' && isMatch(d.data)))
+                if (filtered.length !== drafts.length) {
+                  purgedCount += drafts.length - filtered.length
+                  window.localStorage.setItem(k, JSON.stringify(filtered))
+                }
+              }
+            } catch {}
+          }
+        }
+      } catch (err) {
+        console.warn('[DataStore] Error purging localStorage quotes:', err)
+      }
+
+      window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.QUOTATIONS, all: true } }))
+      window.dispatchEvent(new Event('printerp_drafts_updated'))
+    }
+
+    return purgedCount
+  }
+
   // ============================================================================
   // SPECIALIZED CROSS-MODULE WORKFLOW HELPERS
   // ============================================================================
