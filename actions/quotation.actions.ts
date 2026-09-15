@@ -43,10 +43,10 @@ export async function searchQuotationCustomersAction(
 ): Promise<ServerActionResult<CustomerRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const customers = await CrmService.searchCustomers(query, companyId)
     return { success: true, data: customers.slice(0, 15) }
@@ -64,10 +64,10 @@ export async function resolveQuotationRatesAction(
 ): Promise<ServerActionResult<ResolvedProductRate[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const resolvedRates = await CustomerRepository.resolveCustomerRates(companyId, customerId)
     return { success: true, data: resolvedRates }
@@ -84,10 +84,10 @@ export async function getQuotationProductsAction(
 ): Promise<ServerActionResult<any[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const products = await ProductRepository.getProducts(companyId, true)
     return { success: true, data: products }
@@ -105,10 +105,10 @@ export async function createQuotationAction(
 ): Promise<ServerActionResult<QuotationRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     // RBAC check
     const hasPermission =
@@ -289,10 +289,10 @@ export async function sendQuotationAction(
 ): Promise<ServerActionResult<{ messageId: string; whatsappUrl?: string }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (params.channel === 'sms') {
       return { success: false, error: 'SMS dispatch is deprecated and disabled for quotations. Please use WhatsApp or Email with PDF.' }
@@ -361,10 +361,10 @@ export async function sendQuotationAction(
       })
 
       if (!sendRes.success) {
-        console.warn('[QuotationAction] Email sending notice:', sendRes.error)
+        return { success: false, error: sendRes.error || 'Failed to dispatch email' }
       }
     } else if (params.channel === 'whatsapp') {
-      const whatsappText = CommunicationTemplateService.interpolate(
+      const messageText = CommunicationTemplateService.interpolate(
         lang === 'en' ? templates.whatsappTemplateEn : templates.whatsappTemplateBn,
         vars
       )
@@ -374,7 +374,7 @@ export async function sendQuotationAction(
         : cleanPhone.startsWith('0')
         ? `88${cleanPhone}`
         : `880${cleanPhone}`
-      whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(whatsappText)}`
+      whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageText)}`
     }
 
     // Update status to 'sent'
@@ -427,10 +427,10 @@ export async function convertQuotationToInvoiceAction(
 ): Promise<ServerActionResult<InvoiceRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
@@ -480,15 +480,15 @@ export async function getQuotationsAction(
 ): Promise<ServerActionResult<QuotationRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
-    const companyId = tenant?.companyId || requestedCompanyId || 'c-01'
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
 
     const quotes = await QuotationService.getQuotations(companyId)
     return { success: true, data: quotes }
   } catch (error: any) {
-    const fallbackQuotes = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).map((q) =>
-      normalizeQuotationRecord(q)
-    )
-    return { success: true, data: fallbackQuotes }
+    return { success: false, error: error.message || 'Failed to fetch quotations.' }
   }
 }
 
@@ -502,32 +502,17 @@ export async function getQuotationDetailAction(
 ): Promise<ServerActionResult<{ quotation: QuotationRecord; activities: QuotationActivityRecord[] }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    let quote = companyId ? await QuotationService.getQuotationById(id, companyId) : await QuotationService.getQuotationById(id)
-    if (!quote && companyId) {
-      quote = await QuotationService.getQuotationById(id)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
-    if (!quote) {
-      const allLocal = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).map((q) => normalizeQuotationRecord(q))
-      const found = allLocal.find(
-        (q: QuotationRecord) =>
-          q.id === id ||
-          q.quotation_number === id ||
-          q.id?.toLowerCase() === id.toLowerCase() ||
-          q.quotation_number?.toLowerCase() === id.toLowerCase()
-      )
-      if (found) {
-        quote = found
-      }
-    }
-
+    const quote = await QuotationService.getQuotationById(id, companyId)
     if (!quote) {
       return { success: false, error: 'Quotation not found.' }
     }
 
-    const activities = await QuotationService.getActivities(quote.id, quote.company_id || companyId || 'c-01')
+    const activities = await QuotationService.getActivities(quote.id, companyId)
     return { success: true, data: { quotation: quote, activities } }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch quotation details.' }
@@ -543,10 +528,10 @@ export async function recordQuotationFollowUpAction(
 ): Promise<ServerActionResult<QuotationRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
@@ -610,10 +595,10 @@ export async function updateQuotationStatusAction(
 ): Promise<ServerActionResult<QuotationRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
@@ -672,10 +657,10 @@ export async function applyQuotationNegotiationAction(
 ): Promise<ServerActionResult<QuotationRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
@@ -731,10 +716,10 @@ export async function convertQuotationToJobOrderAction(
 ): Promise<ServerActionResult<any>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||

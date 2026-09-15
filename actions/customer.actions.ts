@@ -65,13 +65,13 @@ export async function createCustomerAction(
 ): Promise<ServerActionResult<CustomerRecord>> {
   try {
     const tenant = await getCurrentTenant(input.company_id)
-    const companyId = tenant?.companyId || input.company_id
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     // Enforce Plan Customer Quota Limit
     try {
@@ -83,15 +83,15 @@ export async function createCustomerAction(
       }
     }
 
-    const userId = tenant?.userId || 'unknown'
-    const userEmail = tenant?.userEmail || ''
-    const role: PrimaryRole = (tenant?.primaryRole as PrimaryRole) || (input.role as PrimaryRole) || 'business_owner'
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail
+    const role: PrimaryRole = (tenant.primaryRole as PrimaryRole) || (tenant.companyRole as PrimaryRole) || 'business_owner'
 
     // RBAC check: Customer -> Create
     const canCreate =
       role === 'business_owner' ||
-      tenant?.permissions.includes('customer.create') ||
-      tenant?.permissions.includes('customers.create') ||
+      tenant.permissions.includes('customer.create') ||
+      tenant.permissions.includes('customers.create') ||
       checkPermission(role, 'customer.create')
 
     if (!canCreate) {
@@ -180,8 +180,8 @@ export async function searchCustomersAction(
 ): Promise<ServerActionResult<CustomerRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) return { success: true, data: [] }
+    if (!tenant || !tenant.companyId) return { success: true, data: [] }
+    const companyId = tenant.companyId
     const results = await CrmService.searchCustomers(query, companyId)
     return {
       success: true,
@@ -210,13 +210,13 @@ export async function checkCustomerDuplicateAction(
 ): Promise<ServerActionResult<DuplicateCheckResponse>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: true,
         data: { hasDuplicate: false, matches: [] },
       }
     }
+    const companyId = tenant.companyId
     const result = await CrmService.findDuplicates(candidate, companyId)
     return {
       success: true,
@@ -246,13 +246,13 @@ export async function getPaginatedCustomersAction(
 ): Promise<ServerActionResult<PaginatedResult<CustomerRecord>>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const result = await CrmService.getPaginatedCustomers(companyId, options)
     return {
@@ -275,13 +275,13 @@ export async function getCustomersSummaryAction(
 ): Promise<ServerActionResult<CustomerSummaryStatistics>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: true,
         data: { totalCustomers: 0, activeCustomers: 0, customersWithDue: 0, totalOutstandingDue: 0 },
       }
     }
+    const companyId = tenant.companyId
 
     const stats = await CrmService.getCustomersSummary(companyId)
     return {
@@ -306,22 +306,22 @@ export async function updateCustomerAction(
 ): Promise<ServerActionResult<CustomerRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
-    const userId = tenant?.userId || 'unknown'
-    const userEmail = tenant?.userEmail || ''
-    const role: PrimaryRole = (tenant?.primaryRole as PrimaryRole) || (input.role as PrimaryRole) || 'business_owner'
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail
+    const role: PrimaryRole = (tenant.primaryRole as PrimaryRole) || (tenant.companyRole as PrimaryRole) || 'business_owner'
 
     // RBAC check: Customer -> Edit
     const canEdit =
       role === 'business_owner' ||
-      tenant?.permissions.includes('customer.edit') ||
-      tenant?.permissions.includes('customers.edit') ||
+      tenant.permissions.includes('customer.edit') ||
+      tenant.permissions.includes('customers.edit') ||
       checkPermission(role, 'customer.edit')
 
     if (!canEdit) {
@@ -368,19 +368,19 @@ export async function deleteCustomerAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
-    const role: PrimaryRole = (tenant?.primaryRole as PrimaryRole) || 'business_owner'
+    const companyId = tenant.companyId
+    const role: PrimaryRole = (tenant.primaryRole as PrimaryRole) || (tenant.companyRole as PrimaryRole) || 'business_owner'
 
     const canDelete =
       role === 'business_owner' ||
-      tenant?.permissions.includes('customer.delete') ||
-      tenant?.permissions.includes('customers.delete') ||
+      tenant.permissions.includes('customer.delete') ||
+      tenant.permissions.includes('customers.delete') ||
       checkPermission(role, 'customer.delete')
 
     if (!canDelete) {
@@ -413,13 +413,13 @@ export async function resolveCustomerRatesAction(
 ): Promise<ServerActionResult<ResolvedProductRate[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const rates = await CrmService.resolveCustomerRates(companyId, customerId)
     return {
@@ -446,19 +446,19 @@ export async function saveCustomerRateAction(
 ): Promise<ServerActionResult<CustomerRateRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
-    const role: PrimaryRole = (tenant?.primaryRole as PrimaryRole) || 'business_owner'
+    const role: PrimaryRole = (tenant.primaryRole as PrimaryRole) || (tenant.companyRole as PrimaryRole) || 'business_owner'
     const canEdit =
       role === 'business_owner' ||
-      tenant?.permissions.includes('customer.edit') ||
-      tenant?.permissions.includes('customers.edit') ||
+      tenant.permissions.includes('customer.edit') ||
+      tenant.permissions.includes('customers.edit') ||
       checkPermission(role, 'customer.edit')
 
     if (!canEdit) {
@@ -480,8 +480,8 @@ export async function saveCustomerRateAction(
     try {
       await AuditService.logEvent(
         companyId,
-        tenant?.userId || 'unknown',
-        tenant?.userEmail || '',
+        tenant.userId || 'unknown',
+        tenant.userEmail || '',
         'customer.rate_change',
         'customer_rate',
         saved.id,
@@ -516,19 +516,19 @@ export async function deleteCustomerRateAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
-    const role: PrimaryRole = (tenant?.primaryRole as PrimaryRole) || 'business_owner'
+    const role: PrimaryRole = (tenant.primaryRole as PrimaryRole) || (tenant.companyRole as PrimaryRole) || 'business_owner'
     const canEdit =
       role === 'business_owner' ||
-      tenant?.permissions.includes('customer.edit') ||
-      tenant?.permissions.includes('customers.edit') ||
+      tenant.permissions.includes('customer.edit') ||
+      tenant.permissions.includes('customers.edit') ||
       checkPermission(role, 'customer.edit')
 
     if (!canEdit) {
@@ -561,13 +561,13 @@ export async function getCustomerFinancialSummaryAction(
 ): Promise<ServerActionResult<CustomerFinancialSummary>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const summary = await CrmService.getCustomerFinancialSummary(companyId, customerId)
     return {
@@ -598,13 +598,13 @@ export async function getCustomerProductAnalyticsAction(
 ): Promise<ServerActionResult<CustomerProductPurchaseStat[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const stats = await CrmService.getCustomerProductPurchases(companyId, customerId, options)
     return {
@@ -628,13 +628,13 @@ export async function getCustomerTimelineAction(
 ): Promise<ServerActionResult<CustomerTimelineEvent[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active company context found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const timeline = await CrmService.getCustomerTimeline(companyId, customerId)
     return {
@@ -657,13 +657,13 @@ export async function getCustomersAction(
 ): Promise<ServerActionResult<CustomerRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: true,
         data: [],
       }
     }
+    const companyId = tenant.companyId
 
     const { CustomerRepository } = await import('@/lib/repositories/customer.repository')
     const list = await CustomerRepository.getCustomers(companyId)
@@ -699,10 +699,10 @@ export async function getCustomerFullDetailsAction(
 ): Promise<ServerActionResult<CustomerFullDetails>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active company context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const { CustomerRepository } = await import('@/lib/repositories/customer.repository')
     const { BillingRepository } = await import('@/lib/repositories/billing.repository')
@@ -772,10 +772,10 @@ export async function logCustomerCommunicationAction(
 ): Promise<ServerActionResult<any>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active company context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     let mappedType: 'phone_call' | 'whatsapp_message' | 'email' | 'meeting' | 'site_visit' = 'phone_call'
     if (payload.type === 'call' || payload.type === 'phone_call') mappedType = 'phone_call'

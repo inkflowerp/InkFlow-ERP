@@ -30,10 +30,10 @@ export async function getCostingsAction(
 ): Promise<ServerActionResult<JobCostingRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasCostView = checkCostingPermission(tenant, 'costing.view')
     const costings = await CostingService.getCostings(companyId)
@@ -62,10 +62,10 @@ export async function getCostingByIdAction(
 ): Promise<ServerActionResult<JobCostingRecord | null>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasCostView = checkCostingPermission(tenant, 'costing.view')
     const costing = await CostingService.getCostingById(id, companyId)
@@ -96,10 +96,10 @@ export async function createCostingAction(
 ): Promise<ServerActionResult<JobCostingRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkCostingPermission(tenant, 'costing.create') && !checkCostingPermission(tenant, 'costing.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to create costing records.' }
@@ -147,10 +147,10 @@ export async function createCostingFromProductAction(
 ): Promise<ServerActionResult<JobCostingRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const costing = await CostingService.createCostingFromProduct(productId, input, {
       ...options,
@@ -170,10 +170,10 @@ export async function syncActualConsumptionToCostingAction(
 ): Promise<ServerActionResult<JobCostingRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkCostingPermission(tenant, 'costing.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to actualize costing.' }

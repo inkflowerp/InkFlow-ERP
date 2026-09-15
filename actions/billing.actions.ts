@@ -86,10 +86,10 @@ export async function searchInvoiceCustomersAction(
 ): Promise<ServerActionResult<CustomerRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const customers = await CrmService.searchCustomers(query, companyId)
     return { success: true, data: customers.slice(0, 15) }
@@ -107,10 +107,10 @@ export async function resolveCustomerPricingAction(
 ): Promise<ServerActionResult<ResolvedProductRate[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const resolvedRates = await CustomerRepository.resolveCustomerRates(companyId, customerId)
     return { success: true, data: resolvedRates }
@@ -127,10 +127,10 @@ export async function getInvoiceProductsAction(
 ): Promise<ServerActionResult<any[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const products = await ProductRepository.getProducts(companyId, true)
     return { success: true, data: products }
@@ -149,10 +149,10 @@ export async function checkCustomerCreditLimitAction(
 ): Promise<ServerActionResult<CreditLimitWarningInfo>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const info = await BillingService.checkCustomerCreditLimit(companyId, customerId, newInvoiceAmount)
     return { success: true, data: info }
@@ -170,10 +170,10 @@ export async function createInvoiceAction(
 ): Promise<ServerActionResult<InvoiceRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
@@ -365,10 +365,10 @@ export async function getInvoiceByIdAction(
 ): Promise<ServerActionResult<InvoiceRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const invoice = await BillingService.getInvoiceById(invoiceId, companyId)
     if (!invoice) {
@@ -396,10 +396,10 @@ export async function getBillingOverviewAction(
 }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const overview = await BillingService.getBillingOverview(companyId, period, customRange)
     return { success: true, data: overview }
@@ -423,10 +423,10 @@ export async function getInvoicesAction(
 ): Promise<ServerActionResult<InvoiceRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const invoices = await BillingService.getInvoices(companyId, filters)
     return { success: true, data: invoices }
@@ -444,10 +444,10 @@ export async function getPaymentsAction(
 ): Promise<ServerActionResult<PaymentRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const payments = await BillingService.getPayments(companyId, customerId)
     return { success: true, data: payments }
@@ -464,10 +464,10 @@ export async function getReceivablesAgingAction(
 ): Promise<ServerActionResult<ReceivablesAgingSummary>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const aging = await BillingService.getReceivablesAging(companyId)
     return { success: true, data: aging }
@@ -486,10 +486,10 @@ export async function reconcileCustomerBalancesAction(
 ): Promise<ServerActionResult<any>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const report = await BillingService.reconcileCustomerBalances(companyId, customerId, autoFix)
     return { success: true, data: report }
@@ -507,10 +507,10 @@ export async function recordMultiInvoicePaymentAction(
 ): Promise<ServerActionResult<PaymentRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
@@ -530,7 +530,7 @@ export async function recordMultiInvoicePaymentAction(
       ...payload,
       companyId,
       branchId: tenant.branchId || undefined,
-      receivedByName: payload.receivedByName || tenant.fullName || 'Cashier',
+      receivedByName: tenant.fullName || payload.receivedByName || 'Cashier',
       actorUserId: tenant.userId,
     })
 
@@ -625,10 +625,10 @@ export async function recordWriteOffAction(
 ): Promise<ServerActionResult<FinancialWriteOffRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
@@ -652,7 +652,7 @@ export async function recordWriteOffAction(
       invoice_id: writeOffData.invoice_id,
       amount: writeOffData.amount,
       reason: writeOffData.reason.trim(),
-      authorized_by_name: writeOffData.authorized_by_name || tenant.fullName || 'Authorized Manager',
+      authorized_by_name: tenant.fullName || writeOffData.authorized_by_name || 'Authorized Manager',
       actor_user_id: tenant.userId,
     })
 
@@ -678,10 +678,10 @@ export async function cancelInvoiceAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const hasPermission =
       tenant.companyRole === 'business_owner' ||
@@ -724,10 +724,10 @@ export async function sendPaymentReminderAction(
   try {
     const effectiveCompanyId = requestedCompanyId || (channelOrCompanyId?.startsWith('comp-') ? channelOrCompanyId : undefined)
     const tenant = await getCurrentTenant(effectiveCompanyId)
-    const companyId = tenant?.companyId || effectiveCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const res = await BillingService.sendPaymentReminder({
       companyId,
@@ -761,10 +761,10 @@ export async function sendInvoiceAction(
 ): Promise<ServerActionResult<{ messageId: string; whatsappUrl?: string }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (params.channel === 'sms') {
       return { success: false, error: 'SMS dispatch is deprecated and disabled for invoices. Please use WhatsApp or Email with PDF.' }
