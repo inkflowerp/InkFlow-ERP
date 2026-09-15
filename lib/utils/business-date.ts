@@ -167,3 +167,24 @@ export function getBangladeshDateRange(daysCount: number = 7): Array<{ dateStr: 
 
   return result
 }
+
+/**
+ * Formats time for UI display in Bangladesh timezone (Asia/Dhaka)
+ */
+export function formatBangladeshTime(
+  dateInput: Date = new Date(),
+  locale: 'en' | 'bn' = 'en',
+  options?: Intl.DateTimeFormatOptions
+): string {
+  try {
+    return dateInput.toLocaleTimeString(locale === 'bn' ? 'bn-BD' : 'en-US', {
+      timeZone: BANGLADESH_TIMEZONE,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      ...options,
+    })
+  } catch {
+    return ''
+  }
+}

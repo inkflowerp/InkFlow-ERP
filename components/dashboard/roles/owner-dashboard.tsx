@@ -18,6 +18,7 @@ import {
   Receipt,
   Building,
   Clock,
+  Calendar,
   CheckCircle2,
   Layers,
   ChevronRight,
@@ -42,6 +43,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { LiveDhakaClock } from '@/components/shared/live-dhaka-clock'
+import { QuickActionsBar } from '@/components/dashboard/quick-actions-bar'
 import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
 import { getBangladeshGreeting, formatBangladeshDate, getBangladeshTodayDateString } from '@/lib/utils/business-date'
 import type { OwnerDashboardSnapshot } from '@/services/dashboard.service'
@@ -112,83 +115,119 @@ export function OwnerDashboard({
   return (
     <div className="space-y-6 pb-16">
       {/* ========================================================================= */}
-      {/* 1. CLEAN EXECUTIVE HEADER                                                 */}
+      {/* 1. UPGRADED EXECUTIVE CONTROL CENTER HEADER                               */}
       {/* ========================================================================= */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs">
-        <div className="space-y-1.5 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              {company ? tBilingual(company.name, company.name_bn || company.name) : 'PrintERP Organization'}
-            </span>
-            {currentBranch && (
-              <Badge variant="outline" className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700 text-xs py-0.5">
-                <Building className="h-3 w-3 mr-1" />
-                {currentBranch.name.split('(')[0].trim()}
-              </Badge>
-            )}
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-900 text-xs py-0.5 font-bold">
-              {tBilingual('Business Control Center', 'ব্যবসায়িক নিয়ন্ত্রণ কেন্দ্র')}
-            </Badge>
-          </div>
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-gradient-to-br from-slate-50/95 via-sky-50/30 to-blue-50/40 dark:from-slate-900 dark:via-slate-900/95 dark:to-blue-950/20 p-5 sm:p-7 shadow-xs">
+        {/* Ambient Soft Decorative Sheen */}
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-3xl" />
 
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100 bangla-text">
-            {tBilingual(`${greeting.en}, ${userFirstName}`, `${greeting.bn}, ${userFirstName}`)}
-          </h1>
-
-          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              {formatBangladeshDate(new Date(), locale as 'en' | 'bn', {
-                weekday: 'long',
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </span>
-            {isUpdating && (
-              <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold animate-pulse">
-                <RefreshCw className="h-3 w-3 animate-spin" />
-                {tBilingual('Syncing...', 'সিঙ্ক হচ্ছে...')}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-2 min-w-0">
+            {/* Top Context Row: Organization + Context Badge + Branch */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                {company ? tBilingual(company.name, company.name_bn || company.name) : 'InkFlow Business'}
               </span>
-            )}
+
+              <Badge
+                variant="outline"
+                className="bg-blue-50/90 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-blue-200 dark:border-blue-900 text-[11px] py-0.5 px-2 font-bold shadow-2xs flex items-center gap-1.5"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />
+                <span>{tBilingual('Business Control Center', 'ব্যবসায়িক নিয়ন্ত্রণ কেন্দ্র')}</span>
+              </Badge>
+
+              {currentBranch && (
+                <Badge variant="outline" className="bg-slate-100/80 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700 text-[11px] py-0.5">
+                  <Building className="h-3 w-3 mr-1 text-slate-500" />
+                  {currentBranch.name.split('(')[0].trim()}
+                </Badge>
+              )}
+            </div>
+
+            {/* Main Greeting */}
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white bangla-text leading-tight">
+              {tBilingual(`${greeting.en}, ${userFirstName}`, `${greeting.bn}, ${userFirstName}`)}
+            </h1>
+
+            {/* Date + Live Asia/Dhaka Clock + Sync Status */}
+            <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <span>
+                  {formatBangladeshDate(new Date(), locale as 'en' | 'bn', {
+                    weekday: 'long',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </span>
+              </span>
+
+              <span className="text-slate-300 dark:text-slate-700 font-bold">·</span>
+
+              <LiveDhakaClock
+                showSeconds={true}
+                showIcon={true}
+                className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-slate-800/70 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700/60 shadow-2xs"
+              />
+
+              {isUpdating && (
+                <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold animate-pulse bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-900 text-[11px]">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  <span>{tBilingual('Syncing...', 'সিঙ্ক হচ্ছে...')}</span>
+                </span>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Header Actions: Primary + New Work Action (Min 44px Touch Target) */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            className="h-11 px-3 text-xs font-semibold border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer min-h-[44px]"
-            title={tBilingual('Refresh Live Data', 'ডাটা রিফ্রেশ করুন')}
-          >
-            <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin' : ''}`} />
-          </Button>
+          {/* Header Actions: Refresh + Receive Payment + New Work Primary CTA (Min 44px Touch Targets) */}
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onRefresh}
+              disabled={isUpdating}
+              className="h-11 px-3.5 text-xs font-semibold border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 shadow-2xs cursor-pointer min-h-[44px] shrink-0"
+              title={tBilingual('Refresh Live Data', 'ডাটা রিফ্রেশ করুন')}
+              aria-label={tBilingual('Refresh Live Data', 'ডাটা রিফ্রেশ করুন')}
+            >
+              <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin text-blue-600' : 'text-slate-600 dark:text-slate-300'}`} />
+            </Button>
 
-          <Button
-            type="button"
-            onClick={() => onOpenPaymentModal()}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-11 px-4 shadow-xs cursor-pointer min-h-[44px]"
-          >
-            <DollarSign className="h-4 w-4 mr-1" />
-            <span>{tBilingual('Receive Payment', 'পেমেন্ট গ্রহণ')}</span>
-          </Button>
+            <Button
+              type="button"
+              onClick={() => onOpenPaymentModal()}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-11 px-4 sm:px-5 shadow-xs cursor-pointer min-h-[44px] shrink-0 transition-all"
+            >
+              <DollarSign className="h-4 w-4 mr-1 stroke-[2.5]" />
+              <span>{tBilingual('Receive Payment', 'পেমেন্ট গ্রহণ')}</span>
+            </Button>
 
-          <Button
-            type="button"
-            onClick={onOpenNewWork}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black h-11 px-5 sm:px-6 shadow-md hover:shadow-lg transition-all cursor-pointer min-h-[44px]"
-          >
-            <Plus className="h-4 w-4 mr-1.5 stroke-[3]" />
-            <span>{tBilingual('+ New Work', '+ নতুন কাজ')}</span>
-          </Button>
+            <Button
+              type="button"
+              onClick={onOpenNewWork}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black h-11 px-5 sm:px-7 shadow-md hover:shadow-lg transition-all cursor-pointer min-h-[44px] shrink-0"
+            >
+              <Plus className="h-4 w-4 mr-1.5 stroke-[3]" />
+              <span>{tBilingual('+ New Work', '+ নতুন কাজ')}</span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. BUSINESS TODAY (4 Canonical Core KPIs)                                 */}
+      {/* 2. DEDICATED QUICK ACTIONS BAR (1-Click Operational Shortcuts)            */}
+      {/* ========================================================================= */}
+      <QuickActionsBar
+        onOpenPaymentModal={onOpenPaymentModal}
+        onOpenNewWork={onOpenNewWork}
+      />
+
+      {/* ========================================================================= */}
+      {/* 3. BUSINESS TODAY (4 Canonical Core KPIs)                                 */}
       {/* ========================================================================= */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">

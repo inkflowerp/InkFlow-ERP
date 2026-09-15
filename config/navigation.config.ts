@@ -29,13 +29,13 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
   return [
     {
       id: 'today',
-      title: 'Today',
-      titleBn: 'আজ',
+      title: 'Dashboard',
+      titleBn: 'ড্যাশবোর্ড',
       items: [
         {
           key: 'dashboard',
-          title: 'Today',
-          titleBn: 'আজ',
+          title: 'Dashboard',
+          titleBn: 'ড্যাশবোর্ড',
           href: `/${tenantSlug}/dashboard`,
           icon: 'LayoutDashboard',
         },

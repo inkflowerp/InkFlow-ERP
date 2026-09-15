@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   AlertCircle,
   Clock,
+  Calendar,
   CheckCircle2,
   DollarSign,
   Package,
@@ -58,6 +59,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { KpiCard, KpiGrid, KpiColorVariant } from '@/components/shared/kpi-card'
+import { LiveDhakaClock } from '@/components/shared/live-dhaka-clock'
 import { TrialDashboardCard } from '@/components/subscriptions/trial-dashboard-card'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -791,15 +793,24 @@ export function DashboardView() {
               </Badge>
             ))}
           </div>
-          <span className="text-xs text-slate-300 font-medium" suppressHydrationWarning>
-            {new Date().toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-US', {
-              timeZone: 'Asia/Dhaka',
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })}
-          </span>
+          <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+            <span className="flex items-center gap-1" suppressHydrationWarning>
+              <Calendar className="h-3.5 w-3.5 text-cyan-300" />
+              {new Date().toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-US', {
+                timeZone: 'Asia/Dhaka',
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </span>
+            <span>·</span>
+            <LiveDhakaClock
+              showSeconds={true}
+              showIcon={true}
+              className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-cyan-200"
+            />
+          </div>
         </div>
       </div>
 

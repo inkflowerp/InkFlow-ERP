@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  LayoutDashboard,
   Clock,
   Printer,
   Plus,
@@ -32,7 +33,7 @@ export function MobileBottomNav() {
   const [newWorkOpen, setNewWorkOpen] = useState(false)
   const [syncOpen, setSyncOpen] = useState(false)
 
-  const isDashboardActive = pathname?.endsWith('/dashboard')
+  const isDashboardActive = pathname === `/${tenantSlug}/dashboard` || pathname === `/${tenantSlug}`
   const isOperatorActive = pathname?.includes('/operator')
   const isMessagesActive = pathname?.includes('/communications')
 
@@ -47,7 +48,7 @@ export function MobileBottomNav() {
         className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-slate-950/95 backdrop-blur-md border-t border-slate-800 pb-[env(safe-area-inset-bottom)] select-none"
       >
         <div className="grid grid-cols-5 h-16 items-center px-1">
-          {/* 1. Today / Dashboard */}
+          {/* 1. Dashboard */}
           <Link
             href={`/${tenantSlug}/dashboard`}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
@@ -56,9 +57,9 @@ export function MobileBottomNav() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Clock className="h-5 w-5 shrink-0" />
+            <LayoutDashboard className="h-5 w-5 shrink-0" />
             <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
-              {tBilingual('Today', 'আজকের কাজ')}
+              {tBilingual('Dashboard', 'ড্যাশবোর্ড')}
             </span>
           </Link>
 
