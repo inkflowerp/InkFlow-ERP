@@ -61,6 +61,8 @@ export default function QuotationsPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
+  const companyId = company?.id
+
   // Fetch authoritative quotations from server
   const loadQuotations = useCallback(async (isSilent = false) => {
     if (!isSilent) setIsLoading(true)
@@ -68,25 +70,19 @@ export default function QuotationsPage() {
     setError(null)
 
     try {
-      const res = await getQuotationsAction(company?.id)
+      const res = await getQuotationsAction(companyId)
       if (res.success && res.data) {
         setServerQuotations(res.data)
-      } else if (!serverQuotations && localQuotations.length > 0) {
-        setServerQuotations(localQuotations)
       } else if (res.error) {
         setError(res.error)
       }
     } catch (err: any) {
-      if (!serverQuotations && localQuotations.length > 0) {
-        setServerQuotations(localQuotations)
-      } else {
-        setError(err?.message || 'Failed to load quotations.')
-      }
+      setError(err?.message || 'Failed to load quotations.')
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [company?.id, localQuotations, serverQuotations])
+  }, [companyId])
 
   useEffect(() => {
     loadQuotations()
@@ -94,8 +90,15 @@ export default function QuotationsPage() {
 
   // Active quotation dataset (Server authoritative, fallback to local store)
   const quotations = useMemo(() => {
-    return serverQuotations || localQuotations || []
+    if (serverQuotations && serverQuotations.length > 0) {
+      return serverQuotations
+    }
+    if (serverQuotations && serverQuotations.length === 0) {
+      return []
+    }
+    return localQuotations || []
   }, [serverQuotations, localQuotations])
+
 
   // KPI Metrics Calculation
   const kpiMetrics = useMemo(() => {

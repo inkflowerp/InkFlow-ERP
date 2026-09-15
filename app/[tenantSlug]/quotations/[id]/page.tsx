@@ -101,6 +101,12 @@ export default function QuotationDetailPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
+  const companyId = company?.id
+  const localQuotationsRef = React.useRef(localQuotations)
+  localQuotationsRef.current = localQuotations
+  const localActivitiesRef = React.useRef(localActivities)
+  localActivitiesRef.current = localActivities
+
   // Authoritative server fetch
   const fetchQuotationDetail = useCallback(async (isSilent = false) => {
     if (!isSilent) setIsLoading(true)
@@ -108,7 +114,7 @@ export default function QuotationDetailPage() {
     setError(null)
 
     try {
-      const res = await getQuotationDetailAction(quoteId, company?.id)
+      const res = await getQuotationDetailAction(quoteId, companyId)
       if (res.success && res.data) {
         setQuote(res.data.quotation)
         setActivities(res.data.activities || [])
@@ -117,17 +123,17 @@ export default function QuotationDetailPage() {
         }
       } else {
         // Fallback to local store
-        const fallbackQuote = localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId)
+        const fallbackQuote = localQuotationsRef.current.find((q) => q.id === quoteId || q.quotation_number === quoteId)
         if (fallbackQuote) {
           setQuote(fallbackQuote)
-          const fallbackActs = localActivities.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId)
+          const fallbackActs = localActivitiesRef.current.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId)
           setActivities(fallbackActs)
         } else {
           setError(res.error || 'Quotation not found.')
         }
       }
     } catch (err: any) {
-      const fallbackQuote = localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId)
+      const fallbackQuote = localQuotationsRef.current.find((q) => q.id === quoteId || q.quotation_number === quoteId)
       if (fallbackQuote) {
         setQuote(fallbackQuote)
       } else {
@@ -137,11 +143,12 @@ export default function QuotationDetailPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [quoteId, company?.id, localQuotations, localActivities])
+  }, [quoteId, companyId])
 
   useEffect(() => {
     fetchQuotationDetail()
   }, [fetchQuotationDetail])
+
 
   // Auto-print on load if query param present
   useEffect(() => {
