@@ -1,7 +1,10 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { getOwnerDashboardDataAction } from '@/actions/dashboard.actions'
+import type { OwnerDashboardSnapshot } from '@/services/dashboard.service'
+import { useRealtimeSync } from '@/hooks/use-realtime-sync'
 import {
   TrendingUp,
   Printer,
@@ -90,6 +93,7 @@ import { MaterialRecord } from '@/types/inventory.types'
 import { ProductionJobRecord, ProductionTaskRecord } from '@/types/production.types'
 import { DesignJobRecord } from '@/types/design.types'
 import { DeliveryChallanRecord } from '@/types/logistics.types'
+import { QuotationRecord } from '@/types/quotation.types'
 import { cn } from '@/lib/utils'
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -148,6 +152,7 @@ export function DashboardView() {
   const [productionJobs, , prodHelpers] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
   const [designJobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [])
   const [deliveryChallans, , deliveryHelpers] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
+  const [quotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
 
   // State Management
   const [activeModal, setActiveModal] = useState<string | null>(null)
@@ -155,6 +160,57 @@ export function DashboardView() {
   const [notification, setNotification] = useState<string | null>(null)
   const [errorState, setErrorState] = useState<string | null>(null)
   const [activeWorkItem, setActiveWorkItem] = useState<MyWorkItem | null>(null)
+
+  // Owner Snapshot & Realtime State
+  const [ownerSnapshot, setOwnerSnapshot] = useState<OwnerDashboardSnapshot | null>(null)
+  const [isLoadingOwner, setIsLoadingOwner] = useState(true)
+  const [isUpdatingOwner, setIsUpdatingOwner] = useState(false)
+  const [ownerError, setOwnerError] = useState<string | null>(null)
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | undefined>(undefined)
+
+  const { lastEventTime } = useRealtimeSync(company?.id)
+
+  const fetchOwnerSnapshot = useCallback(async (isBackground = false) => {
+    if (!isOwner) return
+    if (!isBackground) {
+      setIsLoadingOwner(true)
+    } else {
+      setIsUpdatingOwner(true)
+    }
+    setOwnerError(null)
+    try {
+      const res = await getOwnerDashboardDataAction(currentBranch?.id)
+      if (res.success && res.data) {
+        setOwnerSnapshot(res.data)
+      } else {
+        if (!ownerSnapshot) {
+          setOwnerError(res.error || 'Failed to fetch business owner metrics.')
+        }
+      }
+    } catch (err: any) {
+      if (!ownerSnapshot) {
+        setOwnerError(err?.message || 'Unexpected network error loading dashboard snapshot.')
+      }
+    } finally {
+      setIsLoadingOwner(false)
+      setIsUpdatingOwner(false)
+    }
+  }, [isOwner, currentBranch, ownerSnapshot])
+
+  useEffect(() => {
+    if (isOwner) {
+      fetchOwnerSnapshot(false)
+    }
+  }, [isOwner, company?.id, currentBranch?.id])
+
+  useEffect(() => {
+    if (isOwner && lastEventTime) {
+      const timer = setTimeout(() => {
+        fetchOwnerSnapshot(true)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isOwner, lastEventTime])
 
   // Quick Action Forms State
   const [customerName, setCustomerName] = useState('')
@@ -511,7 +567,107 @@ export function DashboardView() {
     return (deliveryChallans || []).filter((d) => d.status === 'scheduled' || d.status === 'assigned').length
   }, [deliveryChallans])
 
-  // Role-Specific Operational Dashboard Dispatch for Specialized Staff
+  // 1. Business Owner Executive Control Center Dispatch
+  if (isOwner) {
+    if (isLoadingOwner && !ownerSnapshot) {
+      return (
+        <div className="space-y-6 pb-12 animate-pulse">
+          {/* Header Skeleton */}
+          <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl">
+            <div className="h-4 w-40 bg-white/20 rounded-full mb-3" />
+            <div className="h-8 w-64 bg-white/30 rounded-lg mb-2" />
+            <div className="h-4 w-96 bg-white/20 rounded-md" />
+          </div>
+
+          {/* 4 KPIs Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-28 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+            ))}
+          </div>
+
+          {/* Needs Attention & Production Feed Skeletons */}
+          <div className="h-48 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+          <div className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+        </div>
+      )
+    }
+
+    if (ownerError && !ownerSnapshot) {
+      return (
+        <div className="space-y-6 pb-12">
+          <Card className="p-8 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20 text-center">
+            <div className="inline-flex p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 mb-4">
+              <AlertCircle className="h-8 w-8" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 bangla-text mb-1">
+              {tBilingual('Unable to load business dashboard', 'ড্যাশবোর্ড তথ্য লোড করা যায়নি')}
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto bangla-text">
+              {ownerError}
+            </p>
+            <Button
+              onClick={() => fetchOwnerSnapshot(false)}
+              className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {tBilingual('Retry Loading', 'পুনরায় চেষ্টা করুন')}
+            </Button>
+          </Card>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-6">
+        {ownerSnapshot && (
+          <OwnerDashboard
+            data={ownerSnapshot}
+            onOpenNewWork={() => setActiveModal('new_work')}
+            onOpenPaymentModal={(invId) => {
+              setSelectedInvoiceId(invId)
+              setActiveModal('record_payment')
+            }}
+            onRefresh={() => fetchOwnerSnapshot(false)}
+            isUpdating={isUpdatingOwner}
+          />
+        )}
+
+        {/* Executive Modals */}
+        {activeModal === 'new_work' && (
+          <NewWorkWizard
+            isOpen={true}
+            isInlineModal={true}
+            onClose={() => setActiveModal(null)}
+            onSuccess={() => {
+              setActiveModal(null)
+              fetchOwnerSnapshot(true)
+            }}
+          />
+        )}
+
+        {activeModal === 'record_payment' && (
+          <RecordPaymentModal
+            open={true}
+            preselectedInvoiceId={selectedInvoiceId}
+            onOpenChange={(open) => {
+              if (!open) {
+                setActiveModal(null)
+                setSelectedInvoiceId(undefined)
+              }
+            }}
+            onPaymentRecorded={() => {
+              setActiveModal(null)
+              setSelectedInvoiceId(undefined)
+              fetchOwnerSnapshot(true)
+            }}
+          />
+        )}
+      </div>
+    )
+  }
+
+  // 2. Role-Specific Operational Dashboard Dispatch for Specialized Staff
   if (!isOwner) {
     if (isOperator) {
       return (
@@ -545,7 +701,7 @@ export function DashboardView() {
         <div className="space-y-6">
           <SalesDashboard
             metrics={{
-              pendingQuotations: 3,
+              pendingQuotations: (quotations || []).filter((q) => q.status === 'draft' || q.status === 'sent').length,
               unpaidInvoicesCount: invoices.filter((i) => i.status === 'unpaid').length,
               unpaidDuesTotal: totalReceivableDue,
               todaySales: todaySales,

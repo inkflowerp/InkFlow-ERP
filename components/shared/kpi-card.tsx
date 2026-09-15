@@ -26,7 +26,7 @@ export interface KpiTrend {
 export interface KpiCardProps {
   titleEn: string
   titleBn: string
-  value: number | string
+  value?: number | string | null
   unitEn?: string
   unitBn?: string
   isCurrency?: boolean
@@ -126,7 +126,8 @@ export function KpiCard({
   const subtitle = subtitleEn && subtitleBn ? tBilingual(subtitleEn, subtitleBn) : (subtitleEn || subtitleBn)
   const unit = unitEn && unitBn ? tBilingual(unitEn, unitBn) : (unitEn || unitBn)
 
-  const formatVal = (v: number | string) => {
+  const formatVal = (v: number | string | null | undefined) => {
+    if (v === null || v === undefined) return '—'
     if (typeof v === 'number') {
       return locale === 'bn' ? toBengaliNumerals(v.toLocaleString()) : v.toLocaleString()
     }

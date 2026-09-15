@@ -26,6 +26,7 @@ import { SalesOrderRecord } from '@/types/order.types'
 import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import { ProductionJobRecord } from '@/types/production.types'
 import { BarChart2 } from 'lucide-react'
+import { getBangladeshDateRange, toBangladeshDateString } from '@/lib/utils/business-date'
 
 export function DashboardChartsSkeleton() {
   return (
@@ -73,36 +74,35 @@ export function DashboardCharts() {
   const [payments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
   const [productionJobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
 
-  // 1. Compute dynamic 7-day sales and collections trend
+  // 1. Compute dynamic 7-day sales and collections trend using Bangladesh Date Range
   const salesTrendData = useMemo(() => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    const today = new Date()
-    const result = []
+    const range = getBangladeshDateRange(7)
 
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today)
-      d.setDate(d.getDate() - i)
-      const dateStr = d.toISOString().split('T')[0]
-      const dayName = days[d.getDay()]
-
+    return range.map((item) => {
       // Aggregate invoices for this day
       const daySales = (invoices || [])
-        .filter((inv) => inv.created_at && inv.created_at.startsWith(dateStr))
+        .filter((inv) => {
+          const invDate = toBangladeshDateString(inv.invoice_date || inv.created_at)
+          const rawStatus = String(inv.status || '').toLowerCase()
+          return invDate === item.dateStr && rawStatus !== 'cancelled' && rawStatus !== 'void'
+        })
         .reduce((sum, inv) => sum + (Number(inv.grand_total) || Number(inv.subtotal) || 0), 0)
 
       // Aggregate payments for this day
       const dayCollections = (payments || [])
-        .filter((p) => p.payment_date && p.payment_date.startsWith(dateStr))
-        .reduce((sum, p) => sum + (p.amount || 0), 0)
+        .filter((p) => {
+          const pDate = toBangladeshDateString(p.payment_date || p.created_at)
+          return pDate === item.dateStr
+        })
+        .reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
 
-      result.push({
-        day: dayName,
+      return {
+        day: item.dayOfWeek,
+        dateStr: item.dateStr,
         sales: daySales,
         collections: dayCollections,
-      })
-    }
-
-    return result
+      }
+    })
   }, [invoices, payments])
 
   const hasSalesTrendData = useMemo(() => {
@@ -121,13 +121,13 @@ export function DashboardCharts() {
     ;(payments || []).forEach((p) => {
       const method = (p.payment_method || '').toLowerCase()
       if (method.includes('bkash')) {
-        methodTotals.bkash += p.amount || 0
+        methodTotals.bkash += Number(p.amount) || 0
       } else if (method.includes('nagad') || method.includes('rocket')) {
-        methodTotals.nagad += p.amount || 0
+        methodTotals.nagad += Number(p.amount) || 0
       } else if (method.includes('bank') || method.includes('cheque') || method.includes('card')) {
-        methodTotals.bank += p.amount || 0
+        methodTotals.bank += Number(p.amount) || 0
       } else {
-        methodTotals.cash += p.amount || 0
+        methodTotals.cash += Number(p.amount) || 0
       }
     })
 
@@ -195,27 +195,28 @@ export function DashboardCharts() {
 
   const activeOrdersCount = (orders || []).filter((o) => o.status !== 'delivered' && o.status !== 'cancelled').length
 
-  // 4. Compute machine load from live production jobs
-  const productionFloorData = useMemo(() => {
-    const machineMap: Record<string, { activeSft: number; count: number }> = {}
+  // 4. Compute active production work volume by department from live jobs
+  const productionDepartmentData = useMemo(() => {
+    const deptMap: Record<string, { jobCount: number; totalQuantity: number }> = {}
 
     ;(productionJobs || []).forEach((job) => {
-      const machineName = job.department ? `${job.department.toUpperCase()}` : 'Print Press'
-      if (!machineMap[machineName]) {
-        machineMap[machineName] = { activeSft: 0, count: 0 }
+      if (job.status === 'completed' || (job.status as string) === 'cancelled') return
+      const deptName = (job.department || 'printing').replace(/_/g, ' ').toUpperCase()
+      if (!deptMap[deptName]) {
+        deptMap[deptName] = { jobCount: 0, totalQuantity: 0 }
       }
-      machineMap[machineName].activeSft += job.quantity || 1
-      machineMap[machineName].count++
+      deptMap[deptName].jobCount++
+      deptMap[deptName].totalQuantity += Number(job.quantity) || 1
     })
 
-    return Object.entries(machineMap).map(([machine, data]) => ({
-      machine,
-      activeSft: data.activeSft,
-      capacitySft: Math.max(data.activeSft * 1.25, 1000),
+    return Object.entries(deptMap).map(([department, data]) => ({
+      department,
+      jobCount: data.jobCount,
+      totalQuantity: data.totalQuantity,
     }))
   }, [productionJobs])
 
-  const hasProductionData = productionFloorData.length > 0
+  const hasProductionData = productionDepartmentData.length > 0
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -375,16 +376,16 @@ export function DashboardCharts() {
         </CardContent>
       </Card>
 
-      {/* Chart 4: Machine Floor & Capacity Utilization */}
+      {/* Chart 4: Active Work Volume by Department */}
       <Card className="p-5">
         <CardHeader className="p-0 pb-4">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base font-bold bangla-text">
-                {tBilingual('Shop Floor Machine Load', 'শপ ফ্লোর মেশিন লোড')}
+                {tBilingual('Active Work by Department', 'বিভাগ অনুযায়ী চলমান কাজের চাপ')}
               </CardTitle>
               <CardDescription className="text-xs bangla-text">
-                {tBilingual('Active running sft vs rated daily capacity', 'চলমান কাজ বনাম দৈনিক ধারণক্ষমতা (বর্গফুট)')}
+                {tBilingual('Current active job count across departments', 'বিভিন্ন বিভাগের সক্রিয় কাজের সংখ্যা')}
               </CardDescription>
             </div>
           </div>
@@ -395,13 +396,12 @@ export function DashboardCharts() {
           ) : (
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={productionFloorData}>
+                <BarChart data={productionDepartmentData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
-                  <XAxis dataKey="machine" tickLine={false} axisLine={false} fontSize={10} />
+                  <XAxis dataKey="department" tickLine={false} axisLine={false} fontSize={10} />
                   <YAxis tickLine={false} axisLine={false} fontSize={11} />
                   <Tooltip />
-                  <Bar dataKey="activeSft" fill="#3b82f6" name="Active (sft)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="capacitySft" fill="#e2e8f0" name="Max Capacity" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="jobCount" fill="#3b82f6" name="Active Jobs" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

@@ -17,75 +17,74 @@ export class AuditRepository {
     deviceMetadata?: DeviceMetadata | null
   }): Promise<AuditLogEntry> {
     const sanitizedPrev = params.previousValue ? sanitizeForLog(params.previousValue) : null
-    const sanitizedNew = params.newValue ? sanitizeForLog(params.newValue) : null
+    let sanitizedNew = params.newValue ? sanitizeForLog(params.newValue) : null
 
-    const admin = createAdminClient()
-    const payload: any = {
-      company_id: params.companyId,
-      user_id: params.userId || null,
-      user_email: params.userEmail || null,
-      action: params.action,
-      entity: params.entity,
-      entity_id: params.entityId || null,
-      previous_value: sanitizedPrev,
-      new_value: sanitizedNew,
-      description: params.description || null,
-      ip_address: params.ipAddress || null,
-      device_metadata: params.deviceMetadata || null,
-      created_at: new Date().toISOString(),
+    // Ensure description is embedded cleanly inside new_values if provided
+    if (params.description) {
+      if (!sanitizedNew || typeof sanitizedNew !== 'object') {
+        sanitizedNew = { description: params.description }
+      } else {
+        sanitizedNew = { ...sanitizedNew, description: params.description }
+      }
     }
 
-    let { data, error } = await (admin as any)
-      .from('audit_logs')
-      .insert(payload)
-      .select()
-      .single()
+    try {
+      const admin = createAdminClient()
+      const userAgentStr = params.deviceMetadata ? JSON.stringify(params.deviceMetadata) : null
 
-    if (error && error.message?.includes('description')) {
-      // If description column is not in DB schema cache, nest inside new_value
-      delete payload.description
-      if (!payload.new_value) payload.new_value = {}
-      if (params.description) payload.new_value.description = params.description
+      // Use schema-conforming payload (supporting both legacy entity_type/old_values and entity/previous_value)
+      const payload: any = {
+        company_id: params.companyId,
+        user_id: params.userId || null,
+        action: params.action,
+        entity_type: params.entity,
+        entity_id: params.entityId || null,
+        old_values: sanitizedPrev,
+        new_values: sanitizedNew,
+        ip_address: params.ipAddress || null,
+        user_agent: userAgentStr,
+        created_at: new Date().toISOString(),
+      }
 
-      const retryRes = await (admin as any)
+      const { data, error } = await (admin as any)
         .from('audit_logs')
         .insert(payload)
         .select()
         .single()
-      data = retryRes.data
-      error = retryRes.error
-    }
 
-    if (error) {
-      return {
-        id: `aud-${Date.now()}`,
-        company_id: params.companyId,
-        user_id: params.userId || null,
-        user_email: params.userEmail || 'system',
-        action: params.action as any,
-        entity: params.entity as any,
-        entity_id: params.entityId || null,
-        previous_value: sanitizedPrev,
-        new_value: sanitizedNew,
-        timestamp: new Date().toISOString(),
-        description: params.description || undefined,
+      if (!error && data) {
+        return {
+          id: data.id,
+          company_id: data.company_id,
+          user_id: data.user_id,
+          user_email: params.userEmail || 'system',
+          action: data.action,
+          entity: data.entity_type || data.entity || params.entity,
+          entity_id: data.entity_id,
+          previous_value: data.old_values || data.previous_value,
+          new_value: data.new_values || data.new_value,
+          timestamp: data.created_at || new Date().toISOString(),
+          ip_address: data.ip_address,
+          device_metadata: params.deviceMetadata,
+          description: params.description || undefined,
+        }
       }
+    } catch {
+      // Fail closed / gracefully without crashing caller workflow
     }
 
     return {
-      id: data.id,
-      company_id: data.company_id,
-      user_id: data.user_id,
-      user_email: data.user_email || params.userEmail || 'system',
-      action: data.action,
-      entity: data.entity || data.entity_type,
-      entity_id: data.entity_id,
-      previous_value: data.previous_value || data.old_values,
-      new_value: data.new_value || data.new_values,
-      timestamp: data.created_at || new Date().toISOString(),
-      ip_address: data.ip_address,
-      device_metadata: data.device_metadata,
-      description: data.description,
+      id: `aud-${Date.now()}`,
+      company_id: params.companyId,
+      user_id: params.userId || null,
+      user_email: params.userEmail || 'system',
+      action: params.action as any,
+      entity: params.entity as any,
+      entity_id: params.entityId || null,
+      previous_value: sanitizedPrev,
+      new_value: sanitizedNew,
+      timestamp: new Date().toISOString(),
+      description: params.description || undefined,
     }
   }
 
@@ -95,43 +94,45 @@ export class AuditRepository {
     userId?: string
     limit?: number
   }): Promise<AuditLogEntry[]> {
-    const supabase = createAdminClient()
-    let query = (supabase as any)
-      .from('audit_logs')
-      .select('*')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
-      .limit(options?.limit || 100)
+    try {
+      const supabase = createAdminClient()
+      let query = (supabase as any)
+        .from('audit_logs')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
+        .limit(options?.limit || 100)
 
-    if (options?.entity) {
-      query = query.or(`entity.eq.${options.entity},entity_type.eq.${options.entity}`)
-    }
-    if (options?.action) {
-      query = query.eq('action', options.action)
-    }
-    if (options?.userId) {
-      query = query.eq('user_id', options.userId)
-    }
+      if (options?.entity) {
+        query = query.or(`entity_type.eq.${options.entity},entity.eq.${options.entity}`)
+      }
+      if (options?.action) {
+        query = query.eq('action', options.action)
+      }
+      if (options?.userId) {
+        query = query.eq('user_id', options.userId)
+      }
 
-    const { data, error } = await query
-    if (error) {
-      throw new Error(`Failed to fetch audit logs: ${error.message}`)
-    }
+      const { data, error } = await query
+      if (!error && data) {
+        return (data || []).map((row: any) => ({
+          id: row.id,
+          company_id: row.company_id,
+          user_id: row.user_id,
+          user_email: row.user_email || 'authenticated_user',
+          action: row.action,
+          entity: row.entity_type || row.entity,
+          entity_id: row.entity_id,
+          previous_value: row.old_values || row.previous_value,
+          new_value: row.new_values || row.new_value,
+          timestamp: row.created_at,
+          ip_address: row.ip_address,
+          device_metadata: row.device_metadata,
+          description: row.description || row.new_values?.description || row.new_value?.description,
+        }))
+      }
+    } catch {}
 
-    return (data || []).map((row: any) => ({
-      id: row.id,
-      company_id: row.company_id,
-      user_id: row.user_id,
-      user_email: row.user_email || 'authenticated_user',
-      action: row.action,
-      entity: row.entity,
-      entity_id: row.entity_id,
-      previous_value: row.previous_value,
-      new_value: row.new_value,
-      timestamp: row.created_at,
-      ip_address: row.ip_address,
-      device_metadata: row.device_metadata,
-      description: row.description,
-    }))
+    return []
   }
 }
