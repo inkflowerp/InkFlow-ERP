@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   FileText,
   Receipt,
@@ -10,6 +10,7 @@ import {
   Zap,
   Plus,
   ArrowUpRight,
+  CreditCard,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -17,6 +18,8 @@ import { usePermissions } from '@/hooks/use-permissions'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { notify } from '@/lib/notifications/notification-bus'
+import type { AccountRecord } from '@/types/finance.types'
+import { getAccountsAction, recordExpenseAction } from '@/actions/finance.actions'
 
 // Modal Components
 import { NewQuotationModal } from '@/components/quotations/new-quotation-modal'
@@ -24,6 +27,61 @@ import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
+import { SpendMoneyModal } from '@/components/finance/modals/spend-money-modal'
+
+const DEFAULT_FALLBACK_ACCOUNTS: AccountRecord[] = [
+  {
+    id: 'acc-cash-1001',
+    company_id: '',
+    branch_id: null,
+    code: '1001',
+    name: 'Cash in Hand (প্রধান ক্যাশ)',
+    name_bn: 'প্রধান ক্যাশ',
+    account_type: 'ASSET',
+    account_subtype: 'CASH',
+    currency: 'BDT',
+    opening_balance: 50000,
+    current_balance: 50000,
+    is_system: true,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'acc-bank-1002',
+    company_id: '',
+    branch_id: null,
+    code: '1002',
+    name: 'City Bank Ltd (Current A/C)',
+    name_bn: 'ব্যাংক হিসাব',
+    account_type: 'ASSET',
+    account_subtype: 'BANK',
+    currency: 'BDT',
+    opening_balance: 250000,
+    current_balance: 250000,
+    is_system: true,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'acc-mfs-1003',
+    company_id: '',
+    branch_id: null,
+    code: '1003',
+    name: 'bKash Merchant Account',
+    name_bn: 'বিকাশ মার্চেন্ট',
+    account_type: 'ASSET',
+    account_subtype: 'MFS',
+    currency: 'BDT',
+    opening_balance: 15000,
+    current_balance: 15000,
+    is_system: true,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+]
 
 export interface QuickActionsBarProps {
   onOpenPaymentModal?: (invoiceId?: string) => void
@@ -48,12 +106,37 @@ export function QuickActionsBar({
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false)
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false)
+
+  // Accounts state for SpendMoneyModal
+  const [accounts, setAccounts] = useState<AccountRecord[]>(DEFAULT_FALLBACK_ACCOUNTS)
+
+  const fetchAccounts = async () => {
+    try {
+      const res = await getAccountsAction()
+      if (res.success && res.data && res.data.length > 0) {
+        setAccounts(res.data)
+      }
+    } catch (err) {
+      console.warn('[QuickActionsBar] Failed to load accounts:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchAccounts()
+  }, [])
 
   // Authoritative Permission Checks
   const canQuotation = can('create', 'quotations') || can('manage', 'quotations')
   const canInvoice = can('create', 'invoices') || can('create', 'billing') || can('manage', 'billing')
   const canCustomer = can('create', 'crm') || can('create', 'customers') || can('manage', 'crm')
   const canPurchase = can('create', 'purchases') || can('create', 'inventory') || can('manage', 'inventory')
+  const canExpense =
+    can('create', 'accounting') ||
+    can('manage', 'accounting') ||
+    can('create', 'expenses') ||
+    can('manage', 'finance') ||
+    can('create', 'billing')
   const canPayment = can('create', 'billing') || can('create', 'payments') || can('manage', 'billing')
 
   // Handle Success Callbacks
@@ -95,6 +178,33 @@ export function QuickActionsBar({
       type: 'inventory',
     })
     onRefresh?.()
+  }
+
+  const handleExpenseSubmit = async (data: {
+    category: string
+    amount: number
+    paymentAccountId: string
+    expenseAccountId?: string
+    vendorName?: string
+    description: string
+    expenseDate: string
+    attachmentUrl?: string
+  }) => {
+    const res = await recordExpenseAction(data)
+    if (res.success) {
+      setIsExpenseModalOpen(false)
+      notify({
+        title: tBilingual('Expense Recorded', 'খরচ এন্ট্রি সম্পন্ন'),
+        message: tBilingual(
+          `Recorded expense voucher of ৳${data.amount.toLocaleString()}.`,
+          `৳${data.amount.toLocaleString()} টাকার খরচ ভাউচার সংরক্ষিত হয়েছে।`
+        ),
+        type: 'payment',
+      })
+      onRefresh?.()
+    } else {
+      throw new Error(res.error || 'Failed to record expense')
+    }
   }
 
   const handlePaymentRecorded = () => {
@@ -153,6 +263,20 @@ export function QuickActionsBar({
       onClick: () => setIsPurchaseModalOpen(true),
     },
     {
+      id: 'new-expense',
+      labelEn: '+ New Expenses',
+      labelBn: '+ নতুন খরচ',
+      subEn: 'Spend Money / Expense',
+      subBn: 'ভাউচার ও খরচ এন্ট্রি',
+      icon: CreditCard,
+      iconColor: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800',
+      allowed: canExpense,
+      onClick: () => {
+        fetchAccounts()
+        setIsExpenseModalOpen(true)
+      },
+    },
+    {
       id: 'record-payment',
       labelEn: 'Record Payment',
       labelBn: 'পেমেন্ট গ্রহণ',
@@ -191,8 +315,8 @@ export function QuickActionsBar({
           </span>
         </div>
 
-        {/* 5-Action Clickable Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
+        {/* 6-Action Clickable Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
           {visibleActions.map((action) => {
             const Icon = action.icon
             return (
@@ -233,7 +357,7 @@ export function QuickActionsBar({
       </Card>
 
       {/* ========================================================================= */}
-      {/* 5 DIRECT CREATION MODALS (No Route Changes, Underlying Dashboard Preserved) */}
+      {/* DIRECT CREATION MODALS (No Route Changes, Underlying Dashboard Preserved)  */}
       {/* ========================================================================= */}
 
       {/* 1. CREATE QUOTATION MODAL */}
@@ -266,7 +390,15 @@ export function QuickActionsBar({
         onPurchaseCreated={handlePurchaseCreated}
       />
 
-      {/* 5. RECORD PAYMENT MODAL (Fallback if not opened via parent) */}
+      {/* 5. SPEND MONEY / RECORD EXPENSE MODAL */}
+      <SpendMoneyModal
+        isOpen={isExpenseModalOpen}
+        onClose={() => setIsExpenseModalOpen(false)}
+        accounts={accounts}
+        onSubmit={handleExpenseSubmit}
+      />
+
+      {/* 6. RECORD PAYMENT MODAL (Fallback if not opened via parent) */}
       {!onOpenPaymentModal && (
         <RecordPaymentModal
           open={isPaymentModalOpen}
@@ -277,3 +409,4 @@ export function QuickActionsBar({
     </>
   )
 }
+
