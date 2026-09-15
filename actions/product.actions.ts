@@ -37,10 +37,10 @@ export async function getProductsAction(
 ): Promise<ServerActionResult<ProductRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const prods = await ProductService.getProducts(companyId, activeOnly)
     return { success: true, data: prods }
@@ -55,10 +55,10 @@ export async function getProductByIdAction(
 ): Promise<ServerActionResult<ProductRecord | null>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const prod = await ProductService.getProductById(id, companyId)
     return { success: true, data: prod }
@@ -80,10 +80,10 @@ export async function createProductAction(
 ): Promise<ServerActionResult<ProductRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     // Enforce Plan Product Limit
     await EntitlementService.enforceLimit(companyId, 'max_products')
@@ -130,10 +130,10 @@ export async function updateProductAction(
 ): Promise<ServerActionResult<ProductRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkProductPermission(tenant, 'products.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to edit products.' }
@@ -169,10 +169,10 @@ export async function deleteProductAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkProductPermission(tenant, 'products.delete') && !checkProductPermission(tenant, 'products.manage')) {
       return { success: false, error: 'Unauthorized: You do not have permission to delete products.' }
@@ -194,10 +194,10 @@ export async function updateProductPriceAction(
 ): Promise<ServerActionResult<ProductRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkProductPermission(tenant, 'pricing.edit') && !checkProductPermission(tenant, 'products.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to change prices.' }
@@ -232,10 +232,10 @@ export async function createProductVariantAction(
 ): Promise<ServerActionResult<ProductVariantRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const variant = await ProductService.createProductVariant({
       ...data,
@@ -257,10 +257,10 @@ export async function createProductFormulaAction(
 ): Promise<ServerActionResult<ProductFormulaRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const formula = await ProductService.createProductFormula({
       ...data,
@@ -280,10 +280,10 @@ export async function calculateProductPricingAction(
 ): Promise<ServerActionResult<PricingCalculationOutput>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const product = await ProductService.getProductById(productId, companyId)
     if (!product) return { success: false, error: 'Product not found.' }

@@ -30,7 +30,10 @@ export async function getTenantSaasInvoicesAction(
 ): Promise<ServerActionResult<SaasSubscriptionInvoiceRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = requestedCompanyId || tenant?.companyId || 'default'
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
 
     const invoices = await SaasBillingService.getCompanyInvoices(companyId)
     return { success: true, data: invoices }
@@ -43,10 +46,24 @@ export async function getTenantSaasInvoicesAction(
  * Server Action: Fetches a single SaaS invoice by ID
  */
 export async function getSaasInvoiceByIdAction(
-  invoiceId: string
+  invoiceId: string,
+  requestedCompanyId?: string
 ): Promise<ServerActionResult<SaasSubscriptionInvoiceRecord | null>> {
   try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const platformUser = await getCurrentPlatformUser()
+
+    if (!tenant?.companyId && (!platformUser || !platformUser.is_active)) {
+      return { success: false, error: 'Unauthorized: Valid tenant session or platform admin privileges required.' }
+    }
+
     const invoice = await SaasBillingService.getInvoiceById(invoiceId)
+    if (!invoice) return { success: true, data: null }
+
+    if (tenant?.companyId && invoice.company_id !== tenant.companyId && (!platformUser || !platformUser.is_active)) {
+      return { success: false, error: 'Unauthorized: Access to invoice denied.' }
+    }
+
     return { success: true, data: invoice }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch SaaS invoice' }

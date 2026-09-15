@@ -34,10 +34,10 @@ export async function getSuppliersAction(
 ): Promise<ServerActionResult<SupplierRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const suppliers = await SupplierService.getSuppliers(companyId, {
       ...options,
@@ -55,10 +55,10 @@ export async function getSupplierByIdAction(
 ): Promise<ServerActionResult<SupplierRecord | null>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const supplier = await SupplierService.getSupplierById(id, companyId)
     return { success: true, data: supplier }
@@ -77,10 +77,10 @@ export async function createSupplierAction(
 ): Promise<ServerActionResult<SupplierRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkSupplierPermission(tenant, 'suppliers.create') && !checkSupplierPermission(tenant, 'suppliers.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to create suppliers.' }
@@ -111,10 +111,10 @@ export async function updateSupplierAction(
 ): Promise<ServerActionResult<SupplierRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkSupplierPermission(tenant, 'suppliers.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to edit suppliers.' }
@@ -143,10 +143,10 @@ export async function deleteSupplierAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkSupplierPermission(tenant, 'suppliers.delete')) {
       return { success: false, error: 'Unauthorized: You do not have permission to delete suppliers.' }
@@ -171,10 +171,10 @@ export async function getSupplierItemsAction(
 ): Promise<ServerActionResult<SupplierItemRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const items = await SupplierService.getSupplierItems(companyId, { supplierId, materialId })
     return { success: true, data: items }
@@ -193,10 +193,10 @@ export async function createSupplierItemAction(
 ): Promise<ServerActionResult<SupplierItemRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkSupplierPermission(tenant, 'suppliers.edit') && !checkSupplierPermission(tenant, 'suppliers.create')) {
       return { success: false, error: 'Unauthorized: You do not have permission to map supplier items.' }
@@ -227,10 +227,10 @@ export async function deleteSupplierItemAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const success = await SupplierService.deleteSupplierItem(id, companyId)
     if (supplierId) revalidatePath(`/suppliers/${supplierId}`)
@@ -251,10 +251,10 @@ export async function getSupplierPriceHistoryAction(
 ): Promise<ServerActionResult<SupplierPriceHistoryRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const history = await SupplierService.getPriceHistory(companyId, { materialId, supplierId })
     return { success: true, data: history }
@@ -269,10 +269,10 @@ export async function getSupplierLedgerAction(
 ): Promise<ServerActionResult<SupplierLedgerEntryRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const ledger = await SupplierService.getSupplierLedger(companyId, supplierId)
     return { success: true, data: ledger }

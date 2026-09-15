@@ -47,10 +47,10 @@ export async function createMaterialAction(
 ): Promise<ServerActionResult<MaterialRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     // Enforce Plan Inventory Feature Entitlement
     await EntitlementService.enforceFeature(companyId, 'inventory')
@@ -84,10 +84,10 @@ export async function updateMaterialAction(
 ): Promise<ServerActionResult<MaterialRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkInventoryPermission(tenant, 'inventory.edit')) {
       return { success: false, error: 'Unauthorized: You do not have permission to edit materials.' }
@@ -120,10 +120,10 @@ export async function createLocationAction(
 ): Promise<ServerActionResult<InventoryLocationRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkInventoryPermission(tenant, 'inventory.manage') && !checkInventoryPermission(tenant, 'inventory.create')) {
       return { success: false, error: 'Unauthorized: You do not have permission to manage inventory locations.' }
@@ -160,10 +160,10 @@ export async function receiveStockAction(
 ): Promise<ServerActionResult<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkInventoryPermission(tenant, 'inventory.create') && !checkInventoryPermission(tenant, 'inventory.adjust')) {
       return { success: false, error: 'Unauthorized: You do not have permission to receive stock.' }
@@ -207,10 +207,10 @@ export async function createMaterialRequestAction(
 ): Promise<ServerActionResult<MaterialRequestRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const request = await InventoryService.createRequest({
       ...params,
@@ -235,10 +235,10 @@ export async function approveMaterialRequestAction(
 ): Promise<ServerActionResult<MaterialRequestRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkInventoryPermission(tenant, 'inventory.approve') && !checkInventoryPermission(tenant, 'inventory.manage')) {
       return { success: false, error: 'Unauthorized: You do not have permission to approve material requests.' }
@@ -264,10 +264,10 @@ export async function rejectMaterialRequestAction(
 ): Promise<ServerActionResult<MaterialRequestRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkInventoryPermission(tenant, 'inventory.approve') && !checkInventoryPermission(tenant, 'inventory.manage')) {
       return { success: false, error: 'Unauthorized: You do not have permission to reject material requests.' }
@@ -311,10 +311,10 @@ export async function issueMaterialAction(
 ): Promise<ServerActionResult<MaterialIssueRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkInventoryPermission(tenant, 'inventory.issue') && !checkInventoryPermission(tenant, 'inventory.manage')) {
       return { success: false, error: 'Unauthorized: You do not have permission to issue materials.' }
@@ -366,10 +366,10 @@ export async function logProductionConsumptionAction(
 ): Promise<ServerActionResult<{ remnantsCreated: number }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const result = await InventoryService.logProductionConsumption({
       ...params,
@@ -410,10 +410,10 @@ export async function createRemnantAction(
 ): Promise<ServerActionResult<InventoryRemnantRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const remnant = await InventoryService.createRemnant({
       ...params,
@@ -436,10 +436,10 @@ export async function updateRemnantStatusAction(
 ): Promise<ServerActionResult<InventoryRemnantRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const remnant = await InventoryService.updateRemnantStatus(id, status, companyId)
     revalidatePath('/[tenantSlug]/inventory', 'page')
@@ -462,10 +462,10 @@ export async function transferStockAction(
 ): Promise<ServerActionResult<InventoryTransferRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkInventoryPermission(tenant, 'inventory.transfer') && !checkInventoryPermission(tenant, 'inventory.manage')) {
       return { success: false, error: 'Unauthorized: You do not have permission to transfer inventory.' }
@@ -500,10 +500,10 @@ export async function adjustStockAction(
 ): Promise<ServerActionResult<any>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkInventoryPermission(tenant, 'inventory.adjust') && !checkInventoryPermission(tenant, 'inventory.manage')) {
       return { success: false, error: 'Unauthorized: You do not have permission to adjust inventory stock.' }
@@ -569,10 +569,10 @@ export async function addTaskRequirementAction(
 ): Promise<ServerActionResult<TaskMaterialRequirementRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const req = await InventoryService.addTaskRequirement({
       ...requirement,
@@ -592,10 +592,10 @@ export async function removeTaskRequirementAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const removed = await InventoryService.removeTaskRequirement(id, companyId)
     revalidatePath('/[tenantSlug]/production', 'page')
@@ -624,10 +624,10 @@ export async function getInventoryDashboardDataAction(
 ): Promise<ServerActionResult<InventoryDashboardData>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const [matData, locData, balData, reqData, issData, remData, ledData, sumData] = await Promise.all([
       InventoryService.getMaterials(companyId),
@@ -675,10 +675,10 @@ export async function getMaterialDetailsAction(
 ): Promise<ServerActionResult<MaterialFullDetails>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const [mat, locs, bals, rems, led] = await Promise.all([
       InventoryService.getMaterialById(materialId, companyId),

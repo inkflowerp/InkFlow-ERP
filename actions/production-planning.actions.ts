@@ -31,11 +31,10 @@ export async function getProductionTasksAction(
 ): Promise<ServerActionResult<ProductionTaskRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const tasks = await ProductionPlanningService.getTasks(companyId, filters)
     return { success: true, data: tasks }
@@ -53,11 +52,10 @@ export async function getProductionTaskByIdAction(
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const task = await ProductionPlanningService.getTaskById(id, companyId)
     if (!task) {
@@ -79,13 +77,12 @@ export async function createProductionTaskAction(
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    const userId = tenant?.userId || 'system'
-    const userEmail = tenant?.userEmail || null
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail || null
 
     const task = await ProductionPlanningService.createTask(data, companyId)
 
@@ -119,13 +116,12 @@ export async function scheduleProductionTaskAction(
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    const userId = tenant?.userId || 'system'
-    const userEmail = tenant?.userEmail || null
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail || null
 
     const task = await ProductionPlanningService.scheduleTask(input, companyId)
 
@@ -160,14 +156,13 @@ export async function startProductionTaskAction(
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    const userId = tenant?.userId || 'system'
-    const userEmail = tenant?.userEmail || null
-    const userName = tenant?.fullName || 'Operator'
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail || null
+    const userName = tenant.fullName || 'Operator'
 
     const task = await ProductionPlanningService.startTask(
       taskId,
@@ -209,11 +204,10 @@ export async function pauseProductionTaskAction(
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const task = await ProductionPlanningService.pauseTask(taskId, reason, companyId)
 
@@ -244,13 +238,12 @@ export async function completeProductionTaskAction(
 > {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    const userId = tenant?.userId || 'system'
-    const userEmail = tenant?.userEmail || null
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail || null
 
     const result = await ProductionPlanningService.completeTask(taskId, companyId, completionData)
 
@@ -285,13 +278,12 @@ export async function holdProductionTaskAction(
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    const userId = tenant?.userId || 'system'
-    const userEmail = tenant?.userEmail || null
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail || null
 
     const task = await ProductionPlanningService.holdTask(input, companyId)
 
@@ -325,11 +317,10 @@ export async function resumeProductionTaskAction(
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const task = await ProductionPlanningService.resumeTask(taskId, companyId)
 
@@ -349,14 +340,13 @@ export async function reworkProductionTaskAction(
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    const userId = tenant?.userId || 'system'
-    const userEmail = tenant?.userEmail || null
-    const userName = tenant?.fullName || 'QC Inspector'
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail || null
+    const userName = tenant.fullName || 'QC Inspector'
 
     const task = await ProductionPlanningService.createReworkTask(input, companyId, userName)
 
@@ -390,11 +380,10 @@ export async function getMachineQueuesAction(
 ): Promise<ServerActionResult<MachineQueueGroup[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const queues = await ProductionPlanningService.getMachineQueues(companyId, branchId)
     return { success: true, data: queues }
@@ -411,12 +400,11 @@ export async function getMyAssignedTasksAction(
 ): Promise<ServerActionResult<ProductionTaskRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    const userId = tenant?.userId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
 
     const tasks = await ProductionPlanningService.getTasks(companyId, {
       assigned_operator_id: userId,
@@ -441,11 +429,10 @@ export async function reportProductionProblemAction(
 ): Promise<ServerActionResult<any>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     // 1. Hold / Pause the task
     const updatedTask = await ProductionPlanningService.holdTask(

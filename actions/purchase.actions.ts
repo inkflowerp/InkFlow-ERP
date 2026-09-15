@@ -36,10 +36,10 @@ export async function getPurchaseRequestsAction(
 ): Promise<ServerActionResult<PurchaseRequestRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const requests = await PurchaseService.getPurchaseRequests(companyId, {
       ...options,
@@ -57,10 +57,10 @@ export async function getPurchaseRequestByIdAction(
 ): Promise<ServerActionResult<PurchaseRequestRecord | null>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const request = await PurchaseService.getPurchaseRequestById(id, companyId)
     return { success: true, data: request }
@@ -77,10 +77,10 @@ export async function createPurchaseRequestAction(
 ): Promise<ServerActionResult<PurchaseRequestRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkPurchasePermission(tenant, 'purchases.create')) {
       return { success: false, error: 'Unauthorized: You do not have permission to create purchase requests.' }
@@ -113,10 +113,10 @@ export async function approvePurchaseRequestAction(
 ): Promise<ServerActionResult<{ request: PurchaseRequestRecord; po?: PurchaseOrderRecord }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkPurchasePermission(tenant, 'purchases.approve')) {
       return { success: false, error: 'Unauthorized: You do not have permission to approve purchase requests.' }
@@ -149,10 +149,10 @@ export async function rejectPurchaseRequestAction(
 ): Promise<ServerActionResult<PurchaseRequestRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkPurchasePermission(tenant, 'purchases.reject')) {
       return { success: false, error: 'Unauthorized: You do not have permission to reject purchase requests.' }
@@ -187,10 +187,10 @@ export async function getPurchaseOrdersAction(
 ): Promise<ServerActionResult<PurchaseOrderRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const orders = await PurchaseService.getPurchaseOrders(companyId, {
       ...options,
@@ -208,10 +208,10 @@ export async function getPurchaseOrderByIdAction(
 ): Promise<ServerActionResult<PurchaseOrderRecord | null>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const order = await PurchaseService.getPurchaseOrderById(id, companyId)
     return { success: true, data: order }
@@ -231,10 +231,10 @@ export async function createPurchaseOrderAction(
 ): Promise<ServerActionResult<PurchaseOrderRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkPurchasePermission(tenant, 'purchase_orders.create') && !checkPurchasePermission(tenant, 'purchases.create')) {
       return { success: false, error: 'Unauthorized: You do not have permission to create purchase orders.' }
@@ -265,10 +265,10 @@ export async function approvePurchaseOrderAction(
 ): Promise<ServerActionResult<PurchaseOrderRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkPurchasePermission(tenant, 'purchase_orders.approve') && !checkPurchasePermission(tenant, 'purchases.approve')) {
       return { success: false, error: 'Unauthorized: You do not have permission to approve purchase orders.' }
@@ -298,10 +298,10 @@ export async function sendPurchaseOrderAction(
 ): Promise<ServerActionResult<PurchaseOrderRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const updated = await PurchaseService.sendPurchaseOrder(
       id,
@@ -330,10 +330,10 @@ export async function getGoodsReceivedNotesAction(
 ): Promise<ServerActionResult<GoodsReceivedNoteRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const grns = await PurchaseService.getGoodsReceivedNotes(companyId, options)
     return { success: true, data: grns }
@@ -372,10 +372,10 @@ export async function receiveGoodsAction(
 ): Promise<ServerActionResult<{ grn: GoodsReceivedNoteRecord; updatedPO: PurchaseOrderRecord }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkPurchasePermission(tenant, 'goods_receipts.create') && !checkPurchasePermission(tenant, 'inventory.manage')) {
       return { success: false, error: 'Unauthorized: You do not have permission to receive goods.' }
@@ -410,10 +410,10 @@ export async function getSupplierReturnsAction(
 ): Promise<ServerActionResult<SupplierReturnRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const returns = await PurchaseService.getSupplierReturns(companyId, options)
     return { success: true, data: returns }
@@ -445,10 +445,10 @@ export async function createSupplierReturnAction(
 ): Promise<ServerActionResult<SupplierReturnRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     if (!checkPurchasePermission(tenant, 'supplier_returns.create') && !checkPurchasePermission(tenant, 'inventory.manage')) {
       return { success: false, error: 'Unauthorized: You do not have permission to create supplier returns.' }

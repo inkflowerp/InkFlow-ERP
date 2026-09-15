@@ -38,11 +38,10 @@ export async function getMachineriesAction(
 ): Promise<ServerActionResult<MachineryRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const machineries = await MachineryService.getMachineries(companyId, filters)
     return { success: true, data: machineries }
@@ -60,11 +59,10 @@ export async function getMachineryByIdAction(
 ): Promise<ServerActionResult<MachineryRecord | null>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const machine = await MachineryService.getMachineryById(id, companyId)
     if (!machine) {
@@ -88,18 +86,17 @@ export async function createMachineryAction(
 ): Promise<ServerActionResult<MachineryRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || input.company_id)
-    const companyId = tenant?.companyId || requestedCompanyId || input.company_id
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     // Enforce Plan Machinery Feature Entitlement
     await EntitlementService.enforceFeature(companyId, 'machinery')
 
     // Permission authorization check
-    const isOwner = tenant?.primaryRole === 'business_owner' || tenant?.companyRole === 'business_owner'
-    const hasPerm = isOwner || tenant?.permissions.includes('machineries.create') || tenant?.permissions.includes('production.create')
+    const isOwner = tenant.primaryRole === 'business_owner' || tenant.companyRole === 'business_owner'
+    const hasPerm = isOwner || tenant.permissions.includes('machineries.create') || tenant.permissions.includes('production.create')
 
     if (!hasPerm) {
       return { success: false, error: 'Permission denied: You do not have permission to create machinery.' }
@@ -113,21 +110,17 @@ export async function createMachineryAction(
     // Audit log
     await AuditService.logEvent(
       companyId,
-      tenant?.userId || null,
-      tenant?.userEmail || null,
+      tenant.userId || null,
+      tenant.userEmail || null,
       'machinery.create',
       'machinery',
       machine.id,
       null,
       machine,
-      `Added machinery "${machine.name}" (${machine.code})`
+      `Created machinery: ${machine.name} (${machine.code})`
     )
 
-    if (tenant?.companySlug) {
-      revalidatePath(`/${tenant.companySlug}/production/machineries`)
-      revalidatePath(`/${tenant.companySlug}/production`)
-    }
-
+    revalidatePath('/[tenantSlug]/production/machineries', 'layout')
     return { success: true, data: machine }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create machinery.' }
@@ -144,11 +137,10 @@ export async function updateMachineryAction(
 ): Promise<ServerActionResult<MachineryRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const isOwner = tenant?.primaryRole === 'business_owner' || tenant?.companyRole === 'business_owner'
     const hasPerm = isOwner || tenant?.permissions.includes('machineries.edit') || tenant?.permissions.includes('production.edit')
@@ -195,11 +187,10 @@ export async function changeMachineryStatusAction(
 ): Promise<ServerActionResult<MachineryRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const previous = await MachineryService.getMachineryById(id, companyId)
     const machine = await MachineryService.changeStatus(id, companyId, newStatus, notes)
@@ -237,11 +228,10 @@ export async function archiveMachineryAction(
 ): Promise<ServerActionResult<MachineryRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const isOwner = tenant?.primaryRole === 'business_owner' || tenant?.companyRole === 'business_owner'
     const hasPerm = isOwner || tenant?.permissions.includes('machineries.delete') || tenant?.permissions.includes('production.delete')
@@ -288,11 +278,10 @@ export async function checkMachineryConflictAction(
 ): Promise<ServerActionResult<ConflictCheckResult>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const result = await MachineryService.checkConflict(
       machineId,
@@ -317,11 +306,10 @@ export async function assignMachineryAction(
 ): Promise<ServerActionResult<MachineryAssignmentRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || input.company_id)
-    const companyId = tenant?.companyId || requestedCompanyId || input.company_id
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const isOwner = tenant?.primaryRole === 'business_owner' || tenant?.companyRole === 'business_owner'
     const hasPerm = isOwner || tenant?.permissions.includes('machineries.assign') || tenant?.permissions.includes('production.assign') || tenant?.permissions.includes('production.edit')
@@ -371,11 +359,10 @@ export async function updateAssignmentStatusAction(
 ): Promise<ServerActionResult<MachineryAssignmentRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const assignment = await MachineryService.updateAssignmentStatus(assignmentId, companyId, status)
 
@@ -413,11 +400,10 @@ export async function scheduleMaintenanceAction(
 ): Promise<ServerActionResult<MachineryMaintenanceRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const maintenance = await MachineryService.scheduleMaintenance({
       ...input,
@@ -467,11 +453,10 @@ export async function completeMaintenanceAction(
 ): Promise<ServerActionResult<MachineryMaintenanceRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const maintenance = await MachineryService.completeMaintenance(
       maintenanceId,
@@ -539,11 +524,10 @@ export async function reportBreakdownAction(
 ): Promise<ServerActionResult<MachineryBreakdownRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const reporterName = tenant?.fullName || 'Operator'
 
@@ -616,11 +600,10 @@ export async function resolveBreakdownAction(
 ): Promise<ServerActionResult<MachineryBreakdownRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const resolverName = tenant?.fullName || 'Technician'
 
@@ -684,11 +667,10 @@ export async function getMachineryDashboardMetricsAction(
 ): Promise<ServerActionResult<MachinerySummaryMetrics>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const metrics = await MachineryService.getSummaryMetrics(companyId)
     return { success: true, data: metrics }
@@ -706,11 +688,10 @@ export async function getEligibleMachineriesAction(
 ): Promise<ServerActionResult<EligibleMachineSummary>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const summary = await MachineryService.resolveEligibleMachines(companyId, params)
     return { success: true, data: summary }
@@ -728,11 +709,10 @@ export async function getJobOrderAssignmentsAction(
 ): Promise<ServerActionResult<MachineryAssignmentRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const assignments = await MachineryService.getAssignmentsByJobOrder(jobOrderId, companyId)
     return { success: true, data: assignments }
@@ -750,11 +730,10 @@ export async function reassignBreakdownJobAction(
 ): Promise<ServerActionResult<MachineryAssignmentRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const isOwner = tenant?.primaryRole === 'business_owner' || tenant?.companyRole === 'business_owner'
     const hasPerm = isOwner || tenant?.permissions.includes('machineries.assign') || tenant?.permissions.includes('production.assign') || tenant?.permissions.includes('production.edit')

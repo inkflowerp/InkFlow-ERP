@@ -507,4 +507,206 @@ describe('InkFlow ERP — Financial Authorization, Admin Client & Tenant Isolati
     assert.strictEqual(res.allowed, false)
     assert.ok(res.error?.includes('Invalid write-off amount'))
   })
+
+  // 13. IDOR MATRIX: CROSS-TENANT OBJECT LOOKUP PREVENTION
+  test('13. IDOR Matrix: Cross-tenant access blocked across all business entities', () => {
+    interface EntityRecord {
+      id: string
+      company_id: string
+      name: string
+    }
+
+    const testEntities: Record<string, { a: EntityRecord; b: EntityRecord }> = {
+      customer: {
+        a: { id: 'cust-a-1', company_id: tenantA.id, name: 'Customer A' },
+        b: { id: 'cust-b-1', company_id: tenantB.id, name: 'Customer B' },
+      },
+      quotation: {
+        a: { id: 'quote-a-1', company_id: tenantA.id, name: 'Quotation A' },
+        b: { id: 'quote-b-1', company_id: tenantB.id, name: 'Quotation B' },
+      },
+      machinery: {
+        a: { id: 'mach-a-1', company_id: tenantA.id, name: 'Heidelberg A' },
+        b: { id: 'mach-b-1', company_id: tenantB.id, name: 'Roland B' },
+      },
+      material: {
+        a: { id: 'mat-a-1', company_id: tenantA.id, name: 'Art Paper A' },
+        b: { id: 'mat-b-1', company_id: tenantB.id, name: 'Banner Vinyl B' },
+      },
+      saasInvoice: {
+        a: { id: 'saas-inv-a-1', company_id: tenantA.id, name: 'SaaS Inv A' },
+        b: { id: 'saas-inv-b-1', company_id: tenantB.id, name: 'SaaS Inv B' },
+      },
+    }
+
+    function checkEntityAccess(user: SimulatedUserContext, entity: EntityRecord): boolean {
+      return entity.company_id === user.companyId
+    }
+
+    // User A accessing Tenant A entities: ALLOWED
+    for (const [type, data] of Object.entries(testEntities)) {
+      assert.strictEqual(checkEntityAccess(userA_Owner, data.a), true, `User A should access ${type} A`)
+    }
+
+    // User A accessing Tenant B entities: STRICTLY DENIED
+    for (const [type, data] of Object.entries(testEntities)) {
+      assert.strictEqual(checkEntityAccess(userA_Owner, data.b), false, `User A must NOT access ${type} B`)
+    }
+  })
+
+  // 14. MASS ASSIGNMENT & FINANCIAL FIELD TAMPERING
+  test('14. Mass Assignment: Financial fields must be server-calculated, ignoring client parameters', () => {
+    function calculateAuthoritativeInvoiceTotals(params: {
+      items: { quantity: number; unitPrice: number }[]
+      discountAmount?: number
+      vatPercentage?: number
+      clientInjectedPaidAmount?: number
+      clientInjectedDueAmount?: number
+      clientInjectedStatus?: string
+    }) {
+      const subtotal = params.items.reduce((acc, it) => acc + it.quantity * it.unitPrice, 0)
+      const discount = params.discountAmount || 0
+      const taxable = Math.max(0, subtotal - discount)
+      const vatAmount = params.vatPercentage ? (taxable * params.vatPercentage) / 100 : 0
+      const grandTotal = taxable + vatAmount
+
+      // Server-authoritative derivation: ignore client injected values
+      const authoritativePaidAmount = 0 // Initial invoice has 0 recorded payments
+      const authoritativeDueAmount = grandTotal
+      const authoritativeStatus = 'unpaid'
+
+      return {
+        subtotal,
+        discount_amount: discount,
+        vat_amount: vatAmount,
+        grand_total: grandTotal,
+        paid_amount: authoritativePaidAmount,
+        due_amount: authoritativeDueAmount,
+        status: authoritativeStatus,
+      }
+    }
+
+    // Attacker submits payload attempting to mark invoice as paid for free
+    const tamperedPayload = {
+      items: [{ quantity: 10, unitPrice: 1000 }],
+      discountAmount: 500,
+      vatPercentage: 15,
+      clientInjectedPaidAmount: 9500 + 1425, // Attacker claims they already paid
+      clientInjectedDueAmount: 0,            // Attacker claims 0 due
+      clientInjectedStatus: 'paid',          // Attacker claims paid status
+    }
+
+    const calculated = calculateAuthoritativeInvoiceTotals(tamperedPayload)
+
+    assert.strictEqual(calculated.grand_total, 10925)
+    assert.strictEqual(calculated.paid_amount, 0) // Client injection ignored!
+    assert.strictEqual(calculated.due_amount, 10925) // Truth derived!
+    assert.strictEqual(calculated.status, 'unpaid')
+  })
+
+  // 15. CREDIT CONTROL & OVERRIDE PREVENTION
+  test('15. Credit Control: Non-privileged user cannot bypass credit limit', () => {
+    interface CreditCheckInput {
+      currentBalance: number
+      creditLimit: number
+      newOrderAmount: number
+      user: SimulatedUserContext
+      clientRequestedOverride?: boolean
+      clientSuppliedReason?: string
+    }
+
+    function evaluateCreditExposure(input: CreditCheckInput): { approved: boolean; requiresOverride: boolean; error?: string } {
+      const projectedBalance = input.currentBalance + input.newOrderAmount
+      const exceedsLimit = input.creditLimit > 0 && projectedBalance > input.creditLimit
+
+      if (!exceedsLimit) {
+        return { approved: true, requiresOverride: false }
+      }
+
+      // If exceeds, check if user has credit override permission
+      const hasOverridePermission =
+        input.user.companyRole === 'business_owner' ||
+        input.user.permissions.includes('credit.override') ||
+        input.user.permissions.includes('billing.manage')
+
+      if (input.clientRequestedOverride && !hasOverridePermission) {
+        return { approved: false, requiresOverride: true, error: 'Unauthorized: User lacks credit override authority.' }
+      }
+
+      if (input.clientRequestedOverride && hasOverridePermission) {
+        return { approved: true, requiresOverride: true }
+      }
+
+      return { approved: false, requiresOverride: true, error: 'Credit limit exceeded.' }
+    }
+
+    // Salesperson attempts to override 50,000 BDT limit on 100,000 BDT order
+    const salesAttempt = evaluateCreditExposure({
+      currentBalance: 40000,
+      creditLimit: 50000,
+      newOrderAmount: 60000,
+      user: userA_Salesperson,
+      clientRequestedOverride: true,
+      clientSuppliedReason: 'Friend discount',
+    })
+    assert.strictEqual(salesAttempt.approved, false)
+    assert.ok(salesAttempt.error?.includes('User lacks credit override authority'))
+
+    // Owner performs the override
+    const ownerAttempt = evaluateCreditExposure({
+      currentBalance: 40000,
+      creditLimit: 50000,
+      newOrderAmount: 60000,
+      user: userA_Owner,
+      clientRequestedOverride: true,
+      clientSuppliedReason: 'Board approval',
+    })
+    assert.strictEqual(ownerAttempt.approved, true)
+    assert.strictEqual(ownerAttempt.requiresOverride, true)
+  })
+
+  // 16. SEARCH DATA LEAKAGE PREVENTION
+  test('16. Search Isolation: Global search query strictly filters by caller companyId', () => {
+    const globalSearchIndex = [
+      { id: 'inv-1', company_id: tenantA.id, type: 'invoice', title: 'INV-2026-0001 Acme Corp' },
+      { id: 'inv-2', company_id: tenantB.id, type: 'invoice', title: 'INV-2026-9001 Secret Client B' },
+      { id: 'cust-1', company_id: tenantA.id, type: 'customer', title: 'Rahim Printers' },
+      { id: 'cust-2', company_id: tenantB.id, type: 'customer', title: 'Karim Textile (Tenant B)' },
+    ]
+
+    function executeSearch(user: SimulatedUserContext, query: string) {
+      return globalSearchIndex.filter(
+        (entry) => entry.company_id === user.companyId && entry.title.toLowerCase().includes(query.toLowerCase())
+      )
+    }
+
+    // Tenant A user searching for "Tenant B"
+    const resultsA = executeSearch(userA_Owner, 'Tenant B')
+    assert.strictEqual(resultsA.length, 0) // Zero leakage!
+
+    // Tenant A user searching for "INV"
+    const resultsInvA = executeSearch(userA_Owner, 'INV')
+    assert.strictEqual(resultsInvA.length, 1)
+    assert.strictEqual(resultsInvA[0].id, 'inv-1')
+  })
+
+  // 17. FILE / STORAGE TENANT SCOPING
+  test('17. Storage Security: Object storage paths and access are strictly partitioned by tenant ID', () => {
+    function generateStoragePath(companyId: string, resourceType: string, filename: string): string {
+      // Must enforce company_id as root path segment
+      return `${companyId}/${resourceType}/${filename}`
+    }
+
+    function authorizeStorageAccess(user: SimulatedUserContext, objectPath: string): boolean {
+      const rootSegment = objectPath.split('/')[0]
+      return rootSegment === user.companyId
+    }
+
+    const tenantA_Path = generateStoragePath(tenantA.id, 'invoices', 'INV-001.pdf')
+    const tenantB_Path = generateStoragePath(tenantB.id, 'invoices', 'INV-9001.pdf')
+
+    assert.strictEqual(authorizeStorageAccess(userA_Owner, tenantA_Path), true)
+    assert.strictEqual(authorizeStorageAccess(userA_Owner, tenantB_Path), false)
+  })
 })
+

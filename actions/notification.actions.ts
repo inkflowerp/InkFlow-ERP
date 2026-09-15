@@ -19,14 +19,13 @@ export async function getInAppNotificationsAction(
 ): Promise<ServerActionResult<InAppNotificationRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active tenant session found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const supabase = await createClient()
     let query = (supabase.from('in_app_notifications' as any) as any)
@@ -69,14 +68,13 @@ export async function markNotificationReadAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active tenant session found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const supabase = await createClient()
     const { error } = await (supabase.from('in_app_notifications' as any) as any)
@@ -108,14 +106,13 @@ export async function markAllNotificationsReadAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active tenant session found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const supabase = await createClient()
     let query = (supabase.from('in_app_notifications' as any) as any)
@@ -154,14 +151,13 @@ export async function deleteNotificationAction(
 ): Promise<ServerActionResult<boolean>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
+    if (!tenant || !tenant.companyId) {
       return {
         success: false,
-        error: 'Unauthorized: No active tenant session found.',
+        error: 'Unauthorized: Valid authenticated tenant session required.',
       }
     }
+    const companyId = tenant.companyId
 
     const supabase = await createClient()
     const { error } = await (supabase.from('in_app_notifications' as any) as any)

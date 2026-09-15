@@ -48,14 +48,13 @@ export async function getAuthoritativeSubscriptionSnapshotAction(
 ): Promise<ServerActionResult<SubscriptionSnapshot>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
-    const companyId = requestedCompanyId || tenant?.companyId
-    const slug = companySlug || tenant?.companySlug
-
-    if (!companyId && !slug) {
-      return { success: false, error: 'Unauthorized: No valid tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const slug = tenant.companySlug
 
-    const snapshot = await SubscriptionService.resolveTenantSubscription(companyId || '', slug)
+    const snapshot = await SubscriptionService.resolveTenantSubscription(companyId, slug)
     return { success: true, data: snapshot }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to resolve authoritative subscription snapshot' }
@@ -71,14 +70,13 @@ export async function getTenantSubscriptionAction(
 ): Promise<ServerActionResult<CompanySubscriptionRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
-    const companyId = requestedCompanyId || tenant?.companyId
-    const slug = companySlug || tenant?.companySlug
-
-    if (!companyId && !slug) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const slug = tenant.companySlug
 
-    const subscription = await SubscriptionService.getTenantSubscription(companyId || '', slug)
+    const subscription = await SubscriptionService.getTenantSubscription(companyId, slug)
     return { success: true, data: subscription }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch subscription' }
@@ -94,14 +92,13 @@ export async function getTenantEntitlementsAction(
 ): Promise<ServerActionResult<TenantEntitlements>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId || companySlug)
-    const companyId = requestedCompanyId || tenant?.companyId
-    const slug = companySlug || tenant?.companySlug
-
-    if (!companyId && !slug) {
-      return { success: false, error: 'Unauthorized: No valid tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const slug = tenant.companySlug
 
-    const entitlements = await EntitlementService.getTenantEntitlements(companyId || '', slug)
+    const entitlements = await EntitlementService.getTenantEntitlements(companyId, slug)
     return { success: true, data: entitlements }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch entitlements' }
@@ -303,7 +300,10 @@ export async function getSubscriptionEventsAction(
 ): Promise<ServerActionResult<SubscriptionEventRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
 
     const events = await SubscriptionService.getSubscriptionEvents(companyId)
     return { success: true, data: events }
@@ -354,11 +354,10 @@ export async function getTenantSubscriptionInvoicesAction(
 ): Promise<ServerActionResult<SubscriptionInvoiceRecord[]>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const invoices = await SubscriptionService.getTenantInvoices(companyId)
     return { success: true, data: invoices }

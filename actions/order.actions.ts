@@ -50,10 +50,10 @@ export async function createSalesOrderAction(
 ): Promise<ServerActionResult<SalesOrderRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId || !tenant) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     // Enforce Monthly Orders Plan Quota Limit
     await EntitlementService.enforceLimit(companyId, 'monthly_orders')
@@ -133,10 +133,10 @@ export async function updateOrderStatusAction(
 ): Promise<ServerActionResult<SalesOrderRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
-    const companyId = tenant?.companyId || requestedCompanyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const updated = await OrderService.updateOrder(orderId, { status }, companyId)
     if (!updated) {
@@ -190,10 +190,10 @@ export async function createNewWorkIntakeAction(
 ): Promise<ServerActionResult<NewWorkIntakeResult>> {
   try {
     const tenant = await getCurrentTenant(input.companyId)
-    const companyId = tenant?.companyId || input.companyId
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
 
     const { BillingRepository } = await import('@/lib/repositories/billing.repository')
     const { ProductionRepository } = await import('@/lib/repositories/production.repository')
