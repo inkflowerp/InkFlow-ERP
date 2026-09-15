@@ -23,6 +23,22 @@ import type {
 } from '../../types/billing.types.ts'
 import type { CustomerRecord } from '../../types/crm.types.ts'
 
+export function isValidUUID(str?: string | null): boolean {
+  if (!str) return false
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str)
+}
+
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
 export function isSupabaseConfigured(): boolean {
   return !!(
     (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL) &&
@@ -167,48 +183,81 @@ export class BillingRepository {
 
     try {
       const supabase = await createClient()
-      let query = (supabase as any)
-        .from('invoices')
-        .select('*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
-        .eq('company_id', companyId)
-        .order('created_at', { ascending: false })
+      
+      const buildQuery = (selectStr: string) => {
+        let q = (supabase as any)
+          .from('invoices')
+          .select(selectStr)
+          .eq('company_id', companyId)
+          .order('invoice_date', { ascending: false })
+          .order('created_at', { ascending: false })
 
-      if (filters?.status && filters.status !== 'all') {
-        if (filters.status === 'overdue') {
-          query = query.gt('due_amount', 0).lt('due_date', getTodayDateString())
-        } else if (filters.status === 'unpaid') {
-          query = query.in('status', ['unpaid', 'partially_paid']).gt('due_amount', 0)
-        } else if (filters.status === 'vat') {
-          query = query.eq('invoice_type', 'vat_invoice')
-        } else {
-          query = query.eq('status', filters.status)
+        if (filters?.status && filters.status !== 'all') {
+          if (filters.status === 'overdue') {
+            q = q.gt('due_amount', 0).lt('due_date', getTodayDateString())
+          } else if (filters.status === 'unpaid') {
+            q = q.in('status', ['unpaid', 'partially_paid']).gt('due_amount', 0)
+          } else if (filters.status === 'vat') {
+            q = q.eq('invoice_type', 'vat_invoice')
+          } else {
+            q = q.eq('status', filters.status)
+          }
         }
+
+        if (filters?.customerId) {
+          q = q.eq('customer_id', filters.customerId)
+        }
+
+        if (filters?.startDate) {
+          q = q.gte('invoice_date', filters.startDate)
+        }
+        if (filters?.endDate) {
+          q = q.lte('invoice_date', filters.endDate)
+        }
+
+        if (filters?.limit) {
+          q = q.limit(filters.limit)
+        }
+        if (filters?.offset) {
+          q = q.range(filters.offset, filters.offset + (filters.limit || 50) - 1)
+        }
+
+        return q
       }
 
-      if (filters?.customerId) {
-        query = query.eq('customer_id', filters.customerId)
+      // 1. Try full relational join query
+      let res = await buildQuery('*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
+      if (res.error) {
+        // 2. Resilient fallback query with items only
+        res = await buildQuery('*, items:invoice_items(*)')
+      }
+      if (res.error) {
+        // 3. Resilient fallback query with base table
+        res = await buildQuery('*')
       }
 
-      if (filters?.startDate) {
-        query = query.gte('invoice_date', filters.startDate)
-      }
-      if (filters?.endDate) {
-        query = query.lte('invoice_date', filters.endDate)
+      if (!res.error && res.data) {
+        const dbInvoices = (res.data || []) as unknown as InvoiceRecord[]
+        // Ensure items, payments, write_offs defaults
+        const formatted = dbInvoices.map((inv) => ({
+          ...inv,
+          items: inv.items || [],
+          payments: inv.payments || [],
+          write_offs: inv.write_offs || [],
+        }))
+
+        // Sync into client-side store for instant search
+        try {
+          const allLocal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+          const merged = [...formatted, ...allLocal.filter((l) => l.company_id && l.company_id !== companyId)]
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, merged)
+        } catch {}
+
+        return formatted
       }
 
-      if (filters?.limit) {
-        query = query.limit(filters.limit)
-      }
-      if (filters?.offset) {
-        query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1)
-      }
-
-      const { data, error } = await query
-      if (!error && data) {
-        return (data || []) as unknown as InvoiceRecord[]
-      }
-      if (error && mode === 'production') {
-        throw new Error(`Failed to query invoices from database: ${error.message}`)
+      if (res.error && mode === 'production') {
+        throw new Error(`Failed to query invoices from database: ${res.error.message}`)
       }
     } catch (err: any) {
       if (mode === 'production') {
@@ -261,18 +310,52 @@ export class BillingRepository {
 
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
-        .from('invoices')
-        .select('*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
-        .or(`id.eq.${id},invoice_number.eq.${id}`)
-        .eq('company_id', companyId)
-        .maybeSingle()
+      
+      const buildLookup = (selectStr: string) => {
+        let q = (supabase as any)
+          .from('invoices')
+          .select(selectStr)
+          .eq('company_id', companyId)
 
-      if (!error && data) {
-        return (data as unknown as InvoiceRecord) || null
+        if (isValidUUID(id)) {
+          q = q.or(`id.eq.${id},invoice_number.eq.${id}`)
+        } else {
+          q = q.eq('invoice_number', id)
+        }
+        return q.maybeSingle()
       }
-      if (error && mode === 'production') {
-        throw new Error(`Failed to retrieve invoice ${id}: ${error.message}`)
+
+      let res = await buildLookup('*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
+      if (res.error) {
+        res = await buildLookup('*, items:invoice_items(*)')
+      }
+      if (res.error) {
+        res = await buildLookup('*')
+      }
+
+      if (!res.error && res.data) {
+        const inv = res.data as unknown as InvoiceRecord
+        const formatted: InvoiceRecord = {
+          ...inv,
+          items: inv.items || [],
+          payments: inv.payments || [],
+          write_offs: inv.write_offs || [],
+        }
+
+        // Cache update
+        try {
+          const allLocal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+          const existingIdx = allLocal.findIndex((i) => i.id === formatted.id)
+          if (existingIdx >= 0) allLocal[existingIdx] = formatted
+          else allLocal.unshift(formatted)
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allLocal)
+        } catch {}
+
+        return formatted
+      }
+
+      if (res.error && mode === 'production') {
+        throw new Error(`Failed to retrieve invoice ${id}: ${res.error.message}`)
       }
     } catch (err: any) {
       if (mode === 'production') {
@@ -292,7 +375,7 @@ export class BillingRepository {
 
   static async createInvoice(invoice: Partial<InvoiceRecord> & {
     company_id: string
-    customer_id: string
+    customer_id?: string | null
     customer_name: string
     customer_phone: string
     due_date: string
@@ -304,6 +387,26 @@ export class BillingRepository {
     const invoiceNumber =
       invoice.invoice_number || (await this.getNextDocumentNumber(invoice.company_id, 'invoice'))
 
+    const invoiceId = invoice.id
+      ? (mode === 'production' && !isValidUUID(invoice.id) ? generateUUID() : invoice.id)
+      : generateUUID()
+    const validCustomerId = invoice.customer_id
+      ? (mode === 'production' && !isValidUUID(invoice.customer_id) ? null : invoice.customer_id)
+      : null
+    const validBranchId = invoice.branch_id
+      ? (mode === 'production' && !isValidUUID(invoice.branch_id) ? null : invoice.branch_id)
+      : null
+    const validQuotationId = invoice.quotation_id
+      ? (mode === 'production' && !isValidUUID(invoice.quotation_id) ? null : invoice.quotation_id)
+      : null
+    const validSalesOrderId = invoice.sales_order_id
+      ? (mode === 'production' && !isValidUUID(invoice.sales_order_id) ? null : invoice.sales_order_id)
+      : null
+    const validJobOrderId = invoice.job_order_id
+      ? (mode === 'production' && !isValidUUID(invoice.job_order_id) ? null : invoice.job_order_id)
+      : null
+    const validSalespersonId = invoice.salesperson_id && isValidUUID(invoice.salesperson_id) ? invoice.salesperson_id : null
+
     const subtotal = Number(invoice.subtotal) || Number(invoice.grand_total) || 0
     const vatPct = Number(invoice.vat_percentage) || 0
     const vatAmt = Number(invoice.vat_amount) || Math.round((subtotal * vatPct) / 100)
@@ -313,25 +416,25 @@ export class BillingRepository {
     const dueAmount = Math.max(0, grandTotal - paidAmount)
 
     const payload: any = {
-      id: invoice.id || `inv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: invoiceId,
       company_id: invoice.company_id,
-      branch_id: invoice.branch_id || null,
+      branch_id: validBranchId,
       invoice_number: invoiceNumber,
       invoice_type: invoice.invoice_type || 'sales_invoice',
-      customer_id: invoice.customer_id,
+      customer_id: validCustomerId,
       customer_name: invoice.customer_name,
       customer_phone: invoice.customer_phone,
       customer_email: invoice.customer_email || null,
       customer_bin: invoice.customer_bin || null,
       customer_tin: invoice.customer_tin || null,
       customer_address: invoice.customer_address || null,
-      quotation_id: invoice.quotation_id || null,
+      quotation_id: validQuotationId,
       quotation_number: invoice.quotation_number || null,
-      sales_order_id: invoice.sales_order_id || null,
+      sales_order_id: validSalesOrderId,
       order_number: invoice.order_number || null,
-      job_order_id: invoice.job_order_id || null,
+      job_order_id: validJobOrderId,
       job_number: invoice.job_number || null,
-      salesperson_id: invoice.salesperson_id || null,
+      salesperson_id: validSalespersonId,
       salesperson_name: invoice.salesperson_name || null,
       invoice_date: invoice.invoice_date || getTodayDateString(),
       due_date: invoice.due_date,
@@ -368,22 +471,67 @@ export class BillingRepository {
         }
       }
 
-      const { data, error } = await (supabase as any)
+      // Try inserting payload
+      let insertResult = await (supabase as any)
         .from('invoices')
         .insert(payload)
         .select()
         .single()
 
-      if (error) {
-        throw new Error(`Database insert failed for invoice: ${error.message}`)
+      if (insertResult.error) {
+        // Fail-safe: if extended columns fail due to schema evolution, retry with core columns
+        const corePayload = {
+          id: payload.id,
+          company_id: payload.company_id,
+          branch_id: payload.branch_id,
+          invoice_number: payload.invoice_number,
+          invoice_type: payload.invoice_type,
+          customer_id: payload.customer_id,
+          customer_name: payload.customer_name,
+          customer_phone: payload.customer_phone,
+          customer_bin: payload.customer_bin,
+          customer_tin: payload.customer_tin,
+          customer_address: payload.customer_address,
+          sales_order_id: payload.sales_order_id,
+          order_number: payload.order_number,
+          invoice_date: payload.invoice_date,
+          due_date: payload.due_date,
+          status: payload.status,
+          subtotal: payload.subtotal,
+          discount_amount: payload.discount_amount,
+          vat_percentage: payload.vat_percentage,
+          vat_amount: payload.vat_amount,
+          grand_total: payload.grand_total,
+          paid_amount: payload.paid_amount,
+          due_amount: payload.due_amount,
+          write_off_amount: payload.write_off_amount,
+          notes: payload.notes,
+          terms_and_conditions: payload.terms_and_conditions,
+          created_by_name: payload.created_by_name,
+          idempotency_key: payload.idempotency_key,
+          created_at: payload.created_at,
+          updated_at: payload.updated_at,
+        }
+        insertResult = await (supabase as any)
+          .from('invoices')
+          .insert(corePayload)
+          .select()
+          .single()
       }
+
+      if (insertResult.error) {
+        throw new Error(`Database insert failed for invoice: ${insertResult.error.message}`)
+      }
+
+      const data = insertResult.data
 
       if (data) {
         // Insert invoice items if present
         if (invoice.items && invoice.items.length > 0) {
           const itemsPayload = invoice.items.map((it: any) => ({
+            id: generateUUID(),
             invoice_id: data.id,
-            product_id: it.product_id || null,
+            product_id: it.product_id && isValidUUID(it.product_id) ? it.product_id : null,
             item_description: it.item_description || it.item_name || 'Printing Item',
             dimensions_spec:
               it.dimensions_spec ||
@@ -395,17 +543,23 @@ export class BillingRepository {
             total_price: Number(it.total_price) || (Number(it.quantity) * Number(it.unit_price)),
             finishing: it.finishing || null,
           }))
-          const { error: itemsErr } = await (supabase as any).from('invoice_items').insert(itemsPayload)
+
+          let { error: itemsErr } = await (supabase as any).from('invoice_items').insert(itemsPayload)
           if (itemsErr) {
-            throw new Error(`Failed to save line items: ${itemsErr.message}`)
+            // Fail-safe retry without finishing column if schema does not have it yet
+            const fallbackItems = itemsPayload.map(({ finishing, ...rest }) => rest)
+            const retryRes = await (supabase as any).from('invoice_items').insert(fallbackItems)
+            if (retryRes.error) {
+              throw new Error(`Failed to save line items: ${retryRes.error.message}`)
+            }
           }
         }
 
-        // Update customer total due balance in PostgreSQL
-        if (payload.customer_id && payload.customer_id !== '00000000-0000-0000-0000-000000000000') {
+        // Update customer total due balance in PostgreSQL if customer is linked
+        if (validCustomerId) {
           try {
             await (supabase as any).rpc('increment_customer_balance', {
-              p_customer_id: payload.customer_id,
+              p_customer_id: validCustomerId,
               p_due_delta: dueAmount,
               p_invoiced_delta: grandTotal,
             })
@@ -413,7 +567,7 @@ export class BillingRepository {
             const { data: cust } = await (supabase as any)
               .from('customers')
               .select('total_due_balance, total_invoiced_amount')
-              .eq('id', payload.customer_id)
+              .eq('id', validCustomerId)
               .maybeSingle()
             if (cust) {
               await (supabase as any)
@@ -423,12 +577,28 @@ export class BillingRepository {
                   total_invoiced_amount: (Number(cust.total_invoiced_amount) || 0) + grandTotal,
                   updated_at: new Date().toISOString(),
                 })
-                .eq('id', payload.customer_id)
+                .eq('id', validCustomerId)
             }
           }
         }
 
-        return (await this.getInvoiceById(data.id, invoice.company_id)) as InvoiceRecord
+        const retrieved = await this.getInvoiceById(data.id, invoice.company_id)
+        const finalInvoice = retrieved || {
+          ...payload,
+          id: data.id,
+          items: invoice.items || [],
+          payments: [],
+          write_offs: [],
+        }
+
+        // Sync into client store
+        try {
+          const allLocal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+          const filtered = allLocal.filter((i) => i.id !== finalInvoice.id)
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [finalInvoice, ...filtered])
+        } catch {}
+
+        return finalInvoice as InvoiceRecord
       }
     } catch (err: any) {
       if (mode === 'production') {
@@ -437,16 +607,35 @@ export class BillingRepository {
     }
 
     // In-memory simulation only for explicit test/training mode
+    const finalLocalInvoice: InvoiceRecord = {
+      ...payload,
+      items: (invoice.items || []).map((it: any, idx: number) => ({
+        id: it.id || generateUUID(),
+        invoice_id: payload.id,
+        item_description: it.item_description || it.item_name || 'Printing Item',
+        dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
+        quantity: Number(it.quantity) || 1,
+        unit: it.unit || 'pcs',
+        unit_price: Number(it.unit_price) || 0,
+        vat_percentage: Number(it.vat_percentage) || 0,
+        total_price: Number(it.total_price) || (Number(it.quantity) * Number(it.unit_price)),
+        finishing: it.finishing || null,
+        created_at: new Date().toISOString(),
+      })),
+      payments: [],
+      write_offs: [],
+    }
+
     const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    const idx = all.findIndex((i) => i.id === payload.id)
-    if (idx >= 0) all[idx] = payload
-    else all.push(payload)
+    const idx = all.findIndex((i) => i.id === finalLocalInvoice.id)
+    if (idx >= 0) all[idx] = finalLocalInvoice
+    else all.unshift(finalLocalInvoice)
     PrintERPDataStore.set(STORAGE_KEYS.INVOICES, all)
 
     // Sync Customer in in-memory store
-    if (payload.customer_id) {
+    if (validCustomerId) {
       const customers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
-      const cIdx = customers.findIndex((c) => c.id === payload.customer_id)
+      const cIdx = customers.findIndex((c) => c.id === validCustomerId)
       if (cIdx >= 0) {
         customers[cIdx] = {
           ...customers[cIdx],
@@ -459,7 +648,7 @@ export class BillingRepository {
       }
     }
 
-    return payload
+    return finalLocalInvoice
   }
 
   static async updateInvoice(
@@ -593,7 +782,7 @@ export class BillingRepository {
 
     // In-memory simulation only for explicit test/training mode
     const receiptNumber = await this.getNextDocumentNumber(params.companyId, 'payment')
-    const paymentId = `pay-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    const paymentId = generateUUID()
 
     const allocationRecords: PaymentAllocationRecord[] = []
     let totalAllocated = 0
@@ -624,7 +813,7 @@ export class BillingRepository {
             }
 
             allocationRecords.push({
-              id: `alloc-${Date.now()}-${allocationRecords.length + 1}`,
+              id: generateUUID(),
               payment_id: paymentId,
               invoice_id: inv.id,
               invoice_number: inv.invoice_number,
@@ -662,7 +851,7 @@ export class BillingRepository {
           }
 
           allocationRecords.push({
-            id: `alloc-${Date.now()}-${allocationRecords.length + 1}`,
+            id: generateUUID(),
             payment_id: paymentId,
             invoice_id: inv.id,
             invoice_number: inv.invoice_number,
@@ -830,7 +1019,7 @@ export class BillingRepository {
     }
 
     const payload: FinancialWriteOffRecord = {
-      id: `wo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: generateUUID(),
       ...writeOff,
       actor_user_id: writeOff.actor_user_id || null,
       created_at: new Date().toISOString(),

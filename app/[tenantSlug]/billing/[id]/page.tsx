@@ -41,7 +41,7 @@ import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
-import { getInvoicesAction, sendInvoiceAction, sendPaymentReminderAction } from '@/actions/billing.actions'
+import { getInvoiceByIdAction, getInvoicesAction, sendInvoiceAction, sendPaymentReminderAction } from '@/actions/billing.actions'
 
 export default function InvoiceCockpitPage() {
   const params = useParams()
@@ -58,8 +58,16 @@ export default function InvoiceCockpitPage() {
   const [notification, setNotification] = useState<string | null>(null)
 
   const loadInvoice = useCallback(async () => {
+    if (!invId) return
     setIsLoading(true)
     try {
+      const directRes = await getInvoiceByIdAction(invId, companyId)
+      if (directRes.success && directRes.data) {
+        setInvoice(directRes.data)
+        setDocMode(directRes.data.invoice_type || 'sales_invoice')
+        return
+      }
+
       const res = await getInvoicesAction(undefined, companyId)
       if (res.success && res.data) {
         const found = res.data.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)

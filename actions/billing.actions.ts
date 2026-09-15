@@ -303,7 +303,7 @@ export async function createInvoiceAction(
     const createdInvoice = await BillingService.createInvoice({
       company_id: companyId,
       branch_id: tenant.branchId || null,
-      customer_id: resolvedCustomerId || '00000000-0000-0000-0000-000000000000',
+      customer_id: resolvedCustomerId || null,
       customer_name: customerName,
       customer_phone: customerPhone,
       customer_email: customerEmail,
@@ -343,10 +343,41 @@ export async function createInvoiceAction(
       createdInvoice.customer_name
     )
 
-    revalidatePath('/', 'layout')
+    try {
+      revalidatePath('/[tenantSlug]/invoices', 'page')
+      revalidatePath('/[tenantSlug]/billing', 'page')
+      revalidatePath('/[tenantSlug]/billing/[id]', 'page')
+      revalidatePath('/', 'layout')
+    } catch {}
+
     return { success: true, data: createdInvoice }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to create invoice' }
+  }
+}
+
+/**
+ * Server Action: Fetch single invoice by ID or Invoice Number
+ */
+export async function getInvoiceByIdAction(
+  invoiceId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<InvoiceRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const invoice = await BillingService.getInvoiceById(invoiceId, companyId)
+    if (!invoice) {
+      return { success: false, error: 'Invoice not found.' }
+    }
+
+    return { success: true, data: invoice }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch invoice.' }
   }
 }
 
@@ -513,7 +544,12 @@ export async function recordMultiInvoicePaymentAction(
       payment.payment_method
     )
 
-    revalidatePath('/', 'layout')
+    try {
+      revalidatePath('/[tenantSlug]/invoices', 'page')
+      revalidatePath('/[tenantSlug]/billing', 'page')
+      revalidatePath('/[tenantSlug]/billing/[id]', 'page')
+      revalidatePath('/', 'layout')
+    } catch {}
     return { success: true, data: payment }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to record multi-invoice payment.' }
@@ -620,7 +656,12 @@ export async function recordWriteOffAction(
       actor_user_id: tenant.userId,
     })
 
-    revalidatePath('/', 'layout')
+    try {
+      revalidatePath('/[tenantSlug]/invoices', 'page')
+      revalidatePath('/[tenantSlug]/billing', 'page')
+      revalidatePath('/[tenantSlug]/billing/[id]', 'page')
+      revalidatePath('/', 'layout')
+    } catch {}
     return { success: true, data: writeOff }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to record financial write-off.' }
@@ -660,7 +701,12 @@ export async function cancelInvoiceAction(
       tenant.userId
     )
 
-    revalidatePath('/', 'layout')
+    try {
+      revalidatePath('/[tenantSlug]/invoices', 'page')
+      revalidatePath('/[tenantSlug]/billing', 'page')
+      revalidatePath('/[tenantSlug]/billing/[id]', 'page')
+      revalidatePath('/', 'layout')
+    } catch {}
     return { success: true, data: success }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to cancel invoice.' }

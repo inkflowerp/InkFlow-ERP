@@ -1195,6 +1195,7 @@ export default function BillingPage() {
         open={isNewInvoiceOpen}
         onOpenChange={setIsNewInvoiceOpen}
         onInvoiceCreated={(newInv) => {
+          setInvoices((prev) => [newInv, ...prev.filter((i) => i.id !== newInv.id)])
           showNotification(`Invoice #${newInv.invoice_number} created successfully!`)
           loadBillingData()
         }}

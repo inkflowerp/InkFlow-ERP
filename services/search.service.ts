@@ -3,24 +3,24 @@
 // Searches across core domains with strict tenant quarantine and RBAC gating.
 // ==============================================================================
 
-import {
+import type {
   SearchEntity,
   SearchResultItem,
   GroupedSearchResults,
   QuickCommand,
-} from '@/types/search.types'
-import { PrimaryRole } from '@/types/rbac.types'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { CustomerRecord } from '@/types/crm.types'
-import { SalesOrderRecord } from '@/types/order.types'
-import { QuotationRecord } from '@/types/quotation.types'
-import { InvoiceRecord } from '@/types/billing.types'
-import { MaterialRecord } from '@/types/inventory.types'
-import { ProductionJobRecord } from '@/types/production.types'
-import { DesignJobRecord } from '@/types/design.types'
-import { DeliveryChallanRecord } from '@/types/logistics.types'
-import { EmployeeRecord } from '@/types/hr.types'
-import { MachineryRecord } from '@/types/machinery.types'
+} from '../types/search.types.ts'
+import type { PrimaryRole } from '../types/rbac.types.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
+import type { CustomerRecord } from '../types/crm.types.ts'
+import type { SalesOrderRecord } from '../types/order.types.ts'
+import type { QuotationRecord } from '../types/quotation.types.ts'
+import type { InvoiceRecord } from '../types/billing.types.ts'
+import type { MaterialRecord } from '../types/inventory.types.ts'
+import type { ProductionJobRecord } from '../types/production.types.ts'
+import type { DesignJobRecord } from '../types/design.types.ts'
+import type { DeliveryChallanRecord } from '../types/logistics.types.ts'
+import type { EmployeeRecord } from '../types/hr.types.ts'
+import type { MachineryRecord } from '../types/machinery.types.ts'
 
 export const QUICK_COMMANDS: QuickCommand[] = [
   {
