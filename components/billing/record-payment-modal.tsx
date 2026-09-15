@@ -4,9 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Receipt,
   Search,
-  Plus,
   DollarSign,
-  Building2,
   Calendar,
   CreditCard,
   Smartphone,
@@ -20,31 +18,31 @@ import {
   ShieldCheck,
   UserCheck,
   Loader2,
-  Send,
   X,
   Copy,
   Check,
   ExternalLink,
+  ChevronRight,
+  AlertOctagon,
+  FileText,
+  RotateCcw,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { CustomerRecord } from '@/types/crm.types'
 import { InvoiceRecord, PaymentRecord, PaymentMethod } from '@/types/billing.types'
-import { formatBDT, numberToWordsBDT } from '@/lib/formatters'
+import { CustomerRecord } from '@/types/crm.types'
+import { formatBDT, numberToWordsBDT, calculateDaysOverdue } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { notify } from '@/lib/notifications/notification-bus'
 import { MoneyReceiptModal } from './money-receipt-modal'
-import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import {
-  recordMultiInvoicePaymentAction,
-  searchInvoiceCustomersAction,
+  recordPaymentAction,
   getInvoicesAction,
+  getInvoiceByIdAction,
 } from '@/actions/billing.actions'
 
 export interface RecordPaymentModalProps {
@@ -53,13 +51,14 @@ export interface RecordPaymentModalProps {
   preselectedCustomerId?: string
   preselectedInvoiceId?: string
   onPaymentRecorded?: (payment: PaymentRecord) => void
+  onSuccess?: () => void
 }
 
 const PAYMENT_METHODS: { id: PaymentMethod; labelEn: string; labelBn: string; icon: string; badge: string }[] = [
   { id: 'cash', labelEn: 'Cash Counter', labelBn: 'ক্যাশ কাউন্টার', icon: '💵', badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' },
   { id: 'bkash', labelEn: 'bKash Merchant', labelBn: 'বিকাশ মার্চেন্ট', icon: '📱', badge: 'bg-pink-50 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300' },
   { id: 'nagad', labelEn: 'Nagad Wallet', labelBn: 'নগদ ওয়ালেট', icon: '📱', badge: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' },
-  { id: 'bank', labelEn: 'Bank Transfer (EFT / RTGS)', labelBn: 'ব্যাংক ট্রান্সফার', icon: '🏦', badge: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' },
+  { id: 'bank', labelEn: 'Bank Transfer', labelBn: 'ব্যাংক ট্রান্সফার', icon: '🏦', badge: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' },
   { id: 'cheque', labelEn: 'Bank Cheque', labelBn: 'ব্যাংক চেক', icon: '📝', badge: 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300' },
   { id: 'other_mfs', labelEn: 'Rocket / Other MFS', labelBn: 'অন্যান্য এমএফএস', icon: '💳', badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300' },
 ]
@@ -70,295 +69,222 @@ export function RecordPaymentModal({
   preselectedCustomerId,
   preselectedInvoiceId,
   onPaymentRecorded,
+  onSuccess,
 }: RecordPaymentModalProps) {
   const { company } = useTenant()
   const { locale } = useI18n()
 
-  // Data lists
-  const [customers, setCustomers] = useState<CustomerRecord[]>([])
+  // Invoices list for search
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([])
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false)
+  const [isLoadingInvoices, setIsLoadingInvoices] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
-  // Customer Autocomplete / Selection
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null)
-  const [customerSearchQuery, setCustomerSearchQuery] = useState('')
-  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
-  const customerSearchRef = useRef<HTMLDivElement>(null)
+  // Selected Invoice & Customer State
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRecord | null>(null)
 
-  // Form State
+  // Payment Form State
   const [amount, setAmount] = useState<number | ''>('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
-  const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [paymentDate, setPaymentDate] = useState<string>(() => {
+    try {
+      return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Dhaka',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(new Date())
+    } catch {
+      return new Date().toISOString().split('T')[0]
+    }
+  })
   const [receivedByName, setReceivedByName] = useState('Cashier / Accountant')
+  const [referenceNo, setReferenceNo] = useState('')
+  const [bankName, setBankName] = useState('Islami Bank Bangladesh PLC')
   const [notes, setNotes] = useState('')
 
-  // Channel specific details
-  const [mfsTrxId, setMfsTrxId] = useState('')
-  const [mfsSenderNumber, setMfsSenderNumber] = useState('')
-  const [bankName, setBankName] = useState('Islami Bank Bangladesh PLC')
-  const [bankBranch, setBankBranch] = useState('')
-  const [chequeNumber, setChequeNumber] = useState('')
-  const [chequeDate, setChequeDate] = useState(new Date().toISOString().split('T')[0])
-
-  // Multi-Invoice Allocation Mode: 'fifo' | 'custom'
-  const [allocationMode, setAllocationMode] = useState<'fifo' | 'custom'>('fifo')
-  const [customAllocations, setCustomAllocations] = useState<Record<string, number>>({})
-
-  // Options & Post-Actions
-  const [sendNotification, setSendNotification] = useState(true)
-  const [autoOpenReceipt, setAutoOpenReceipt] = useState(true)
+  // Submission State
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  // Success State
+  // Success & Receipt State
   const [savedPayment, setSavedPayment] = useState<PaymentRecord | null>(null)
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
 
-  // Load Customers & Invoices on open
+  // Load unpaid invoices on modal open
+  const loadInvoices = React.useCallback(async () => {
+    if (!company?.id) return
+    setIsLoadingInvoices(true)
+    try {
+      const res = await getInvoicesAction({ status: 'unpaid' }, company.id)
+      if (res.success && res.data) {
+        setInvoices(res.data)
+      } else {
+        setInvoices([])
+      }
+    } catch {
+      setInvoices([])
+    } finally {
+      setIsLoadingInvoices(false)
+    }
+  }, [company?.id])
+
   useEffect(() => {
     if (open) {
       setSubmitError(null)
+      loadInvoices()
+    }
+  }, [open, loadInvoices])
 
-      // Fetch customers & invoices
-      searchInvoiceCustomersAction('', company?.id).then((res) => {
-        if (res.success && res.data) {
-          setCustomers(res.data)
-        } else {
-          const custList = PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS) || []
-          setCustomers(custList)
-        }
-      })
-
-      getInvoicesAction({ status: 'unpaid' }, company?.id).then((res) => {
-        if (res.success && res.data) {
-          setInvoices(res.data)
-        } else {
-          const invList = PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || []
-          setInvoices(invList)
-        }
-      })
-
-      if (preselectedCustomerId) {
-        setSelectedCustomerId(preselectedCustomerId)
-        searchInvoiceCustomersAction(preselectedCustomerId, company?.id).then((res) => {
-          if (res.success && res.data && res.data.length > 0) {
-            setSelectedCustomer(res.data[0])
+  // If preselectedInvoiceId provided, load and set that invoice directly
+  useEffect(() => {
+    if (open && preselectedInvoiceId) {
+      // Find in existing list or fetch directly
+      const found = invoices.find((i) => i.id === preselectedInvoiceId || i.invoice_number === preselectedInvoiceId)
+      if (found) {
+        handleSelectInvoice(found)
+      } else if (company?.id) {
+        getInvoiceByIdAction(preselectedInvoiceId, company.id).then((res) => {
+          if (res.success && res.data) {
+            handleSelectInvoice(res.data)
           }
         })
       }
+    } else if (open && preselectedCustomerId && !selectedInvoice) {
+      setSearchQuery(preselectedCustomerId)
     }
-  }, [open, preselectedCustomerId, company?.id])
+  }, [open, preselectedInvoiceId, preselectedCustomerId, invoices, company?.id])
 
-  // If preselected invoice, preset amount to its due
-  useEffect(() => {
-    if (open && preselectedInvoiceId && invoices.length > 0) {
-      const targetInv = invoices.find((i) => i.id === preselectedInvoiceId)
-      if (targetInv && targetInv.due_amount > 0) {
-        setSelectedCustomerId(targetInv.customer_id || '')
-        setAmount(targetInv.due_amount)
-        setCustomAllocations({ [targetInv.id]: targetInv.due_amount })
-        setAllocationMode('custom')
+  // Filtered Invoices matching search query
+  const matchingInvoices = useMemo(() => {
+    const activeUnpaid = invoices.filter((inv) => inv.due_amount > 0 && inv.status !== 'cancelled')
+    if (!searchQuery.trim()) return activeUnpaid.slice(0, 10)
 
-        const cust = customers.find((c) => c.id === targetInv.customer_id)
-        if (cust) setSelectedCustomer(cust)
-      }
-    }
-  }, [open, preselectedInvoiceId, invoices, customers])
-
-  // Click outside to close customer dropdown
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (customerSearchRef.current && !customerSearchRef.current.contains(e.target as Node)) {
-        setShowCustomerDropdown(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  // Customer Filter for Autocomplete
-  const filteredCustomers = useMemo(() => {
-    if (!customerSearchQuery.trim()) return customers.slice(0, 8)
-    const q = customerSearchQuery.toLowerCase()
-    return customers.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        (c.company_name && c.company_name.toLowerCase().includes(q)) ||
-        c.mobile.includes(q)
-    ).slice(0, 10)
-  }, [customers, customerSearchQuery])
-
-  // Unpaid Invoices for this customer
-  const customerUnpaidInvoices = useMemo(() => {
-    if (!selectedCustomerId) return []
-    return invoices
-      .filter((i) => i.customer_id === selectedCustomerId && Number(i.due_amount || 0) > 0 && i.status !== 'cancelled')
-      .sort((a, b) => new Date(a.invoice_date).getTime() - new Date(b.invoice_date).getTime())
-  }, [invoices, selectedCustomerId])
-
-  // Total Customer Outstanding Due
-  const totalCustomerDue = useMemo(() => {
-    return customerUnpaidInvoices.reduce((sum, inv) => sum + Number(inv.due_amount || 0), 0)
-  }, [customerUnpaidInvoices])
-
-  // Allocation Breakdown
-  const allocationBreakdown = useMemo(() => {
-    const payAmt = Number(amount) || 0
-
-    if (allocationMode === 'custom') {
-      return customerUnpaidInvoices.map((inv) => {
-        const invDue = Number(inv.due_amount) || 0
-        const customAlloc = Math.min(Number(customAllocations[inv.id]) || 0, invDue)
-        const remaining = Math.max(0, invDue - customAlloc)
-        return {
-          invoice: inv,
-          allocated: customAlloc,
-          remaining,
-          isFullySettled: remaining === 0 && customAlloc > 0,
-        }
-      })
-    }
-
-    // FIFO Mode
-    let remainingPay = payAmt
-    return customerUnpaidInvoices.map((inv) => {
-      const invDue = Number(inv.due_amount) || 0
-      const alloc = Math.min(remainingPay, invDue)
-      const remaining = Math.max(0, invDue - alloc)
-      remainingPay = Math.max(0, remainingPay - alloc)
-      return {
-        invoice: inv,
-        allocated: alloc,
-        remaining,
-        isFullySettled: remaining === 0 && alloc > 0,
-      }
+    const q = searchQuery.toLowerCase().trim()
+    return activeUnpaid.filter((inv) => {
+      const matchInvNo = inv.invoice_number.toLowerCase().includes(q)
+      const matchCust = inv.customer_name.toLowerCase().includes(q)
+      const matchPhone = inv.customer_phone ? inv.customer_phone.includes(q) : false
+      const matchOrder = inv.order_number ? inv.order_number.toLowerCase().includes(q) : false
+      const matchCustId = inv.customer_id ? inv.customer_id.toLowerCase().includes(q) : false
+      return matchInvNo || matchCust || matchPhone || matchOrder || matchCustId
     })
-  }, [amount, allocationMode, customAllocations, customerUnpaidInvoices])
+  }, [invoices, searchQuery])
 
-  // Unallocated surplus (Customer Advance)
-  const unallocatedSurplus = useMemo(() => {
-    const payAmt = Number(amount) || 0
-    const totalAlloc = allocationBreakdown.reduce((sum, item) => sum + item.allocated, 0)
-    return Math.max(0, payAmt - totalAlloc)
-  }, [amount, allocationBreakdown])
-
-  // Quick Preset Handlers
-  const handleSetFullDue = () => {
-    if (totalCustomerDue > 0) {
-      setAmount(totalCustomerDue)
-    }
-  }
-
-  const handleSetHalfDue = () => {
-    if (totalCustomerDue > 0) {
-      setAmount(Math.round(totalCustomerDue / 2))
-    }
-  }
-
-  const handleCustomAllocChange = (invId: string, value: number) => {
-    setCustomAllocations((prev) => ({
-      ...prev,
-      [invId]: Math.max(0, value),
-    }))
-  }
-
-  const handleSelectCustomer = (cust: CustomerRecord) => {
-    setSelectedCustomerId(cust.id)
-    setSelectedCustomer(cust)
-    setCustomerSearchQuery('')
-    setShowCustomerDropdown(false)
-  }
-
-  const handleClearCustomer = () => {
-    setSelectedCustomerId('')
-    setSelectedCustomer(null)
-    setCustomerSearchQuery('')
-  }
-
-  const handleResetForm = () => {
-    setAmount('')
-    setNotes('')
-    setMfsTrxId('')
-    setMfsSenderNumber('')
-    setChequeNumber('')
-    setSavedPayment(null)
+  // Handle invoice selection
+  const handleSelectInvoice = (inv: InvoiceRecord) => {
+    setSelectedInvoice(inv)
+    setAmount(inv.due_amount) // Default to full outstanding due
     setSubmitError(null)
   }
 
+  // Handle clearing invoice selection
+  const handleClearInvoice = () => {
+    setSelectedInvoice(null)
+    setAmount('')
+    setSubmitError(null)
+  }
+
+  // Quick Action: Set Full Due
+  const handleSetFullDue = () => {
+    if (selectedInvoice && selectedInvoice.due_amount > 0) {
+      setAmount(selectedInvoice.due_amount)
+      setSubmitError(null)
+    }
+  }
+
+  // Quick Action: Set Half Due (50%)
+  const handleSetHalfDue = () => {
+    if (selectedInvoice && selectedInvoice.due_amount > 0) {
+      const half = Math.round((selectedInvoice.due_amount / 2) * 100) / 100
+      setAmount(half)
+      setSubmitError(null)
+    }
+  }
+
+  // Outstanding calculations
+  const invoiceTotal = selectedInvoice ? Number(selectedInvoice.grand_total) || 0 : 0
+  const invoicePaid = selectedInvoice ? Number(selectedInvoice.paid_amount) || 0 : 0
+  const invoiceDue = selectedInvoice ? Number(selectedInvoice.due_amount) || 0 : 0
+
+  const numericAmount = Number(amount) || 0
+  const remainingDue = Math.max(0, Math.round((invoiceDue - numericAmount) * 100) / 100)
+  const isOverpaid = numericAmount > (invoiceDue + 0.001)
+  const isZeroOrNegative = numericAmount <= 0
+  const isFullySettled = remainingDue === 0 && numericAmount > 0 && !isOverpaid
+
+  // Handle form reset
+  const handleResetForm = () => {
+    setSelectedInvoice(null)
+    setAmount('')
+    setSearchQuery('')
+    setReferenceNo('')
+    setNotes('')
+    setSubmitError(null)
+    setSavedPayment(null)
+  }
+
+  // Handle submission
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     setSubmitError(null)
 
-    if (!selectedCustomerId) {
-      setSubmitError('Please select a customer before recording payment.')
+    if (!selectedInvoice) {
+      setSubmitError('Please search and select an invoice to collect payment.')
       return
     }
 
-    const payAmount = Number(amount) || 0
-    if (payAmount <= 0) {
+    if (isZeroOrNegative) {
       setSubmitError('Payment amount must be greater than ৳0.')
+      return
+    }
+
+    if (isOverpaid) {
+      setSubmitError(`Payment amount (৳${formatBDT(numericAmount)}) cannot exceed outstanding due (৳${formatBDT(invoiceDue)}).`)
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      const explicitAllocations =
-        allocationMode === 'custom'
-          ? Object.entries(customAllocations)
-              .filter(([_, amt]) => amt > 0)
-              .map(([invId, amt]) => ({ invoiceId: invId, amount: amt }))
-          : allocationBreakdown
-              .filter((a) => a.allocated > 0)
-              .map((a) => ({ invoiceId: a.invoice.id, amount: a.allocated }))
-
-      const res = await recordMultiInvoicePaymentAction(
+      const res = await recordPaymentAction(
         {
-          customerId: selectedCustomerId,
-          customerName: selectedCustomer?.name || 'Customer',
-          amount: payAmount,
+          invoiceId: selectedInvoice.id,
+          customerId: selectedInvoice.customer_id || undefined,
+          customerName: selectedInvoice.customer_name,
+          amount: numericAmount,
           paymentMethod,
-          paymentDate,
           bankName: paymentMethod === 'bank' || paymentMethod === 'cheque' ? bankName : null,
-          chequeNumber: paymentMethod === 'cheque' ? chequeNumber : null,
-          chequeDate: paymentMethod === 'cheque' ? chequeDate : null,
+          chequeNumber: paymentMethod === 'cheque' ? referenceNo : null,
           mfsTransactionId:
             paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'other_mfs'
-              ? mfsTrxId
+              ? referenceNo
               : null,
-          notes: notes || `Payment received from ${selectedCustomer?.name || 'Customer'} via ${paymentMethod.toUpperCase()}`,
+          notes: notes || `Payment for Invoice #${selectedInvoice.invoice_number} via ${paymentMethod.toUpperCase()}`,
           receivedByName,
-          idempotencyKey: `pay-${selectedCustomerId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          allocations: explicitAllocations,
+          idempotencyKey: `pay-${selectedInvoice.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         },
         company?.id
       )
 
       if (!res.success || !res.data) {
-        setSubmitError(res.error || 'Failed to record payment.')
+        setSubmitError(res.error || 'Failed to record payment. Transaction rolled back.')
         return
       }
 
       const payment = res.data
-
-      notify({
-        title: 'Payment Recorded (টাকা জমা সম্পন্ন)',
-        message: `৳ ${formatBDT(payAmount)} received from ${selectedCustomer?.name || 'Customer'} (Receipt: ${payment.receipt_number})`,
-        type: 'payment',
-      })
-
       setSavedPayment(payment)
 
       if (onPaymentRecorded) {
         onPaymentRecorded(payment)
       }
-
-      if (autoOpenReceipt) {
-        setIsReceiptModalOpen(true)
+      if (onSuccess) {
+        onSuccess()
       }
+
+      // Automatically open Money Receipt modal
+      setIsReceiptModalOpen(true)
     } catch (err: any) {
-      setSubmitError(err.message || 'Failed to record payment collection.')
+      setSubmitError(err.message || 'Error occurred while recording payment.')
     } finally {
       setIsSubmitting(false)
     }
@@ -372,626 +298,458 @@ export function RecordPaymentModal({
           if (!v) handleResetForm()
           onOpenChange(v)
         }}
-        size="5xl"
+        size="3xl"
         title={
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center">
-              <Receipt className="h-5 w-5" />
+            <div className="h-9 w-9 rounded-xl bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center font-bold">
+              <DollarSign className="h-5 w-5" />
             </div>
             <div>
               <h2 className="text-base font-black text-slate-900 dark:text-white">
-                {locale === 'bn' ? 'কাস্টমার পেমেন্ট ও মানি রিসিট (MR)' : 'Receive Customer Payment & Money Receipt'}
+                {locale === 'bn' ? 'পেমেন্ট আদায় (Receive Payment)' : 'Receive Payment'}
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Easier than Excel • Faster than paper • Transactional Settlement
+                Search invoice or customer • Partial or full collection • Instant receipt
               </p>
             </div>
           </div>
         }
         hideFooter
       >
-        <div className="space-y-4 pt-1 pb-4 max-h-[80vh] overflow-y-auto pr-1">
-          {/* SUCCESS BANNER */}
-          {savedPayment && (
-            <div className="rounded-xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-900 dark:text-emerald-200 animate-in fade-in-0">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span>
-                  <strong>Money Receipt #{savedPayment.receipt_number} Generated!</strong> Received: ৳{formatBDT(savedPayment.amount)} from {savedPayment.customer_name}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsReceiptModalOpen(true)}
-                  className="h-7 text-xs bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-100 dark:bg-slate-900 dark:text-emerald-300 dark:border-emerald-700 font-bold"
-                >
-                  <Printer className="h-3.5 w-3.5 mr-1" />
-                  View & Print MR
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleResetForm}
-                  className="h-7 text-xs text-slate-600 dark:text-slate-300"
-                >
-                  + Record Another
-                </Button>
-              </div>
-            </div>
-          )}
-
+        <div className="space-y-4 pt-1 pb-2">
           {/* ERROR BANNER */}
           {submitError && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 p-3.5 flex items-start gap-2.5 text-xs text-rose-900 dark:text-rose-200 animate-in fade-in-0">
+            <div className="rounded-xl border border-rose-300 bg-rose-50 dark:bg-rose-950/50 p-3 flex items-start gap-2.5 text-xs text-rose-800 dark:text-rose-200 animate-in fade-in-0">
               <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold">Validation Error:</span> {submitError}
+                <strong>Payment Error:</strong> {submitError}
               </div>
             </div>
           )}
 
-          {/* =========================================================================
-              SECTION 1: CUSTOMER SELECTION & RECEIVABLES
-             ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
-                  1
-                </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Customer & Balance
-                </h3>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {selectedCustomer && (
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
-                      <UserCheck className="h-3.5 w-3.5" />
-                      {selectedCustomer.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleClearCustomer}
-                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer"
-                    >
-                      Change
-                    </button>
-                  </div>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsCustomerModalOpen(true)}
-                  className="h-7 text-xs font-bold gap-1 text-emerald-600 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  + New Customer
-                </Button>
-              </div>
-            </div>
-
-            {/* Customer Search & Autocomplete */}
-            {!selectedCustomer ? (
-              <div className="relative" ref={customerSearchRef}>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Search & Select Customer <span className="text-rose-500">*</span>
+          {/* STEP 1: SEARCH & SELECT INVOICE (if no invoice selected) */}
+          {!selectedInvoice ? (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Search Invoice or Customer / চালান খুঁজুন</span>
+                  <span className="text-[10px] text-slate-400 font-normal">
+                    Invoice #, Customer Name, Phone
+                  </span>
                 </Label>
                 <div className="relative">
                   <Input
-                    placeholder="Search by name, company, or mobile number..."
-                    value={customerSearchQuery}
-                    onChange={(e) => {
-                      setCustomerSearchQuery(e.target.value)
-                      setShowCustomerDropdown(true)
-                    }}
-                    onFocus={() => setShowCustomerDropdown(true)}
-                    className="text-xs h-9 pr-8"
+                    placeholder="Type Invoice # (e.g. INV-1025), customer name, or phone..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-10 text-xs pl-9 pr-8 rounded-xl border-slate-300 dark:border-slate-700"
+                    autoFocus
                   />
-                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Matching Results List */}
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                  <span>Unpaid Invoices Matching Search ({matchingInvoices.length})</span>
+                  {isLoadingInvoices && <Loader2 className="h-3 w-3 animate-spin text-slate-400" />}
                 </div>
 
-                {showCustomerDropdown && filteredCustomers.length > 0 && (
-                  <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredCustomers.map((cust) => (
-                      <div
-                        key={cust.id}
-                        onClick={() => handleSelectCustomer(cust)}
-                        className="p-3 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 cursor-pointer text-xs flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="font-bold text-slate-900 dark:text-slate-100">{cust.name}</div>
-                          {cust.company_name && <div className="text-[11px] text-slate-500">🏢 {cust.company_name}</div>}
-                          <div className="text-[11px] font-mono text-emerald-600">📞 {cust.mobile}</div>
+                {isLoadingInvoices ? (
+                  <div className="p-8 text-center text-xs text-slate-500 space-y-2">
+                    <Loader2 className="h-5 w-5 animate-spin mx-auto text-emerald-600" />
+                    <p>Searching invoices...</p>
+                  </div>
+                ) : matchingInvoices.length === 0 ? (
+                  <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 space-y-1">
+                    <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto" />
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      No matching unpaid invoices found.
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      All matching accounts are paid, or invoice number does not exist.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden max-h-72 overflow-y-auto">
+                    {matchingInvoices.map((inv) => {
+                      const daysOverdue = calculateDaysOverdue(inv.due_date)
+                      return (
+                        <div
+                          key={inv.id}
+                          onClick={() => handleSelectInvoice(inv)}
+                          className="p-3 hover:bg-emerald-50/50 dark:hover:bg-slate-900/60 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                                #{inv.invoice_number}
+                              </span>
+                              <span className="font-bold text-slate-900 dark:text-white truncate">
+                                {inv.customer_name}
+                              </span>
+                              {inv.customer_phone && (
+                                <span className="text-slate-500 text-[11px] font-mono">
+                                  ({inv.customer_phone})
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-x-3 font-mono">
+                              <span>Date: {inv.invoice_date}</span>
+                              <span>Total: ৳{formatBDT(inv.grand_total)}</span>
+                              <span>Paid: ৳{formatBDT(inv.paid_amount || 0)}</span>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0 flex items-center gap-3">
+                            <div>
+                              <div className="font-mono font-black text-rose-600 dark:text-rose-400 text-sm">
+                                ৳ {formatBDT(inv.due_amount)} DUE
+                              </div>
+                              {daysOverdue > 0 ? (
+                                <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider block">
+                                  {daysOverdue}d Overdue
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">
+                                  {inv.status === 'partially_paid' ? 'Partially Paid' : 'Unpaid'}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              size="sm"
+                              className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1 px-3 shadow-xs"
+                            >
+                              <span>Select</span>
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <span className="text-[10px] text-slate-400 block font-semibold">Total Due</span>
-                          <span className="font-mono font-bold text-xs text-rose-600">
-                            ৳ {formatBDT(cust.total_due_balance || 0)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div>
-                  <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
-                    <span>{selectedCustomer.name}</span>
-                    {selectedCustomer.company_name && (
-                      <span className="font-normal text-slate-500">({selectedCustomer.company_name})</span>
+            </div>
+          ) : (
+            /* STEP 2: INVOICE SUMMARY & PAYMENT COLLECTION FORM */
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* SELECTED INVOICE SUMMARY CARD */}
+              <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 dark:border-blue-900/60 dark:bg-blue-950/20 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-blue-700 dark:text-blue-300 font-bold uppercase tracking-wider">
+                      Selected Invoice
+                    </span>
+                    <strong className="font-mono text-sm font-black text-slate-900 dark:text-white">
+                      #{selectedInvoice.invoice_number}
+                    </strong>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      • {selectedInvoice.customer_name}
+                    </span>
+                    {selectedInvoice.customer_phone && (
+                      <span className="text-xs text-slate-500 font-mono">
+                        ({selectedInvoice.customer_phone})
+                      </span>
                     )}
                   </div>
-                  <div className="text-slate-500 text-[11px] font-mono">
-                    Phone: {selectedCustomer.mobile} {selectedCustomer.address ? `• ${selectedCustomer.address}` : ''}
-                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearInvoice}
+                    className="h-7 text-xs text-blue-700 hover:text-blue-900 dark:text-blue-400 gap-1 px-2"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Change Invoice</span>
+                  </Button>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Outstanding Due</span>
-                    <span className="text-sm font-black font-mono text-rose-600">
-                      ৳ {formatBDT(totalCustomerDue)}
+                {/* 3 Prominent Stat Cards */}
+                <div className="grid grid-cols-3 gap-2.5 pt-1 text-center font-mono">
+                  <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider block">
+                      Invoice Total
                     </span>
+                    <strong className="text-xs font-bold text-slate-900 dark:text-white">
+                      ৳ {formatBDT(invoiceTotal)}
+                    </strong>
                   </div>
-                  <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 font-bold border-blue-200">
-                    {customerUnpaidInvoices.length} Open Invoices
-                  </Badge>
-                </div>
-              </div>
-            )}
-          </div>
 
-          {/* =========================================================================
-              SECTION 2: PAYMENT COLLECTION DETAILS
-             ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
-                2
-              </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Payment Collection Details
-              </h3>
-            </div>
-
-            {/* Amount with Quick Presets */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="payAmount" className="text-xs font-semibold">
-                  Amount Received (৳ BDT) <span className="text-rose-500">*</span>
-                </Label>
-                {totalCustomerDue > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={handleSetFullDue}
-                      className="px-2 py-0.5 text-[11px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-md border border-emerald-200 dark:border-emerald-800 cursor-pointer"
-                    >
-                      Full Due (৳ {formatBDT(totalCustomerDue)})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSetHalfDue}
-                      className="px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 rounded-md cursor-pointer"
-                    >
-                      50% (৳ {formatBDT(Math.round(totalCustomerDue / 2))})
-                    </button>
+                  <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <span className="text-[10px] text-emerald-600 uppercase tracking-wider block">
+                      Paid
+                    </span>
+                    <strong className="text-xs font-bold text-emerald-600">
+                      ৳ {formatBDT(invoicePaid)}
+                    </strong>
                   </div>
-                )}
-              </div>
 
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-sm">৳</span>
-                <Input
-                  id="payAmount"
-                  type="number"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="pl-8 text-base font-mono font-bold h-11 border-slate-300 dark:border-slate-700 focus:border-emerald-500"
-                  required
-                  min={1}
-                />
-              </div>
-
-              {Number(amount) > 0 && (
-                <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium italic">
-                  In Words: <strong>{numberToWordsBDT(Number(amount))}</strong>
-                </div>
-              )}
-            </div>
-
-            {/* Payment Channel */}
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold block">
-                Payment Channel <span className="text-rose-500">*</span>
-              </Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {PAYMENT_METHODS.map((pm) => {
-                  const isSelected = paymentMethod === pm.id
-                  return (
-                    <button
-                      key={pm.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(pm.id)}
-                      className={cn(
-                        'p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer',
-                        isSelected
-                          ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 shadow-xs ring-1 ring-emerald-500'
-                          : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      )}
-                    >
-                      <span className="text-lg">{pm.icon}</span>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-bold truncate">{pm.labelEn}</div>
-                        <div className="text-[10px] text-slate-400 truncate">{pm.labelBn}</div>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Channel Dynamic Fields */}
-            {(paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'other_mfs') && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">
-                    MFS Transaction ID (TrxID) <span className="text-rose-500">*</span>
-                  </Label>
-                  <Input
-                    placeholder="e.g. 9J48KL21"
-                    value={mfsTrxId}
-                    onChange={(e) => setMfsTrxId(e.target.value)}
-                    className="h-9 text-xs font-mono font-bold uppercase"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Sender Mobile Number (Optional)</Label>
-                  <Input
-                    placeholder="01XXXXXXXXX"
-                    value={mfsSenderNumber}
-                    onChange={(e) => setMfsSenderNumber(e.target.value)}
-                    className="h-9 text-xs font-mono"
-                  />
-                </div>
-              </div>
-            )}
-
-            {(paymentMethod === 'bank' || paymentMethod === 'cheque') && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">
-                    Bank Name <span className="text-rose-500">*</span>
-                  </Label>
-                  <Input
-                    placeholder="e.g. Islami Bank, DBBL, BRAC Bank"
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    className="h-9 text-xs font-semibold"
-                    required
-                  />
-                </div>
-
-                {paymentMethod === 'bank' && (
-                  <div className="space-y-1">
-                    <Label className="text-xs font-semibold">Branch / Deposit Slip Reference</Label>
-                    <Input
-                      placeholder="e.g. Motijheel Branch / Slip #889"
-                      value={bankBranch}
-                      onChange={(e) => setBankBranch(e.target.value)}
-                      className="h-9 text-xs"
-                    />
+                  <div className="p-2 bg-rose-50 dark:bg-rose-950/50 rounded-lg border border-rose-200 dark:border-rose-900/60">
+                    <span className="text-[10px] text-rose-700 dark:text-rose-400 font-bold uppercase tracking-wider block">
+                      Outstanding Due
+                    </span>
+                    <strong className="text-sm font-black text-rose-600 dark:text-rose-400">
+                      ৳ {formatBDT(invoiceDue)}
+                    </strong>
                   </div>
-                )}
-
-                {paymentMethod === 'cheque' && (
-                  <>
-                    <div className="space-y-1">
-                      <Label className="text-xs font-semibold">
-                        Cheque Number <span className="text-rose-500">*</span>
-                      </Label>
-                      <Input
-                        placeholder="e.g. CQ-9948210"
-                        value={chequeNumber}
-                        onChange={(e) => setChequeNumber(e.target.value)}
-                        className="h-9 text-xs font-mono font-bold"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1 sm:col-span-2">
-                      <Label className="text-xs font-semibold">Cheque Date</Label>
-                      <Input
-                        type="date"
-                        value={chequeDate}
-                        onChange={(e) => setChequeDate(e.target.value)}
-                        className="h-9 text-xs"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Date & Received By */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">
-                  Payment Collection Date <span className="text-rose-500">*</span>
-                </Label>
-                <Input
-                  type="date"
-                  value={paymentDate}
-                  onChange={(e) => setPaymentDate(e.target.value)}
-                  className="h-9 text-xs"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">
-                  Received / Collected By <span className="text-rose-500">*</span>
-                </Label>
-                <Input
-                  value={receivedByName}
-                  onChange={(e) => setReceivedByName(e.target.value)}
-                  className="h-9 text-xs"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* =========================================================================
-              SECTION 3: MULTI-INVOICE ALLOCATION & SETTLEMENT
-             ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
-                  3
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Invoice Allocation & Settlement
-                </h3>
               </div>
 
-              {/* Mode Toggle */}
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-[11px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => setAllocationMode('fifo')}
-                  className={cn(
-                    'px-2.5 py-1 rounded-md transition-all cursor-pointer',
-                    allocationMode === 'fifo'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
-                  )}
-                >
-                  Auto FIFO
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAllocationMode('custom')}
-                  className={cn(
-                    'px-2.5 py-1 rounded-md transition-all cursor-pointer',
-                    allocationMode === 'custom'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
-                  )}
-                >
-                  Custom
-                </button>
-              </div>
-            </div>
-
-            {customerUnpaidInvoices.length === 0 ? (
-              <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-center space-y-1">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto" />
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  No open invoices for this customer
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  This payment will be recorded as an advance customer credit for future job orders.
-                </p>
-              </div>
-            ) : (
+              {/* PAYMENT INPUT & PRESET ACTIONS */}
               <div className="space-y-2">
-                <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden text-xs">
-                  <table className="w-full text-left">
-                    <thead className="bg-slate-100/80 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-semibold text-[11px]">
-                      <tr>
-                        <th className="p-2.5">Invoice #</th>
-                        <th className="p-2.5">Date</th>
-                        <th className="p-2.5 text-right">Invoice Due</th>
-                        <th className="p-2.5 text-right">Allocating</th>
-                        <th className="p-2.5 text-right">Remaining Due</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {allocationBreakdown.map(({ invoice, allocated, remaining, isFullySettled }) => (
-                        <tr key={invoice.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
-                          <td className="p-2.5 font-mono font-bold text-blue-600 dark:text-blue-400">
-                            {invoice.invoice_number}
-                          </td>
-                          <td className="p-2.5 text-slate-500 text-[11px]">{invoice.invoice_date}</td>
-                          <td className="p-2.5 text-right font-mono font-bold text-slate-900 dark:text-white">
-                            ৳ {formatBDT(invoice.due_amount)}
-                          </td>
-                          <td className="p-2.5 text-right">
-                            {allocationMode === 'custom' ? (
-                              <Input
-                                type="number"
-                                value={customAllocations[invoice.id] ?? ''}
-                                onChange={(e) => handleCustomAllocChange(invoice.id, Number(e.target.value) || 0)}
-                                className="h-7 w-24 text-right text-xs font-mono font-bold ml-auto"
-                                max={invoice.due_amount}
-                              />
-                            ) : (
-                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                ৳ {formatBDT(allocated)}
-                              </span>
-                            )}
-                          </td>
-                          <td className="p-2.5 text-right font-mono font-bold">
-                            {isFullySettled ? (
-                              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] py-0">
-                                Settle Full (৳0)
-                              </Badge>
-                            ) : (
-                              <span className="text-slate-700 dark:text-slate-300">
-                                ৳ {formatBDT(remaining)}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <DollarSign className="h-4 w-4 text-emerald-600" />
+                    <span>Payment Amount (টাকার পরিমাণ)*</span>
+                  </Label>
+
+                  {/* Quick Preset Buttons */}
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleSetHalfDue}
+                      className="h-6 text-[11px] px-2 font-bold text-slate-600 hover:text-slate-900"
+                    >
+                      50% Due (৳{formatBDT(Math.round(invoiceDue / 2))})
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleSetFullDue}
+                      className="h-6 text-[11px] px-2.5 font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      Collect Full Due (৳{formatBDT(invoiceDue)})
+                    </Button>
+                  </div>
                 </div>
 
-                {unallocatedSurplus > 0 && (
-                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
-                    <span>
-                      Surplus payment of <strong>৳ {formatBDT(unallocatedSurplus)}</strong> will be credited as Customer Advance.
-                    </span>
-                  </div>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-2.5 text-base font-black text-slate-500 font-mono">
+                    ৳
+                  </span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    max={invoiceDue}
+                    inputMode="decimal"
+                    placeholder="Enter amount (partial or full)"
+                    value={amount}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : Number(e.target.value)
+                      setAmount(val)
+                      setSubmitError(null)
+                    }}
+                    className={cn(
+                      'h-11 pl-8 text-base font-black font-mono rounded-xl',
+                      isOverpaid && 'border-rose-500 focus-visible:ring-rose-500',
+                      !isOverpaid && numericAmount > 0 && 'border-emerald-500 focus-visible:ring-emerald-500'
+                    )}
+                    autoFocus
+                  />
+                </div>
+
+                {numericAmount > 0 && (
+                  <p className="text-[11px] text-slate-500 italic">
+                    In words: {numberToWordsBDT(numericAmount)}
+                  </p>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* =========================================================================
-              SECTION 4: REMARKS & POST-ACTIONS
-             ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
-                4
+              {/* LIVE PAYMENT PREVIEW & PROJECTED INVOICE STATUS */}
+              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+                <div className="flex items-center justify-between font-mono">
+                  <span className="text-slate-500">Outstanding Due:</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-300">৳ {formatBDT(invoiceDue)}</span>
+                </div>
+                <div className="flex items-center justify-between font-mono">
+                  <span className="text-emerald-600 font-bold">Collecting Now:</span>
+                  <span className="font-black text-emerald-600">৳ {formatBDT(numericAmount)}</span>
+                </div>
+                <div className="flex items-center justify-between font-mono pt-1 border-t border-slate-200 dark:border-slate-800">
+                  <span className="font-bold text-slate-900 dark:text-white">Remaining Due After Payment:</span>
+                  <span className={cn('font-black text-sm', remainingDue === 0 ? 'text-emerald-600' : 'text-rose-600')}>
+                    ৳ {formatBDT(remainingDue)}
+                  </span>
+                </div>
+
+                {/* Status Indicator */}
+                <div className="pt-1 flex items-center justify-between text-[11px] font-bold">
+                  <span>Projected Status:</span>
+                  {isOverpaid ? (
+                    <span className="text-rose-600 flex items-center gap-1">
+                      <AlertTriangle className="h-3.5 w-3.5" /> Amount exceeds due balance!
+                    </span>
+                  ) : isFullySettled ? (
+                    <span className="text-emerald-600 flex items-center gap-1">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Invoice will become Paid
+                    </span>
+                  ) : numericAmount > 0 ? (
+                    <span className="text-blue-600 flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5 text-blue-600" /> Invoice will remain Partially Paid (৳{formatBDT(remainingDue)} due)
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">Enter amount above</span>
+                  )}
+                </div>
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Remarks & Post-Actions
-              </h3>
-            </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Purpose / Remarks (On Account of)</Label>
-              <Input
-                placeholder="e.g. Settlement of banner print bill"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
+              {/* PAYMENT METHOD SELECTION */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  Payment Method (পদ্ধতি)*
+                </Label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {PAYMENT_METHODS.map((m) => {
+                    const isSelected = paymentMethod === m.id
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(m.id)}
+                        className={cn(
+                          'p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-center justify-center gap-1 text-center',
+                          isSelected
+                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-xs'
+                            : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300'
+                        )}
+                      >
+                        <span className="text-base">{m.icon}</span>
+                        <span className="text-[10px] leading-tight">
+                          {locale === 'bn' ? m.labelBn : m.labelEn}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
 
-            <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={autoOpenReceipt}
-                  onChange={(e) => setAutoOpenReceipt(e.target.checked)}
-                  className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+              {/* PAYMENT DATE & REFERENCE */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Payment Date (তারিখ)*
+                  </Label>
+                  <Input
+                    type="date"
+                    value={paymentDate}
+                    onChange={(e) => setPaymentDate(e.target.value)}
+                    className="h-9 text-xs rounded-lg"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    {paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'other_mfs'
+                      ? 'TrxID / Transaction No.'
+                      : paymentMethod === 'cheque'
+                      ? 'Cheque Number'
+                      : paymentMethod === 'bank'
+                      ? 'Bank Reference / Slip No.'
+                      : 'Reference (Optional)'}
+                  </Label>
+                  <Input
+                    placeholder={
+                      paymentMethod === 'bkash' || paymentMethod === 'nagad'
+                        ? 'e.g. 9J83KX92'
+                        : paymentMethod === 'cheque'
+                        ? 'e.g. CHQ-482019'
+                        : 'Optional transaction note'
+                    }
+                    value={referenceNo}
+                    onChange={(e) => setReferenceNo(e.target.value)}
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
+
+              {/* OPTIONAL NOTES */}
+              <div className="space-y-1 text-xs">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Notes (মন্তব্য)
+                </Label>
+                <Input
+                  placeholder="e.g. Collected by cashier at desk / Received advance payment"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="h-8 text-xs rounded-lg"
                 />
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  Open official printable Money Receipt (MR) upon saving
-                </span>
-              </label>
+              </div>
 
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={sendNotification}
-                  onChange={(e) => setSendNotification(e.target.checked)}
-                  className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4"
-                />
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  Generate WhatsApp payment confirmation for customer ({selectedCustomer?.mobile || 'Customer'})
-                </span>
-              </label>
-            </div>
-          </div>
-        </div>
+              {/* DYNAMIC CONFIRMATION BUTTON */}
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onOpenChange(false)}
+                  className="h-10 text-xs px-4"
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
 
-        {/* =========================================================================
-            STANDARDIZED MODAL BOTTOM ACTION BAR
-           ========================================================================= */}
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              handleResetForm()
-              onOpenChange(false)
-            }}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            Cancel
-          </Button>
-
-          <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
-            {savedPayment && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsReceiptModalOpen(true)}
-                className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1.5"
-              >
-                <Printer className="h-4 w-4" />
-                <span>View / Print MR</span>
-              </Button>
-            )}
-
-            <Button
-              type="button"
-              onClick={() => handleSubmit()}
-              disabled={isSubmitting || !selectedCustomerId || !amount || Number(amount) <= 0}
-              className="h-10 px-5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Recording Payment...</span>
-                </>
-              ) : (
-                <>
-                  <Receipt className="h-4 w-4" />
-                  <span>Save & Issue Money Receipt</span>
-                </>
-              )}
-            </Button>
-          </div>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isSubmitting || isZeroOrNegative || isOverpaid}
+                  className={cn(
+                    'h-10 text-xs font-black text-white px-6 shadow-md gap-2 rounded-xl transition-all',
+                    isFullySettled
+                      ? 'bg-emerald-600 hover:bg-emerald-700'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  )}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Recording Payment...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>
+                        {numericAmount > 0
+                          ? `Collect ৳${formatBDT(numericAmount)}`
+                          : 'Enter Payment Amount'}
+                      </span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
       </ModalDialog>
 
-      {/* QUICK NEW CUSTOMER MODAL */}
-      <NewCustomerModal
-        open={isCustomerModalOpen}
-        onOpenChange={setIsCustomerModalOpen}
-        onCustomerCreated={(newCust) => {
-          setCustomers((prev) => [newCust, ...prev])
-          setSelectedCustomerId(newCust.id)
-          setSelectedCustomer(newCust)
-        }}
-      />
-
-      {/* OFFICIAL MONEY RECEIPT VIEWER MODAL */}
-      <MoneyReceiptModal
-        open={isReceiptModalOpen}
-        onOpenChange={setIsReceiptModalOpen}
-        payment={savedPayment}
-        customer={selectedCustomer}
-        invoices={customerUnpaidInvoices}
-      />
+      {/* MONEY RECEIPT MODAL (AUTO TRIGGERED ON SUCCESS) */}
+      {savedPayment && (
+        <MoneyReceiptModal
+          open={isReceiptModalOpen}
+          onOpenChange={setIsReceiptModalOpen}
+          payment={savedPayment}
+          customer={null}
+          invoices={selectedInvoice ? [selectedInvoice] : []}
+        />
+      )}
     </>
   )
 }
+
+// Export alias for seamless backwards-compatibility
+export const ReceivePaymentModal = RecordPaymentModal

@@ -97,8 +97,8 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
         },
         {
           key: 'billing',
-          title: 'Invoices & Payments',
-          titleBn: 'ইনভয়েস ও পেমেন্ট',
+          title: 'Billing & Collections',
+          titleBn: 'বিলিং ও কালেকশন',
           href: `/${tenantSlug}/billing`,
           icon: 'Receipt',
           permission: { action: 'view', resource: 'invoices' },

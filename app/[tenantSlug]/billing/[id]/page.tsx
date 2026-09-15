@@ -38,8 +38,6 @@ import {
   formatBDT,
 } from '@/lib/formatters'
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
-import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { getInvoiceByIdAction, getInvoicesAction, sendInvoiceAction, sendPaymentReminderAction } from '@/actions/billing.actions'
 
@@ -77,20 +75,9 @@ export default function InvoiceCockpitPage() {
           return
         }
       }
-      // Local fallback
-      const local = PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || []
-      const foundLocal = local.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
-      if (foundLocal) {
-        setInvoice(foundLocal)
-        setDocMode(foundLocal.invoice_type || 'sales_invoice')
-      }
+      setInvoice(null)
     } catch {
-      const local = PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES) || []
-      const foundLocal = local.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
-      if (foundLocal) {
-        setInvoice(foundLocal)
-        setDocMode(foundLocal.invoice_type || 'sales_invoice')
-      }
+      setInvoice(null)
     } finally {
       setIsLoading(false)
     }
