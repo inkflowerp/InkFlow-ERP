@@ -76,19 +76,65 @@ export interface QuotationRecord {
   notes?: string | null // Customer-facing notes
   terms_and_conditions?: string | null // Terms & conditions
   internal_notes?: string | null // Internal notes (visible only to staff)
+  follow_up_date?: string | null
+  follow_up_status?: 'pending' | 'completed' | 'overdue' | null
+  last_follow_up_method?: 'whatsapp' | 'phone' | 'email' | 'in_person' | 'other' | null
+  last_follow_up_at?: string | null
+  last_follow_up_note?: string | null
+  next_action?: string | null
+  follow_up_count?: number
   converted_order_id?: string | null
   converted_invoice_id?: string | null
   created_at: string
   updated_at: string
 }
 
+export type QuotationActivityAction =
+  | 'created'
+  | 'sent'
+  | 'viewed'
+  | 'negotiated'
+  | 'approved'
+  | 'rejected'
+  | 'expired'
+  | 'converted'
+  | 'follow_up'
+  | 'status_change'
+
 export interface QuotationActivityRecord {
   id: string
   quotation_id: string
-  action: 'created' | 'sent' | 'viewed' | 'negotiated' | 'approved' | 'rejected' | 'expired' | 'converted'
+  action: QuotationActivityAction
   details?: string | null
   actor_name: string
   created_at: string
+}
+
+export type FollowUpMethod = 'whatsapp' | 'phone' | 'email' | 'in_person' | 'other'
+
+export type FollowUpOutcome =
+  | 'interested'
+  | 'negotiating'
+  | 'approved'
+  | 'price_high'
+  | 'competitor_chosen'
+  | 'postponed'
+  | 'no_response'
+  | 'other'
+
+export interface RecordFollowUpPayload {
+  quotationId: string
+  method: FollowUpMethod
+  note: string
+  outcome?: FollowUpOutcome
+  nextFollowUpDate?: string | null
+  markResponded?: boolean
+}
+
+export interface ApplyNegotiationPayload {
+  quotationId: string
+  discountAmount: number
+  notes?: string
 }
 
 export interface CreateQuotationItemInput {

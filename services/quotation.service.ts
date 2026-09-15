@@ -68,24 +68,243 @@ export class QuotationService {
     return true
   }
 
-  static async convertToOrder(quoteId: string): Promise<SalesOrderRecord | null> {
-    return PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
+  static async convertToOrder(quoteId: string, companyId: string = 'c-01', options?: { createdByName?: string; advanceAmount?: number }): Promise<any> {
+    return QuotationRepository.convertQuotationToJobOrder(quoteId, companyId, options)
   }
 
   static async convertToInvoice(quoteId: string, companyId: string = 'c-01', createdByName?: string): Promise<InvoiceRecord> {
     return QuotationRepository.convertQuotationToInvoice(quoteId, companyId, { createdByName })
   }
 
+  static async recordFollowUp(
+    quotationId: string,
+    companyId: string = 'c-01',
+    data: {
+      method: 'whatsapp' | 'phone' | 'email' | 'in_person' | 'other'
+      note: string
+      outcome?: string
+      nextFollowUpDate?: string | null
+      markResponded?: boolean
+    },
+    actorName?: string
+  ): Promise<QuotationRecord | null> {
+    return QuotationRepository.recordFollowUp(quotationId, companyId, data, actorName)
+  }
+
+  static async applyNegotiation(
+    quotationId: string,
+    companyId: string = 'c-01',
+    discountAmount: number,
+    notes?: string,
+    actorName?: string
+  ): Promise<QuotationRecord | null> {
+    return QuotationRepository.applyNegotiation(quotationId, companyId, discountAmount, notes, actorName)
+  }
+
+  static async updateStatus(
+    quotationId: string,
+    newStatus: QuotationStatus,
+    reason?: string,
+    companyId: string = 'c-01',
+    actorName?: string
+  ): Promise<QuotationRecord | null> {
+    return QuotationRepository.updateStatus(quotationId, newStatus, reason, companyId, actorName)
+  }
+
   static async getActivities(quotationId: string, companyId: string = 'c-01'): Promise<QuotationActivityRecord[]> {
     return QuotationRepository.getActivities(quotationId, companyId)
   }
 
-  static async addActivity(activity: QuotationActivityRecord): Promise<QuotationActivityRecord[]> {
-    return PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
+  static async addActivity(activity: QuotationActivityRecord): Promise<void> {
+    return QuotationRepository.addActivity(activity)
   }
 
   /**
-   * Generates customer-facing text message for WhatsApp, SMS, or Email
+   * Translates validity date into business meaning and visual urgency
+   */
+  static calculateExpiryUrgency(validUntil: string): {
+    label: string
+    urgency: 'critical' | 'warning' | 'normal' | 'expired'
+    daysLeft: number
+  } {
+    if (!validUntil) return { label: 'No validity date', urgency: 'normal', daysLeft: 999 }
+    
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const target = new Date(validUntil)
+    target.setHours(0, 0, 0, 0)
+    
+    const diffTime = target.getTime() - today.getTime()
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays < 0) {
+      const pastDays = Math.abs(diffDays)
+      return {
+        label: pastDays === 1 ? 'Expired yesterday' : `Expired ${pastDays} days ago`,
+        urgency: 'expired',
+        daysLeft: diffDays,
+      }
+    }
+    if (diffDays === 0) {
+      return { label: 'Expires today', urgency: 'critical', daysLeft: 0 }
+    }
+    if (diffDays === 1) {
+      return { label: 'Expires tomorrow', urgency: 'critical', daysLeft: 1 }
+    }
+    if (diffDays <= 3) {
+      return { label: `Expires in ${diffDays} days`, urgency: 'warning', daysLeft: diffDays }
+    }
+    return { label: `Expires in ${diffDays} days`, urgency: 'normal', daysLeft: diffDays }
+  }
+
+  /**
+   * Intelligently derives the Next Action for an active quotation
+   */
+  static calculateNextAction(quote: QuotationRecord): string {
+    if (quote.status === 'converted') {
+      if (quote.converted_order_id && quote.converted_invoice_id) {
+        return 'Converted to Order & Invoice'
+      }
+      if (quote.converted_order_id) {
+        return `Converted to Order #${quote.converted_order_id}`
+      }
+      return 'Converted to Invoice'
+    }
+
+    if (quote.status === 'approved') {
+      return 'Approved — Convert to Job Order / Invoice'
+    }
+
+    if (quote.status === 'rejected') {
+      return 'Rejected — Review client feedback'
+    }
+
+    const expiry = this.calculateExpiryUrgency(quote.valid_until)
+    if (expiry.urgency === 'expired') {
+      return 'Expired — Follow up for revised quote'
+    }
+
+    if (quote.follow_up_date) {
+      const fDate = new Date(quote.follow_up_date)
+      fDate.setHours(0, 0, 0, 0)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      if (fDate <= today) {
+        return 'Follow up today (Scheduled)'
+      }
+    }
+
+    if (quote.status === 'negotiation') {
+      return 'Customer is negotiating — Finalize price'
+    }
+
+    if (quote.status === 'viewed') {
+      return 'Customer viewed proposal — Call for decision'
+    }
+
+    if (quote.status === 'sent') {
+      return 'Waiting for customer response'
+    }
+
+    if (expiry.daysLeft <= 1) {
+      return 'Expiring soon — Urgent follow-up'
+    }
+
+    return 'Draft — Complete & Send to Client'
+  }
+
+  /**
+   * Aggregates 5 Commercial Sales-Control KPIs for Business Owners
+   */
+  static getKpiMetrics(quotes: QuotationRecord[]) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const activeQuotes = quotes.filter(
+      (q) => q.status !== 'converted' && q.status !== 'rejected' && q.status !== 'expired'
+    )
+
+    // 1. OPEN PIPELINE (Total Grand Total of active proposals)
+    const openPipeline = activeQuotes.reduce((sum, q) => sum + (Number(q.grand_total) || 0), 0)
+
+    // 2. ACTIVE QUOTATIONS count
+    const activeCount = activeQuotes.length
+
+    // 3. FOLLOW-UP TODAY (Quotes with follow-up scheduled for today or overdue, or in sent status for >2 days)
+    const followUpToday = activeQuotes.filter((q) => {
+      if (q.follow_up_date) {
+        const d = new Date(q.follow_up_date)
+        d.setHours(0, 0, 0, 0)
+        return d <= today
+      }
+      return false
+    }).length
+
+    // 4. EXPIRING SOON (Active quotes expiring in <= 3 days)
+    const expiringSoon = activeQuotes.filter((q) => {
+      const exp = this.calculateExpiryUrgency(q.valid_until)
+      return exp.urgency === 'critical' || exp.urgency === 'warning'
+    }).length
+
+    // 5. CONVERTED / WON VALUE
+    const wonQuotes = quotes.filter((q) => q.status === 'converted' || q.status === 'approved')
+    const wonCount = wonQuotes.length
+    const wonValue = wonQuotes.reduce((sum, q) => sum + (Number(q.grand_total) || 0), 0)
+
+    return {
+      openPipeline,
+      activeCount,
+      followUpToday,
+      expiringSoon,
+      wonCount,
+      wonValue,
+      totalQuotes: quotes.length,
+    }
+  }
+
+  /**
+   * Automatically identifies high-priority quotations that require owner / salesperson attention
+   */
+  static getNeedsAttentionQuotes(quotes: QuotationRecord[]): QuotationRecord[] {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    return quotes
+      .filter((q) => {
+        if (q.status === 'converted' || q.status === 'rejected') return false
+
+        // 1. Approved but not converted
+        if (q.status === 'approved') return true
+
+        // 2. Follow-up scheduled today or overdue
+        if (q.follow_up_date) {
+          const fDate = new Date(q.follow_up_date)
+          fDate.setHours(0, 0, 0, 0)
+          if (fDate <= today) return true
+        }
+
+        // 3. Expiring today or within 3 days
+        const exp = this.calculateExpiryUrgency(q.valid_until)
+        if (exp.urgency === 'critical' || exp.urgency === 'warning') return true
+
+        // 4. Sent for > 2 days with no follow up recorded
+        if (q.status === 'sent' && !q.last_follow_up_at) {
+          const sentDate = new Date(q.quotation_date || q.created_at)
+          const daysOld = (today.getTime() - sentDate.getTime()) / (1000 * 60 * 60 * 24)
+          if (daysOld >= 2) return true
+        }
+
+        // 5. Negotiation in progress
+        if (q.status === 'negotiation') return true
+
+        return false
+      })
+      .slice(0, 8)
+  }
+
+  /**
+   * Generates customer-facing text message for WhatsApp or Email
    * Strictly shields internal notes, database IDs, and sensitive data.
    */
   static generateQuotationTextMessage(quote: QuotationRecord, companyName: string = 'InkFlow'): string {

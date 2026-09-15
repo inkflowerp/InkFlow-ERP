@@ -11,11 +11,16 @@ import { EntitlementService } from '@/services/entitlement.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import {
   QuotationRecord,
+  QuotationStatus,
+  QuotationActivityRecord,
   CreateQuotationPayload,
   SendQuotationPayload,
+  RecordFollowUpPayload,
+  ApplyNegotiationPayload,
 } from '@/types/quotation.types'
 import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
 import { InvoiceRecord } from '@/types/billing.types'
+import { SalesOrderRecord } from '@/types/order.types'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -459,5 +464,292 @@ export async function convertQuotationToInvoiceAction(
     return { success: true, data: invoice }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to convert quotation to invoice' }
+  }
+}
+
+/**
+ * Server Action: Fetches authoritative quotations for tenant
+ */
+export async function getQuotationsAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<QuotationRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const quotes = await QuotationService.getQuotations(companyId)
+    return { success: true, data: quotes }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch quotations.' }
+  }
+}
+
+/**
+ * Server Action: Fetches single quotation with activity history
+ */
+export async function getQuotationDetailAction(
+  id: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<{ quotation: QuotationRecord; activities: QuotationActivityRecord[] }>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const quote = await QuotationService.getQuotationById(id, companyId)
+    if (!quote) {
+      return { success: false, error: 'Quotation not found.' }
+    }
+
+    const activities = await QuotationService.getActivities(quote.id, companyId)
+    return { success: true, data: { quotation: quote, activities } }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch quotation details.' }
+  }
+}
+
+/**
+ * Server Action: Records a quotation follow-up with scheduled date, method, and outcome
+ */
+export async function recordQuotationFollowUpAction(
+  params: RecordFollowUpPayload,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<QuotationRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.permissions.includes('quotations.view') ||
+      tenant.permissions.includes('quotations.create') ||
+      tenant.permissions.includes('quotations.edit') ||
+      tenant.permissions.includes('quotation.edit')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: You do not have permission to record quotation follow-ups.' }
+    }
+
+    const updated = await QuotationService.recordFollowUp(
+      params.quotationId,
+      companyId,
+      {
+        method: params.method,
+        note: params.note,
+        outcome: params.outcome,
+        nextFollowUpDate: params.nextFollowUpDate,
+        markResponded: params.markResponded,
+      },
+      tenant.fullName || 'Sales Executive'
+    )
+
+    if (!updated) {
+      return { success: false, error: 'Quotation not found.' }
+    }
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'quotation.follow_up',
+        'quotation',
+        params.quotationId,
+        null,
+        { method: params.method, nextFollowUpDate: params.nextFollowUpDate, outcome: params.outcome },
+        `Recorded follow-up for quotation #${updated.quotation_number} via ${params.method}`
+      )
+    } catch {
+      // Non-blocking
+    }
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: updated }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to record follow-up.' }
+  }
+}
+
+/**
+ * Server Action: Updates quotation status safely with activity and audit logging
+ */
+export async function updateQuotationStatusAction(
+  quotationId: string,
+  status: QuotationStatus,
+  reason?: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<QuotationRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.permissions.includes('quotations.edit') ||
+      tenant.permissions.includes('quotations.approve') ||
+      tenant.permissions.includes('quotation.edit') ||
+      tenant.permissions.includes('quotation.approve')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: You do not have permission to update quotation status.' }
+    }
+
+    const updated = await QuotationService.updateStatus(
+      quotationId,
+      status,
+      reason,
+      companyId,
+      tenant.fullName || 'Sales Executive'
+    )
+
+    if (!updated) {
+      return { success: false, error: 'Quotation not found.' }
+    }
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'quotation.status_change',
+        'quotation',
+        quotationId,
+        null,
+        { newStatus: status, reason },
+        `Advanced quotation #${updated.quotation_number} status to ${status.toUpperCase()}`
+      )
+    } catch {
+      // Non-blocking
+    }
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: updated }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to update quotation status.' }
+  }
+}
+
+/**
+ * Server Action: Applies negotiated discount concession and recalculates margin with internal shielding
+ */
+export async function applyQuotationNegotiationAction(
+  quotationId: string,
+  discountAmount: number,
+  notes?: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<QuotationRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.permissions.includes('quotations.edit') ||
+      tenant.permissions.includes('quotation.edit')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: You do not have permission to modify quotation prices.' }
+    }
+
+    const updated = await QuotationService.applyNegotiation(
+      quotationId,
+      companyId,
+      discountAmount,
+      notes,
+      tenant.fullName || 'Sales Executive'
+    )
+
+    if (!updated) {
+      return { success: false, error: 'Quotation not found.' }
+    }
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'quotation.negotiate',
+        'quotation',
+        quotationId,
+        null,
+        { discountAmount, newGrandTotal: updated.grand_total, newMargin: updated.margin_percent },
+        `Applied concession discount of ৳${discountAmount} to quotation #${updated.quotation_number}`
+      )
+    } catch {
+      // Non-blocking
+    }
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: updated }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to apply negotiated price.' }
+  }
+}
+
+/**
+ * Server Action: Converts an approved quotation into a production Job Order
+ */
+export async function convertQuotationToJobOrderAction(
+  quotationId: string,
+  options?: { advanceAmount?: number },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<any>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    const companyId = tenant?.companyId || requestedCompanyId
+    if (!companyId || !tenant) {
+      return { success: false, error: 'Unauthorized: No active tenant context found.' }
+    }
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.permissions.includes('orders.create') ||
+      tenant.permissions.includes('order.create') ||
+      tenant.permissions.includes('quotations.approve') ||
+      tenant.permissions.includes('quotation.approve')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: You do not have permission to convert quotations to job orders.' }
+    }
+
+    const order = await QuotationService.convertToOrder(quotationId, companyId, {
+      createdByName: tenant.fullName || 'Sales Executive',
+      advanceAmount: options?.advanceAmount,
+    })
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'quotation.convert_order',
+        'quotation',
+        quotationId,
+        null,
+        { quotationId, orderNumber: order.order_number },
+        `Converted quotation to Production Job Order #${order.order_number}`
+      )
+    } catch {
+      // Non-blocking
+    }
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: order }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to convert quotation to job order.' }
   }
 }

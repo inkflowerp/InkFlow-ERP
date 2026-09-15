@@ -1,13 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import {
   FileSpreadsheet,
   ArrowLeft,
   Printer,
-  Download,
   Send,
   Copy,
   CheckCircle2,
@@ -26,6 +25,11 @@ import {
   Truck,
   Wrench,
   Tag,
+  Loader2,
+  Check,
+  ShieldCheck,
+  RefreshCw,
+  MessageSquare,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -34,7 +38,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { FeatureGate } from '@/components/shared/feature-gate'
 import {
@@ -45,14 +48,24 @@ import {
   LanguageMode,
   QuotationActivityRecord,
 } from '@/types/quotation.types'
-import { convertQuotationToInvoiceAction, sendQuotationAction } from '@/actions/quotation.actions'
+import {
+  getQuotationDetailAction,
+  updateQuotationStatusAction,
+  convertQuotationToJobOrderAction,
+  convertQuotationToInvoiceAction,
+  sendQuotationAction,
+} from '@/actions/quotation.actions'
 import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
+import { QuotationService } from '@/services/quotation.service'
+import { FollowUpModal } from '@/components/quotations/follow-up-modal'
+import { NegotiationModal } from '@/components/quotations/negotiation-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function QuotationDetailPage() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const quoteId = (params?.id as string) || ''
   const shouldAutoPrint = searchParams?.get('print') === 'true'
 
@@ -60,21 +73,75 @@ export default function QuotationDetailPage() {
   const { tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
-  const [quotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
-  const [allActivities] = useDataStore<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
+  // Local datastore fallback
+  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
+  const [localActivities] = useDataStore<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
 
-  const quote = quotations.find((q) => q.id === quoteId || q.quotation_number === quoteId)
-  const activities = allActivities.filter((a) => quote && (a.quotation_id === quote.id || a.quotation_id === quoteId))
+  const [quote, setQuote] = useState<QuotationRecord | null>(() => {
+    return localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId) || null
+  })
+  const [activities, setActivities] = useState<QuotationActivityRecord[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Presentation & Workflow State
   const [languageMode, setLanguageMode] = useState<LanguageMode>(quote?.language_mode || 'bn')
-  const [isNegotiationOpen, setIsNegotiationOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
   const [isConvertingInvoice, setIsConvertingInvoice] = useState(false)
+  const [isConvertingOrder, setIsConvertingOrder] = useState(false)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
 
-  // Negotiation State
-  const [negotiatedDiscount, setNegotiatedDiscount] = useState<number>(quote?.discount_amount || 0)
-  const [negotiatedNotes, setNegotiatedNotes] = useState<string>('')
+  // Modals state
+  const [isFollowUpOpen, setIsFollowUpOpen] = useState(false)
+  const [isNegotiationOpen, setIsNegotiationOpen] = useState(false)
+
+  const showNotification = (msg: string) => {
+    setNotification(msg)
+    setTimeout(() => setNotification(null), 3500)
+  }
+
+  // Authoritative server fetch
+  const fetchQuotationDetail = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsLoading(true)
+    setIsRefreshing(true)
+    setError(null)
+
+    try {
+      const res = await getQuotationDetailAction(quoteId, company?.id)
+      if (res.success && res.data) {
+        setQuote(res.data.quotation)
+        setActivities(res.data.activities || [])
+        if (res.data.quotation.language_mode) {
+          setLanguageMode(res.data.quotation.language_mode)
+        }
+      } else {
+        // Fallback to local store
+        const fallbackQuote = localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId)
+        if (fallbackQuote) {
+          setQuote(fallbackQuote)
+          const fallbackActs = localActivities.filter((a) => a.quotation_id === fallbackQuote.id || a.quotation_id === quoteId)
+          setActivities(fallbackActs)
+        } else {
+          setError(res.error || 'Quotation not found.')
+        }
+      }
+    } catch (err: any) {
+      const fallbackQuote = localQuotations.find((q) => q.id === quoteId || q.quotation_number === quoteId)
+      if (fallbackQuote) {
+        setQuote(fallbackQuote)
+      } else {
+        setError(err?.message || 'Failed to load quotation.')
+      }
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }, [quoteId, company?.id, localQuotations, localActivities])
+
+  useEffect(() => {
+    fetchQuotationDetail()
+  }, [fetchQuotationDetail])
 
   // Auto-print on load if query param present
   useEffect(() => {
@@ -85,9 +152,15 @@ export default function QuotationDetailPage() {
     }
   }, [shouldAutoPrint, quote])
 
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+  if (isLoading && !quote) {
+    return (
+      <FeatureGate feature="quotation_pdf">
+        <div className="space-y-6 max-w-6xl py-12 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto" />
+          <p className="text-xs text-slate-500 font-medium">Loading quotation cockpit...</p>
+        </div>
+      </FeatureGate>
+    )
   }
 
   if (!quote) {
@@ -116,33 +189,41 @@ export default function QuotationDetailPage() {
     )
   }
 
-  // Handle status change
-  const handleStatusChange = (newStatus: QuotationStatus) => {
-    PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
-      status: newStatus,
-    })
-
-    const newActivity: QuotationActivityRecord = {
-      id: `qa-${Date.now()}`,
-      quotation_id: quote.id,
-      action: newStatus as any,
-      details: `Quotation status advanced to ${newStatus.toUpperCase()}`,
-      actor_name: currentUser?.profile?.full_name || 'Current User',
-      created_at: new Date().toISOString(),
-    }
-    PrintERPDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, newActivity)
-    showNotification(`Quotation status updated to ${newStatus.toUpperCase()}`)
-  }
-
-  // Convert to Order Action
-  const handleConvertToOrder = () => {
-    const order = PrintERPDataStore.convertQuotationToSalesOrder(quote.id)
-    if (order) {
-      showNotification(`Successfully converted to Job Order Ticket #${order.order_number}!`)
+  // Handle status change via Server Action
+  const handleStatusChange = async (newStatus: QuotationStatus) => {
+    try {
+      const res = await updateQuotationStatusAction(quote.id, newStatus, undefined, company?.id)
+      if (res.success && res.data) {
+        setQuote(res.data)
+        showNotification(`Status updated to ${newStatus.toUpperCase()}`)
+        fetchQuotationDetail(true)
+      } else {
+        showNotification(`Failed to update status: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err?.message}`)
     }
   }
 
-  // Convert to Invoice Action (Preserving quoted prices)
+  // Convert to Job Order Action (Server Action)
+  const handleConvertToOrder = async () => {
+    setIsConvertingOrder(true)
+    try {
+      const res = await convertQuotationToJobOrderAction(quote.id, {}, company?.id)
+      setIsConvertingOrder(false)
+      if (res.success && res.data) {
+        showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number}!`)
+        fetchQuotationDetail(true)
+      } else {
+        showNotification(`Conversion failed: ${res.error}`)
+      }
+    } catch (err: any) {
+      setIsConvertingOrder(false)
+      showNotification(`Conversion error: ${err?.message}`)
+    }
+  }
+
+  // Convert to Invoice Action (Server Action)
   const handleConvertToInvoice = async () => {
     setIsConvertingInvoice(true)
     try {
@@ -150,6 +231,7 @@ export default function QuotationDetailPage() {
       setIsConvertingInvoice(false)
       if (res.success && res.data) {
         showNotification(`Successfully converted to Invoice #${res.data.invoice_number}! Quoted prices preserved.`)
+        fetchQuotationDetail(true)
       } else {
         showNotification(`Conversion failed: ${res.error}`)
       }
@@ -160,7 +242,7 @@ export default function QuotationDetailPage() {
   }
 
   // Duplicate Quote Action
-  const handleDuplicate = () => {
+  const handleDuplicate = async () => {
     const dupNumber = `QUO-0000${Math.floor(Math.random() * 900) + 100}`
     const duplicated: QuotationRecord = {
       ...quote,
@@ -174,16 +256,24 @@ export default function QuotationDetailPage() {
     }
     PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, duplicated)
     showNotification(`Quotation cloned into new Draft ${dupNumber}.`)
+    router.push(`/${slug}/quotations/${duplicated.id}`)
   }
 
   // Send WhatsApp Action
   const handleSendWhatsApp = async () => {
-    const rawPhone = quote.customer_whatsapp || quote.customer_phone
+    const rawPhone = quote.customer_whatsapp || quote.customer_phone || ''
     const cleanPhone = rawPhone.replace(/\D/g, '')
+    const formattedPhone = cleanPhone.startsWith('880')
+      ? cleanPhone
+      : cleanPhone.startsWith('0')
+      ? `88${cleanPhone}`
+      : `880${cleanPhone}`
+
     const text = encodeURIComponent(
-      `Hello ${quote.customer_name},\nHere is your official quotation ${quote.quotation_number} from ${company?.name || 'InkFlow'}.\nGrand Total: ৳ ${quote.grand_total} (Valid until ${quote.valid_until}).\nPlease review and confirm.`
+      `Hello ${quote.customer_name},\nHere is your official quotation #${quote.quotation_number} from ${company?.name || 'InkFlow'}.\nGrand Total: ৳${formatBDT(quote.grand_total)} (Valid until ${quote.valid_until}).\nPlease review and let us know your confirmation.`
     )
-    window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank')
+    window.open(`https://wa.me/${formattedPhone}?text=${text}`, '_blank')
+
     await sendQuotationAction(
       {
         quotationId: quote.id,
@@ -192,177 +282,244 @@ export default function QuotationDetailPage() {
       },
       company?.id
     )
-    handleStatusChange('sent')
+    fetchQuotationDetail(true)
   }
 
-  // Apply Negotiation
-  const handleApplyNegotiation = (e: React.FormEvent) => {
-    e.preventDefault()
-    const newSubtotal = quote.subtotal
-    const newVat = Math.round(((newSubtotal - negotiatedDiscount) * quote.vat_rate) / 100)
-    const newGrandTotal = Math.max(0, newSubtotal - negotiatedDiscount) + newVat
-    const newMargin = Math.round(
-      ((newSubtotal - negotiatedDiscount - quote.total_cost) / (newSubtotal - negotiatedDiscount || 1)) * 100
-    )
-
-    PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
-      discount_amount: negotiatedDiscount,
-      vat_amount: newVat,
-      grand_total: newGrandTotal,
-      margin_percent: newMargin,
-      status: 'negotiation',
-      updated_at: new Date().toISOString(),
-    })
-
-    const newActivity: QuotationActivityRecord = {
-      id: `qa-${Date.now()}`,
-      quotation_id: quote.id,
-      action: 'negotiated',
-      details: `Applied negotiated discount of ৳ ${negotiatedDiscount}. New Total: ৳ ${newGrandTotal}. Reason: ${negotiatedNotes || 'Customer concession'}`,
-      actor_name: currentUser?.profile?.full_name || 'Current User (Sales)',
-      created_at: new Date().toISOString(),
+  // Send Email Action
+  const handleSendEmail = async () => {
+    if (!quote.customer_email) {
+      showNotification('Customer email address is missing on this quotation.')
+      return
     }
-    PrintERPDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, newActivity)
-    setIsNegotiationOpen(false)
-    showNotification(`Negotiated price ৳ ${newGrandTotal} applied. Gross margin is now ${newMargin}%.`)
+
+    setIsSendingEmail(true)
+    try {
+      const res = await sendQuotationAction(
+        {
+          quotationId: quote.id,
+          channel: 'email',
+          format: 'pdf',
+        },
+        company?.id
+      )
+      setIsSendingEmail(false)
+      if (res.success) {
+        showNotification(`Quotation PDF emailed to ${quote.customer_email} successfully.`)
+        fetchQuotationDetail(true)
+      } else {
+        showNotification(`Email failed: ${res.error}`)
+      }
+    } catch (err: any) {
+      setIsSendingEmail(false)
+      showNotification(`Email error: ${err?.message}`)
+    }
   }
+
+  const nextAction = QuotationService.calculateNextAction(quote)
+  const expiryUrgency = QuotationService.calculateExpiryUrgency(quote.valid_until)
 
   return (
     <FeatureGate feature="quotation_pdf">
-      <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
-        {/* Non-print Top Controls Bar */}
-        <div className="print:hidden space-y-4">
-          <Link
-            href={`/${slug}/quotations`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Quotations Directory
-          </Link>
+      <div className="space-y-6 max-w-6xl pb-16 print:max-w-none print:w-full print:bg-white print:text-slate-900 print:m-0 print:p-0">
+        {/* =========================================================================
+            NON-PRINT CONTROLS: ACTION HIERARCHY HEADER
+           ========================================================================= */}
+        <div className="print:hidden space-y-3">
+          <div className="flex items-center justify-between">
+            <Link
+              href={`/${slug}/quotations`}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to Quotations Directory
+            </Link>
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-slate-900 text-white dark:bg-slate-950 shadow-lg">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5">
-                <span className="font-mono font-bold text-cyan-300 text-lg">
-                  {quote.quotation_number}
-                </span>
-                <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-white/10 text-white border border-white/20">
-                  {quote.status.toUpperCase()}
-                </span>
-                {quote.converted_order_id && (
-                  <Badge variant="outline" className="bg-purple-900/60 text-purple-200 border-purple-400 text-xs">
-                    Order #{quote.converted_order_id}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => fetchQuotationDetail(false)}
+              disabled={isRefreshing}
+              className="h-7 text-xs text-slate-500 gap-1"
+            >
+              <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Sync
+            </Button>
+          </div>
+
+          {/* Cockpit Command Center Card */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 text-white dark:bg-slate-950 shadow-xl space-y-4">
+            {/* Top Row: Identification & Badges */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="font-mono font-black text-cyan-300 text-xl tracking-tight">
+                    {quote.quotation_number}
+                  </span>
+                  <Badge variant="outline" className="bg-white/10 text-white border-white/20 text-xs font-bold capitalize">
+                    {quote.status}
                   </Badge>
-                )}
-                {quote.converted_invoice_id && (
-                  <Badge variant="outline" className="bg-emerald-900/60 text-emerald-200 border-emerald-400 text-xs">
-                    Invoice Converted
-                  </Badge>
-                )}
+                  {quote.converted_order_id && (
+                    <Badge variant="outline" className="bg-purple-900/80 text-purple-200 border-purple-400/60 text-xs font-mono font-bold">
+                      Job Order #{quote.converted_order_id}
+                    </Badge>
+                  )}
+                  {quote.converted_invoice_id && (
+                    <Badge variant="outline" className="bg-emerald-900/80 text-emerald-200 border-emerald-400/60 text-xs font-mono font-bold">
+                      Invoice Converted
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="text-xs text-slate-300 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span>Customer: <strong className="text-white">{quote.customer_name}</strong> {quote.customer_company && `(${quote.customer_company})`}</span>
+                  <span>•</span>
+                  <span>Sales: <strong className="text-white">{quote.salesperson_name}</strong></span>
+                  <span>•</span>
+                  <span className="font-mono text-cyan-200">Total: ৳{formatBDT(quote.grand_total)}</span>
+                </div>
               </div>
-              <div className="text-xs text-slate-300">
-                Customer: <strong>{quote.customer_name}</strong> {quote.customer_company && `(${quote.customer_company})`} • Sales: <strong>{quote.salesperson_name}</strong>
+
+              {/* Next Action & Status Dropdown */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="text-right hidden sm:block">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Recommended Next Action</span>
+                  <span className="text-xs font-bold text-amber-300">{nextAction}</span>
+                </div>
+
+                <select
+                  value={quote.status}
+                  onChange={(e) => handleStatusChange(e.target.value as QuotationStatus)}
+                  className="h-9 px-2.5 rounded-lg bg-white/10 text-white text-xs border border-white/20 font-semibold focus:ring-1 focus:ring-cyan-400"
+                >
+                  <option value="draft" className="text-black">Draft</option>
+                  <option value="sent" className="text-black">Sent</option>
+                  <option value="viewed" className="text-black">Viewed</option>
+                  <option value="negotiation" className="text-black">Negotiation</option>
+                  <option value="approved" className="text-black">Approved</option>
+                  <option value="rejected" className="text-black">Rejected</option>
+                  <option value="expired" className="text-black">Expired</option>
+                  <option value="converted" className="text-black">Converted</option>
+                </select>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Status Selector */}
-              <select
-                value={quote.status}
-                onChange={(e) => handleStatusChange(e.target.value as QuotationStatus)}
-                className="h-8 px-2 rounded-md bg-white/10 text-white text-xs border border-white/20 font-semibold"
-              >
-                <option value="draft" className="text-black">Draft</option>
-                <option value="sent" className="text-black">Sent</option>
-                <option value="viewed" className="text-black">Viewed</option>
-                <option value="negotiation" className="text-black">Negotiation</option>
-                <option value="approved" className="text-black">Approved</option>
-                <option value="rejected" className="text-black">Rejected</option>
-                <option value="expired" className="text-black">Expired</option>
-                <option value="converted" className="text-black">Converted</option>
-              </select>
-
-              {/* Negotiation Drawer Trigger */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsNegotiationOpen(true)}
-                className="h-8 text-xs bg-amber-500/20 text-amber-200 border-amber-400/40 hover:bg-amber-500/30"
-              >
-                <Sliders className="h-3.5 w-3.5 mr-1" />
-                Negotiate Margin
-              </Button>
-
-              {/* Send WhatsApp */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleSendWhatsApp}
-                className="h-8 text-xs bg-emerald-500/20 text-emerald-200 border-emerald-400/40 hover:bg-emerald-500/30"
-              >
-                <Send className="h-3.5 w-3.5 mr-1" />
-                Send WhatsApp
-              </Button>
-
-              {/* Duplicate */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleDuplicate}
-                className="h-8 text-xs bg-white/10 text-white border-white/20 hover:bg-white/20"
-              >
-                <Copy className="h-3.5 w-3.5 mr-1" />
-                Duplicate
-              </Button>
-
-              {/* Print / Download PDF */}
-              <Button
-                size="sm"
-                onClick={() => window.print()}
-                className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Printer className="h-3.5 w-3.5 mr-1" />
-                Print / Save PDF
-              </Button>
-
-              {/* Convert to Invoice */}
-              {quote.status !== 'converted' && (
+            {/* Bottom Row: Clear Action Hierarchy */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              {/* PRIMARY & SECONDARY ACTIONS */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* 1. PRIMARY ACTION: Follow Up */}
                 <Button
                   size="sm"
-                  onClick={handleConvertToInvoice}
-                  disabled={isConvertingInvoice}
-                  className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                  onClick={() => setIsFollowUpOpen(true)}
+                  className="h-9 text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 shadow-md gap-1.5 cursor-pointer"
                 >
-                  <Receipt className="h-3.5 w-3.5 mr-1" />
-                  {isConvertingInvoice ? 'Converting...' : 'Convert to Invoice'}
+                  <Clock className="h-4 w-4" />
+                  Follow Up
                 </Button>
-              )}
 
-              {/* Convert to Order */}
-              {quote.status !== 'converted' && (
+                {/* 2. WhatsApp Direct */}
                 <Button
                   size="sm"
-                  onClick={handleConvertToOrder}
-                  className="h-8 text-xs bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  variant="outline"
+                  onClick={handleSendWhatsApp}
+                  className="h-9 text-xs bg-emerald-500/20 text-emerald-200 border-emerald-400/40 hover:bg-emerald-500/30 gap-1.5 cursor-pointer"
                 >
-                  <FileCheck className="h-3.5 w-3.5 mr-1" />
-                  Convert to Job Order
+                  <MessageSquare className="h-4 w-4 text-emerald-400" />
+                  Send WhatsApp
                 </Button>
-              )}
+
+                {/* 3. Send Email */}
+                {quote.customer_email && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSendEmail}
+                    disabled={isSendingEmail}
+                    className="h-9 text-xs bg-blue-500/20 text-blue-200 border-blue-400/40 hover:bg-blue-500/30 gap-1.5 cursor-pointer"
+                  >
+                    <Mail className="h-4 w-4 text-blue-400" />
+                    {isSendingEmail ? 'Sending...' : 'Email PDF'}
+                  </Button>
+                )}
+
+                {/* 4. Negotiate Margin */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsNegotiationOpen(true)}
+                  className="h-9 text-xs bg-white/10 text-white border-white/20 hover:bg-white/20 gap-1.5 cursor-pointer"
+                >
+                  <Sliders className="h-3.5 w-3.5 text-cyan-300" />
+                  Negotiate Margin
+                </Button>
+
+                {/* 5. Duplicate */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDuplicate}
+                  className="h-9 text-xs bg-white/10 text-white border-white/20 hover:bg-white/20 gap-1.5 cursor-pointer"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  Duplicate
+                </Button>
+              </div>
+
+              {/* CONVERSION & UTILITY */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Print / Save PDF */}
+                <Button
+                  size="sm"
+                  onClick={() => window.print()}
+                  className="h-9 text-xs bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 gap-1.5 cursor-pointer"
+                >
+                  <Printer className="h-4 w-4" />
+                  Print / Save PDF
+                </Button>
+
+                {/* Convert to Job Order */}
+                {quote.status !== 'converted' && !quote.converted_order_id && (
+                  <Button
+                    size="sm"
+                    onClick={handleConvertToOrder}
+                    disabled={isConvertingOrder}
+                    className="h-9 text-xs bg-purple-600 hover:bg-purple-700 text-white font-bold gap-1.5 shadow-md cursor-pointer"
+                  >
+                    <FileCheck className="h-4 w-4" />
+                    {isConvertingOrder ? 'Converting...' : 'Convert to Job Order'}
+                  </Button>
+                )}
+
+                {/* Convert to Invoice */}
+                {quote.status !== 'converted' && !quote.converted_invoice_id && (
+                  <Button
+                    size="sm"
+                    onClick={handleConvertToInvoice}
+                    disabled={isConvertingInvoice}
+                    className="h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 shadow-md cursor-pointer"
+                  >
+                    <Receipt className="h-4 w-4" />
+                    {isConvertingInvoice ? 'Converting...' : 'Convert to Invoice'}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Language Presentation Mode Switcher */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-slate-100 dark:bg-slate-900 text-xs">
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
-              Document Presentation Language:
+          {/* Document Presentation Language Switcher */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs border border-slate-200 dark:border-slate-800">
+            <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+              <span>Document Presentation Language:</span>
+              <span className="text-[11px] text-slate-400 font-normal">
+                (Changes print/view typography between English and বাংলা)
+              </span>
             </span>
             <div className="flex items-center gap-1">
               <Button
                 size="sm"
                 variant={languageMode === 'en' ? 'default' : 'outline'}
                 onClick={() => setLanguageMode('en')}
-                className="h-7 text-xs px-2.5"
+                className="h-7 text-xs px-3"
               >
                 English
               </Button>
@@ -370,7 +527,7 @@ export default function QuotationDetailPage() {
                 size="sm"
                 variant={languageMode === 'bn' ? 'default' : 'outline'}
                 onClick={() => setLanguageMode('bn')}
-                className="h-7 text-xs px-2.5"
+                className="h-7 text-xs px-3 bangla-text"
               >
                 বাংলা
               </Button>
@@ -378,9 +535,9 @@ export default function QuotationDetailPage() {
           </div>
         </div>
 
-        {/* Notification */}
+        {/* Notifications */}
         {notification && (
-          <div className="print:hidden p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
+          <div className="print:hidden p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
             <span>{notification}</span>
           </div>
@@ -388,19 +545,19 @@ export default function QuotationDetailPage() {
 
         {/* =========================================================================
             PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
-            Styled with standard A4 margins and print borders.
+            Standard A4 layout with print-optimized styling
            ========================================================================= */}
         <div className="bg-white text-slate-900 p-8 sm:p-12 rounded-2xl shadow-xl border border-slate-200 print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
           {/* Document Header */}
           <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6">
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="h-10 w-10 rounded-lg bg-blue-700 text-white font-black text-xl flex items-center justify-center">
-                  {(company?.name || 'P').charAt(0).toUpperCase()}
+              <div className="flex items-center gap-2.5">
+                <div className="h-11 w-11 rounded-xl bg-blue-700 text-white font-black text-2xl flex items-center justify-center shadow-xs">
+                  {(company?.name || 'I').charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h2 className="text-xl font-black tracking-tight text-slate-900">
-                    {company?.name || 'Printing & Signage Solutions'}
+                    {company?.name || 'InkFlow Printing & Signage Solutions'}
                   </h2>
                   {company?.name_bn && (
                     <div className="text-xs text-slate-600 font-semibold">{company.name_bn}</div>
@@ -408,7 +565,7 @@ export default function QuotationDetailPage() {
                 </div>
               </div>
               <p className="text-xs text-slate-600 pt-1">
-                Motijheel Printing Zone, 42 Fakirapool Main Road, Dhaka-1000
+                42 Fakirapool Main Road, Motijheel Commercial Area, Dhaka-1000, Bangladesh
               </p>
               <div className="text-xs text-slate-600 flex flex-wrap gap-3 pt-0.5">
                 <span>Phone: +880 1711-000000</span>
@@ -421,9 +578,7 @@ export default function QuotationDetailPage() {
 
             <div className="text-right space-y-1">
               <div className="text-2xl font-black text-blue-800 uppercase tracking-wide">
-                {languageMode === 'bn'
-                  ? 'উদ্ধৃতিপত্র / প্রাক্কলন'
-                  : 'OFFICIAL QUOTATION'}
+                {languageMode === 'bn' ? 'উদ্ধৃতিপত্র / প্রাক্কলন' : 'OFFICIAL QUOTATION'}
               </div>
               <div className="text-sm font-mono font-bold text-slate-900">
                 {quote.quotation_number}
@@ -435,14 +590,14 @@ export default function QuotationDetailPage() {
                 Valid Until: <strong>{quote.valid_until}</strong>
               </div>
               {quote.reference_no && (
-                <div className="text-xs text-slate-700">
+                <div className="text-xs text-slate-700 font-mono">
                   Ref / PO: <strong>{quote.reference_no}</strong>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Customer / Client Box */}
+          {/* Customer & Project Meta Box */}
           <div className="grid grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
             <div className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -450,9 +605,11 @@ export default function QuotationDetailPage() {
               </span>
               <div className="text-sm font-bold text-slate-900">
                 {languageMode === 'bn' && quote.customer_name_bn ? quote.customer_name_bn : quote.customer_name}
-                {quote.customer_company && <span className="font-normal text-xs text-slate-600 ml-1">({quote.customer_company})</span>}
+                {quote.customer_company && (
+                  <span className="font-normal text-xs text-slate-600 ml-1">({quote.customer_company})</span>
+                )}
               </div>
-              <div className="text-slate-600">{quote.customer_address}</div>
+              {quote.customer_address && <div className="text-slate-600">{quote.customer_address}</div>}
               <div className="text-slate-600 font-mono">Mobile: {quote.customer_phone}</div>
               {quote.customer_email && <div className="text-slate-600">Email: {quote.customer_email}</div>}
               {quote.customer_type && (
@@ -550,7 +707,7 @@ export default function QuotationDetailPage() {
             </table>
           </div>
 
-          {/* Financial Summary & Words */}
+          {/* Financial Summary & Terms */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-6 items-start">
             {/* Terms and Notes */}
             <div className="space-y-3 text-xs">
@@ -595,14 +752,14 @@ export default function QuotationDetailPage() {
 
               <div className="text-[11px] text-slate-500 pt-1 italic">
                 {languageMode === 'bn'
-                  ? `কথায়: ${quote.grand_total} টাকা মাত্র।`
+                  ? `কথায়: ${toBengaliNumerals(quote.grand_total)} টাকা মাত্র।`
                   : `In Words: Bangladeshi Taka ${formatBDT(quote.grand_total)} Only.`}
               </div>
             </div>
           </div>
 
-          {/* Signature Area */}
-          <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-slate-300 text-xs page-break-inside-avoid print-avoid-break">
+          {/* Signature Block */}
+          <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-slate-300 text-xs">
             <div className="text-center space-y-1">
               <div className="font-bold text-slate-900">{quote.salesperson_name}</div>
               <div className="text-[11px] text-slate-500">
@@ -613,13 +770,15 @@ export default function QuotationDetailPage() {
             <div className="text-center space-y-1">
               <div className="font-bold text-slate-900">Authorized Signatory</div>
               <div className="text-[11px] text-slate-500">
-                {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'Authorized Signatory'}`}
+                {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'InkFlow Solutions'}`}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Non-print Activity Timeline */}
+        {/* =========================================================================
+            NON-PRINT ACTIVITY TIMELINE
+           ========================================================================= */}
         <div className="print:hidden">
           <Card>
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -628,100 +787,67 @@ export default function QuotationDetailPage() {
                 Quotation Activity & Negotiation Timeline
               </CardTitle>
               <CardDescription className="text-xs">
-                Audit log of creation, customer dispatches, viewed previews, and order conversions.
+                Authoritative history of customer follow-ups, price negotiations, status advances, and order conversions.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-5 space-y-3">
-              {activities.map((act) => (
-                <div key={act.id} className="flex items-start gap-3 text-xs">
-                  <div className="h-2 w-2 rounded-full bg-blue-600 mt-1.5 shrink-0" />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold capitalize text-slate-900 dark:text-white">
-                        {act.action}
-                      </span>
-                      <span className="text-slate-400 font-mono text-[11px]">{act.created_at}</span>
-                    </div>
-                    {act.details && <p className="text-slate-600 dark:text-slate-300 mt-0.5">{act.details}</p>}
-                    <div className="text-[11px] text-slate-400 mt-0.5">By {act.actor_name}</div>
-                  </div>
+            <CardContent className="p-5">
+              {activities.length === 0 ? (
+                <div className="p-6 text-center text-xs text-slate-400">
+                  No recorded activity yet.
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-4">
+                  {activities.map((act) => (
+                    <div key={act.id} className="flex items-start gap-3 text-xs">
+                      <div className="h-2.5 w-2.5 rounded-full bg-blue-600 mt-1 shrink-0" />
+                      <div className="flex-1 border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold capitalize text-slate-900 dark:text-white">
+                            {act.action.replace('_', ' ')}
+                          </span>
+                          <span className="text-slate-400 font-mono text-[11px]">
+                            {new Date(act.created_at).toLocaleString('en-BD')}
+                          </span>
+                        </div>
+                        {act.details && (
+                          <p className="text-slate-600 dark:text-slate-300 mt-1 font-normal">
+                            {act.details}
+                          </p>
+                        )}
+                        <div className="text-[11px] text-slate-400 mt-0.5">By {act.actor_name}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* MODAL: NEGOTIATION MARGIN ANALYZER (Shielded from customer) */}
-        <ModalDialog
+        {/* Modals */}
+        <FollowUpModal
+          open={isFollowUpOpen}
+          onOpenChange={setIsFollowUpOpen}
+          quotation={quote}
+          onFollowUpRecorded={(updated) => {
+            setQuote(updated)
+            showNotification(`Follow-up saved for #${updated.quotation_number}`)
+            fetchQuotationDetail(true)
+          }}
+          companyId={company?.id || 'c-01'}
+        />
+
+        <NegotiationModal
           open={isNegotiationOpen}
           onOpenChange={setIsNegotiationOpen}
-          title="Negotiation Margin Analyzer (Internal Only)"
-          description="Simulate concession discounts and inspect impact on gross profit margin before committing."
-        >
-          <form onSubmit={handleApplyNegotiation} className="space-y-4 pt-1">
-            <div className="p-3.5 rounded-xl bg-slate-900 text-white space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-400">List Subtotal:</span>
-                <strong className="font-mono">৳ {formatBDT(quote.subtotal)}</strong>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Internal Base Cost (Shielded):</span>
-                <strong className="font-mono text-amber-400">৳ {formatBDT(quote.total_cost)}</strong>
-              </div>
-              <div className="flex justify-between border-t border-slate-800 pt-1.5">
-                <span className="text-slate-400">Projected Gross Margin:</span>
-                <strong
-                  className={`font-mono text-sm ${
-                    Math.round(
-                      ((quote.subtotal - negotiatedDiscount - quote.total_cost) /
-                        (quote.subtotal - negotiatedDiscount || 1)) *
-                        100
-                    ) > 35
-                      ? 'text-emerald-400'
-                      : 'text-red-400'
-                  }`}
-                >
-                  {Math.round(
-                    ((quote.subtotal - negotiatedDiscount - quote.total_cost) /
-                      (quote.subtotal - negotiatedDiscount || 1)) *
-                      100
-                  )}
-                  %
-                </strong>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="negDisc" required>Concession Discount Amount (৳ BDT)</Label>
-              <Input
-                id="negDisc"
-                type="number"
-                value={negotiatedDiscount}
-                onChange={(e) => setNegotiatedDiscount(Math.max(0, Number(e.target.value)))}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="negReason">Customer Negotiation Remarks</Label>
-              <Input
-                id="negReason"
-                placeholder="e.g. Client requested ৳ 2,500 concession for bulk order commitment."
-                value={negotiatedNotes}
-                onChange={(e) => setNegotiatedNotes(e.target.value)}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="outline" onClick={() => setIsNegotiationOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white">
-                Apply Concession & Update
-              </Button>
-            </div>
-          </form>
-        </ModalDialog>
+          quotation={quote}
+          onNegotiationApplied={(updated) => {
+            setQuote(updated)
+            showNotification(`Negotiated total ৳${formatBDT(updated.grand_total)} applied (Margin: ${updated.margin_percent}%).`)
+            fetchQuotationDetail(true)
+          }}
+          companyId={company?.id || 'c-01'}
+        />
       </div>
     </FeatureGate>
   )

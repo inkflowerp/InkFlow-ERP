@@ -1,15 +1,17 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import {
   FileSpreadsheet,
   Plus,
   Search,
   CheckCircle2,
-  ExternalLink,
-  DollarSign,
-  TrendingUp,
+  AlertCircle,
+  RefreshCw,
+  SlidersHorizontal,
+  Calculator,
+  Loader2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -18,10 +20,15 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { FeatureGate } from '@/components/shared/feature-gate'
 import { QuotationRecord, QuotationStatus } from '@/types/quotation.types'
+import { QuotationService } from '@/services/quotation.service'
+import { getQuotationsAction } from '@/actions/quotation.actions'
+import { QuotationKpiBar } from '@/components/quotations/quotation-kpi-bar'
+import { NeedsAttentionPanel } from '@/components/quotations/needs-attention-panel'
+import { QuotationTable } from '@/components/quotations/quotation-table'
+import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NewQuotationModal } from '@/components/quotations/new-quotation-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
@@ -29,15 +36,24 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 export default function QuotationsPage() {
   const { company } = useTenant()
   const { checkCanCreate, openLimitExceededModal } = useSubscription()
-  const { tBilingual } = useI18n()
+  const { tBilingual, locale } = useI18n()
   const slug = company?.slug || 'my-company'
 
-  const [quotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
-  const [search, setSearch] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  // Authoritative server state + local store cache
+  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
+  const [serverQuotations, setServerQuotations] = useState<QuotationRecord[] | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // New Quotation Modal State
+  // Filtering & Search
+  const [search, setSearch] = useState('')
+  const [selectedFilter, setSelectedFilter] = useState<string>('all')
+
+  // Modals state
   const [isNewOpen, setIsNewOpen] = useState(false)
+  const [followUpQuote, setFollowUpQuote] = useState<QuotationRecord | null>(null)
+  const [isFollowUpOpen, setIsFollowUpOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
 
   const showNotification = (msg: string) => {
@@ -45,68 +61,148 @@ export default function QuotationsPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
+  // Fetch authoritative quotations from server
+  const loadQuotations = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsLoading(true)
+    setIsRefreshing(true)
+    setError(null)
+
+    try {
+      const res = await getQuotationsAction(company?.id)
+      if (res.success && res.data) {
+        setServerQuotations(res.data)
+      } else if (!serverQuotations && localQuotations.length > 0) {
+        setServerQuotations(localQuotations)
+      } else if (res.error) {
+        setError(res.error)
+      }
+    } catch (err: any) {
+      if (!serverQuotations && localQuotations.length > 0) {
+        setServerQuotations(localQuotations)
+      } else {
+        setError(err?.message || 'Failed to load quotations.')
+      }
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }, [company?.id, localQuotations, serverQuotations])
+
+  useEffect(() => {
+    loadQuotations()
+  }, [loadQuotations])
+
+  // Active quotation dataset (Server authoritative, fallback to local store)
+  const quotations = useMemo(() => {
+    return serverQuotations || localQuotations || []
+  }, [serverQuotations, localQuotations])
+
+  // KPI Metrics Calculation
+  const kpiMetrics = useMemo(() => {
+    return QuotationService.getKpiMetrics(quotations)
+  }, [quotations])
+
+  // Filtered quotations based on search & action-oriented filters
+  const filteredQuotations = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    return quotations.filter((q) => {
+      // 1. Search filter
+      const term = search.toLowerCase().trim()
+      const matchSearch =
+        !term ||
+        q.quotation_number.toLowerCase().includes(term) ||
+        q.customer_name.toLowerCase().includes(term) ||
+        (q.customer_company && q.customer_company.toLowerCase().includes(term)) ||
+        (q.salesperson_name && q.salesperson_name.toLowerCase().includes(term)) ||
+        (q.customer_phone && q.customer_phone.includes(term)) ||
+        (q.items && q.items.some((it) => it.description.toLowerCase().includes(term)))
+
+      if (!matchSearch) return false
+
+      // 2. Action & Status filters
+      if (selectedFilter === 'all') return true
+      if (selectedFilter === 'active') {
+        return q.status !== 'converted' && q.status !== 'rejected' && q.status !== 'expired'
+      }
+      if (selectedFilter === 'follow_up_today') {
+        if (q.follow_up_date) {
+          const d = new Date(q.follow_up_date)
+          d.setHours(0, 0, 0, 0)
+          return d <= today
+        }
+        return false
+      }
+      if (selectedFilter === 'expiring_soon') {
+        const exp = QuotationService.calculateExpiryUrgency(q.valid_until)
+        return exp.urgency === 'critical' || exp.urgency === 'warning'
+      }
+      if (selectedFilter === 'awaiting_reply') {
+        return q.status === 'sent' || q.status === 'viewed'
+      }
+
+      return q.status === selectedFilter
+    })
+  }, [quotations, search, selectedFilter])
+
+  const handleOpenFollowUp = (quote: QuotationRecord) => {
+    setFollowUpQuote(quote)
+    setIsFollowUpOpen(true)
+  }
+
+  const handleFollowUpSaved = (updatedQuote: QuotationRecord) => {
+    showNotification(`Follow-up logged for #${updatedQuote.quotation_number}.`)
+    loadQuotations(true)
+  }
+
   const handleQuotationCreated = (quote: QuotationRecord) => {
     showNotification(`Quotation #${quote.quotation_number} created successfully.`)
+    loadQuotations(true)
   }
 
-  const filtered = quotations.filter((q) => {
-    const matchSearch =
-      q.quotation_number.toLowerCase().includes(search.toLowerCase()) ||
-      q.customer_name.toLowerCase().includes(search.toLowerCase()) ||
-      (q.salesperson_name && q.salesperson_name.toLowerCase().includes(search.toLowerCase())) ||
-      (q.customer_phone && q.customer_phone.includes(search))
-
-    const matchStatus = selectedStatus === 'all' || q.status === selectedStatus
-    return matchSearch && matchStatus
-  })
-
-  // Quick stats
-  const totalValue = quotations.reduce((acc, q) => acc + (q.grand_total || 0), 0)
-  const inNegotiation = quotations
-    .filter((q) => q.status === 'negotiation' || q.status === 'sent')
-    .reduce((acc, q) => acc + (q.grand_total || 0), 0)
-  const convertedValue = quotations
-    .filter((q) => q.status === 'converted' || q.status === 'approved')
-    .reduce((acc, q) => acc + (q.grand_total || 0), 0)
-
-  const getStatusBadge = (status: QuotationStatus) => {
-    switch (status) {
-      case 'draft':
-        return <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-300">Draft</Badge>
-      case 'sent':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Sent</Badge>
-      case 'viewed':
-        return <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-200">Viewed</Badge>
-      case 'negotiation':
-        return <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 font-bold">Negotiation</Badge>
-      case 'approved':
-        return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 font-bold">Approved</Badge>
-      case 'converted':
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 font-bold">Converted to Order</Badge>
-      case 'rejected':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Rejected</Badge>
-      case 'expired':
-        return <Badge variant="outline" className="bg-slate-100 text-slate-500">Expired</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
+  const filterTabs = [
+    { id: 'all', label: 'All', count: quotations.length },
+    { id: 'active', label: 'Active Pipeline', count: kpiMetrics.activeCount },
+    { id: 'follow_up_today', label: 'Follow-Up Today', count: kpiMetrics.followUpToday, badgeColor: 'bg-amber-100 text-amber-900 font-bold' },
+    { id: 'expiring_soon', label: 'Expiring Soon', count: kpiMetrics.expiringSoon, badgeColor: 'bg-rose-100 text-rose-900 font-bold' },
+    { id: 'draft', label: 'Draft', count: quotations.filter((q) => q.status === 'draft').length },
+    { id: 'sent', label: 'Sent', count: quotations.filter((q) => q.status === 'sent').length },
+    { id: 'negotiation', label: 'Negotiation', count: quotations.filter((q) => q.status === 'negotiation').length },
+    { id: 'approved', label: 'Approved', count: quotations.filter((q) => q.status === 'approved').length },
+    { id: 'converted', label: 'Converted', count: kpiMetrics.wonCount },
+    { id: 'rejected', label: 'Rejected', count: quotations.filter((q) => q.status === 'rejected').length },
+    { id: 'expired', label: 'Expired', count: quotations.filter((q) => q.status === 'expired').length },
+  ]
 
   return (
     <FeatureGate feature="quotation_pdf">
-      <div className="space-y-6 max-w-7xl">
-        {/* Header */}
+      <div className="space-y-5 max-w-7xl pb-10">
+        {/* Page Header */}
         <PageHeader
-          titleEn="Quotations & Estimates"
-          titleBn="কোটেশন ও প্রাক্কলন"
-          descriptionEn="Generate formal commercial estimates, resolve custom rates, and convert approved proposals to job orders."
-          descriptionBn="আনুষ্ঠানিক কোটেশন তৈরি, দরদাম ও কাস্টমার রেট নির্ধারণ এবং অনুমোদিত প্রস্তাবনা সরাসরি অর্ডারে রূপান্তর করুন।"
+          titleEn="Quotations & Sales Pipeline"
+          titleBn="কোটেশন ও সেলস পাইপলাইন"
+          descriptionEn="Commercial sales-control center: track active proposals, urgent follow-ups, profit margins, and order conversions."
+          descriptionBn="বাণিজ্যিক সেলস কন্ট্রোল সেন্টার: চলতি কোটেশন, দ্রুত ফলো-আপ, প্রফিট মার্জিন ও জব অর্ডার কনভার্সন ট্র্যাক করুন।"
           icon={FileSpreadsheet}
           iconColor="text-blue-600"
           actions={
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => loadQuotations(false)}
+                disabled={isRefreshing}
+                className="text-xs h-9 px-3 gap-1.5"
+                title="Refresh Quotations"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
+              </Button>
+
               <Link href={`/${slug}/pricing`}>
-                <Button variant="outline" size="sm" className="text-xs bangla-text">
+                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium bangla-text">
+                  <Calculator className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Live Estimator', 'লাইভ ক্যালকুলেটর')}
                 </Button>
               </Link>
@@ -121,260 +217,181 @@ export default function QuotationsPage() {
                   }
                   setIsNewOpen(true)
                 }}
-                title={!checkCanCreate('monthly_orders').allowed ? checkCanCreate('monthly_orders').reason : undefined}
-                className="bg-blue-600 hover:bg-blue-700 text-xs bangla-text shadow-sm hover:shadow"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9 font-bold px-4 gap-1.5 shadow-sm hover:shadow"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
                 {tBilingual('New Quotation', 'নতুন কোটেশন')}
               </Button>
             </div>
           }
         />
 
-        {/* Notification */}
+        {/* Notifications */}
         {notification && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
+          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
             <span>{notification}</span>
           </div>
         )}
 
-        {/* Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="p-4 shadow-sm">
-            <span className="text-xs font-semibold text-slate-500">Total Quoted Pipeline</span>
-            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-              <CurrencyDisplay amount={totalValue} />
+        {/* Error Alert */}
+        {error && (
+          <div className="p-3.5 bg-red-50 text-red-900 dark:bg-red-950/40 dark:text-red-200 rounded-xl border border-red-200 text-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+              <span>{error}</span>
             </div>
-            <span className="text-[11px] text-slate-400">{quotations.length} total quotations issued</span>
-          </Card>
+            <Button size="sm" variant="outline" onClick={() => loadQuotations(false)} className="h-7 text-xs">
+              Retry
+            </Button>
+          </div>
+        )}
 
-          <Card className="p-4 border-l-4 border-l-amber-500 shadow-sm">
-            <span className="text-xs font-semibold text-slate-500">Active Proposals in Negotiation</span>
-            <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1">
-              <CurrencyDisplay amount={inNegotiation} />
-            </div>
-            <span className="text-[11px] text-amber-600 font-medium">Awaiting customer sign-off</span>
-          </Card>
+        {/* 1. Interactive Business-Owner KPI Bar */}
+        <QuotationKpiBar
+          metrics={kpiMetrics}
+          selectedFilter={selectedFilter}
+          onSelectFilter={setSelectedFilter}
+        />
 
-          <Card className="p-4 border-l-4 border-l-emerald-500 shadow-sm">
-            <span className="text-xs font-semibold text-slate-500">Won & Converted to Orders/Invoices</span>
-            <div className="text-2xl font-black text-emerald-600 mt-1">
-              <CurrencyDisplay amount={convertedValue} />
-            </div>
-            <span className="text-[11px] text-emerald-600 font-medium">Approved job tickets</span>
-          </Card>
-        </div>
+        {/* 2. Needs Attention Triage Section */}
+        <NeedsAttentionPanel
+          quotations={quotations}
+          tenantSlug={slug}
+          companyName={company?.name || 'InkFlow'}
+          onOpenFollowUp={handleOpenFollowUp}
+        />
 
-        {/* Filter Tabs & Search */}
-        <Card className="p-4 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center gap-3">
-            <div className="relative flex-1 w-full">
+        {/* 3. Search & Filter Tabs */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+            {/* Search Box */}
+            <div className="relative w-full md:w-80">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Search by quote number, customer name, phone, salesperson..."
+                placeholder="Search quote #, customer, phone, item..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 text-xs"
+                className="pl-9 text-xs h-9 font-medium"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto">
-              {[
-                { id: 'all', label: 'All' },
-                { id: 'draft', label: 'Draft' },
-                { id: 'sent', label: 'Sent' },
-                { id: 'negotiation', label: 'Negotiation' },
-                { id: 'approved', label: 'Approved' },
-                { id: 'converted', label: 'Converted' },
-              ].map((tab) => (
-                <Button
-                  key={tab.id}
-                  size="sm"
-                  variant={selectedStatus === tab.id ? 'default' : 'outline'}
-                  onClick={() => setSelectedStatus(tab.id)}
-                  className="text-xs h-8 px-3"
-                >
-                  {tab.label}
-                </Button>
-              ))}
+            {/* Filter Tabs Horizontal Scroll */}
+            <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+              {filterTabs.map((tab) => {
+                const isSelected = selectedFilter === tab.id
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setSelectedFilter(tab.id)}
+                    className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                      isSelected
+                        ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    {tab.count > 0 && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          isSelected
+                            ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
+                            : tab.badgeColor || 'bg-slate-200/80 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
         </Card>
 
-        {/* Quotations Table */}
-        <Card className="shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Quotation Directory ({filtered.length})</CardTitle>
-              <span className="text-xs text-slate-400">All commercial proposals & estimates</span>
+        {/* 4. Quotation Directory Table / Card List */}
+        <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden">
+          <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                Quotation Directory
+              </CardTitle>
+              <Badge variant="outline" className="text-xs font-mono">
+                {filteredQuotations.length} records
+              </Badge>
             </div>
+            {selectedFilter !== 'all' && (
+              <button
+                type="button"
+                onClick={() => setSelectedFilter('all')}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+              >
+                Clear Filter
+              </button>
+            )}
           </CardHeader>
+
           <CardContent className="p-0">
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="py-3 px-4">Quote Number</th>
-                    <th className="py-3 px-4">Customer</th>
-                    <th className="py-3 px-4">Primary Item</th>
-                    <th className="py-3 px-4">Subtotal</th>
-                    <th className="py-3 px-4">Grand Total (৳)</th>
-                    <th className="py-3 px-4">Valid Until</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filtered.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="py-8 text-center text-xs text-slate-400">
-                        {tBilingual('No quotations found matching filter.', 'কোন কোটেশন পাওয়া যায়নি।')}
-                      </td>
-                    </tr>
-                  ) : (
-                    filtered.map((q) => (
-                      <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                        {/* Quote Number */}
-                        <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
-                          <Link
-                            href={`/${slug}/quotations/${q.id}`}
-                            className="hover:underline flex items-center gap-1 group"
-                          >
-                            <span>{q.quotation_number}</span>
-                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </Link>
-                        </td>
-
-                        {/* Customer */}
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-slate-900 dark:text-white">
-                            {q.customer_name}
-                            {q.customer_company && (
-                              <span className="text-slate-500 font-normal text-xs ml-1">({q.customer_company})</span>
-                            )}
-                          </div>
-                          <div className="text-[11px] font-mono text-slate-400">{q.customer_phone}</div>
-                        </td>
-
-                        {/* Primary Item */}
-                        <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300">
-                          {q.items?.[0]?.description || 'Custom Job'}
-                          {q.items && q.items.length > 1 && (
-                            <span className="text-slate-400 ml-1">(+{q.items.length - 1} more)</span>
-                          )}
-                        </td>
-
-                        {/* Subtotal */}
-                        <td className="py-3.5 px-4 text-xs font-medium text-slate-500">
-                          <CurrencyDisplay amount={q.subtotal} />
-                        </td>
-
-                        {/* Grand Total */}
-                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                          <CurrencyDisplay amount={q.grand_total} />
-                        </td>
-
-                        {/* Valid Until */}
-                        <td className="py-3.5 px-4 text-xs text-slate-500">
-                          {q.valid_until}
-                        </td>
-
-                        {/* Status */}
-                        <td className="py-3.5 px-4">
-                          {getStatusBadge(q.status)}
-                        </td>
-
-                        {/* Actions */}
-                        <td className="py-3.5 px-4 text-right">
-                          <Link
-                            href={`/${slug}/quotations/${q.id}`}
-                            className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                          >
-                            Open Cockpit
-                          </Link>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Card List View */}
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-400">
-                  {tBilingual('No quotations found matching filter.', 'কোন কোটেশন পাওয়া যায়নি।')}
+            {isLoading ? (
+              <div className="p-12 text-center space-y-3">
+                <Loader2 className="h-7 w-7 animate-spin text-blue-600 mx-auto" />
+                <p className="text-xs text-slate-500 font-medium">Loading quotations pipeline...</p>
+              </div>
+            ) : filteredQuotations.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+                  <FileSpreadsheet className="h-6 w-6" />
                 </div>
-              ) : (
-                filtered.map((q) => (
-                  <div key={q.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Top: Quote # & Status */}
-                    <div className="flex items-center justify-between gap-2">
-                      <Link
-                        href={`/${slug}/quotations/${q.id}`}
-                        className="font-mono font-bold text-sm text-blue-600 hover:underline flex items-center gap-1"
-                      >
-                        <span>{q.quotation_number}</span>
-                        <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-                      </Link>
-                      {getStatusBadge(q.status)}
-                    </div>
-
-                    {/* Customer Info */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="font-semibold text-sm text-slate-900 dark:text-white">
-                          {q.customer_name} {q.customer_company && `(${q.customer_company})`}
-                        </div>
-                        {q.customer_phone && (
-                          <a href={`tel:${q.customer_phone}`} className="text-xs font-mono text-blue-600 hover:underline">
-                            {q.customer_phone}
-                          </a>
-                        )}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Grand Total</span>
-                        <span className="text-sm font-black text-slate-900 dark:text-white">
-                          <CurrencyDisplay amount={q.grand_total} />
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Primary Item Spec */}
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800 space-y-1">
-                      <div className="text-slate-700 dark:text-slate-300 font-medium line-clamp-2">
-                        {q.items?.[0]?.description || 'Custom Job'}
-                      </div>
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                        <span>Subtotal: <CurrencyDisplay amount={q.subtotal} /></span>
-                        <span>Valid: {q.valid_until}</span>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex justify-end pt-1">
-                      <Link
-                        href={`/${slug}/quotations/${q.id}`}
-                        className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60 min-h-[38px]"
-                      >
-                        Open Quotation Cockpit →
-                      </Link>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    {search || selectedFilter !== 'all'
+                      ? 'No quotations match current filter'
+                      : 'No quotations created yet'}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                    {search || selectedFilter !== 'all'
+                      ? 'Try clearing the search query or changing active filter tabs.'
+                      : 'Generate formal commercial proposals with custom rates and dimensional pricing in under 60 seconds.'}
+                  </p>
+                </div>
+                {(!search && selectedFilter === 'all') && (
+                  <Button
+                    size="sm"
+                    onClick={() => setIsNewOpen(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold mt-2"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    Create First Quotation
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <QuotationTable
+                quotations={filteredQuotations}
+                tenantSlug={slug}
+                companyName={company?.name || 'InkFlow'}
+                onOpenFollowUp={handleOpenFollowUp}
+              />
+            )}
           </CardContent>
         </Card>
 
-        {/* NEW REBUILT MODAL: CREATE QUOTATION */}
+        {/* 5. Modals */}
+        {/* Create Quotation Modal */}
         <NewQuotationModal
           open={isNewOpen}
           onOpenChange={setIsNewOpen}
           onQuotationCreated={handleQuotationCreated}
+          companyId={company?.id || 'c-01'}
+        />
+
+        {/* Follow-up Logging Modal */}
+        <FollowUpModal
+          open={isFollowUpOpen}
+          onOpenChange={setIsFollowUpOpen}
+          quotation={followUpQuote}
+          onFollowUpRecorded={handleFollowUpSaved}
           companyId={company?.id || 'c-01'}
         />
       </div>

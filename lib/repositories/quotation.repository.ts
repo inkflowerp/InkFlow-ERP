@@ -60,26 +60,23 @@ export class QuotationRepository {
    */
   static async getQuotations(companyId: string): Promise<QuotationRecord[]> {
     return measureAsync(`QuotationRepository.getQuotations(${companyId})`, async () => {
-      const supabase = await createClient()
-      const { data, error } = await (supabase as any)
-        .from('quotations')
-        .select('*, items:quotation_items(*)')
-        .eq('company_id', companyId)
-        .order('created_at', { ascending: false })
+      try {
+        const supabase = await createClient()
+        const { data, error } = await (supabase as any)
+          .from('quotations')
+          .select('*, items:quotation_items(*)')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false })
 
-      if (error) {
+        if (!error && data && data.length > 0) {
+          return data as unknown as QuotationRecord[]
+        }
+      } catch {
         // Safe fallback to client/mock datastore
-        const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-        return quotes.filter((q) => !q.company_id || q.company_id === companyId)
       }
 
-      const list = (data || []) as unknown as QuotationRecord[]
-      if (list.length === 0) {
-        const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
-        return quotes.filter((q) => !q.company_id || q.company_id === companyId)
-      }
-
-      return list
+      const quotes = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
+      return quotes.filter((q) => !q.company_id || q.company_id === companyId)
     })
   }
 
@@ -400,13 +397,13 @@ export class QuotationRepository {
     updates: Partial<QuotationRecord>,
     companyId: string
   ): Promise<QuotationRecord | null> {
-    const supabase = await createClient()
-    const payload: any = { ...updates, updated_at: new Date().toISOString() }
-    delete payload.id
-    delete payload.company_id
-    delete payload.items
-
     try {
+      const supabase = await createClient()
+      const payload: any = { ...updates, updated_at: new Date().toISOString() }
+      delete payload.id
+      delete payload.company_id
+      delete payload.items
+
       await (supabase as any)
         .from('quotations')
         .update(payload)
@@ -503,6 +500,239 @@ export class QuotationRepository {
   }
 
   /**
+   * Converts a quotation to a formal Production Job Order, strictly preserving all item specs & quoted prices
+   */
+  static async convertQuotationToJobOrder(
+    quotationId: string,
+    companyId: string,
+    options?: {
+      createdByName?: string
+      advanceAmount?: number
+    }
+  ): Promise<any> {
+    const quote = await this.getQuotationById(quotationId, companyId)
+    if (!quote) {
+      throw new Error(`Quotation ${quotationId} not found in company context.`)
+    }
+
+    if (quote.status === 'converted' && (quote.converted_order_id || quote.converted_invoice_id)) {
+      throw new Error(`Quotation ${quote.quotation_number} has already been converted.`)
+    }
+
+    const orderNumber = PrintERPDataStore.getNextDocumentNumber(companyId, 'order')
+    const orderId = `ord-${Date.now()}`
+
+    const advance = Math.max(0, Number(options?.advanceAmount) || 0)
+    const dueAmount = Math.max(0, quote.grand_total - advance)
+
+    const salesOrder = {
+      id: orderId,
+      company_id: companyId,
+      order_number: orderNumber,
+      customer_id: quote.customer_id || '00000000-0000-0000-0000-000000000000',
+      customer_name: quote.customer_name,
+      customer_phone: quote.customer_phone,
+      customer_address: quote.customer_address || '',
+      order_date: new Date().toISOString().split('T')[0],
+      delivery_date: quote.delivery_date || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+      status: 'confirmed',
+      priority: 'normal',
+      payment_terms: advance > 0 ? 'advance' : 'cash',
+      subtotal: quote.subtotal,
+      discount_amount: quote.discount_amount,
+      vat_amount: quote.vat_amount,
+      final_price: quote.grand_total,
+      advance_amount: advance,
+      due_amount: dueAmount,
+      notes: `Converted from Quotation #${quote.quotation_number}.${quote.notes ? ` Notes: ${quote.notes}` : ''}`,
+      salesperson_name: options?.createdByName || quote.salesperson_name || 'Sales Staff',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      items: (quote.items || []).map((it, idx) => ({
+        id: `item-${Date.now()}-${idx + 1}`,
+        order_id: orderId,
+        product_id: it.product_id || null,
+        item_name: it.description,
+        dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit}` : null,
+        width: it.width || 0,
+        height: it.height || 0,
+        dimension_unit: it.dimension_unit || 'ft',
+        area_sft: it.area_sft || 0,
+        quantity: it.quantity,
+        unit: it.unit,
+        unit_price: it.unit_rate, // PRESERVED QUOTED RATE
+        total_price: it.item_total,
+        media_type: it.material_spec || null,
+        finishing: it.finishing || null,
+        installation_required: it.installation_required || false,
+      })),
+    }
+
+    // Persist to DataStore
+    PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, salesOrder)
+
+    // Update Quotation Status to Converted
+    await this.updateQuotation(quote.id, {
+      status: 'converted',
+      converted_order_id: salesOrder.order_number,
+    }, companyId)
+
+    // Log Activity
+    const activity: QuotationActivityRecord = {
+      id: `qa-${Date.now()}`,
+      quotation_id: quote.id,
+      action: 'converted',
+      details: `Converted to Job Order #${salesOrder.order_number} (Total: ৳${quote.grand_total}, Advance: ৳${advance})`,
+      actor_name: options?.createdByName || 'Sales Staff',
+      created_at: new Date().toISOString(),
+    }
+    PrintERPDataStore.addItem<QuotationActivityRecord>(STORAGE_KEYS.QUOTATION_ACTIVITIES, activity)
+
+    return salesOrder
+  }
+
+  /**
+   * Records a quotation follow-up event with schedule and outcome
+   */
+  static async recordFollowUp(
+    quotationId: string,
+    companyId: string,
+    data: {
+      method: 'whatsapp' | 'phone' | 'email' | 'in_person' | 'other'
+      note: string
+      outcome?: string
+      nextFollowUpDate?: string | null
+      markResponded?: boolean
+    },
+    actorName: string = 'Sales Representative'
+  ): Promise<QuotationRecord | null> {
+    const quote = await this.getQuotationById(quotationId, companyId)
+    if (!quote) return null
+
+    const updates: Partial<QuotationRecord> = {
+      last_follow_up_method: data.method,
+      last_follow_up_at: new Date().toISOString(),
+      last_follow_up_note: data.note,
+      follow_up_date: data.nextFollowUpDate || null,
+      follow_up_count: (quote.follow_up_count || 0) + 1,
+      follow_up_status: data.nextFollowUpDate ? 'pending' : 'completed',
+    }
+
+    if (data.markResponded && quote.status === 'sent') {
+      updates.status = 'viewed'
+    }
+    if (data.outcome === 'negotiating') {
+      updates.status = 'negotiation'
+    } else if (data.outcome === 'approved') {
+      updates.status = 'approved'
+    }
+
+    await this.updateQuotation(quote.id, updates, companyId)
+
+    const methodLabels: Record<string, string> = {
+      whatsapp: 'WhatsApp',
+      phone: 'Phone Call',
+      email: 'Email',
+      in_person: 'In-person Meeting',
+      other: 'Direct Contact',
+    }
+
+    const activity: QuotationActivityRecord = {
+      id: `qa-${Date.now()}`,
+      quotation_id: quote.id,
+      action: 'follow_up',
+      details: `Follow-up via ${methodLabels[data.method] || data.method}: "${data.note}"${
+        data.nextFollowUpDate ? ` (Next scheduled: ${data.nextFollowUpDate})` : ''
+      }${data.outcome ? ` [Outcome: ${data.outcome}]` : ''}`,
+      actor_name: actorName,
+      created_at: new Date().toISOString(),
+    }
+    await this.addActivity(activity)
+
+    return this.getQuotationById(quotationId, companyId)
+  }
+
+  /**
+   * Applies negotiated concession discount and recalculates margin with internal shielding
+   */
+  static async applyNegotiation(
+    quotationId: string,
+    companyId: string,
+    discountAmount: number,
+    notes?: string,
+    actorName: string = 'Sales Executive'
+  ): Promise<QuotationRecord | null> {
+    const quote = await this.getQuotationById(quotationId, companyId)
+    if (!quote) return null
+
+    const safeDiscount = Math.max(0, Math.min(quote.subtotal, Number(discountAmount) || 0))
+    const subtotalAfterDisc = Math.max(0, quote.subtotal - safeDiscount)
+    const newVat = Math.round((subtotalAfterDisc * quote.vat_rate) / 100)
+    const newGrandTotal = subtotalAfterDisc + newVat
+    const totalCost = quote.total_cost || Math.round(quote.subtotal * 0.55)
+    const newMargin = newGrandTotal > 0 ? Math.round(((newGrandTotal - totalCost) / newGrandTotal) * 100) : 35
+
+    const updates: Partial<QuotationRecord> = {
+      discount_amount: safeDiscount,
+      vat_amount: newVat,
+      grand_total: newGrandTotal,
+      margin_percent: newMargin,
+      status: 'negotiation',
+    }
+
+    await this.updateQuotation(quote.id, updates, companyId)
+
+    const activity: QuotationActivityRecord = {
+      id: `qa-${Date.now()}`,
+      quotation_id: quote.id,
+      action: 'negotiated',
+      details: `Applied negotiated concession discount of ৳${safeDiscount}. New Grand Total: ৳${newGrandTotal} (Projected Margin: ${newMargin}%). ${
+        notes ? `Remarks: ${notes}` : ''
+      }`,
+      actor_name: actorName,
+      created_at: new Date().toISOString(),
+    }
+    await this.addActivity(activity)
+
+    return this.getQuotationById(quotationId, companyId)
+  }
+
+  /**
+   * Updates quotation status safely with activity log
+   */
+  static async updateStatus(
+    quotationId: string,
+    newStatus: QuotationStatus,
+    reason?: string,
+    companyId: string = 'c-01',
+    actorName: string = 'System'
+  ): Promise<QuotationRecord | null> {
+    const quote = await this.getQuotationById(quotationId, companyId)
+    if (!quote) return null
+
+    // Safe transition validation
+    if (quote.status === 'converted' && newStatus !== 'converted') {
+      throw new Error('Cannot change status of a converted quotation.')
+    }
+
+    await this.updateQuotation(quote.id, { status: newStatus }, companyId)
+
+    const activity: QuotationActivityRecord = {
+      id: `qa-${Date.now()}`,
+      quotation_id: quote.id,
+      action: 'status_change',
+      details: `Status changed from ${quote.status.toUpperCase()} to ${newStatus.toUpperCase()}${
+        reason ? ` (Reason: ${reason})` : ''
+      }`,
+      actor_name: actorName,
+      created_at: new Date().toISOString(),
+    }
+    await this.addActivity(activity)
+
+    return this.getQuotationById(quotationId, companyId)
+  }
+
+  /**
    * Adds an activity record to a quotation
    */
   static async addActivity(activity: QuotationActivityRecord): Promise<void> {
@@ -519,18 +749,22 @@ export class QuotationRepository {
    * Retrieves activity timeline for a quotation
    */
   static async getActivities(quotationId: string, companyId: string): Promise<QuotationActivityRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('quotation_activities')
-      .select('*')
-      .eq('quotation_id', quotationId)
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('quotation_activities')
+        .select('*')
+        .eq('quotation_id', quotationId)
+        .order('created_at', { ascending: false })
 
-    if (error || !data || data.length === 0) {
-      const activities = PrintERPDataStore.get<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES) || []
-      return activities.filter((a) => a.quotation_id === quotationId)
+      if (!error && data && data.length > 0) {
+        return data as QuotationActivityRecord[]
+      }
+    } catch {
+      // Fallback to DataStore
     }
 
-    return data as QuotationActivityRecord[]
+    const activities = PrintERPDataStore.get<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES) || []
+    return activities.filter((a) => a.quotation_id === quotationId)
   }
 }
