@@ -31,8 +31,7 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { calculateJobPricing } from '@/lib/pricing-engine'
 import { PricingCalculationInput, PriceOverrideRecord, ProductRecord } from '@/types/product.types'
-import { useDataStore } from '@/hooks/use-data-store'
-import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { getProductsAction } from '@/actions/product.actions'
 import { formatBDT } from '@/lib/formatters'
 
 const DEFAULT_PRODUCT_TEMPLATE: ProductRecord = {
@@ -72,8 +71,25 @@ export default function PricingCalculatorPage() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
+  const companyId = company?.id
 
-  const [products] = useDataStore<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, [])
+  const [products, setProducts] = useState<ProductRecord[]>([])
+
+  React.useEffect(() => {
+    let isMounted = true
+    async function fetchCatalog() {
+      try {
+        const res = await getProductsAction(companyId, true)
+        if (isMounted && res.success && res.data && res.data.length > 0) {
+          setProducts(res.data)
+        }
+      } catch {}
+    }
+    fetchCatalog()
+    return () => {
+      isMounted = false
+    }
+  }, [companyId])
 
   // Selected preset product
   const [selectedProductId, setSelectedProductId] = useState<string>('')

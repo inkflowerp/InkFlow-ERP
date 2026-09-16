@@ -52,6 +52,8 @@ export type PermissionModule =
   | 'notifications'
   | 'support'
   | 'branches'
+  | 'products'
+  | 'pricing'
 
 export type DataScope =
   | 'own'
@@ -72,6 +74,22 @@ export interface ModuleActionSpec {
 }
 
 export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
+  products: {
+    module: 'products',
+    label: 'Products & Services',
+    labelBn: 'পণ্য ও সেবা ক্যাটালগ',
+    description: 'Print, fabrication, installation tariffs, specifications and catalog items',
+    actions: ['view', 'create', 'edit', 'delete', 'manage', 'export'],
+    defaultScope: 'company',
+  },
+  pricing: {
+    module: 'pricing',
+    label: 'Pricing & Tariffs',
+    labelBn: 'মূল্য নির্ধারণ ও ট্যারিফ',
+    description: 'Price lists, customer rates, floor margins and calculation formulas',
+    actions: ['view', 'edit', 'manage'],
+    defaultScope: 'company',
+  },
   customers: {
     module: 'customers',
     label: 'Customers',

@@ -243,6 +243,33 @@ export class SearchService {
       }
     }
 
+    // 4.5 Products & Services Catalog
+    if (hasPermission('products.view') || hasPermission('inventory.view') || hasPermission('quotation.create')) {
+      const products = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []).filter(
+        (p) => !p.company_id || p.company_id === companyId
+      )
+      for (const p of products) {
+        if (
+          p.name.toLowerCase().includes(q) ||
+          (p.name_bn && p.name_bn.toLowerCase().includes(q)) ||
+          (p.sku && p.sku.toLowerCase().includes(q)) ||
+          (p.material_spec && p.material_spec.toLowerCase().includes(q))
+        ) {
+          results.push({
+            id: p.id,
+            entity: 'product',
+            title: p.name,
+            subtitle: `${p.sku} • ৳${p.selling_price}/${p.unit || 'sft'} • ${p.product_type?.replace('_', ' ')}`,
+            badge: p.category,
+            status: p.is_active ? 'active' : 'archived',
+            href: `/products/${p.id}`,
+            requiredPermission: 'products.view',
+            metadata: { sku: p.sku, sellingPrice: p.selling_price, unit: p.unit },
+          })
+        }
+      }
+    }
+
     // 5. Inventory
     if (hasPermission('inventory.view')) {
       const materials = (PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []).filter(

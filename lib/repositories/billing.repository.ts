@@ -596,7 +596,7 @@ export class BillingRepository {
           const itemsPayload = invoice.items.map((it: any) => ({
             id: generateUUID(),
             invoice_id: data.id,
-            product_id: it.product_id && isValidUUID(it.product_id) ? it.product_id : null,
+            product_id: it.product_id ? (mode === 'production' && !isValidUUID(it.product_id) ? null : it.product_id) : null,
             item_description: it.item_description || it.item_name || 'Printing Item',
             dimensions_spec:
               it.dimensions_spec ||
@@ -657,12 +657,12 @@ export class BillingRepository {
         }
 
         const retrieved = await this.getInvoiceById(data.id, invoice.company_id)
-        const finalInvoice = retrieved || {
-          ...payload,
+        const finalInvoice = {
+          ...(retrieved || payload),
           id: data.id,
-          items: invoice.items || [],
-          payments: [],
-          write_offs: [],
+          items: invoice.items && invoice.items.length > 0 ? invoice.items : (retrieved?.items || []),
+          payments: retrieved?.payments || [],
+          write_offs: retrieved?.write_offs || [],
         }
 
         // Sync into client store
@@ -686,6 +686,7 @@ export class BillingRepository {
       items: (invoice.items || []).map((it: any) => ({
         id: it.id || generateUUID(),
         invoice_id: payload.id,
+        product_id: it.product_id || null,
         item_description: it.item_description || it.item_name || 'Printing Item',
         dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
         quantity: Number(it.quantity) || 1,

@@ -652,24 +652,42 @@ export class CustomerRepository {
     }
 
     if (isSupabaseConfigured()) {
-      const supabase = await createClient()
-      const { data, error } = await (supabase as any)
-        .from('customer_rates')
-        .upsert(payload, { onConflict: 'company_id,customer_id,product_id' })
-        .select()
-        .single()
+      try {
+        const supabase = await createClient()
+        const { data, error } = await (supabase as any)
+          .from('customer_rates')
+          .upsert(payload, { onConflict: 'company_id,customer_id,product_id' })
+          .select()
+          .single()
 
-      if (error) {
-        throw new Error(`Failed to save customer rate: ${error.message}`)
+        if (error) {
+          throw new Error(`Failed to save customer rate: ${error.message}`)
+        }
+        if (isTestMode()) {
+          PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, data)
+        }
+        return data as CustomerRateRecord
+      } catch (err: any) {
+        if (isTestMode()) {
+          const testItem: CustomerRateRecord = {
+            id: `rate-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            created_at: new Date().toISOString(),
+            ...payload,
+          } as CustomerRateRecord
+          PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, testItem)
+          return testItem
+        }
+        throw err
       }
-      return data as CustomerRateRecord
     }
 
-    return {
-      id: `rate-${Date.now()}`,
+    const testItem: CustomerRateRecord = {
+      id: `rate-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       created_at: new Date().toISOString(),
       ...payload,
     } as CustomerRateRecord
+    PrintERPDataStore.addItem(STORAGE_KEYS.CUSTOMER_RATES, testItem)
+    return testItem
   }
 
   /**
@@ -677,18 +695,30 @@ export class CustomerRepository {
    */
   static async deleteCustomerRate(companyId: string, customerId: string, productId: string): Promise<boolean> {
     if (isSupabaseConfigured()) {
-      const supabase = await createClient()
-      const { error } = await (supabase as any)
-        .from('customer_rates')
-        .delete()
-        .eq('company_id', companyId)
-        .eq('customer_id', customerId)
-        .eq('product_id', productId)
+      try {
+        const supabase = await createClient()
+        const { error } = await (supabase as any)
+          .from('customer_rates')
+          .delete()
+          .eq('company_id', companyId)
+          .eq('customer_id', customerId)
+          .eq('product_id', productId)
 
-      if (error) {
-        throw new Error(`Failed to remove customer rate: ${error.message}`)
+        if (error) {
+          throw new Error(`Failed to remove customer rate: ${error.message}`)
+        }
+      } catch (err) {
+        if (!isTestMode()) throw err
       }
-      return true
+    }
+    if (isTestMode()) {
+      const rates = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+      PrintERPDataStore.set(
+        STORAGE_KEYS.CUSTOMER_RATES,
+        rates.filter(
+          (r) => !(r.company_id === companyId && r.customer_id === customerId && r.product_id === productId)
+        )
+      )
     }
     return true
   }

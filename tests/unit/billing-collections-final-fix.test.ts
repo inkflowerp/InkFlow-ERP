@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
+import { BillingRepository, getTodayDateString } from '../../lib/repositories/billing.repository.ts'
 import { BillingService } from '../../services/billing.service.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { formatBDT, numberToWordsBDT } from '../../lib/formatters.ts'
@@ -13,7 +13,7 @@ describe('Billing & Collections Final Fix - Forensic Suite', () => {
     PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
     PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, [])
 
-    const todayStr = new Date().toISOString().split('T')[0]
+    const todayStr = getTodayDateString()
     const pastDueDate = '2026-01-01'
 
     // Scenario A: Create invoice ৳10,000
@@ -130,7 +130,7 @@ describe('Billing & Collections Final Fix - Forensic Suite', () => {
 
   it('2. Invoice Deletion Lifecycle & Protection Rules', async () => {
     PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [])
-    const todayStr = new Date().toISOString().split('T')[0]
+    const todayStr = getTodayDateString()
 
     // Create Draft / Unpaid invoice
     const unpaidInv = await BillingRepository.createInvoice({

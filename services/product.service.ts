@@ -4,27 +4,34 @@ import type {
   ProductVariantRecord,
   ProductFormulaRecord,
   PriceListRecord,
+  ProductUsageStats,
+  ResolvedProductPrice,
   PricingCalculationInput,
   PricingCalculationOutput,
 } from '../types/product.types.ts'
 import { ProductRepository } from '../lib/repositories/product.repository.ts'
 import { calculateJobPricing } from '../lib/pricing-engine.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 export class ProductService {
-  static async getProducts(companyId: string = 'c-01', activeOnly: boolean = false): Promise<ProductRecord[]> {
-    return ProductRepository.getProducts(companyId, activeOnly)
+  static async getProducts(
+    companyId: string,
+    activeOnly: boolean = false,
+    category?: string,
+    search?: string
+  ): Promise<ProductRecord[]> {
+    return ProductRepository.getProducts(companyId, activeOnly, category, search)
   }
 
-  static async getProductById(id: string, companyId: string = 'c-01'): Promise<ProductRecord | null> {
+  static async getProductById(id: string, companyId: string): Promise<ProductRecord | null> {
     return ProductRepository.getProductById(id, companyId)
   }
 
-  static async createProduct(data: Partial<ProductRecord>): Promise<ProductRecord> {
-    const companyId = data.company_id || 'c-01'
+  static async createProduct(data: Partial<ProductRecord> & { company_id: string }): Promise<ProductRecord> {
+    if (!data.company_id) {
+      throw new Error('Tenant Company ID is required to create a product.')
+    }
     return ProductRepository.createProduct({
       ...data,
-      company_id: companyId,
       name: data.name || 'Product',
       sku: data.sku || `PRD-${Date.now().toString().slice(-4)}`,
       unit: (data.unit as any) || 'sft',
@@ -32,11 +39,28 @@ export class ProductService {
     })
   }
 
-  static async updateProduct(id: string, data: Partial<ProductRecord>, companyId: string = 'c-01'): Promise<ProductRecord | null> {
+  static async updateProduct(id: string, data: Partial<ProductRecord>, companyId: string): Promise<ProductRecord> {
+    if (!companyId) throw new Error('Tenant Company ID is required to update a product.')
     return ProductRepository.updateProduct(id, data, companyId)
   }
 
-  static async deleteProduct(id: string, companyId: string = 'c-01'): Promise<boolean> {
+  static async archiveProduct(id: string, isArchived: boolean, companyId: string): Promise<ProductRecord> {
+    if (!companyId) throw new Error('Tenant Company ID is required to archive a product.')
+    return ProductRepository.archiveProduct(id, isArchived, companyId)
+  }
+
+  static async restoreProduct(id: string, companyId: string): Promise<ProductRecord> {
+    if (!companyId) throw new Error('Tenant Company ID is required to restore a product.')
+    return ProductRepository.restoreProduct(id, companyId)
+  }
+
+  static async checkProductDeletionSafety(productId: string, companyId: string) {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.checkProductDeletionSafety(productId, companyId)
+  }
+
+  static async deleteProduct(id: string, companyId: string): Promise<{ deleted: boolean; archived: boolean; message: string }> {
+    if (!companyId) throw new Error('Tenant Company ID is required to delete a product.')
     return ProductRepository.deleteProduct(id, companyId)
   }
 
@@ -45,43 +69,61 @@ export class ProductService {
     newPrice: number,
     reason: string = 'Market cost adjustment',
     changedByName: string = 'Current User',
-    companyId: string = 'c-01'
+    changedByUserIdOrCompanyId: string | null = null,
+    companyIdArg?: string
   ): Promise<ProductRecord | null> {
-    const existing = await this.getProductById(productId, companyId)
+    const effectiveCompanyId = companyIdArg || (changedByUserIdOrCompanyId && typeof changedByUserIdOrCompanyId === 'string' ? changedByUserIdOrCompanyId : '')
+    const effectiveUserId = companyIdArg ? changedByUserIdOrCompanyId : null
+
+    if (!effectiveCompanyId) throw new Error('Tenant Company ID is required.')
+    const existing = await this.getProductById(productId, effectiveCompanyId)
     if (!existing) return null
 
-    const updated = await this.updateProduct(productId, { selling_price: newPrice }, companyId)
+    const safeNewPrice = Math.max(0, Number(newPrice) || 0)
+    const updated = await this.updateProduct(productId, { selling_price: safeNewPrice }, effectiveCompanyId)
 
-    const historyEntry: PriceHistoryRecord = {
-      id: `ph-${Date.now()}`,
-      company_id: existing.company_id,
-      product_id: productId,
-      old_price: existing.selling_price,
-      new_price: newPrice,
+    await ProductRepository.recordPriceChange(
+      productId,
+      existing.selling_price,
+      safeNewPrice,
       reason,
-      changed_by_name: changedByName,
-      created_at: new Date().toISOString(),
-    }
-    try {
-      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, historyEntry)
-    } catch {
-      // Non-blocking
-    }
+      effectiveCompanyId,
+      effectiveUserId,
+      changedByName
+    )
 
     return updated
   }
 
-  static async getPriceHistory(productId?: string): Promise<PriceHistoryRecord[]> {
-    const history = PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || []
-    if (productId) return history.filter((h) => h.product_id === productId)
-    return history
+  static async getPriceHistory(productId?: string, companyId?: string): Promise<PriceHistoryRecord[]> {
+    return ProductRepository.getProductPriceHistory(productId, companyId)
+  }
+
+  static async getProductUsageStats(productId: string, companyId: string): Promise<ProductUsageStats> {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.getProductUsageStats(productId, companyId)
+  }
+
+  static async resolveCustomerProductPrice(
+    productId: string,
+    customerId: string | undefined,
+    companyId: string,
+    options?: {
+      allowFloorOverride?: boolean
+      overrideReason?: string
+      authorizedBy?: string
+    }
+  ): Promise<ResolvedProductPrice> {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.resolveCustomerProductPrice(productId, customerId, companyId, options)
   }
 
   // ============================================================================
   // VARIANTS
   // ============================================================================
 
-  static async getProductVariants(productId: string, companyId: string = 'c-01'): Promise<ProductVariantRecord[]> {
+  static async getProductVariants(productId: string, companyId: string): Promise<ProductVariantRecord[]> {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
     return ProductRepository.getProductVariants(productId, companyId)
   }
 
@@ -90,14 +132,21 @@ export class ProductService {
     product_id: string
     variant_name: string
   }): Promise<ProductVariantRecord> {
+    if (!data.company_id) throw new Error('Tenant Company ID is required.')
     return ProductRepository.createProductVariant(data)
+  }
+
+  static async deleteProductVariant(variantId: string, companyId: string): Promise<boolean> {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.deleteProductVariant(variantId, companyId)
   }
 
   // ============================================================================
   // FORMULAS
   // ============================================================================
 
-  static async getProductFormulas(productId: string, companyId: string = 'c-01'): Promise<ProductFormulaRecord[]> {
+  static async getProductFormulas(productId: string, companyId: string): Promise<ProductFormulaRecord[]> {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
     return ProductRepository.getProductFormulas(productId, companyId)
   }
 
@@ -106,6 +155,7 @@ export class ProductService {
     product_id: string
     model: any
   }): Promise<ProductFormulaRecord> {
+    if (!data.company_id) throw new Error('Tenant Company ID is required.')
     return ProductRepository.createProductFormula(data)
   }
 
@@ -113,7 +163,8 @@ export class ProductService {
   // PRICE LISTS
   // ============================================================================
 
-  static async getPriceLists(companyId: string = 'c-01'): Promise<PriceListRecord[]> {
+  static async getPriceLists(companyId: string): Promise<PriceListRecord[]> {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
     return ProductRepository.getPriceLists(companyId)
   }
 
@@ -122,6 +173,7 @@ export class ProductService {
     name: string
     code: string
   }): Promise<PriceListRecord> {
+    if (!data.company_id) throw new Error('Tenant Company ID is required.')
     return ProductRepository.createPriceList(data)
   }
 

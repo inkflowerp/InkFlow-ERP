@@ -11,20 +11,38 @@ export type ProductType =
 export type UnitOfMeasure =
   | 'pcs'
   | 'sft'
+  | 'rft'
   | 'inch'
   | 'ft'
   | 'sqm'
+  | 'meter'
   | 'sheet'
   | 'roll'
   | 'kg'
   | 'ltr'
   | 'hr'
-  | 'meter'
+  | 'set'
   | 'box'
   | 'packet'
-  | 'set'
   | 'pair'
   | string
+
+export type PricingMethod =
+  | 'fixed'
+  | 'per_piece'
+  | 'per_sft'
+  | 'per_rft'
+  | 'per_inch'
+  | 'per_meter'
+  | 'per_sheet'
+  | 'per_roll'
+  | 'per_kg'
+  | 'per_liter'
+  | 'per_hour'
+  | 'dimensional_area'
+  | 'running_length'
+  | 'compound_signage'
+  | 'custom_formula'
 
 export type PricingComponentKey =
   | 'material'
@@ -115,7 +133,7 @@ export interface ProductVariantRecord {
   updated_at: string
 }
 
-export type PriceListTier = 'retail' | 'wholesale' | 'dealer' | 'corporate' | 'vip' | 'custom'
+export type PriceListTier = 'retail' | 'wholesale' | 'agency' | 'dealer' | 'corporate' | 'vip' | 'custom'
 
 export interface PriceListRecord {
   id: string
@@ -143,7 +161,7 @@ export interface PriceListItemRecord {
 }
 
 export interface PricingFormulaConfig {
-  model?: 'dimensional_area' | 'running_length' | 'unit_quantity' | 'compound_signage' | 'custom_formula'
+  model?: 'dimensional_area' | 'running_length' | 'unit_quantity' | 'compound_signage' | 'custom_formula' | PricingMethod
   base_rate?: number
   min_area_sft?: number
   waste_factor_percent?: number
@@ -222,6 +240,35 @@ export interface PricingCalculationOutput {
   costingSnapshot: Record<string, any>
 }
 
+export interface ProductUsageStats {
+  quotationCount: number
+  invoiceCount: number
+  jobCount: number
+  totalRevenueBDT: number
+  lastSoldDate?: string | null
+  isReferenced: boolean
+}
+
+export interface ResolvedProductPrice {
+  productId: string
+  productName: string
+  sku: string
+  unit: string
+  sellingPrice: number
+  effectiveRate: number
+  minPrice: number
+  baseCost: number
+  source: 'custom' | 'price_list' | 'customer_tier' | 'last_invoice' | 'default'
+  sourceLabel: string
+  sourceDetails?: string
+  priceListCode?: string | null
+  isBelowMinimum?: boolean
+  isFloorEnforced?: boolean
+  originalRequestedRate?: number
+  overrideReason?: string
+  authorizedBy?: string
+}
+
 export interface ProductRecord {
   id: string
   company_id: string
@@ -243,10 +290,23 @@ export interface ProductRecord {
   pricing_formula?: PricingFormulaConfig | null
   variants?: ProductVariantRecord[]
   formulas?: ProductFormulaRecord[]
+  requires_design?: boolean
+  requires_approval?: boolean
+  requires_production?: boolean
+  requires_fabrication?: boolean
+  requires_finishing?: boolean
+  requires_installation?: boolean
+  requires_delivery?: boolean
+  default_department?: string
+  estimated_production_time_hours?: number
+  default_finishing?: string | null
+  production_instructions?: string | null
+  internal_notes?: string | null
   is_active: boolean
   created_by?: string | null
   created_at: string
   updated_at: string
+  usage_stats?: ProductUsageStats
 }
 
 export interface PriceHistoryRecord {
@@ -256,6 +316,7 @@ export interface PriceHistoryRecord {
   old_price: number
   new_price: number
   reason: string
+  changed_by?: string | null
   changed_by_name?: string
   created_at: string
 }
@@ -269,6 +330,7 @@ export interface PriceOverrideRecord {
   original_price: number
   override_price: number
   reason: string
+  authorized_by?: string | null
   authorized_by_name?: string
   created_at: string
 }

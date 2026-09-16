@@ -43,6 +43,7 @@ import {
   createQuotationAction,
   sendQuotationAction,
 } from '@/actions/quotation.actions'
+import { createProductAction } from '@/actions/product.actions'
 import { checkCustomerDuplicateAction } from '@/actions/customer.actions'
 import {
   QuotationRecord,
@@ -173,9 +174,72 @@ export function NewQuotationModal({
   const [isSending, setIsSending] = useState(false)
   const [sendSuccessMsg, setSendSuccessMsg] = useState<string | null>(null)
 
+  // Quick-Add Product Modal State (Phase 15)
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
+  const [quickAddIndex, setQuickAddIndex] = useState<number>(0)
+  const [quickAddName, setQuickAddName] = useState('')
+  const [quickAddCategory, setQuickAddCategory] = useState('flex_banner')
+  const [quickAddUnit, setQuickAddUnit] = useState<any>('sft')
+  const [quickAddPrice, setQuickAddPrice] = useState<number>(0)
+  const [quickAddMinPrice, setQuickAddMinPrice] = useState<number>(0)
+  const [isSavingQuickProduct, setIsSavingQuickProduct] = useState(false)
+  const [quickProductError, setQuickProductError] = useState<string | null>(null)
+
   const customerSearchRef = useRef<HTMLDivElement>(null)
   const sendDropdownRef = useRef<HTMLDivElement>(null)
   const effectiveCompanyId = company?.id || companyId
+
+  const handleOpenQuickAdd = (index: number) => {
+    setQuickAddIndex(index)
+    setQuickAddName('')
+    setQuickAddCategory('flex_banner')
+    setQuickAddUnit('sft')
+    setQuickAddPrice(0)
+    setQuickAddMinPrice(0)
+    setQuickProductError(null)
+    setQuickAddOpen(true)
+  }
+
+  const handleSaveQuickProduct = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!quickAddName.trim()) {
+      setQuickProductError('Product name is required.')
+      return
+    }
+    setIsSavingQuickProduct(true)
+    setQuickProductError(null)
+    try {
+      const sku = `PRD-${Date.now().toString().slice(-4)}`
+      const res = await createProductAction(
+        {
+          name: quickAddName.trim(),
+          sku,
+          category: quickAddCategory,
+          product_type: 'print_service',
+          unit: quickAddUnit,
+          selling_price: Math.max(0, Number(quickAddPrice) || 0),
+          min_price: Math.max(0, Number(quickAddMinPrice) || 0),
+        },
+        effectiveCompanyId
+      )
+      if (!res.success || !res.data) {
+        setQuickProductError(res.error || 'Failed to create product.')
+        setIsSavingQuickProduct(false)
+        return
+      }
+
+      const created = res.data
+      setProductsCatalog((prev) => [...prev, created])
+      setQuickAddOpen(false)
+      setIsSavingQuickProduct(false)
+
+      // Immediately select into target quotation item line
+      handleProductSelect(quickAddIndex, created.id)
+    } catch (err: any) {
+      setQuickProductError(err.message || 'Error creating product.')
+      setIsSavingQuickProduct(false)
+    }
+  }
 
   // Set default salesperson name from authenticated user
   useEffect(() => {
@@ -1132,7 +1196,16 @@ export function NewQuotationModal({
                 {/* Product Catalog & Description */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block">Product Catalog</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs font-semibold block">Product Catalog</Label>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenQuickAdd(index)}
+                        className="text-[11px] text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-0.5"
+                      >
+                        <Plus className="h-3 w-3" /> Quick Add
+                      </button>
+                    </div>
                     <select
                       value={item.product_id || ''}
                       onChange={(e) => handleProductSelect(index, e.target.value)}
@@ -1628,6 +1701,119 @@ export function NewQuotationModal({
           </div>
         </div>
       </div>
+
+      {/* QUICK ADD PRODUCT MODAL (Phase 15) */}
+      <ModalDialog
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+        title="Quick Add Product to Catalog"
+        description="Creates an authoritative product in PostgreSQL and inserts it directly into this quote."
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleSaveQuickProduct} className="p-4 space-y-3.5 text-xs">
+          {quickProductError && (
+            <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200">
+              {quickProductError}
+            </div>
+          )}
+
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">Product Name *</Label>
+            <Input
+              placeholder="e.g. PVC Board Print (3mm)"
+              value={quickAddName}
+              onChange={(e) => setQuickAddName(e.target.value)}
+              className="text-xs h-9"
+              autoFocus
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Category</Label>
+              <select
+                value={quickAddCategory}
+                onChange={(e) => setQuickAddCategory(e.target.value)}
+                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+              >
+                <option value="flex_banner">Flex Banner</option>
+                <option value="vinyl_sticker">Vinyl Sticker</option>
+                <option value="uv_print">UV Printing</option>
+                <option value="signage_3d">3D Signage</option>
+                <option value="paper_print">Paper Print</option>
+                <option value="general_print">General Print</option>
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Sell By (Unit) *</Label>
+              <select
+                value={quickAddUnit}
+                onChange={(e) => setQuickAddUnit(e.target.value)}
+                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium uppercase font-mono"
+              >
+                <option value="sft">sft (স্কয়ার ফুট)</option>
+                <option value="pcs">pcs (পিস)</option>
+                <option value="rft">rft (রানিং ফুট)</option>
+                <option value="inch">inch (ইঞ্চি)</option>
+                <option value="ft">ft (ফুট)</option>
+                <option value="sheet">sheet (শীট)</option>
+                <option value="set">set (সেট)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Selling Price (৳) *</Label>
+              <Input
+                type="number"
+                step="0.5"
+                min="0"
+                placeholder="0"
+                value={quickAddPrice || ''}
+                onChange={(e) => setQuickAddPrice(parseFloat(e.target.value) || 0)}
+                className="text-xs h-9 font-mono font-bold"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Min Floor Charge (৳)</Label>
+              <Input
+                type="number"
+                step="0.5"
+                min="0"
+                placeholder="0"
+                value={quickAddMinPrice || ''}
+                onChange={(e) => setQuickAddMinPrice(parseFloat(e.target.value) || 0)}
+                className="text-xs h-9 font-mono text-amber-700 dark:text-amber-400"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setQuickAddOpen(false)}
+              disabled={isSavingQuickProduct}
+              className="text-xs h-8"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSavingQuickProduct}
+              className="text-xs h-8 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4"
+            >
+              {isSavingQuickProduct ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+              Save & Add to Quote
+            </Button>
+          </div>
+        </form>
+      </ModalDialog>
     </ModalDialog>
   )
 }

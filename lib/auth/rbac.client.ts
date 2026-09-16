@@ -70,6 +70,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
+    products: { view: true, create: true, edit: true, export: true },
+    pricing: { view: true, create: true, edit: true, manage: true },
   },
 
   designer: {
@@ -89,6 +91,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: { view: true },
   },
 
   production_manager: {
@@ -108,6 +112,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
+    products: { view: true, create: true, edit: true },
+    pricing: { view: true },
   },
 
   operator: {
@@ -127,6 +133,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
   },
 
   store_manager: {
@@ -146,6 +154,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
+    products: { view: true, create: true, edit: true },
+    pricing: { view: true },
   },
 
   accountant: {
@@ -165,6 +175,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: { view: true },
   },
 
   delivery_coordinator: {
@@ -184,6 +196,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
   },
 
   general_staff: {
@@ -203,6 +217,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     tasks: { view: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
   },
 }
 
