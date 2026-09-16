@@ -185,7 +185,7 @@ export function OwnerDashboard({
               showSeconds={true}
               showIcon={false}
               className="inline-flex items-center"
-              timeClassName="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-white drop-shadow-sm leading-none"
+              timeClassName="text-3xl sm:text-4xl lg:text-5xl font-bold font-numeric tabular-nums tracking-normal text-white drop-shadow-sm leading-none"
             />
 
             <span className="text-[11px] text-blue-200/80 font-semibold mt-1">

@@ -56,7 +56,7 @@ export function TimeDisplay({
   return (
     <span
       suppressHydrationWarning
-      className={cn('text-sm text-slate-700 dark:text-slate-300 font-mono', className)}
+      className={cn('text-sm text-slate-700 dark:text-slate-300 font-numeric tabular-nums', className)}
     >
       {formatted}
     </span>

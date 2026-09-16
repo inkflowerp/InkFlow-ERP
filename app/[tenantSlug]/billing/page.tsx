@@ -559,10 +559,10 @@ export default function BillingPage() {
             <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Total Invoiced
             </div>
-            <div className="text-lg font-black font-mono text-slate-900 dark:text-white mt-1">
+            <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
               {formatBDT(overviewMetrics?.salesAmount || 0)}
             </div>
-            <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+            <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">
               {overviewMetrics?.salesCount || 0} Bills Generated
             </div>
           </Card>
@@ -572,10 +572,10 @@ export default function BillingPage() {
             <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
               Collected
             </div>
-            <div className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+            <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
               {formatBDT(overviewMetrics?.collectionAmount || 0)}
             </div>
-            <div className="text-[10px] text-emerald-600/80 font-mono mt-0.5">
+            <div className="text-xs text-emerald-600/90 font-numeric tabular-nums mt-0.5">
               {overviewMetrics?.collectionCount || 0} Payments Received
             </div>
           </Card>
@@ -585,10 +585,10 @@ export default function BillingPage() {
             <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
               Outstanding Due
             </div>
-            <div className="text-lg font-black font-mono text-amber-600 dark:text-amber-400 mt-1">
+            <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1">
               {formatBDT(overviewMetrics?.outstandingDue ?? overviewMetrics?.totalReceivables ?? 0)}
             </div>
-            <div className="text-[10px] text-amber-600/80 font-mono mt-0.5">
+            <div className="text-xs text-amber-600/90 font-numeric tabular-nums mt-0.5">
               {overviewMetrics?.outstandingDueCount ?? overviewMetrics?.dueTodayCount ?? 0} Bills Pending
             </div>
           </Card>
@@ -601,10 +601,10 @@ export default function BillingPage() {
                 <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping" />
               )}
             </div>
-            <div className="text-lg font-black font-mono text-rose-600 dark:text-rose-400 mt-1">
+            <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1">
               {formatBDT(overviewMetrics?.overdueAmount || 0)}
             </div>
-            <div className="text-[10px] text-rose-600/80 font-mono mt-0.5">
+            <div className="text-xs text-rose-600/90 font-numeric tabular-nums mt-0.5">
               {overviewMetrics?.overdueCount || 0} Overdue Bills
             </div>
           </Card>
@@ -614,10 +614,10 @@ export default function BillingPage() {
             <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Total Receivable
             </div>
-            <div className="text-lg font-black font-mono text-slate-900 dark:text-white mt-1">
+            <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
               {formatBDT(overviewMetrics?.totalReceivables || 0)}
             </div>
-            <div className="text-[10px] text-slate-400 font-mono mt-0.5">All Ledger Balance</div>
+            <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">All Ledger Balance</div>
           </Card>
 
           {/* 6. Collection Rate */}
@@ -625,10 +625,10 @@ export default function BillingPage() {
             <div className="text-[11px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
               Collection Rate
             </div>
-            <div className="text-lg font-black font-mono text-blue-600 dark:text-blue-400 mt-1 flex items-baseline gap-1">
+            <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-blue-600 dark:text-blue-400 mt-1 flex items-baseline gap-1">
               <span>{overviewMetrics?.collectionRate || 0}%</span>
             </div>
-            <div className="text-[10px] text-blue-600/80 font-mono mt-0.5">Collected ÷ Invoiced</div>
+            <div className="text-xs text-blue-600/90 font-numeric tabular-nums mt-0.5">Collected ÷ Invoiced</div>
           </Card>
         </div>
       </div>
@@ -787,7 +787,7 @@ export default function BillingPage() {
                         {/* Right: Due Amount prominence & Action buttons */}
                         <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
                           <div className="text-right">
-                            <div className="font-mono font-black text-rose-600 dark:text-rose-400 text-sm">
+                            <div className="font-numeric tabular-nums font-bold text-rose-600 dark:text-rose-400 text-sm">
                               {formatBDT(item.dueAmount)} DUE
                             </div>
                             {item.daysOverdue > 0 ? (
@@ -994,15 +994,15 @@ export default function BillingPage() {
                             <div className="font-bold text-slate-900 dark:text-white">{inv.customer_name}</div>
                             <div className="text-[11px] text-slate-500 font-mono">{inv.customer_phone}</div>
                           </td>
-                          <td className="p-3 font-mono text-slate-500">{inv.invoice_date}</td>
-                          <td className="p-3 font-mono text-slate-500">{inv.due_date}</td>
-                          <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                          <td className="p-3 font-numeric tabular-nums text-slate-500">{inv.invoice_date}</td>
+                          <td className="p-3 font-numeric tabular-nums text-slate-500">{inv.due_date}</td>
+                          <td className="p-3 text-right font-numeric tabular-nums font-bold text-slate-900 dark:text-white">
                             {formatBDT(inv.grand_total)}
                           </td>
-                          <td className="p-3 text-right font-mono text-emerald-600 font-bold">
+                          <td className="p-3 text-right font-numeric tabular-nums text-emerald-600 font-bold">
                             {formatBDT(inv.paid_amount || 0)}
                           </td>
-                          <td className="p-3 text-right font-mono font-black text-rose-600 dark:text-rose-400">
+                          <td className="p-3 text-right font-numeric tabular-nums font-bold text-rose-600 dark:text-rose-400">
                             {formatBDT(inv.due_amount || 0)}
                           </td>
                           <td className="p-3 text-center">
@@ -1213,7 +1213,7 @@ export default function BillingPage() {
                           <td className="p-3 font-mono text-slate-500 text-[11px]">
                             {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name || '—'}
                           </td>
-                          <td className="p-3 text-right font-mono font-black text-emerald-600 text-sm">
+                          <td className="p-3 text-right font-numeric tabular-nums font-bold text-emerald-600 text-sm">
                             {formatBDT(pay.amount)}
                           </td>
                           <td className="p-3 text-slate-600 dark:text-slate-300">
@@ -1314,10 +1314,10 @@ export default function BillingPage() {
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                       {b.label}
                     </span>
-                    <div className="text-base font-black font-mono text-slate-900 dark:text-white mt-1">
+                    <div className="text-base font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
                       {formatBDT(b.amount || 0)}
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono">
+                    <span className="text-xs text-slate-400 font-numeric tabular-nums">
                       {b.invoiceCount || 0} Bills • {b.customerCount || 0} Cust
                     </span>
                   </Card>
@@ -1327,17 +1327,17 @@ export default function BillingPage() {
                   <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">
                     Total Overdue
                   </span>
-                  <div className="text-base font-black font-mono text-rose-600 dark:text-rose-400 mt-1">
+                  <div className="text-base font-bold font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1">
                     {formatBDT(receivablesAging.totalOverdue || 0)}
                   </div>
-                  <span className="text-[10px] text-rose-600/80 font-mono">Overdue Total</span>
+                  <span className="text-xs text-rose-600/80 font-numeric tabular-nums">Overdue Total</span>
                 </Card>
 
                 <Card className="p-3 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 shadow-xs">
                   <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
                     Total Receivables
                   </span>
-                  <div className="text-base font-black font-mono text-slate-900 dark:text-white mt-1">
+                  <div className="text-base font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
                     {formatBDT(receivablesAging.totalReceivables || 0)}
                   </div>
                   <span className="text-[10px] text-slate-500 font-mono">All Open Accounts</span>
@@ -1411,7 +1411,7 @@ export default function BillingPage() {
                                 </Badge>
                               )}
                             </td>
-                            <td className="p-3 text-right font-mono font-black text-rose-600 dark:text-rose-400 text-sm">
+                            <td className="p-3 text-right font-numeric tabular-nums font-bold text-rose-600 dark:text-rose-400 text-sm">
                               {formatBDT(c.totalDue)}
                             </td>
                             <td className="p-3 text-right">

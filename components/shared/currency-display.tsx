@@ -32,14 +32,14 @@ export function CurrencyDisplay({
 
   const colorClasses = {
     default: 'text-inherit',
-    success: 'text-emerald-500 dark:text-emerald-400 font-semibold',
-    danger: 'text-red-500 dark:text-red-400 font-semibold',
-    warning: 'text-amber-500 dark:text-amber-400 font-semibold',
-    muted: 'text-slate-400 dark:text-slate-400',
+    success: 'text-emerald-600 dark:text-emerald-400 font-semibold',
+    danger: 'text-rose-600 dark:text-rose-400 font-semibold',
+    warning: 'text-amber-600 dark:text-amber-400 font-semibold',
+    muted: 'text-slate-500 dark:text-slate-400',
   }
 
   return (
-    <span className={cn('tabular-nums font-medium inline-block whitespace-nowrap text-inherit', colorClasses[colorVariant], className)}>
+    <span className={cn('font-numeric tabular-nums font-semibold inline-block whitespace-nowrap text-inherit', colorClasses[colorVariant], className)}>
       {formatted}
     </span>
   )

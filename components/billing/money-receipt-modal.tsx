@@ -168,10 +168,10 @@ export function MoneyReceiptModal({
         {/* ACTION BAR & PAYMENT HIGHLIGHT (NON-PRINT) */}
         <div className="print:hidden space-y-3">
           <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex flex-wrap items-center gap-3 font-mono">
+            <div className="flex flex-wrap items-center gap-3 font-numeric tabular-nums">
               <div>
                 <span className="text-emerald-700 dark:text-emerald-400 font-bold block text-[10px] uppercase">Payment Received</span>
-                <strong className="text-emerald-800 dark:text-emerald-200 text-sm font-black">{formatBDT(payment.amount)}</strong>
+                <strong className="text-emerald-800 dark:text-emerald-200 text-sm font-bold">{formatBDT(payment.amount)}</strong>
               </div>
               {invoices.length > 0 && invoices[0] && (
                 <>
@@ -352,7 +352,7 @@ export function MoneyReceiptModal({
                       <th className="p-2 text-right">Remaining Due</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-numeric tabular-nums">
                     {payment.allocations.map((alloc, i) => {
                       const matchedInv = invoices.find((inv) => inv.id === alloc.invoice_id || inv.invoice_number === alloc.invoice_number)
                       const grandTotal = matchedInv ? matchedInv.grand_total : alloc.allocated_amount
@@ -393,7 +393,7 @@ export function MoneyReceiptModal({
                       <th className="p-2 text-right">Remaining Due</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-numeric tabular-nums">
                     <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
                       <td className="p-2 font-bold text-blue-600 dark:text-blue-400">
                         #{invoices[0].invoice_number}
@@ -416,9 +416,9 @@ export function MoneyReceiptModal({
 
           {/* TOTAL & SIGNATURES */}
           <div className="flex flex-col sm:flex-row justify-between items-end gap-6 pt-4 border-t border-slate-200 dark:border-slate-800">
-            <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-mono shadow-sm min-w-[200px]">
+            <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-numeric tabular-nums shadow-sm min-w-[200px]">
               <span className="text-[10px] uppercase font-bold text-emerald-100 block">Total Amount Received</span>
-              <div className="text-2xl font-black tracking-tight">
+              <div className="text-2xl font-bold tracking-normal">
                 {formatBDT(payment.amount)}
               </div>
             </div>

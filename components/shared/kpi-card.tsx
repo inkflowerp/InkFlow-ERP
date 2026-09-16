@@ -189,11 +189,11 @@ export function KpiCard({
       {/* Main Metric Value */}
       <div className="mt-2 flex items-baseline gap-1.5 flex-wrap">
         {isCurrency && typeof value === 'number' ? (
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-slate-900 dark:text-white" suppressHydrationWarning>
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-numeric tabular-nums tracking-normal text-slate-900 dark:text-white" suppressHydrationWarning>
             <CurrencyDisplay amount={value} />
           </div>
         ) : (
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-slate-900 dark:text-white" suppressHydrationWarning>
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-numeric tabular-nums tracking-normal text-slate-900 dark:text-white" suppressHydrationWarning>
             {formatVal(value)}
           </div>
         )}
@@ -211,7 +211,7 @@ export function KpiCard({
           {trend ? (
             <div
               className={cn(
-                'inline-flex items-center gap-1 font-semibold text-xs font-mono rounded-md px-1.5 py-0.5 border',
+                'inline-flex items-center gap-1 font-semibold text-xs font-numeric tabular-nums rounded-md px-1.5 py-0.5 border',
                 trend.direction === 'up'
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/80'
                   : trend.direction === 'down'
