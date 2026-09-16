@@ -32,14 +32,14 @@ export function LiveDhakaClock({
     const updateTime = () => {
       try {
         const now = new Date()
-        const formatted = now.toLocaleTimeString(locale === 'bn' ? 'bn-BD' : 'en-US', {
+        const formatted = now.toLocaleTimeString('en-US', {
           timeZone: 'Asia/Dhaka',
-          hour: 'numeric',
+          hour: '2-digit',
           minute: '2-digit',
           ...(showSeconds ? { second: '2-digit' } : {}),
           hour12: true,
         })
-        setTimeString(locale === 'bn' ? toBengaliNumerals(formatted) : formatted)
+        setTimeString(formatted)
       } catch {
         // Fallback gracefully
       }

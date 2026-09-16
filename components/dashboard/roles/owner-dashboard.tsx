@@ -81,7 +81,7 @@ export function OwnerDashboard({
   const { company, currentBranch, currentUser } = useTenant()
   const router = useRouter()
   const slug = company?.slug || 'my-company'
-  const num = (v: number | string) => (locale === 'bn' ? toBengaliNumerals(v) : v)
+  const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
 
   const greeting = getBangladeshGreeting(locale as 'en' | 'bn')
   const userFirstName = currentUser?.profile?.full_name?.split(' ')[0] || (locale === 'bn' ? 'মালিক' : 'Owner')

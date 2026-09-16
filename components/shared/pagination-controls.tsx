@@ -29,16 +29,13 @@ export function PaginationControls({
   const startItem = totalCount === 0 ? 0 : pageIndex * pageSize + 1
   const endItem = Math.min((pageIndex + 1) * pageSize, totalCount)
 
-  const num = (val: number) => (locale === 'bn' ? toBengaliNumerals(val) : val)
+  const num = (val: number) => val
 
   const itemsText = (() => {
-    if (locale === 'en') {
-      return `${startItem} - ${endItem} of ${totalCount} items`
-    }
     if (locale === 'bn') {
-      return `${toBengaliNumerals(startItem)} - ${toBengaliNumerals(endItem)} / মোট ${toBengaliNumerals(totalCount)} টি`
+      return `${startItem} - ${endItem} / মোট ${totalCount} টি`
     }
-    return `${startItem} - ${endItem} of ${totalCount} items (${toBengaliNumerals(startItem)} - ${toBengaliNumerals(endItem)} / মোট ${toBengaliNumerals(totalCount)} টি)`
+    return `${startItem} - ${endItem} of ${totalCount} items`
   })()
 
   const rowsLabel = tBilingual('Rows:', 'প্রতি পৃষ্ঠায়:')

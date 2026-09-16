@@ -55,8 +55,8 @@
 
 @theme {
   --font-sans: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-bangla: var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", monospace;
+  --font-bangla: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-inter), var(--font-hind-siliguri), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Responsive Breakpoints */
   --breakpoint-xs: 480px;
@@ -100,6 +100,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .dark body {
@@ -150,7 +152,7 @@ h6 {
 /* Bengali Typography - Crisp, legible line-height ensuring no diacritic clipping */
 .bangla-text,
 [lang="bn"] {
-  font-family: var(--font-bangla);
+  font-family: var(--font-sans);
   word-break: normal;
   overflow-wrap: break-word;
   line-height: 1.55;
@@ -163,17 +165,16 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
-/* Numeric & Tabular Data - Tabular alignment on primary UI font for financial figures, KPIs, tables */
+/* Numeric & Tabular Data - Tabular alignment on primary UI font for financial figures, KPIs, tables, codes & IDs */
 .font-numeric,
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-}
-
-/* Monospace Data - Code, technical IDs, raw hashes */
-.font-mono {
-  font-family: var(--font-mono);
-  font-feature-settings: "tnum" 1, "zero" 1;
+.tabular-nums,
+.font-mono,
+input[type="number"],
+input[data-numeric],
+[data-numeric] {
+  font-family: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", sans-serif !important;
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1, "zero" 1 !important;
 }
 
 .nav-link-nowrap {

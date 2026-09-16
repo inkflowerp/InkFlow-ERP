@@ -437,7 +437,7 @@ export function DashboardView() {
     setActiveWorkItem(null)
   }
 
-  const num = (v: number | string) => (locale === 'bn' ? toBengaliNumerals(v) : v)
+  const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
 
   // Recent Table Data
   const recentOrdersData: TableOrderRecord[] = authorizedOrders.slice(0, 8).map((o) => {

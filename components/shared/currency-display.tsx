@@ -22,8 +22,7 @@ export function CurrencyDisplay({
 }: CurrencyDisplayProps) {
   const { locale } = useI18n()
 
-  const shouldBengaliNumerals =
-    useBengaliNumerals !== undefined ? useBengaliNumerals : locale === 'bn'
+  const shouldBengaliNumerals = Boolean(useBengaliNumerals)
 
   const formatted = formatBDT(amount, {
     useBengaliNumerals: shouldBengaliNumerals,

@@ -66,7 +66,7 @@ export function DashboardCharts() {
   const { locale, tBilingual } = useI18n()
   const { isOwner, isSales, isAccountant, can } = usePermissions()
   const canSeeFinancials = isOwner || isSales || isAccountant || can('view', 'invoices') || can('view', 'reports')
-  const num = (v: number | string) => (locale === 'bn' ? toBengaliNumerals(v) : v)
+  const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
 
   // Live Data Stores
   const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])

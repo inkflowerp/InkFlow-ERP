@@ -129,9 +129,9 @@ export function KpiCard({
   const formatVal = (v: number | string | null | undefined) => {
     if (v === null || v === undefined) return '—'
     if (typeof v === 'number') {
-      return locale === 'bn' ? toBengaliNumerals(v.toLocaleString()) : v.toLocaleString()
+      return v.toLocaleString()
     }
-    return locale === 'bn' ? toBengaliNumerals(v) : v
+    return v
   }
 
   if (isLoading) {
