@@ -48,6 +48,14 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           permission: { action: 'view', resource: 'quotations' },
         },
         {
+          key: 'billing',
+          title: 'Billing & Collections',
+          titleBn: 'বিলিং ও কালেকশন',
+          href: `/${tenantSlug}/billing`,
+          icon: 'Receipt',
+          permission: { action: 'view', resource: 'invoices' },
+        },
+        {
           key: 'operator',
           title: 'My Work',
           titleBn: 'আমার কাজ',
@@ -94,14 +102,6 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           href: `/${tenantSlug}/sales`,
           icon: 'Briefcase',
           permission: { action: 'view', resource: 'quotations' },
-        },
-        {
-          key: 'billing',
-          title: 'Billing & Collections',
-          titleBn: 'বিলিং ও কালেকশন',
-          href: `/${tenantSlug}/billing`,
-          icon: 'Receipt',
-          permission: { action: 'view', resource: 'invoices' },
         },
         {
           key: 'design',
