@@ -377,6 +377,12 @@ export interface CommercialCalculationParams {
   width?: number
   height?: number
   dimensionUnit?: 'ft' | 'inch' | 'm'
+  widthAllowance?: number
+  heightAllowance?: number
+  lengthAllowance?: number
+  productionWidthAllowance?: number
+  productionLengthAllowance?: number
+  allowanceUnit?: 'ft' | 'inch' | 'mm' | 'cm' | 'm' | string
   minBillableQuantity?: number
   minOrderQuantity?: number
   minimumCharge?: number
@@ -405,6 +411,16 @@ export interface CommercialCalculationResult {
   // Dimensions & Area
   areaSqft?: number
   lengthRft?: number
+  sellingWidth?: number
+  sellingHeight?: number
+  productionWidth?: number
+  productionHeight?: number
+  widthAllowance?: number
+  heightAllowance?: number
+  singleAreaSqft?: number
+  singleProductionAreaSqft?: number
+  productionAreaSqft?: number
+  physicalConsumptionSqft?: number
   // Costing & Margins
   estimatedMaterialCost: number
   estimatedDirectCost: number
@@ -463,6 +479,9 @@ export interface ResolvedProductPrice {
   isMinimumChargeApplied?: boolean
   appliedTier?: string
   tier?: string
+  production_width_allowance?: number | null
+  production_length_allowance?: number | null
+  allowance_unit?: string | null
 }
 
 export interface ProductRecord {
@@ -501,6 +520,9 @@ export interface ProductRecord {
   roll_length_ft?: number | null
   sheet_width_ft?: number | null
   sheet_length_ft?: number | null
+  production_width_allowance?: number | null
+  production_length_allowance?: number | null
+  allowance_unit?: string | null
   material_spec?: string | null
   description?: string | null
   description_bn?: string | null

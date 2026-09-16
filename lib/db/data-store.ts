@@ -213,6 +213,7 @@ export const STORAGE_KEYS = {
   BANK_STATEMENTS: 'printerp_tenant_bank_statements',
   GATEWAY_TRANSACTIONS: 'printerp_gateway_transactions',
   SAAS_INVOICES: 'printerp_saas_invoices',
+  PRODUCT_CATEGORIES: 'printerp_tenant_product_categories',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -314,7 +315,8 @@ export function isTransactionalKey(key: string): boolean {
     key === STORAGE_KEYS.EMPLOYEE_BRANCH_ASSIGNMENTS ||
     key === STORAGE_KEYS.WORKFLOW_CONFIGURATIONS ||
     key === STORAGE_KEYS.USER_BRANCH_ACCESS ||
-    key === STORAGE_KEYS.SAVED_VIEWS
+    key === STORAGE_KEYS.SAVED_VIEWS ||
+    key === STORAGE_KEYS.PRODUCT_CATEGORIES
   )
 }
 

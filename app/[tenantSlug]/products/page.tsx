@@ -84,6 +84,9 @@ import {
   deleteProductSupplierPriceAction,
   getPriceOverridesAction,
 } from '@/actions/product.actions'
+import { getCategoriesAction } from '@/actions/category.actions'
+import { CategoryModal } from '@/components/categories/category-modal'
+import type { ProductCategoryRecord } from '@/types/category.types'
 import { createQuotationAction } from '@/actions/quotation.actions'
 import { convertToFeet } from '@/lib/pricing-engine'
 import {
@@ -276,8 +279,25 @@ export default function ProductsCatalogPage() {
     }
   }
 
+  // Category State
+  const [categories, setCategories] = useState<ProductCategoryRecord[]>([])
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<ProductCategoryRecord | null>(null)
+
+  const loadCategories = async () => {
+    try {
+      const res = await getCategoriesAction(companyId, false)
+      if (res.success && res.data) {
+        setCategories(res.data)
+      }
+    } catch (err) {
+      console.error('Failed to load categories', err)
+    }
+  }
+
   useEffect(() => {
     loadProducts()
+    loadCategories()
   }, [companyId])
 
   // Computed live commercial numbers for create/edit modal
@@ -1111,26 +1131,50 @@ export default function ProductsCatalogPage() {
             />
           </div>
 
-          {/* Category Dropdown */}
-          <div className="w-full md:w-auto">
+          {/* Category Dropdown & Quick Add */}
+          <div className="w-full md:w-auto flex items-center gap-1.5">
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="w-full md:w-auto h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
             >
               <option value="all">All Categories (সকল ক্যাটাগরি)</option>
-              <option value="flex_banner">Flex & Vinyl Banner</option>
-              <option value="backlit_flex">Backlit Signage</option>
-              <option value="vinyl_sticker">Vinyl & Stickers</option>
-              <option value="rigid_board">Rigid Board Mounts</option>
-              <option value="signage_3d">3D Letter & Signage</option>
-              <option value="display_stand">Display & Standee</option>
-              <option value="commercial_print">Visiting Card & Leaflet</option>
-              <option value="finishing">Finishing & Binding</option>
-              <option value="installation">Installation & Site Work</option>
-              <option value="design_service">Design & Artwork</option>
-              <option value="delivery_logistics">Delivery & Logistics</option>
+              {categories.length > 0 ? (
+                categories.map((cat) => (
+                  <option key={cat.id} value={cat.slug || cat.name}>
+                    {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="flex_banner">Flex & Vinyl Banner</option>
+                  <option value="backlit_flex">Backlit Signage</option>
+                  <option value="vinyl_sticker">Vinyl & Stickers</option>
+                  <option value="rigid_board">Rigid Board Mounts</option>
+                  <option value="signage_3d">3D Letter & Signage</option>
+                  <option value="display_stand">Display & Standee</option>
+                  <option value="commercial_print">Visiting Card & Leaflet</option>
+                  <option value="finishing">Finishing & Binding</option>
+                  <option value="installation">Installation & Site Work</option>
+                  <option value="design_service">Design & Artwork</option>
+                  <option value="delivery_logistics">Delivery & Logistics</option>
+                </>
+              )}
             </select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setEditingCategory(null)
+                setIsCategoryModalOpen(true)
+              }}
+              title="Add New Category"
+              className="h-9 px-2.5 text-xs text-slate-600 dark:text-slate-300 border-dashed hover:border-cyan-500 hover:text-cyan-600 shrink-0"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Category
+            </Button>
           </div>
 
           {/* Commercial Type Dropdown */}
@@ -2016,23 +2060,45 @@ export default function ProductsCatalogPage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">Category</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold block">Category</Label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCategory(null)
+                        setIsCategoryModalOpen(true)
+                      }}
+                      className="text-[11px] text-cyan-600 dark:text-cyan-400 hover:underline font-semibold flex items-center gap-0.5"
+                    >
+                      <Plus className="h-3 w-3" /> New
+                    </button>
+                  </div>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
                   >
-                    <option value="flex_banner">Flex Banner</option>
-                    <option value="backlit_flex">Backlit Flex</option>
-                    <option value="vinyl_sticker">Vinyl Sticker</option>
-                    <option value="rigid_board">Rigid Board Mount</option>
-                    <option value="signage_3d">3D Letter Signage</option>
-                    <option value="display_stand">Display Standee</option>
-                    <option value="commercial_print">Commercial Print / Cards</option>
-                    <option value="finishing">Finishing Service</option>
-                    <option value="installation">Installation Service</option>
-                    <option value="design_service">Design Service</option>
-                    <option value="delivery_logistics">Delivery Service</option>
+                    {categories.length > 0 ? (
+                      categories.map((cat) => (
+                        <option key={cat.id} value={cat.slug || cat.name}>
+                          {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="flex_banner">Flex Banner</option>
+                        <option value="backlit_flex">Backlit Flex</option>
+                        <option value="vinyl_sticker">Vinyl Sticker</option>
+                        <option value="rigid_board">Rigid Board Mount</option>
+                        <option value="signage_3d">3D Letter Signage</option>
+                        <option value="display_stand">Display Standee</option>
+                        <option value="commercial_print">Commercial Print / Cards</option>
+                        <option value="finishing">Finishing Service</option>
+                        <option value="installation">Installation Service</option>
+                        <option value="design_service">Design Service</option>
+                        <option value="delivery_logistics">Delivery Service</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
@@ -3362,6 +3428,21 @@ export default function ProductsCatalogPage() {
           </div>
         </div>
       </ModalDialog>
+
+      {/* ======================================================== */}
+      {/* MODAL 5: CATEGORY CREATION / EDITING MODAL */}
+      {/* ======================================================== */}
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onSuccess={(cat) => {
+          loadCategories()
+          setFormData((prev) => ({ ...prev, category: cat.slug || cat.name }))
+          showNotification(`Category "${cat.name}" saved successfully.`, 'success')
+        }}
+        existingCategories={categories}
+        editingCategory={editingCategory}
+      />
     </div>
   )
 }

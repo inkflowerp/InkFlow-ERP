@@ -428,6 +428,236 @@ export function calculateSheetAreaSft(widthFt: number, lengthFt: number): number
 }
 
 /**
+ * Calculates physical cutting yield for roll media, considering width constraints,
+ * length constraints, lanes across roll width, production allowances, customer billable area,
+ * and remaining remnants.
+ */
+export function calculateRollCuttingYield(params: {
+  rollWidthFt: number
+  rollLengthFt: number
+  sellingWidthFt: number
+  sellingLengthFt: number
+  widthAllowanceFt?: number
+  lengthAllowanceFt?: number
+  allowRotation?: boolean
+}): {
+  rollWidthFt: number
+  rollLengthFt: number
+  totalRollAreaSqft: number
+  sellingWidthFt: number
+  sellingLengthFt: number
+  singleSellingAreaSqft: number
+  productionWidthFt: number
+  productionLengthFt: number
+  singleProductionAreaSqft: number
+  fitsRoll: boolean
+  isRotated: boolean
+  lanesAcrossWidth: number
+  cutsAlongLength: number
+  maxFullJobsYield: number
+  totalPhysicalAreaCutSqft: number
+  totalSellableCustomerAreaSqft: number
+  totalProductionAllowanceSqft: number
+  linearLengthConsumedFt: number
+  remainingRollLengthFt: number
+  remainingRollRemnantAreaSqft: number
+  sideStripRemnantAreaSqft: number
+  totalRemnantAreaSqft: number
+  naiveAreaDivisionYield: number
+  cuttingEfficiencyPercent: number
+} {
+  const rollW = Math.max(0, Number(params.rollWidthFt) || 0)
+  const rollL = Math.max(0, Number(params.rollLengthFt) || 0)
+  const totalRollArea = Math.round(rollW * rollL * 10000) / 10000
+
+  const sW = Math.max(0, Number(params.sellingWidthFt) || 0)
+  const sL = Math.max(0, Number(params.sellingLengthFt) || 0)
+  const wAllow = Math.max(0, Number(params.widthAllowanceFt) || 0)
+  const lAllow = Math.max(0, Number(params.lengthAllowanceFt) || 0)
+
+  let pW = sW + wAllow
+  let pL = sL + lAllow
+  let isRotated = false
+
+  // Standard orientation check
+  let lanes = pW > 0 ? Math.floor(rollW / pW) : 0
+  let cutsAlongLength = pL > 0 ? Math.floor(rollL / pL) : 0
+  let totalYield = lanes * cutsAlongLength
+
+  // Check rotated orientation if enabled
+  if (params.allowRotation) {
+    const rotPW = sL + wAllow
+    const rotPL = sW + lAllow
+    const rotLanes = rotPW > 0 ? Math.floor(rollW / rotPW) : 0
+    const rotCuts = rotPL > 0 ? Math.floor(rollL / rotPL) : 0
+    const rotYield = rotLanes * rotCuts
+    if (rotYield > totalYield) {
+      pW = rotPW
+      pL = rotPL
+      lanes = rotLanes
+      cutsAlongLength = rotCuts
+      totalYield = rotYield
+      isRotated = true
+    }
+  }
+
+  const fitsRoll = totalYield > 0
+  const singleSellingArea = Math.round(sW * sL * 10000) / 10000
+  const singleProductionArea = Math.round(pW * pL * 10000) / 10000
+
+  const totalPhysicalAreaCut = Math.round(totalYield * singleProductionArea * 10000) / 10000
+  const totalSellableArea = Math.round(totalYield * singleSellingArea * 10000) / 10000
+  const totalAllowanceArea = Math.round((totalPhysicalAreaCut - totalSellableArea) * 10000) / 10000
+
+  const linearLengthConsumed = fitsRoll ? Math.round(cutsAlongLength * pL * 10000) / 10000 : 0
+  const remainingRollLength = Math.max(0, Math.round((rollL - linearLengthConsumed) * 10000) / 10000)
+  const remainingRollRemnantArea = Math.round(remainingRollLength * rollW * 10000) / 10000
+
+  // Side strip leftover during linear cut
+  const usedWidthAcrossRoll = lanes * pW
+  const sideStripWidth = Math.max(0, rollW - usedWidthAcrossRoll)
+  const sideStripRemnantArea = Math.round(sideStripWidth * linearLengthConsumed * 10000) / 10000
+
+  const totalRemnantArea = Math.round((remainingRollRemnantArea + sideStripRemnantArea) * 10000) / 10000
+  const naiveAreaDivisionYield = singleProductionArea > 0 ? Math.floor(totalRollArea / singleProductionArea) : 0
+  const cuttingEfficiencyPercent = totalRollArea > 0 ? Math.round((totalPhysicalAreaCut / totalRollArea) * 10000) / 100 : 0
+
+  return {
+    rollWidthFt: rollW,
+    rollLengthFt: rollL,
+    totalRollAreaSqft: totalRollArea,
+    sellingWidthFt: sW,
+    sellingLengthFt: sL,
+    singleSellingAreaSqft: singleSellingArea,
+    productionWidthFt: Math.round(pW * 10000) / 10000,
+    productionLengthFt: Math.round(pL * 10000) / 10000,
+    singleProductionAreaSqft: singleProductionArea,
+    fitsRoll,
+    isRotated,
+    lanesAcrossWidth: lanes,
+    cutsAlongLength,
+    maxFullJobsYield: totalYield,
+    totalPhysicalAreaCutSqft: totalPhysicalAreaCut,
+    totalSellableCustomerAreaSqft: totalSellableArea,
+    totalProductionAllowanceSqft: totalAllowanceArea,
+    linearLengthConsumedFt: linearLengthConsumed,
+    remainingRollLengthFt: remainingRollLength,
+    remainingRollRemnantAreaSqft: remainingRollRemnantArea,
+    sideStripRemnantAreaSqft: sideStripRemnantArea,
+    totalRemnantAreaSqft: totalRemnantArea,
+    naiveAreaDivisionYield,
+    cuttingEfficiencyPercent,
+  }
+}
+
+/**
+ * Calculates multi-job sequential consumption along a roll of material.
+ */
+export function calculateMultiJobRollConsumption(params: {
+  rollWidthFt: number
+  rollLengthFt: number
+  jobs: Array<{
+    name?: string
+    sellingWidthFt: number
+    sellingLengthFt: number
+    quantity: number
+    widthAllowanceFt?: number
+    lengthAllowanceFt?: number
+  }>
+}): {
+  rollWidthFt: number
+  rollLengthFt: number
+  totalRollAreaSqft: number
+  totalLinearLengthConsumedFt: number
+  totalPhysicalAreaCutSqft: number
+  totalCustomerBillableAreaSqft: number
+  totalProductionAllowanceSqft: number
+  remainingRollLengthFt: number
+  remainingRollRemnantAreaSqft: number
+  isRollSufficient: boolean
+  lengthDeficitFt: number
+  jobBreakdown: Array<{
+    name?: string
+    quantity: number
+    singleSellingAreaSqft: number
+    totalSellingAreaSqft: number
+    productionWidthFt: number
+    productionLengthFt: number
+    singleProductionAreaSqft: number
+    totalProductionAreaSqft: number
+    linearLengthFt: number
+  }>
+} {
+  const rollW = Math.max(0, Number(params.rollWidthFt) || 0)
+  const rollL = Math.max(0, Number(params.rollLengthFt) || 0)
+  const totalRollArea = Math.round(rollW * rollL * 10000) / 10000
+
+  let totalLinearLength = 0
+  let totalPhysicalArea = 0
+  let totalCustomerArea = 0
+
+  const jobBreakdown = (params.jobs || []).map((j) => {
+    const qty = Math.max(1, Number(j.quantity) || 1)
+    const sW = Math.max(0, Number(j.sellingWidthFt) || 0)
+    const sL = Math.max(0, Number(j.sellingLengthFt) || 0)
+    const wAllow = Math.max(0, Number(j.widthAllowanceFt) || 0)
+    const lAllow = Math.max(0, Number(j.lengthAllowanceFt) || 0)
+
+    const pW = sW + wAllow
+    const pL = sL + lAllow
+
+    const singleSellingArea = Math.round(sW * sL * 10000) / 10000
+    const totalSellingArea = Math.round(singleSellingArea * qty * 10000) / 10000
+
+    const singleProductionArea = Math.round(pW * pL * 10000) / 10000
+    const totalProductionArea = Math.round(singleProductionArea * qty * 10000) / 10000
+
+    const linearLength = Math.round(pL * qty * 10000) / 10000
+
+    totalLinearLength += linearLength
+    totalPhysicalArea += totalProductionArea
+    totalCustomerArea += totalSellingArea
+
+    return {
+      name: j.name,
+      quantity: qty,
+      singleSellingAreaSqft: singleSellingArea,
+      totalSellingAreaSqft: totalSellingArea,
+      productionWidthFt: pW,
+      productionLengthFt: pL,
+      singleProductionAreaSqft: singleProductionArea,
+      totalProductionAreaSqft: totalProductionArea,
+      linearLengthFt: linearLength,
+    }
+  })
+
+  totalLinearLength = Math.round(totalLinearLength * 10000) / 10000
+  totalPhysicalArea = Math.round(totalPhysicalArea * 10000) / 10000
+  totalCustomerArea = Math.round(totalCustomerArea * 10000) / 10000
+  const totalAllowanceArea = Math.round((totalPhysicalArea - totalCustomerArea) * 10000) / 10000
+
+  const isRollSufficient = rollL >= totalLinearLength
+  const remainingLength = isRollSufficient ? Math.round((rollL - totalLinearLength) * 10000) / 10000 : 0
+  const lengthDeficit = isRollSufficient ? 0 : Math.round((totalLinearLength - rollL) * 10000) / 10000
+  const remainingRemnantArea = Math.round(remainingLength * rollW * 10000) / 10000
+
+  return {
+    rollWidthFt: rollW,
+    rollLengthFt: rollL,
+    totalRollAreaSqft: totalRollArea,
+    totalLinearLengthConsumedFt: totalLinearLength,
+    totalPhysicalAreaCutSqft: totalPhysicalArea,
+    totalCustomerBillableAreaSqft: totalCustomerArea,
+    totalProductionAllowanceSqft: totalAllowanceArea,
+    remainingRollLengthFt: remainingLength,
+    remainingRollRemnantAreaSqft: remainingRemnantArea,
+    isRollSufficient,
+    lengthDeficitFt: lengthDeficit,
+    jobBreakdown,
+  }
+}
+
+/**
  * Commercial Costing Model:
  * Calculates usable yield and effective cost per selling unit accounting for default wastage.
  *
@@ -693,10 +923,97 @@ export function convertDimensionToRft(
 }
 
 /**
+ * Converts length to feet from any standard measurement unit.
+ */
+export function convertLengthToFeet(length: number, unit: string = 'ft'): number {
+  const l = Math.max(0, Number(length) || 0)
+  const u = (unit || 'ft').toLowerCase()
+  if (u === 'inch' || u === 'in') return l / 12
+  if (u === 'm' || u === 'meter' || u === 'metre') return l * 3.28084
+  if (u === 'mm' || u === 'millimeter') return l / 304.8
+  if (u === 'cm' || u === 'centimeter') return l / 30.48
+  return l
+}
+
+/**
+ * Calculates physical production dimensions, allowances, customer billable area,
+ * and physical consumption area for roll/sheet materials.
+ */
+export function calculateProductionDimensions(params: {
+  sellingWidth: number
+  sellingHeight: number
+  dimensionUnit?: 'ft' | 'inch' | 'm' | 'mm' | 'cm' | string
+  widthAllowance?: number
+  heightAllowance?: number
+  lengthAllowance?: number
+  allowanceUnit?: 'ft' | 'inch' | 'm' | 'mm' | 'cm' | string
+  quantity?: number
+}): {
+  sellingWidth: number
+  sellingHeight: number
+  widthAllowance: number
+  heightAllowance: number
+  productionWidth: number
+  productionHeight: number
+  singleSellingAreaSqft: number
+  totalSellingAreaSqft: number
+  singleProductionAreaSqft: number
+  totalProductionAreaSqft: number
+  physicalConsumptionSqft: number
+  billableAreaSqft: number
+  allowanceAreaSqft: number
+  allowanceRatio: number
+} {
+  const sW = Math.max(0, Number(params.sellingWidth) || 0)
+  const sH = Math.max(0, Number(params.sellingHeight) || 0)
+  const dimUnit = (params.dimensionUnit || 'ft').toLowerCase()
+  const allowUnit = (params.allowanceUnit || dimUnit).toLowerCase()
+  const qty = Math.max(1, Number(params.quantity) || 1)
+
+  const wAllow = Math.max(0, Number(params.widthAllowance) || 0)
+  const hAllow = Math.max(0, Number(params.heightAllowance ?? params.lengthAllowance) || 0)
+
+  const sWFt = convertLengthToFeet(sW, dimUnit)
+  const sHFt = convertLengthToFeet(sH, dimUnit)
+
+  const wAllowFt = convertLengthToFeet(wAllow, allowUnit)
+  const hAllowFt = convertLengthToFeet(hAllow, allowUnit)
+
+  const pWFt = sWFt + wAllowFt
+  const pHFt = sHFt + hAllowFt
+
+  const singleSellingAreaSqft = Math.round(sWFt * sHFt * 10000) / 10000
+  const totalSellingAreaSqft = Math.round(singleSellingAreaSqft * qty * 10000) / 10000
+
+  const singleProductionAreaSqft = Math.round(pWFt * pHFt * 10000) / 10000
+  const totalProductionAreaSqft = Math.round(singleProductionAreaSqft * qty * 10000) / 10000
+
+  const allowanceAreaSqft = Math.round((totalProductionAreaSqft - totalSellingAreaSqft) * 10000) / 10000
+  const allowanceRatio = totalSellingAreaSqft > 0 ? Math.round((totalProductionAreaSqft / totalSellingAreaSqft) * 10000) / 10000 : 1.0
+
+  return {
+    sellingWidth: sW,
+    sellingHeight: sH,
+    widthAllowance: wAllow,
+    heightAllowance: hAllow,
+    productionWidth: Math.round(pWFt * 10000) / 10000,
+    productionHeight: Math.round(pHFt * 10000) / 10000,
+    singleSellingAreaSqft,
+    totalSellingAreaSqft,
+    singleProductionAreaSqft,
+    totalProductionAreaSqft,
+    physicalConsumptionSqft: totalProductionAreaSqft,
+    billableAreaSqft: totalSellingAreaSqft,
+    allowanceAreaSqft,
+    allowanceRatio,
+  }
+}
+
+/**
  * Centralized Commercial Pricing Calculation Engine.
  * Evaluates pricing methods, minimum billable quantities, minimum monetary charges,
  * expected material and direct costs, component recipe rollups, multi-tier pricing resolution,
- * gross margins, and low-margin protections.
+ * gross margins, production allowances, and low-margin protections.
  */
 export function calculateCommercialPricing(params: {
   pricingMethod?: string
@@ -706,6 +1023,12 @@ export function calculateCommercialPricing(params: {
   width?: number
   height?: number
   dimensionUnit?: 'ft' | 'inch' | 'mm' | 'cm' | 'm'
+  widthAllowance?: number
+  heightAllowance?: number
+  lengthAllowance?: number
+  productionWidthAllowance?: number
+  productionLengthAllowance?: number
+  allowanceUnit?: 'ft' | 'inch' | 'mm' | 'cm' | 'm' | string
   minBillableQuantity?: number
   minOrderQuantity?: number
   minimumCharge?: number
@@ -737,6 +1060,7 @@ export function calculateCommercialPricing(params: {
     production_role?: string
     is_optional?: boolean
   }>
+  conversionRatio?: number
   materialUnitCost?: number
   effectiveMaterialCost?: number
   defaultWastagePercent?: number
@@ -767,8 +1091,20 @@ export function calculateCommercialPricing(params: {
   areaSqft?: number
   singleAreaSqft?: number
   lengthRft?: number
+  sellingWidth?: number
+  sellingHeight?: number
+  productionWidth?: number
+  productionHeight?: number
+  widthAllowance?: number
+  heightAllowance?: number
+  singleProductionAreaSqft?: number
+  productionAreaSqft?: number
+  physicalConsumptionSqft?: number
   expectedConsumptionUnits: number
   expectedConsumption: number
+  purchaseEquivalentQuantity: number
+  purchaseEquivalentConsumption: number
+  costingQuantity: number
   effectiveMaterialCost: number
   estimatedMaterialCost: number
   componentsTotalCostPerUnit: number
@@ -829,15 +1165,49 @@ export function calculateCommercialPricing(params: {
   let actualQuantity = rawQty
   let areaSqft: number | undefined
   let lengthRft: number | undefined
+  let singleAreaSqft: number | undefined
+  let sellingWidth: number | undefined
+  let sellingHeight: number | undefined
+  let productionWidth: number | undefined
+  let productionHeight: number | undefined
+  let widthAllowance: number | undefined
+  let heightAllowance: number | undefined
+  let singleProductionAreaSqft: number | undefined
+  let productionAreaSqft: number | undefined
+  let physicalConsumptionSqft: number | undefined
 
   if (method === 'per_area') {
     if (params.width && params.height && Number(params.width) > 0 && Number(params.height) > 0) {
-      const pieceArea = convertDimensionsToSqft(Number(params.width), Number(params.height), params.dimensionUnit || 'ft')
-      actualQuantity = Math.round(pieceArea * (rawQty || 1) * 100) / 100
+      const wAllow = Math.max(0, Number(params.productionWidthAllowance ?? params.widthAllowance) || 0)
+      const hAllow = Math.max(0, Number(params.productionLengthAllowance ?? params.heightAllowance ?? params.lengthAllowance) || 0)
+      const allowUnit = params.allowanceUnit || params.dimensionUnit || 'ft'
+
+      const dimCalc = calculateProductionDimensions({
+        sellingWidth: Number(params.width),
+        sellingHeight: Number(params.height),
+        dimensionUnit: params.dimensionUnit || 'ft',
+        widthAllowance: wAllow,
+        heightAllowance: hAllow,
+        allowanceUnit: allowUnit,
+        quantity: rawQty || 1,
+      })
+
+      actualQuantity = dimCalc.totalSellingAreaSqft
       areaSqft = actualQuantity
+      singleAreaSqft = dimCalc.singleSellingAreaSqft
+      sellingWidth = dimCalc.sellingWidth
+      sellingHeight = dimCalc.sellingHeight
+      productionWidth = dimCalc.productionWidth
+      productionHeight = dimCalc.productionHeight
+      widthAllowance = dimCalc.widthAllowance
+      heightAllowance = dimCalc.heightAllowance
+      singleProductionAreaSqft = dimCalc.singleProductionAreaSqft
+      productionAreaSqft = dimCalc.totalProductionAreaSqft
+      physicalConsumptionSqft = dimCalc.physicalConsumptionSqft
     } else {
       actualQuantity = rawQty
       areaSqft = rawQty
+      singleAreaSqft = rawQty > 0 ? 1 : 0
     }
   } else if (method === 'per_length') {
     if (params.width && Number(params.width) > 0) {
@@ -878,12 +1248,17 @@ export function calculateCommercialPricing(params: {
     isMinimumChargeApplied = true
   }
 
-  // 7. Costing & Yield Analysis
+  // 7. Costing & Physical Consumption Analysis
   const materialUnitCost = Math.max(0, Number(params.effectiveMaterialCost ?? params.materialUnitCost) || 0)
   const defaultWastage = Math.max(0, Number(params.defaultWastagePercent) || 0)
-  const expectedConsumptionUnits = Math.round(actualQuantity * (1 + defaultWastage / 100) * 100) / 100
 
-  const estimatedMaterialCost = Math.round(materialUnitCost * actualQuantity * 100) / 100
+  // Base physical quantity before operational wastage:
+  // If production dimensions exist (e.g. 33.3125 sqft), use productionAreaSqft; otherwise actualQuantity.
+  const basePhysicalQuantity = productionAreaSqft !== undefined && productionAreaSqft > 0 ? productionAreaSqft : actualQuantity
+  const expectedConsumptionUnits = Math.round(basePhysicalQuantity * (1 + defaultWastage / 100) * 10000) / 10000
+
+  // Estimated Material Cost is based on physical material consumption:
+  const estimatedMaterialCost = Math.round(materialUnitCost * basePhysicalQuantity * 100) / 100
 
   // 8. Components / Recipe Rollup
   let componentsTotalCostPerUnit = 0
@@ -913,27 +1288,32 @@ export function calculateCommercialPricing(params: {
   }
 
   const totalDirectCostPerUnit = Math.round((materialUnitCost + extraDirectCostPerUnit + componentsTotalCostPerUnit) * 100) / 100
-  const estimatedDirectCost = Math.round(totalDirectCostPerUnit * actualQuantity * 100) / 100
+  const estimatedDirectCost = Math.round(
+    (estimatedMaterialCost + (extraDirectCostPerUnit + componentsTotalCostPerUnit) * actualQuantity) * 100
+  ) / 100
 
   const hasExtraDirectCosts = extraDirectCostPerUnit > 0 || componentsTotalCostPerUnit > 0
   const costBasisType: 'material' | 'direct_cost' | 'none' = hasExtraDirectCosts
     ? 'direct_cost'
     : (materialUnitCost > 0 ? 'material' : 'none')
 
-  const activeCostBasis = hasExtraDirectCosts ? totalDirectCostPerUnit : materialUnitCost
-  const costBasisAmount = Math.round(activeCostBasis * actualQuantity * 100) / 100
-  const totalEstimatedCost = costBasisAmount
+  const totalEstimatedCost = hasExtraDirectCosts ? estimatedDirectCost : estimatedMaterialCost
+  const costBasisAmount = totalEstimatedCost
+  const activeCostBasis =
+    productionAreaSqft !== undefined && productionAreaSqft > 0 && actualQuantity > 0 && productionAreaSqft !== actualQuantity
+      ? Math.round((totalEstimatedCost / actualQuantity) * 10000) / 10000
+      : (hasExtraDirectCosts ? totalDirectCostPerUnit : materialUnitCost)
 
-  const grossProfitAmount = Math.round((finalAmount - costBasisAmount) * 100) / 100
+  const grossProfitAmount = Math.round((finalAmount - totalEstimatedCost) * 100) / 100
   const totalEstimatedProfit = grossProfitAmount
-  const grossProfitPerUnit = Math.round((appliedSellingPrice - activeCostBasis) * 100) / 100
+  const grossProfitPerUnit = actualQuantity > 0 ? Math.round((grossProfitAmount / actualQuantity) * 100) / 100 : Math.round((appliedSellingPrice - activeCostBasis) * 100) / 100
 
-  const grossMarginPercent = appliedSellingPrice > 0
-    ? Math.round(((appliedSellingPrice - activeCostBasis) / appliedSellingPrice) * 10000) / 100
+  const grossMarginPercent = finalAmount > 0
+    ? Math.round(((finalAmount - totalEstimatedCost) / finalAmount) * 10000) / 100
     : 0
 
-  const markupPercent = activeCostBasis > 0
-    ? Math.round(((appliedSellingPrice - activeCostBasis) / activeCostBasis) * 10000) / 100
+  const markupPercent = totalEstimatedCost > 0
+    ? Math.round(((finalAmount - totalEstimatedCost) / totalEstimatedCost) * 10000) / 100
     : 0
 
   const suggestedSellingPrice = calculateSuggestedSellingPrice(activeCostBasis, targetMargin)
@@ -977,10 +1357,22 @@ export function calculateCommercialPricing(params: {
     isMoqViolated,
     moqDeficit,
     areaSqft,
-    singleAreaSqft: areaSqft ? Math.round((areaSqft / (rawQty || 1)) * 100) / 100 : 0,
+    singleAreaSqft: singleAreaSqft !== undefined ? singleAreaSqft : (areaSqft ? Math.round((areaSqft / (rawQty || 1)) * 100) / 100 : 0),
     lengthRft,
+    sellingWidth,
+    sellingHeight,
+    productionWidth,
+    productionHeight,
+    widthAllowance,
+    heightAllowance,
+    singleProductionAreaSqft,
+    productionAreaSqft,
+    physicalConsumptionSqft,
     expectedConsumptionUnits,
     expectedConsumption: expectedConsumptionUnits,
+    purchaseEquivalentQuantity: Math.round((actualQuantity / Math.max(0.0001, Number(params.conversionRatio) || 1.0)) * 10000) / 10000,
+    purchaseEquivalentConsumption: Math.round((expectedConsumptionUnits / Math.max(0.0001, Number(params.conversionRatio) || 1.0)) * 10000) / 10000,
+    costingQuantity: basePhysicalQuantity,
     calculatedQuantity: billableQuantity,
     effectiveMaterialCost: materialUnitCost,
     estimatedMaterialCost,

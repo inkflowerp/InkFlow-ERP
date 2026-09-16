@@ -118,6 +118,9 @@ export function enrichProductRecord(p: ProductRecord): ProductRecord {
     min_billable_quantity: p.min_billable_quantity !== null && p.min_billable_quantity !== undefined ? Math.max(0, Number(p.min_billable_quantity)) : 0,
     min_order_quantity: p.min_order_quantity !== null && p.min_order_quantity !== undefined ? Math.max(0, Number(p.min_order_quantity)) : 1.0,
     allow_manual_override: p.allow_manual_override !== undefined ? Boolean(p.allow_manual_override) : true,
+    production_width_allowance: p.production_width_allowance !== null && p.production_width_allowance !== undefined ? Number(p.production_width_allowance) : 0,
+    production_length_allowance: p.production_length_allowance !== null && p.production_length_allowance !== undefined ? Number(p.production_length_allowance) : 0,
+    allowance_unit: p.allowance_unit || 'ft',
     price_tiers: p.price_tiers || {},
     cost_breakdown: {
       material_cost: matCost,
@@ -411,6 +414,9 @@ export class ProductRepository {
         roll_length_ft: product.roll_length_ft !== undefined && product.roll_length_ft !== null ? Number(product.roll_length_ft) : null,
         sheet_width_ft: product.sheet_width_ft !== undefined && product.sheet_width_ft !== null ? Number(product.sheet_width_ft) : null,
         sheet_length_ft: product.sheet_length_ft !== undefined && product.sheet_length_ft !== null ? Number(product.sheet_length_ft) : null,
+        production_width_allowance: product.production_width_allowance !== undefined && product.production_width_allowance !== null ? Number(product.production_width_allowance) : 0,
+        production_length_allowance: product.production_length_allowance !== undefined && product.production_length_allowance !== null ? Number(product.production_length_allowance) : 0,
+        allowance_unit: product.allowance_unit || 'ft',
         material_spec: product.material_spec?.trim() || null,
         description: product.description?.trim() || null,
         description_bn: product.description_bn?.trim() || null,
@@ -532,6 +538,9 @@ export class ProductRepository {
       if (payload.min_allowed_margin_percent !== undefined) payload.min_allowed_margin_percent = Number(payload.min_allowed_margin_percent)
       if (payload.allow_manual_override !== undefined) payload.allow_manual_override = Boolean(payload.allow_manual_override)
       if (payload.pricing_method !== undefined) payload.pricing_method = normalizePricingMethod(payload.pricing_method)
+      if (payload.production_width_allowance !== undefined) payload.production_width_allowance = Number(payload.production_width_allowance)
+      if (payload.production_length_allowance !== undefined) payload.production_length_allowance = Number(payload.production_length_allowance)
+      if (payload.allowance_unit !== undefined) payload.allowance_unit = String(payload.allowance_unit)
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
@@ -1618,6 +1627,9 @@ export class ProductRepository {
       resolved.suggestedSellingPrice = suggestedPrice
       resolved.grossProfitPerUnit = finalMarginCalc.grossProfit
       resolved.grossMarginPercent = finalMarginCalc.grossMarginPercent
+      resolved.production_width_allowance = product.production_width_allowance
+      resolved.production_length_allowance = product.production_length_allowance
+      resolved.allowance_unit = product.allowance_unit
 
       return resolved
     })
