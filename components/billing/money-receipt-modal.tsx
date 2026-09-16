@@ -148,7 +148,7 @@ export function MoneyReceiptModal({
                     <span className="text-slate-500 block text-[10px] uppercase">Remaining Due</span>
                     {Math.max(0, (invoices[0].due_amount || 0) - payment.amount) === 0 ? (
                       <strong className="text-emerald-600 dark:text-emerald-400 font-black flex items-center gap-1">
-                        ৳ 0 <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Paid</span>
+                        {formatBDT(0)} <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Paid</span>
                       </strong>
                     ) : (
                       <strong className="text-rose-600 dark:text-rose-400 font-black flex items-center gap-1">
@@ -201,23 +201,12 @@ export function MoneyReceiptModal({
 
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePrint}
-                className="h-8 text-xs gap-1.5 font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Download PDF
-              </Button>
-
-              <Button
-                type="button"
                 size="sm"
                 onClick={handlePrint}
                 className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer shadow-xs"
               >
                 <Printer className="h-3.5 w-3.5" />
-                Print
+                Print / PDF
               </Button>
             </div>
           </div>
