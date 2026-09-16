@@ -832,14 +832,12 @@ export function NewQuotationModal({
                   <Input
                     id="custNameInput"
                     placeholder="Search or enter customer name..."
-                    value={selectedCustomer ? customerName : customerSearchQuery || customerName}
+                    value={customerName}
                     onChange={(e) => {
                       const val = e.target.value
-                      if (selectedCustomer) {
-                        setCustomerName(val)
-                      } else {
+                      setCustomerName(val)
+                      if (!selectedCustomer) {
                         setCustomerSearchQuery(val)
-                        setCustomerName(val)
                         setShowCustomerDropdown(true)
                       }
                     }}
@@ -871,7 +869,7 @@ export function NewQuotationModal({
                           {cust.company_name && (
                             <div className="text-[11px] text-slate-500 font-medium">🏢 {cust.company_name}</div>
                           )}
-                          <div className="text-[11px] font-mono text-blue-600 dark:text-blue-400">
+                          <div className="text-[11px] font-numeric tabular-nums text-blue-600 dark:text-blue-400">
                             📞 {cust.mobile}
                           </div>
                         </div>
@@ -907,13 +905,8 @@ export function NewQuotationModal({
                   id="custPhoneInput"
                   placeholder="017XXXXXXXX"
                   value={customerPhone}
-                  onChange={(e) => {
-                    setCustomerPhone(e.target.value)
-                    if (!selectedCustomer) {
-                      setCustomerSearchQuery(e.target.value)
-                    }
-                  }}
-                  className="text-xs h-9 font-mono"
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="text-xs h-9 font-numeric tabular-nums"
                 />
               </div>
 
@@ -927,7 +920,7 @@ export function NewQuotationModal({
                   placeholder="018XXXXXXXX"
                   value={customerWhatsapp}
                   onChange={(e) => setCustomerWhatsapp(e.target.value)}
-                  className="text-xs h-9 font-mono"
+                  className="text-xs h-9 font-numeric tabular-nums"
                 />
               </div>
 
