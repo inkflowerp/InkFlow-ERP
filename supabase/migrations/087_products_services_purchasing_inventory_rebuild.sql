@@ -174,4 +174,4 @@ BEGIN
     END IF;
 END $$;
 
-CREATE INDEX IF NOT EXISTS idx_inventory_remnants_dimensions ON public.inventory_remnants(company_id, parent_material_id, status, width, length);
+CREATE INDEX IF NOT EXISTS idx_inventory_remnants_dimensions ON public.inventory_remnants(company_id, material_id, status, width, length);
