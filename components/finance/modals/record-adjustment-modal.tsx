@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useI18n } from '@/i18n/context'
+import { formatBDT } from '@/lib/formatters'
 import type { AccountRecord } from '@/types/finance.types'
 
 interface RecordAdjustmentModalProps {
@@ -75,7 +76,7 @@ export function RecordAdjustmentModal({
     if (!isBalanced) {
       setError(
         tBilingual(
-          `Journal entry is unbalanced: Debit (৳${totalDebit.toFixed(2)}) must equal Credit (৳${totalCredit.toFixed(2)})`,
+          `Journal entry is unbalanced: Debit (${formatBDT(totalDebit)}) must equal Credit (${formatBDT(totalCredit)})`,
           `জার্নাল এন্ট্রি অসমান: ডেবিট ও ক্রেডিট টাকার পরিমাণ সমান হতে হবে`
         )
       )
@@ -222,8 +223,8 @@ export function RecordAdjustmentModal({
         {/* Balance Status Footer */}
         <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
           <div className="flex items-center gap-4">
-            <span>Debit: ৳{totalDebit.toFixed(2)}</span>
-            <span>Credit: ৳{totalCredit.toFixed(2)}</span>
+            <span>Debit: {formatBDT(totalDebit)}</span>
+            <span>Credit: {formatBDT(totalCredit)}</span>
           </div>
           <div className="flex items-center gap-1.5">
             {isBalanced ? (
@@ -234,7 +235,7 @@ export function RecordAdjustmentModal({
             ) : (
               <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1">
                 <AlertCircle className="w-4 h-4" />
-                <span>Diff: ৳{Math.abs(totalDebit - totalCredit).toFixed(2)}</span>
+                <span>Diff: {formatBDT(Math.abs(totalDebit - totalCredit))}</span>
               </span>
             )}
           </div>

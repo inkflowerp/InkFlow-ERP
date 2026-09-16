@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import { ResolvedProductRate } from '@/types/crm.types'
+import { formatBDT } from '@/lib/formatters'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -235,7 +236,7 @@ export function CustomerRatesTable({
 
                       {/* Default Rate */}
                       <td className="py-3 px-3 text-right font-medium text-slate-500">
-                        ৳{r.defaultRate.toFixed(2)}
+                        {formatBDT(r.defaultRate)}
                       </td>
 
                       {/* Last Invoice Rate */}
@@ -243,7 +244,7 @@ export function CustomerRatesTable({
                         {r.lastInvoiceRate !== null ? (
                           <div>
                             <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                              ৳{r.lastInvoiceRate.toFixed(2)}
+                              {formatBDT(r.lastInvoiceRate)}
                             </span>
                             {r.lastInvoiceNumber && (
                               <div className="text-[10px] text-slate-400 truncate" title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
@@ -269,7 +270,7 @@ export function CustomerRatesTable({
                           />
                         ) : r.customerRate !== null ? (
                           <span className="font-bold text-blue-600 dark:text-blue-400">
-                            ৳{r.customerRate.toFixed(2)}
+                            {formatBDT(r.customerRate)}
                           </span>
                         ) : (
                           <span className="text-slate-400 italic">Auto</span>
@@ -295,7 +296,7 @@ export function CustomerRatesTable({
 
                       {/* Effective Rate */}
                       <td className="py-3 px-3 text-right font-black text-sm text-slate-900 dark:text-white">
-                        ৳{r.effectiveRate.toFixed(2)}
+                        {formatBDT(r.effectiveRate)}
                       </td>
 
                       {/* Actions */}
@@ -411,19 +412,19 @@ export function CustomerRatesTable({
                   <div>
                     <div className="text-[10px] text-slate-400">Default</div>
                     <div className="font-medium text-slate-600 dark:text-slate-400">
-                      ৳{r.defaultRate.toFixed(2)}
+                      {formatBDT(r.defaultRate)}
                     </div>
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-400">Last Invoice</div>
                     <div className="font-medium text-emerald-600 dark:text-emerald-400 truncate">
-                      {r.lastInvoiceRate !== null ? `৳${r.lastInvoiceRate.toFixed(2)}` : 'None'}
+                      {r.lastInvoiceRate !== null ? formatBDT(r.lastInvoiceRate) : 'None'}
                     </div>
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-400 font-bold">Effective</div>
                     <div className="font-black text-slate-900 dark:text-white">
-                      ৳{r.effectiveRate.toFixed(2)}
+                      {formatBDT(r.effectiveRate)}
                     </div>
                   </div>
                 </div>

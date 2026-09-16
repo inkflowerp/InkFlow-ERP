@@ -13,6 +13,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { CustomerProductPurchaseStat } from '@/types/crm.types'
+import { formatBDT } from '@/lib/formatters'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -215,10 +216,10 @@ export function CustomerProductAnalytics({
                     {item.totalQuantity.toLocaleString()} <span className="text-[10px] text-slate-400 font-normal uppercase">{item.unit}</span>
                   </td>
                   <td className="py-3 px-3 text-right font-medium text-slate-600 dark:text-slate-300">
-                    ৳{item.lastRate.toFixed(2)}
+                    {formatBDT(item.lastRate)}
                   </td>
                   <td className="py-3 px-3 text-right font-bold text-sm text-emerald-600 dark:text-emerald-400">
-                    ৳{item.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    {formatBDT(item.totalAmount)}
                   </td>
                   <td className="py-3 px-4 text-right text-slate-500 font-medium">
                     {item.lastPurchaseDate}
@@ -253,7 +254,7 @@ export function CustomerProductAnalytics({
                 </div>
 
                 <Badge variant="outline" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30">
-                  ৳{item.totalAmount.toLocaleString('en-IN')}
+                  {formatBDT(item.totalAmount)}
                 </Badge>
               </div>
 
@@ -267,7 +268,7 @@ export function CustomerProductAnalytics({
                 <div>
                   <div className="text-[10px] text-slate-400">Last Rate</div>
                   <div className="font-semibold text-slate-700 dark:text-slate-300">
-                    ৳{item.lastRate.toFixed(2)}
+                    {formatBDT(item.lastRate)}
                   </div>
                 </div>
                 <div>

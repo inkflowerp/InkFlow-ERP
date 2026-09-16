@@ -8,48 +8,66 @@ export function toBengaliNumerals(input: number | string): string {
 
 /**
  * Formats a number with South Asian (Lakh / Crore) comma separation
- * Example: 1500000 -> 15,00,000.00
+ * Example: 1500000 -> 15,00,000 (suppresses unnecessary .00)
+ * Example: 1500000.50 -> 15,00,000.50 (preserves meaningful decimals)
  */
-export function formatLakhCrore(amount: number, showDecimals = true): string {
-  const parts = amount.toFixed(showDecimals ? 2 : 0).split('.')
-  let integerPart = parts[0]
-  const decimalPart = parts[1]
+export function formatLakhCrore(
+  amount: number,
+  showDecimals: boolean | 'auto' | 'always' = 'auto'
+): string {
+  const num = typeof amount === 'number' && !isNaN(amount) ? amount : 0
+  const isNegative = num < 0
+  const absNum = Math.abs(num)
 
-  const isNegative = integerPart.startsWith('-')
-  if (isNegative) {
-    integerPart = integerPart.substring(1)
+  // Standardize to 2 decimal places to check fraction
+  const fixed2 = absNum.toFixed(2)
+  const [intStr, decStr] = fixed2.split('.')
+  const hasFraction = decStr !== '00'
+
+  let includeDecimals = false
+  if (showDecimals === 'always') {
+    includeDecimals = true
+  } else if (showDecimals === false) {
+    includeDecimals = false
+  } else {
+    // 'auto' or true (default): show decimals only when meaningful
+    includeDecimals = hasFraction
   }
 
+  const decimalPart = includeDecimals ? `.${decStr}` : ''
+
   // If 3 digits or fewer, no additional grouping needed
-  if (integerPart.length <= 3) {
-    return (isNegative ? '-' : '') + integerPart + (decimalPart ? '.' + decimalPart : '')
+  if (intStr.length <= 3) {
+    const res = intStr + decimalPart
+    return isNegative ? `-${res}` : res
   }
 
   // Last 3 digits
-  const lastThree = integerPart.substring(integerPart.length - 3)
-  const otherDigits = integerPart.substring(0, integerPart.length - 3)
+  const lastThree = intStr.substring(intStr.length - 3)
+  const otherDigits = intStr.substring(0, intStr.length - 3)
   // Group the rest by 2
   const formattedOther = otherDigits.replace(/\B(?=(\d{2})+(?!\d))/g, ',')
 
-  const result = `${formattedOther},${lastThree}${decimalPart ? '.' + decimalPart : ''}`
+  const result = `${formattedOther},${lastThree}${decimalPart}`
   return isNegative ? `-${result}` : result
 }
 
 /**
  * Formats an amount to Bangladeshi Taka (৳ BDT)
  * Supports English digits or Bengali digits
+ * Adheres to Global BDT Decimal Display Rule: suppresses trailing .00
  */
 export function formatBDT(
   amount: number,
   options?: {
     useBengaliNumerals?: boolean
-    showDecimals?: boolean
+    showDecimals?: boolean | 'auto' | 'always'
     symbol?: string
   }
 ): string {
   const {
     useBengaliNumerals = false,
-    showDecimals = true,
+    showDecimals = 'auto',
     symbol = '৳',
   } = options || {}
 
@@ -264,10 +282,13 @@ export function calculateDaysOverdue(dueDateStr: string): number {
 }
 
 /**
- * Converts a numerical BDT currency amount into English words (e.g. "One Lakh Fifty Thousand Taka Only")
+ * Converts a numerical BDT currency amount into English words (e.g. "One Lakh Fifty Thousand Taka Only", "Five Thousand Taka and Fifty Paisa Only")
  */
 export function numberToWordsBDT(amount: number): string {
-  if (amount === 0) return 'Zero Taka Only'
+  if (typeof amount !== 'number' || isNaN(amount)) return 'Zero Taka Only'
+
+  const absAmount = Math.abs(amount)
+  if (absAmount === 0) return 'Zero Taka Only'
 
   const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
   const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
@@ -288,22 +309,39 @@ export function numberToWordsBDT(amount: number): string {
     return str.trim()
   }
 
-  let amt = Math.floor(amount)
-  const crore = Math.floor(amt / 10000000)
-  amt %= 10000000
-  const lakh = Math.floor(amt / 100000)
-  amt %= 100000
-  const thousand = Math.floor(amt / 1000)
-  amt %= 1000
-  const remainder = amt
+  let taka = Math.floor(absAmount)
+  const paisa = Math.round((absAmount - taka) * 100)
 
-  let res = ''
-  if (crore > 0) res += convertBelowThousand(crore) + ' Crore '
-  if (lakh > 0) res += convertBelowThousand(lakh) + ' Lakh '
-  if (thousand > 0) res += convertBelowThousand(thousand) + ' Thousand '
-  if (remainder > 0) res += convertBelowThousand(remainder) + ' '
+  const crore = Math.floor(taka / 10000000)
+  taka %= 10000000
+  const lakh = Math.floor(taka / 100000)
+  taka %= 100000
+  const thousand = Math.floor(taka / 1000)
+  taka %= 1000
+  const remainder = taka
 
-  return (res.trim() + ' Taka Only').replace(/\s+/g, ' ')
+  let takaWords = ''
+  if (crore > 0) takaWords += convertBelowThousand(crore) + ' Crore '
+  if (lakh > 0) takaWords += convertBelowThousand(lakh) + ' Lakh '
+  if (thousand > 0) takaWords += convertBelowThousand(thousand) + ' Thousand '
+  if (remainder > 0) takaWords += convertBelowThousand(remainder) + ' '
+  takaWords = takaWords.trim()
+
+  const paisaWords = paisa > 0 ? convertBelowThousand(paisa) : ''
+
+  if (!takaWords && !paisaWords) {
+    return 'Zero Taka Only'
+  }
+
+  if (takaWords && !paisaWords) {
+    return `${takaWords} Taka Only`.replace(/\s+/g, ' ')
+  }
+
+  if (takaWords && paisaWords) {
+    return `${takaWords} Taka and ${paisaWords} Paisa Only`.replace(/\s+/g, ' ')
+  }
+
+  return `${paisaWords} Paisa Only`.replace(/\s+/g, ' ')
 }
 
 const BN_NUMS_0_TO_99 = [
@@ -320,10 +358,13 @@ const BN_NUMS_0_TO_99 = [
 ]
 
 /**
- * Converts a numerical BDT currency amount into Bangla words (e.g. "এক লক্ষ পঞ্চাশ হাজার টাকা মাত্র")
+ * Converts a numerical BDT currency amount into Bangla words (e.g. "এক লক্ষ পঞ্চাশ হাজার টাকা মাত্র", "পাঁচ হাজার টাকা এবং পঞ্চাশ পয়সা মাত্র")
  */
 export function numberToWordsBangla(amount: number): string {
-  if (amount === 0) return 'শূন্য টাকা মাত্র'
+  if (typeof amount !== 'number' || isNaN(amount)) return 'শূন্য টাকা মাত্র'
+
+  const absAmount = Math.abs(amount)
+  if (absAmount === 0) return 'শূন্য টাকা মাত্র'
 
   const convertBelowThousand = (n: number): string => {
     let str = ''
@@ -338,22 +379,39 @@ export function numberToWordsBangla(amount: number): string {
     return str.trim()
   }
 
-  let amt = Math.floor(amount)
-  const crore = Math.floor(amt / 10000000)
-  amt %= 10000000
-  const lakh = Math.floor(amt / 100000)
-  amt %= 100000
-  const thousand = Math.floor(amt / 1000)
-  amt %= 1000
-  const remainder = amt
+  let taka = Math.floor(absAmount)
+  const paisa = Math.round((absAmount - taka) * 100)
 
-  let res = ''
-  if (crore > 0) res += convertBelowThousand(crore) + ' কোটি '
-  if (lakh > 0) res += convertBelowThousand(lakh) + ' লক্ষ '
-  if (thousand > 0) res += convertBelowThousand(thousand) + ' হাজার '
-  if (remainder > 0) res += convertBelowThousand(remainder) + ' '
+  const crore = Math.floor(taka / 10000000)
+  taka %= 10000000
+  const lakh = Math.floor(taka / 100000)
+  taka %= 100000
+  const thousand = Math.floor(taka / 1000)
+  taka %= 1000
+  const remainder = taka
 
-  return (res.trim() + ' টাকা মাত্র').replace(/\s+/g, ' ')
+  let takaWords = ''
+  if (crore > 0) takaWords += convertBelowThousand(crore) + ' কোটি '
+  if (lakh > 0) takaWords += convertBelowThousand(lakh) + ' লক্ষ '
+  if (thousand > 0) takaWords += convertBelowThousand(thousand) + ' হাজার '
+  if (remainder > 0) takaWords += convertBelowThousand(remainder) + ' '
+  takaWords = takaWords.trim()
+
+  const paisaWords = paisa > 0 ? (BN_NUMS_0_TO_99[paisa] || convertBelowThousand(paisa)) : ''
+
+  if (!takaWords && !paisaWords) {
+    return 'শূন্য টাকা মাত্র'
+  }
+
+  if (takaWords && !paisaWords) {
+    return `${takaWords} টাকা মাত্র`.replace(/\s+/g, ' ')
+  }
+
+  if (takaWords && paisaWords) {
+    return `${takaWords} টাকা এবং ${paisaWords} পয়সা মাত্র`.replace(/\s+/g, ' ')
+  }
+
+  return `${paisaWords} পয়সা মাত্র`.replace(/\s+/g, ' ')
 }
 
 /**

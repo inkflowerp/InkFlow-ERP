@@ -297,10 +297,10 @@ describe('Bangladesh Localization + VAT Lifecycle Integration Test (V7)', () => 
     assert.strictEqual(banglaWords, 'পঁয়ত্রিশ হাজার চার শত পঁচিশ টাকা মাত্র')
 
     const formattedCurrencyEn = LocalizationService.formatCurrency(salesVatBreakdown.grand_total, false)
-    assert.strictEqual(formattedCurrencyEn, '৳\u00A035,425.00')
+    assert.strictEqual(formattedCurrencyEn, '৳\u00A035,425')
 
     const formattedCurrencyBn = LocalizationService.formatCurrency(salesVatBreakdown.grand_total, true)
-    assert.strictEqual(formattedCurrencyBn, '৳\u00A0৩৫,৪২৫.০০')
+    assert.strictEqual(formattedCurrencyBn, '৳\u00A0৩৫,৪২৫')
 
     // Hierarchical Address String
     const formattedAddrEn = LocalizationService.formatAddress(

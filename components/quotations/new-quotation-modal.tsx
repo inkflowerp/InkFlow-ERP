@@ -1300,7 +1300,7 @@ export function NewQuotationModal({
                   <div className="text-right">
                     <span className="text-[11px] text-slate-400 mr-2">Line Total:</span>
                     <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
-                      ৳ {Number(item.item_total).toLocaleString('en-BD')}
+                      {formatBDT(Number(item.item_total))}
                     </span>
                   </div>
                 </div>
@@ -1399,12 +1399,12 @@ export function NewQuotationModal({
             {/* Grand Total Display Box */}
             <div className="p-3.5 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-xl flex flex-col justify-between shadow-md">
               <div className="flex justify-between text-xs text-blue-100 font-medium">
-                <span>Subtotal: ৳{calculatedSubtotal.toLocaleString('en-BD')}</span>
-                <span>VAT: +৳{calculatedVat.toLocaleString('en-BD')}</span>
+                <span>Subtotal: {formatBDT(calculatedSubtotal)}</span>
+                <span>VAT: +{formatBDT(calculatedVat)}</span>
               </div>
               <div className="flex items-baseline justify-between pt-2 border-t border-white/15">
                 <span className="text-xs font-semibold uppercase tracking-wider text-blue-100">Grand Total:</span>
-                <span className="text-xl font-black font-mono">৳ {calculatedGrandTotal.toLocaleString('en-BD')}</span>
+                <span className="text-xl font-black font-mono">{formatBDT(calculatedGrandTotal)}</span>
               </div>
             </div>
           </div>

@@ -224,12 +224,16 @@ describe('Billing & Collections Final Fix - Forensic Suite', () => {
     )
   })
 
-  it('3. Money Receipt Formatting & BDT Grouping', () => {
-    assert.strictEqual(formatBDT(5000), '৳\u00A05,000.00')
-    assert.strictEqual(formatBDT(10000), '৳\u00A010,000.00')
-    assert.strictEqual(formatBDT(125000), '৳\u00A01,25,000.00')
-    assert.strictEqual(formatBDT(1000000), '৳\u00A010,00,000.00')
+  it('3. Money Receipt Formatting & BDT Grouping (Global BDT Decimal Display Rule)', () => {
+    assert.strictEqual(formatBDT(5000), '৳\u00A05,000')
+    assert.strictEqual(formatBDT(10000), '৳\u00A010,000')
+    assert.strictEqual(formatBDT(125000), '৳\u00A01,25,000')
+    assert.strictEqual(formatBDT(1000000), '৳\u00A010,00,000')
+    assert.strictEqual(formatBDT(5000.50), '৳\u00A05,000.50')
+    assert.strictEqual(formatBDT(5000.25), '৳\u00A05,000.25')
     assert.strictEqual(numberToWordsBDT(5000), 'Five Thousand Taka Only')
+    assert.strictEqual(numberToWordsBDT(5000.50), 'Five Thousand Taka and Fifty Paisa Only')
     assert.strictEqual(numberToWordsBDT(125000), 'One Lakh Twenty Five Thousand Taka Only')
+    assert.strictEqual(numberToWordsBDT(125000.75), 'One Lakh Twenty Five Thousand Taka and Seventy Five Paisa Only')
   })
 })

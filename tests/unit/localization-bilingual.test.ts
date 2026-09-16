@@ -29,6 +29,39 @@ describe('Localization & Bilingual Formatters Unit Tests (V7)', () => {
     assert.strictEqual(bnFormat, '৳\u00A0১,২৫,৫০,০০০.৫০')
   })
 
+  test('Global BDT Decimal Display Rule: suppresses unnecessary .00 and preserves meaningful decimals', () => {
+    // Standard test cases requested
+    assert.strictEqual(formatBDT(10000), '৳\u00A010,000')
+    assert.strictEqual(formatBDT(10000.00), '৳\u00A010,000')
+    assert.strictEqual(formatBDT(10000.50), '৳\u00A010,000.50')
+    assert.strictEqual(formatBDT(10000.25), '৳\u00A010,000.25')
+    assert.strictEqual(formatBDT(10000.05), '৳\u00A010,000.05')
+    assert.strictEqual(formatBDT(0), '৳\u00A00')
+    assert.strictEqual(formatBDT(0.50), '৳\u00A00.50')
+    assert.strictEqual(formatBDT(125000), '৳\u00A01,25,000')
+    assert.strictEqual(formatBDT(125000.75), '৳\u00A01,25,000.75')
+
+    // Bengali numerals variant
+    assert.strictEqual(formatBDT(10000, { useBengaliNumerals: true }), '৳\u00A0১০,০০০')
+    assert.strictEqual(formatBDT(10000.50, { useBengaliNumerals: true }), '৳\u00A0১০,০০০.৫০')
+    assert.strictEqual(formatBDT(125000, { useBengaliNumerals: true }), '৳\u00A0১,২৫,০০০')
+
+    // Number to words with Paisa
+    assert.strictEqual(LocalizationService.amountInWords(5000, 'en'), 'Five Thousand Taka Only')
+    assert.strictEqual(LocalizationService.amountInWords(5000.50, 'en'), 'Five Thousand Taka and Fifty Paisa Only')
+    assert.strictEqual(LocalizationService.amountInWords(5000.25, 'en'), 'Five Thousand Taka and Twenty Five Paisa Only')
+    assert.strictEqual(LocalizationService.amountInWords(5000.05, 'en'), 'Five Thousand Taka and Five Paisa Only')
+    assert.strictEqual(LocalizationService.amountInWords(0, 'en'), 'Zero Taka Only')
+    assert.strictEqual(LocalizationService.amountInWords(0.50, 'en'), 'Fifty Paisa Only')
+    assert.strictEqual(LocalizationService.amountInWords(125000, 'en'), 'One Lakh Twenty Five Thousand Taka Only')
+    assert.strictEqual(LocalizationService.amountInWords(125000.75, 'en'), 'One Lakh Twenty Five Thousand Taka and Seventy Five Paisa Only')
+
+    // Number to words in Bengali
+    assert.strictEqual(LocalizationService.amountInWords(5000, 'bn'), 'পাঁচ হাজার টাকা মাত্র')
+    assert.strictEqual(LocalizationService.amountInWords(5000.50, 'bn'), 'পাঁচ হাজার টাকা এবং পঞ্চাশ পয়সা মাত্র')
+    assert.strictEqual(LocalizationService.amountInWords(0, 'bn'), 'শূন্য টাকা মাত্র')
+  })
+
   test('normalizes various Bangladesh telephone formats to standard +880 international format', () => {
     assert.strictEqual(normalizeBdPhone('01711223344'), '+8801711223344')
     assert.strictEqual(normalizeBdPhone('8801711223344'), '+8801711223344')

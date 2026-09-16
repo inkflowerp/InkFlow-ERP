@@ -90,13 +90,13 @@ export function TrialBalanceView({ statement, isLoading }: TrialBalanceViewProps
                     </Badge>
                   </td>
                   <td className="p-3 text-right font-mono text-slate-700 dark:text-slate-300">
-                    {acc.debit > 0 ? `৳${acc.debit.toLocaleString()}` : '-'}
+                    {acc.debit > 0 ? formatBDT(acc.debit) : '-'}
                   </td>
                   <td className="p-3 text-right font-mono text-slate-700 dark:text-slate-300">
-                    {acc.credit > 0 ? `৳${acc.credit.toLocaleString()}` : '-'}
+                    {acc.credit > 0 ? formatBDT(acc.credit) : '-'}
                   </td>
                   <td className="p-3 text-right font-mono font-semibold text-slate-900 dark:text-slate-100">
-                    ৳{acc.net_balance.toLocaleString()}
+                    {formatBDT(acc.net_balance)}
                   </td>
                 </tr>
               ))}
@@ -107,13 +107,13 @@ export function TrialBalanceView({ statement, isLoading }: TrialBalanceViewProps
                   {tBilingual('Total Trial Balance', 'মোট রেওয়ামিল')}
                 </td>
                 <td className="p-3 text-right font-mono text-sm text-indigo-700 dark:text-indigo-400">
-                  ৳{total_debit.toLocaleString()}
+                  {formatBDT(total_debit)}
                 </td>
                 <td className="p-3 text-right font-mono text-sm text-indigo-700 dark:text-indigo-400">
-                  ৳{total_credit.toLocaleString()}
+                  {formatBDT(total_credit)}
                 </td>
                 <td className="p-3 text-right font-mono text-sm text-emerald-600 dark:text-emerald-400">
-                  {is_balanced ? '✓ Balanced' : 'Diff: ৳' + Math.abs(total_debit - total_credit).toFixed(2)}
+                  {is_balanced ? '✓ Balanced' : 'Diff: ' + formatBDT(Math.abs(total_debit - total_credit))}
                 </td>
               </tr>
             </tfoot>
