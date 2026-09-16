@@ -25,6 +25,8 @@ export type CommercialProductType =
   | 'installation'
   | 'delivery'
   | 'package_bundle'
+  | 'material'
+  | 'package'
 
 export type MeasurementType =
   | 'piece'

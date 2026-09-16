@@ -44,6 +44,11 @@ import {
   ListPlus,
   PlusCircle,
   X,
+  ChevronDown,
+  ChevronUp,
+  Hammer,
+  Palette,
+  Info,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -132,6 +137,18 @@ export default function ProductsCatalogPage() {
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [formTab, setFormTab] = useState<'basic' | 'units' | 'pricing' | 'costing' | 'components' | 'suppliers' | 'production' | 'advanced'>('basic')
+  const [expandedSections, setExpandedSections] = useState<{
+    purchasing?: boolean
+    production?: boolean
+    minimums?: boolean
+    costing?: boolean
+    components?: boolean
+  }>({})
+
+  const toggleSection = (key: 'purchasing' | 'production' | 'minimums' | 'costing' | 'components') => {
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
   const [editingProduct, setEditingProduct] = useState<ProductRecord | null>(null)
   const [pricingProduct, setPricingProduct] = useState<ProductRecord | null>(null)
   const [newPrice, setNewPrice] = useState<number>(0)
@@ -393,6 +410,220 @@ export default function ProductsCatalogPage() {
     }
   }
 
+  // Product Type and Pricing Definition Cards
+  const PRODUCT_TYPE_CARDS = [
+    {
+      type: 'production_product' as CommercialProductType,
+      label: 'Product',
+      label_bn: 'পণ্য',
+      description: 'Physical item that you sell or produce',
+      icon: Package,
+    },
+    {
+      type: 'service' as CommercialProductType,
+      label: 'Service',
+      label_bn: 'সেবা',
+      description: 'A service such as design, installation, delivery, etc.',
+      icon: Sparkles,
+    },
+    {
+      type: 'material' as CommercialProductType,
+      label: 'Material',
+      label_bn: 'কাঁচামাল',
+      description: 'Raw material or substrate stock item',
+      icon: Layers,
+    },
+    {
+      type: 'finishing' as CommercialProductType,
+      label: 'Finishing',
+      label_bn: 'ফিনিশিং',
+      description: 'Lamination, eyelet, binding, cutting, etc.',
+      icon: Scissors,
+    },
+    {
+      type: 'fabrication' as CommercialProductType,
+      label: 'Fabrication',
+      label_bn: 'ফেব্রিকেশন',
+      description: 'Fabrication work such as acrylic, metal, ACP',
+      icon: Wrench,
+    },
+    {
+      type: 'installation' as CommercialProductType,
+      label: 'Installation',
+      label_bn: 'ইনস্টলেশন',
+      description: 'Installation or fitting service',
+      icon: Building2,
+    },
+    {
+      type: 'delivery' as CommercialProductType,
+      label: 'Delivery',
+      label_bn: 'ডেলিভারি',
+      description: 'Delivery / transport service',
+      icon: Truck,
+    },
+    {
+      type: 'package' as CommercialProductType,
+      label: 'Package',
+      label_bn: 'প্যাকেজ',
+      description: 'Combination of products/services',
+      icon: Boxes,
+    },
+  ]
+
+  const PRICING_PILLS: { id: PricingMethod; label: string; unit: string; symbol: string }[] = [
+    { id: 'per_area', label: 'Per Sqft', unit: 'sft', symbol: '৳ / sqft' },
+    { id: 'per_piece', label: 'Per Piece', unit: 'pcs', symbol: '৳ / piece' },
+    { id: 'per_job', label: 'Per Job', unit: 'job', symbol: '৳ / job' },
+    { id: 'per_hour', label: 'Per Hour', unit: 'hr', symbol: '৳ / hour' },
+    { id: 'per_length', label: 'Per Ft', unit: 'ft', symbol: '৳ / ft' },
+    { id: 'per_weight', label: 'Per Kg', unit: 'kg', symbol: '৳ / kg' },
+    { id: 'fixed', label: 'Fixed Price', unit: 'pcs', symbol: 'Fixed ৳' },
+    { id: 'formula', label: 'Formula', unit: 'sft', symbol: 'Formula' },
+  ]
+
+  const handleSelectProductType = (type: CommercialProductType) => {
+    let defaultSellingUnit = formData.selling_unit || 'sft'
+    let defaultPurchaseUnit = formData.purchase_unit || 'roll'
+    let defaultPricingMethod: PricingMethod = formData.pricing_method || 'per_area'
+    let defaultMeasurementType: MeasurementType = formData.measurement_type || 'area'
+    let defaultDepartment = formData.default_department || 'printing'
+    let requiresProduction = formData.requires_production
+    let requiresFinishing = formData.requires_finishing
+    let requiresFabrication = formData.requires_fabrication
+    let requiresInstallation = formData.requires_installation
+    let requiresDelivery = formData.requires_delivery
+
+    if (type === 'ready_product') {
+      defaultSellingUnit = 'pcs'
+      defaultPurchaseUnit = 'pcs'
+      defaultPricingMethod = 'per_piece'
+      defaultMeasurementType = 'piece'
+      defaultDepartment = 'printing'
+      requiresProduction = false
+    } else if (type === 'service') {
+      defaultSellingUnit = 'job'
+      defaultPurchaseUnit = 'pcs'
+      defaultPricingMethod = 'per_job'
+      defaultMeasurementType = 'job'
+      defaultDepartment = 'design'
+      requiresProduction = false
+      requiresFinishing = false
+      requiresFabrication = false
+      requiresInstallation = false
+      requiresDelivery = false
+    } else if (type === 'material') {
+      defaultSellingUnit = 'sft'
+      defaultPurchaseUnit = 'roll'
+      defaultPricingMethod = 'per_area'
+      defaultMeasurementType = 'area'
+      defaultDepartment = 'printing'
+      requiresProduction = false
+    } else if (type === 'finishing') {
+      defaultSellingUnit = 'sft'
+      defaultPurchaseUnit = 'roll'
+      defaultPricingMethod = 'per_area'
+      defaultMeasurementType = 'area'
+      defaultDepartment = 'finishing'
+      requiresProduction = false
+      requiresFinishing = true
+    } else if (type === 'fabrication') {
+      defaultSellingUnit = 'sft'
+      defaultPurchaseUnit = 'sheet'
+      defaultPricingMethod = 'per_area'
+      defaultMeasurementType = 'area'
+      defaultDepartment = 'fabrication'
+      requiresProduction = true
+      requiresFabrication = true
+    } else if (type === 'installation') {
+      defaultSellingUnit = 'sft'
+      defaultPurchaseUnit = 'pcs'
+      defaultPricingMethod = 'per_area'
+      defaultMeasurementType = 'area'
+      defaultDepartment = 'installation'
+      requiresProduction = false
+      requiresInstallation = true
+    } else if (type === 'delivery') {
+      defaultSellingUnit = 'job'
+      defaultPurchaseUnit = 'pcs'
+      defaultPricingMethod = 'per_job'
+      defaultMeasurementType = 'job'
+      defaultDepartment = 'printing'
+      requiresProduction = false
+      requiresDelivery = true
+    } else if (type === 'package') {
+      defaultSellingUnit = 'pcs'
+      defaultPurchaseUnit = 'pcs'
+      defaultPricingMethod = 'per_piece'
+      defaultMeasurementType = 'piece'
+      defaultDepartment = 'printing'
+      requiresProduction = true
+    } else if (type === 'production_product') {
+      defaultSellingUnit = 'sft'
+      defaultPurchaseUnit = 'roll'
+      defaultPricingMethod = 'per_area'
+      defaultMeasurementType = 'area'
+      defaultDepartment = 'printing'
+      requiresProduction = true
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      commercial_type: type,
+      product_type:
+        type === 'ready_product'
+          ? 'ready_product'
+          : type === 'service'
+          ? 'service'
+          : type === 'material'
+          ? 'material'
+          : type === 'finishing'
+          ? 'finishing'
+          : type === 'fabrication'
+          ? 'fabrication'
+          : type === 'installation'
+          ? 'installation'
+          : type === 'delivery'
+          ? 'delivery'
+          : type === 'package'
+          ? 'package_bundle'
+          : 'print_service',
+      selling_unit: defaultSellingUnit,
+      purchase_unit: defaultPurchaseUnit,
+      unit: defaultSellingUnit as UnitOfMeasure,
+      pricing_method: defaultPricingMethod,
+      measurement_type: defaultMeasurementType,
+      default_department: defaultDepartment,
+      requires_production: requiresProduction,
+      requires_finishing: requiresFinishing,
+      requires_fabrication: requiresFabrication,
+      requires_installation: requiresInstallation,
+      requires_delivery: requiresDelivery,
+    }))
+  }
+
+  const handlePricingMethodSelect = (opt: typeof PRICING_PILLS[0]) => {
+    setFormData((prev) => ({
+      ...prev,
+      pricing_method: opt.id,
+      selling_unit: opt.unit,
+      unit: opt.unit as UnitOfMeasure,
+      measurement_type:
+        opt.id === 'per_area'
+          ? 'area'
+          : opt.id === 'per_piece'
+          ? 'piece'
+          : opt.id === 'per_job'
+          ? 'job'
+          : opt.id === 'per_hour'
+          ? 'time'
+          : opt.id === 'per_length'
+          ? 'length'
+          : opt.id === 'per_weight'
+          ? 'weight'
+          : prev.measurement_type,
+    }))
+  }
+
   // Handle open create modal
   const handleOpenCreate = () => {
     const check = checkCanCreate('max_products')
@@ -403,6 +634,7 @@ export default function ProductsCatalogPage() {
     setEditingProduct(null)
     setSupplierPrices([])
     setFormTab('basic')
+    setExpandedSections({})
     setFormData({
       name: '',
       name_bn: '',
@@ -479,6 +711,13 @@ export default function ProductsCatalogPage() {
     setEditingProduct(p)
     setFormTab('basic')
     loadSupplierPrices(p.id)
+    setExpandedSections({
+      purchasing: Boolean((Number(p.purchase_price) > 0 || (p.purchase_unit && p.purchase_unit !== 'pcs')) && p.commercial_type !== 'service'),
+      production: Boolean(p.requires_production || p.requires_fabrication || p.requires_finishing || p.requires_installation || p.requires_delivery || p.default_finishing || p.production_instructions),
+      minimums: Boolean((Number(p.min_order_quantity) && Number(p.min_order_quantity) > 1) || (Number(p.min_billable_quantity) && Number(p.min_billable_quantity) > 0) || (Number(p.minimum_charge) && Number(p.minimum_charge) > 0)),
+      costing: Boolean(p.cost_breakdown && Object.values(p.cost_breakdown).some(v => Number(v) > 0)),
+      components: Boolean(p.components && p.components.length > 0),
+    })
     setFormData({
       name: p.name,
       name_bn: p.name_bn || '',
@@ -1887,7 +2126,7 @@ export default function ProductsCatalogPage() {
       </ModalDialog>
 
       {/* ======================================================== */}
-      {/* MODAL 2: CREATE / EDIT PRODUCT MASTER 2.0 (PROGRESSIVE TABS) */}
+      {/* MODAL 2: CREATE / EDIT PRODUCT (SIMPLIFIED & PROGRESSIVE) */}
       {/* ======================================================== */}
       <ModalDialog
         open={isCreateOpen}
@@ -1900,505 +2139,560 @@ export default function ProductsCatalogPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-black text-slate-900 dark:text-white">
-                  {editingProduct ? 'Edit Commercial Product Master' : tBilingual('New Product & Commercial Master', 'নতুন পণ্য ও কমার্শিয়াল মাস্টার')}
+                <span className="text-base font-bold text-slate-900 dark:text-white">
+                  {editingProduct ? 'Edit Product' : 'Add Product'}
                 </span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
-                  Master 2.0
-                </Badge>
               </div>
-              <p className="text-[11px] text-slate-500">
-                Purchase Units, Conversions, Usable Yield, Costing & Selling Tariffs
+              <p className="text-xs text-slate-500">
+                {editingProduct ? 'Update product details and commercial rules.' : 'Create a product or service your business sells.'}
               </p>
             </div>
           </div>
         }
       >
-        <form onSubmit={handleSaveProduct} className="space-y-4 pt-1">
-          {/* Progressive Navigation Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-200 dark:border-slate-800 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setFormTab('basic')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg transition-all shrink-0',
-                formTab === 'basic'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              )}
-            >
-              1. Basic Info
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormTab('units')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg transition-all shrink-0',
-                formTab === 'units'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              )}
-            >
-              2. Units & Conversion
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormTab('pricing')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg transition-all shrink-0',
-                formTab === 'pricing'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              )}
-            >
-              3. Pricing & Margin
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormTab('costing')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg transition-all shrink-0',
-                formTab === 'costing'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              )}
-            >
-              4. Costing & Yield
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormTab('components')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg transition-all shrink-0',
-                formTab === 'components'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              )}
-            >
-              5. Recipe / Bundle ({formData.components?.length || 0})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormTab('suppliers')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg transition-all shrink-0',
-                formTab === 'suppliers'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              )}
-            >
-              6. Suppliers ({supplierPrices.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormTab('production')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg transition-all shrink-0',
-                formTab === 'production'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              )}
-            >
-              7. Production
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormTab('advanced')}
-              className={cn(
-                'px-3 py-1.5 rounded-lg transition-all shrink-0',
-                formTab === 'advanced'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              )}
-            >
-              8. Advanced
-            </button>
+        <form onSubmit={handleSaveProduct} className="space-y-4 pt-1 max-h-[78vh] overflow-y-auto pr-1">
+          {/* STEP 1: WHAT ARE YOU SELLING? */}
+          <div>
+            <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider block mb-2">
+              1. What are you selling?
+            </Label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {PRODUCT_TYPE_CARDS.map((card) => {
+                const Icon = card.icon
+                const isSelected = formData.commercial_type === card.type
+                return (
+                  <button
+                    key={card.type}
+                    type="button"
+                    onClick={() => handleSelectProductType(card.type)}
+                    className={cn(
+                      'flex flex-col items-start p-2.5 rounded-xl border text-left transition-all relative overflow-hidden',
+                      isSelected
+                        ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 shadow-xs ring-1 ring-blue-500'
+                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
+                    )}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1">
+                      <div className={cn(
+                        'flex h-7 w-7 items-center justify-center rounded-lg',
+                        isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      )}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      {isSelected && (
+                        <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      )}
+                    </div>
+                    <span className="text-xs font-bold block">{card.label}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight line-clamp-1 mt-0.5">
+                      {card.description}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-          {/* TAB 1: BASIC INFORMATION */}
-          {formTab === 'basic' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Product / Service Name (English) <span className="text-rose-500">*</span>
-                  </Label>
-                  <Input
-                    placeholder="e.g. Star Flex Banner 320 GSM"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="text-xs h-9"
-                    required
-                  />
-                </div>
+          {/* STEP 2: BASIC INFORMATION */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider block">
+              2. Basic Information
+            </span>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Item Name (Bangla / বাংলা নাম)
-                  </Label>
-                  <Input
-                    placeholder="যেমন: স্টার ফ্লেক্স ব্যানার"
-                    value={formData.name_bn}
-                    onChange={(e) => setFormData({ ...formData, name_bn: e.target.value })}
-                    className="text-xs h-9 font-bengali"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    SKU / Item Code <span className="text-rose-500">*</span>
-                  </Label>
-                  <Input
-                    placeholder="PRD-FLX-01"
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="text-xs h-9 font-mono uppercase"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <Label className="text-xs font-semibold block">Category</Label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingCategory(null)
-                        setIsCategoryModalOpen(true)
-                      }}
-                      className="text-[11px] text-cyan-600 dark:text-cyan-400 hover:underline font-semibold flex items-center gap-0.5"
-                    >
-                      <Plus className="h-3 w-3" /> New
-                    </button>
-                  </div>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-                  >
-                    {categories.length > 0 ? (
-                      categories.map((cat) => (
-                        <option key={cat.id} value={cat.slug || cat.name}>
-                          {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="flex_banner">Flex Banner</option>
-                        <option value="backlit_flex">Backlit Flex</option>
-                        <option value="vinyl_sticker">Vinyl Sticker</option>
-                        <option value="rigid_board">Rigid Board Mount</option>
-                        <option value="signage_3d">3D Letter Signage</option>
-                        <option value="display_stand">Display Standee</option>
-                        <option value="commercial_print">Commercial Print / Cards</option>
-                        <option value="finishing">Finishing Service</option>
-                        <option value="installation">Installation Service</option>
-                        <option value="design_service">Design Service</option>
-                        <option value="delivery_logistics">Delivery Service</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Commercial Type</Label>
-                  <select
-                    value={formData.commercial_type}
-                    onChange={(e) => setFormData({ ...formData, commercial_type: e.target.value as CommercialProductType })}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-                  >
-                    {COMMERCIAL_PRODUCT_TYPES.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <Label className="text-xs font-semibold mb-1 block">
+                  Product Name <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  placeholder="e.g. Star Flex Banner 320 GSM, Vinyl Sticker, Graphic Design..."
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="text-sm font-medium h-9"
+                  required
+                  autoFocus
+                />
               </div>
 
               <div>
-                <Label className="text-xs font-semibold mb-1 block">Description</Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="text-xs font-semibold block">
+                    Category <span className="text-rose-500">*</span>
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCategory(null)
+                      setIsCategoryModalOpen(true)
+                    }}
+                    className="text-[11px] text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 font-semibold flex items-center gap-1 hover:underline"
+                  >
+                    <Plus className="h-3 w-3" /> New Category
+                  </button>
+                </div>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
+                  required
+                >
+                  <option value="" disabled>Select category...</option>
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <option key={cat.id} value={cat.slug || cat.name}>
+                        {cat.parent_name ? `${cat.parent_name} → ` : ''}{cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="flex_banner">Flex Banner</option>
+                      <option value="vinyl_sticker">Vinyl Sticker</option>
+                      <option value="display_stand">Display Stand</option>
+                      <option value="finishing">Finishing</option>
+                      <option value="services">Services & Design</option>
+                      <option value="delivery_logistics">Delivery</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Bengali Name (Optional)
+                </Label>
                 <Input
-                  placeholder="Optional brief commercial description or customer-facing details..."
+                  placeholder="যেমন: স্টার ফ্লেক্স ব্যানার"
+                  value={formData.name_bn}
+                  onChange={(e) => setFormData({ ...formData, name_bn: e.target.value })}
+                  className="text-xs h-9 font-bengali"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  SKU / Item Code (Optional)
+                </Label>
+                <Input
+                  placeholder="PRD-FLX-01"
+                  value={formData.sku}
+                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                  className="text-xs h-9 font-mono uppercase text-slate-600 dark:text-slate-400"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">Description (Optional)</Label>
+                <Input
+                  placeholder="Customer-facing notes or specifications..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="text-xs h-9"
                 />
               </div>
             </div>
-          )}
+          </div>
 
-          {/* TAB 2: UNITS & CONVERSION */}
-          {formTab === 'units' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Measurement Type</Label>
-                  <select
-                    value={formData.measurement_type}
-                    onChange={(e) => setFormData({ ...formData, measurement_type: e.target.value as MeasurementType })}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium capitalize"
-                  >
-                    {MEASUREMENT_TYPES.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          {/* STEP 3: HOW DO YOU CHARGE? */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider block">
+              3. How do you charge?
+            </span>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Purchase Unit (কীভাবে কিনি)
-                  </Label>
-                  <select
-                    value={formData.purchase_unit}
-                    disabled={liveCommercialMath.isService}
-                    onChange={(e) => setFormData({ ...formData, purchase_unit: e.target.value })}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium uppercase font-mono disabled:opacity-50"
-                  >
-                    {COMMON_PURCHASE_UNITS.map((u) => (
-                      <option key={u.code} value={u.code}>
-                        {u.name} ({u.code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Selling Unit (কীভাবে বিক্রি করি) <span className="text-rose-500">*</span>
-                  </Label>
-                  <select
-                    value={formData.selling_unit}
-                    onChange={(e) => setFormData({ ...formData, selling_unit: e.target.value, unit: e.target.value as UnitOfMeasure })}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium uppercase font-mono"
-                  >
-                    {COMMON_SELLING_UNITS.map((u) => (
-                      <option key={u.code} value={u.code}>
-                        {u.name} ({u.code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Dynamic Roll Dimension Calculator */}
-              {formData.measurement_type === 'area' && formData.purchase_unit === 'roll' && (
-                <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
-                      Roll Dimension Helper (1 Roll Area Calculation)
-                    </span>
-                    <Badge variant="outline" className="text-[10px] font-mono bg-white">
-                      10ft × 164ft = 1,640 sqft
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div>
-                      <Label className="text-[11px] font-semibold mb-1 block">Roll Width (Feet)</Label>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        value={formData.roll_width_ft || ''}
-                        onChange={(e) => {
-                          const w = Number(e.target.value) || 0
-                          const l = formData.roll_length_ft || 0
-                          const ratio = Math.round(w * l)
-                          setFormData({ ...formData, roll_width_ft: w, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
-                        }}
-                        className="text-xs h-8 font-mono"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-[11px] font-semibold mb-1 block">Roll Length (Feet)</Label>
-                      <Input
-                        type="number"
-                        step="1"
-                        value={formData.roll_length_ft || ''}
-                        onChange={(e) => {
-                          const l = Number(e.target.value) || 0
-                          const w = formData.roll_width_ft || 0
-                          const ratio = Math.round(w * l)
-                          setFormData({ ...formData, roll_length_ft: l, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
-                        }}
-                        className="text-xs h-8 font-mono"
-                      />
-                    </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <Label className="text-[11px] font-semibold mb-1 block">Derived Conversion Ratio</Label>
-                      <div className="h-8 px-3 rounded-md bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 flex items-center font-mono font-bold text-xs text-blue-700 dark:text-blue-300">
-                        {formData.conversion_ratio} sqft / roll
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Dynamic Sheet Dimension Calculator */}
-              {formData.measurement_type === 'area' && formData.purchase_unit === 'sheet' && (
-                <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
-                      Sheet Dimension Helper (1 Sheet Area Calculation)
-                    </span>
-                    <Badge variant="outline" className="text-[10px] font-mono bg-white">
-                      4ft × 8ft = 32 sqft
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div>
-                      <Label className="text-[11px] font-semibold mb-1 block">Sheet Width (Feet)</Label>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        value={formData.sheet_width_ft || ''}
-                        onChange={(e) => {
-                          const w = Number(e.target.value) || 0
-                          const l = formData.sheet_length_ft || 0
-                          const ratio = Math.round(w * l)
-                          setFormData({ ...formData, sheet_width_ft: w, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
-                        }}
-                        className="text-xs h-8 font-mono"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-[11px] font-semibold mb-1 block">Sheet Length (Feet)</Label>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        value={formData.sheet_length_ft || ''}
-                        onChange={(e) => {
-                          const l = Number(e.target.value) || 0
-                          const w = formData.sheet_width_ft || 0
-                          const ratio = Math.round(w * l)
-                          setFormData({ ...formData, sheet_length_ft: l, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
-                        }}
-                        className="text-xs h-8 font-mono"
-                      />
-                    </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <Label className="text-[11px] font-semibold mb-1 block">Derived Ratio</Label>
-                      <div className="h-8 px-3 rounded-md bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 flex items-center font-mono font-bold text-xs text-blue-700 dark:text-blue-300">
-                        {formData.conversion_ratio} sqft / sheet
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Conversion Ratio Input */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Conversion Ratio (1 {formData.purchase_unit || 'Unit'} = N {formData.selling_unit || 'Units'})
-                  </Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    disabled={liveCommercialMath.isService}
-                    value={formData.conversion_ratio || ''}
-                    onChange={(e) => setFormData({ ...formData, conversion_ratio: Number(e.target.value) })}
-                    className="text-xs h-9 font-mono font-bold disabled:opacity-50"
-                  />
-                  <span className="text-[11px] text-slate-400 mt-0.5 block">
-                    Example: 1 Roll = 1640 sqft, 1 Sheet = 32 sqft, 1 Box = 100 pcs
-                  </span>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Production Unit</Label>
-                  <Input
-                    value={formData.production_unit}
-                    onChange={(e) => setFormData({ ...formData, production_unit: e.target.value })}
-                    placeholder="e.g. sft or pcs"
-                    className="text-xs h-9 uppercase font-mono"
-                  />
-                  <span className="text-[11px] text-slate-400 mt-0.5 block">
-                    Unit consumed by printing machines or fabrication work orders
-                  </span>
-                </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-500 mb-1.5 block">
+                Pricing Method
+              </Label>
+              <div className="flex flex-wrap gap-1.5">
+                {PRICING_PILLS.map((opt) => {
+                  const isSelected = formData.pricing_method === opt.id
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => handlePricingMethodSelect(opt)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
+                        isSelected
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
-          )}
 
-          {/* TAB 3: PRICING & MARGIN */}
-          {formTab === 'pricing' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Pricing Method (কী নিয়মে বিল হবে) <span className="text-rose-500">*</span>
-                  </Label>
-                  <select
-                    value={formData.pricing_method}
-                    onChange={(e) => setFormData({ ...formData, pricing_method: e.target.value as PricingMethod })}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold capitalize"
-                  >
-                    {PRICING_METHOD_OPTIONS.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.label} ({m.example})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Default Selling Rate (৳ BDT) <span className="text-rose-500">*</span>
-                  </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Selling Price <span className="text-rose-500">*</span>
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-sm font-bold text-slate-400">৳</span>
                   <Input
                     type="number"
                     step="0.1"
+                    placeholder="0.00"
                     value={formData.selling_price || ''}
                     onChange={(e) => setFormData({ ...formData, selling_price: Number(e.target.value) })}
-                    className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
+                    className="pl-7 pr-16 text-sm font-bold font-mono h-9 text-blue-600 dark:text-blue-400"
                     required
                   />
-                  <span className="text-[10px] text-slate-400">per 1 {formData.selling_unit}</span>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Target Margin %</Label>
-                  <Input
-                    type="number"
-                    step="1"
-                    value={formData.target_margin_percentage || ''}
-                    onChange={(e) => setFormData({ ...formData, target_margin_percentage: Number(e.target.value) })}
-                    className="text-xs h-9 font-mono font-semibold"
-                  />
-                  <span className="text-[10px] text-slate-400">Gross margin target %</span>
+                  <span className="absolute right-3 top-2.5 text-xs text-slate-500 font-medium">
+                    / {formData.selling_unit || 'unit'}
+                  </span>
                 </div>
               </div>
 
-              {/* Advisory Suggested Selling Price Card */}
-              <div className="p-3.5 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                    <Sparkles className="h-4 w-4 text-emerald-600" />
-                    <span>Advisory Suggested Selling Price: ৳{liveCommercialMath.suggestedSellingPrice} / {formData.selling_unit}</span>
-                  </div>
-                  <p className="text-[11px] text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">
-                    Derived from cost basis ৳{liveCommercialMath.costBasis} ({liveCommercialMath.costBasisType === 'direct_cost' ? 'Direct Job Cost' : 'Material Cost'}) @ {formData.target_margin_percentage}% target gross margin.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setFormData({ ...formData, selling_price: liveCommercialMath.suggestedSellingPrice })}
-                  className="text-xs bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs shrink-0"
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Sell By (Selling Unit)
+                </Label>
+                <select
+                  value={formData.selling_unit}
+                  onChange={(e) => setFormData({ ...formData, selling_unit: e.target.value, unit: e.target.value as UnitOfMeasure })}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium uppercase font-mono"
                 >
-                  Apply Suggested Price
-                </Button>
+                  {COMMON_SELLING_UNITS.map((u) => (
+                    <option key={u.code} value={u.code}>
+                      {u.name} ({u.code})
+                    </option>
+                  ))}
+                </select>
               </div>
+            </div>
+          </div>
 
-              {/* Separation of 3 Minimums */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+          {/* STEP 4: OPTIONAL ADVANCED SETTINGS */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pt-1">
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Advanced Settings (Optional)
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Optional settings for purchasing, production allowances, minimums, costing and components.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {!liveCommercialMath.isService && (
+                <button
+                  type="button"
+                  onClick={() => toggleSection('purchasing')}
+                  className={cn(
+                    'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
+                    expandedSections.purchasing
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                  )}
+                >
+                  <span>Purchasing</span>
+                  {expandedSections.purchasing ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                </button>
+              )}
+
+              {(formData.requires_production || formData.commercial_type === 'production_product' || formData.commercial_type === 'fabrication' || formData.commercial_type === 'material') && (
+                <button
+                  type="button"
+                  onClick={() => toggleSection('production')}
+                  className={cn(
+                    'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
+                    expandedSections.production
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                  )}
+                >
+                  <span>Production</span>
+                  {expandedSections.production ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => toggleSection('minimums')}
+                className={cn(
+                  'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
+                  expandedSections.minimums
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                )}
+              >
+                <span>Minimums</span>
+                {expandedSections.minimums ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => toggleSection('costing')}
+                className={cn(
+                  'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
+                  expandedSections.costing
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                  )}
+              >
+                <span>Costing</span>
+                {expandedSections.costing ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => toggleSection('components')}
+                className={cn(
+                  'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
+                  expandedSections.components
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                )}
+              >
+                <span>Components ({formData.components?.length || 0})</span>
+                {expandedSections.components ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </button>
+            </div>
+
+            {/* SUBSECTION A: PURCHASING & MEDIA SPECS */}
+            {expandedSections.purchasing && !liveCommercialMath.isService && (
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Purchasing & Material Conversion
+                  </span>
+                  <span className="text-[11px] text-slate-500">How you buy raw materials</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Purchase Unit</Label>
+                    <select
+                      value={formData.purchase_unit}
+                      onChange={(e) => setFormData({ ...formData, purchase_unit: e.target.value })}
+                      className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium uppercase font-mono"
+                    >
+                      {COMMON_PURCHASE_UNITS.map((u) => (
+                        <option key={u.code} value={u.code}>
+                          {u.name} ({u.code})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Purchase Price (৳ BDT)</Label>
+                    <Input
+                      type="number"
+                      step="1"
+                      value={formData.purchase_price || ''}
+                      onChange={(e) => setFormData({ ...formData, purchase_price: Number(e.target.value) })}
+                      className="text-xs h-9 font-mono font-bold"
+                    />
+                    <span className="text-[10px] text-slate-400">per 1 {formData.purchase_unit}</span>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Conversion Ratio
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={formData.conversion_ratio || ''}
+                      onChange={(e) => setFormData({ ...formData, conversion_ratio: Number(e.target.value) })}
+                      className="text-xs h-9 font-mono font-bold"
+                    />
+                    <span className="text-[10px] text-slate-400">
+                      1 {formData.purchase_unit} = {formData.conversion_ratio} {formData.selling_unit}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Roll Dimension Helper */}
+                {formData.purchase_unit === 'roll' && (
+                  <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                        Roll Dimension Helper (1 Roll Area)
+                      </span>
+                      <Badge variant="outline" className="text-[10px] font-mono bg-white">
+                        {formData.roll_width_ft}ft × {formData.roll_length_ft}ft = {Math.round((formData.roll_width_ft || 0) * (formData.roll_length_ft || 0))} sqft
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Roll Width (Feet)</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          value={formData.roll_width_ft || ''}
+                          onChange={(e) => {
+                            const w = Number(e.target.value) || 0
+                            const l = formData.roll_length_ft || 0
+                            const ratio = Math.round(w * l)
+                            setFormData({ ...formData, roll_width_ft: w, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
+                          }}
+                          className="text-xs h-8 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Roll Length (Feet)</Label>
+                        <Input
+                          type="number"
+                          step="1"
+                          value={formData.roll_length_ft || ''}
+                          onChange={(e) => {
+                            const l = Number(e.target.value) || 0
+                            const w = formData.roll_width_ft || 0
+                            const ratio = Math.round(w * l)
+                            setFormData({ ...formData, roll_length_ft: l, conversion_ratio: ratio > 0 ? ratio : formData.conversion_ratio })
+                          }}
+                          className="text-xs h-8 font-mono"
+                        />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <Label className="text-[11px] font-semibold mb-1 block">Derived Ratio</Label>
+                        <div className="h-8 px-3 rounded-md bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 flex items-center font-mono font-bold text-xs text-blue-700 dark:text-blue-300">
+                          {formData.conversion_ratio} sqft / roll
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* SUBSECTION B: PRODUCTION DETAILS */}
+            {expandedSections.production && (
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
                 <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
-                  3-Way Minimum Controls (MOQ vs Min Billable Qty vs Min Charge)
+                  Production Rules & Geometric Allowances
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Extra Width Needed for Production (Allowance)
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.05"
+                      placeholder="e.g. 0.25 ft"
+                      value={formData.dimensions_spec ? (formData.dimensions_spec.includes('x') ? formData.dimensions_spec.split('x')[0] : '') : '0.25'}
+                      onChange={(e) => {
+                        const w = e.target.value
+                        const l = formData.dimensions_spec?.includes('x') ? formData.dimensions_spec.split('x')[1] : '0.25'
+                        setFormData({ ...formData, dimensions_spec: `${w}x${l}` })
+                      }}
+                      className="text-xs h-9 font-mono"
+                    />
+                    <span className="text-[10px] text-slate-400">Bleed / grip allowance (feet)</span>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Extra Length Needed for Production (Allowance)
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.05"
+                      placeholder="e.g. 0.25 ft"
+                      value={formData.dimensions_spec ? (formData.dimensions_spec.includes('x') ? formData.dimensions_spec.split('x')[1] : '') : '0.25'}
+                      onChange={(e) => {
+                        const l = e.target.value
+                        const w = formData.dimensions_spec?.includes('x') ? formData.dimensions_spec.split('x')[0] : '0.25'
+                        setFormData({ ...formData, dimensions_spec: `${w}x${l}` })
+                      }}
+                      className="text-xs h-9 font-mono"
+                    />
+                    <span className="text-[10px] text-slate-400">Lead / tail allowance (feet)</span>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Expected Production Wastage (%)
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      value={formData.default_wastage_percentage || ''}
+                      onChange={(e) => setFormData({ ...formData, default_wastage_percentage: Number(e.target.value) })}
+                      className="text-xs h-9 font-mono font-bold"
+                    />
+                    <span className="text-[10px] text-slate-400">Statistical scrap (e.g. 5%)</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={formData.requires_design}
+                      onChange={(e) => setFormData({ ...formData, requires_design: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>Requires Design</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={formData.requires_approval}
+                      onChange={(e) => setFormData({ ...formData, requires_approval: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>Requires Approval</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={formData.requires_production}
+                      onChange={(e) => setFormData({ ...formData, requires_production: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>Requires Production</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={formData.requires_fabrication}
+                      onChange={(e) => setFormData({ ...formData, requires_fabrication: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>Requires Fabrication</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={formData.requires_finishing}
+                      onChange={(e) => setFormData({ ...formData, requires_finishing: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>Requires Finishing</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={formData.requires_installation}
+                      onChange={(e) => setFormData({ ...formData, requires_installation: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>Requires Installation</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* SUBSECTION C: MINIMUM CHARGES */}
+            {expandedSections.minimums && (
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
+                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                  3-Way Minimum Separation (MOQ vs Min Billable Qty vs Min Charge)
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
@@ -2410,13 +2704,11 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, min_order_quantity: Number(e.target.value) })}
                       className="text-xs h-9 font-mono"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Physical quantity cutoff (e.g. 1 pc)
-                    </span>
+                    <span className="text-[10px] text-slate-400">Order cutoff (e.g. 1 pc)</span>
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block">2. Min Billable Qty</Label>
+                    <Label className="text-xs font-semibold mb-1 block">2. Minimum Quantity You Charge For</Label>
                     <Input
                       type="number"
                       step="1"
@@ -2424,9 +2716,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, min_billable_quantity: Number(e.target.value) })}
                       className="text-xs h-9 font-mono text-amber-600 font-bold"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Billing quantity floor (e.g. 20 sqft min for 12 sqft order)
-                    </span>
+                    <span className="text-[10px] text-slate-400">Billing floor (e.g. 20 sqft min)</span>
                   </div>
 
                   <div>
@@ -2438,202 +2728,21 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, minimum_charge: Number(e.target.value) })}
                       className="text-xs h-9 font-mono font-bold text-blue-600"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Monetary line item floor (e.g. ৳500 min charge)
-                    </span>
+                    <span className="text-[10px] text-slate-400">Money floor (e.g. ৳500 min)</span>
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* 5-Tier Pricing Matrix */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
-                  Price-Tier Architecture (5 Customer Rates)
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-xs">
-                  <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Retail Rate</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.price_tiers?.retail ?? formData.selling_price}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          price_tiers: { ...formData.price_tiers, retail: Number(e.target.value) },
-                        })
-                      }
-                      className="text-xs h-8 font-mono font-bold"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Corporate Rate</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.price_tiers?.corporate ?? ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          price_tiers: { ...formData.price_tiers, corporate: Number(e.target.value) },
-                        })
-                      }
-                      className="text-xs h-8 font-mono font-bold"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Dealer Rate</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.price_tiers?.dealer ?? ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          price_tiers: { ...formData.price_tiers, dealer: Number(e.target.value) },
-                        })
-                      }
-                      className="text-xs h-8 font-mono font-bold"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Wholesale Rate</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.price_tiers?.wholesale ?? ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          price_tiers: { ...formData.price_tiers, wholesale: Number(e.target.value) },
-                        })
-                      }
-                      className="text-xs h-8 font-mono font-bold"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Custom Rate</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.price_tiers?.custom ?? ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          price_tiers: { ...formData.price_tiers, custom: Number(e.target.value) },
-                        })
-                      }
-                      className="text-xs h-8 font-mono font-bold"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Low-Margin Protection Controls */}
-              <div className="p-3.5 bg-rose-50/50 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900/40 space-y-2.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-rose-900 dark:text-rose-200 flex items-center gap-1.5">
-                    <ShieldAlert className="h-4 w-4 text-rose-600" />
-                    Low-Margin Approval & Safety Protection
-                  </span>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.allow_manual_override}
-                      onChange={(e) => setFormData({ ...formData, allow_manual_override: e.target.checked })}
-                      className="rounded"
-                    />
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">Allow Manual Override</span>
-                  </label>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Minimum Allowed Margin (%)</Label>
-                    <Input
-                      type="number"
-                      step="1"
-                      value={formData.min_allowed_margin_percent || 15}
-                      onChange={(e) => setFormData({ ...formData, min_allowed_margin_percent: Number(e.target.value) })}
-                      className="text-xs h-8 font-mono font-bold text-rose-700 dark:text-rose-400"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Minimum Price Floor (৳ BDT)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.min_price || ''}
-                      onChange={(e) => setFormData({ ...formData, min_price: Number(e.target.value) })}
-                      className="text-xs h-8 font-mono font-bold text-amber-600"
-                    />
-                  </div>
-                </div>
-                <p className="text-[11px] text-rose-700/80 dark:text-rose-300/80">
-                  Quotes or invoice lines with selling prices below the allowed margin percentage trigger an approval requirement and audit trail.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: COSTING & YIELD */}
-          {formTab === 'costing' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Purchase Price (৳ BDT per {formData.purchase_unit || 'Unit'})
-                  </Label>
-                  <Input
-                    type="number"
-                    step="1"
-                    disabled={liveCommercialMath.isService}
-                    value={formData.purchase_price || ''}
-                    onChange={(e) => setFormData({ ...formData, purchase_price: Number(e.target.value) })}
-                    className="text-xs h-9 font-mono font-bold text-slate-800 dark:text-slate-200 disabled:opacity-50"
-                  />
-                  <span className="text-[11px] text-slate-400 mt-0.5 block">
-                    Supplier buying rate per 1 {formData.purchase_unit}
-                  </span>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Default Expected Wastage (%)
-                  </Label>
-                  <Input
-                    type="number"
-                    step="0.5"
-                    disabled={liveCommercialMath.isService}
-                    value={formData.default_wastage_percentage || ''}
-                    onChange={(e) => setFormData({ ...formData, default_wastage_percentage: Number(e.target.value) })}
-                    className="text-xs h-9 font-mono font-bold disabled:opacity-50"
-                  />
-                  <span className="text-[11px] text-slate-400 mt-0.5 block">
-                    Standard edge scrap / lead trim (e.g. 5%)
-                  </span>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Effective Base Material Cost (COGS)
-                  </Label>
-                  <div className="h-9 px-3 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center font-mono font-bold text-xs text-slate-900 dark:text-white">
-                    ৳{liveCommercialMath.effectiveMaterialCost} / {formData.selling_unit}
-                  </div>
-                  <span className="text-[11px] text-slate-400 mt-0.5 block">
-                    Calculated: Purchase Price ÷ Expected Usable Yield
-                  </span>
-                </div>
-              </div>
-
-              {/* Direct Cost Component Breakdown */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+            {/* SUBSECTION D: COSTING & MARGINS */}
+            {expandedSections.costing && (
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
-                    Direct Job Cost Components (per {formData.selling_unit})
+                    Direct Cost Breakdown & Target Margins
                   </span>
                   <Badge variant="outline" className="text-[10px] font-mono">
-                    Total Direct: ৳{liveCommercialMath.totalDirectCost}
+                    Total Cost: ৳{liveCommercialMath.totalDirectCost} / {formData.selling_unit}
                   </Badge>
                 </div>
 
@@ -2744,306 +2853,142 @@ export default function ProductsCatalogPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Other Direct</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={formData.cost_breakdown?.other_direct_cost || ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          cost_breakdown: { ...formData.cost_breakdown, other_direct_cost: Number(e.target.value) },
-                        })
-                      }
-                      className="text-xs h-8 font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Cost Basis & Yield Indicator */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
-                <div className="flex justify-between font-bold text-slate-900 dark:text-white">
-                  <span>Margin Basis Declaration:</span>
-                  <span className="font-mono text-blue-600">
-                    Margin Based On: {liveCommercialMath.costBasisType === 'direct_cost' ? 'Estimated Direct Cost' : 'Material Cost'} (৳{liveCommercialMath.costBasis})
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-400">Gross Usable Units (after {formData.default_wastage_percentage || 0}% waste):</span>
-                  <span className="font-mono font-bold text-blue-600">{liveCommercialMath.usableUnits} {formData.selling_unit}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-400">Calculated Gross Margin at ৳{formData.selling_price}:</span>
-                  <span className="font-mono font-bold text-emerald-600">{liveCommercialMath.grossMarginPercent}%</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 5: COMPONENTS / RECIPE / BUNDLE */}
-          {formTab === 'components' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Compound Deliverable / Bill of Materials (BOM)
-                  </h4>
-                  <p className="text-[11px] text-slate-500">
-                    Define child components, sub-assemblies, and finishing operations (e.g. X-Stand, LED Sign).
-                  </p>
-                </div>
-                <Badge variant="outline" className="font-mono text-xs">
-                  Recipe Rollup: ৳{liveCommercialMath.componentsCost}
-                </Badge>
-              </div>
-
-              {/* Component Rows Table */}
-              {formData.components && formData.components.length > 0 ? (
-                <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 dark:bg-slate-800 font-semibold text-slate-600 dark:text-slate-300">
-                      <tr>
-                        <th className="py-2 px-3">Component / Material</th>
-                        <th className="py-2 px-2">Qty</th>
-                        <th className="py-2 px-2">Unit</th>
-                        <th className="py-2 px-2">Waste %</th>
-                        <th className="py-2 px-2">Cost (৳)</th>
-                        <th className="py-2 px-2">Role</th>
-                        <th className="py-2 px-3 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
-                      {formData.components.map((comp, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3 font-sans font-semibold text-slate-900 dark:text-white">
-                            {comp.name || 'Component'}
-                          </td>
-                          <td className="py-2 px-2">{comp.quantity}</td>
-                          <td className="py-2 px-2 uppercase">{comp.unit}</td>
-                          <td className="py-2 px-2">{comp.waste_percent || 0}%</td>
-                          <td className="py-2 px-2">৳{comp.cost_contribution}</td>
-                          <td className="py-2 px-2 font-sans capitalize">{comp.production_role || 'material'}</td>
-                          <td className="py-2 px-3 text-right font-sans">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = [...formData.components]
-                                next.splice(idx, 1)
-                                setFormData({ ...formData, components: next })
-                              }}
-                              className="text-rose-600 hover:text-rose-800 p-1"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="p-4 text-center border border-dashed rounded-lg text-xs text-slate-400">
-                  No child components configured. Simple standalone products do not require components.
-                </div>
-              )}
-
-              {/* Add Component Sub-Form */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5">
-                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block uppercase">
-                  Add Component Item
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs">
-                  <div className="col-span-2">
-                    <Label className="text-[10px] mb-0.5 block">Item / Service Name</Label>
-                    <Input
-                      placeholder="e.g. X-Stand Hardware"
-                      value={newComponent.name}
-                      onChange={(e) => setNewComponent({ ...newComponent, name: e.target.value })}
-                      className="text-xs h-8"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] mb-0.5 block">Qty</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={newComponent.quantity}
-                      onChange={(e) => setNewComponent({ ...newComponent, quantity: Number(e.target.value) })}
-                      className="text-xs h-8 font-mono"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] mb-0.5 block">Unit</Label>
-                    <Input
-                      placeholder="pcs"
-                      value={newComponent.unit}
-                      onChange={(e) => setNewComponent({ ...newComponent, unit: e.target.value })}
-                      className="text-xs h-8 uppercase font-mono"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] mb-0.5 block">Cost (৳)</Label>
+                    <Label className="text-[11px] font-semibold mb-1 block">Target Margin %</Label>
                     <Input
                       type="number"
                       step="1"
-                      value={newComponent.cost_contribution}
-                      onChange={(e) => setNewComponent({ ...newComponent, cost_contribution: Number(e.target.value) })}
-                      className="text-xs h-8 font-mono"
+                      value={formData.target_margin_percentage || ''}
+                      onChange={(e) => setFormData({ ...formData, target_margin_percentage: Number(e.target.value) })}
+                      className="text-xs h-8 font-mono font-bold"
                     />
                   </div>
-                  <div>
-                    <Label className="text-[10px] mb-0.5 block">Role</Label>
-                    <select
-                      value={newComponent.production_role}
-                      onChange={(e) => setNewComponent({ ...newComponent, production_role: e.target.value })}
-                      className="w-full h-8 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-[11px] px-1"
-                    >
-                      <option value="material">Material</option>
-                      <option value="hardware">Hardware</option>
-                      <option value="graphic">Graphic</option>
-                      <option value="finishing">Finishing</option>
-                      <option value="assembly">Assembly</option>
-                      <option value="installation">Installation</option>
-                    </select>
-                  </div>
                 </div>
-                <div className="flex justify-end pt-1">
+
+                {/* Suggested Price Card */}
+                <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                      <Sparkles className="h-4 w-4 text-emerald-600" />
+                      <span>Suggested Selling Price: ৳{liveCommercialMath.suggestedSellingPrice} / {formData.selling_unit}</span>
+                    </div>
+                    <p className="text-[11px] text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">
+                      Based on cost ৳{liveCommercialMath.costBasis} @ {formData.target_margin_percentage}% margin.
+                    </p>
+                  </div>
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() => {
-                      if (!newComponent.name?.trim()) return
-                      setFormData({
-                        ...formData,
-                        components: [...(formData.components || []), { ...newComponent }],
-                      })
-                      setNewComponent({
-                        component_product_id: '',
-                        name: '',
-                        quantity: 1,
-                        unit: 'pcs',
-                        waste_percent: 0,
-                        cost_contribution: 0,
-                        is_optional: false,
-                        production_role: 'material',
-                      })
-                    }}
-                    className="text-xs h-8 bg-blue-600 hover:bg-blue-700"
+                    variant="outline"
+                    onClick={() => setFormData({ ...formData, selling_price: liveCommercialMath.suggestedSellingPrice })}
+                    className="text-xs bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs shrink-0"
                   >
-                    <Plus className="h-3 w-3 mr-1" /> Append Component
+                    Apply Suggested Price
                   </Button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* TAB 6: SUPPLIER PURCHASE ECONOMICS */}
-          {formTab === 'suppliers' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Supplier-Specific Purchase Economics
-                  </h4>
-                  <p className="text-[11px] text-slate-500">
-                    Track procurement tariffs and lead times across Bangladeshi material suppliers.
-                  </p>
+            {/* SUBSECTION E: MATERIALS & COMPONENTS */}
+            {expandedSections.components && (
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Materials & Components (Recipe / BOM)
+                  </span>
+                  <Badge variant="outline" className="font-mono text-xs">
+                    Rollup: ৳{liveCommercialMath.componentsCost}
+                  </Badge>
                 </div>
-              </div>
 
-              {/* Active Supplier Tariffs */}
-              {supplierPrices.length > 0 ? (
-                <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 dark:bg-slate-800 font-semibold text-slate-600 dark:text-slate-300">
-                      <tr>
-                        <th className="py-2 px-3">Supplier Name</th>
-                        <th className="py-2 px-2">Unit</th>
-                        <th className="py-2 px-2">Conversion</th>
-                        <th className="py-2 px-2">Price (৳)</th>
-                        <th className="py-2 px-2">MOQ</th>
-                        <th className="py-2 px-2">Lead Time</th>
-                        <th className="py-2 px-3 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
-                      {supplierPrices.map((sp) => (
-                        <tr key={sp.id} className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3 font-sans font-semibold text-slate-900 dark:text-white">
-                            {sp.supplier_name}
-                          </td>
-                          <td className="py-2 px-2 uppercase">{sp.purchase_unit}</td>
-                          <td className="py-2 px-2">{sp.conversion_ratio}</td>
-                          <td className="py-2 px-2 font-bold text-blue-600">৳{sp.purchase_price}</td>
-                          <td className="py-2 px-2">{sp.moq}</td>
-                          <td className="py-2 px-2">{sp.lead_time_days || 0} days</td>
-                          <td className="py-2 px-3 text-right font-sans">
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                if (sp.id && companyId) {
-                                  await deleteProductSupplierPriceAction(sp.id, companyId)
-                                  if (editingProduct) loadSupplierPrices(editingProduct.id)
-                                }
-                              }}
-                              className="text-rose-600 hover:text-rose-800 p-1"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </td>
+                {/* Components Table */}
+                {formData.components && formData.components.length > 0 ? (
+                  <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-slate-50 dark:bg-slate-800 font-semibold text-slate-600 dark:text-slate-300">
+                        <tr>
+                          <th className="py-2 px-3">Item Name</th>
+                          <th className="py-2 px-2">Qty</th>
+                          <th className="py-2 px-2">Unit</th>
+                          <th className="py-2 px-2">Cost (৳)</th>
+                          <th className="py-2 px-2">Role</th>
+                          <th className="py-2 px-3 text-right">Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="p-4 text-center border border-dashed rounded-lg text-xs text-slate-400">
-                  No multi-supplier tariffs registered yet. Default master purchase price applies.
-                </div>
-              )}
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                        {formData.components.map((comp, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50/50">
+                            <td className="py-2 px-3 font-sans font-semibold text-slate-900 dark:text-white">
+                              {comp.name || 'Component'}
+                            </td>
+                            <td className="py-2 px-2">{comp.quantity}</td>
+                            <td className="py-2 px-2 uppercase">{comp.unit}</td>
+                            <td className="py-2 px-2">৳{comp.cost_contribution}</td>
+                            <td className="py-2 px-2 font-sans capitalize">{comp.production_role || 'material'}</td>
+                            <td className="py-2 px-3 text-right font-sans">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = [...formData.components]
+                                  next.splice(idx, 1)
+                                  setFormData({ ...formData, components: next })
+                                }}
+                                className="text-rose-600 hover:text-rose-800 p-1"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="p-3 text-center border border-dashed rounded-lg text-xs text-slate-400">
+                    No child components added. Simple products do not require components.
+                  </div>
+                )}
 
-              {/* Add Supplier Quote */}
-              {editingProduct ? (
-                <div className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5">
+                {/* Add Component Subform */}
+                <div className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
                   <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block uppercase">
-                    Register Supplier Tariff Quote
+                    Add Component Item
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                     <div className="col-span-2 sm:col-span-2">
-                      <Label className="text-[10px] mb-0.5 block">Supplier / Vendor Name</Label>
+                      <Label className="text-[10px] mb-0.5 block">Item Name</Label>
                       <Input
-                        placeholder="e.g. Star Media Import Ltd"
-                        value={newSupplier.supplier_name}
-                        onChange={(e) => setNewSupplier({ ...newSupplier, supplier_name: e.target.value })}
+                        placeholder="e.g. X-Stand Hardware"
+                        value={newComponent.name}
+                        onChange={(e) => setNewComponent({ ...newComponent, name: e.target.value })}
                         className="text-xs h-8"
                       />
                     </div>
                     <div>
-                      <Label className="text-[10px] mb-0.5 block">Purchase Unit</Label>
+                      <Label className="text-[10px] mb-0.5 block">Qty</Label>
                       <Input
-                        value={newSupplier.purchase_unit}
-                        onChange={(e) => setNewSupplier({ ...newSupplier, purchase_unit: e.target.value })}
+                        type="number"
+                        step="0.1"
+                        value={newComponent.quantity}
+                        onChange={(e) => setNewComponent({ ...newComponent, quantity: Number(e.target.value) })}
+                        className="text-xs h-8 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] mb-0.5 block">Unit</Label>
+                      <Input
+                        placeholder="pcs"
+                        value={newComponent.unit}
+                        onChange={(e) => setNewComponent({ ...newComponent, unit: e.target.value })}
                         className="text-xs h-8 uppercase font-mono"
                       />
                     </div>
                     <div>
-                      <Label className="text-[10px] mb-0.5 block">Rate (৳ / Unit)</Label>
+                      <Label className="text-[10px] mb-0.5 block">Cost (৳)</Label>
                       <Input
                         type="number"
                         step="1"
-                        value={newSupplier.purchase_price}
-                        onChange={(e) => setNewSupplier({ ...newSupplier, purchase_price: Number(e.target.value) })}
-                        className="text-xs h-8 font-mono font-bold"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] mb-0.5 block">Lead Time (Days)</Label>
-                      <Input
-                        type="number"
-                        step="1"
-                        value={newSupplier.lead_time_days}
-                        onChange={(e) => setNewSupplier({ ...newSupplier, lead_time_days: Number(e.target.value) })}
+                        value={newComponent.cost_contribution}
+                        onChange={(e) => setNewComponent({ ...newComponent, cost_contribution: Number(e.target.value) })}
                         className="text-xs h-8 font-mono"
                       />
                     </div>
@@ -3052,195 +2997,32 @@ export default function ProductsCatalogPage() {
                     <Button
                       type="button"
                       size="sm"
-                      onClick={async () => {
-                        if (!newSupplier.supplier_name.trim() || !editingProduct) return
-                        await saveProductSupplierPriceAction({
-                          product_id: editingProduct.id,
-                          supplier_name: newSupplier.supplier_name.trim(),
-                          purchase_unit: newSupplier.purchase_unit,
-                          conversion_ratio: newSupplier.conversion_ratio,
-                          purchase_price: newSupplier.purchase_price,
-                          moq: newSupplier.moq,
-                          lead_time_days: newSupplier.lead_time_days,
-                          notes: newSupplier.notes,
-                        }, companyId)
-                        setNewSupplier({
-                          supplier_name: '',
-                          supplier_sku: '',
-                          purchase_unit: 'roll',
-                          conversion_ratio: 1640,
-                          purchase_price: 8500,
-                          moq: 1,
-                          lead_time_days: 2,
-                          notes: '',
+                      onClick={() => {
+                        if (!newComponent.name?.trim()) return
+                        setFormData({
+                          ...formData,
+                          components: [...(formData.components || []), { ...newComponent }],
                         })
-                        loadSupplierPrices(editingProduct.id)
+                        setNewComponent({
+                          component_product_id: '',
+                          name: '',
+                          quantity: 1,
+                          unit: 'pcs',
+                          waste_percent: 0,
+                          cost_contribution: 0,
+                          is_required: true,
+                          production_role: 'material',
+                        })
                       }}
-                      className="text-xs h-8 bg-blue-600 hover:bg-blue-700"
+                      className="text-xs h-8 bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                      <Plus className="h-3 w-3 mr-1" /> Add Supplier Quote
+                      <Plus className="h-3 w-3 mr-1" /> Add Component
                     </Button>
                   </div>
                 </div>
-              ) : (
-                <p className="text-[11px] text-slate-400">
-                  Save the product master first to register multi-supplier purchase tariffs.
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* TAB 7: PRODUCTION ROUTING */}
-          {formTab === 'production' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Default Department</Label>
-                  <select
-                    value={formData.default_department}
-                    onChange={(e) => setFormData({ ...formData, default_department: e.target.value })}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-                  >
-                    <option value="printing">Large Format Printing</option>
-                    <option value="fabrication">Metal / Acrylic Fabrication</option>
-                    <option value="finishing">Finishing & Binding</option>
-                    <option value="design">Pre-Press & Design</option>
-                    <option value="installation">Site Installation</option>
-                  </select>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Est. Production Time (Hours)</Label>
-                  <Input
-                    type="number"
-                    step="0.5"
-                    value={formData.estimated_production_time_hours || ''}
-                    onChange={(e) => setFormData({ ...formData, estimated_production_time_hours: Number(e.target.value) })}
-                    className="text-xs h-9 font-mono"
-                  />
-                </div>
               </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={formData.requires_design}
-                    onChange={(e) => setFormData({ ...formData, requires_design: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Requires Design</span>
-                </label>
-
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={formData.requires_approval}
-                    onChange={(e) => setFormData({ ...formData, requires_approval: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Requires Approval</span>
-                </label>
-
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={formData.requires_production}
-                    onChange={(e) => setFormData({ ...formData, requires_production: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Requires Production</span>
-                </label>
-
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={formData.requires_fabrication}
-                    onChange={(e) => setFormData({ ...formData, requires_fabrication: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Requires Fabrication</span>
-                </label>
-
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={formData.requires_finishing}
-                    onChange={(e) => setFormData({ ...formData, requires_finishing: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Requires Finishing</span>
-                </label>
-
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={formData.requires_installation}
-                    onChange={(e) => setFormData({ ...formData, requires_installation: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Requires Installation</span>
-                </label>
-
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={formData.requires_delivery}
-                    onChange={(e) => setFormData({ ...formData, requires_delivery: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Requires Delivery</span>
-                </label>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 8: ADVANCED SPECIFICATIONS */}
-          {formTab === 'advanced' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Material Specification</Label>
-                  <Input
-                    placeholder="e.g. 280 GSM Frontlit Chinese Media"
-                    value={formData.material_spec}
-                    onChange={(e) => setFormData({ ...formData, material_spec: e.target.value })}
-                    className="text-xs h-9"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Default Finishing Notes</Label>
-                  <Input
-                    placeholder="e.g. 1-inch hem on all four sides + eyelets every 2.5 ft"
-                    value={formData.default_finishing}
-                    onChange={(e) => setFormData({ ...formData, default_finishing: e.target.value })}
-                    className="text-xs h-9"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">Production Instructions</Label>
-                <Input
-                  placeholder="Notes for print-operators and fabrication team..."
-                  value={formData.production_instructions}
-                  onChange={(e) => setFormData({ ...formData, production_instructions: e.target.value })}
-                  className="text-xs h-9"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">Internal Management Notes</Label>
-                <Input
-                  placeholder="Confidential supplier notes or procurement lead times..."
-                  value={formData.internal_notes}
-                  onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
-                  className="text-xs h-9"
-                />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Footer Action */}
           <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
@@ -3252,15 +3034,13 @@ export default function ProductsCatalogPage() {
             >
               Cancel
             </Button>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="w-full sm:w-auto text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm"
-              >
-                {isPending ? 'Saving Master...' : editingProduct ? 'Update Commercial Master' : 'Register Commercial Master'}
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="w-full sm:w-auto text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm"
+            >
+              {isPending ? 'Saving...' : editingProduct ? 'Update Product' : 'Save Product'}
+            </Button>
           </div>
         </form>
       </ModalDialog>
