@@ -47,6 +47,7 @@ import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { MoneyReceiptModal } from '@/components/billing/money-receipt-modal'
 import {
   updateCustomerAction,
+  toggleCustomerActiveAction,
   resolveCustomerRatesAction,
   getCustomerFinancialSummaryAction,
   getCustomerTimelineAction,
@@ -245,6 +246,31 @@ export default function CustomerProfilePage() {
     }
   }
 
+  // Handle Toggle Customer Active / Inactive Status
+  const [isTogglingActive, setIsTogglingActive] = useState(false)
+  const handleToggleActive = async () => {
+    if (!companyId || !customer) return
+    const newStatus = customer.is_active === false
+    const actionName = newStatus ? 'Reactivate' : 'Deactivate'
+    if (!confirm(`Are you sure you want to ${actionName.toLowerCase()} "${customer.name}"?`)) return
+
+    setIsTogglingActive(true)
+    try {
+      const res = await toggleCustomerActiveAction(customer.id, newStatus, companyId)
+      if (res.success && res.data) {
+        setCustomer(res.data)
+        showNotification(`Customer successfully ${newStatus ? 'reactivated' : 'deactivated'}.`)
+        loadCustomerData()
+      } else {
+        alert(res.error || `Failed to ${actionName.toLowerCase()} customer.`)
+      }
+    } catch {
+      alert(`Network error while attempting to ${actionName.toLowerCase()} customer.`)
+    } finally {
+      setIsTogglingActive(false)
+    }
+  }
+
   // Handle Record Payment
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -365,6 +391,17 @@ export default function CustomerProfilePage() {
   const custType = customer.customer_category || customer.customer_type || 'retail'
   const hasDue = financialSummary.totalDue > 0
 
+  const unpaidInvoices = invoices.filter(
+    (inv) => inv.status === 'unpaid' || inv.status === 'partially_paid' || Number(inv.due_amount) > 0
+  )
+  const openQuotations = quotations.filter(
+    (q) => q.status === 'draft' || q.status === 'sent' || (q.status as string) === 'pending'
+  )
+  const activeOrders = orders.filter(
+    (o) => o.status === 'pending' || o.status === 'in_production' || (o.status as string) === 'processing' || o.status === 'draft'
+  )
+  const hasOpenWork = unpaidInvoices.length > 0 || openQuotations.length > 0 || activeOrders.length > 0
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Back to Customer Directory link */}
@@ -420,6 +457,11 @@ export default function CustomerProfilePage() {
                 >
                   {custType}
                 </Badge>
+                {customer.is_active === false && (
+                  <Badge variant="destructive" className="text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800 border-rose-200">
+                    Inactive
+                  </Badge>
+                )}
               </div>
 
               {/* Company & Contact Person */}
@@ -486,7 +528,25 @@ export default function CustomerProfilePage() {
                   className="h-9 text-xs font-semibold"
                 >
                   <Edit2 className="h-3.5 w-3.5 mr-1.5" />
-                  Edit Customer
+                  Edit
+                </Button>
+              )}
+
+              {/* Deactivate / Reactivate Customer */}
+              {can('edit', 'customers') && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleToggleActive}
+                  disabled={isTogglingActive}
+                  className={cn(
+                    'h-9 text-xs font-semibold transition-colors',
+                    customer.is_active === false
+                      ? 'text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800'
+                      : 'text-slate-600 border-slate-200 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-rose-950/30'
+                  )}
+                >
+                  {customer.is_active === false ? 'Reactivate' : 'Deactivate'}
                 </Button>
               )}
             </div>
@@ -574,161 +634,326 @@ export default function CustomerProfilePage() {
 
       {/* 1. OVERVIEW TAB */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left 2 Cols: Invoices & Payments Highlights */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Recent Invoices */}
-            <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
-              <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-blue-600" />
-                  <span>Recent Invoices</span>
+        <div className="space-y-6">
+          {/* Open Work & Action Items Section */}
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+            <CardHeader className="p-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className={cn("h-4 w-4", hasDue ? "text-amber-500" : "text-blue-600")} />
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                  Open Business & Action Items
                 </CardTitle>
-                <button
-                  onClick={() => setActiveTab('invoices')}
-                  className="text-xs font-semibold text-blue-600 hover:underline flex items-center"
-                >
-                  View All &rarr;
-                </button>
-              </CardHeader>
-              <CardContent className="p-0">
-                {invoices.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-slate-400">
-                    No invoices generated yet for this customer.
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100 dark:divide-slate-900 text-xs">
-                    {invoices.slice(0, 5).map((inv) => (
-                      <div key={inv.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
-                        <div>
-                          <div className="font-bold text-slate-900 dark:text-white">
-                            {inv.invoice_number}
-                          </div>
-                          <div className="text-[11px] text-slate-400">
-                            {inv.invoice_date}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <div className="font-bold text-slate-900 dark:text-white">
-                              ৳{Number(inv.grand_total).toLocaleString('en-IN')}
-                            </div>
-                            {Number(inv.due_amount) > 0 && (
-                              <div className="text-[10px] text-rose-500 font-semibold">
-                                Due: ৳{Number(inv.due_amount).toLocaleString('en-IN')}
-                              </div>
-                            )}
-                          </div>
-
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              'text-[10px] capitalize',
-                              inv.status === 'paid' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                              inv.status === 'unpaid' && 'bg-rose-50 text-rose-700 border-rose-200',
-                              inv.status === 'partially_paid' && 'bg-amber-50 text-amber-700 border-amber-200'
-                            )}
-                          >
-                            {inv.status.replace('_', ' ')}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Recent Payments */}
-            <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
-              <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-emerald-600" />
-                  <span>Recent Payments</span>
-                </CardTitle>
-                <button
-                  onClick={() => setActiveTab('payments')}
-                  className="text-xs font-semibold text-blue-600 hover:underline flex items-center"
-                >
-                  View All &rarr;
-                </button>
-              </CardHeader>
-              <CardContent className="p-0">
-                {payments.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-slate-400">
-                    No payment receipts recorded yet.
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100 dark:divide-slate-900 text-xs">
-                    {payments.slice(0, 5).map((pay) => (
-                      <div key={pay.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
-                        <div>
-                          <div className="font-bold text-slate-900 dark:text-white">
-                            MR #{pay.receipt_number}
-                          </div>
-                          <div className="text-[11px] text-slate-400">
-                            {pay.payment_date} • via {pay.payment_method.toUpperCase()}
-                          </div>
-                        </div>
-
-                        <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
-                          ৳{Number(pay.amount).toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Col: Timeline & Quick Rate Snapshot */}
-          <div className="space-y-6">
-            {/* Quick Activity Timeline */}
-            <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
-              <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-purple-600" />
-                  <span>Recent Activity</span>
-                </CardTitle>
-                <button
-                  onClick={() => setActiveTab('activity')}
-                  className="text-xs font-semibold text-blue-600 hover:underline"
-                >
-                  Full History &rarr;
-                </button>
-              </CardHeader>
-              <CardContent className="p-4">
-                <CustomerTimeline events={timelineEvents.slice(0, 5)} />
-              </CardContent>
-            </Card>
-
-            {/* Rates Card Shortcut */}
-            <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <Tag className="h-3.5 w-3.5 text-blue-600" />
-                  <span>Special Pricing Configured</span>
-                </div>
-                <Badge variant="outline" className="text-[10px]">
-                  {rates.filter((r) => r.hasCustomRate).length} Custom Rates
-                </Badge>
               </div>
+              <Badge variant="outline" className="text-[10px] font-semibold">
+                {unpaidInvoices.length} Unpaid • {openQuotations.length} Open Quotes • {activeOrders.length} Active Orders
+              </Badge>
+            </CardHeader>
+            <CardContent className="p-4">
+              {!hasOpenWork ? (
+                <div className="p-4 text-center text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center justify-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <span>All customer accounts are settled — no outstanding dues, open quotes or active orders.</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Unpaid Invoices */}
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/30 dark:bg-slate-900/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-rose-500" />
+                        Unpaid Invoices ({unpaidInvoices.length})
+                      </span>
+                      {unpaidInvoices.length > 0 && (
+                        <button
+                          onClick={() => setIsRecordPayOpen(true)}
+                          className="text-[10px] font-bold text-emerald-600 hover:underline"
+                        >
+                          + Pay
+                        </button>
+                      )}
+                    </div>
+                    {unpaidInvoices.length === 0 ? (
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium py-2 flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> Account Settled (No unpaid invoices)
+                      </p>
+                    ) : (
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {unpaidInvoices.map((inv) => (
+                          <div
+                            key={inv.id}
+                            className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs"
+                          >
+                            <div>
+                              <Link
+                                href={`/${slug}/billing/invoices/${inv.id}`}
+                                className="font-bold text-blue-600 hover:underline flex items-center gap-1"
+                              >
+                                {inv.invoice_number}
+                              </Link>
+                              <div className="text-[10px] text-slate-400">
+                                {inv.invoice_date}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold text-rose-600 text-xs">
+                                Due ৳{Number(inv.due_amount).toLocaleString('en-IN')}
+                              </div>
+                              <div className="text-[9px] text-slate-400">
+                                Total ৳{Number(inv.grand_total).toLocaleString('en-IN')}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Automated rate fallback ensures this customer always gets their agreed rate on new quotations and invoices.
-              </p>
+                  {/* Open Quotations */}
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/30 dark:bg-slate-900/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Send className="h-3.5 w-3.5 text-amber-500" />
+                        Open Quotations ({openQuotations.length})
+                      </span>
+                      <Link
+                        href={`/${slug}/quotations/new?customerId=${customer.id}`}
+                        className="text-[10px] font-bold text-blue-600 hover:underline"
+                      >
+                        + New
+                      </Link>
+                    </div>
+                    {openQuotations.length === 0 ? (
+                      <p className="text-[11px] text-slate-400 py-2">No pending quotations</p>
+                    ) : (
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {openQuotations.map((q) => (
+                          <div
+                            key={q.id}
+                            className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs"
+                          >
+                            <div>
+                              <Link
+                                href={`/${slug}/quotations`}
+                                className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
+                              >
+                                {q.quotation_number}
+                              </Link>
+                              <div className="text-[10px] text-slate-400 capitalize">
+                                Status: {q.status}
+                              </div>
+                            </div>
+                            <div className="font-bold text-slate-900 dark:text-white text-xs">
+                              ৳{Number(q.grand_total).toLocaleString('en-IN')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setActiveTab('rates')}
-                className="w-full text-xs font-semibold h-8 text-blue-600"
-              >
-                Open Rates Sheet
-              </Button>
-            </Card>
+                  {/* Active Orders */}
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/30 dark:bg-slate-900/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <ShoppingBag className="h-3.5 w-3.5 text-cyan-500" />
+                        Active Orders ({activeOrders.length})
+                      </span>
+                      <Link
+                        href={`/${slug}/orders`}
+                        className="text-[10px] font-bold text-blue-600 hover:underline"
+                      >
+                        View
+                      </Link>
+                    </div>
+                    {activeOrders.length === 0 ? (
+                      <p className="text-[11px] text-slate-400 py-2">No active production orders</p>
+                    ) : (
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {activeOrders.map((ord) => (
+                          <div
+                            key={ord.id}
+                            className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs"
+                          >
+                            <div>
+                              <Link
+                                href={`/${slug}/orders`}
+                                className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
+                              >
+                                {ord.order_number}
+                              </Link>
+                              <div className="text-[10px] text-cyan-600 dark:text-cyan-400 capitalize">
+                                {ord.status.replace('_', ' ')}
+                              </div>
+                            </div>
+                            <div className="font-bold text-slate-900 dark:text-white text-xs">
+                              ৳{Number(ord.final_price || 0).toLocaleString('en-IN')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left 2 Cols: Invoices & Payments Highlights */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Recent Invoices */}
+              <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+                <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
+                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-blue-600" />
+                    <span>Recent Invoices</span>
+                  </CardTitle>
+                  <button
+                    onClick={() => setActiveTab('invoices')}
+                    className="text-xs font-semibold text-blue-600 hover:underline flex items-center"
+                  >
+                    View All &rarr;
+                  </button>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {invoices.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-slate-400">
+                      No invoices generated yet for this customer.
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-900 text-xs">
+                      {invoices.slice(0, 5).map((inv) => (
+                        <div key={inv.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
+                          <div>
+                            <div className="font-bold text-slate-900 dark:text-white">
+                              {inv.invoice_number}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              {inv.invoice_date}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <div className="font-bold text-slate-900 dark:text-white">
+                                ৳{Number(inv.grand_total).toLocaleString('en-IN')}
+                              </div>
+                              {Number(inv.due_amount) > 0 && (
+                                <div className="text-[10px] text-rose-500 font-semibold">
+                                  Due: ৳{Number(inv.due_amount).toLocaleString('en-IN')}
+                                </div>
+                              )}
+                            </div>
+
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'text-[10px] capitalize',
+                                inv.status === 'paid' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                inv.status === 'unpaid' && 'bg-rose-50 text-rose-700 border-rose-200',
+                                inv.status === 'partially_paid' && 'bg-amber-50 text-amber-700 border-amber-200'
+                              )}
+                            >
+                              {inv.status.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Payments */}
+              <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+                <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
+                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-emerald-600" />
+                    <span>Recent Payments</span>
+                  </CardTitle>
+                  <button
+                    onClick={() => setActiveTab('payments')}
+                    className="text-xs font-semibold text-blue-600 hover:underline flex items-center"
+                  >
+                    View All &rarr;
+                  </button>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {payments.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-slate-400">
+                      No payment receipts recorded yet.
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-900 text-xs">
+                      {payments.slice(0, 5).map((pay) => (
+                        <div key={pay.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
+                          <div>
+                            <div className="font-bold text-slate-900 dark:text-white">
+                              MR #{pay.receipt_number}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              {pay.payment_date} • via {pay.payment_method.toUpperCase()}
+                            </div>
+                          </div>
+
+                          <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                            ৳{Number(pay.amount).toLocaleString('en-IN')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Col: Timeline & Quick Rate Snapshot */}
+            <div className="space-y-6">
+              {/* Quick Activity Timeline */}
+              <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+                <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
+                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-purple-600" />
+                    <span>Recent Activity</span>
+                  </CardTitle>
+                  <button
+                    onClick={() => setActiveTab('activity')}
+                    className="text-xs font-semibold text-blue-600 hover:underline"
+                  >
+                    Full History &rarr;
+                  </button>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <CustomerTimeline events={timelineEvents.slice(0, 5)} tenantSlug={slug} />
+                </CardContent>
+              </Card>
+
+              {/* Rates Card Shortcut */}
+              <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Tag className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Special Pricing Configured</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px]">
+                    {rates.filter((r) => r.hasCustomRate).length} Custom Rates
+                  </Badge>
+                </div>
+
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Automated rate fallback ensures this customer always gets their agreed rate on new quotations and invoices.
+                </p>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('rates')}
+                  className="w-full text-xs font-semibold h-8 text-blue-600"
+                >
+                  Open Rates Sheet
+                </Button>
+              </Card>
+            </div>
           </div>
         </div>
       )}
@@ -972,7 +1197,7 @@ export default function CustomerProfilePage() {
       {/* 7. ACTIVITY & TIMELINE TAB */}
       {activeTab === 'activity' && (
         <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 p-6">
-          <CustomerTimeline events={timelineEvents} />
+          <CustomerTimeline events={timelineEvents} tenantSlug={slug} />
         </Card>
       )}
 

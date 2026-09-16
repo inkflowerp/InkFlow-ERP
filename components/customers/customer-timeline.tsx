@@ -23,9 +23,16 @@ import { cn } from '@/lib/utils'
 interface CustomerTimelineProps {
   events: CustomerTimelineEvent[]
   isLoading?: boolean
+  tenantSlug?: string
+  onSelectPaymentForReceipt?: (paymentId: string) => void
 }
 
-export function CustomerTimeline({ events, isLoading = false }: CustomerTimelineProps) {
+export function CustomerTimeline({
+  events,
+  isLoading = false,
+  tenantSlug,
+  onSelectPaymentForReceipt,
+}: CustomerTimelineProps) {
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -80,7 +87,7 @@ export function CustomerTimeline({ events, isLoading = false }: CustomerTimeline
     }
   }
 
-  const getEventBadge = (type: CustomerTimelineEvent['type'], status?: string | null) => {
+  const getEventBadge = (type: CustomerTimelineEvent['type']) => {
     switch (type) {
       case 'invoice_created':
         return (
@@ -95,9 +102,17 @@ export function CustomerTimeline({ events, isLoading = false }: CustomerTimeline
           </Badge>
         )
       case 'quotation_created':
+      case 'quotation_sent':
         return (
           <Badge className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 text-[10px]">
             Quotation
+          </Badge>
+        )
+      case 'order_created':
+      case 'job_started':
+        return (
+          <Badge className="bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 text-[10px]">
+            Order
           </Badge>
         )
       case 'communication_logged':
@@ -109,6 +124,65 @@ export function CustomerTimeline({ events, isLoading = false }: CustomerTimeline
       default:
         return null
     }
+  }
+
+  const renderReferenceLink = (evt: CustomerTimelineEvent) => {
+    if (!evt.referenceNumber && !evt.referenceId) return null
+    const refNum = evt.referenceNumber || evt.referenceId
+    const baseSlug = tenantSlug || 'my-company'
+
+    if (evt.referenceType === 'invoice' || evt.type === 'invoice_created') {
+      return (
+        <a
+          href={`/${baseSlug}/billing/invoices/${evt.referenceId || refNum}`}
+          className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 hover:underline bg-blue-50/70 dark:bg-blue-950/50 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-900"
+          title="Open Invoice"
+        >
+          <span>{refNum}</span>
+          <span className="text-[9px]">&rarr;</span>
+        </a>
+      )
+    }
+
+    if (evt.referenceType === 'quotation' || evt.type.startsWith('quotation')) {
+      return (
+        <a
+          href={`/${baseSlug}/quotations`}
+          className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:underline bg-amber-50/70 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900"
+          title="Open Quotations"
+        >
+          <span>{refNum}</span>
+          <span className="text-[9px]">&rarr;</span>
+        </a>
+      )
+    }
+
+    if (evt.referenceType === 'order' || evt.type.startsWith('order') || evt.type === 'job_started') {
+      return (
+        <a
+          href={`/${baseSlug}/orders`}
+          className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 hover:underline bg-cyan-50/70 dark:bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-900"
+          title="Open Orders"
+        >
+          <span>{refNum}</span>
+          <span className="text-[9px]">&rarr;</span>
+        </a>
+      )
+    }
+
+    if (evt.referenceType === 'payment' || evt.type === 'payment_received') {
+      return (
+        <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-900">
+          MR #{refNum}
+        </span>
+      )
+    }
+
+    return (
+      <span className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-400">
+        Ref: {refNum}
+      </span>
+    )
   }
 
   return (
@@ -128,7 +202,8 @@ export function CustomerTimeline({ events, isLoading = false }: CustomerTimeline
                   <span className="font-semibold text-slate-900 dark:text-white">
                     {evt.title}
                   </span>
-                  {getEventBadge(evt.type, evt.status)}
+                  {getEventBadge(evt.type)}
+                  {renderReferenceLink(evt)}
                 </div>
 
                 <div className="text-[11px] text-slate-400 font-medium shrink-0">
@@ -148,7 +223,9 @@ export function CustomerTimeline({ events, isLoading = false }: CustomerTimeline
 
               <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400">
                 {evt.actorName && (
-                  <span>By: <strong className="text-slate-600 dark:text-slate-300 font-medium">{evt.actorName}</strong></span>
+                  <span>
+                    By: <strong className="text-slate-600 dark:text-slate-300 font-medium">{evt.actorName}</strong>
+                  </span>
                 )}
                 {evt.amount !== undefined && evt.amount !== null && (
                   <span className="font-bold text-slate-700 dark:text-slate-300 ml-auto">

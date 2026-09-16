@@ -90,6 +90,8 @@ export class CrmService {
       customerType?: string
       dueFilter?: 'all' | 'has_due' | 'no_due'
       activeFilter?: 'all' | 'active' | 'inactive'
+      sortBy?: 'newest' | 'billed' | 'due' | 'latest_order' | 'name'
+      sortOrder?: 'asc' | 'desc'
     } = {}
   ): Promise<PaginatedResult<CustomerRecord>> {
     if (!companyId) {
@@ -322,6 +324,14 @@ export class CrmService {
   static async deleteCustomer(id: string, companyId: string): Promise<boolean> {
     if (!id || !companyId) return false
     return await CustomerRepository.deleteCustomer(id, companyId)
+  }
+
+  /**
+   * Toggles customer active/inactive status (safe deactivation)
+   */
+  static async toggleCustomerActive(id: string, companyId: string, isActive: boolean): Promise<CustomerRecord | null> {
+    if (!id || !companyId) return null
+    return await CustomerRepository.toggleCustomerActive(id, companyId, isActive)
   }
 
   // ==============================================================================

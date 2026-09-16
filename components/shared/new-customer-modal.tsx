@@ -224,12 +224,6 @@ export function NewCustomerModal({
       return
     }
 
-    if (!fullAddress.trim() && !area.trim()) {
-      setErrorMessage('Address is required.')
-      setActiveTab('info')
-      return
-    }
-
     setIsSubmitting(true)
     const activeCompanyId = company?.id || companyId
 
@@ -249,7 +243,7 @@ export function NewCustomerModal({
         district_id: districtId,
         upazila_id: upazilaId,
         area: area.trim() || null,
-        address: fullAddress.trim() || area.trim(),
+        address: fullAddress.trim() || area.trim() || null,
         payment_terms: paymentTerms,
         credit_limit: creditLimit,
         tin_no: tin.trim() || null,
@@ -304,7 +298,7 @@ export function NewCustomerModal({
               {locale === 'bn' ? 'নতুন কাস্টমার নিবন্ধন' : 'New Customer Registration'}
             </h2>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Create profile, credit limits, delivery addresses, and customer-specific rates
+              Fast walk-in customer creation, credit limits, delivery addresses, and customer-specific rates
             </p>
           </div>
         </div>
@@ -353,37 +347,58 @@ export function NewCustomerModal({
 
         {/* Duplicate Matches Alert */}
         {duplicateMatches.length > 0 && !dismissDuplicate && (
-          <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/40 text-xs space-y-2">
+          <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/40 text-xs space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-                <span>Possible Duplicate Customer Detected</span>
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                <span>Possible Existing Customer Detected</span>
               </div>
               <button
                 type="button"
                 onClick={() => setDismissDuplicate(true)}
-                className="text-[11px] font-semibold text-amber-700 underline cursor-pointer"
+                className="text-[11px] font-bold text-amber-800 dark:text-amber-300 hover:underline cursor-pointer"
               >
-                Dismiss
+                Continue Anyway &rarr;
               </button>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {duplicateMatches.map((m) => (
                 <div
                   key={m.customer.id}
-                  className="p-2 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-amber-200/60 dark:border-amber-900/60 flex items-center justify-between"
+                  className="p-2.5 rounded-lg bg-white/90 dark:bg-slate-900/90 border border-amber-200/80 dark:border-amber-900/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                 >
                   <div>
-                    <span className="font-semibold text-slate-900 dark:text-white bangla-text">
-                      {m.customer.name}
-                    </span>
-                    <span className="text-slate-500 dark:text-slate-400 ml-1.5 font-mono text-xs">
-                      ({m.customer.mobile})
-                    </span>
-                    <div className="text-xs text-amber-600 dark:text-amber-400 font-medium bangla-text">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-slate-900 dark:text-white">
+                        {m.customer.name}
+                      </span>
+                      {m.customer.company_name && (
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">
+                          • {m.customer.company_name}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono">
+                      {m.customer.mobile} {m.customer.whatsapp ? `• WA: ${m.customer.whatsapp}` : ''}
+                    </div>
+                    <div className="text-[11px] text-amber-700 dark:text-amber-300 font-medium mt-0.5">
                       {m.matchReason}
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        onCustomerCreated?.(m.customer)
+                        onOpenChange(false)
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-7 px-2.5"
+                    >
+                      Use Existing Customer
+                    </Button>
                   </div>
                 </div>
               ))}

@@ -251,6 +251,30 @@ export class QuotationRepository {
   }
 
   /**
+   * Retrieves customer-specific quotations with direct database scoping
+   */
+  static async getCustomerQuotations(companyId: string, customerId: string): Promise<QuotationRecord[]> {
+    return measureAsync(`QuotationRepository.getCustomerQuotations(${customerId})`, async () => {
+      try {
+        const supabase = await createClient()
+        const { data, error } = await (supabase as any)
+          .from('quotations')
+          .select('*, items:quotation_items(*)')
+          .eq('company_id', companyId)
+          .eq('customer_id', customerId)
+          .order('created_at', { ascending: false })
+
+        if (!error && data) {
+          return data as unknown as QuotationRecord[]
+        }
+      } catch {}
+
+      const all = await this.getQuotations(companyId)
+      return all.filter((q) => q.customer_id === customerId)
+    })
+  }
+
+  /**
    * Retrieves a single quotation with items and activity timeline
    */
   static async getQuotationById(id: string, companyId?: string): Promise<QuotationRecord | null> {

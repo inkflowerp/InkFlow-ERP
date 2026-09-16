@@ -146,6 +146,10 @@ export interface CustomerFinancialSummary {
   totalInvoiceAmount: number
   totalPaid: number
   totalDue: number
+  totalOverdue?: number
+  creditLimit?: number
+  availableCredit?: number
+  paymentTerms?: string | null
   lastPayment: {
     amount: number
     date: string
@@ -193,6 +197,7 @@ export interface CustomerTimelineEvent {
   amount?: number | null
   referenceId?: string | null
   referenceNumber?: string | null
+  referenceType?: 'invoice' | 'payment' | 'quotation' | 'order' | 'job' | 'delivery' | 'customer'
   actorName?: string | null
   status?: string | null
 }

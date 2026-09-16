@@ -34,6 +34,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
+import { PaginationControls } from '@/components/shared/pagination-controls'
+import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
+import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import {
   getPaginatedCustomersAction,
   getCustomersSummaryAction,
@@ -65,11 +68,12 @@ export default function CustomersPage() {
   })
   const [totalRecords, setTotalRecords] = useState(0)
   const [page, setPage] = useState(1)
-  const [pageSize] = useState(25)
+  const [pageSize, setPageSize] = useState(25)
 
   const [search, setSearch] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedDueFilter, setSelectedDueFilter] = useState<'all' | 'has_due' | 'no_due'>('all')
+  const [sortPreset, setSortPreset] = useState<'newest' | 'highest_billed' | 'highest_due' | 'latest_order' | 'alphabetical'>('newest')
 
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
@@ -77,11 +81,30 @@ export default function CustomersPage() {
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [selectedCustomerForInvoice, setSelectedCustomerForInvoice] = useState<CustomerRecord | null>(null)
+  const [selectedCustomerForPayment, setSelectedCustomerForPayment] = useState<CustomerRecord | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
 
   const showNotification = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
+  }
+
+  // Derive sortBy & sortOrder from preset
+  const getSortParams = () => {
+    switch (sortPreset) {
+      case 'highest_billed':
+        return { sortBy: 'billed' as const, sortOrder: 'desc' as const }
+      case 'highest_due':
+        return { sortBy: 'due' as const, sortOrder: 'desc' as const }
+      case 'latest_order':
+        return { sortBy: 'latest_order' as const, sortOrder: 'desc' as const }
+      case 'alphabetical':
+        return { sortBy: 'name' as const, sortOrder: 'asc' as const }
+      case 'newest':
+      default:
+        return { sortBy: 'newest' as const, sortOrder: 'desc' as const }
+    }
   }
 
   // Fetch summary and customers list
@@ -90,6 +113,7 @@ export default function CustomersPage() {
     setIsLoading(true)
     setIsError(false)
     try {
+      const { sortBy, sortOrder } = getSortParams()
       const [sumRes, listRes] = await Promise.all([
         getCustomersSummaryAction(companyId),
         getPaginatedCustomersAction(
@@ -99,6 +123,8 @@ export default function CustomersPage() {
             search,
             customerType: selectedType !== 'all' ? selectedType : undefined,
             dueFilter: selectedDueFilter,
+            sortBy,
+            sortOrder,
           },
           companyId
         ),
@@ -121,7 +147,7 @@ export default function CustomersPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [companyId, page, pageSize, search, selectedType, selectedDueFilter])
+  }, [companyId, page, pageSize, search, selectedType, selectedDueFilter, sortPreset])
 
   useEffect(() => {
     loadData()
@@ -310,7 +336,10 @@ export default function CustomersPage() {
           {/* Customer Type Filter */}
           <select
             value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
+            onChange={(e) => {
+              setSelectedType(e.target.value)
+              setPage(1)
+            }}
             className="h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium"
           >
             <option value="all">All Types (সব ধরণ)</option>
@@ -324,12 +353,31 @@ export default function CustomersPage() {
           {/* Due Status Filter */}
           <select
             value={selectedDueFilter}
-            onChange={(e) => setSelectedDueFilter(e.target.value as any)}
+            onChange={(e) => {
+              setSelectedDueFilter(e.target.value as any)
+              setPage(1)
+            }}
             className="h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium"
           >
             <option value="all">All Balances (সব)</option>
             <option value="has_due">Has Outstanding Due (বকেয়া আছে)</option>
             <option value="no_due">No Due (বকেয়া নেই)</option>
+          </select>
+
+          {/* Sort Preset */}
+          <select
+            value={sortPreset}
+            onChange={(e) => {
+              setSortPreset(e.target.value as any)
+              setPage(1)
+            }}
+            className="h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium text-slate-700 dark:text-slate-300"
+          >
+            <option value="newest">Sort: Newest First</option>
+            <option value="highest_billed">Sort: Highest Billed</option>
+            <option value="highest_due">Sort: Highest Due Balance</option>
+            <option value="latest_order">Sort: Latest Order</option>
+            <option value="alphabetical">Sort: Alphabetical (A-Z)</option>
           </select>
 
           <Button
@@ -410,7 +458,7 @@ export default function CustomersPage() {
                     <th className="py-3 px-3 text-right">Total Invoiced</th>
                     <th className="py-3 px-3 text-right">Due Balance</th>
                     <th className="py-3 px-3 text-right">Last Order</th>
-                    <th className="py-3 px-4 text-center">Actions</th>
+                    <th className="py-3 px-4 text-center">Quick Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -529,19 +577,42 @@ export default function CustomersPage() {
                         {/* Actions */}
                         <td className="py-3.5 px-4 text-center">
                           <div className="flex items-center justify-center gap-1.5">
+                            {/* New Quotation Shortcut */}
                             <Link
-                              href={`/${slug}/customers/${c.id}`}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 font-semibold text-xs transition-colors"
+                              href={`/${slug}/quotations/new?customerId=${c.id}`}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
+                              title="Create Quotation"
                             >
-                              <span>360 View</span>
+                              <FileText className="h-4 w-4" />
                             </Link>
 
-                            <Link
-                              href={`/${slug}/billing/invoices/new?customerId=${c.id}`}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            {/* Create Invoice Shortcut (Modal) */}
+                            <button
+                              onClick={() => setSelectedCustomerForInvoice(c)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
                               title="Create Invoice"
                             >
                               <Receipt className="h-4 w-4" />
+                            </button>
+
+                            {/* Record Payment (Modal) */}
+                            {hasDue && (
+                              <button
+                                onClick={() => setSelectedCustomerForPayment(c)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                                title="Record Payment"
+                              >
+                                <CreditCard className="h-4 w-4" />
+                              </button>
+                            )}
+
+                            {/* 360 View */}
+                            <Link
+                              href={`/${slug}/customers/${c.id}`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 font-semibold text-xs transition-colors ml-1"
+                            >
+                              <span>360</span>
+                              <ArrowRight className="h-3 w-3" />
                             </Link>
                           </div>
                         </td>
@@ -645,6 +716,30 @@ export default function CustomersPage() {
                     </div>
                   </div>
 
+                  {/* Mobile Quick Action Buttons */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <Link
+                      href={`/${slug}/quotations/new?customerId=${c.id}`}
+                      className="flex-1 text-center py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                    >
+                      + Quote
+                    </Link>
+                    <button
+                      onClick={() => setSelectedCustomerForInvoice(c)}
+                      className="flex-1 text-center py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50"
+                    >
+                      + Invoice
+                    </button>
+                    {hasDue && (
+                      <button
+                        onClick={() => setSelectedCustomerForPayment(c)}
+                        className="flex-1 text-center py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50"
+                      >
+                        Pay
+                      </button>
+                    )}
+                  </div>
+
                   {/* Bottom: View 360 Workspace Button */}
                   <Link
                     href={`/${slug}/customers/${c.id}`}
@@ -657,6 +752,19 @@ export default function CustomersPage() {
               )
             })}
           </div>
+
+          {/* Pagination Controls */}
+          <PaginationControls
+            pageIndex={page - 1}
+            pageSize={pageSize}
+            totalCount={totalRecords}
+            onPageChange={(idx) => setPage(idx + 1)}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setPage(1)
+            }}
+            pageSizeOptions={[10, 25, 50, 100]}
+          />
         </>
       )}
 
@@ -667,6 +775,34 @@ export default function CustomersPage() {
         onCustomerCreated={handleCustomerCreated}
         companyId={companyId}
       />
+
+      {/* Quick Invoice Creation Modal */}
+      {selectedCustomerForInvoice && (
+        <NewInvoiceModal
+          open={Boolean(selectedCustomerForInvoice)}
+          onOpenChange={(open) => !open && setSelectedCustomerForInvoice(null)}
+          preselectedCustomerId={selectedCustomerForInvoice.id}
+          onInvoiceCreated={(newInv) => {
+            setSelectedCustomerForInvoice(null)
+            showNotification(`Invoice ${newInv.invoice_number} created for ${selectedCustomerForInvoice.name}!`)
+            loadData()
+          }}
+        />
+      )}
+
+      {/* Quick Payment Collection Modal */}
+      {selectedCustomerForPayment && (
+        <RecordPaymentModal
+          open={Boolean(selectedCustomerForPayment)}
+          onOpenChange={(open) => !open && setSelectedCustomerForPayment(null)}
+          preselectedCustomerId={selectedCustomerForPayment.id}
+          onPaymentRecorded={() => {
+            setSelectedCustomerForPayment(null)
+            showNotification(`Payment recorded for ${selectedCustomerForPayment.name}!`)
+            loadData()
+          }}
+        />
+      )}
     </div>
   )
 }

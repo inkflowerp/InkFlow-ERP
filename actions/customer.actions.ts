@@ -241,6 +241,8 @@ export async function getPaginatedCustomersAction(
     customerType?: string
     dueFilter?: 'all' | 'has_due' | 'no_due'
     activeFilter?: 'all' | 'active' | 'inactive'
+    sortBy?: 'newest' | 'billed' | 'due' | 'latest_order' | 'name'
+    sortOrder?: 'asc' | 'desc'
   } = {},
   requestedCompanyId?: string
 ): Promise<ServerActionResult<PaginatedResult<CustomerRecord>>> {
@@ -400,6 +402,76 @@ export async function deleteCustomerAction(
     return {
       success: false,
       error: err?.message || 'Failed to delete customer.',
+    }
+  }
+}
+
+/**
+ * Server Action: Toggle Customer Active/Inactive
+ */
+export async function toggleCustomerActiveAction(
+  id: string,
+  isActive: boolean,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<CustomerRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return {
+        success: false,
+        error: 'Unauthorized: Valid authenticated tenant session required.',
+      }
+    }
+    const companyId = tenant.companyId
+    const role: PrimaryRole = (tenant.primaryRole as PrimaryRole) || (tenant.companyRole as PrimaryRole) || 'business_owner'
+
+    const canEdit =
+      role === 'business_owner' ||
+      tenant.permissions.includes('customer.edit') ||
+      tenant.permissions.includes('customers.edit') ||
+      checkPermission(role, 'customer.edit')
+
+    if (!canEdit) {
+      return {
+        success: false,
+        error: 'Unauthorized: You do not have permission to change customer status.',
+      }
+    }
+
+    const updated = await CrmService.toggleCustomerActive(id, companyId, isActive)
+    if (!updated) {
+      return {
+        success: false,
+        error: 'Customer record not found or status update failed.',
+      }
+    }
+
+    // Audit Trail
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId || 'unknown',
+        tenant.userEmail || '',
+        isActive ? 'customer.reactivate' : 'customer.deactivate',
+        'customer',
+        id,
+        null,
+        { id, isActive },
+        `${isActive ? 'Reactivated' : 'Deactivated'} customer ${updated.name}`
+      )
+    } catch {
+      // Non-blocking
+    }
+
+    revalidatePath('/', 'layout')
+    return {
+      success: true,
+      data: updated,
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err?.message || 'Failed to update customer status.',
     }
   }
 }
@@ -709,36 +781,20 @@ export async function getCustomerFullDetailsAction(
     const { QuotationRepository } = await import('@/lib/repositories/quotation.repository')
     const { OrderRepository } = await import('@/lib/repositories/order.repository')
 
-    const [cust, finRes, ratesRes, timelineRes, allInvs, allPays, allQuotes, allOrds] = await Promise.all([
+    const [cust, finRes, ratesRes, timelineRes, custInvs, custPays, custQuotes, custOrds] = await Promise.all([
       CustomerRepository.getCustomerById(customerId, companyId),
       CrmService.getCustomerFinancialSummary(companyId, customerId).catch(() => null),
       CrmService.resolveCustomerRates(companyId, customerId).catch(() => []),
       CrmService.getCustomerTimeline(companyId, customerId).catch(() => []),
-      BillingRepository.getInvoices(companyId).catch(() => []),
+      BillingRepository.getInvoices(companyId, { customerId }).catch(() => []),
       BillingRepository.getPayments(companyId, customerId).catch(() => []),
-      QuotationRepository.getQuotations(companyId).catch(() => []),
-      OrderRepository.getOrders(companyId).catch(() => []),
+      QuotationRepository.getCustomerQuotations(companyId, customerId).catch(() => []),
+      OrderRepository.getCustomerOrders(companyId, customerId).catch(() => []),
     ])
 
     if (!cust) {
       return { success: false, error: 'Customer not found.' }
     }
-
-    const cleanCustMobile = (cust.mobile || (cust as any).phone || '').replace(/\D/g, '')
-    const cleanCustName = (cust.name || '').toLowerCase().trim()
-
-    const matchedQuotes = (allQuotes || []).filter((q: any) => {
-      if (q.customer_id && q.customer_id === customerId) return true
-      const qPhone = (q.customer_phone || q.phone || '').replace(/\D/g, '')
-      if (cleanCustMobile && qPhone && (qPhone === cleanCustMobile || qPhone.endsWith(cleanCustMobile) || cleanCustMobile.endsWith(qPhone))) {
-        return true
-      }
-      const qName = (q.customer_name || '').toLowerCase().trim()
-      if (cleanCustName && qName && qName === cleanCustName) {
-        return true
-      }
-      return false
-    })
 
     return {
       success: true,
@@ -747,10 +803,10 @@ export async function getCustomerFullDetailsAction(
         financialSummary: finRes,
         rates: ratesRes || [],
         timelineEvents: timelineRes || [],
-        invoices: (allInvs || []).filter((i: any) => i.customer_id === customerId),
-        payments: allPays || [],
-        quotations: matchedQuotes,
-        orders: (allOrds || []).filter((o: any) => o.customer_id === customerId),
+        invoices: custInvs || [],
+        payments: custPays || [],
+        quotations: custQuotes || [],
+        orders: custOrds || [],
       },
     }
   } catch (err: any) {

@@ -33,6 +33,30 @@ export class OrderRepository {
     })
   }
 
+  /**
+   * Retrieves customer-specific sales orders with direct database scoping
+   */
+  static async getCustomerOrders(companyId: string, customerId: string): Promise<SalesOrderRecord[]> {
+    return measureAsync(`OrderRepository.getCustomerOrders(${customerId})`, async () => {
+      try {
+        const supabase = await createClient()
+        const { data, error } = await (supabase as any)
+          .from('sales_orders')
+          .select('*, items:sales_order_items(*)')
+          .eq('company_id', companyId)
+          .eq('customer_id', customerId)
+          .order('created_at', { ascending: false })
+
+        if (!error && data) {
+          return (data || []) as unknown as SalesOrderRecord[]
+        }
+      } catch {}
+
+      const all = await this.getOrders(companyId)
+      return all.filter((o) => o.customer_id === customerId)
+    })
+  }
+
   static async getPaginatedOrders(
     companyId: string,
     options: {
