@@ -98,6 +98,14 @@ export default function BillingPage() {
 
   // Period & Filters
   const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>('this_month')
+  const [customStartDate, setCustomStartDate] = useState<string>(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+  })
+  const [customEndDate, setCustomEndDate] = useState<string>(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
   const [invoiceFilterTab, setInvoiceFilterTab] = useState<string>('all')
   const [priorityTab, setPriorityTab] = useState<'all' | 'due_today' | 'overdue' | 'high_value'>('all')
   const [search, setSearch] = useState('')
@@ -153,8 +161,13 @@ export default function BillingPage() {
     setIsLoading(true)
 
     try {
+      const customRange =
+        selectedPeriod === 'custom' && customStartDate && customEndDate
+          ? { start: customStartDate, end: customEndDate }
+          : undefined
+
       const [overviewRes, invRes, payRes, agingRes] = await Promise.all([
-        getBillingOverviewAction(selectedPeriod, undefined, company.id),
+        getBillingOverviewAction(selectedPeriod, customRange, company.id),
         getInvoicesAction(undefined, company.id),
         getPaymentsAction(undefined, company.id),
         getReceivablesAgingAction(company.id),
@@ -183,7 +196,7 @@ export default function BillingPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [company?.id, selectedPeriod])
+  }, [company?.id, selectedPeriod, customStartDate, customEndDate])
 
   useEffect(() => {
     loadBillingData()
@@ -465,33 +478,63 @@ export default function BillingPage() {
           2. KPI SUMMARY CARDS (TOTAL INVOICED, COLLECTED, DUE, OVERDUE)
          ========================================================================= */}
       <div className="space-y-3">
-        {/* Period Selector & Refresh Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-bold">
-            {(['this_month', 'this_week', 'today', 'all_time'] as BillingPeriod[]).map((p) => {
-              const labels: Record<BillingPeriod, string> = {
-                this_month: 'This Month',
-                this_week: 'This Week',
-                today: 'Today',
-                all_time: 'All Time',
-                custom: 'Custom',
-              }
-              const isSelected = selectedPeriod === p
-              return (
-                <button
-                  key={p}
-                  onClick={() => setSelectedPeriod(p)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-                    isSelected
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold'
-                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                  )}
+        {/* Period Selector & Custom Date-to-Date Range Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-bold">
+              {(['this_month', 'this_week', 'today', 'all_time', 'custom'] as BillingPeriod[]).map((p) => {
+                const labels: Record<BillingPeriod, string> = {
+                  this_month: 'This Month',
+                  this_week: 'This Week',
+                  today: 'Today',
+                  all_time: 'All Time',
+                  custom: 'Custom Date',
+                }
+                const isSelected = selectedPeriod === p
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setSelectedPeriod(p)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-md transition-all cursor-pointer',
+                      isSelected
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    )}
+                  >
+                    {labels[p]}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Date-to-Date Range Inputs */}
+            {selectedPeriod === 'custom' && (
+              <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 p-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs animate-in fade-in slide-in-from-left-2">
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="px-2 py-1 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                  title="From Date"
+                />
+                <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="px-2 py-1 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                  title="To Date"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => loadBillingData()}
+                  className="h-7 px-2.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
                 >
-                  {labels[p]}
-                </button>
-              )
-            })}
+                  Apply
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
