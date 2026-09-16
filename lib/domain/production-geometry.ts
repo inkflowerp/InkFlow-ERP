@@ -225,3 +225,58 @@ export function convertDimensionFromFeet(feet: number, targetUnit: string = 'ft'
 }
 
 export const formatDimensionWithInches = formatFeetAndInches
+
+export interface AllowanceHierarchyInput {
+  serviceDefault?: { widthAllowancePerSide?: number; lengthAllowancePerSide?: number; unit?: string }
+  materialOverride?: { widthAllowancePerSide?: number; lengthAllowancePerSide?: number; unit?: string }
+  customerOverride?: { widthAllowancePerSide?: number; lengthAllowancePerSide?: number; unit?: string }
+  jobOverride?: { widthAllowancePerSide?: number; lengthAllowancePerSide?: number; unit?: string }
+  serviceDefaultAllowanceIn?: number
+  materialOverrideAllowanceIn?: number
+  customerOverrideAllowanceIn?: number
+  jobOverrideAllowanceIn?: number
+}
+
+/**
+ * Resolves allowance rule following the strict priority chain:
+ * Job Override > Customer/Quote Override > Material Override > Service Default > System Default (1.0 inch)
+ */
+export function resolveAllowanceHierarchy(input: AllowanceHierarchyInput): AllowanceConfig & {
+  allowance_width_in: number
+  allowance_length_in: number
+  applied_source: 'job_override' | 'customer_override' | 'material_override' | 'service_default' | 'system_default'
+} {
+  let chosenWidth: number | undefined = undefined
+  let chosenLength: number | undefined = undefined
+  let appliedSource: 'job_override' | 'customer_override' | 'material_override' | 'service_default' | 'system_default' = 'system_default'
+
+  if (input.jobOverride?.widthAllowancePerSide !== undefined || input.jobOverrideAllowanceIn !== undefined) {
+    chosenWidth = input.jobOverride?.widthAllowancePerSide ?? input.jobOverrideAllowanceIn
+    chosenLength = input.jobOverride?.lengthAllowancePerSide ?? input.jobOverrideAllowanceIn
+    appliedSource = 'job_override'
+  } else if (input.customerOverride?.widthAllowancePerSide !== undefined || input.customerOverrideAllowanceIn !== undefined) {
+    chosenWidth = input.customerOverride?.widthAllowancePerSide ?? input.customerOverrideAllowanceIn
+    chosenLength = input.customerOverride?.lengthAllowancePerSide ?? input.customerOverrideAllowanceIn
+    appliedSource = 'customer_override'
+  } else if (input.materialOverride?.widthAllowancePerSide !== undefined || input.materialOverrideAllowanceIn !== undefined) {
+    chosenWidth = input.materialOverride?.widthAllowancePerSide ?? input.materialOverrideAllowanceIn
+    chosenLength = input.materialOverride?.lengthAllowancePerSide ?? input.materialOverrideAllowanceIn
+    appliedSource = 'material_override'
+  } else if (input.serviceDefault?.widthAllowancePerSide !== undefined || input.serviceDefaultAllowanceIn !== undefined) {
+    chosenWidth = input.serviceDefault?.widthAllowancePerSide ?? input.serviceDefaultAllowanceIn
+    chosenLength = input.serviceDefault?.lengthAllowancePerSide ?? input.serviceDefaultAllowanceIn
+    appliedSource = 'service_default'
+  }
+
+  const finalWidth = chosenWidth !== undefined ? chosenWidth : 1.0
+  const finalLength = chosenLength !== undefined ? chosenLength : 1.0
+
+  return {
+    widthAllowancePerSide: finalWidth,
+    lengthAllowancePerSide: finalLength,
+    allowance_width_in: finalWidth,
+    allowance_length_in: finalLength,
+    applied_source: appliedSource,
+    unit: 'inch',
+  }
+}

@@ -55,18 +55,26 @@ export interface CompatibilityCheckResult {
  * Checks physical roll and remnant compatibility for a requested production piece.
  */
 export function evaluateMaterialCompatibility(input: any): any {
-  const pW = Math.max(
-    0,
-    Number(input.productionWidthFt ?? input.geometry?.production_width_ft ?? input.geometry?.productionWidthFt ?? input.production_width_ft) || 0
-  )
-  const pL = Math.max(
-    0,
-    Number(input.productionLengthFt ?? input.geometry?.production_length_ft ?? input.geometry?.productionLengthFt ?? input.production_length_ft) || 0
-  )
+  const allowanceIn = Number(input.allowancePerSideIn ?? input.allowance_per_side_in ?? input.allowanceIn ?? 0)
+  const custW = Number(input.customerWidthFt ?? input.customer_width_ft ?? input.width ?? 0)
+  const custL = Number(input.customerLengthFt ?? input.customer_length_ft ?? input.length ?? 0)
+
+  let rawPW = Number(input.productionWidthFt ?? input.geometry?.production_width_ft ?? input.geometry?.productionWidthFt ?? input.production_width_ft)
+  let rawPL = Number(input.productionLengthFt ?? input.geometry?.production_length_ft ?? input.geometry?.productionLengthFt ?? input.production_length_ft)
+
+  if (isNaN(rawPW) || rawPW <= 0) {
+    rawPW = custW > 0 ? custW + (allowanceIn * 2) / 12 : 0
+  }
+  if (isNaN(rawPL) || rawPL <= 0) {
+    rawPL = custL > 0 ? custL + (allowanceIn * 2) / 12 : 0
+  }
+
+  const pW = Math.max(0, rawPW)
+  const pL = Math.max(0, rawPL)
   const formattedSize = `${formatFeetAndInches(pW)} × ${formatFeetAndInches(pL)}`
   const materialName = input.materialName || input.required_material_name || 'Material'
 
-  const rawWidths = input.availableWidthsFt ?? input.available_roll_widths_ft
+  const rawWidths = input.availableWidthsFt ?? input.available_roll_widths_ft ?? input.availableRollWidthsFt
   const configuredWidths = (rawWidths && rawWidths.length > 0)
     ? [...rawWidths].sort((a: number, b: number) => a - b)
     : [3.0, 4.0, 5.0] // standard large format default widths
@@ -111,6 +119,7 @@ export function evaluateMaterialCompatibility(input: any): any {
       productionLengthFt: pL,
       formattedProductionSize: formattedSize,
       bestFitWidthFt: null,
+      selectedRollWidthFt: null,
       selected_roll_width_ft: null,
       sideWastageWidthFt: null,
       waste_strip_width_in: null,
@@ -120,6 +129,7 @@ export function evaluateMaterialCompatibility(input: any): any {
       bestFitRemnantCode: null,
       reasonCode: 'NO_CONFIGURED_WIDTH',
       error_code: 'NO_COMPATIBLE_WIDTH',
+      rejectionReason: msg,
       message: msg,
       warning_message: msg,
       warningLevel: 'error',
@@ -165,7 +175,9 @@ export function evaluateMaterialCompatibility(input: any): any {
     productionLengthFt: pL,
     formattedProductionSize: formattedSize,
     bestFitWidthFt: bestFitWidth,
+    selectedRollWidthFt: bestFitWidth,
     selected_roll_width_ft: bestFitWidth,
+    plannedLinearLengthFt: isRotatedFit ? pW : pL,
     sideWastageWidthFt: sideWastageFt,
     waste_strip_width_in: wasteStripIn,
     bestFitRollId: primaryRoll?.id || null,

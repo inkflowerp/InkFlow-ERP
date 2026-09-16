@@ -41,6 +41,10 @@ interface ServiceConfigModalProps {
   initialData?: ProductRecord | null
   categories?: ProductCategoryRecord[]
   availableMaterials?: MaterialRecord[]
+  printingMethods?: Array<{ id: string; name: string; name_bn?: string | null }>
+  finishingMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
+  additionalMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
+  installationMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
 }
 
 export function ServiceConfigModal({
@@ -50,6 +54,10 @@ export function ServiceConfigModal({
   initialData,
   categories = [],
   availableMaterials = [],
+  printingMethods = [],
+  finishingMasterOptions = [],
+  additionalMasterOptions = [],
+  installationMasterOptions = [],
 }: ServiceConfigModalProps) {
   const [activeTab, setActiveTab] = useState<'basic' | 'dimensions' | 'materials' | 'finishing' | 'additionals' | 'pricing'>('basic')
 
@@ -58,6 +66,7 @@ export function ServiceConfigModal({
   const [nameBn, setNameBn] = useState('')
   const [sku, setSku] = useState('')
   const [category, setCategory] = useState('printing_service')
+  const [printingMethodName, setPrintingMethodName] = useState('')
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
 
@@ -464,6 +473,35 @@ export function ServiceConfigModal({
                 </select>
               </div>
 
+              <div>
+                <Label htmlFor="srv-printing-method" className="text-sm font-medium">
+                  Printing Method
+                </Label>
+                <select
+                  id="srv-printing-method"
+                  value={printingMethodName}
+                  onChange={(e) => setPrintingMethodName(e.target.value)}
+                  className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                >
+                  <option value="">-- Select Printing Method --</option>
+                  <option value="Eco-Solvent Print">Eco-Solvent Print (ইকো-সলভেন্ট)</option>
+                  <option value="UV Flatbed Print">UV Flatbed Print (ইউভি ফ্ল্যাটবেড)</option>
+                  <option value="UV Roll-to-Roll Print">UV Roll-to-Roll Print</option>
+                  <option value="Solvent Print">Solvent Flex Print (সলভেন্ট)</option>
+                  <option value="Sublimation Print">Sublimation Print (সাবলিমেশন)</option>
+                  <option value="DTF Print">DTF Print (ডিটিএফ)</option>
+                  <option value="Latex Print">Latex Print (ল্যাটেক্স)</option>
+                  <option value="Screen Print">Screen Print (স্ক্রিন প্রিন্ট)</option>
+                  {printingMethods.map((pm) => (
+                    <option key={pm.id} value={pm.name}>
+                      {pm.name} {pm.name_bn ? `(${pm.name_bn})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="srv-pricing-method" className="text-sm font-medium">
                   Charging Method

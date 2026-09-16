@@ -95,6 +95,30 @@ import { EntityTypeSelectorModal } from '@/components/products/entity-type-selec
 import { ReadyProductModal } from '@/components/products/ready-product-modal'
 import { ServiceConfigModal } from '@/components/products/service-config-modal'
 import { MaterialConfigModal } from '@/components/products/material-config-modal'
+import { PrintingMethodModal } from '@/components/products/printing-method-modal'
+import { FinishingOptionModal } from '@/components/products/finishing-option-modal'
+import { AdditionalOptionModal } from '@/components/products/additional-option-modal'
+import { InstallationOptionModal } from '@/components/products/installation-option-modal'
+import {
+  getPrintingMethodsAction,
+  savePrintingMethodAction,
+  deletePrintingMethodAction,
+  getFinishingOptionsAction,
+  saveFinishingOptionAction,
+  deleteFinishingOptionAction,
+  getAdditionalOptionsAction,
+  saveAdditionalOptionAction,
+  deleteAdditionalOptionAction,
+  getInstallationOptionsAction,
+  saveInstallationOptionAction,
+  deleteInstallationOptionAction,
+} from '@/actions/configuration-masters.actions'
+import type {
+  PrintingMethod,
+  FinishingOptionRecord,
+  AdditionalOptionRecord,
+  InstallationOptionRecord,
+} from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { createQuotationAction } from '@/actions/quotation.actions'
 import { convertToFeet } from '@/lib/pricing-engine'
@@ -134,16 +158,32 @@ export default function ProductsCatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'low_margin' | 'archived'>('active')
-  const [entityTypeFilter, setEntityTypeFilter] = useState<'all' | 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation'>('all')
+  const [entityTypeFilter, setEntityTypeFilter] = useState<'all' | 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation' | 'printing_methods'>('all')
 
   // Notification alert
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
+  // Configuration Masters State
+  const [printingMethods, setPrintingMethods] = useState<PrintingMethod[]>([])
+  const [finishingOptions, setFinishingOptions] = useState<FinishingOptionRecord[]>([])
+  const [additionalOptions, setAdditionalOptions] = useState<AdditionalOptionRecord[]>([])
+  const [installationOptions, setInstallationOptions] = useState<InstallationOptionRecord[]>([])
 
   // Rebuilt V3 Modals State
   const [isTypeSelectorOpen, setIsTypeSelectorOpen] = useState(false)
   const [isReadyProductModalOpen, setIsReadyProductModalOpen] = useState(false)
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false)
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
+
+  // Configuration Master Modals State
+  const [isPrintingMethodModalOpen, setIsPrintingMethodModalOpen] = useState(false)
+  const [editingPrintingMethod, setEditingPrintingMethod] = useState<PrintingMethod | null>(null)
+  const [isFinishingModalOpen, setIsFinishingModalOpen] = useState(false)
+  const [editingFinishing, setEditingFinishing] = useState<FinishingOptionRecord | null>(null)
+  const [isAdditionalModalOpen, setIsAdditionalModalOpen] = useState(false)
+  const [editingAdditional, setEditingAdditional] = useState<AdditionalOptionRecord | null>(null)
+  const [isInstallationModalOpen, setIsInstallationModalOpen] = useState(false)
+  const [editingInstallation, setEditingInstallation] = useState<InstallationOptionRecord | null>(null)
 
   // Legacy modal state fallback
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -323,10 +363,139 @@ export default function ProductsCatalogPage() {
     }
   }
 
+  // Load configuration masters
+  const loadPrintingMethods = async () => {
+    try {
+      const data = await getPrintingMethodsAction()
+      if (data) setPrintingMethods(data)
+    } catch (err) {
+      console.error('Failed to load printing methods', err)
+    }
+  }
+
+  const loadFinishingOptions = async () => {
+    try {
+      const data = await getFinishingOptionsAction()
+      if (data) setFinishingOptions(data)
+    } catch (err) {
+      console.error('Failed to load finishing options', err)
+    }
+  }
+
+  const loadAdditionalOptions = async () => {
+    try {
+      const data = await getAdditionalOptionsAction()
+      if (data) setAdditionalOptions(data)
+    } catch (err) {
+      console.error('Failed to load additional options', err)
+    }
+  }
+
+  const loadInstallationOptions = async () => {
+    try {
+      const data = await getInstallationOptionsAction()
+      if (data) setInstallationOptions(data)
+    } catch (err) {
+      console.error('Failed to load installation options', err)
+    }
+  }
+
   useEffect(() => {
     loadProducts()
     loadCategories()
+    loadPrintingMethods()
+    loadFinishingOptions()
+    loadAdditionalOptions()
+    loadInstallationOptions()
   }, [companyId])
+
+  // Handlers for Configuration Masters
+  const handleSavePrintingMethod = async (data: Partial<PrintingMethod>) => {
+    const res = await savePrintingMethodAction({ ...data, id: editingPrintingMethod?.id })
+    if (res) {
+      showNotification(`Printing method '${data.name}' saved successfully.`)
+      await loadPrintingMethods()
+    }
+  }
+
+  const handleDeletePrintingMethod = async (id: string) => {
+    const res = await deletePrintingMethodAction(id)
+    if (res) {
+      showNotification('Printing method deleted.')
+      await loadPrintingMethods()
+    }
+  }
+
+  const handleSaveFinishingOption = async (data: Partial<FinishingOptionRecord>) => {
+    const res = await saveFinishingOptionAction({ ...data, id: editingFinishing?.id })
+    if (res) {
+      showNotification(`Finishing option '${data.name}' saved.`)
+      await loadFinishingOptions()
+    }
+  }
+
+  const handleDeleteFinishingOption = async (id: string) => {
+    const res = await deleteFinishingOptionAction(id)
+    if (res) {
+      showNotification('Finishing option deleted.')
+      await loadFinishingOptions()
+    }
+  }
+
+  const handleSaveAdditionalOption = async (data: Partial<AdditionalOptionRecord>) => {
+    const res = await saveAdditionalOptionAction({ ...data, id: editingAdditional?.id })
+    if (res) {
+      showNotification(`Additional option '${data.name}' saved.`)
+      await loadAdditionalOptions()
+    }
+  }
+
+  const handleDeleteAdditionalOption = async (id: string) => {
+    const res = await deleteAdditionalOptionAction(id)
+    if (res) {
+      showNotification('Additional option deleted.')
+      await loadAdditionalOptions()
+    }
+  }
+
+  const handleSaveInstallationOption = async (data: Partial<InstallationOptionRecord>) => {
+    const res = await saveInstallationOptionAction({ ...data, id: editingInstallation?.id })
+    if (res) {
+      showNotification(`Installation option '${data.name}' saved.`)
+      await loadInstallationOptions()
+    }
+  }
+
+  const handleDeleteInstallationOption = async (id: string) => {
+    const res = await deleteInstallationOptionAction(id)
+    if (res) {
+      showNotification('Installation option deleted.')
+      await loadInstallationOptions()
+    }
+  }
+
+  const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation' | 'printing_method') => {
+    setEditingProduct(null)
+    if (type === 'product') {
+      setIsReadyProductModalOpen(true)
+    } else if (type === 'service') {
+      setIsServiceModalOpen(true)
+    } else if (type === 'material') {
+      setIsMaterialModalOpen(true)
+    } else if (type === 'printing_method') {
+      setEditingPrintingMethod(null)
+      setIsPrintingMethodModalOpen(true)
+    } else if (type === 'finishing') {
+      setEditingFinishing(null)
+      setIsFinishingModalOpen(true)
+    } else if (type === 'additional') {
+      setEditingAdditional(null)
+      setIsAdditionalModalOpen(true)
+    } else if (type === 'installation') {
+      setEditingInstallation(null)
+      setIsInstallationModalOpen(true)
+    }
+  }
 
   // Computed live commercial numbers for create/edit modal
   const liveCommercialMath = useMemo(() => {
@@ -644,17 +813,6 @@ export default function ProductsCatalogPage() {
     }
     setEditingProduct(null)
     setIsTypeSelectorOpen(true)
-  }
-
-  const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation') => {
-    setEditingProduct(null)
-    if (type === 'product') {
-      setIsReadyProductModalOpen(true)
-    } else if (type === 'service' || type === 'finishing' || type === 'additional' || type === 'installation') {
-      setIsServiceModalOpen(true)
-    } else if (type === 'material') {
-      setIsMaterialModalOpen(true)
-    }
   }
 
   const handleOpenEdit = (p: ProductRecord) => {
@@ -1424,6 +1582,7 @@ export default function ProductsCatalogPage() {
           { id: 'finishing', label: 'Finishing' },
           { id: 'additional', label: 'Additional Work' },
           { id: 'installation', label: 'Installation & Delivery' },
+          { id: 'printing_methods', label: 'Printing Methods' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -1559,19 +1718,149 @@ export default function ProductsCatalogPage() {
         </div>
       </Card>
 
-      {/* Catalog Table & Mobile Cards */}
-      <Card className="shadow-xs overflow-hidden">
-        <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Commercial Master Items</span>
-              <Badge variant="outline" className="text-xs font-mono font-bold">
-                {filteredProducts.length}
-              </Badge>
-            </CardTitle>
-            <span className="text-xs text-slate-400">PostgreSQL Authoritative Units, Conversion & Costing</span>
-          </div>
-        </CardHeader>
+      {/* Printing Methods Master View vs Catalog Table */}
+      {entityTypeFilter === 'printing_methods' ? (
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Printing Technologies & Methods</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold">
+                  {printingMethods.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Configurable printing methods (Eco-Solvent, UV Flatbed, UV Roll, DTF, Sublimation, Latex, etc.) usable across all Print Services without code deployments.
+              </CardDescription>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingPrintingMethod(null)
+                setIsPrintingMethodModalOpen(true)
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Add Printing Method
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {printingMethods.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <Palette className="h-10 w-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Printing Methods Configured</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Add printing methods to bind compatible materials, ink rates, and production rules.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingPrintingMethod(null)
+                    setIsPrintingMethodModalOpen(true)
+                  }}
+                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Printing Method
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Method Name</th>
+                      <th className="py-3 px-3">Code</th>
+                      <th className="py-3 px-3">Compatible Media</th>
+                      <th className="py-3 px-3">Default Ink</th>
+                      <th className="py-3 px-3">Base Cost / sqft</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {printingMethods.map((pm) => (
+                      <tr key={pm.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                          <div>{pm.name}</div>
+                          {pm.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{pm.name_bn}</div>}
+                          {pm.description && <div className="text-[11px] text-slate-400 font-normal">{pm.description}</div>}
+                        </td>
+                        <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                          {pm.code || '—'}
+                        </td>
+                        <td className="py-3.5 px-3">
+                          <div className="flex flex-wrap gap-1">
+                            {(pm.compatible_material_types || []).map((t) => (
+                              <Badge key={t} variant="secondary" className="text-[10px] uppercase font-mono">
+                                {t}
+                              </Badge>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-3 text-xs text-slate-600 dark:text-slate-300">
+                          {pm.default_ink_type || 'Standard CMYK'}
+                        </td>
+                        <td className="py-3.5 px-3 font-mono font-semibold text-xs text-slate-800 dark:text-slate-200">
+                          ৳{pm.cost_per_sqft || 0}/sft
+                        </td>
+                        <td className="py-3.5 px-3">
+                          {pm.is_active !== false ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingPrintingMethod(pm)
+                                setIsPrintingMethodModalOpen(true)
+                              }}
+                              className="h-7 text-xs px-2"
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeletePrintingMethod(pm.id)}
+                              className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                              title="Delete Method"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        /* Catalog Table & Mobile Cards */
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Commercial Master Items</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold">
+                  {filteredProducts.length}
+                </Badge>
+              </CardTitle>
+              <span className="text-xs text-slate-400">PostgreSQL Authoritative Units, Conversion & Costing</span>
+            </div>
+          </CardHeader>
         <CardContent className="p-0">
           {/* Loading Skeleton */}
           {isLoading && (
@@ -1917,6 +2206,7 @@ export default function ProductsCatalogPage() {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* ======================================================== */}
       {/* MODAL 1: FAST QUOTE WITH MINIMUM CHARGE & COST ESTIMATOR */}
@@ -3346,6 +3636,11 @@ export default function ProductsCatalogPage() {
         onSave={handleSaveRebuiltProduct}
         initialData={editingProduct}
         categories={categories}
+        availableMaterials={products.filter((p) => p.entity_type === 'material' || p.product_type === 'material') as any}
+        printingMethods={printingMethods}
+        finishingMasterOptions={finishingOptions}
+        additionalMasterOptions={additionalOptions}
+        installationMasterOptions={installationOptions}
       />
 
       <MaterialConfigModal
@@ -3357,6 +3652,36 @@ export default function ProductsCatalogPage() {
         onSave={handleSaveRebuiltProduct}
         initialData={editingProduct}
         categories={categories}
+      />
+
+      {/* Standalone Configuration Master Modals */}
+      <PrintingMethodModal
+        open={isPrintingMethodModalOpen}
+        onOpenChange={setIsPrintingMethodModalOpen}
+        method={editingPrintingMethod}
+        onSave={handleSavePrintingMethod}
+      />
+
+      <FinishingOptionModal
+        open={isFinishingModalOpen}
+        onOpenChange={setIsFinishingModalOpen}
+        finishing={editingFinishing}
+        onSave={handleSaveFinishingOption}
+      />
+
+      <AdditionalOptionModal
+        open={isAdditionalModalOpen}
+        onOpenChange={setIsAdditionalModalOpen}
+        additional={editingAdditional}
+        products={products}
+        onSave={handleSaveAdditionalOption}
+      />
+
+      <InstallationOptionModal
+        open={isInstallationModalOpen}
+        onOpenChange={setIsInstallationModalOpen}
+        installation={editingInstallation}
+        onSave={handleSaveInstallationOption}
       />
     </div>
   )

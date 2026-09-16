@@ -2,13 +2,13 @@
 
 import React from 'react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
-import { Package, Wrench, Boxes, Sparkles, PlusCircle, ArrowRight, ShieldCheck } from 'lucide-react'
+import { Package, Wrench, Boxes, Sparkles, PlusCircle, ArrowRight, ShieldCheck, Palette } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface EntityTypeSelectorModalProps {
   isOpen: boolean
   onClose: () => void
-  onSelect: (type: 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation') => void
+  onSelect: (type: 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation' | 'printing_method') => void
 }
 
 export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTypeSelectorModalProps) {
@@ -72,6 +72,13 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
       description: 'On-Site Installation, Shop Delivery, Dispatch',
       icon: ShieldCheck,
       colorClass: 'hover:border-indigo-500 hover:bg-indigo-500/5',
+    },
+    {
+      id: 'printing_method' as const,
+      title: 'Printing Method',
+      description: 'Eco-Solvent, UV Flatbed, DTF, Latex',
+      icon: Palette,
+      colorClass: 'hover:border-rose-500 hover:bg-rose-500/5',
     },
   ]
 

@@ -154,32 +154,37 @@ export function calculateServiceCosting(input: any): any {
   const baseServiceAmount = Math.round(billableQty * baseRate * 100) / 100
 
   // 4. Resolve Finishing Options
-  let selectedFinishing: any[] = input.selectedFinishing || []
+  let selectedFinishing: any[] = input.selectedFinishing || input.finishing_options || input.finishingOptions || input.selected_finishing || []
   if (input.selected_finishing_ids && Array.isArray(input.selected_finishing_ids) && srvCfg.finishing_options) {
     selectedFinishing = srvCfg.finishing_options.filter((f: any) => input.selected_finishing_ids.includes(f.id))
   }
 
   let finishingAmount = 0
   let finishingCost = 0
-  const finishingBreakdown: Array<{ name: string; price: number; cost: number }> = []
+  const finishingBreakdown: Array<{ name: string; price: number; cost: number; totalPrice: number; totalCost: number; quantity: number; unitPrice: number }> = []
 
   if (selectedFinishing.length > 0) {
     for (const f of selectedFinishing) {
       let fItemPrice = 0
       let fItemCost = 0
+      let itemQty = qty
       const price = Number(f.unit_price ?? f.price) || 0
       const cost = Number(f.unit_cost ?? f.cost) || 0
 
       if (f.pricing_method === 'per_sqft' || f.pricing_method === 'per_area') {
+        itemQty = geom.totalCustomerAreaSqft
         fItemPrice = geom.totalCustomerAreaSqft * price
         fItemCost = geom.totalProductionAreaSqft * cost
       } else if (f.pricing_method === 'per_rft' || f.pricing_method === 'per_length') {
         const perimeterFt = 2 * (geom.customerWidthFt + geom.customerLengthFt) * qty
+        itemQty = perimeterFt
         fItemPrice = perimeterFt * price
         fItemCost = perimeterFt * cost
       } else if (f.pricing_method === 'per_piece') {
-        fItemPrice = qty * price
-        fItemCost = qty * cost
+        const compQty = Math.max(1, Number(f.quantity_per_piece ?? f.component_quantity) || 1)
+        itemQty = qty * compQty
+        fItemPrice = itemQty * price
+        fItemCost = itemQty * cost
       } else {
         fItemPrice = price
         fItemCost = cost
@@ -191,6 +196,10 @@ export function calculateServiceCosting(input: any): any {
         name: f.name,
         price: Math.round(fItemPrice * 100) / 100,
         cost: Math.round(fItemCost * 100) / 100,
+        totalPrice: Math.round(fItemPrice * 100) / 100,
+        totalCost: Math.round(fItemCost * 100) / 100,
+        quantity: itemQty,
+        unitPrice: price,
       })
     }
   }
@@ -216,8 +225,10 @@ export function calculateServiceCosting(input: any): any {
         aItemPrice = geom.totalCustomerAreaSqft * price
         aItemCost = geom.totalProductionAreaSqft * cost
       } else if (a.pricing_method === 'per_piece') {
-        aItemPrice = qty * price
-        aItemCost = qty * cost
+        const compQty = Math.max(1, Number(a.quantity_per_piece ?? a.component_quantity) || 1)
+        const totalCompQty = qty * compQty
+        aItemPrice = totalCompQty * price
+        aItemCost = totalCompQty * cost
       } else {
         aItemPrice = price
         aItemCost = cost

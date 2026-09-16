@@ -711,3 +711,81 @@ export interface PriceOverrideRecord {
   tenant_slug?: string | null
   created_at: string
 }
+
+export interface PrintingMethod {
+  id: string
+  company_id: string
+  name: string
+  name_bn?: string | null
+  code?: string | null
+  description?: string | null
+  category_id?: string | null
+  compatible_material_types?: string[]
+  cost_per_sqft?: number
+  default_ink_type?: string | null
+  is_active: boolean
+  created_at?: string
+  updated_at?: string
+}
+
+export interface MaterialPurchaseConfig {
+  id: string
+  company_id: string
+  material_id: string
+  supplier_id?: string | null
+  supplier_name?: string | null
+  config_name: string
+  width_ft: number
+  length_ft: number
+  unit: string
+  purchase_price: number
+  item_code_sku?: string | null
+  is_default: boolean
+  is_active: boolean
+  created_at?: string
+  updated_at?: string
+}
+
+export interface FinishingOptionRecord {
+  id: string
+  company_id: string
+  name: string
+  name_bn?: string | null
+  category?: string
+  pricing_method: 'sqft' | 'per_piece' | 'per_linear_ft' | 'fixed' | 'percentage' | string
+  selling_price: number
+  cost: number
+  material_id?: string | null
+  is_active: boolean
+  created_at?: string
+  updated_at?: string
+}
+
+export interface AdditionalOptionRecord {
+  id: string
+  company_id: string
+  name: string
+  name_bn?: string | null
+  product_id?: string | null
+  pricing_method: 'sqft' | 'per_piece' | 'fixed' | string
+  selling_price: number
+  cost: number
+  is_active: boolean
+  created_at?: string
+  updated_at?: string
+}
+
+export interface InstallationOptionRecord {
+  id: string
+  company_id: string
+  name: string
+  name_bn?: string | null
+  fulfillment_type: 'installation' | 'delivery' | 'pickup' | 'custom' | string
+  pricing_method: 'fixed' | 'per_piece' | 'sqft' | 'per_km' | string
+  selling_price: number
+  cost: number
+  creates_task: boolean
+  is_active: boolean
+  created_at?: string
+  updated_at?: string
+}
