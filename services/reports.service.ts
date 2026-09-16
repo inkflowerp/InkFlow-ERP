@@ -237,17 +237,20 @@ export class ReportsService {
 
   static getInventoryValuation(): InventoryValuationItem[] {
     const materials = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
-    return materials.map((m, idx) => ({
-      id: `iv-${idx}`,
-      materialName: m.name,
-      category: m.category,
-      stockQty: m.current_stock,
-      unit: m.unit,
-      unitCost: m.average_cost,
-      totalValue: m.current_stock * m.average_cost,
-      reorderLevel: m.min_stock_level,
-      isLowStock: m.current_stock <= m.min_stock_level,
-    }))
+    return materials.map((m, idx) => {
+      const unitCost = Number(m.average_cost ?? m.cost_per_unit ?? m.last_purchase_price ?? 0)
+      return {
+        id: `iv-${idx}`,
+        materialName: m.name,
+        category: m.category,
+        stockQty: m.current_stock,
+        unit: m.unit,
+        unitCost,
+        totalValue: m.current_stock * unitCost,
+        reorderLevel: m.min_stock_level,
+        isLowStock: m.current_stock <= m.min_stock_level,
+      }
+    })
   }
 
   static getCustomerReports(): CustomerReportItem[] {

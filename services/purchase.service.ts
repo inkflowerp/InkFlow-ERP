@@ -465,6 +465,55 @@ export class PurchaseService {
           console.error(`[PurchaseService] V3 Stock mutation error for material ${item.material_id}:`, err)
         }
 
+        // Spawn Individual Physical Rolls if this is a roll material or purchased in rolls
+        try {
+          const material = await InventoryRepository.getMaterialById(item.material_id, params.company_id)
+          const isRoll =
+            (item.unit && item.unit.toLowerCase() === 'roll') ||
+            Boolean(material?.is_roll) ||
+            material?.material_type === 'roll'
+
+          if (isRoll) {
+            const rollWidth = Number((item as any).roll_width_ft || material?.roll_width_ft || material?.width || 4)
+            const rollLength = Number(
+              (item as any).roll_length_ft ||
+                material?.roll_length_ft ||
+                material?.length ||
+                material?.standard_roll_length_ft ||
+                164
+            )
+            const rollCost = item.unit_cost !== undefined ? item.unit_cost : 0
+
+            for (let r = 0; r < accepted; r++) {
+              const rollIndex = (r + 1).toString().padStart(3, '0')
+              const rollCode = item.roll_id
+                ? accepted === 1
+                  ? item.roll_id
+                  : `${item.roll_id}-${rollIndex}`
+                : `ROLL-${Date.now().toString().slice(-5)}-${rollIndex}`
+
+              await InventoryRepository.createPhysicalRoll({
+                company_id: params.company_id,
+                branch_id: params.branch_id || po.branch_id || null,
+                location_id: params.receiving_location_id || null,
+                material_id: item.material_id,
+                roll_code: rollCode,
+                width_ft: rollWidth,
+                initial_length_ft: rollLength,
+                unit_cost: rollCost,
+                purchase_order_id: po.id,
+                grn_id: grn.id,
+                supplier_id: po.supplier_id,
+                batch_lot_number: item.batch_lot_number || null,
+                location_name: 'Main Store',
+                notes: `Received via GRN ${grn.grn_number} (PO ${po.po_number})`,
+              })
+            }
+          }
+        } catch (rollErr: any) {
+          console.error(`[PurchaseService] Physical roll creation error for material ${item.material_id}:`, rollErr)
+        }
+
         // Record Supplier Price History
         try {
           await SupplierRepository.recordSupplierPriceHistory({

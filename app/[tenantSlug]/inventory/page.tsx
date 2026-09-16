@@ -560,7 +560,7 @@ export default function InventoryDashboardPage() {
                             </td>
 
                             <td className="py-3.5 px-4 text-xs font-mono font-bold text-slate-900 dark:text-white">
-                              <CurrencyDisplay amount={mat.average_cost} />
+                              <CurrencyDisplay amount={mat.average_cost || mat.cost_per_unit || 0} />
                             </td>
 
                             <td className="py-3.5 px-4 font-mono font-black text-emerald-600 text-sm">
@@ -621,7 +621,7 @@ export default function InventoryDashboardPage() {
                         <div>
                           <span className="text-[10px] text-slate-400 block">Valuation:</span>
                           <span className="font-mono font-bold text-emerald-600 text-sm">
-                            <CurrencyDisplay amount={mat.current_stock * mat.average_cost} />
+                            <CurrencyDisplay amount={mat.current_stock * (mat.average_cost || mat.cost_per_unit || 0)} />
                           </span>
                         </div>
                       </div>

@@ -15,6 +15,7 @@ import type {
   InventoryRollRecord,
   InventoryTransactionType,
   MaterialUnit,
+  MaterialWastageRecord,
 } from '../../types/inventory.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { measureAsync } from '../performance/logger.ts'
@@ -791,48 +792,64 @@ export class InventoryRepository {
   // INVENTORY REMNANTS
   // ==========================================
 
-  static async getRemnants(companyId: string, options?: {
-    materialId?: string
-    status?: string
-    locationId?: string
-  }): Promise<InventoryRemnantRecord[]> {
-    const supabase = await createClient()
-    let query = (supabase as any)
-      .from('inventory_remnants')
-      .select('*, parent_material:materials(id, name, sku, unit), location:inventory_locations(id, location_name, location_code)')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+  static async getRemnants(
+    companyId: string,
+    options?: { materialId?: string; status?: string; locationId?: string }
+  ): Promise<InventoryRemnantRecord[]> {
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('inventory_remnants')
+        .select('*, parent_material:materials(id, name, sku, unit), location:inventory_locations(id, location_name, location_code)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
 
-    if (options?.materialId) {
-      query = query.eq('parent_material_id', options.materialId)
-    }
-    if (options?.status && options.status !== 'all') {
-      query = query.eq('status', options.status)
-    }
-    if (options?.locationId) {
-      query = query.eq('location_id', options.locationId)
-    }
+      if (options?.materialId) {
+        query = query.eq('parent_material_id', options.materialId)
+      }
+      if (options?.status && options.status !== 'all') {
+        query = query.eq('status', options.status)
+      }
+      if (options?.locationId) {
+        query = query.eq('location_id', options.locationId)
+      }
 
-    const { data, error } = await query
-    if (error) {
-      throw new Error(`Failed to fetch inventory remnants: ${error.message}`)
+      const { data, error } = await query
+      if (error) {
+        throw new Error(`Failed to fetch inventory remnants: ${error.message}`)
+      }
+      return (data || []) as unknown as InventoryRemnantRecord[]
+    } catch {
+      const all = PrintERPDataStore.get<InventoryRemnantRecord[]>(STORAGE_KEYS.REMNANTS) || []
+      let filtered = all.filter((r) => !r.company_id || r.company_id === companyId)
+      if (options?.materialId) {
+        filtered = filtered.filter((r) => r.parent_material_id === options.materialId)
+      }
+      if (options?.status && options.status !== 'all') {
+        filtered = filtered.filter((r) => r.status === options.status)
+      }
+      return filtered
     }
-    return (data || []) as unknown as InventoryRemnantRecord[]
   }
 
   static async getRemnantById(id: string, companyId: string): Promise<InventoryRemnantRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('inventory_remnants')
-      .select('*, parent_material:materials(id, name, sku, unit), location:inventory_locations(id, location_name, location_code)')
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('inventory_remnants')
+        .select('*, parent_material:materials(id, name, sku, unit), location:inventory_locations(id, location_name, location_code)')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch inventory remnant ${id}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch inventory remnant ${id}: ${error.message}`)
+      }
+      return (data as unknown as InventoryRemnantRecord) || null
+    } catch {
+      const all = PrintERPDataStore.get<InventoryRemnantRecord[]>(STORAGE_KEYS.REMNANTS) || []
+      return all.find((r) => r.id === id && (!r.company_id || r.company_id === companyId)) || null
     }
-    return (data as unknown as InventoryRemnantRecord) || null
   }
 
   static async createRemnant(params: {
@@ -851,60 +868,86 @@ export class InventoryRepository {
     notes?: string | null
     created_by_name: string
   }): Promise<InventoryRemnantRecord> {
-    const supabase = await createClient()
     const remnantCode = `REM-${Date.now().toString().slice(-6)}`
     const dimUnit = params.dimension_unit || 'ft'
     const areaSft = dimUnit === 'ft' ? params.width * params.length : (params.width * params.length) / 144
 
-    const { data, error } = await (supabase as any)
-      .from('inventory_remnants')
-      .insert({
-        company_id: params.company_id,
-        branch_id: params.branch_id || null,
-        remnant_code: remnantCode,
-        parent_material_id: params.parent_material_id,
-        production_task_id: params.production_task_id || null,
-        issue_item_id: params.issue_item_id || null,
-        location_id: params.location_id,
-        width: params.width,
-        length: params.length,
-        dimension_unit: dimUnit,
-        area_sft: areaSft,
-        quantity: params.quantity || 1,
-        unit: params.unit || 'pcs',
-        condition: params.condition || 'usable',
-        status: 'available',
-        notes: params.notes?.trim() || null,
-        created_by_name: params.created_by_name,
-      })
-      .select('*, parent_material:materials(id, name, sku, unit), location:inventory_locations(id, location_name, location_code)')
-      .single()
-
-    if (error) {
-      throw new Error(`Failed to create remnant: ${error.message}`)
-    }
-
-    // Ledger audit entry for remnant creation
-    await (supabase as any).from('stock_ledger').insert({
+    const remnantRecord: InventoryRemnantRecord = {
+      id: `rem-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       company_id: params.company_id,
       branch_id: params.branch_id || null,
-      material_id: params.parent_material_id,
-      location_id: params.location_id,
-      transaction_type: 'REMNANT',
-      quantity_change: params.quantity || 1,
-      unit: params.unit || 'pcs',
-      balance_after: 0,
-      unit_cost: 0,
-      total_cost: 0,
-      reference_type: 'INVENTORY_REMNANT',
-      reference_id: data.id,
+      remnant_code: remnantCode,
+      parent_material_id: params.parent_material_id,
       production_task_id: params.production_task_id || null,
-      notes: `Reusable remnant logged: ${remnantCode} (${params.width}x${params.length} ${dimUnit})`,
-      performed_by_name: params.created_by_name,
+      issue_item_id: params.issue_item_id || null,
+      location_id: params.location_id,
+      width: params.width,
+      length: params.length,
+      dimension_unit: dimUnit,
+      area_sft: areaSft,
+      quantity: params.quantity || 1,
+      unit: params.unit || 'pcs',
+      condition: params.condition || 'usable',
+      status: 'available',
+      notes: params.notes?.trim() || null,
+      created_by_name: params.created_by_name,
       created_at: new Date().toISOString(),
-    })
+      updated_at: new Date().toISOString(),
+    }
 
-    return data as unknown as InventoryRemnantRecord
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('inventory_remnants')
+        .insert({
+          company_id: params.company_id,
+          branch_id: params.branch_id || null,
+          remnant_code: remnantCode,
+          parent_material_id: params.parent_material_id,
+          production_task_id: params.production_task_id || null,
+          issue_item_id: params.issue_item_id || null,
+          location_id: params.location_id,
+          width: params.width,
+          length: params.length,
+          dimension_unit: dimUnit,
+          area_sft: areaSft,
+          quantity: params.quantity || 1,
+          unit: params.unit || 'pcs',
+          condition: params.condition || 'usable',
+          status: 'available',
+          notes: params.notes?.trim() || null,
+          created_by_name: params.created_by_name,
+        })
+        .select('*, parent_material:materials(id, name, sku, unit), location:inventory_locations(id, location_name, location_code)')
+        .single()
+
+      if (!error && data) {
+        // Ledger audit entry for remnant creation
+        await (supabase as any).from('stock_ledger').insert({
+          company_id: params.company_id,
+          branch_id: params.branch_id || null,
+          material_id: params.parent_material_id,
+          location_id: params.location_id,
+          transaction_type: 'REMNANT',
+          quantity_change: params.quantity || 1,
+          unit: params.unit || 'pcs',
+          balance_after: 0,
+          unit_cost: 0,
+          total_cost: 0,
+          reference_type: 'INVENTORY_REMNANT',
+          reference_id: data.id,
+          production_task_id: params.production_task_id || null,
+          notes: `Reusable remnant logged: ${remnantCode} (${params.width}x${params.length} ${dimUnit})`,
+          performed_by_name: params.created_by_name,
+          created_at: new Date().toISOString(),
+        })
+        PrintERPDataStore.addItem(STORAGE_KEYS.REMNANTS, data)
+        return data as unknown as InventoryRemnantRecord
+      }
+    } catch {}
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.REMNANTS, remnantRecord)
+    return remnantRecord
   }
 
   static async updateRemnantStatus(
@@ -1111,35 +1154,315 @@ export class InventoryRepository {
   // ==========================================
 
   static async getStockLedger(companyId: string, materialId?: string): Promise<StockLedgerRecord[]> {
-    const supabase = await createClient()
-    let query = (supabase as any)
-      .from('stock_ledger')
-      .select('*, material:materials(name, sku), location:inventory_locations(location_name, location_code)')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('stock_ledger')
+        .select('*, material:materials(name, sku), location:inventory_locations(location_name, location_code)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
 
-    if (materialId) {
-      query = query.eq('material_id', materialId)
-    }
+      if (materialId) {
+        query = query.eq('material_id', materialId)
+      }
 
-    const { data, error } = await query
-    if (error) {
-      throw new Error(`Failed to fetch stock ledger: ${error.message}`)
+      const { data, error } = await query
+      if (error) {
+        throw new Error(`Failed to fetch stock ledger: ${error.message}`)
+      }
+      return (data || []) as unknown as StockLedgerRecord[]
+    } catch {
+      const all = PrintERPDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
+      let filtered = all.filter((l) => !l.company_id || l.company_id === companyId)
+      if (materialId) {
+        filtered = filtered.filter((l) => l.material_id === materialId)
+      }
+      return filtered
     }
-    return (data || []) as unknown as StockLedgerRecord[]
   }
 
-  static async getInventoryRolls(companyId: string): Promise<InventoryRollRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('inventory_rolls')
-      .select('*, material:materials!inner(company_id, name, sku)')
-      .eq('materials.company_id', companyId)
-      .order('created_at', { ascending: false })
+  // ==========================================
+  // PHYSICAL ROLLS MANAGEMENT (V3 ARCHITECTURE)
+  // ==========================================
 
-    if (error) {
-      throw new Error(`Failed to fetch inventory rolls: ${error.message}`)
+  static async getInventoryRolls(
+    companyId: string,
+    options?: { materialId?: string; status?: string; locationId?: string }
+  ): Promise<InventoryRollRecord[]> {
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('inventory_rolls')
+        .select('*, material:materials(id, name, sku, unit)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
+
+      if (options?.materialId) {
+        query = query.eq('material_id', options.materialId)
+      }
+      if (options?.status && options.status !== 'all') {
+        query = query.eq('status', options.status)
+      }
+      if (options?.locationId) {
+        query = query.eq('location_id', options.locationId)
+      }
+
+      const { data, error } = await query
+      if (!error && data) {
+        return (data || []) as unknown as InventoryRollRecord[]
+      }
+    } catch {}
+
+    const all = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+    return all.filter((r) => {
+      if (r.company_id && r.company_id !== companyId) return false
+      if (options?.materialId && r.material_id !== options.materialId) return false
+      if (options?.status && options.status !== 'all' && r.status !== options.status) return false
+      return true
+    })
+  }
+
+  static async getInventoryRollById(id: string, companyId: string): Promise<InventoryRollRecord | null> {
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('inventory_rolls')
+        .select('*, material:materials(id, name, sku, unit)')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
+
+      if (!error && data) {
+        return data as unknown as InventoryRollRecord
+      }
+    } catch {}
+
+    const all = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+    return all.find((r) => r.id === id || r.roll_code === id || r.roll_tag === id) || null
+  }
+
+  static async createPhysicalRoll(params: {
+    id?: string
+    company_id: string
+    branch_id?: string | null
+    location_id?: string | null
+    material_id: string
+    roll_code?: string
+    width_ft: number
+    initial_length_ft: number
+    unit_cost?: number
+    purchase_order_id?: string | null
+    grn_id?: string | null
+    supplier_id?: string | null
+    batch_lot_number?: string | null
+    location_name?: string
+    notes?: string | null
+  }): Promise<InventoryRollRecord> {
+    const rollId = params.id || crypto.randomUUID()
+    const rollCode = params.roll_code || `ROLL-${Date.now().toString().slice(-6)}`
+    const initialArea = Math.round(params.width_ft * params.initial_length_ft * 100) / 100
+    const unitCost = Number(params.unit_cost) || 0
+    const totalCost = unitCost > 0 ? unitCost : 0
+
+    const payload: InventoryRollRecord = {
+      id: rollId,
+      company_id: params.company_id,
+      branch_id: params.branch_id || null,
+      location_id: params.location_id || null,
+      material_id: params.material_id,
+      roll_code: rollCode,
+      roll_tag: rollCode,
+      width_ft: params.width_ft,
+      initial_length_ft: params.initial_length_ft,
+      current_length_ft: params.initial_length_ft,
+      initial_area_sft: initialArea,
+      consumed_area_sft: 0,
+      remaining_area_sft: initialArea,
+      current_area_sft: initialArea,
+      status: 'available',
+      location_name: params.location_name || 'Main Store',
+      unit_cost: unitCost,
+      total_cost: totalCost,
+      purchase_order_id: params.purchase_order_id || null,
+      grn_id: params.grn_id || null,
+      supplier_id: params.supplier_id || null,
+      batch_lot_number: params.batch_lot_number || null,
+      notes: params.notes || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
-    return (data || []) as unknown as InventoryRollRecord[]
+
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('inventory_rolls')
+        .insert(payload)
+        .select()
+        .single()
+
+      if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
+        return payload
+      }
+    } catch {}
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
+    return payload
+  }
+
+  static async consumeFromPhysicalRoll(params: {
+    company_id: string
+    roll_id: string
+    linear_length_consumed_ft: number
+    production_task_id?: string | null
+    job_order_id?: string | null
+    operator_name?: string
+    notes?: string | null
+  }): Promise<{ roll: InventoryRollRecord; remnant?: InventoryRemnantRecord | null }> {
+    const roll = await this.getInventoryRollById(params.roll_id, params.company_id)
+    if (!roll) {
+      throw new Error(`Physical Roll ${params.roll_id} not found.`)
+    }
+
+    const currentLen = Number(roll.current_length_ft ?? roll.remaining_area_sft / roll.width_ft)
+    const consumedLen = Math.min(currentLen, Math.max(0, Number(params.linear_length_consumed_ft) || 0))
+    const consumedArea = Math.round(consumedLen * roll.width_ft * 100) / 100
+
+    const newRemainingLen = Math.max(0, Math.round((currentLen - consumedLen) * 100) / 100)
+    const newRemainingArea = Math.round(newRemainingLen * roll.width_ft * 100) / 100
+    const newConsumedArea = (Number(roll.consumed_area_sft) || 0) + consumedArea
+
+    const isDepleted = newRemainingLen <= 0.5 // less than 6 inches is considered depleted
+    const newStatus: any = isDepleted ? 'depleted' : 'in_use'
+
+    const updatedRollPayload: Partial<InventoryRollRecord> = {
+      current_length_ft: newRemainingLen,
+      remaining_area_sft: newRemainingArea,
+      current_area_sft: newRemainingArea,
+      consumed_area_sft: newConsumedArea,
+      status: newStatus,
+      updated_at: new Date().toISOString(),
+    }
+
+    let updatedRoll: InventoryRollRecord = { ...roll, ...updatedRollPayload }
+
+    try {
+      const supabase = await createClient()
+      const { data } = await (supabase as any)
+        .from('inventory_rolls')
+        .update(updatedRollPayload)
+        .eq('id', roll.id)
+        .select()
+        .single()
+
+      if (data) updatedRoll = data as unknown as InventoryRollRecord
+    } catch {}
+
+    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll)
+
+    // Log Stock Ledger Entry for Roll Consumption
+    await this.recordStockAdjustment({
+      company_id: params.company_id,
+      branch_id: roll.branch_id || null,
+      material_id: roll.material_id,
+      location_id: roll.location_id || null,
+      quantity_change: -consumedArea,
+      transaction_type: 'CONSUMPTION',
+      unit_cost: roll.unit_cost || 0,
+      reference_type: 'INVENTORY_ROLL',
+      reference_id: roll.id,
+      production_task_id: params.production_task_id || null,
+      notes: `Consumed ${consumedLen}ft (${consumedArea} sqft) from Roll ${roll.roll_code || roll.roll_tag}. Remaining: ${newRemainingLen}ft.`,
+      performed_by_name: params.operator_name || 'Production Operator',
+    })
+
+    // Create Remnant if usable offcut remains and roll was marked depleted or split
+    let remnant: InventoryRemnantRecord | null = null
+    if (newRemainingLen >= 2.0) { // at least 2 feet long offcut is considered a usable remnant
+      try {
+        remnant = await this.createRemnant({
+          company_id: params.company_id,
+          branch_id: roll.branch_id || null,
+          parent_material_id: roll.material_id,
+          production_task_id: params.production_task_id || null,
+          location_id: roll.location_id || 'loc-main',
+          width: roll.width_ft,
+          length: newRemainingLen,
+          dimension_unit: 'ft',
+          condition: 'usable',
+          notes: `Offcut from roll ${roll.roll_code || roll.roll_tag}`,
+          created_by_name: params.operator_name || 'Production Operator',
+        })
+      } catch {}
+    }
+
+    return { roll: updatedRoll, remnant }
+  }
+
+  static async findCompatibleRemnants(
+    companyId: string,
+    materialId: string,
+    minWidthFt: number,
+    minLengthFt: number
+  ): Promise<InventoryRemnantRecord[]> {
+    const allRemnants = await this.getRemnants(companyId, { materialId, status: 'available' })
+    return allRemnants.filter(
+      (r) =>
+        (Number(r.width) >= minWidthFt && Number(r.length) >= minLengthFt) ||
+        (Number(r.width) >= minLengthFt && Number(r.length) >= minWidthFt)
+    )
+  }
+
+  static async recordWastage(params: {
+    company_id: string
+    material_id: string
+    material_name?: string
+    job_order_id?: string | null
+    production_task_id?: string | null
+    expected_usage?: number
+    actual_usage?: number
+    wastage_quantity: number
+    unit?: string
+    wastage_reason: string
+    estimated_cost?: number
+    operator_name?: string
+  }): Promise<MaterialWastageRecord> {
+    const wastageId = crypto.randomUUID()
+    const payload: MaterialWastageRecord = {
+      id: wastageId,
+      company_id: params.company_id,
+      material_id: params.material_id,
+      material_name: params.material_name,
+      job_order_id: params.job_order_id || null,
+      production_task_id: params.production_task_id || null,
+      expected_usage: params.expected_usage || 0,
+      actual_usage: params.actual_usage || 0,
+      wastage_quantity: params.wastage_quantity,
+      unit: (params.unit || 'sft') as MaterialUnit,
+      wastage_reason: params.wastage_reason,
+      estimated_cost: params.estimated_cost || 0,
+      created_at: new Date().toISOString(),
+    }
+
+    try {
+      const supabase = await createClient()
+      await (supabase as any).from('material_wastages').insert(payload)
+    } catch {}
+
+    // Ledger Entry for Wastage
+    await this.recordStockAdjustment({
+      company_id: params.company_id,
+      material_id: params.material_id,
+      quantity_change: -Math.abs(params.wastage_quantity),
+      transaction_type: 'WASTAGE',
+      reference_type: 'MATERIAL_WASTAGE',
+      reference_id: wastageId,
+      production_task_id: params.production_task_id || null,
+      notes: `Production Wastage: ${params.wastage_reason} (${params.wastage_quantity} ${params.unit || 'sft'})`,
+      performed_by_name: params.operator_name || 'Production Operator',
+    })
+
+    return payload
   }
 }
+

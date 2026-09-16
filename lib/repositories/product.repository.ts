@@ -101,8 +101,29 @@ export function enrichProductRecord(p: ProductRecord): ProductRecord {
       ? 'per_hour'
       : 'per_piece')) as PricingMethod
 
+  const entityType =
+    p.entity_type ||
+    (p.product_type === 'ready_product'
+      ? 'product'
+      : p.product_type === 'material'
+      ? 'material'
+      : p.product_type === 'finishing'
+      ? 'finishing'
+      : p.product_type === 'additional'
+      ? 'additional'
+      : p.product_type === 'installation'
+      ? 'installation'
+      : p.commercial_type === 'service' || p.product_type === 'print_service'
+      ? 'service'
+      : 'product')
+
   return {
     ...p,
+    entity_type: entityType,
+    service_config: p.service_config || null,
+    material_config: p.material_config || null,
+    is_service: p.is_service !== undefined ? Boolean(p.is_service) : entityType === 'service',
+    is_ready_product: p.is_ready_product !== undefined ? Boolean(p.is_ready_product) : entityType === 'product',
     commercial_type: p.commercial_type || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'production_product' : 'service'),
     measurement_type: p.measurement_type || 'area',
     pricing_method: pricingMethod,
@@ -171,13 +192,17 @@ export class ProductRepository {
     companyId: string,
     activeOnly: boolean = false,
     category?: string,
-    search?: string
+    search?: string,
+    entityType?: string
   ): Promise<ProductRecord[]> {
     return measureAsync(`ProductRepository.getProducts(${companyId})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
         const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
         let filtered = prods.filter((p) => !p.company_id || p.company_id === companyId)
         if (activeOnly) filtered = filtered.filter((p) => p.is_active !== false)
+        if (entityType && entityType !== 'all') {
+          filtered = filtered.filter((p) => p.entity_type === entityType)
+        }
         if (category && category !== 'all') filtered = filtered.filter((p) => p.category === category || p.product_type === category)
         if (search && search.trim()) {
           const q = search.trim().toLowerCase()
@@ -202,6 +227,10 @@ export class ProductRepository {
 
         if (activeOnly) {
           query = query.eq('is_active', true)
+        }
+
+        if (entityType && entityType !== 'all') {
+          query = query.eq('entity_type', entityType)
         }
 
         if (category && category !== 'all') {
@@ -433,6 +462,11 @@ export class ProductRepository {
         requires_finishing: Boolean(product.requires_finishing),
         requires_installation: Boolean(product.requires_installation),
         requires_delivery: Boolean(product.requires_delivery),
+        entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : 'product'),
+        service_config: product.service_config || null,
+        material_config: product.material_config || null,
+        is_service: product.is_service !== undefined ? Boolean(product.is_service) : (product.entity_type === 'service' || product.product_type === 'print_service'),
+        is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (product.entity_type === 'product' || product.product_type === 'ready_product'),
         default_department: product.default_department || 'printing',
         estimated_production_time_hours: Number(product.estimated_production_time_hours) || 4.0,
         default_finishing: product.default_finishing?.trim() || null,

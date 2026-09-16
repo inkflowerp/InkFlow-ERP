@@ -91,6 +91,10 @@ import {
 } from '@/actions/product.actions'
 import { getCategoriesAction } from '@/actions/category.actions'
 import { CategoryModal } from '@/components/categories/category-modal'
+import { EntityTypeSelectorModal } from '@/components/products/entity-type-selector-modal'
+import { ReadyProductModal } from '@/components/products/ready-product-modal'
+import { ServiceConfigModal } from '@/components/products/service-config-modal'
+import { MaterialConfigModal } from '@/components/products/material-config-modal'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { createQuotationAction } from '@/actions/quotation.actions'
 import { convertToFeet } from '@/lib/pricing-engine'
@@ -130,11 +134,18 @@ export default function ProductsCatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'low_margin' | 'archived'>('active')
+  const [entityTypeFilter, setEntityTypeFilter] = useState<'all' | 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation'>('all')
 
   // Notification alert
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
-  // Modals
+  // Rebuilt V3 Modals State
+  const [isTypeSelectorOpen, setIsTypeSelectorOpen] = useState(false)
+  const [isReadyProductModalOpen, setIsReadyProductModalOpen] = useState(false)
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false)
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
+
+  // Legacy modal state fallback
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [formTab, setFormTab] = useState<'basic' | 'units' | 'pricing' | 'costing' | 'components' | 'suppliers' | 'production' | 'advanced'>('basic')
   const [expandedSections, setExpandedSections] = useState<{
@@ -624,8 +635,55 @@ export default function ProductsCatalogPage() {
     }))
   }
 
-  // Handle open create modal
+  // Rebuilt V3 Modal Handlers
   const handleOpenCreate = () => {
+    const check = checkCanCreate('max_products')
+    if (!check.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
+    setEditingProduct(null)
+    setIsTypeSelectorOpen(true)
+  }
+
+  const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation') => {
+    setEditingProduct(null)
+    if (type === 'product') {
+      setIsReadyProductModalOpen(true)
+    } else if (type === 'service' || type === 'finishing' || type === 'additional' || type === 'installation') {
+      setIsServiceModalOpen(true)
+    } else if (type === 'material') {
+      setIsMaterialModalOpen(true)
+    }
+  }
+
+  const handleOpenEdit = (p: ProductRecord) => {
+    setEditingProduct(p)
+    if (p.entity_type === 'service' || p.product_type === 'print_service' || p.product_type === 'service') {
+      setIsServiceModalOpen(true)
+    } else if (p.entity_type === 'material' || p.product_type === 'material') {
+      setIsMaterialModalOpen(true)
+    } else {
+      setIsReadyProductModalOpen(true)
+    }
+  }
+
+  const handleSaveRebuiltProduct = async (productData: Partial<ProductRecord>) => {
+    if (editingProduct) {
+      const res = await updateProductAction(editingProduct.id, productData, companyId)
+      if (!res.success) throw new Error(res.error || 'Failed to update item.')
+      showNotification(`Updated '${productData.name || editingProduct.name}' successfully.`)
+    } else {
+      const res = await createProductAction(productData as any, companyId)
+      if (!res.success) throw new Error(res.error || 'Failed to create item.')
+      refreshUsage()
+      showNotification(`Registered new item '${productData.name}' into catalog.`)
+    }
+    await loadProducts()
+  }
+
+  // Legacy open modal fallback
+  const handleOpenLegacyCreate = () => {
     const check = checkCanCreate('max_products')
     if (!check.allowed) {
       openLimitExceededModal('max_products')
@@ -706,18 +764,8 @@ export default function ProductsCatalogPage() {
     setIsCreateOpen(true)
   }
 
-  // Handle open edit modal
-  const handleOpenEdit = (p: ProductRecord) => {
+  const handleOpenLegacyEdit = (p: ProductRecord) => {
     setEditingProduct(p)
-    setFormTab('basic')
-    loadSupplierPrices(p.id)
-    setExpandedSections({
-      purchasing: Boolean((Number(p.purchase_price) > 0 || (p.purchase_unit && p.purchase_unit !== 'pcs')) && p.commercial_type !== 'service'),
-      production: Boolean(p.requires_production || p.requires_fabrication || p.requires_finishing || p.requires_installation || p.requires_delivery || p.default_finishing || p.production_instructions),
-      minimums: Boolean((Number(p.min_order_quantity) && Number(p.min_order_quantity) > 1) || (Number(p.min_billable_quantity) && Number(p.min_billable_quantity) > 0) || (Number(p.minimum_charge) && Number(p.minimum_charge) > 0)),
-      costing: Boolean(p.cost_breakdown && Object.values(p.cost_breakdown).some(v => Number(v) > 0)),
-      components: Boolean(p.components && p.components.length > 0),
-    })
     setFormData({
       name: p.name,
       name_bn: p.name_bn || '',
@@ -1207,6 +1255,16 @@ export default function ProductsCatalogPage() {
         p.commercial_type === selectedType ||
         p.product_type === selectedType
 
+      const matchEntityType =
+        entityTypeFilter === 'all' ||
+        p.entity_type === entityTypeFilter ||
+        (entityTypeFilter === 'product' && (p.product_type === 'ready_product' || p.commercial_type === 'ready_product')) ||
+        (entityTypeFilter === 'service' && (p.product_type === 'print_service' || p.commercial_type === 'service')) ||
+        (entityTypeFilter === 'material' && (p.product_type === 'material' || p.commercial_type === 'material')) ||
+        (entityTypeFilter === 'finishing' && (p.product_type === 'finishing' || p.commercial_type === 'finishing')) ||
+        (entityTypeFilter === 'additional' && (p.product_type === 'additional' || p.commercial_type === 'additional')) ||
+        (entityTypeFilter === 'installation' && (p.product_type === 'installation' || p.commercial_type === 'installation'))
+
       const margin =
         p.selling_price > 0
           ? ((p.selling_price - p.base_cost) / p.selling_price) * 100
@@ -1217,9 +1275,9 @@ export default function ProductsCatalogPage() {
       else if (statusFilter === 'archived') matchStatus = p.is_active === false
       else if (statusFilter === 'low_margin') matchStatus = margin < 20 && p.is_active !== false
 
-      return matchSearch && matchCategory && matchType && matchStatus
+      return matchSearch && matchCategory && matchType && matchEntityType && matchStatus
     })
-  }, [products, search, selectedCategory, selectedType, statusFilter])
+  }, [products, search, selectedCategory, selectedType, entityTypeFilter, statusFilter])
 
   // Business Owner Signal Metrics
   const metrics = useMemo(() => {
@@ -1354,6 +1412,33 @@ export default function ProductsCatalogPage() {
           </div>
           <span className="text-[11px] text-slate-400">Historical snapshots preserved</span>
         </Card>
+      </div>
+
+      {/* Architectural Entity Type Tabs */}
+      <div className="flex border-b border-border/70 gap-1.5 overflow-x-auto pb-2 scrollbar-none text-xs font-semibold">
+        {[
+          { id: 'all', label: 'All Items' },
+          { id: 'product', label: 'Ready Products' },
+          { id: 'service', label: 'Services' },
+          { id: 'material', label: 'Raw Materials' },
+          { id: 'finishing', label: 'Finishing' },
+          { id: 'additional', label: 'Additional Work' },
+          { id: 'installation', label: 'Installation & Delivery' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setEntityTypeFilter(tab.id as any)}
+            className={cn(
+              'px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap text-xs',
+              entityTypeFilter === tab.id
+                ? 'bg-primary text-primary-foreground shadow-xs font-bold'
+                : 'bg-card border border-border/60 text-muted-foreground hover:bg-accent hover:text-foreground'
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Search, Category, Commercial Type & Status Filters */}
@@ -1806,13 +1891,21 @@ export default function ProductsCatalogPage() {
                           setNewTargetMargin(item.target_margin_percentage || 35)
                           setNewWastage(item.default_wastage_percentage || 0)
                         }}
-                        className="h-9 px-3 text-xs"
+                        className="h-9 px-2.5 text-xs"
                       >
                         <Edit3 className="h-3.5 w-3.5 mr-1" /> Price
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenEdit(item)}
+                        className="h-9 px-2.5 text-xs"
+                      >
+                        Edit
+                      </Button>
                       <Link
                         href={`/${slug}/products/${item.id}`}
-                        className="inline-flex items-center justify-center h-9 px-3 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                        className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                       >
                         Detail
                       </Link>
@@ -3222,6 +3315,48 @@ export default function ProductsCatalogPage() {
         }}
         existingCategories={categories}
         editingCategory={editingCategory}
+      />
+
+      {/* ======================================================== */}
+      {/* REBUILT V3 ARCHITECTURAL MODALS */}
+      {/* ======================================================== */}
+      <EntityTypeSelectorModal
+        isOpen={isTypeSelectorOpen}
+        onClose={() => setIsTypeSelectorOpen(false)}
+        onSelect={handleSelectEntityType}
+      />
+
+      <ReadyProductModal
+        isOpen={isReadyProductModalOpen}
+        onClose={() => {
+          setIsReadyProductModalOpen(false)
+          setEditingProduct(null)
+        }}
+        onSave={handleSaveRebuiltProduct}
+        initialData={editingProduct}
+        categories={categories}
+      />
+
+      <ServiceConfigModal
+        isOpen={isServiceModalOpen}
+        onClose={() => {
+          setIsServiceModalOpen(false)
+          setEditingProduct(null)
+        }}
+        onSave={handleSaveRebuiltProduct}
+        initialData={editingProduct}
+        categories={categories}
+      />
+
+      <MaterialConfigModal
+        isOpen={isMaterialModalOpen}
+        onClose={() => {
+          setIsMaterialModalOpen(false)
+          setEditingProduct(null)
+        }}
+        onSave={handleSaveRebuiltProduct}
+        initialData={editingProduct}
+        categories={categories}
       />
     </div>
   )

@@ -123,16 +123,32 @@ export interface InventoryStockBalanceRecord {
 
 export interface InventoryRollRecord {
   id: string
+  company_id?: string
+  branch_id?: string | null
+  location_id?: string | null
   material_id: string
+  roll_code?: string
   roll_tag: string
   width_ft: number
   initial_length_ft: number
+  current_length_ft?: number
   initial_area_sft: number
   consumed_area_sft: number
   remaining_area_sft: number
-  status: 'in_warehouse' | 'mounted' | 'depleted' | 'scrapped'
+  current_area_sft?: number
+  status: 'available' | 'reserved' | 'mounted' | 'in_use' | 'depleted' | 'scrapped' | 'in_warehouse'
   mounted_press_name?: string | null
+  location_name?: string
+  unit_cost?: number
+  total_cost?: number
+  purchase_order_id?: string | null
+  grn_id?: string | null
+  supplier_id?: string | null
+  batch_lot_number?: string | null
+  notes?: string | null
+  material?: Partial<MaterialRecord>
   created_at: string
+  updated_at?: string
 }
 
 export interface StockLedgerRecord {
@@ -194,6 +210,9 @@ export interface MaterialRecord {
   width?: number | null
   length?: number | null
   dimension_unit?: string | null
+  available_widths_ft?: number[]
+  standard_roll_length_ft?: number
+  default_allowance_per_side_in?: number
   unit: MaterialUnit
   base_unit?: string | null
   conversion_factor?: number
@@ -202,13 +221,15 @@ export interface MaterialRecord {
   roll_length_ft?: number | null
   total_roll_area_sft?: number | null
   current_stock: number
-  reorder_level?: number
   min_stock_level: number
+  reorder_level?: number
   coverage_rate_sft_per_unit?: number | null
-  last_purchase_price: number
-  average_cost: number
-  manual_cost: number
-  valuation_method: ValuationMethod
+  cost_per_unit?: number
+  average_cost?: number
+  last_purchase_price?: number
+  manual_cost?: number
+  valuation_method?: ValuationMethod
+  preferred_supplier_id?: string | null
   location?: string | null
   is_active?: boolean
   notes?: string | null

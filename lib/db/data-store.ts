@@ -114,6 +114,8 @@ export const STORAGE_KEYS = {
   MATERIALS: 'printerp_tenant_materials',
   MOUNTED_ROLLS: 'printerp_tenant_mounted_rolls',
   STOCK_LEDGER: 'printerp_tenant_stock_ledger',
+  REMNANTS: 'printerp_tenant_remnants',
+  LOCATIONS: 'printerp_tenant_locations',
   PRODUCTION_JOBS: 'printerp_tenant_production_jobs',
   REWORKS: 'printerp_tenant_reworks',
   INVOICES: 'printerp_tenant_invoices',

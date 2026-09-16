@@ -11,6 +11,7 @@ export type ProductType =
   | 'production_product'
   | 'service'
   | 'finishing'
+  | 'additional'
   | 'fabrication'
   | 'installation'
   | 'delivery'
@@ -21,6 +22,7 @@ export type CommercialProductType =
   | 'production_product'
   | 'service'
   | 'finishing'
+  | 'additional'
   | 'fabrication'
   | 'installation'
   | 'delivery'
@@ -553,6 +555,14 @@ export interface ProductRecord {
   created_at: string
   updated_at: string
   usage_stats?: ProductUsageStats
+  // V3 Rebuild Architecture additions
+  entity_type?: EntityType
+  is_service?: boolean
+  is_ready_product?: boolean
+  service_config?: ServiceConfiguration | null
+  material_config?: MaterialConfiguration | null
+  available_widths_ft?: number[]
+  standard_roll_length_ft?: number
   // Computed commercial helpers
   effective_unit_cost?: number
   suggested_selling_price?: number
@@ -560,6 +570,106 @@ export interface ProductRecord {
   estimated_material_cost?: number
   estimated_direct_cost?: number
   cost_basis_type?: CostBasisType
+}
+
+export type EntityType = 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation'
+
+export interface ServiceDimensionPreset {
+  id?: string
+  width: number
+  length: number
+  unit?: 'ft' | 'inch' | 'm' | string
+  label?: string
+}
+
+export interface ServiceAllowanceRule {
+  widthAllowancePerSide: number
+  lengthAllowancePerSide: number
+  unit: 'inch' | 'ft' | 'mm' | 'cm' | string
+}
+
+export interface ServiceRequiredMaterial {
+  id?: string
+  material_id?: string
+  material_name: string
+  is_required?: boolean
+  consumption_rule?: 'roll_geometry' | 'area_direct' | 'linear_direct' | 'liquid_volume' | 'piece_count' | 'roll_linear_length' | 'area_sqft' | string
+  allowance_per_side?: number
+  allowance_per_side_in?: number
+  allowance_unit?: string
+  unit?: string
+  consumption_unit?: string
+  compatible_widths_ft?: number[]
+  waste_percent?: number
+}
+
+export interface ServiceFinishingOption {
+  id: string
+  name: string
+  name_bn?: string
+  material_id?: string
+  material_name?: string
+  pricing_method: string // 'per_sqft' | 'per_rft' | 'per_piece' | 'fixed'
+  price?: number
+  unit_price?: number
+  cost?: number
+  unit_cost?: number
+  is_default?: boolean
+}
+
+export interface ServiceAdditionalOption {
+  id: string
+  name: string
+  name_bn?: string
+  product_id?: string
+  product_name?: string
+  pricing_method: string // 'per_piece' | 'per_sqft' | 'fixed'
+  price?: number
+  unit_price?: number
+  cost?: number
+  unit_cost?: number
+}
+
+export interface ServiceInstallationOption {
+  id: string
+  name: string
+  name_bn?: string
+  fulfillment_type?: 'installation' | 'delivery' | 'pickup' | string
+  pricing_method: string // 'per_sqft' | 'per_piece' | 'fixed' | 'per_job'
+  price?: number
+  unit_price?: number
+  cost?: number
+  unit_cost?: number
+  creates_task?: boolean
+}
+
+export interface ServiceConfiguration {
+  dimension_presets?: ServiceDimensionPreset[]
+  presets?: ServiceDimensionPreset[]
+  allow_custom_dimensions?: boolean
+  default_unit?: 'ft' | 'inch' | 'm' | string
+  dimension_unit?: 'ft' | 'inch' | 'm' | string
+  allowance_rule?: ServiceAllowanceRule
+  required_materials?: ServiceRequiredMaterial[]
+  finishing_options?: ServiceFinishingOption[]
+  additional_options?: ServiceAdditionalOption[]
+  installation_options?: ServiceInstallationOption[]
+  min_charge?: number
+  minimum_charge?: number
+  min_billable_qty?: number
+  pricing_method?: string
+}
+
+export interface MaterialConfiguration {
+  material_type?: 'roll' | 'sheet' | 'rigid' | 'liquid' | 'hardware' | 'accessory'
+  available_widths_ft?: number[]
+  standard_roll_length_ft?: number
+  purchase_unit?: string
+  purchase_price?: number
+  usage_unit?: string
+  conversion_ratio?: number
+  default_allowance_per_side_in?: number
+  reorder_level?: number
 }
 
 export interface PriceHistoryRecord {

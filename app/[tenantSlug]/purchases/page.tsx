@@ -577,7 +577,7 @@ export default function PurchasesPage() {
                     const matId = e.target.value
                     setSelectedMaterialId(matId)
                     const found = materials.find((m: MaterialRecord) => m.id === matId)
-                    if (found) setPoUnitCost(found.last_purchase_price || found.average_cost)
+                    if (found) setPoUnitCost(found.last_purchase_price || found.average_cost || found.cost_per_unit || 0)
                   }}
                   className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
                   required

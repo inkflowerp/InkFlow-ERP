@@ -175,6 +175,12 @@ export const PRODUCT_TYPE_DEFAULT_MAP: Record<
     requires_production: false,
     product_type: 'material',
   },
+  additional: {
+    pricing_method: 'per_piece',
+    selling_unit: 'piece',
+    requires_production: false,
+    product_type: 'ready_product',
+  },
 }
 
 export const PRICING_METHOD_DEFAULT_MAP: Record<string, { selling_unit: string; unit_label: string }> = {
