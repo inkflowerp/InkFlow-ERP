@@ -56,6 +56,14 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           permission: { action: 'view', resource: 'invoices' },
         },
         {
+          key: 'customers',
+          title: 'Customers',
+          titleBn: 'কাস্টমার',
+          href: `/${tenantSlug}/customers`,
+          icon: 'Users',
+          permission: { action: 'view', resource: 'customers' },
+        },
+        {
           key: 'operator',
           title: 'My Work',
           titleBn: 'আমার কাজ',
@@ -87,14 +95,6 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
       title: 'Work',
       titleBn: 'কাজ',
       items: [
-        {
-          key: 'customers',
-          title: 'Customers',
-          titleBn: 'কাস্টমার',
-          href: `/${tenantSlug}/customers`,
-          icon: 'Users',
-          permission: { action: 'view', resource: 'customers' },
-        },
         {
           key: 'sales',
           title: 'Sales & Quotes',
