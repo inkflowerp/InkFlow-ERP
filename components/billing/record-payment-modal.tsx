@@ -298,7 +298,7 @@ export function RecordPaymentModal({
             </div>
             <div>
               <h2 className="text-base font-black text-slate-900 dark:text-white">
-                {locale === 'bn' ? 'পেমেন্ট আদায় (Receive Payment)' : 'Receive Payment'}
+                {locale === 'bn' ? 'বকেয়া আদায় (Collect Due)' : 'Collect Due'}
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Search invoice or customer • Partial or full collection • Instant receipt

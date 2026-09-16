@@ -458,7 +458,7 @@ export default function BillingPage() {
               className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
               <DollarSign className="h-4 w-4" />
-              <span>Receive Payment</span>
+              <span>Collect Due</span>
             </Button>
 
             <Button
@@ -1424,7 +1424,7 @@ export default function BillingPage() {
                                 }}
                                 className="h-7 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs px-3 cursor-pointer"
                               >
-                                Receive Payment
+                                Collect Due
                               </Button>
                             </td>
                           </tr>
@@ -1484,7 +1484,7 @@ export default function BillingPage() {
                             }}
                             className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs px-3 cursor-pointer"
                           >
-                            Receive Payment
+                            Collect Due
                           </Button>
                         </div>
                       </div>

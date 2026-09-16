@@ -227,7 +227,7 @@ export default function InvoiceCockpitPage() {
                   className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white font-bold gap-1 h-9"
                 >
                   <DollarSign className="h-3.5 w-3.5" />
-                  Receive Payment (MR)
+                  Collect Due (MR)
                 </Button>
 
                 <Button
