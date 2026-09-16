@@ -97,7 +97,7 @@ export default function BillingPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'invoices' | 'payments' | 'receivables'>(initialTab)
 
   // Period & Filters
-  const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>('today')
+  const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>('this_month')
   const [invoiceFilterTab, setInvoiceFilterTab] = useState<string>('all')
   const [priorityTab, setPriorityTab] = useState<'all' | 'due_today' | 'overdue' | 'high_value'>('all')
   const [search, setSearch] = useState('')
@@ -468,11 +468,12 @@ export default function BillingPage() {
         {/* Period Selector & Refresh Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-bold">
-            {(['today', 'this_week', 'this_month'] as BillingPeriod[]).map((p) => {
+            {(['this_month', 'this_week', 'today', 'all_time'] as BillingPeriod[]).map((p) => {
               const labels: Record<BillingPeriod, string> = {
-                today: 'Today',
-                this_week: 'This Week',
                 this_month: 'This Month',
+                this_week: 'This Week',
+                today: 'Today',
+                all_time: 'All Time',
                 custom: 'Custom',
               }
               const isSelected = selectedPeriod === p

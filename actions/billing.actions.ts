@@ -385,7 +385,7 @@ export async function getInvoiceByIdAction(
  * Server Action: Fetch period-aware billing & collections overview metrics
  */
 export async function getBillingOverviewAction(
-  period: BillingPeriod = 'today',
+  period: BillingPeriod = 'this_month',
   customRange?: { start: string; end: string },
   requestedCompanyId?: string
 ): Promise<ServerActionResult<{

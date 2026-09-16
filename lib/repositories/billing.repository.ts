@@ -1346,7 +1346,7 @@ export class BillingRepository {
    */
   static async getBillingOverview(
     companyId: string,
-    period: BillingPeriod = 'today',
+    period: BillingPeriod = 'this_month',
     customRange?: { start: string; end: string }
   ): Promise<{
     metrics: BillingOverviewMetrics
@@ -1358,9 +1358,13 @@ export class BillingRepository {
 
     let startDate = todayStr
     let endDate = todayStr
-    let periodLabel = "Today's"
+    let periodLabel = 'This Month'
 
-    if (period === 'this_week') {
+    if (period === 'today') {
+      startDate = todayStr
+      endDate = todayStr
+      periodLabel = "Today's"
+    } else if (period === 'this_week') {
       const d = new Date()
       const day = d.getDay()
       const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Monday
@@ -1372,6 +1376,10 @@ export class BillingRepository {
       startDate = `${todayStr.slice(0, 7)}-01`
       endDate = todayStr
       periodLabel = 'This Month'
+    } else if (period === 'all_time') {
+      startDate = '2000-01-01'
+      endDate = todayStr
+      periodLabel = 'All Time'
     } else if (period === 'custom' && customRange) {
       startDate = customRange.start
       endDate = customRange.end

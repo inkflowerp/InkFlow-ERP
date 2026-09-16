@@ -126,7 +126,7 @@ export interface InvoiceRecord {
   updated_at: string
 }
 
-export type BillingPeriod = 'today' | 'this_week' | 'this_month' | 'custom'
+export type BillingPeriod = 'today' | 'this_week' | 'this_month' | 'all_time' | 'custom'
 
 export interface BillingOverviewMetrics {
   period: BillingPeriod
