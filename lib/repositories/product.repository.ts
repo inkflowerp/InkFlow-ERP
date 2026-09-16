@@ -6,11 +6,143 @@ import type {
   PriceListRecord,
   PriceListItemRecord,
   PriceHistoryRecord,
+  PriceOverrideRecord,
   ProductUsageStats,
   ResolvedProductPrice,
+  ProductSupplierPriceRecord,
+  ProductComponent,
+  ProductCostBreakdown,
+  ProductPriceTiers,
+  PricingMethod,
+  PriceTierKey,
 } from '../../types/product.types.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import {
+  calculateEffectiveUnitCost,
+  calculateGrossMargin,
+  calculateSuggestedSellingPrice,
+  applyMinimumCharge,
+  validateUnitConversion,
+  normalizeUnitCode,
+  calculateCommercialPricing,
+  normalizePricingMethod,
+  validateCircularBOM,
+} from '../units.ts'
+
+export function enrichProductRecord(p: ProductRecord): ProductRecord {
+  const purchasePrice = Number(p.purchase_price) || 0
+  const conversionRatio = Math.max(0.0001, Number(p.conversion_ratio) || 1.0)
+  const defaultWastage = Math.max(0, Number(p.default_wastage_percentage) || 0)
+  const targetMargin = Number(p.target_margin_percentage) !== undefined ? Number(p.target_margin_percentage) : 35.0
+  const minAllowedMargin = Number(p.min_allowed_margin_percent) !== undefined ? Number(p.min_allowed_margin_percent) : 15.0
+  const sellingPrice = Number(p.selling_price) || 0
+
+  let effectiveCost = Number(p.base_cost) || 0
+  if (purchasePrice > 0 && conversionRatio > 0) {
+    const costCalc = calculateEffectiveUnitCost({
+      purchasePrice,
+      conversionRatio,
+      defaultWastagePercent: defaultWastage,
+    })
+    effectiveCost = costCalc.effectiveCostPerSellingUnit
+  }
+
+  // Component Cost Rollup (BOM / Recipe)
+  const components: ProductComponent[] = Array.isArray(p.components) ? p.components : []
+  let componentCostTotal = 0
+  if (components.length > 0) {
+    componentCostTotal = components.reduce((sum, c) => {
+      const cCost = Number(c.cost_contribution) || 0
+      const cQty = Number(c.quantity) || 1
+      const cWaste = Math.max(0, Number(c.waste_percent) || 0)
+      const wasteMultiplier = 1 + cWaste / 100
+      return sum + cCost * cQty * wasteMultiplier
+    }, 0)
+  }
+
+  // Multi-Component Direct Cost Breakdown
+  const cb = p.cost_breakdown || {}
+  const matCost = cb.material_cost !== undefined ? Number(cb.material_cost) : effectiveCost
+  const inkCost = Number(cb.ink_cost) || 0
+  const machCost = Number(cb.machine_cost) || 0
+  const labCost = Number(cb.labor_cost) || 0
+  const finCost = Number(cb.finishing_cost) || 0
+  const fabCost = Number(cb.fabrication_cost) || 0
+  const instCost = Number(cb.installation_cost) || 0
+  const delCost = Number(cb.delivery_cost) || 0
+  const othCost = Number(cb.other_direct_cost) || 0
+
+  const directCostSum = matCost + inkCost + machCost + labCost + finCost + fabCost + instCost + delCost + othCost
+  const estimatedDirectCost = directCostSum > matCost ? directCostSum : (componentCostTotal > 0 ? effectiveCost + componentCostTotal : effectiveCost)
+  const estimatedMaterialCost = effectiveCost
+
+  let costBasisType: 'material_cost' | 'direct_cost' | 'none' = 'none'
+  let activeCostBasis = 0
+  if (estimatedDirectCost > estimatedMaterialCost) {
+    costBasisType = 'direct_cost'
+    activeCostBasis = estimatedDirectCost
+  } else if (estimatedMaterialCost > 0) {
+    costBasisType = 'material_cost'
+    activeCostBasis = estimatedMaterialCost
+  }
+
+  const suggestedPrice = calculateSuggestedSellingPrice(activeCostBasis || effectiveCost, targetMargin)
+  const marginCalc = calculateGrossMargin(activeCostBasis || effectiveCost, sellingPrice)
+
+  const pricingMethod = (normalizePricingMethod(p.pricing_method) ||
+    (p.measurement_type === 'area'
+      ? 'per_area'
+      : p.measurement_type === 'length'
+      ? 'per_length'
+      : p.measurement_type === 'job'
+      ? 'per_job'
+      : p.measurement_type === 'time'
+      ? 'per_hour'
+      : 'per_piece')) as PricingMethod
+
+  return {
+    ...p,
+    commercial_type: p.commercial_type || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'production_product' : 'service'),
+    measurement_type: p.measurement_type || 'area',
+    pricing_method: pricingMethod,
+    selling_unit: p.selling_unit || p.unit,
+    purchase_unit: p.purchase_unit || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'roll' : p.unit),
+    purchase_price: purchasePrice,
+    conversion_ratio: conversionRatio,
+    production_unit: p.production_unit || p.unit,
+    default_wastage_percentage: defaultWastage,
+    target_margin_percentage: targetMargin,
+    min_allowed_margin_percent: minAllowedMargin,
+    minimum_charge: Number(p.minimum_charge) || 0,
+    min_billable_quantity: p.min_billable_quantity !== null && p.min_billable_quantity !== undefined ? Math.max(0, Number(p.min_billable_quantity)) : 0,
+    min_order_quantity: p.min_order_quantity !== null && p.min_order_quantity !== undefined ? Math.max(0, Number(p.min_order_quantity)) : 1.0,
+    allow_manual_override: p.allow_manual_override !== undefined ? Boolean(p.allow_manual_override) : true,
+    price_tiers: p.price_tiers || {},
+    cost_breakdown: {
+      material_cost: matCost,
+      ink_cost: inkCost,
+      machine_cost: machCost,
+      labor_cost: labCost,
+      finishing_cost: finCost,
+      fabrication_cost: fabCost,
+      installation_cost: instCost,
+      delivery_cost: delCost,
+      other_direct_cost: othCost,
+      total_direct_cost: estimatedDirectCost,
+    },
+    components,
+    supplier_prices: p.supplier_prices || [],
+    vat_applicable: Boolean(p.vat_applicable),
+    is_tax_inclusive: Boolean(p.is_tax_inclusive),
+    effective_unit_cost: effectiveCost,
+    estimated_material_cost: estimatedMaterialCost,
+    estimated_direct_cost: estimatedDirectCost,
+    cost_basis_type: costBasisType,
+    suggested_selling_price: suggestedPrice,
+    gross_margin_percent: marginCalc.grossMarginPercent,
+  }
+}
 
 export function isSupabaseConfigured(): boolean {
   return !!(
@@ -84,7 +216,8 @@ export class ProductRepository {
           throw new Error(`Failed to load products: ${error.message}`)
         }
 
-        return (data || []) as ProductRecord[]
+        const enriched = ((data || []) as ProductRecord[]).map(enrichProductRecord)
+        return enriched
       } catch (err: any) {
         throw new Error(`Database error fetching products: ${err.message}`)
       }
@@ -123,7 +256,7 @@ export class ProductRepository {
 
         if (!data) return null
 
-        const prod = data as ProductRecord
+        const prod = enrichProductRecord(data as ProductRecord)
         const stats = await this.getProductUsageStats(prod.id, companyId)
         return { ...prod, usage_stats: stats }
       } catch (err: any) {
@@ -204,6 +337,32 @@ export class ProductRepository {
         throw new Error(`Product with SKU '${normalizedSku}' already exists in your company catalog.`)
       }
 
+      const purchasePrice = Math.max(0, Number(product.purchase_price) || 0)
+      const conversionRatio = Math.max(0.0001, Number(product.conversion_ratio) || 1.0)
+      const defaultWastage = Math.max(0, Number(product.default_wastage_percentage) || 0)
+      const targetMargin = Number(product.target_margin_percentage) !== undefined ? Number(product.target_margin_percentage) : 35.0
+
+      // Calculate effective base cost if purchase economics are provided
+      let calculatedBaseCost = Math.max(0, Number(product.base_cost) || 0)
+      if (purchasePrice > 0 && conversionRatio > 0) {
+        const costCalc = calculateEffectiveUnitCost({
+          purchasePrice,
+          conversionRatio,
+          defaultWastagePercent: defaultWastage,
+        })
+        if (calculatedBaseCost === 0) {
+          calculatedBaseCost = costCalc.effectiveCostPerSellingUnit
+        }
+      }
+
+      // Validate against circular BOM reference
+      if (product.components && Array.isArray(product.components)) {
+        const circularCheck = validateCircularBOM(product.id, product.components)
+        if (circularCheck.hasCycle) {
+          throw new Error(circularCheck.error)
+        }
+      }
+
       const payload: any = {
         company_id: product.company_id,
         branch_id: product.branch_id || null,
@@ -212,12 +371,51 @@ export class ProductRepository {
         sku: normalizedSku,
         category: product.category || 'general_print',
         product_type: product.product_type || 'print_service',
+        commercial_type: product.commercial_type || 'production_product',
+        measurement_type: product.measurement_type || (product.selling_unit === 'sft' || product.unit === 'sft' || product.category?.includes('flex') ? 'area' : 'piece'),
+        pricing_method: normalizePricingMethod(
+          product.pricing_method ||
+            (product.measurement_type === 'area' || product.selling_unit === 'sft' || product.unit === 'sft' || product.category?.includes('flex') || product.category?.includes('banner')
+              ? 'per_area'
+              : product.measurement_type === 'length' || product.selling_unit === 'rft' || product.unit === 'rft'
+              ? 'per_length'
+              : product.measurement_type === 'job'
+              ? 'per_job'
+              : product.measurement_type === 'time'
+              ? 'per_hour'
+              : product.measurement_type === 'weight'
+              ? 'per_weight'
+              : product.measurement_type === 'volume'
+              ? 'per_volume'
+              : 'per_piece')
+        ),
         unit: product.unit,
+        selling_unit: product.selling_unit || product.unit,
+        purchase_unit: product.purchase_unit || (product.product_type === 'print_service' ? 'roll' : product.unit),
+        purchase_price: purchasePrice,
+        conversion_ratio: conversionRatio,
+        production_unit: product.production_unit || product.unit,
+        default_wastage_percentage: defaultWastage,
+        target_margin_percentage: targetMargin,
+        min_allowed_margin_percent: product.min_allowed_margin_percent !== undefined ? Number(product.min_allowed_margin_percent) : 15.0,
+        minimum_charge: Math.max(0, Number(product.minimum_charge) || 0),
+        min_billable_quantity: product.min_billable_quantity !== undefined && product.min_billable_quantity !== null ? Math.max(0, Number(product.min_billable_quantity)) : 0,
+        min_order_quantity: product.min_order_quantity !== undefined && product.min_order_quantity !== null ? Math.max(0.01, Number(product.min_order_quantity)) : 1.0,
+        allow_manual_override: product.allow_manual_override !== undefined ? Boolean(product.allow_manual_override) : true,
+        price_tiers: product.price_tiers || {},
+        cost_breakdown: product.cost_breakdown || {},
+        components: product.components || [],
+        vat_applicable: Boolean(product.vat_applicable),
+        is_tax_inclusive: Boolean(product.is_tax_inclusive),
+        roll_width_ft: product.roll_width_ft !== undefined && product.roll_width_ft !== null ? Number(product.roll_width_ft) : null,
+        roll_length_ft: product.roll_length_ft !== undefined && product.roll_length_ft !== null ? Number(product.roll_length_ft) : null,
+        sheet_width_ft: product.sheet_width_ft !== undefined && product.sheet_width_ft !== null ? Number(product.sheet_width_ft) : null,
+        sheet_length_ft: product.sheet_length_ft !== undefined && product.sheet_length_ft !== null ? Number(product.sheet_length_ft) : null,
         material_spec: product.material_spec?.trim() || null,
         description: product.description?.trim() || null,
         description_bn: product.description_bn?.trim() || null,
         dimensions_spec: product.dimensions_spec?.trim() || null,
-        base_cost: Math.max(0, Number(product.base_cost) || 0),
+        base_cost: calculatedBaseCost,
         selling_price: Math.max(0, Number(product.selling_price) || 0),
         min_price: Math.max(0, Number(product.min_price) || 0),
         tax_rate: product.tax_rate !== undefined ? Number(product.tax_rate) : 7.5,
@@ -242,10 +440,10 @@ export class ProductRepository {
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const testRecord: ProductRecord = {
+          const testRecord: ProductRecord = enrichProductRecord({
             id: product.id || `prd-test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             ...payload,
-          }
+          })
           PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord)
           return testRecord
         }
@@ -269,17 +467,18 @@ export class ProductRepository {
         }
 
         // In test mode keep store synced
+        const enriched = enrichProductRecord(data as ProductRecord)
         if (isTestMode()) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, data)
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, enriched)
         }
 
-        return data as ProductRecord
+        return enriched
       } catch (err: any) {
         if (isTestMode() && !err.message.includes('already exists')) {
-          const testRecord: ProductRecord = {
+          const testRecord: ProductRecord = enrichProductRecord({
             id: product.id || `prd-test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             ...payload,
-          }
+          })
           PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord)
           return testRecord
         }
@@ -302,6 +501,13 @@ export class ProductRepository {
         updates.sku = normalizedSku
       }
 
+      if (updates.components && Array.isArray(updates.components)) {
+        const circularCheck = validateCircularBOM(id, updates.components)
+        if (circularCheck.hasCycle) {
+          throw new Error(circularCheck.error)
+        }
+      }
+
       const payload: any = {
         ...updates,
         updated_at: new Date().toISOString(),
@@ -316,6 +522,16 @@ export class ProductRepository {
       if (payload.selling_price !== undefined) payload.selling_price = Math.max(0, Number(payload.selling_price))
       if (payload.min_price !== undefined) payload.min_price = Math.max(0, Number(payload.min_price))
       if (payload.tax_rate !== undefined) payload.tax_rate = Number(payload.tax_rate)
+      if (payload.purchase_price !== undefined) payload.purchase_price = Math.max(0, Number(payload.purchase_price))
+      if (payload.conversion_ratio !== undefined) payload.conversion_ratio = Math.max(0.0001, Number(payload.conversion_ratio))
+      if (payload.default_wastage_percentage !== undefined) payload.default_wastage_percentage = Math.max(0, Number(payload.default_wastage_percentage))
+      if (payload.target_margin_percentage !== undefined) payload.target_margin_percentage = Number(payload.target_margin_percentage)
+      if (payload.minimum_charge !== undefined) payload.minimum_charge = Math.max(0, Number(payload.minimum_charge))
+      if (payload.min_order_quantity !== undefined) payload.min_order_quantity = Math.max(0.01, Number(payload.min_order_quantity))
+      if (payload.min_billable_quantity !== undefined) payload.min_billable_quantity = Math.max(0, Number(payload.min_billable_quantity))
+      if (payload.min_allowed_margin_percent !== undefined) payload.min_allowed_margin_percent = Number(payload.min_allowed_margin_percent)
+      if (payload.allow_manual_override !== undefined) payload.allow_manual_override = Boolean(payload.allow_manual_override)
+      if (payload.pricing_method !== undefined) payload.pricing_method = normalizePricingMethod(payload.pricing_method)
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
@@ -324,7 +540,7 @@ export class ProductRepository {
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
           const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload)
           if (!updated) throw new Error(`Product ${id} not found in test store`)
-          return updated
+          return enrichProductRecord(updated)
         }
         throw new Error('Authoritative database connection is required to update a product.')
       }
@@ -347,18 +563,19 @@ export class ProductRepository {
           throw new Error(`Product ${id} not found in tenant catalog.`)
         }
 
+        const enriched = enrichProductRecord(data as ProductRecord)
         if (isTestMode()) {
-          PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, data)
+          PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, enriched)
         }
 
-        return data as ProductRecord
+        return enriched
       } catch (err: any) {
         if (isTestMode() && !err.message.includes('already assigned')) {
           const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
           const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
           const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload)
-          if (updated) return updated
+          if (updated) return enrichProductRecord(updated)
         }
         throw err
       }
@@ -605,7 +822,15 @@ export class ProductRepository {
     reason: string,
     companyId: string,
     changedByUserId?: string | null,
-    changedByName?: string
+    changedByName?: string,
+    commercialDetails?: {
+      oldPurchasePrice?: number
+      newPurchasePrice?: number
+      oldMarginPercent?: number
+      newMarginPercent?: number
+      oldWastagePercent?: number
+      newWastagePercent?: number
+    }
   ): Promise<PriceHistoryRecord> {
     const entry: PriceHistoryRecord = {
       id: `ph-${Date.now()}`,
@@ -613,6 +838,12 @@ export class ProductRepository {
       product_id: productId,
       old_price: oldPrice,
       new_price: newPrice,
+      old_purchase_price: commercialDetails?.oldPurchasePrice,
+      new_purchase_price: commercialDetails?.newPurchasePrice,
+      old_margin_percent: commercialDetails?.oldMarginPercent,
+      new_margin_percent: commercialDetails?.newMarginPercent,
+      old_wastage_percent: commercialDetails?.oldWastagePercent,
+      new_wastage_percent: commercialDetails?.newWastagePercent,
       reason: reason.trim() || 'Manual price adjustment',
       changed_by: changedByUserId || null,
       changed_by_name: changedByName || 'Current User',
@@ -636,6 +867,12 @@ export class ProductRepository {
           product_id: productId,
           old_price: oldPrice,
           new_price: newPrice,
+          old_purchase_price: commercialDetails?.oldPurchasePrice || null,
+          new_purchase_price: commercialDetails?.newPurchasePrice || null,
+          old_margin_percent: commercialDetails?.oldMarginPercent || null,
+          new_margin_percent: commercialDetails?.newMarginPercent || null,
+          old_wastage_percent: commercialDetails?.oldWastagePercent || null,
+          new_wastage_percent: commercialDetails?.newWastagePercent || null,
           reason: entry.reason,
           changed_by: changedByUserId || null,
           created_at: entry.created_at,
@@ -1045,11 +1282,14 @@ export class ProductRepository {
     productId: string,
     customerId: string | undefined,
     companyId: string,
-    options?: {
-      allowFloorOverride?: boolean
-      overrideReason?: string
-      authorizedBy?: string
-    }
+    options?:
+      | {
+          allowFloorOverride?: boolean
+          overrideReason?: string
+          authorizedBy?: string
+          tier?: string
+        }
+      | string
   ): Promise<ResolvedProductPrice> {
     return measureAsync(`ProductRepository.resolveCustomerProductPrice(${productId})`, async () => {
       const product = await this.getProductById(productId, companyId)
@@ -1060,6 +1300,9 @@ export class ProductRepository {
       const defaultRate = Number(product.selling_price) || 0
       const minPrice = Number(product.min_price) || 0
       const baseCost = Number(product.base_cost) || 0
+
+      const parsedOptions = typeof options === 'string' ? { tier: options } : options
+      const requestedTier = parsedOptions?.tier?.toLowerCase() as PriceTierKey | undefined
 
       let resolved: ResolvedProductPrice = {
         productId: product.id,
@@ -1075,7 +1318,29 @@ export class ProductRepository {
         sourceDetails: `Standard rate ৳${defaultRate}/${product.unit}`,
       }
 
-      if (customerId) {
+      // Check explicit tier override if provided
+      if (requestedTier && product.price_tiers && (product.price_tiers as any)[requestedTier] !== undefined) {
+        const tierRate = Number((product.price_tiers as any)[requestedTier])
+        if (tierRate > 0) {
+          resolved = {
+            productId: product.id,
+            productName: product.name,
+            sku: product.sku,
+            unit: product.unit,
+            sellingPrice: defaultRate,
+            effectiveRate: tierRate,
+            minPrice,
+            baseCost,
+            source: 'customer_tier',
+            sourceLabel: `${requestedTier.toUpperCase()} Tier Rate`,
+            sourceDetails: `Product ${requestedTier} tier price ৳${tierRate}/${product.unit}`,
+            appliedTier: requestedTier,
+            tier: requestedTier,
+          }
+        }
+      }
+
+      if (customerId && resolved.source === 'default') {
         let foundCustomRate = false
 
         // Tier 1: Check Customer-Specific Rate (customer_rates)
@@ -1137,7 +1402,7 @@ export class ProductRepository {
         // Tier 2 & 3: Check Customer Price List and Tier Markup
         if (!foundCustomRate) {
           try {
-            let customerCategory = 'retail'
+            let customerCategory = requestedTier || 'retail'
             let assignedPriceListId: string | null = null
 
             if (isSupabaseConfigured()) {
@@ -1149,14 +1414,14 @@ export class ProductRepository {
                 .maybeSingle()
 
               if (cust) {
-                customerCategory = cust.customer_type || cust.customer_category || 'retail'
+                customerCategory = requestedTier || cust.customer_type || cust.customer_category || 'retail'
                 assignedPriceListId = cust.price_list_id || null
               }
             } else if (isTestMode()) {
               const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
               const cust = customers.find((c) => c.id === customerId)
               if (cust) {
-                customerCategory = cust.customer_type || cust.customer_category || 'retail'
+                customerCategory = requestedTier || cust.customer_type || cust.customer_category || 'retail'
                 assignedPriceListId = cust.price_list_id || null
               }
             }
@@ -1209,6 +1474,28 @@ export class ProductRepository {
               }
             }
 
+            // Tier 2.5: Product Direct Price Tiers (retail, corporate, dealer, wholesale, custom)
+            if (!foundPriceListItem && product.price_tiers) {
+              const tierKey = customerCategory.toLowerCase() as PriceTierKey
+              if (product.price_tiers[tierKey] && Number(product.price_tiers[tierKey]) > 0) {
+                const tierRate = Number(product.price_tiers[tierKey])
+                resolved = {
+                  productId: product.id,
+                  productName: product.name,
+                  sku: product.sku,
+                  unit: product.unit,
+                  sellingPrice: defaultRate,
+                  effectiveRate: tierRate,
+                  minPrice,
+                  baseCost,
+                  source: 'customer_tier',
+                  sourceLabel: `${customerCategory.toUpperCase()} Tier Rate`,
+                  sourceDetails: `Product ${customerCategory} tier price ৳${tierRate}/${product.unit}`,
+                }
+                foundPriceListItem = true
+              }
+            }
+
             // Tier 3: Category Price List Markup
             if (!foundPriceListItem) {
               const priceLists = await this.getPriceLists(companyId)
@@ -1240,33 +1527,317 @@ export class ProductRepository {
         }
       }
 
+      // Calculate commercial economics
+      const purchasePrice = Number(product.purchase_price) || 0
+      const conversionRatio = Math.max(0.0001, Number(product.conversion_ratio) || 1.0)
+      const defaultWastage = Math.max(0, Number(product.default_wastage_percentage) || 0)
+      const targetMargin = Number(product.target_margin_percentage) !== undefined ? Number(product.target_margin_percentage) : 35.0
+      const minAllowedMargin = Number(product.min_allowed_margin_percent) !== undefined ? Number(product.min_allowed_margin_percent) : 15.0
+      const minimumCharge = Number(product.minimum_charge) || 0
+      const minOrderQty = Number(product.min_order_quantity) || 1.0
+      const minBillableQty = product.min_billable_quantity !== undefined && product.min_billable_quantity !== null ? Math.max(0, Number(product.min_billable_quantity)) : 0
+
+      let effectiveUnitCost = Number(product.base_cost) || 0
+      if (purchasePrice > 0 && conversionRatio > 0) {
+        const costCalc = calculateEffectiveUnitCost({
+          purchasePrice,
+          conversionRatio,
+          defaultWastagePercent: defaultWastage,
+        })
+        effectiveUnitCost = costCalc.effectiveCostPerSellingUnit
+      }
+
+      const suggestedPrice = calculateSuggestedSellingPrice(effectiveUnitCost, targetMargin)
+
       // ========================================================================
-      // TIER 5 / PHASE 8: MINIMUM PRICE SAFETY FLOOR ENFORCEMENT
+      // TIER 5 / PHASE 8: MINIMUM PRICE SAFETY FLOOR & LOW-MARGIN PROTECTION
       // ========================================================================
       const originalRate = resolved.effectiveRate
-      if (minPrice > 0 && originalRate < minPrice) {
-        resolved.isBelowMinimum = true
+      const preMarginCalc = calculateGrossMargin(effectiveUnitCost, originalRate)
+      const isBelowFloor = minPrice > 0 && originalRate < minPrice
+      const isLowMargin = minAllowedMargin > 0 && preMarginCalc.grossMarginPercent < minAllowedMargin
+
+      if (isBelowFloor || isLowMargin) {
+        resolved.isBelowMinimum = isBelowFloor
+        resolved.isBelowMinimumMargin = isLowMargin
         resolved.originalRequestedRate = originalRate
 
-        if (options?.allowFloorOverride && options.overrideReason?.trim()) {
+        if (parsedOptions?.allowFloorOverride && parsedOptions.overrideReason?.trim()) {
           // Authorized price override
           resolved.isFloorEnforced = false
           resolved.effectiveRate = originalRate
-          resolved.overrideReason = options.overrideReason.trim()
-          resolved.authorizedBy = options.authorizedBy || 'Authorized Manager'
-          resolved.sourceDetails = (resolved.sourceDetails || '') + ` [Floor Override: ৳${originalRate}/${product.unit}, Reason: ${options.overrideReason}]`
+          resolved.overrideReason = parsedOptions.overrideReason.trim()
+          resolved.authorizedBy = parsedOptions.authorizedBy || 'Authorized Manager'
+          resolved.sourceDetails = (resolved.sourceDetails || '') + ` [Floor Override: ৳${originalRate}/${product.unit}, Reason: ${parsedOptions.overrideReason}]`
+
+          // Log price override
+          ProductRepository.logPriceOverride(companyId, {
+            product_id: product.id,
+            product_name: product.name,
+            original_price: defaultRate,
+            override_price: originalRate,
+            overridden_price: originalRate,
+            original_margin_percent: calculateGrossMargin(effectiveUnitCost, defaultRate).grossMarginPercent,
+            override_margin_percent: preMarginCalc.grossMarginPercent,
+            overridden_margin_percent: preMarginCalc.grossMarginPercent,
+            reason: parsedOptions.overrideReason.trim(),
+            authorized_by_name: parsedOptions.authorizedBy || 'Authorized User',
+          }).catch(() => {})
         } else {
-          // Enforce minimum floor strictly: max(calculated/resolved rate, minimum allowed price)
+          // Enforce minimum floor strictly if below minPrice
           resolved.isFloorEnforced = true
-          resolved.effectiveRate = minPrice
-          resolved.sourceDetails = (resolved.sourceDetails || '') + ` [Floor Enforced: min ৳${minPrice}/${product.unit}]`
+          if (isBelowFloor) {
+            resolved.effectiveRate = minPrice
+            resolved.sourceDetails = (resolved.sourceDetails || '') + ` [Floor Enforced: min ৳${minPrice}/${product.unit}]`
+          } else {
+            resolved.sourceDetails = (resolved.sourceDetails || '') + ` [Low Margin: ${preMarginCalc.grossMarginPercent}% < min ${minAllowedMargin}%]`
+          }
         }
       } else {
         resolved.isBelowMinimum = false
+        resolved.isBelowMinimumMargin = false
         resolved.isFloorEnforced = false
       }
 
+      const finalMarginCalc = calculateGrossMargin(effectiveUnitCost, resolved.effectiveRate)
+
+      resolved.pricingMethod = product.pricing_method
+      resolved.minBillableQuantity = minBillableQty
+      resolved.minAllowedMarginPercent = minAllowedMargin
+      resolved.costBasisType = product.cost_basis_type
+      resolved.estimatedDirectCost = product.estimated_direct_cost
+      resolved.priceTiers = product.price_tiers
+      resolved.purchaseUnit = product.purchase_unit || product.unit
+      resolved.purchasePrice = purchasePrice
+      resolved.conversionRatio = conversionRatio
+      resolved.defaultWastagePercent = defaultWastage
+      resolved.targetMarginPercent = targetMargin
+      resolved.minimumCharge = minimumCharge
+      resolved.minOrderQuantity = minOrderQty
+      resolved.effectiveUnitCost = effectiveUnitCost
+      resolved.suggestedSellingPrice = suggestedPrice
+      resolved.grossProfitPerUnit = finalMarginCalc.grossProfit
+      resolved.grossMarginPercent = finalMarginCalc.grossMarginPercent
+
       return resolved
+    })
+  }
+
+  // ============================================================================
+  // SUPPLIER PURCHASE ECONOMICS METHODS
+  // ============================================================================
+
+  static async getProductSupplierPrices(
+    productId: string,
+    companyId: string
+  ): Promise<ProductSupplierPriceRecord[]> {
+    return measureAsync(`ProductRepository.getProductSupplierPrices(${productId})`, async () => {
+      if (!isSupabaseConfigured() || isTestMode()) {
+        const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES) || []
+        return prices.filter((p) => (!p.company_id || p.company_id === companyId) && p.product_id === productId)
+      }
+
+      try {
+        const supabase = await createClient()
+        const { data, error } = await (supabase as any)
+          .from('product_supplier_prices')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('product_id', productId)
+          .order('purchase_price', { ascending: true })
+
+        if (error) throw error
+        return (data || []) as ProductSupplierPriceRecord[]
+      } catch (err: any) {
+        if (isTestMode()) {
+          const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES) || []
+          return prices.filter((p) => (!p.company_id || p.company_id === companyId) && p.product_id === productId)
+        }
+        throw err
+      }
+    })
+  }
+
+  static async saveProductSupplierPrice(
+    companyId: string,
+    data: Partial<ProductSupplierPriceRecord> & { product_id: string; supplier_name: string; purchase_price: number }
+  ): Promise<ProductSupplierPriceRecord> {
+    return measureAsync(`ProductRepository.saveProductSupplierPrice`, async () => {
+      const record: ProductSupplierPriceRecord = {
+        id: data.id || `psp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        company_id: companyId,
+        product_id: data.product_id,
+        supplier_id: data.supplier_id || null,
+        supplier_name: data.supplier_name.trim(),
+        purchase_unit: data.purchase_unit || 'roll',
+        conversion_ratio: Math.max(0.0001, Number(data.conversion_ratio) || 1.0),
+        purchase_price: Math.max(0, Number(data.purchase_price) || 0),
+        moq: Math.max(0.01, Number(data.moq) || 1.0),
+        lead_time_days: Math.max(1, Number(data.lead_time_days) || 1),
+        last_purchase_date: data.last_purchase_date || null,
+        is_preferred: Boolean(data.is_preferred),
+        notes: data.notes || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      if (!isSupabaseConfigured() || isTestMode()) {
+        const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES) || []
+        const existingIdx = prices.findIndex((p) => p.id === record.id)
+        if (existingIdx >= 0) {
+          prices[existingIdx] = record
+        } else {
+          prices.push(record)
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, prices)
+        return record
+      }
+
+      const supabase = await createClient()
+      const { data: saved, error } = await (supabase as any)
+        .from('product_supplier_prices')
+        .upsert(record)
+        .select()
+        .single()
+
+      if (error) throw new Error(`Failed to save supplier price: ${error.message}`)
+      return saved as ProductSupplierPriceRecord
+    })
+  }
+
+  static async deleteProductSupplierPrice(id: string, companyId: string): Promise<boolean> {
+    return measureAsync(`ProductRepository.deleteProductSupplierPrice(${id})`, async () => {
+      if (!isSupabaseConfigured() || isTestMode()) {
+        const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES) || []
+        PrintERPDataStore.set(
+          STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES,
+          prices.filter((p) => p.id !== id || (p.company_id && p.company_id !== companyId))
+        )
+        return true
+      }
+
+      const supabase = await createClient()
+      const { error } = await (supabase as any)
+        .from('product_supplier_prices')
+        .delete()
+        .eq('id', id)
+        .eq('company_id', companyId)
+
+      if (error) throw error
+      return true
+    })
+  }
+
+  // ============================================================================
+  // PRICE OVERRIDES AUDITING METHODS
+  // ============================================================================
+
+  static async logPriceOverride(
+    companyId: string,
+    data: Partial<PriceOverrideRecord> & {
+      original_price: number
+      override_price?: number
+      overridden_price?: number
+      reason: string
+    }
+  ): Promise<PriceOverrideRecord> {
+    const overridePrice = Number(data.overridden_price ?? data.override_price) || 0
+    const entry: PriceOverrideRecord = {
+      id: data.id || `ovr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      company_id: companyId,
+      product_id: data.product_id || null,
+      product_name: data.product_name || null,
+      document_type: data.document_type || 'quotation',
+      document_code: data.document_code || null,
+      document_id: data.document_id || null,
+      original_price: Number(data.original_price) || 0,
+      override_price: overridePrice,
+      overridden_price: overridePrice,
+      original_margin_percent: data.original_margin_percent || null,
+      override_margin_percent: data.override_margin_percent || data.overridden_margin_percent || null,
+      overridden_margin_percent: data.override_margin_percent || data.overridden_margin_percent || null,
+      reason: data.reason.trim(),
+      authorized_by: data.authorized_by || data.authorized_by_name || null,
+      authorized_by_id: data.authorized_by_id || null,
+      authorized_by_name: data.authorized_by_name || data.authorized_by || 'Manager',
+      tenant_slug: data.tenant_slug || null,
+      created_at: new Date().toISOString(),
+    }
+
+    if (!isSupabaseConfigured() || isTestMode()) {
+      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry)
+      return entry
+    }
+
+    try {
+      const supabase = await createClient()
+      const { data: saved, error } = await (supabase as any)
+        .from('price_overrides')
+        .insert(entry)
+        .select()
+        .single()
+
+      if (error) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry)
+        return entry
+      }
+      return saved as PriceOverrideRecord
+    } catch {
+      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry)
+      return entry
+    }
+  }
+
+  static async getPriceOverrides(
+    companyId: string,
+    productId?: string,
+    limit: number = 50
+  ): Promise<PriceOverrideRecord[]> {
+    if (!isSupabaseConfigured() || isTestMode()) {
+      let entries = PrintERPDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES) || []
+      entries = entries.filter((e) => !e.company_id || e.company_id === companyId)
+      if (productId) entries = entries.filter((e) => e.product_id === productId)
+      return entries.slice(0, limit)
+    }
+
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('price_overrides')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (productId) {
+        query = query.eq('product_id', productId)
+      }
+
+      const { data, error } = await query
+      if (error) throw error
+      return (data || []) as PriceOverrideRecord[]
+    } catch {
+      let entries = PrintERPDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES) || []
+      entries = entries.filter((e) => !e.company_id || e.company_id === companyId)
+      if (productId) entries = entries.filter((e) => e.product_id === productId)
+      return entries.slice(0, limit)
+    }
+  }
+
+  // Ergonomic static aliases for seamless multi-tenant calling
+  static async upsertSupplierPrice(data: Partial<ProductSupplierPriceRecord> & { company_id: string; product_id: string; supplier_name: string; purchase_price: number }): Promise<ProductSupplierPriceRecord> {
+    return ProductRepository.saveProductSupplierPrice(data.company_id, data)
+  }
+
+  static async getSupplierPrices(productId: string, companyId: string): Promise<ProductSupplierPriceRecord[]> {
+    return ProductRepository.getProductSupplierPrices(productId, companyId)
+  }
+
+  static async recordPriceOverride(data: Partial<PriceOverrideRecord> & { company_id: string; original_price?: number; standard_price?: number; overridden_price?: number; override_price?: number; reason: string }): Promise<PriceOverrideRecord> {
+    return ProductRepository.logPriceOverride(data.company_id, {
+      ...data,
+      original_price: Number(data.original_price ?? data.standard_price) || 0,
+      overridden_price: Number(data.overridden_price ?? data.override_price) || 0,
     })
   }
 }

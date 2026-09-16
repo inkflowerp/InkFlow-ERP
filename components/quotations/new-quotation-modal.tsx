@@ -58,6 +58,7 @@ import { DEFAULT_QUOTATION_TERMS, DEFAULT_QUOTATION_TERMS_BN } from '@/types/quo
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { calculateCommercialPricing } from '@/lib/units'
 
 export interface NewQuotationModalProps {
   open: boolean
@@ -338,14 +339,21 @@ export function NewQuotationModal({
           if (it.product_id && map.has(it.product_id)) {
             const resolved = map.get(it.product_id)!
             const newRate = resolved.effectiveRate
-            const area = calculateItemArea(it.width || 0, it.height || 0, it.quantity || 1, it.dimension_unit)
-            const lineTotal = calculateLineTotal(area, it.quantity || 1, newRate)
+            const prod = productsCatalog.find((p) => p.id === it.product_id)
+            const lineMath = calculateLineTotal(
+              it.width || 0,
+              it.height || 0,
+              it.quantity || 1,
+              newRate,
+              prod,
+              it.dimension_unit
+            )
             return {
               ...it,
               unit_rate: newRate,
               rate_source: resolved.source,
-              area_sft: area,
-              item_total: lineTotal,
+              area_sft: lineMath.area,
+              item_total: lineMath.total,
             }
           }
           return it
@@ -416,11 +424,31 @@ export function NewQuotationModal({
     return Math.round(w * h * qty * 100) / 100
   }
 
-  const calculateLineTotal = (areaSft: number, qty: number, rate: number) => {
-    if (areaSft > 0) {
-      return Math.round(areaSft * rate)
+  const calculateLineTotal = (
+    w: number,
+    h: number,
+    qty: number,
+    rate: number,
+    prod?: ProductRecord | null,
+    dimUnit: 'ft' | 'inch' | 'm' = 'ft'
+  ) => {
+    const calc = calculateCommercialPricing({
+      pricingMethod: prod?.pricing_method,
+      unitPrice: rate,
+      quantity: qty,
+      width: w,
+      height: h,
+      dimensionUnit: dimUnit,
+      minBillableQuantity: prod && prod.min_billable_quantity !== undefined && prod.min_billable_quantity !== null ? Math.max(0, Number(prod.min_billable_quantity)) : 0,
+      minOrderQuantity: prod && prod.min_order_quantity !== undefined && prod.min_order_quantity !== null ? Math.max(0, Number(prod.min_order_quantity)) : 1,
+      minimumCharge: prod && prod.minimum_charge !== undefined ? Math.max(0, Number(prod.minimum_charge)) : 0,
+      materialUnitCost: prod ? Number(prod.effective_unit_cost ?? prod.base_cost) || 0 : 0,
+    })
+    return {
+      area: calc.areaSqft || calculateItemArea(w, h, qty, dimUnit),
+      total: calc.finalAmount,
+      calcResult: calc,
     }
-    return Math.round(qty * rate)
   }
 
   const handleProductSelect = (index: number, productId: string) => {
@@ -439,8 +467,14 @@ export function NewQuotationModal({
     setItems((prev) => {
       const copy = [...prev]
       const current = copy[index]
-      const area = calculateItemArea(current.width || 0, current.height || 0, current.quantity || 1, current.dimension_unit)
-      const lineTotal = calculateLineTotal(area, current.quantity || 1, rate)
+      const lineMath = calculateLineTotal(
+        current.width || 0,
+        current.height || 0,
+        current.quantity || 1,
+        rate,
+        prod,
+        current.dimension_unit
+      )
 
       copy[index] = {
         ...current,
@@ -448,11 +482,11 @@ export function NewQuotationModal({
         description: current.description || prod.name,
         description_bn: current.description_bn || prod.name_bn || '',
         material_spec: prod.material_spec || current.material_spec || '',
-        unit: prod.unit || current.unit || 'pcs',
+        unit: prod.selling_unit || prod.unit || current.unit || 'pcs',
         unit_rate: rate,
         rate_source: source,
-        area_sft: area,
-        item_total: lineTotal,
+        area_sft: lineMath.area,
+        item_total: lineMath.total,
         isSignageProduct: isSignage,
         installation_required: isSignage ? current.installation_required : false,
       }
@@ -475,11 +509,12 @@ export function NewQuotationModal({
       const rate = Number(field === 'unit_rate' ? value : item.unit_rate) || 0
       const dimUnit = field === 'dimension_unit' ? value : item.dimension_unit
 
-      const area = calculateItemArea(w, h, qty, dimUnit)
-      const lineTotal = calculateLineTotal(area, qty, rate)
+      const prod = item.product_id ? productsCatalog.find((p) => p.id === item.product_id) : null
 
-      item.area_sft = area
-      item.item_total = lineTotal
+      const lineMath = calculateLineTotal(w, h, qty, rate, prod, dimUnit)
+
+      item.area_sft = lineMath.area
+      item.item_total = lineMath.total
       copy[index] = item
       return copy
     })

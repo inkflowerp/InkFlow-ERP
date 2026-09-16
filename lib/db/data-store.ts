@@ -179,6 +179,8 @@ export const STORAGE_KEYS = {
   PRICE_LISTS: 'printerp_tenant_price_lists',
   PRICE_LIST_ITEMS: 'printerp_tenant_price_list_items',
   CUSTOMER_RATES: 'printerp_tenant_customer_rates',
+  PRICE_OVERRIDES: 'printerp_tenant_price_overrides',
+  PRODUCT_SUPPLIER_PRICES: 'printerp_tenant_product_supplier_prices',
   PURCHASE_REQUESTS: 'printerp_tenant_purchase_requests',
   PURCHASE_REQUEST_ITEMS: 'printerp_tenant_purchase_request_items',
   SUPPLIER_ITEMS: 'printerp_tenant_supplier_items',

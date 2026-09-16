@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useTransition } from 'react'
+import React, { useState, useEffect, useTransition, useMemo } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import {
@@ -32,6 +32,10 @@ import {
   Check,
   AlertTriangle,
   RefreshCw,
+  Scale,
+  Percent,
+  Coins,
+  Boxes,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -42,13 +46,6 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
-import type {
-  ProductRecord,
-  ProductVariantRecord,
-  ProductFormulaRecord,
-  PriceHistoryRecord,
-  ProductUsageStats,
-} from '@/types/product.types'
 import {
   getProductByIdAction,
   updateProductPriceAction,
@@ -59,7 +56,24 @@ import {
   getProductPriceHistoryAction,
   getProductUsageStatsAction,
   checkProductDeletionSafetyAction,
+  getProductSupplierPricesAction,
+  getPriceOverridesAction,
 } from '@/actions/product.actions'
+import type {
+  ProductRecord,
+  ProductVariantRecord,
+  ProductFormulaRecord,
+  PriceHistoryRecord,
+  ProductUsageStats,
+  ProductSupplierPriceRecord,
+  PriceOverrideRecord,
+} from '@/types/product.types'
+import {
+  calculateEffectiveUnitCost,
+  calculateGrossMargin,
+  calculateSuggestedSellingPrice,
+  normalizePricingMethod,
+} from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 export default function ProductDetailPage() {
@@ -73,6 +87,8 @@ export default function ProductDetailPage() {
 
   const [product, setProduct] = useState<ProductRecord | null>(null)
   const [priceHistory, setPriceHistory] = useState<PriceHistoryRecord[]>([])
+  const [supplierPrices, setSupplierPrices] = useState<ProductSupplierPriceRecord[]>([])
+  const [priceOverrides, setPriceOverrides] = useState<PriceOverrideRecord[]>([])
   const [usageStats, setUsageStats] = useState<ProductUsageStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -82,11 +98,25 @@ export default function ProductDetailPage() {
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   // Active detail tab
-  const [activeTab, setActiveTab] = useState<'overview' | 'production' | 'variants' | 'formula' | 'history' | 'usage'>('overview')
+  const [activeTab, setActiveTab] = useState<
+    | 'overview'
+    | 'commercial'
+    | 'price_tiers'
+    | 'cost_breakdown'
+    | 'recipe'
+    | 'suppliers'
+    | 'production'
+    | 'variants'
+    | 'history'
+    | 'usage'
+  >('overview')
 
   // Modals
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
   const [newPrice, setNewPrice] = useState<number>(0)
+  const [newPurchasePrice, setNewPurchasePrice] = useState<number>(0)
+  const [newTargetMargin, setNewTargetMargin] = useState<number>(35)
+  const [newWastage, setNewWastage] = useState<number>(0)
   const [priceReason, setPriceReason] = useState('')
 
   // Add Variant Modal
@@ -119,21 +149,34 @@ export default function ProductDetailPage() {
     setFetchError(null)
 
     try {
-      const [prodRes, histRes, statsRes] = await Promise.all([
+      const [prodRes, histRes, statsRes, suppRes, overrideRes] = await Promise.all([
         getProductByIdAction(productId, companyId),
         getProductPriceHistoryAction(productId, companyId),
         getProductUsageStatsAction(productId, companyId),
+        getProductSupplierPricesAction(productId, companyId),
+        getPriceOverridesAction(productId, 50, companyId),
       ])
 
       if (prodRes.success && prodRes.data) {
         setProduct(prodRes.data)
         setNewPrice(prodRes.data.selling_price)
+        setNewPurchasePrice(prodRes.data.purchase_price || 0)
+        setNewTargetMargin(prodRes.data.target_margin_percentage || 35)
+        setNewWastage(prodRes.data.default_wastage_percentage || 0)
       } else {
         setFetchError(prodRes.error || 'Product record not found in database.')
       }
 
       if (histRes.success && histRes.data) {
         setPriceHistory(histRes.data)
+      }
+
+      if (suppRes.success && suppRes.data) {
+        setSupplierPrices(suppRes.data)
+      }
+
+      if (overrideRes.success && overrideRes.data) {
+        setPriceOverrides(overrideRes.data)
       }
 
       if (statsRes.success && statsRes.data) {
@@ -150,7 +193,86 @@ export default function ProductDetailPage() {
     loadProductData()
   }, [productId, companyId])
 
-  // Handle Price Adjustment
+  // Commercial economics derivation
+  const commercialEconomics = useMemo(() => {
+    if (!product) return null
+
+    const isService =
+      product.commercial_type === 'service' ||
+      product.commercial_type === 'installation' ||
+      product.commercial_type === 'delivery' ||
+      product.measurement_type === 'job'
+
+    const purchasePrice = Number(product.purchase_price) || 0
+    const conversionRatio = Math.max(0.0001, Number(product.conversion_ratio) || 1.0)
+    const wastage = Number(product.default_wastage_percentage) || 0
+    const targetMargin = Number(product.target_margin_percentage) || 35.0
+    const sellingPrice = Number(product.selling_price) || 0
+
+    let effectiveMaterialCost = Number(product.base_cost) || 0
+    let usableUnits = conversionRatio
+    if (!isService && purchasePrice > 0) {
+      const calc = calculateEffectiveUnitCost({
+        purchasePrice,
+        conversionRatio,
+        defaultWastagePercent: wastage,
+      })
+      effectiveMaterialCost = calc.effectiveCostPerSellingUnit
+      usableUnits = calc.expectedUsableUnits
+    }
+
+    // Direct Cost Breakdown Rollup
+    const cb = product.cost_breakdown || {}
+    const extraDirectCost =
+      Number(cb.ink_cost || 0) +
+      Number(cb.machine_cost || 0) +
+      Number(cb.labor_cost || 0) +
+      Number(cb.finishing_cost || 0) +
+      Number(cb.fabrication_cost || 0) +
+      Number(cb.installation_cost || 0) +
+      Number(cb.delivery_cost || 0) +
+      Number(cb.other_direct_cost || 0)
+
+    // Components Recipe Rollup
+    const componentsCost = (product.components || []).reduce(
+      (acc, c) => acc + (Number(c.unit_cost || 0) * Number(c.quantity || 1) * (1 + (Number(c.waste_percent || 0) / 100))),
+      0
+    )
+
+    const totalDirectCost = effectiveMaterialCost + extraDirectCost + componentsCost
+    const hasDirectExtras = extraDirectCost > 0 || componentsCost > 0
+    const costBasisType = hasDirectExtras ? 'direct_cost' : 'material'
+    const activeCostBasis = hasDirectExtras ? totalDirectCost : effectiveMaterialCost
+
+    const suggestedSellingPrice = calculateSuggestedSellingPrice(activeCostBasis, targetMargin)
+    const marginCalc = calculateGrossMargin(activeCostBasis, sellingPrice)
+
+    return {
+      isService,
+      purchaseUnit: product.purchase_unit || 'roll',
+      sellingUnit: product.selling_unit || product.unit || 'sqft',
+      purchasePrice,
+      conversionRatio,
+      wastage,
+      usableUnits: Math.round(usableUnits * 100) / 100,
+      effectiveMaterialCost: Math.round(effectiveMaterialCost * 100) / 100,
+      extraDirectCost: Math.round(extraDirectCost * 100) / 100,
+      componentsCost: Math.round(componentsCost * 100) / 100,
+      totalDirectCost: Math.round(totalDirectCost * 100) / 100,
+      costBasisType,
+      activeCostBasis: Math.round(activeCostBasis * 100) / 100,
+      targetMargin,
+      suggestedSellingPrice,
+      grossProfit: marginCalc.grossProfit,
+      grossMarginPercent: marginCalc.grossMarginPercent,
+      pricingMethod: normalizePricingMethod(product.pricing_method || product.measurement_type),
+      minBillableQty: Number(product.min_billable_quantity || 0),
+      minOrderQty: Number(product.min_order_quantity || 0),
+      minimumCharge: Number(product.minimum_charge || 0),
+    }
+  }, [product])
+
+  // Handle Price Adjustment with Commercial Log
   const handleUpdatePrice = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!product) return
@@ -161,7 +283,17 @@ export default function ProductDetailPage() {
 
     startTransition(async () => {
       try {
-        const res = await updateProductPriceAction(product.id, newPrice, priceReason, companyId)
+        const res = await updateProductPriceAction(
+          product.id,
+          newPrice,
+          priceReason,
+          companyId,
+          {
+            newPurchasePrice,
+            newTargetMarginPercent: newTargetMargin,
+            newWastagePercent: newWastage,
+          }
+        )
         if (!res.success) {
           showNotification(res.error || 'Failed to update price.', 'error')
           return
@@ -266,7 +398,11 @@ export default function ProductDetailPage() {
     if (safetyRes.success && safetyRes.data) {
       setDeletionSafety(safetyRes.data)
     } else {
-      setDeletionSafety({ isSafe: false, references: { quotations: 1, invoices: 0, jobs: 0, customerRates: 0 }, reason: 'Could not verify references. Archiving is recommended.' })
+      setDeletionSafety({
+        isSafe: false,
+        references: { quotations: 1, invoices: 0, jobs: 0, customerRates: 0 },
+        reason: 'Could not verify references. Archiving is recommended.',
+      })
     }
   }
 
@@ -337,11 +473,6 @@ export default function ProductDetailPage() {
     )
   }
 
-  const marginPercent =
-    product.selling_price > 0
-      ? Math.round(((product.selling_price - product.base_cost) / product.selling_price) * 100)
-      : 0
-
   const formula = product.pricing_formula
 
   return (
@@ -364,7 +495,10 @@ export default function ProductDetailPage() {
                 {product.name}
               </h1>
               <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
-                {product.product_type?.replace('_', ' ')}
+                {(product.commercial_type || product.product_type)?.replace('_', ' ')}
+              </span>
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 uppercase">
+                {commercialEconomics?.pricingMethod?.replace('_', ' ') || 'Per Area'}
               </span>
               {product.is_active !== false ? (
                 <Badge className="bg-emerald-500 text-white text-[11px]">Active</Badge>
@@ -382,13 +516,17 @@ export default function ProductDetailPage() {
               <span>•</span>
               <span className="capitalize">{product.category?.replace('_', ' ')}</span>
               <span>•</span>
-              <span className="uppercase font-mono font-semibold text-blue-600">Unit: {product.unit}</span>
-              {product.material_spec && (
+              <span className="uppercase font-mono font-semibold text-blue-600">
+                Sell: {product.selling_unit || product.unit}
+              </span>
+              {product.purchase_price && product.purchase_price > 0 ? (
                 <>
                   <span>•</span>
-                  <span>{product.material_spec}</span>
+                  <span className="font-mono text-slate-600 dark:text-slate-400">
+                    Buy: ৳{product.purchase_price}/{product.purchase_unit || 'roll'}
+                  </span>
                 </>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -451,14 +589,20 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {/* KPI Summary Cards */}
+      {/* Commercial KPI Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="p-4 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Internal Base Cost</span>
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            {commercialEconomics?.costBasisType === 'direct_cost' ? 'Est. Direct Cost' : 'Effective Unit Cost'}
+          </span>
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            <CurrencyDisplay amount={product.base_cost} />
+            <CurrencyDisplay amount={commercialEconomics?.activeCostBasis || product.base_cost} />
           </div>
-          <span className="text-[11px] text-slate-400">COGS benchmark per {product.unit}</span>
+          <span className="text-[11px] text-slate-400">
+            per {product.selling_unit || product.unit} (
+            {commercialEconomics?.costBasisType === 'direct_cost' ? 'Direct Job Cost' : 'Raw Material Yield'}
+            )
+          </span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-blue-600 shadow-xs">
@@ -466,84 +610,58 @@ export default function ProductDetailPage() {
           <div className="text-2xl font-black text-blue-600 mt-1 font-mono">
             <CurrencyDisplay amount={product.selling_price} />
           </div>
-          <span className="text-[11px] text-blue-600 font-medium">Standard customer price</span>
+          <span className="text-[11px] text-blue-600 font-medium">
+            Pricing: {commercialEconomics?.pricingMethod?.replace('_', ' ')}
+          </span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-amber-500 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Minimum Floor Price</span>
-          <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 font-mono">
-            <CurrencyDisplay amount={product.min_price} />
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">3 Commercial Minimums</span>
+          <div className="text-xs font-bold text-amber-900 dark:text-amber-300 mt-1 space-y-0.5 font-mono">
+            <div>MOQ: {product.min_order_quantity || 1} {product.selling_unit || 'unit'}</div>
+            <div>Min Billable: {product.min_billable_quantity || 0} {product.selling_unit || 'unit'}</div>
+            <div>Min Charge: ৳{product.minimum_charge || 0}</div>
           </div>
-          <span className="text-[11px] text-amber-600">Discounts cannot fall below this</span>
         </Card>
 
         <Card className="p-4 bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 shadow-xs">
-          <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">Standard Margin</span>
+          <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
+            Gross Margin % ({commercialEconomics?.costBasisType === 'direct_cost' ? 'Direct Cost' : 'Material'})
+          </span>
           <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">
-            {marginPercent}%
+            {commercialEconomics?.grossMarginPercent || 0}%
           </div>
           <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
-            VAT: {product.tax_rate}% NBR compliant
+            Profit: ৳{commercialEconomics?.grossProfit || 0} / {product.selling_unit || product.unit}
           </span>
         </Card>
       </div>
 
       {/* Navigation Tabs */}
       <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={cn(
-            'px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap',
-            activeTab === 'overview' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
-          )}
-        >
-          Overview & Specs
-        </button>
-        <button
-          onClick={() => setActiveTab('production')}
-          className={cn(
-            'px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap',
-            activeTab === 'production' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
-          )}
-        >
-          Production Rules
-        </button>
-        <button
-          onClick={() => setActiveTab('variants')}
-          className={cn(
-            'px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap',
-            activeTab === 'variants' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
-          )}
-        >
-          Variants ({product.variants?.length || 0})
-        </button>
-        <button
-          onClick={() => setActiveTab('formula')}
-          className={cn(
-            'px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap',
-            activeTab === 'formula' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
-          )}
-        >
-          Pricing Formula
-        </button>
-        <button
-          onClick={() => setActiveTab('history')}
-          className={cn(
-            'px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap',
-            activeTab === 'history' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
-          )}
-        >
-          Price History ({priceHistory.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('usage')}
-          className={cn(
-            'px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap',
-            activeTab === 'usage' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
-          )}
-        >
-          Commercial Usage
-        </button>
+        {[
+          { id: 'overview', label: 'Overview & Specs' },
+          { id: 'commercial', label: 'Commercial & Yield' },
+          { id: 'price_tiers', label: 'Price Tiers' },
+          { id: 'cost_breakdown', label: 'Direct Cost Breakdown' },
+          { id: 'recipe', label: `Recipe / Bundle (${product.components?.length || 0})` },
+          { id: 'suppliers', label: `Suppliers (${supplierPrices.length})` },
+          { id: 'production', label: 'Production Rules' },
+          { id: 'variants', label: `Variants (${product.variants?.length || 0})` },
+          { id: 'history', label: `Price History (${priceHistory.length + priceOverrides.length})` },
+          { id: 'usage', label: 'Commercial Usage' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={cn(
+              'px-3 py-1.5 rounded-lg transition-all whitespace-nowrap',
+              activeTab === tab.id ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* ======================================================== */}
@@ -573,8 +691,13 @@ export default function ProductDetailPage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2">
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
-                <span className="text-slate-400 block">Billing Unit</span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200 uppercase">{product.unit}</span>
+                <span className="text-slate-400 block">Pricing Method</span>
+                <span className="font-mono font-bold text-blue-700 uppercase">{commercialEconomics?.pricingMethod?.replace('_', ' ')}</span>
+              </div>
+
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-400 block">Selling Unit</span>
+                <span className="font-mono font-bold text-slate-800 dark:text-slate-200 uppercase">{product.selling_unit || product.unit}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
@@ -583,13 +706,18 @@ export default function ProductDetailPage() {
               </div>
 
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
-                <span className="text-slate-400 block">Dimensions Spec</span>
-                <span className="font-medium text-slate-800 dark:text-slate-200">{product.dimensions_spec || 'Custom Sizes'}</span>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
                 <span className="text-slate-400 block">Tax Rate</span>
                 <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{product.tax_rate}% VAT</span>
+              </div>
+            </div>
+
+            {/* Low-Margin Protection Summary */}
+            <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/60 rounded-xl text-xs space-y-1">
+              <strong className="text-blue-900 dark:text-blue-300 font-bold block">Commercial Governance:</strong>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-slate-700 dark:text-slate-300 pt-1">
+                <div>Allow Manual Price Override: <strong className="text-slate-900 dark:text-white">{product.allow_manual_override !== false ? 'Yes' : 'No'}</strong></div>
+                <div>Min Allowed Margin Floor: <strong className="text-emerald-700">{product.min_allowed_margin_percent || 15}%</strong></div>
+                <div>Min Order Quantity (MOQ): <strong className="text-slate-900 dark:text-white">{product.min_order_quantity || 1} {product.selling_unit}</strong></div>
               </div>
             </div>
 
@@ -604,7 +732,340 @@ export default function ProductDetailPage() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 2: PRODUCTION RULES */}
+      {/* TAB 2: COMMERCIAL ECONOMICS & YIELD */}
+      {/* ======================================================== */}
+      {activeTab === 'commercial' && commercialEconomics && (
+        <Card className="shadow-xs">
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Boxes className="h-4 w-4 text-blue-600" />
+              Commercial Purchase Economics, Conversion & Usable Yield
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Mathematical modeling of how raw materials are purchased, converted, wasted, costed, and priced.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4 text-xs">
+            {!commercialEconomics.isService ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                  <span className="text-slate-400 uppercase text-[10px] tracking-wider block">Purchase Tariff</span>
+                  <div className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">
+                    ৳{commercialEconomics.purchasePrice}
+                  </div>
+                  <span className="text-[11px] text-slate-500">per 1 {commercialEconomics.purchaseUnit}</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                  <span className="text-slate-400 uppercase text-[10px] tracking-wider block">Conversion Ratio</span>
+                  <div className="text-lg font-bold font-mono text-blue-600 mt-1">
+                    1 : {commercialEconomics.conversionRatio}
+                  </div>
+                  <span className="text-[11px] text-slate-500">{commercialEconomics.sellingUnit} per {commercialEconomics.purchaseUnit}</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                  <span className="text-slate-400 uppercase text-[10px] tracking-wider block">Expected Wastage</span>
+                  <div className="text-lg font-bold font-mono text-amber-600 mt-1">
+                    {commercialEconomics.wastage}%
+                  </div>
+                  <span className="text-[11px] text-slate-500">Yield: {commercialEconomics.usableUnits} usable {commercialEconomics.sellingUnit}</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                  <span className="text-slate-400 uppercase text-[10px] tracking-wider block">Effective Material Cost</span>
+                  <div className="text-lg font-bold font-mono text-emerald-600 mt-1">
+                    ৳{commercialEconomics.effectiveMaterialCost}
+                  </div>
+                  <span className="text-[11px] text-slate-500">per {commercialEconomics.sellingUnit} (yield-adjusted)</span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl text-blue-900 dark:text-blue-300">
+                <strong>Service / Installation Item:</strong> Direct billing without raw material roll conversion. Selling Unit: <strong>{commercialEconomics.sellingUnit}</strong>.
+              </div>
+            )}
+
+            {/* 3 Minimums Rule Explanation */}
+            <div className="p-4 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-800 space-y-2">
+              <strong className="text-amber-900 dark:text-amber-300 font-bold block text-xs">
+                Three Distinct Commercial Minimum Rules:
+              </strong>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">1. Physical MOQ</span>
+                  <div className="text-sm font-bold font-mono mt-0.5">{product.min_order_quantity || 1} {commercialEconomics.sellingUnit}</div>
+                  <p className="text-[11px] text-slate-500 mt-1">Minimum physical quantity the workshop accepts.</p>
+                </div>
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">2. Min Billable Qty</span>
+                  <div className="text-sm font-bold font-mono mt-0.5 text-blue-600">{product.min_billable_quantity || 0} {commercialEconomics.sellingUnit}</div>
+                  <p className="text-[11px] text-slate-500 mt-1">Minimum quantity used for invoice billing.</p>
+                </div>
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">3. Minimum Charge</span>
+                  <div className="text-sm font-bold font-mono mt-0.5 text-emerald-600">৳{product.minimum_charge || 0}</div>
+                  <p className="text-[11px] text-slate-500 mt-1">Minimum monetary amount charged per item.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing & Margin Card */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-600 dark:text-slate-400 font-semibold">Pricing Method:</span>
+                <span className="font-mono font-bold text-purple-700 uppercase">{commercialEconomics.pricingMethod.replace('_', ' ')}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-600 dark:text-slate-400 font-semibold">Target Gross Margin %:</span>
+                <span className="font-mono font-bold">{commercialEconomics.targetMargin}%</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-600 dark:text-slate-400 font-semibold">Suggested Selling Price:</span>
+                <span className="font-mono font-bold text-emerald-600">৳{commercialEconomics.suggestedSellingPrice} / {commercialEconomics.sellingUnit}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-600 dark:text-slate-400 font-semibold">Actual Catalog Selling Rate:</span>
+                <span className="font-mono font-bold text-blue-600 text-sm">৳{product.selling_price} / {commercialEconomics.sellingUnit}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-600 dark:text-slate-400 font-semibold">
+                  Calculated Margin ({commercialEconomics.costBasisType === 'direct_cost' ? 'Direct Cost Basis' : 'Material Cost Basis'}):
+                </span>
+                <span className="font-mono font-bold text-emerald-600 text-sm">{commercialEconomics.grossMarginPercent}%</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 3: PRICE TIERS */}
+      {/* ======================================================== */}
+      {activeTab === 'price_tiers' && (
+        <Card className="shadow-xs">
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Tag className="h-4 w-4 text-blue-600" />
+              Multi-Tier Pricing Architecture
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Configured customer segment price tiers. Hierarchy: Customer Override → Price Tier → Catalog Default.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+              {[
+                { key: 'retail', label: 'Retail', color: 'border-l-blue-500' },
+                { key: 'corporate', label: 'Corporate', color: 'border-l-indigo-500' },
+                { key: 'dealer', label: 'Dealer', color: 'border-l-amber-500' },
+                { key: 'wholesale', label: 'Wholesale', color: 'border-l-emerald-500' },
+                { key: 'custom', label: 'Custom / Special', color: 'border-l-purple-500' },
+              ].map((tier) => {
+                const tierPrice = (product.price_tiers as any)?.[tier.key] ?? product.selling_price
+                const tierMargin = calculateGrossMargin(commercialEconomics?.activeCostBasis || product.base_cost, tierPrice)
+                return (
+                  <div key={tier.key} className={cn('p-3.5 rounded-xl border bg-slate-50/50 dark:bg-slate-900/50 border-l-4 shadow-xs', tier.color)}>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">{tier.label}</span>
+                    <div className="text-lg font-black font-mono text-slate-900 dark:text-white mt-1">
+                      ৳{tierPrice}
+                    </div>
+                    <div className="text-[11px] text-emerald-600 font-semibold mt-1">
+                      {tierMargin.grossMarginPercent}% Margin
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 4: DIRECT COST BREAKDOWN */}
+      {/* ======================================================== */}
+      {activeTab === 'cost_breakdown' && (
+        <Card className="shadow-xs">
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Calculator className="h-4 w-4 text-emerald-600" />
+              Estimated Direct Job Cost Breakdown
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Distinguishing raw material cost from total direct job costs (ink, machine, labor, finishing, installation, delivery).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
+                <span className="text-slate-400 block">Raw Material</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{commercialEconomics?.effectiveMaterialCost || product.base_cost}</span>
+              </div>
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
+                <span className="text-slate-400 block">Ink & Consumables</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.ink_cost || 0}</span>
+              </div>
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
+                <span className="text-slate-400 block">Machine Depreciation</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.machine_cost || 0}</span>
+              </div>
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
+                <span className="text-slate-400 block">Direct Labor</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.labor_cost || 0}</span>
+              </div>
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
+                <span className="text-slate-400 block">Finishing Work</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.finishing_cost || 0}</span>
+              </div>
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
+                <span className="text-slate-400 block">Sign / Frame Fabrication</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.fabrication_cost || 0}</span>
+              </div>
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
+                <span className="text-slate-400 block">Site Installation</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.installation_cost || 0}</span>
+              </div>
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
+                <span className="text-slate-400 block">Delivery Dispatch</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.delivery_cost || 0}</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex justify-between items-center text-xs">
+              <div>
+                <strong className="text-emerald-900 dark:text-emerald-300 font-bold block">
+                  Total Estimated Direct Unit Cost: ৳{commercialEconomics?.totalDirectCost} / {product.selling_unit}
+                </strong>
+                <span className="text-emerald-700 dark:text-emerald-400">
+                  Margin calculation basis: <strong>{commercialEconomics?.costBasisType === 'direct_cost' ? 'Estimated Direct Cost' : 'Estimated Material Cost'}</strong>
+                </span>
+              </div>
+              <div className="text-right font-mono">
+                <span className="text-slate-500 block text-[10px] uppercase">Selling Tariff</span>
+                <span className="text-base font-bold text-blue-600">৳{product.selling_price}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 5: RECIPE / BUNDLE */}
+      {/* ======================================================== */}
+      {activeTab === 'recipe' && (
+        <Card className="shadow-xs">
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Layers className="h-4 w-4 text-purple-600" />
+              Bill of Materials (BOM) & Component Recipe
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Complete deliverable assembled from multiple raw materials, hardware, and service components.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Component Item</th>
+                  <th className="py-3 px-3">Role</th>
+                  <th className="py-3 px-3">Qty</th>
+                  <th className="py-3 px-3">Unit</th>
+                  <th className="py-3 px-3">Waste %</th>
+                  <th className="py-3 px-3">Unit Cost</th>
+                  <th className="py-3 px-4 text-right">Total Cost</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {(!product.components || product.components.length === 0) ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                      No recipe components registered for this product (standard simple product).
+                    </td>
+                  </tr>
+                ) : (
+                  product.components.map((c, idx) => {
+                    const lineCost = (Number(c.unit_cost) || 0) * (Number(c.quantity) || 1) * (1 + (Number(c.waste_percent || 0) / 100))
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                        <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{c.component_name}</td>
+                        <td className="py-3 px-3 capitalize text-slate-500">{c.production_role || 'material'}</td>
+                        <td className="py-3 px-3 font-mono">{c.quantity}</td>
+                        <td className="py-3 px-3 font-mono uppercase">{c.unit}</td>
+                        <td className="py-3 px-3 font-mono text-amber-600">{c.waste_percent || 0}%</td>
+                        <td className="py-3 px-3 font-mono">৳{c.unit_cost}</td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">৳{lineCost.toFixed(2)}</td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 6: SUPPLIER QUOTES */}
+      {/* ======================================================== */}
+      {activeTab === 'suppliers' && (
+        <Card className="shadow-xs">
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-blue-600" />
+              Supplier-Specific Purchase Economics
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Multi-vendor procurement rates, lead times, and MOQ tracking.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Supplier Name</th>
+                  <th className="py-3 px-3">Supplier Code / SKU</th>
+                  <th className="py-3 px-3">Purchase Unit</th>
+                  <th className="py-3 px-3">Purchase Price</th>
+                  <th className="py-3 px-3">MOQ</th>
+                  <th className="py-3 px-3">Lead Time</th>
+                  <th className="py-3 px-4 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {supplierPrices.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                      No supplier-specific price quotes recorded. Default purchase price: ৳{product.purchase_price || 0}.
+                    </td>
+                  </tr>
+                ) : (
+                  supplierPrices.map((sp) => (
+                    <tr key={sp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{sp.supplier_name}</td>
+                      <td className="py-3 px-3 font-mono text-slate-500">{sp.notes || '-'}</td>
+                      <td className="py-3 px-3 uppercase font-mono">{sp.purchase_unit}</td>
+                      <td className="py-3 px-3 font-mono font-bold text-blue-600">৳{sp.purchase_price}</td>
+                      <td className="py-3 px-3 font-mono">{sp.moq || 1}</td>
+                      <td className="py-3 px-3 font-mono">{sp.lead_time_days ? `${sp.lead_time_days} days` : '-'}</td>
+                      <td className="py-3 px-4 text-right">
+                        {sp.is_preferred ? (
+                          <Badge className="bg-emerald-500 text-white text-[10px]">Preferred Vendor</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-slate-400 text-[10px]">Secondary</Badge>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 7: PRODUCTION RULES */}
       {/* ======================================================== */}
       {activeTab === 'production' && (
         <Card className="shadow-xs">
@@ -675,7 +1136,7 @@ export default function ProductDetailPage() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 3: VARIANTS */}
+      {/* TAB 8: VARIANTS */}
       {/* ======================================================== */}
       {activeTab === 'variants' && (
         <Card className="shadow-xs">
@@ -745,125 +1206,129 @@ export default function ProductDetailPage() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 4: PRICING FORMULA */}
-      {/* ======================================================== */}
-      {activeTab === 'formula' && (
-        <Card className="shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Sliders className="h-4 w-4 text-blue-600" />
-                  Structured Pricing & Costing Formula Engine
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Declarative, non-eval mathematical rules evaluated safely in real-time.
-                </CardDescription>
-              </div>
-              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
-                <ShieldCheck className="h-3 w-3 mr-1" /> Safe Non-Eval Rule
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4 text-xs">
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-lg font-mono border border-slate-200 dark:border-slate-800">
-              <strong>Active Rule Template: </strong>
-              <span className="text-blue-600 dark:text-blue-400 font-bold">{formula?.model || 'dimensional_area'}</span>
-              <div className="mt-1 text-slate-500 font-sans text-xs">
-                Formula: Area(sft) = Width(ft) × Height(ft) × Qty. Planned Waste: {formula?.waste_factor_percent || 5}%.
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800">
-                <span className="text-slate-400 block">Material Cost Rate</span>
-                <div className="text-base font-bold text-slate-900 dark:text-white mt-1 font-mono">
-                  ৳{formula?.material_rate || 0} / sft
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800">
-                <span className="text-slate-400 block">Print Machine Rate</span>
-                <div className="text-base font-bold text-slate-900 dark:text-white mt-1 font-mono">
-                  ৳{formula?.print_rate || formula?.machine_rate || 0} / sft
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800">
-                <span className="text-slate-400 block">Finishing Rate</span>
-                <div className="text-base font-bold text-slate-900 dark:text-white mt-1 font-mono">
-                  ৳{formula?.finishing_rate || 3} / ft
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800">
-                <span className="text-slate-400 block">Fabrication / Metal</span>
-                <div className="text-base font-bold text-slate-900 dark:text-white mt-1 font-mono">
-                  ৳{formula?.fabrication_rate || 0} / sft
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ======================================================== */}
-      {/* TAB 5: PRICE HISTORY AUDIT TRAIL */}
+      {/* TAB 9: PRICE HISTORY & OVERRIDES */}
       {/* ======================================================== */}
       {activeTab === 'history' && (
-        <Card className="shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <History className="h-4 w-4 text-purple-600" />
-              Price Adjustment Audit Trail
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Immutable PostgreSQL log of catalog price revisions and reason documentation.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Effective Date</th>
-                  <th className="py-3 px-3">Previous Price</th>
-                  <th className="py-3 px-3">New Price</th>
-                  <th className="py-3 px-4">Reason for Change</th>
-                  <th className="py-3 px-3">Authorized By</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {priceHistory.length === 0 ? (
+        <div className="space-y-6">
+          <Card className="shadow-xs">
+            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <History className="h-4 w-4 text-purple-600" />
+                Price Adjustment Audit Trail
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Immutable PostgreSQL log of catalog price revisions and commercial changes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-400">
-                      No historical price changes recorded for this item.
-                    </td>
+                    <th className="py-3 px-4">Effective Date</th>
+                    <th className="py-3 px-3">Previous Price</th>
+                    <th className="py-3 px-3">New Price</th>
+                    <th className="py-3 px-3">Purchase Price</th>
+                    <th className="py-3 px-4">Reason for Change</th>
+                    <th className="py-3 px-3">Authorized By</th>
                   </tr>
-                ) : (
-                  priceHistory.map((h) => (
-                    <tr key={h.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 px-4 text-slate-500 font-mono">
-                        {h.created_at ? new Date(h.created_at).toLocaleString() : '-'}
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {priceHistory.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-400">
+                        No historical price changes recorded for this item.
                       </td>
-                      <td className="py-3 px-3 line-through text-slate-400 font-mono">
-                        <CurrencyDisplay amount={h.old_price} />
-                      </td>
-                      <td className="py-3 px-3 font-bold text-blue-600 font-mono">
-                        <CurrencyDisplay amount={h.new_price} />
-                      </td>
-                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300 font-medium">{h.reason}</td>
-                      <td className="py-3 px-3 text-slate-500">{h.changed_by_name || 'Owner'}</td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
+                  ) : (
+                    priceHistory.map((h) => (
+                      <tr key={h.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                        <td className="py-3 px-4 text-slate-500 font-mono">
+                          {h.created_at ? new Date(h.created_at).toLocaleString() : '-'}
+                        </td>
+                        <td className="py-3 px-3 line-through text-slate-400 font-mono">
+                          <CurrencyDisplay amount={h.old_price} />
+                        </td>
+                        <td className="py-3 px-3 font-bold text-blue-600 font-mono">
+                          <CurrencyDisplay amount={h.new_price} />
+                        </td>
+                        <td className="py-3 px-3 font-mono text-slate-600 dark:text-slate-300">
+                          {h.new_purchase_price ? `৳${h.new_purchase_price}` : '-'}
+                        </td>
+                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300 font-medium">{h.reason}</td>
+                        <td className="py-3 px-3 text-slate-500">{h.changed_by_name || 'Owner'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+
+          {/* Overrides Audit Trail */}
+          <Card className="shadow-xs">
+            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                Low-Margin Quotation & Line Override Audit Trail
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Authorized salesperson discounts and low-margin price exceptions logged in real-time.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-3">Catalog Price</th>
+                    <th className="py-3 px-3">Overridden Price</th>
+                    <th className="py-3 px-3">Standard Margin</th>
+                    <th className="py-3 px-3">Overridden Margin</th>
+                    <th className="py-3 px-4">Reason / Business Justification</th>
+                    <th className="py-3 px-3">Authorized By</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {priceOverrides.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-slate-400">
+                        No quotation price overrides recorded for this product.
+                      </td>
+                    </tr>
+                  ) : (
+                    priceOverrides.map((po) => (
+                      <tr key={po.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                        <td className="py-3 px-4 text-slate-500 font-mono">
+                          {po.created_at ? new Date(po.created_at).toLocaleString() : '-'}
+                        </td>
+                        <td className="py-3 px-3 font-mono line-through text-slate-400">
+                          ৳{po.original_price}
+                        </td>
+                        <td className="py-3 px-3 font-bold font-mono text-rose-600">
+                          ৳{po.overridden_price}
+                        </td>
+                        <td className="py-3 px-3 font-mono text-slate-500">
+                          {po.original_margin_percent ? `${po.original_margin_percent}%` : '-'}
+                        </td>
+                        <td className="py-3 px-3 font-mono font-bold text-rose-600">
+                          {po.overridden_margin_percent ? `${po.overridden_margin_percent}%` : '-'}
+                        </td>
+                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300 font-medium">
+                          {po.reason || 'Management approval'}
+                        </td>
+                        <td className="py-3 px-3 text-slate-500">{po.authorized_by || 'Manager'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* ======================================================== */}
-      {/* TAB 6: COMMERCIAL USAGE */}
+      {/* TAB 7: COMMERCIAL USAGE */}
       {/* ======================================================== */}
       {activeTab === 'usage' && (
         <div className="space-y-4">
@@ -915,7 +1380,7 @@ export default function ProductDetailPage() {
         title={
           <div className="flex items-center gap-2">
             <Tag className="h-5 w-5 text-blue-600" />
-            <span className="font-bold text-base">Adjust Catalog Selling Price</span>
+            <span className="font-bold text-base">Adjust Commercial Price & Tariffs</span>
           </div>
         }
       >
@@ -927,7 +1392,7 @@ export default function ProductDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Current Selling Price:</span>
-              <span className="font-mono font-bold text-blue-600">৳{product.selling_price} / {product.unit}</span>
+              <span className="font-mono font-bold text-blue-600">৳{product.selling_price} / {product.selling_unit || product.unit}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Minimum Floor Price:</span>
@@ -935,16 +1400,28 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          <div>
-            <Label className="text-xs font-semibold mb-1 block">New Selling Price (৳ BDT) <span className="text-rose-500">*</span></Label>
-            <Input
-              type="number"
-              step="0.1"
-              value={newPrice}
-              onChange={(e) => setNewPrice(Number(e.target.value))}
-              className="text-xs h-9 font-mono font-bold text-blue-600"
-              required
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">New Purchase Price (৳)</Label>
+              <Input
+                type="number"
+                step="1"
+                value={newPurchasePrice}
+                onChange={(e) => setNewPurchasePrice(Number(e.target.value))}
+                className="text-xs h-9 font-mono font-semibold"
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">New Selling Price (৳) <span className="text-rose-500">*</span></Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={newPrice}
+                onChange={(e) => setNewPrice(Number(e.target.value))}
+                className="text-xs h-9 font-mono font-bold text-blue-600"
+                required
+              />
+            </div>
           </div>
 
           <div>

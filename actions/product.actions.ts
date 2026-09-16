@@ -11,6 +11,8 @@ import type {
   ProductFormulaRecord,
   PriceListRecord,
   PriceHistoryRecord,
+  PriceOverrideRecord,
+  ProductSupplierPriceRecord,
   ProductUsageStats,
   ResolvedProductPrice,
   PricingCalculationInput,
@@ -289,7 +291,12 @@ export async function updateProductPriceAction(
   productId: string,
   newPrice: number,
   reason?: string,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  commercialDetails?: {
+    newPurchasePrice?: number
+    newTargetMarginPercent?: number
+    newWastagePercent?: number
+  }
 ): Promise<ServerActionResult<ProductRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
@@ -316,7 +323,8 @@ export async function updateProductPriceAction(
       reason || 'Manual catalog price adjustment',
       tenant.fullName || tenant.userEmail || 'Current User',
       tenant.userId,
-      companyId
+      companyId,
+      commercialDetails
     )
     if (!updated) return { success: false, error: 'Product not found.' }
 
@@ -329,7 +337,7 @@ export async function updateProductPriceAction(
         'product_price',
         productId,
         null,
-        { new_price: newPrice, reason },
+        { new_price: newPrice, reason, commercialDetails },
         `Adjusted price of ${updated.name} to ৳${newPrice}`
       )
     } catch {}
@@ -590,5 +598,121 @@ export async function calculateProductPricingAction(
     return { success: true, data: result }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to calculate pricing.' }
+  }
+}
+
+// ==========================================
+// SUPPLIER PURCHASE ECONOMICS ACTIONS
+// ==========================================
+
+export async function getProductSupplierPricesAction(
+  productId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<ProductSupplierPriceRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const prices = await ProductService.getProductSupplierPrices(productId, companyId)
+    return { success: true, data: prices }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch supplier prices.' }
+  }
+}
+
+export async function saveProductSupplierPriceAction(
+  data: Partial<ProductSupplierPriceRecord> & { product_id: string; supplier_name: string; purchase_price: number },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<ProductSupplierPriceRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    if (!checkProductPermission(tenant, 'products.manage_costing') && !checkProductPermission(tenant, 'products.edit')) {
+      return { success: false, error: 'Unauthorized: You do not have permission to manage supplier purchase prices.' }
+    }
+
+    const saved = await ProductService.saveProductSupplierPrice(companyId, data)
+    revalidatePath(`/${tenant.companySlug || 'tenant'}/products/${data.product_id}`)
+    return { success: true, data: saved }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to save supplier price.' }
+  }
+}
+
+export async function deleteProductSupplierPriceAction(
+  id: string,
+  productId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<boolean>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    if (!checkProductPermission(tenant, 'products.manage_costing') && !checkProductPermission(tenant, 'products.edit')) {
+      return { success: false, error: 'Unauthorized: You do not have permission to delete supplier prices.' }
+    }
+
+    await ProductService.deleteProductSupplierPrice(id, companyId)
+    revalidatePath(`/${tenant.companySlug || 'tenant'}/products/${productId}`)
+    return { success: true, data: true }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to delete supplier price.' }
+  }
+}
+
+// ==========================================
+// PRICE OVERRIDES AUDITING ACTIONS
+// ==========================================
+
+export async function getPriceOverridesAction(
+  productId?: string,
+  limit: number = 50,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<PriceOverrideRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const overrides = await ProductService.getPriceOverrides(companyId, productId, limit)
+    return { success: true, data: overrides }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch price overrides.' }
+  }
+}
+
+export async function logPriceOverrideAction(
+  data: Partial<PriceOverrideRecord> & { original_price: number; override_price: number; reason: string },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<PriceOverrideRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const entry = await ProductService.logPriceOverride(companyId, {
+      ...data,
+      authorized_by_id: tenant.userId,
+      authorized_by_name: (tenant as any).userName || (tenant as any).name || tenant.userId || 'Authorized User',
+      tenant_slug: tenant.companySlug,
+    })
+
+    return { success: true, data: entry }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to log price override.' }
   }
 }

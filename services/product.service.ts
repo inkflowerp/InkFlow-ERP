@@ -70,7 +70,12 @@ export class ProductService {
     reason: string = 'Market cost adjustment',
     changedByName: string = 'Current User',
     changedByUserIdOrCompanyId: string | null = null,
-    companyIdArg?: string
+    companyIdArg?: string,
+    commercialDetails?: {
+      newPurchasePrice?: number
+      newTargetMarginPercent?: number
+      newWastagePercent?: number
+    }
   ): Promise<ProductRecord | null> {
     const effectiveCompanyId = companyIdArg || (changedByUserIdOrCompanyId && typeof changedByUserIdOrCompanyId === 'string' ? changedByUserIdOrCompanyId : '')
     const effectiveUserId = companyIdArg ? changedByUserIdOrCompanyId : null
@@ -80,7 +85,18 @@ export class ProductService {
     if (!existing) return null
 
     const safeNewPrice = Math.max(0, Number(newPrice) || 0)
-    const updated = await this.updateProduct(productId, { selling_price: safeNewPrice }, effectiveCompanyId)
+    const updatePayload: Partial<ProductRecord> = { selling_price: safeNewPrice }
+    if (commercialDetails?.newPurchasePrice !== undefined) {
+      updatePayload.purchase_price = Math.max(0, Number(commercialDetails.newPurchasePrice))
+    }
+    if (commercialDetails?.newTargetMarginPercent !== undefined) {
+      updatePayload.target_margin_percentage = Number(commercialDetails.newTargetMarginPercent)
+    }
+    if (commercialDetails?.newWastagePercent !== undefined) {
+      updatePayload.default_wastage_percentage = Math.max(0, Number(commercialDetails.newWastagePercent))
+    }
+
+    const updated = await this.updateProduct(productId, updatePayload, effectiveCompanyId)
 
     await ProductRepository.recordPriceChange(
       productId,
@@ -89,7 +105,15 @@ export class ProductService {
       reason,
       effectiveCompanyId,
       effectiveUserId,
-      changedByName
+      changedByName,
+      {
+        oldPurchasePrice: existing.purchase_price,
+        newPurchasePrice: commercialDetails?.newPurchasePrice !== undefined ? commercialDetails.newPurchasePrice : existing.purchase_price,
+        oldMarginPercent: existing.target_margin_percentage,
+        newMarginPercent: commercialDetails?.newTargetMarginPercent !== undefined ? commercialDetails.newTargetMarginPercent : existing.target_margin_percentage,
+        oldWastagePercent: existing.default_wastage_percentage,
+        newWastagePercent: commercialDetails?.newWastagePercent !== undefined ? commercialDetails.newWastagePercent : existing.default_wastage_percentage,
+      }
     )
 
     return updated
@@ -108,11 +132,14 @@ export class ProductService {
     productId: string,
     customerId: string | undefined,
     companyId: string,
-    options?: {
-      allowFloorOverride?: boolean
-      overrideReason?: string
-      authorizedBy?: string
-    }
+    options?:
+      | {
+          allowFloorOverride?: boolean
+          overrideReason?: string
+          authorizedBy?: string
+          tier?: string
+        }
+      | string
   ): Promise<ResolvedProductPrice> {
     if (!companyId) throw new Error('Tenant Company ID is required.')
     return ProductRepository.resolveCustomerProductPrice(productId, customerId, companyId, options)
@@ -175,6 +202,39 @@ export class ProductService {
   }): Promise<PriceListRecord> {
     if (!data.company_id) throw new Error('Tenant Company ID is required.')
     return ProductRepository.createPriceList(data)
+  }
+
+  // ============================================================================
+  // SUPPLIER PURCHASE ECONOMICS
+  // ============================================================================
+
+  static async getProductSupplierPrices(productId: string, companyId: string) {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.getProductSupplierPrices(productId, companyId)
+  }
+
+  static async saveProductSupplierPrice(companyId: string, data: any) {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.saveProductSupplierPrice(companyId, data)
+  }
+
+  static async deleteProductSupplierPrice(id: string, companyId: string) {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.deleteProductSupplierPrice(id, companyId)
+  }
+
+  // ============================================================================
+  // PRICE OVERRIDES AUDITING
+  // ============================================================================
+
+  static async logPriceOverride(companyId: string, data: any) {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.logPriceOverride(companyId, data)
+  }
+
+  static async getPriceOverrides(companyId: string, productId?: string, limit?: number) {
+    if (!companyId) throw new Error('Tenant Company ID is required.')
+    return ProductRepository.getPriceOverrides(companyId, productId, limit)
   }
 
   // ============================================================================

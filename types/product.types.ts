@@ -7,10 +7,38 @@ export type ProductType =
   | 'installation_service'
   | 'custom_job'
   | 'material'
+  | 'ready_product'
+  | 'production_product'
+  | 'service'
+  | 'finishing'
+  | 'fabrication'
+  | 'installation'
+  | 'delivery'
+  | 'package_bundle'
+
+export type CommercialProductType =
+  | 'ready_product'
+  | 'production_product'
+  | 'service'
+  | 'finishing'
+  | 'fabrication'
+  | 'installation'
+  | 'delivery'
+  | 'package_bundle'
+
+export type MeasurementType =
+  | 'piece'
+  | 'length'
+  | 'area'
+  | 'weight'
+  | 'volume'
+  | 'job'
+  | 'time'
 
 export type UnitOfMeasure =
   | 'pcs'
   | 'sft'
+  | 'sqft'
   | 'rft'
   | 'inch'
   | 'ft'
@@ -20,16 +48,30 @@ export type UnitOfMeasure =
   | 'roll'
   | 'kg'
   | 'ltr'
+  | 'liter'
+  | 'ml'
   | 'hr'
+  | 'hour'
   | 'set'
   | 'box'
+  | 'pack'
   | 'packet'
   | 'pair'
+  | 'job'
+  | 'trip'
   | string
 
 export type PricingMethod =
   | 'fixed'
   | 'per_piece'
+  | 'per_area'
+  | 'per_length'
+  | 'per_weight'
+  | 'per_volume'
+  | 'per_job'
+  | 'per_hour'
+  | 'tiered'
+  | 'formula'
   | 'per_sft'
   | 'per_rft'
   | 'per_inch'
@@ -38,7 +80,6 @@ export type PricingMethod =
   | 'per_roll'
   | 'per_kg'
   | 'per_liter'
-  | 'per_hour'
   | 'dimensional_area'
   | 'running_length'
   | 'compound_signage'
@@ -249,6 +290,139 @@ export interface ProductUsageStats {
   isReferenced: boolean
 }
 
+export type PriceTierKey = 'retail' | 'corporate' | 'dealer' | 'wholesale' | 'custom'
+export type ProductPriceTiers = Partial<Record<PriceTierKey, number>>
+
+export interface ProductSupplierPriceRecord {
+  id: string
+  company_id: string
+  product_id: string
+  supplier_id?: string | null
+  supplier_name: string
+  purchase_unit: string
+  conversion_ratio: number
+  purchase_price: number
+  moq: number
+  lead_time_days: number
+  last_purchase_date?: string | null
+  is_preferred: boolean
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProductionRole =
+  | 'hardware'
+  | 'print'
+  | 'finishing'
+  | 'assembly'
+  | 'structure'
+  | 'electrical'
+  | 'mounting'
+  | 'labor'
+  | 'delivery'
+  | 'material'
+  | 'raw_material'
+  | 'accessory'
+  | 'packaging'
+  | 'installation'
+  | 'other'
+
+export interface ProductComponent {
+  id?: string
+  component_product_id?: string | null
+  name?: string
+  component_name?: string
+  quantity?: number
+  unit?: string
+  waste_percent?: number
+  is_optional?: boolean
+  is_required?: boolean
+  cost_contribution?: number
+  unit_cost?: number
+  production_role?: ProductionRole | string
+  notes?: string | null
+}
+
+export interface ProductCostBreakdown {
+  material_cost?: number
+  ink_cost?: number
+  machine_cost?: number
+  labor_cost?: number
+  finishing_cost?: number
+  fabrication_cost?: number
+  installation_cost?: number
+  delivery_cost?: number
+  other_direct_cost?: number
+  total_direct_cost?: number
+  // Shorthand aliases
+  material?: number
+  ink?: number
+  machine?: number
+  labor?: number
+  finishing?: number
+  fabrication?: number
+  installation?: number
+  delivery?: number
+  other_direct?: number
+  [key: string]: number | undefined
+}
+
+export type CostBasisType = 'material_cost' | 'direct_cost' | 'none' | 'material'
+
+export interface CommercialCalculationParams {
+  pricingMethod?: PricingMethod
+  unitPrice: number
+  quantity: number
+  width?: number
+  height?: number
+  dimensionUnit?: 'ft' | 'inch' | 'm'
+  minBillableQuantity?: number
+  minOrderQuantity?: number
+  minimumCharge?: number
+  costBreakdown?: ProductCostBreakdown
+  materialUnitCost?: number
+  defaultWastagePercent?: number
+  targetMarginPercent?: number
+  minAllowedMarginPercent?: number
+  isTaxInclusive?: boolean
+  vatRatePercent?: number
+}
+
+export interface CommercialCalculationResult {
+  pricingMethod: PricingMethod
+  actualQuantity: number
+  billableQuantity: number
+  isMinBillableApplied: boolean
+  unitPrice: number
+  calculatedAmount: number
+  minimumCharge: number
+  isMinimumChargeApplied: boolean
+  finalAmount: number
+  minOrderQuantity: number
+  isMoqViolated: boolean
+  moqDeficit: number
+  // Dimensions & Area
+  areaSqft?: number
+  lengthRft?: number
+  // Costing & Margins
+  estimatedMaterialCost: number
+  estimatedDirectCost: number
+  costBasisType: CostBasisType
+  costBasisAmount: number
+  grossProfitAmount: number
+  grossMarginPercent: number
+  markupPercent: number
+  suggestedSellingPrice: number
+  minAllowedMarginPercent: number
+  isBelowMinimumMargin: boolean
+  marginDeficitPercent: number
+  // Taxes
+  vatRatePercent: number
+  vatAmount: number
+  grandTotalWithVat: number
+}
+
 export interface ResolvedProductPrice {
   productId: string
   productName: string
@@ -267,6 +441,28 @@ export interface ResolvedProductPrice {
   originalRequestedRate?: number
   overrideReason?: string
   authorizedBy?: string
+  // Commercial Master 2.0 & 2.1 fields
+  pricingMethod?: PricingMethod
+  minBillableQuantity?: number
+  minAllowedMarginPercent?: number
+  isBelowMinimumMargin?: boolean
+  costBasisType?: CostBasisType
+  estimatedDirectCost?: number
+  priceTiers?: ProductPriceTiers
+  purchaseUnit?: string | null
+  purchasePrice?: number
+  conversionRatio?: number
+  defaultWastagePercent?: number
+  targetMarginPercent?: number
+  minimumCharge?: number
+  minOrderQuantity?: number
+  effectiveUnitCost?: number
+  suggestedSellingPrice?: number
+  grossProfitPerUnit?: number
+  grossMarginPercent?: number
+  isMinimumChargeApplied?: boolean
+  appliedTier?: string
+  tier?: string
 }
 
 export interface ProductRecord {
@@ -278,7 +474,33 @@ export interface ProductRecord {
   sku: string
   category: string
   product_type: ProductType
+  commercial_type?: CommercialProductType
   unit: UnitOfMeasure
+  selling_unit?: string | null
+  purchase_unit?: string | null
+  purchase_price?: number
+  conversion_ratio?: number
+  measurement_type?: MeasurementType
+  production_unit?: string | null
+  default_wastage_percentage?: number
+  target_margin_percentage?: number
+  minimum_charge?: number
+  min_order_quantity?: number
+  // Commercial Master 2.1 additions
+  pricing_method?: PricingMethod
+  min_billable_quantity?: number
+  allow_manual_override?: boolean
+  min_allowed_margin_percent?: number
+  price_tiers?: ProductPriceTiers
+  cost_breakdown?: ProductCostBreakdown
+  components?: ProductComponent[]
+  supplier_prices?: ProductSupplierPriceRecord[]
+  vat_applicable?: boolean
+  is_tax_inclusive?: boolean
+  roll_width_ft?: number | null
+  roll_length_ft?: number | null
+  sheet_width_ft?: number | null
+  sheet_length_ft?: number | null
   material_spec?: string | null
   description?: string | null
   description_bn?: string | null
@@ -307,6 +529,13 @@ export interface ProductRecord {
   created_at: string
   updated_at: string
   usage_stats?: ProductUsageStats
+  // Computed commercial helpers
+  effective_unit_cost?: number
+  suggested_selling_price?: number
+  gross_margin_percent?: number
+  estimated_material_cost?: number
+  estimated_direct_cost?: number
+  cost_basis_type?: CostBasisType
 }
 
 export interface PriceHistoryRecord {
@@ -315,6 +544,12 @@ export interface PriceHistoryRecord {
   product_id: string
   old_price: number
   new_price: number
+  old_purchase_price?: number | null
+  new_purchase_price?: number | null
+  old_margin_percent?: number | null
+  new_margin_percent?: number | null
+  old_wastage_percent?: number | null
+  new_wastage_percent?: number | null
   reason: string
   changed_by?: string | null
   changed_by_name?: string
@@ -325,12 +560,20 @@ export interface PriceOverrideRecord {
   id: string
   company_id: string
   product_id?: string | null
-  document_type?: 'quotation' | 'order' | 'invoice' | null
+  product_name?: string | null
+  document_type?: 'quotation' | 'order' | 'invoice' | 'job' | null
   document_code?: string | null
+  document_id?: string | null
   original_price: number
   override_price: number
+  overridden_price?: number
+  original_margin_percent?: number | null
+  override_margin_percent?: number | null
+  overridden_margin_percent?: number | null
   reason: string
   authorized_by?: string | null
+  authorized_by_id?: string | null
   authorized_by_name?: string
+  tenant_slug?: string | null
   created_at: string
 }
