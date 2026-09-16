@@ -316,7 +316,7 @@ export default function InvoiceCockpitPage() {
             <div className={`p-2.5 rounded-lg border ${invoice.due_amount === 0 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30' : 'border-amber-400 bg-amber-50 dark:bg-amber-950/30'}`}>
               <span className="text-[10px] text-slate-500 block font-semibold">7. Payment</span>
               <strong className={`font-bold ${invoice.due_amount === 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
-                {invoice.due_amount === 0 ? 'Fully Settled' : `Due ৳${formatBDT(invoice.due_amount)}`}
+                {invoice.due_amount === 0 ? 'Fully Settled' : `Due ${formatBDT(invoice.due_amount)}`}
               </strong>
             </div>
           </div>

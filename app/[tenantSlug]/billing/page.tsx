@@ -57,7 +57,6 @@ import {
   InvoiceType,
   PaymentMethod,
   PaymentRecord,
-  FinancialWriteOffRecord,
   BillingPeriod,
   BillingOverviewMetrics,
   CollectionPriorityItem,
@@ -73,7 +72,7 @@ import {
   getInvoicesAction,
   getPaymentsAction,
   getReceivablesAgingAction,
-  recordWriteOffAction,
+  deleteInvoiceAction,
   cancelInvoiceAction,
   sendInvoiceAction,
   sendPaymentReminderAction,
@@ -122,11 +121,10 @@ export default function BillingPage() {
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false)
 
-  // Write-Off Modal State
-  const [selectedInvoiceForWriteOff, setSelectedInvoiceForWriteOff] = useState<InvoiceRecord | null>(null)
-  const [writeOffAmount, setWriteOffAmount] = useState<number>(0)
-  const [writeOffReason, setWriteOffReason] = useState('')
-  const [isSubmittingWriteOff, setIsSubmittingWriteOff] = useState(false)
+  // Delete / Cancel Invoice Modal State
+  const [selectedInvoiceForDelete, setSelectedInvoiceForDelete] = useState<InvoiceRecord | null>(null)
+  const [deleteReason, setDeleteReason] = useState('')
+  const [isSubmittingDelete, setIsSubmittingDelete] = useState(false)
 
   // Cancellation Modal State
   const [selectedInvoiceForCancel, setSelectedInvoiceForCancel] = useState<InvoiceRecord | null>(null)
@@ -222,7 +220,6 @@ export default function BillingPage() {
       if (invoiceFilterTab === 'due_today') return inv.due_date === new Date().toISOString().split('T')[0] && inv.due_amount > 0
       if (invoiceFilterTab === 'overdue') return inv.due_amount > 0 && calculateDaysOverdue(inv.due_date) > 0
       if (invoiceFilterTab === 'cancelled') return inv.status === 'cancelled'
-      if (invoiceFilterTab === 'written_off') return inv.status === 'written_off' || (inv.write_off_amount && inv.write_off_amount > 0)
       if (invoiceFilterTab === 'vat') return inv.invoice_type === 'vat_invoice'
       return true
     })
@@ -314,35 +311,31 @@ export default function BillingPage() {
     }
   }
 
-  // Quick Action: Record Write-Off Submit
-  const handleConfirmWriteOff = async (e: React.FormEvent) => {
+  // Quick Action: Delete Invoice Submit
+  const handleConfirmDelete = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedInvoiceForWriteOff) return
+    if (!selectedInvoiceForDelete) return
 
-    setIsSubmittingWriteOff(true)
+    setIsSubmittingDelete(true)
     try {
-      const res = await recordWriteOffAction(
-        {
-          invoice_id: selectedInvoiceForWriteOff.id,
-          amount: writeOffAmount,
-          reason: writeOffReason,
-          authorized_by_name: 'Chief Financial Officer',
-        },
+      const res = await deleteInvoiceAction(
+        selectedInvoiceForDelete.id,
+        deleteReason || 'Deleted by user',
         company?.id
       )
 
       if (res.success) {
-        showNotification(`Write-off of ৳${formatBDT(writeOffAmount)} recorded with audit trail.`)
-        setSelectedInvoiceForWriteOff(null)
-        setWriteOffReason('')
+        showNotification(`Invoice #${selectedInvoiceForDelete.invoice_number} deleted successfully.`)
+        setSelectedInvoiceForDelete(null)
+        setDeleteReason('')
         loadBillingData()
       } else {
-        showNotification(res.error || 'Failed to record write-off.')
+        showNotification(res.error || 'Failed to delete invoice.')
       }
     } catch (err: any) {
-      showNotification(err.message || 'Error recording write-off.')
+      showNotification(err.message || 'Error deleting invoice.')
     } finally {
-      setIsSubmittingWriteOff(false)
+      setIsSubmittingDelete(false)
     }
   }
 
@@ -452,7 +445,7 @@ export default function BillingPage() {
               className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
               <DollarSign className="h-4 w-4" />
-              <span>+ Receive Payment</span>
+              <span>Receive Payment</span>
             </Button>
 
             <Button
@@ -462,7 +455,7 @@ export default function BillingPage() {
               className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
               <Plus className="h-4 w-4" />
-              <span>+ New Invoice</span>
+              <span>New Invoice</span>
             </Button>
           </div>
         }
@@ -549,10 +542,10 @@ export default function BillingPage() {
               Outstanding Due
             </div>
             <div className="text-lg font-black font-mono text-amber-600 dark:text-amber-400 mt-1">
-              {formatBDT(overviewMetrics?.dueTodayAmount || 0)}
+              {formatBDT(overviewMetrics?.outstandingDue ?? overviewMetrics?.totalReceivables ?? 0)}
             </div>
             <div className="text-[10px] text-amber-600/80 font-mono mt-0.5">
-              {overviewMetrics?.dueTodayCount || 0} Bills Maturing
+              {overviewMetrics?.outstandingDueCount ?? overviewMetrics?.dueTodayCount ?? 0} Bills Pending
             </div>
           </Card>
 
@@ -591,7 +584,7 @@ export default function BillingPage() {
             <div className="text-lg font-black font-mono text-blue-600 dark:text-blue-400 mt-1 flex items-baseline gap-1">
               <span>{overviewMetrics?.collectionRate || 0}%</span>
             </div>
-            <div className="text-[10px] text-blue-600/80 font-mono mt-0.5">Collected ÷ Billed</div>
+            <div className="text-[10px] text-blue-600/80 font-mono mt-0.5">Collected ÷ Invoiced</div>
           </Card>
         </div>
       </div>
@@ -877,7 +870,6 @@ export default function BillingPage() {
                   { id: 'paid', label: 'Paid' },
                   { id: 'due_today', label: 'Due Today' },
                   { id: 'vat', label: 'VAT 6.3' },
-                  { id: 'written_off', label: 'Written Off' },
                   { id: 'cancelled', label: 'Cancelled' },
                 ].map((f) => (
                   <button
@@ -1002,18 +994,15 @@ export default function BillingPage() {
                                 </Button>
                               </Link>
 
-                              {can('edit', 'invoices') && inv.due_amount > 0 && inv.status !== 'cancelled' && (
+                              {can('delete', 'invoices') && inv.status !== 'cancelled' && (
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => {
-                                    setSelectedInvoiceForWriteOff(inv)
-                                    setWriteOffAmount(inv.due_amount)
-                                  }}
-                                  className="h-7 text-[11px] px-1.5 text-slate-400 hover:text-purple-600"
-                                  title="Record financial write-off"
+                                  onClick={() => setSelectedInvoiceForDelete(inv)}
+                                  className="h-7 text-[11px] px-1.5 text-slate-400 hover:text-rose-600"
+                                  title="Delete Invoice"
                                 >
-                                  Write-off
+                                  Delete
                                 </Button>
                               )}
 
@@ -1097,6 +1086,16 @@ export default function BillingPage() {
                               View
                             </Button>
                           </Link>
+                          {can('delete', 'invoices') && inv.status !== 'cancelled' && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setSelectedInvoiceForDelete(inv)}
+                              className="h-8 text-xs px-2 text-slate-400 hover:text-rose-600"
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1464,7 +1463,7 @@ export default function BillingPage() {
         preselectedCustomerId={selectedCustomerIdForPayment}
         preselectedInvoiceId={selectedInvoiceIdForPayment}
         onPaymentRecorded={(payment) => {
-          showNotification(`Payment of ৳${formatBDT(payment.amount)} received successfully!`)
+          showNotification(`Payment of ${formatBDT(payment.amount)} received successfully!`)
           loadBillingData()
         }}
       />
@@ -1488,60 +1487,85 @@ export default function BillingPage() {
         }}
       />
 
-      {/* 4. FINANCIAL WRITE-OFF MODAL */}
-      {selectedInvoiceForWriteOff && (
+      {/* 4. DELETE INVOICE MODAL */}
+      {selectedInvoiceForDelete && (
         <ModalDialog
-          open={!!selectedInvoiceForWriteOff}
-          onOpenChange={(v) => !v && setSelectedInvoiceForWriteOff(null)}
-          title={`Financial Write-Off — Invoice #${selectedInvoiceForWriteOff.invoice_number}`}
-          size="lg"
+          open={!!selectedInvoiceForDelete}
+          onOpenChange={(v) => !v && setSelectedInvoiceForDelete(null)}
+          title={`Delete Invoice — #${selectedInvoiceForDelete.invoice_number}`}
+          size="md"
           hideFooter
         >
-          <form onSubmit={handleConfirmWriteOff} className="space-y-4 pt-1">
-            <div className="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-xl border border-purple-200 dark:border-purple-900/60 text-xs text-purple-900 dark:text-purple-200 space-y-1">
-              <div>Customer: <strong>{selectedInvoiceForWriteOff.customer_name}</strong></div>
-              <div>Current Due: <strong className="font-mono">{formatBDT(selectedInvoiceForWriteOff.due_amount)}</strong></div>
+          {selectedInvoiceForDelete.status === 'paid' || (selectedInvoiceForDelete.paid_amount || 0) >= (selectedInvoiceForDelete.grand_total || 0) ? (
+            <div className="space-y-4 pt-1">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+                <strong>Paid invoices cannot be deleted</strong> because they are part of the permanent financial record.
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">
+                Invoice: <strong>#{selectedInvoiceForDelete.invoice_number}</strong><br />
+                Customer: <strong>{selectedInvoiceForDelete.customer_name}</strong><br />
+                Total Paid: <strong className="font-mono">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong>
+              </div>
+              <div className="flex justify-end pt-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setSelectedInvoiceForDelete(null)}>
+                  Close
+                </Button>
+              </div>
             </div>
+          ) : (selectedInvoiceForDelete.paid_amount || 0) > 0 ? (
+            <div className="space-y-4 pt-1">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+                <strong>Partially paid invoices cannot be deleted directly</strong> because financial payments are attached to this document. Please perform an authorized payment refund/reversal first.
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">
+                Invoice: <strong>#{selectedInvoiceForDelete.invoice_number}</strong><br />
+                Customer: <strong>{selectedInvoiceForDelete.customer_name}</strong><br />
+                Paid: <strong className="font-mono text-emerald-600">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong><br />
+                Remaining Due: <strong className="font-mono text-rose-600">{formatBDT(selectedInvoiceForDelete.due_amount || 0)}</strong>
+              </div>
+              <div className="flex justify-end pt-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setSelectedInvoiceForDelete(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleConfirmDelete} className="space-y-4 pt-1">
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 font-mono">
+                <div>Invoice: <strong className="text-slate-900 dark:text-white">#{selectedInvoiceForDelete.invoice_number}</strong></div>
+                <div>Customer: <strong className="text-slate-900 dark:text-white">{selectedInvoiceForDelete.customer_name}</strong></div>
+                <div>Amount: <strong className="text-slate-900 dark:text-white font-bold">{formatBDT(selectedInvoiceForDelete.grand_total)}</strong></div>
+              </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-bold">Write-Off Amount (৳)*</Label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0.01"
-                max={selectedInvoiceForWriteOff.due_amount}
-                value={writeOffAmount}
-                onChange={(e) => setWriteOffAmount(Number(e.target.value))}
-                className="h-9 text-xs font-mono font-bold"
-                required
-              />
-            </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                This invoice will be removed from normal billing views.
+              </p>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-bold">Authorized Reason / Waiver Note*</Label>
-              <Input
-                placeholder="e.g. Bad debt settlement / Authorized goodwill discount"
-                value={writeOffReason}
-                onChange={(e) => setWriteOffReason(e.target.value)}
-                className="h-9 text-xs"
-                required
-              />
-            </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Reason for Deletion</Label>
+                <Input
+                  placeholder="e.g. Draft invoice discarded / Customer cancelled order"
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setSelectedInvoiceForWriteOff(null)}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isSubmittingWriteOff || writeOffAmount <= 0}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs"
-              >
-                {isSubmittingWriteOff ? 'Recording Write-Off...' : `Authorize ৳${formatBDT(writeOffAmount)} Write-Off`}
-              </Button>
-            </div>
-          </form>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setSelectedInvoiceForDelete(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isSubmittingDelete}
+                  className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs"
+                >
+                  {isSubmittingDelete ? 'Deleting...' : 'Delete Invoice'}
+                </Button>
+              </div>
+            </form>
+          )}
         </ModalDialog>
       )}
 

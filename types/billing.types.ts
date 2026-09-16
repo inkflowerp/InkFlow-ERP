@@ -137,6 +137,8 @@ export interface BillingOverviewMetrics {
   salesCount: number
   collectionAmount: number
   collectionCount: number
+  outstandingDue: number
+  outstandingDueCount: number
   dueTodayAmount: number
   dueTodayCount: number
   overdueAmount: number

@@ -481,7 +481,7 @@ export default function JobCostingPage() {
                   <div className="p-2 rounded bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
                     <span className="text-[10px] text-slate-400 block uppercase">Est vs Act Cost</span>
                     <span className="font-mono font-semibold">
-                      {isSalesRoleShielded ? '••••••' : `৳${formatBDT(cst.est.total_cost)} / ৳${cst.status === 'actualized' ? formatBDT(cst.act.total_cost) : '—'}`}
+                      {isSalesRoleShielded ? '••••••' : `${formatBDT(cst.est.total_cost)} / ${cst.status === 'actualized' ? formatBDT(cst.act.total_cost) : '—'}`}
                     </span>
                   </div>
                   <div className="p-2 rounded bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">

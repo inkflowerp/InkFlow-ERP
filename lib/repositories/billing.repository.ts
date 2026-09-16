@@ -1405,7 +1405,10 @@ export class BillingRepository {
     const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + Number(inv.due_amount || 0), 0)
     const overdueCount = overdueInvoices.length
 
-    const collectionRate = salesAmount > 0 ? Math.min(100, Math.round((collectionAmount / salesAmount) * 100)) : (collectionAmount > 0 ? 100 : 0)
+    const outstandingDue = totalReceivables
+    const outstandingDueCount = openInvoices.length
+
+    const collectionRate = salesAmount > 0 ? Math.min(100, Math.round((collectionAmount / salesAmount) * 100)) : 0
 
     const metrics: BillingOverviewMetrics = {
       period,
@@ -1418,6 +1421,8 @@ export class BillingRepository {
       collectionCount,
       dueTodayAmount,
       dueTodayCount,
+      outstandingDue,
+      outstandingDueCount,
       overdueAmount,
       overdueCount,
       totalReceivables,

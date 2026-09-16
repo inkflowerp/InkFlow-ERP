@@ -424,7 +424,7 @@ export function OwnerDashboard({
                 icon={BarChart3}
                 colorVariant="info"
                 badge={`${data.profitMetrics.marginPercent}%`}
-                subtitleEn={`Revenue: ৳${formatBDT(data.profitMetrics.totalRevenue ?? 0)} • Cost: ৳${formatBDT(data.profitMetrics.totalCost ?? 0)}`}
+                subtitleEn={`Revenue: ${formatBDT(data.profitMetrics.totalRevenue ?? 0)} • Cost: ${formatBDT(data.profitMetrics.totalCost ?? 0)}`}
               />
             ) : (
               <Card className="p-4 border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex flex-col justify-between">
@@ -842,7 +842,7 @@ export function OwnerDashboard({
           open={true}
           onOpenChange={(open) => !open && setReminderItem(null)}
           title={tBilingual('Send Due Payment Reminder', 'বকেয়া বিলের তাগাদা বার্তা পাঠান')}
-          description={`${reminderItem.customerName} • Invoice #${reminderItem.invoiceNumber} (৳${formatBDT(reminderItem.dueAmount)})`}
+          description={`${reminderItem.customerName} • Invoice #${reminderItem.invoiceNumber} (${formatBDT(reminderItem.dueAmount)})`}
         >
           <div className="space-y-4 pt-2">
             <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs font-mono border space-y-1">

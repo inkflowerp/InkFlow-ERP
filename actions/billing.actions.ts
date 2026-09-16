@@ -714,6 +714,50 @@ export async function cancelInvoiceAction(
 }
 
 /**
+ * Server Action: Safely deletes/cancels an unpaid invoice without reducing subscription creation quota
+ */
+export async function deleteInvoiceAction(
+  invoiceId: string,
+  reason: string = 'Deleted by user',
+  requestedCompanyId?: string
+): Promise<ServerActionResult<boolean>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const hasPermission =
+      tenant.companyRole === 'business_owner' ||
+      tenant.permissions.includes('invoices.delete') ||
+      tenant.permissions.includes('invoices.cancel') ||
+      tenant.permissions.includes('billing.edit')
+
+    if (!hasPermission) {
+      return { success: false, error: 'Unauthorized: You do not have permission to delete invoices.' }
+    }
+
+    const success = await BillingService.deleteInvoice(
+      invoiceId,
+      companyId,
+      tenant.fullName || 'Authorized Manager',
+      tenant.userId
+    )
+
+    try {
+      revalidatePath('/[tenantSlug]/invoices', 'page')
+      revalidatePath('/[tenantSlug]/billing', 'page')
+      revalidatePath('/[tenantSlug]/billing/[id]', 'page')
+      revalidatePath('/', 'layout')
+    } catch {}
+    return { success: true, data: success }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to delete invoice.' }
+  }
+}
+
+/**
  * Server Action: Generates payment reminder WhatsApp link
  */
 export async function sendPaymentReminderAction(

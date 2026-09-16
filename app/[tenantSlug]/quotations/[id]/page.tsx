@@ -960,7 +960,7 @@ export default function QuotationDetailPage() {
           quotation={quote}
           onNegotiationApplied={(updated) => {
             setQuote(updated)
-            showNotification(`Negotiated total ৳${formatBDT(updated.grand_total)} applied (Margin: ${updated.margin_percent}%).`)
+            showNotification(`Negotiated total ${formatBDT(updated.grand_total)} applied (Margin: ${updated.margin_percent}%).`)
             fetchQuotationDetail(true)
           }}
           companyId={company?.id || 'c-01'}

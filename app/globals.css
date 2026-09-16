@@ -392,6 +392,65 @@ button, input, select, textarea {
   a[href]::after {
     content: "" !important;
   }
+
+  /* 9. Standalone Modal / Money Receipt Print Isolation */
+  body:has([data-money-receipt], .printable-receipt-modal) > *:not([class*="fixed"], [class*="z-[100]"]) {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Strip dark backdrop overlays completely in print */
+  [class*="backdrop-blur"],
+  div[class*="bg-slate-950/60"],
+  div[class*="bg-black/"],
+  .fixed.inset-0.bg-slate-950\/60 {
+    display: none !important;
+    background: transparent !important;
+  }
+
+  /* Make the modal dialog and receipt container flow cleanly as standard print document */
+  .printable-receipt-modal,
+  [data-money-receipt],
+  div[class*="fixed inset-0 z-[100]"] {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .printable-receipt-modal > div,
+  div[class*="fixed inset-0 z-[100]"] > div:not([class*="backdrop"]) {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  [data-money-receipt-canvas] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
 }
 
 /* Custom Scrollbars */
