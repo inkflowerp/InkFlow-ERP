@@ -48,6 +48,7 @@ import {
   ChevronUp,
   Hammer,
   Palette,
+  Printer,
   Info,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
@@ -1409,7 +1410,104 @@ export default function ProductsCatalogPage() {
     })
   }
 
-  // Filtered Products
+  // Refresh all catalog & configuration masters
+  const handleRefreshAll = async () => {
+    setIsLoading(true)
+    setFetchError(null)
+    try {
+      await Promise.all([
+        loadProducts(),
+        loadCategories(),
+        loadPrintingMethods(),
+        loadFinishingOptions(),
+        loadAdditionalOptions(),
+        loadInstallationOptions(),
+      ])
+      showNotification('Catalog & Configuration Masters refreshed successfully.', 'success')
+    } catch (err: any) {
+      setFetchError(err.message || 'Error refreshing catalog data.')
+      showNotification(err.message || 'Error refreshing catalog data.', 'error')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Direct entity creation launchers
+  const handleOpenCreateService = () => {
+    const check = checkCanCreate('max_products')
+    if (!check.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
+    setEditingProduct(null)
+    setIsServiceModalOpen(true)
+  }
+
+  const handleOpenCreateProduct = () => {
+    const check = checkCanCreate('max_products')
+    if (!check.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
+    setEditingProduct(null)
+    setIsReadyProductModalOpen(true)
+  }
+
+  const handleOpenCreateMaterial = () => {
+    const check = checkCanCreate('max_products')
+    if (!check.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
+    setEditingProduct(null)
+    setIsMaterialModalOpen(true)
+  }
+
+  // Entity Type Helpers
+  const isServiceItem = (p: ProductRecord) =>
+    p.entity_type === 'service' ||
+    p.product_type === 'print_service' ||
+    p.product_type === 'service' ||
+    p.commercial_type === 'service' ||
+    p.commercial_type === 'installation' ||
+    p.commercial_type === 'delivery'
+
+  const isMaterialItem = (p: ProductRecord) =>
+    p.entity_type === 'material' ||
+    p.product_type === 'material' ||
+    p.commercial_type === 'material' ||
+    p.category === 'materials' ||
+    p.category === 'roll_media' ||
+    p.category === 'rigid_sheets' ||
+    p.category === 'inks' ||
+    p.category === 'hardware_stock' ||
+    Boolean(p.material_config)
+
+  const isReadyProductItem = (p: ProductRecord) =>
+    p.entity_type === 'product' ||
+    p.product_type === 'ready_product' ||
+    p.commercial_type === 'production_product' ||
+    (!isServiceItem(p) && !isMaterialItem(p))
+
+  // Live Tab Counts Memo
+  const tabCounts = useMemo(() => {
+    const serviceCount = products.filter(isServiceItem).length
+    const materialCount = products.filter(isMaterialItem).length
+    const productCount = products.filter(isReadyProductItem).length
+
+    return {
+      all: products.length,
+      service: serviceCount,
+      product: productCount,
+      material: materialCount,
+      finishing: finishingOptions.length,
+      additional: additionalOptions.length,
+      installation: installationOptions.length,
+      printing_methods: printingMethods.length,
+    }
+  }, [products, finishingOptions, additionalOptions, installationOptions, printingMethods])
+
+  // Filtered Products (Catalog Items)
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const q = search.toLowerCase().trim()
@@ -1419,7 +1517,8 @@ export default function ProductsCatalogPage() {
         (p.name_bn && p.name_bn.includes(q)) ||
         p.sku.toLowerCase().includes(q) ||
         (p.material_spec && p.material_spec.toLowerCase().includes(q)) ||
-        (p.category && p.category.toLowerCase().includes(q))
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (p.dimensions_spec && p.dimensions_spec.toLowerCase().includes(q))
 
       const matchCategory =
         selectedCategory === 'all' ||
@@ -1431,15 +1530,21 @@ export default function ProductsCatalogPage() {
         p.commercial_type === selectedType ||
         p.product_type === selectedType
 
-      const matchEntityType =
-        entityTypeFilter === 'all' ||
-        p.entity_type === entityTypeFilter ||
-        (entityTypeFilter === 'product' && (p.product_type === 'ready_product' || p.commercial_type === 'ready_product')) ||
-        (entityTypeFilter === 'service' && (p.product_type === 'print_service' || p.commercial_type === 'service')) ||
-        (entityTypeFilter === 'material' && (p.product_type === 'material' || p.commercial_type === 'material')) ||
-        (entityTypeFilter === 'finishing' && (p.product_type === 'finishing' || p.commercial_type === 'finishing')) ||
-        (entityTypeFilter === 'additional' && (p.product_type === 'additional' || p.commercial_type === 'additional')) ||
-        (entityTypeFilter === 'installation' && (p.product_type === 'installation' || p.commercial_type === 'installation'))
+      let matchEntityType = true
+      if (entityTypeFilter === 'product') {
+        matchEntityType = isReadyProductItem(p)
+      } else if (entityTypeFilter === 'service') {
+        matchEntityType = isServiceItem(p)
+      } else if (entityTypeFilter === 'material') {
+        matchEntityType = isMaterialItem(p)
+      } else if (
+        entityTypeFilter === 'finishing' ||
+        entityTypeFilter === 'additional' ||
+        entityTypeFilter === 'installation' ||
+        entityTypeFilter === 'printing_methods'
+      ) {
+        matchEntityType = false
+      }
 
       const margin =
         p.selling_price > 0
@@ -1454,6 +1559,82 @@ export default function ProductsCatalogPage() {
       return matchSearch && matchCategory && matchType && matchEntityType && matchStatus
     })
   }, [products, search, selectedCategory, selectedType, entityTypeFilter, statusFilter])
+
+  // Filtered Finishing Options
+  const filteredFinishingOptions = useMemo(() => {
+    const q = search.toLowerCase().trim()
+    return finishingOptions.filter((f) => {
+      const matchSearch =
+        !q ||
+        f.name.toLowerCase().includes(q) ||
+        (f.name_bn && f.name_bn.includes(q)) ||
+        (f.category && f.category.toLowerCase().includes(q)) ||
+        (f.pricing_method && f.pricing_method.toLowerCase().includes(q))
+
+      let matchStatus = true
+      if (statusFilter === 'active') matchStatus = f.is_active !== false
+      else if (statusFilter === 'archived') matchStatus = f.is_active === false
+
+      return matchSearch && matchStatus
+    })
+  }, [finishingOptions, search, statusFilter])
+
+  // Filtered Additional Options
+  const filteredAdditionalOptions = useMemo(() => {
+    const q = search.toLowerCase().trim()
+    return additionalOptions.filter((a) => {
+      const matchSearch =
+        !q ||
+        a.name.toLowerCase().includes(q) ||
+        (a.name_bn && a.name_bn.includes(q)) ||
+        (a.pricing_method && a.pricing_method.toLowerCase().includes(q))
+
+      let matchStatus = true
+      if (statusFilter === 'active') matchStatus = a.is_active !== false
+      else if (statusFilter === 'archived') matchStatus = a.is_active === false
+
+      return matchSearch && matchStatus
+    })
+  }, [additionalOptions, search, statusFilter])
+
+  // Filtered Installation Options
+  const filteredInstallationOptions = useMemo(() => {
+    const q = search.toLowerCase().trim()
+    return installationOptions.filter((i) => {
+      const matchSearch =
+        !q ||
+        i.name.toLowerCase().includes(q) ||
+        (i.name_bn && i.name_bn.includes(q)) ||
+        (i.fulfillment_type && i.fulfillment_type.toLowerCase().includes(q)) ||
+        (i.pricing_method && i.pricing_method.toLowerCase().includes(q))
+
+      let matchStatus = true
+      if (statusFilter === 'active') matchStatus = i.is_active !== false
+      else if (statusFilter === 'archived') matchStatus = i.is_active === false
+
+      return matchSearch && matchStatus
+    })
+  }, [installationOptions, search, statusFilter])
+
+  // Filtered Printing Methods
+  const filteredPrintingMethods = useMemo(() => {
+    const q = search.toLowerCase().trim()
+    return printingMethods.filter((pm) => {
+      const matchSearch =
+        !q ||
+        pm.name.toLowerCase().includes(q) ||
+        (pm.name_bn && pm.name_bn.includes(q)) ||
+        (pm.code && pm.code.toLowerCase().includes(q)) ||
+        (pm.description && pm.description.toLowerCase().includes(q)) ||
+        (pm.default_ink_type && pm.default_ink_type.toLowerCase().includes(q))
+
+      let matchStatus = true
+      if (statusFilter === 'active') matchStatus = pm.is_active !== false
+      else if (statusFilter === 'archived') matchStatus = pm.is_active === false
+
+      return matchSearch && matchStatus
+    })
+  }, [printingMethods, search, statusFilter])
 
   // Business Owner Signal Metrics
   const metrics = useMemo(() => {
@@ -1483,23 +1664,53 @@ export default function ProductsCatalogPage() {
 
   return (
     <div className="space-y-6 max-w-7xl pb-12">
-      {/* Header */}
+      {/* Page Header with Direct Action Launchers */}
       <PageHeader
-        titleEn="Products & Services"
-        titleBn="পণ্য ও সেবা"
-        descriptionEn="Commercial catalog & specifications • Ready products, services, raw media, and commercial tariffs"
-        descriptionBn="রেডি প্রোডাক্ট, প্রিন্টিং সার্ভিস, কাঁচামাল ও কমার্শিয়াল ট্যারিফ নিয়ন্ত্রণ কেন্দ্র"
+        titleEn="Products & Commercial Masters"
+        titleBn="পণ্য ও বাণিজ্যিক মাস্টার্স"
+        descriptionEn="Unified commercial catalog • Print services, ready products, raw materials, finishing & logistics tariffs"
+        descriptionBn="প্রিন্টিং সার্ভিস, রেডি প্রোডাক্ট, কাঁচামাল, ফিনিশিং ও ডেলিভারি ট্যারিফ নিয়ন্ত্রণ কেন্দ্র"
         icon={Package}
         iconColor="text-blue-600"
         actions={
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Direct Quick Launchers */}
             <Button
               size="sm"
-              onClick={handleOpenCreate}
+              onClick={handleOpenCreateService}
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
-              <Plus className="h-4 w-4" />
-              <span>{tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}</span>
+              <Printer className="h-4 w-4" />
+              <span>+ Service</span>
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={handleOpenCreateProduct}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
+            >
+              <Package className="h-4 w-4" />
+              <span>+ Ready Product</span>
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={handleOpenCreateMaterial}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
+            >
+              <Layers className="h-4 w-4" />
+              <span>+ Raw Material</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleOpenCreate}
+              className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
+              title="Add Other Configuration Master"
+            >
+              <Sliders className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+              <span>Masters</span>
             </Button>
 
             <Link href={`/${slug}/pricing`}>
@@ -1516,18 +1727,19 @@ export default function ProductsCatalogPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={loadProducts}
+              onClick={handleRefreshAll}
               disabled={isLoading}
               className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
+              title="Refresh all catalog and master records"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
-              <span>Refresh</span>
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
         }
       />
 
-      {/* Notification */}
+      {/* Notification Toast */}
       {notification && (
         <div
           className={cn(
@@ -1553,7 +1765,7 @@ export default function ProductsCatalogPage() {
             <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0" />
             <span>{fetchError}</span>
           </div>
-          <Button size="sm" variant="outline" onClick={loadProducts} className="text-xs shrink-0">
+          <Button size="sm" variant="outline" onClick={handleRefreshAll} className="text-xs shrink-0">
             <RefreshCw className="mr-1.5 h-3 w-3" /> Retry Connection
           </Button>
         </div>
@@ -1570,7 +1782,7 @@ export default function ProductsCatalogPage() {
             {metrics.totalActive}
           </div>
           <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">
-            Commercial Master Active
+            {tabCounts.service} Services • {tabCounts.product} Products • {tabCounts.material} Materials
           </div>
         </Card>
 
@@ -1600,46 +1812,61 @@ export default function ProductsCatalogPage() {
           </div>
         </Card>
 
-        {/* 4. Archived Items */}
+        {/* 4. Configuration Masters */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            Archived Items
+            Configuration Masters
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
-            {metrics.totalArchived}
+            {tabCounts.finishing + tabCounts.additional + tabCounts.installation + tabCounts.printing_methods}
           </div>
           <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">
-            Historical Snapshots Preserved
+            Finishing, Addons, Logistics & Inks
           </div>
         </Card>
       </div>
 
-      {/* Main Navigation Tabs Header */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+      {/* 8 Specialized Commercial Navigation Tabs with Live Counts */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800 scrollbar-thin">
         {[
-          { id: 'all', label: 'All Items' },
-          { id: 'product', label: 'Ready Products' },
-          { id: 'service', label: 'Services' },
-          { id: 'material', label: 'Raw Materials' },
-          { id: 'finishing', label: 'Finishing' },
-          { id: 'additional', label: 'Additional Work' },
-          { id: 'installation', label: 'Installation & Delivery' },
-          { id: 'printing_methods', label: 'Printing Methods' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setEntityTypeFilter(tab.id as any)}
-            className={cn(
-              'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
-              entityTypeFilter === tab.id
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
+          { id: 'all', label: 'All Items', count: tabCounts.all, icon: Package },
+          { id: 'service', label: 'Services', count: tabCounts.service, icon: Printer },
+          { id: 'product', label: 'Ready Products', count: tabCounts.product, icon: Package },
+          { id: 'material', label: 'Raw Materials', count: tabCounts.material, icon: Layers },
+          { id: 'finishing', label: 'Finishing Masters', count: tabCounts.finishing, icon: Scissors },
+          { id: 'additional', label: 'Additional Work', count: tabCounts.additional, icon: PlusCircle },
+          { id: 'installation', label: 'Installation & Delivery', count: tabCounts.installation, icon: Truck },
+          { id: 'printing_methods', label: 'Printing Methods', count: tabCounts.printing_methods, icon: Palette },
+        ].map((tab) => {
+          const Icon = tab.icon
+          const isActive = entityTypeFilter === tab.id
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setEntityTypeFilter(tab.id as any)}
+              className={cn(
+                'px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 border',
+                isActive
+                  ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white shadow-xs'
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+              )}
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <span>{tab.label}</span>
+              <span
+                className={cn(
+                  'px-1.5 py-0.5 text-[10px] rounded-full font-mono font-bold',
+                  isActive
+                    ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                )}
+              >
+                {tab.count}
+              </span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Search, Category, Commercial Type & Status Filters */}
@@ -1648,74 +1875,78 @@ export default function ProductsCatalogPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
           <Input
-            placeholder="Search by English name, বাংলা নাম, SKU, material spec..."
+            placeholder="Search by English name, বাংলা নাম, SKU, specs, pricing..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-8 text-xs h-9"
           />
         </div>
 
-        {/* Category Dropdown & Quick Add */}
-        <div className="flex items-center gap-1.5">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-          >
-            <option value="all">All Categories (সকল ক্যাটাগরি)</option>
-            {categories.length > 0 ? (
-              categories.map((cat) => (
-                <option key={cat.id} value={cat.slug || cat.name}>
-                  {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
-                </option>
-              ))
-            ) : (
-              <>
-                <option value="flex_banner">Flex & Vinyl Banner</option>
-                <option value="backlit_flex">Backlit Signage</option>
-                <option value="vinyl_sticker">Vinyl & Stickers</option>
-                <option value="rigid_board">Rigid Board Mounts</option>
-                <option value="signage_3d">3D Letter & Signage</option>
-                <option value="display_stand">Display & Standee</option>
-                <option value="commercial_print">Visiting Card & Leaflet</option>
-                <option value="finishing">Finishing & Binding</option>
-                <option value="installation">Installation & Site Work</option>
-                <option value="design_service">Design & Artwork</option>
-                <option value="delivery_logistics">Delivery & Logistics</option>
-              </>
-            )}
-          </select>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setEditingCategory(null)
-              setIsCategoryModalOpen(true)
-            }}
-            title="Add New Category"
-            className="h-9 px-2.5 text-xs text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-blue-500 hover:text-blue-600 shrink-0"
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Category
-          </Button>
-        </div>
+        {/* Category Dropdown & Quick Add (Catalog Tabs only) */}
+        {entityTypeFilter !== 'printing_methods' && entityTypeFilter !== 'installation' && (
+          <div className="flex items-center gap-1.5">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+            >
+              <option value="all">All Categories (সকল ক্যাটাগরি)</option>
+              {categories.length > 0 ? (
+                categories.map((cat) => (
+                  <option key={cat.id} value={cat.slug || cat.name}>
+                    {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="flex_banner">Flex & Vinyl Banner</option>
+                  <option value="backlit_flex">Backlit Signage</option>
+                  <option value="vinyl_sticker">Vinyl & Stickers</option>
+                  <option value="rigid_board">Rigid Board Mounts</option>
+                  <option value="signage_3d">3D Letter & Signage</option>
+                  <option value="display_stand">Display & Standee</option>
+                  <option value="commercial_print">Visiting Card & Leaflet</option>
+                  <option value="finishing">Finishing & Binding</option>
+                  <option value="installation">Installation & Site Work</option>
+                  <option value="design_service">Design & Artwork</option>
+                  <option value="delivery_logistics">Delivery & Logistics</option>
+                </>
+              )}
+            </select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setEditingCategory(null)
+                setIsCategoryModalOpen(true)
+              }}
+              title="Add New Category"
+              className="h-9 px-2.5 text-xs text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-blue-500 hover:text-blue-600 shrink-0"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Category
+            </Button>
+          </div>
+        )}
 
-        {/* Commercial Type Dropdown */}
-        <div>
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-          >
-            <option value="all">All Commercial Types</option>
-            {COMMERCIAL_PRODUCT_TYPES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Commercial Type Dropdown (Catalog Tabs only) */}
+        {(entityTypeFilter === 'all' || entityTypeFilter === 'product' || entityTypeFilter === 'service' || entityTypeFilter === 'material') && (
+          <div>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+            >
+              <option value="all">All Commercial Types</option>
+              {COMMERCIAL_PRODUCT_TYPES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Status Tabs */}
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-bold">
@@ -1726,7 +1957,7 @@ export default function ProductsCatalogPage() {
               statusFilter === 'active' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
             )}
           >
-            Active ({metrics.totalActive})
+            Active
           </button>
           <button
             onClick={() => setStatusFilter('low_margin')}
@@ -1735,7 +1966,7 @@ export default function ProductsCatalogPage() {
               statusFilter === 'low_margin' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
             )}
           >
-            Low Margin ({metrics.lowMarginCount})
+            Low Margin
           </button>
           <button
             onClick={() => setStatusFilter('archived')}
@@ -1744,7 +1975,7 @@ export default function ProductsCatalogPage() {
               statusFilter === 'archived' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
             )}
           >
-            Archived ({metrics.totalArchived})
+            Archived
           </button>
           <button
             onClick={() => setStatusFilter('all')}
@@ -1758,19 +1989,21 @@ export default function ProductsCatalogPage() {
         </div>
       </div>
 
-      {/* Printing Methods Master View vs Catalog Table */}
-      {entityTypeFilter === 'printing_methods' ? (
+      {/* ======================================================== */}
+      {/* VIEW 1: PRINTING METHODS MASTER TAB                     */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'printing_methods' && (
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <span>Printing Technologies & Methods</span>
                 <Badge variant="outline" className="text-xs font-mono font-bold">
-                  {printingMethods.length}
+                  {filteredPrintingMethods.length}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Configurable printing methods (Eco-Solvent, UV Flatbed, UV Roll, DTF, Sublimation, Latex, etc.) usable across all Print Services without code deployments.
+                Configurable printing methods (Eco-Solvent, UV Flatbed, UV Roll, DTF, Sublimation, Latex, etc.) usable across all Print Services.
               </CardDescription>
             </div>
             <Button
@@ -1786,12 +2019,12 @@ export default function ProductsCatalogPage() {
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            {printingMethods.length === 0 ? (
+            {filteredPrintingMethods.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Palette className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Printing Methods Configured</h3>
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Printing Methods Found</h3>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Add printing methods to bind compatible materials, ink rates, and production rules.
+                  Add printing technologies to bind compatible raw media, ink rates, and production speeds.
                 </p>
                 <Button
                   size="sm"
@@ -1809,17 +2042,17 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                     <tr>
-                      <th className="py-3 px-4">Method Name</th>
+                      <th className="py-3 px-4">Method Name & Description</th>
                       <th className="py-3 px-3">Code</th>
                       <th className="py-3 px-3">Compatible Media</th>
-                      <th className="py-3 px-3">Default Ink</th>
+                      <th className="py-3 px-3">Default Ink System</th>
                       <th className="py-3 px-3">Base Cost / sqft</th>
                       <th className="py-3 px-3">Status</th>
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {printingMethods.map((pm) => (
+                    {filteredPrintingMethods.map((pm) => (
                       <tr key={pm.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                         <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                           <div>{pm.name}</div>
@@ -1827,7 +2060,7 @@ export default function ProductsCatalogPage() {
                           {pm.description && <div className="text-[11px] text-slate-400 font-normal">{pm.description}</div>}
                         </td>
                         <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
-                          {pm.code || '—'}
+                          {pm.code ? <Badge variant="secondary" className="font-mono text-xs">{pm.code}</Badge> : '—'}
                         </td>
                         <td className="py-3.5 px-3">
                           <div className="flex flex-wrap gap-1">
@@ -1887,13 +2120,1095 @@ export default function ProductsCatalogPage() {
             )}
           </CardContent>
         </Card>
-      ) : (
-        /* Catalog Table & Mobile Cards */
+      )}
+
+      {/* ======================================================== */}
+      {/* VIEW 2: FINISHING MASTERS TAB                           */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'finishing' && (
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Post-Press Finishing & Fabrication Masters</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold">
+                  {filteredFinishingOptions.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Configurable finishing operations (Hemming, Eyelets, Lamination, Binding, Seaming, Foam Mounts, Framing) selectable inside services and quotations.
+              </CardDescription>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingFinishing(null)
+                setIsFinishingModalOpen(true)
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Add Finishing Option
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {filteredFinishingOptions.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <Scissors className="h-10 w-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Finishing Options Configured</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Add finishing operations with custom pricing methods (per sqft, per linear ft, per piece, or fixed) to attach them to services.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingFinishing(null)
+                    setIsFinishingModalOpen(true)
+                  }}
+                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Finishing Option
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Finishing Name</th>
+                      <th className="py-3 px-3">Category</th>
+                      <th className="py-3 px-3">Pricing Method</th>
+                      <th className="py-3 px-3">Unit Cost</th>
+                      <th className="py-3 px-3">Selling Price</th>
+                      <th className="py-3 px-3">Gross Margin</th>
+                      <th className="py-3 px-3">Linked Material</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredFinishingOptions.map((f) => {
+                      const margin =
+                        f.selling_price > 0
+                          ? Math.round(((f.selling_price - (f.cost || 0)) / f.selling_price) * 100)
+                          : 0
+                      const linkedMat = products.find((p) => p.id === f.material_id)
+
+                      return (
+                        <tr key={f.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                            <div>{f.name}</div>
+                            {f.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{f.name_bn}</div>}
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                              {f.category?.replace('_', ' ') || 'General'}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-700 dark:text-slate-300">
+                            <Badge variant="outline" className="text-[11px] uppercase">
+                              {f.pricing_method?.replace('_', ' ')}
+                            </Badge>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                            ৳{f.cost || 0}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            ৳{f.selling_price || 0}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs">
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border',
+                                margin >= 35
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                              )}
+                            >
+                              {margin}%
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3 text-xs text-slate-600 dark:text-slate-300">
+                            {linkedMat ? (
+                              <span className="text-blue-600 font-semibold">{linkedMat.name}</span>
+                            ) : (
+                              <span className="text-slate-400 italic">None</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {f.is_active !== false ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingFinishing(f)
+                                  setIsFinishingModalOpen(true)
+                                }}
+                                className="h-7 text-xs px-2"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDeleteFinishingOption(f.id)}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Delete Finishing Option"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* VIEW 3: ADDITIONAL WORK MASTERS TAB                     */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'additional' && (
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Additional Work & Catalog Addons</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold">
+                  {filteredAdditionalOptions.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Reusable hardware items, stand accessories, framing, and add-on charges linked to catalog products.
+              </CardDescription>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingAdditional(null)
+                setIsAdditionalModalOpen(true)
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Add Additional Option
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {filteredAdditionalOptions.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <PlusCircle className="h-10 w-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Additional Options Configured</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Add hardware accessories, stands, or extra charges to attach them seamlessly to jobs and quotes.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingAdditional(null)
+                    setIsAdditionalModalOpen(true)
+                  }}
+                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Additional Option
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Option Name</th>
+                      <th className="py-3 px-3">Linked Catalog Item</th>
+                      <th className="py-3 px-3">Pricing Method</th>
+                      <th className="py-3 px-3">Unit Cost</th>
+                      <th className="py-3 px-3">Selling Price</th>
+                      <th className="py-3 px-3">Gross Margin</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredAdditionalOptions.map((a) => {
+                      const margin =
+                        a.selling_price > 0
+                          ? Math.round(((a.selling_price - (a.cost || 0)) / a.selling_price) * 100)
+                          : 0
+                      const linkedProduct = products.find((p) => p.id === a.product_id)
+
+                      return (
+                        <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                            <div>{a.name}</div>
+                            {a.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{a.name_bn}</div>}
+                          </td>
+                          <td className="py-3.5 px-3 text-xs text-slate-600 dark:text-slate-300">
+                            {linkedProduct ? (
+                              <span className="text-blue-600 font-semibold">{linkedProduct.name}</span>
+                            ) : (
+                              <span className="text-slate-400 italic">None (Custom)</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs">
+                            <Badge variant="outline" className="text-[11px] uppercase">
+                              {a.pricing_method?.replace('_', ' ')}
+                            </Badge>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                            ৳{a.cost || 0}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            ৳{a.selling_price || 0}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs">
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border',
+                                margin >= 35
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                              )}
+                            >
+                              {margin}%
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {a.is_active !== false ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingAdditional(a)
+                                  setIsAdditionalModalOpen(true)
+                                }}
+                                className="h-7 text-xs px-2"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDeleteAdditionalOption(a.id)}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Delete Additional Option"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* VIEW 4: INSTALLATION & DELIVERY MASTERS TAB              */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'installation' && (
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Installation, Logistics & Dispatch Masters</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold">
+                  {filteredInstallationOptions.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Configurable site installations, height tiers, delivery dispatches, and logistics tariffs with automated production task integration.
+              </CardDescription>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingInstallation(null)
+                setIsInstallationModalOpen(true)
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Add Installation Option
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {filteredInstallationOptions.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <Truck className="h-10 w-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Installation & Delivery Options Configured</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Add installation tariffs or delivery zones with automatic shop-floor task generation upon order confirmation.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingInstallation(null)
+                    setIsInstallationModalOpen(true)
+                  }}
+                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Installation Option
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Scope Name</th>
+                      <th className="py-3 px-3">Fulfillment Scope</th>
+                      <th className="py-3 px-3">Production Task</th>
+                      <th className="py-3 px-3">Pricing Method</th>
+                      <th className="py-3 px-3">Unit Cost</th>
+                      <th className="py-3 px-3">Selling Rate</th>
+                      <th className="py-3 px-3">Gross Margin</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredInstallationOptions.map((i) => {
+                      const margin =
+                        i.selling_price > 0
+                          ? Math.round(((i.selling_price - (i.cost || 0)) / i.selling_price) * 100)
+                          : 0
+
+                      return (
+                        <tr key={i.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                            <div>{i.name}</div>
+                            {i.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{i.name_bn}</div>}
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+                              {i.fulfillment_type || 'Installation'}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {i.creates_task ? (
+                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px]">
+                                🛠️ Auto-Task
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-slate-400">No Task</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs">
+                            <Badge variant="outline" className="text-[11px] uppercase">
+                              {i.pricing_method?.replace('_', ' ')}
+                            </Badge>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                            ৳{i.cost || 0}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            ৳{i.selling_price || 0}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs">
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border',
+                                margin >= 35
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                              )}
+                            >
+                              {margin}%
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {i.is_active !== false ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingInstallation(i)
+                                  setIsInstallationModalOpen(true)
+                                }}
+                                className="h-7 text-xs px-2"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDeleteInstallationOption(i.id)}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Delete Installation Option"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* VIEW 5: SERVICES SPECIALIZED TABLE                       */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'service' && (
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Printing & Fabrication Services Master</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold">
+                  {filteredProducts.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Large format, signage, offset, and fabrication services configured with substrate dimensions, allowances, and finishing options.
+              </CardDescription>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleOpenCreateService}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              New Service
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-8 space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <Printer className="h-10 w-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Services Found</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Create high-performance printing services with substrate allowances, dimension presets, and finishing tariffs.
+                </p>
+                <Button size="sm" onClick={handleOpenCreateService} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Service
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Service & SKU</th>
+                      <th className="py-3 px-3">Printable Substrate</th>
+                      <th className="py-3 px-3">Pricing Model</th>
+                      <th className="py-3 px-3">Dimension Presets</th>
+                      <th className="py-3 px-3">Finishing</th>
+                      <th className="py-3 px-3">Base Cost</th>
+                      <th className="py-3 px-3">Selling Rate</th>
+                      <th className="py-3 px-3">Gross Margin</th>
+                      <th className="py-3 px-3">Min Charge</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredProducts.map((item) => {
+                      const marginPercent =
+                        item.selling_price > 0
+                          ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
+                          : 0
+                      const presets = item.service_config?.dimension_presets || item.service_config?.presets || []
+                      const finishings = item.service_config?.finishing_options || []
+
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <Link
+                              href={`/${slug}/products/${item.id}`}
+                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                            >
+                              <span>{item.name}</span>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                            </Link>
+                            {item.name_bn && (
+                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                            )}
+                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                              {item.sku} • {item.category || 'printing'}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <Badge variant="outline" className="text-xs font-medium">
+                              {item.service_config?.printable_material_name || item.material_spec || 'Standard Media'}
+                            </Badge>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-700 dark:text-slate-300">
+                            <Badge variant="secondary" className="text-[11px] uppercase">
+                              {(item.pricing_method || item.service_config?.pricing_method || 'per_area').replace('_', ' ')}
+                            </Badge>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {presets.length > 0 ? (
+                              <div className="flex flex-wrap gap-1 max-w-[140px]">
+                                {presets.slice(0, 2).map((p, idx) => (
+                                  <span key={idx} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-mono rounded">
+                                    {p.width}'×{p.length}'
+                                  </span>
+                                ))}
+                                {presets.length > 2 && (
+                                  <span className="text-[10px] text-slate-400 font-mono">+{presets.length - 2} more</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">Custom Dimensions</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {finishings.length > 0 ? (
+                              <Badge variant="secondary" className="text-[10px]">
+                                {finishings.length} options
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">—</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                            <CurrencyDisplay amount={item.base_cost} />
+                            <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            <CurrencyDisplay amount={item.selling_price} />
+                            <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs">
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border',
+                                marginPercent >= 35
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  : marginPercent >= 20
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                              )}
+                            >
+                              {marginPercent}%
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3 text-xs font-mono">
+                            {item.minimum_charge ? <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span> : '—'}
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {item.is_active !== false ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                onClick={() => handleOpenFastQuote(item)}
+                                className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
+                              >
+                                <Calculator className="h-3 w-3 mr-1" />
+                                Quote
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setPricingProduct(item)
+                                  setNewPrice(item.selling_price)
+                                  setNewPurchasePrice(item.purchase_price || 0)
+                                  setNewTargetMargin(item.target_margin_percentage || 35)
+                                  setNewWastage(item.default_wastage_percentage || 0)
+                                }}
+                                className="h-7 text-xs px-2"
+                                title="Adjust price"
+                              >
+                                <Edit3 className="h-3 w-3 mr-1" />
+                                Price
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleOpenEdit(item)}
+                                className="h-7 text-xs px-2"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleInitiateDelete(item)}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Delete Service"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* VIEW 6: READY PRODUCTS SPECIALIZED TABLE                 */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'product' && (
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Ready Products & Display Hardware</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold">
+                  {filteredProducts.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Finished physical units (Rollup standees, X-banners, POP displays, acrylic stands, frames) with dimensions and tiered pricing.
+              </CardDescription>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleOpenCreateProduct}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs shrink-0"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              New Ready Product
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-8 space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <Package className="h-10 w-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Ready Products Found</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Add finished display hardware or stock products with packaging specifications and tiered dealer pricing.
+                </p>
+                <Button size="sm" onClick={handleOpenCreateProduct} className="mt-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Ready Product
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Product & SKU</th>
+                      <th className="py-3 px-3">Physical Dimensions & Spec</th>
+                      <th className="py-3 px-3">Packaging & MOQ</th>
+                      <th className="py-3 px-3">Price Tiers (Corp/Dealer/Wholesale)</th>
+                      <th className="py-3 px-3">Unit Cost</th>
+                      <th className="py-3 px-3">Selling Rate</th>
+                      <th className="py-3 px-3">Gross Margin</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredProducts.map((item) => {
+                      const marginPercent =
+                        item.selling_price > 0
+                          ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
+                          : 0
+                      const tiers = item.price_tiers || {}
+
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <Link
+                              href={`/${slug}/products/${item.id}`}
+                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                            >
+                              <span>{item.name}</span>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                            </Link>
+                            {item.name_bn && (
+                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                            )}
+                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                              {item.sku} • {item.category || 'hardware'}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                              {item.dimensions_spec || item.material_spec || 'Standard Dimension'}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-400">
+                            <span>📦 MOQ: {item.min_order_quantity || 1} {item.unit || 'pcs'}</span>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <div className="flex flex-wrap gap-1 text-[10px] font-mono">
+                              {tiers.corporate ? (
+                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200">
+                                  Corp: ৳{tiers.corporate}
+                                </span>
+                              ) : null}
+                              {tiers.dealer ? (
+                                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200">
+                                  Dealer: ৳{tiers.dealer}
+                                </span>
+                              ) : null}
+                              {tiers.wholesale ? (
+                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200">
+                                  WS: ৳{tiers.wholesale}
+                                </span>
+                              ) : null}
+                              {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
+                                <span className="text-slate-400 italic">Standard Retail</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                            <CurrencyDisplay amount={item.base_cost} />
+                          </td>
+                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            <CurrencyDisplay amount={item.selling_price} />
+                            <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs">
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border',
+                                marginPercent >= 35
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  : marginPercent >= 20
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                              )}
+                            >
+                              {marginPercent}%
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {item.is_active !== false ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                onClick={() => handleOpenFastQuote(item)}
+                                className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
+                              >
+                                <Calculator className="h-3 w-3 mr-1" />
+                                Quote
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setPricingProduct(item)
+                                  setNewPrice(item.selling_price)
+                                  setNewPurchasePrice(item.purchase_price || 0)
+                                  setNewTargetMargin(item.target_margin_percentage || 35)
+                                  setNewWastage(item.default_wastage_percentage || 0)
+                                }}
+                                className="h-7 text-xs px-2"
+                                title="Adjust price"
+                              >
+                                <Edit3 className="h-3 w-3 mr-1" />
+                                Price
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleOpenEdit(item)}
+                                className="h-7 text-xs px-2"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleInitiateDelete(item)}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Delete Product"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* VIEW 7: RAW MATERIALS & MEDIA SPECIALIZED TABLE          */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'material' && (
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Raw Materials & Media Master</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold">
+                  {filteredProducts.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Roll media, rigid substrate boards, ink stocks, and hardware materials with dimensional conversion ratios and yield costing.
+              </CardDescription>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleOpenCreateMaterial}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs shrink-0"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              New Raw Material
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-8 space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <Layers className="h-10 w-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Raw Materials Found</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Add substrates (rolls, sheets, inks) with bulk procurement rates, dimensional conversion ratios, and wastage factors.
+                </p>
+                <Button size="sm" onClick={handleOpenCreateMaterial} className="mt-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Raw Material
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Material Name & SKU</th>
+                      <th className="py-3 px-3">Media Form & Geometry</th>
+                      <th className="py-3 px-3">Purchase Economics</th>
+                      <th className="py-3 px-3">Yield & Conversion</th>
+                      <th className="py-3 px-3">Compatible Printing</th>
+                      <th className="py-3 px-3">Effective Cost / Unit</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredProducts.map((item) => {
+                      const printingList = item.material_config?.compatible_printing_methods || item.printing_methods || []
+
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <Link
+                              href={`/${slug}/products/${item.id}`}
+                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                            >
+                              <span>{item.name}</span>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                            </Link>
+                            {item.name_bn && (
+                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                            )}
+                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                              {item.sku} • {item.material_spec || 'Standard Grade'}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {item.roll_width_ft && item.roll_length_ft ? (
+                              <Badge variant="outline" className="text-[11px] font-mono bg-blue-50/50">
+                                Roll: {item.roll_width_ft}' × {item.roll_length_ft}'
+                              </Badge>
+                            ) : item.sheet_width_ft && item.sheet_length_ft ? (
+                              <Badge variant="outline" className="text-[11px] font-mono bg-emerald-50/50">
+                                Sheet: {item.sheet_width_ft}' × {item.sheet_length_ft}'
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[11px] font-mono">
+                                Unit ({item.unit})
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {item.purchase_price && item.purchase_price > 0 ? (
+                              <div>
+                                <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
+                                  ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">No Purchase Tariff</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-400">
+                            <div>1 {item.purchase_unit || 'roll'} = {item.conversion_ratio || 1} {item.selling_unit || item.unit}</div>
+                            {item.default_wastage_percentage ? (
+                              <div className="text-[10px] text-amber-600">({item.default_wastage_percentage}% waste allowance)</div>
+                            ) : null}
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {printingList.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {printingList.map((m, idx) => (
+                                  <Badge key={idx} variant="secondary" className="text-[10px] uppercase font-mono">
+                                    {m}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">Universal Media</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            ৳{item.base_cost}
+                            <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {item.is_active !== false ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setPricingProduct(item)
+                                  setNewPrice(item.selling_price)
+                                  setNewPurchasePrice(item.purchase_price || 0)
+                                  setNewTargetMargin(item.target_margin_percentage || 35)
+                                  setNewWastage(item.default_wastage_percentage || 0)
+                                }}
+                                className="h-7 text-xs px-2"
+                                title="Adjust tariff"
+                              >
+                                <Edit3 className="h-3 w-3 mr-1" />
+                                Tariff
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleOpenEdit(item)}
+                                className="h-7 text-xs px-2"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleInitiateDelete(item)}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Delete Material"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* VIEW 8: UNIFIED ALL COMMERCIAL CATALOG ITEMS             */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'all' && (
         <Card className="shadow-xs overflow-hidden">
           <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>Commercial Master Items</span>
+                <span>Commercial Master Catalog</span>
                 <Badge variant="outline" className="text-xs font-mono font-bold">
                   {filteredProducts.length}
                 </Badge>
@@ -1901,351 +3216,358 @@ export default function ProductsCatalogPage() {
               <span className="text-xs text-slate-400">PostgreSQL Authoritative Units, Conversion & Costing</span>
             </div>
           </CardHeader>
-        <CardContent className="p-0">
-          {/* Loading Skeleton */}
-          {isLoading && (
-            <div className="p-8 space-y-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
-              ))}
-            </div>
-          )}
+          <CardContent className="p-0">
+            {/* Loading Skeleton */}
+            {isLoading && (
+              <div className="p-8 space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            )}
 
-          {/* Empty State */}
-          {!isLoading && filteredProducts.length === 0 && (
-            <div className="p-12 text-center space-y-3">
-              <Package className="h-10 w-10 text-slate-300 mx-auto" />
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Products Found</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                No catalog items matched your current filter criteria. Create a new product or reset your search.
-              </p>
-              <Button size="sm" onClick={handleOpenCreate} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-3.5 w-3.5 mr-1" /> Add New Item
-              </Button>
-            </div>
-          )}
+            {/* Empty State */}
+            {!isLoading && filteredProducts.length === 0 && (
+              <div className="p-12 text-center space-y-3">
+                <Package className="h-10 w-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Products Found</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  No catalog items matched your current filter criteria. Create a new product or reset your search.
+                </p>
+                <Button size="sm" onClick={handleOpenCreate} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add New Item
+                </Button>
+              </div>
+            )}
 
-          {/* Desktop Table View */}
-          {!isLoading && filteredProducts.length > 0 && (
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="py-3 px-4">Item & SKU</th>
-                    <th className="py-3 px-3">Type</th>
-                    <th className="py-3 px-3">Purchase Economics</th>
-                    <th className="py-3 px-3">Effective Cost</th>
-                    <th className="py-3 px-3">Selling Rate</th>
-                    <th className="py-3 px-3">Gross Margin</th>
-                    <th className="py-3 px-3">Min Charge</th>
-                    <th className="py-3 px-3">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredProducts.map((item) => {
-                    const marginPercent =
-                      item.selling_price > 0
-                        ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
-                        : 0
+            {/* Desktop Table View */}
+            {!isLoading && filteredProducts.length > 0 && (
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Item & SKU</th>
+                      <th className="py-3 px-3">Entity Kind</th>
+                      <th className="py-3 px-3">Purchase Economics</th>
+                      <th className="py-3 px-3">Effective Cost</th>
+                      <th className="py-3 px-3">Selling Rate</th>
+                      <th className="py-3 px-3">Gross Margin</th>
+                      <th className="py-3 px-3">Min Charge</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredProducts.map((item) => {
+                      const marginPercent =
+                        item.selling_price > 0
+                          ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
+                          : 0
 
-                    const isService =
-                      item.commercial_type === 'service' ||
-                      item.commercial_type === 'installation' ||
-                      item.commercial_type === 'delivery'
+                      const isService = isServiceItem(item)
+                      const isMaterial = isMaterialItem(item)
 
-                    return (
-                      <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                        {/* Item & SKU */}
-                        <td className="py-3.5 px-4">
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                          {/* Item & SKU */}
+                          <td className="py-3.5 px-4">
+                            <Link
+                              href={`/${slug}/products/${item.id}`}
+                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                            >
+                              <span>{item.name}</span>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                            </Link>
+                            {item.name_bn && (
+                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                            )}
+                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                              {item.sku} {item.material_spec ? `• ${item.material_spec}` : ''}
+                            </div>
+                          </td>
+
+                          {/* Entity Kind Badge */}
+                          <td className="py-3.5 px-3">
+                            <span
+                              className={cn(
+                                'capitalize px-2 py-0.5 rounded text-[11px] font-semibold border',
+                                isService
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                  : isMaterial
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                              )}
+                            >
+                              {isService ? 'Service' : isMaterial ? 'Raw Material' : 'Ready Product'}
+                            </span>
+                          </td>
+
+                          {/* Purchase Economics */}
+                          <td className="py-3.5 px-3">
+                            {!isService && item.purchase_price && item.purchase_price > 0 ? (
+                              <div>
+                                <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
+                                  ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
+                                </div>
+                                <div className="text-[10px] text-slate-400 font-mono">
+                                  1 {item.purchase_unit || 'roll'} = {item.conversion_ratio || 1} {item.selling_unit || item.unit}
+                                  {item.default_wastage_percentage ? ` (${item.default_wastage_percentage}% waste)` : ''}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">No Purchase Unit</span>
+                            )}
+                          </td>
+
+                          {/* Effective Unit Cost */}
+                          <td className="py-3.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 font-mono">
+                            <CurrencyDisplay amount={item.base_cost} />
+                            <span className="text-[10px] text-slate-400 font-normal">/{item.selling_unit || item.unit}</span>
+                          </td>
+
+                          {/* Selling Rate */}
+                          <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-white font-mono">
+                            <CurrencyDisplay amount={item.selling_price} />
+                            <span className="text-xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          </td>
+
+                          {/* Gross Margin % */}
+                          <td className="py-3.5 px-3">
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border font-mono',
+                                marginPercent >= 35
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900'
+                                  : marginPercent >= 20
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+                              )}
+                            >
+                              {marginPercent}%
+                            </span>
+                          </td>
+
+                          {/* Minimum Charge */}
+                          <td className="py-3.5 px-3 text-xs font-mono font-medium text-slate-600 dark:text-slate-400">
+                            {item.minimum_charge && item.minimum_charge > 0 ? (
+                              <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-3.5 px-3">
+                            {item.is_active !== false ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {/* Fast Quote Button */}
+                              <Button
+                                size="sm"
+                                onClick={() => handleOpenFastQuote(item)}
+                                className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
+                              >
+                                <Calculator className="h-3 w-3 mr-1" />
+                                Quote
+                              </Button>
+
+                              {/* Adjust Price Button */}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setPricingProduct(item)
+                                  setNewPrice(item.selling_price)
+                                  setNewPurchasePrice(item.purchase_price || 0)
+                                  setNewTargetMargin(item.target_margin_percentage || 35)
+                                  setNewWastage(item.default_wastage_percentage || 0)
+                                }}
+                                className="h-7 text-xs px-2"
+                                title="Adjust commercial price with audit log"
+                              >
+                                <Edit3 className="h-3 w-3 mr-1" />
+                                Price
+                              </Button>
+
+                              {/* Edit Button */}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleOpenEdit(item)}
+                                className="h-7 text-xs px-2"
+                              >
+                                Edit
+                              </Button>
+
+                              {/* Archive / Restore */}
+                              {item.is_active !== false ? (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleToggleArchive(item)}
+                                  className="h-7 w-7 p-0 text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                                  title="Archive Product"
+                                >
+                                  <Archive className="h-3.5 w-3.5" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleToggleArchive(item)}
+                                  className="h-7 text-xs px-2 text-emerald-600 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 font-semibold"
+                                  title="Restore Product"
+                                >
+                                  <RefreshCw className="h-3 w-3 mr-1" />
+                                  Restore
+                                </Button>
+                              )}
+
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleInitiateDelete(item)}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Delete Item"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Mobile Card View (390 x 844 touch friendly) */}
+            {!isLoading && filteredProducts.length > 0 && (
+              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredProducts.map((item) => {
+                  const marginPercent =
+                    item.selling_price > 0
+                      ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
+                      : 0
+
+                  return (
+                    <div key={item.id} className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
                           <Link
                             href={`/${slug}/products/${item.id}`}
-                            className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                            className="font-bold text-sm text-slate-900 dark:text-white hover:text-blue-600"
                           >
-                            <span>{item.name}</span>
-                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                            {item.name}
                           </Link>
                           {item.name_bn && (
                             <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
                           )}
                           <div className="text-[11px] font-mono text-slate-400 mt-0.5">
-                            {item.sku} {item.material_spec ? `• ${item.material_spec}` : ''}
+                            {item.sku} • {item.material_spec || 'Standard Spec'}
                           </div>
-                        </td>
+                        </div>
+                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 shrink-0">
+                          {(item.commercial_type || item.product_type)?.replace('_', ' ')}
+                        </span>
+                      </div>
 
-                        {/* Commercial Product Type */}
-                        <td className="py-3.5 px-3">
-                          <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900">
-                            {(item.commercial_type || item.product_type)?.replace('_', ' ')}
-                          </span>
-                        </td>
+                      {/* Commercial Economics Badges */}
+                      {item.purchase_price && item.purchase_price > 0 ? (
+                        <div className="text-xs font-mono text-slate-500 bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                          Buy: <strong>৳{item.purchase_price}/{item.purchase_unit}</strong> (1 {item.purchase_unit} = {item.conversion_ratio} {item.selling_unit})
+                        </div>
+                      ) : null}
 
-                        {/* Purchase Economics (Roll / Sheet / Box) */}
-                        <td className="py-3.5 px-3">
-                          {!isService && item.purchase_price && item.purchase_price > 0 ? (
-                            <div>
-                              <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
-                                ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
-                              </div>
-                              <div className="text-[10px] text-slate-400 font-mono">
-                                1 {item.purchase_unit || 'roll'} = {item.conversion_ratio || 1} {item.selling_unit || item.unit}
-                                {item.default_wastage_percentage ? ` (${item.default_wastage_percentage}% waste)` : ''}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-slate-400 italic">No Purchase Unit</span>
-                          )}
-                        </td>
-
-                        {/* Effective Unit Cost */}
-                        <td className="py-3.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 font-mono">
-                          <CurrencyDisplay amount={item.base_cost} />
-                          <span className="text-[10px] text-slate-400 font-normal">/{item.selling_unit || item.unit}</span>
-                        </td>
-
-                        {/* Selling Rate */}
-                        <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-white font-mono">
-                          <CurrencyDisplay amount={item.selling_price} />
-                          <span className="text-xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
-                        </td>
-
-                        {/* Gross Margin % */}
-                        <td className="py-3.5 px-3">
-                          <span
-                            className={cn(
-                              'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border font-mono',
-                              marginPercent >= 35
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900'
-                                : marginPercent >= 20
-                                ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900'
-                                : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
-                            )}
-                          >
+                      {/* Metrics Grid */}
+                      <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-center border border-slate-100 dark:border-slate-800">
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase block">Selling Rate</span>
+                          <div className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">
+                            ৳{item.selling_price}/{item.selling_unit || item.unit}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase block">Eff. Cost</span>
+                          <div className="font-mono text-xs text-slate-600 dark:text-slate-300">
+                            ৳{item.base_cost}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-emerald-600 uppercase block">Margin</span>
+                          <div className="font-mono font-bold text-xs text-emerald-600">
                             {marginPercent}%
-                          </span>
-                        </td>
-
-                        {/* Minimum Charge */}
-                        <td className="py-3.5 px-3 text-xs font-mono font-medium text-slate-600 dark:text-slate-400">
-                          {item.minimum_charge && item.minimum_charge > 0 ? (
-                            <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span>
-                          ) : (
-                            <span className="text-slate-300">—</span>
-                          )}
-                        </td>
-
-                        {/* Status */}
-                        <td className="py-3.5 px-3">
-                          {item.is_active !== false ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
-                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Actions */}
-                        <td className="py-3.5 px-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {/* Fast Quote Button */}
-                            <Button
-                              size="sm"
-                              onClick={() => handleOpenFastQuote(item)}
-                              className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
-                            >
-                              <Calculator className="h-3 w-3 mr-1" />
-                              Quote
-                            </Button>
-
-                            {/* Adjust Price Button */}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setPricingProduct(item)
-                                setNewPrice(item.selling_price)
-                                setNewPurchasePrice(item.purchase_price || 0)
-                                setNewTargetMargin(item.target_margin_percentage || 35)
-                                setNewWastage(item.default_wastage_percentage || 0)
-                              }}
-                              className="h-7 text-xs px-2"
-                              title="Adjust commercial price with audit log"
-                            >
-                              <Edit3 className="h-3 w-3 mr-1" />
-                              Price
-                            </Button>
-
-                            {/* Edit Button */}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleOpenEdit(item)}
-                              className="h-7 text-xs px-2"
-                            >
-                              Edit
-                            </Button>
-
-                            {/* Archive / Restore */}
-                            {item.is_active !== false ? (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleToggleArchive(item)}
-                                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-800 dark:hover:text-white"
-                                title="Archive Product"
-                              >
-                                <Archive className="h-3.5 w-3.5" />
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleToggleArchive(item)}
-                                className="h-7 text-xs px-2 text-emerald-600 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 font-semibold"
-                                title="Restore Product"
-                              >
-                                <RefreshCw className="h-3 w-3 mr-1" />
-                                Restore
-                              </Button>
-                            )}
-
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleInitiateDelete(item)}
-                              className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                              title="Delete Item"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
                           </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                        </div>
+                      </div>
 
-          {/* Mobile Card View (390 x 844 touch friendly) */}
-          {!isLoading && filteredProducts.length > 0 && (
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-              {filteredProducts.map((item) => {
-                const marginPercent =
-                  item.selling_price > 0
-                    ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
-                    : 0
-
-                return (
-                  <div key={item.id} className="p-4 space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
+                      {/* Mobile Action Buttons */}
+                      <div className="flex items-center gap-2 pt-1">
+                        {item.is_active !== false ? (
+                          <Button
+                            size="sm"
+                            onClick={() => handleOpenFastQuote(item)}
+                            className="flex-1 h-9 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+                          >
+                            <Calculator className="h-3.5 w-3.5 mr-1" /> Fast Quote
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => handleToggleArchive(item)}
+                            className="flex-1 h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                          >
+                            <RefreshCw className="h-3.5 w-3.5 mr-1" /> Restore Item
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setPricingProduct(item)
+                            setNewPrice(item.selling_price)
+                            setNewPurchasePrice(item.purchase_price || 0)
+                            setNewTargetMargin(item.target_margin_percentage || 35)
+                            setNewWastage(item.default_wastage_percentage || 0)
+                          }}
+                          className="h-9 px-2.5 text-xs"
+                        >
+                          <Edit3 className="h-3.5 w-3.5 mr-1" /> Price
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenEdit(item)}
+                          className="h-9 px-2.5 text-xs"
+                        >
+                          Edit
+                        </Button>
                         <Link
                           href={`/${slug}/products/${item.id}`}
-                          className="font-bold text-sm text-slate-900 dark:text-white hover:text-blue-600"
+                          className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                         >
-                          {item.name}
+                          Detail
                         </Link>
-                        {item.name_bn && (
-                          <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
-                        )}
-                        <div className="text-[11px] font-mono text-slate-400 mt-0.5">
-                          {item.sku} • {item.material_spec || 'Standard Spec'}
-                        </div>
-                      </div>
-                      <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 shrink-0">
-                        {(item.commercial_type || item.product_type)?.replace('_', ' ')}
-                      </span>
-                    </div>
-
-                    {/* Commercial Economics Badges */}
-                    {item.purchase_price && item.purchase_price > 0 ? (
-                      <div className="text-xs font-mono text-slate-500 bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                        Buy: <strong>৳{item.purchase_price}/{item.purchase_unit}</strong> (1 {item.purchase_unit} = {item.conversion_ratio} {item.selling_unit})
-                      </div>
-                    ) : null}
-
-                    {/* Metrics Grid */}
-                    <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-center border border-slate-100 dark:border-slate-800">
-                      <div>
-                        <span className="text-[10px] text-slate-400 uppercase block">Selling Rate</span>
-                        <div className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">
-                          ৳{item.selling_price}/{item.selling_unit || item.unit}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-400 uppercase block">Eff. Cost</span>
-                        <div className="font-mono text-xs text-slate-600 dark:text-slate-300">
-                          ৳{item.base_cost}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-emerald-600 uppercase block">Margin</span>
-                        <div className="font-mono font-bold text-xs text-emerald-600">
-                          {marginPercent}%
-                        </div>
                       </div>
                     </div>
-
-                    {/* Mobile Action Buttons */}
-                    <div className="flex items-center gap-2 pt-1">
-                      {item.is_active !== false ? (
-                        <Button
-                          size="sm"
-                          onClick={() => handleOpenFastQuote(item)}
-                          className="flex-1 h-9 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
-                        >
-                          <Calculator className="h-3.5 w-3.5 mr-1" /> Fast Quote
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => handleToggleArchive(item)}
-                          className="flex-1 h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                        >
-                          <RefreshCw className="h-3.5 w-3.5 mr-1" /> Restore Item
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setPricingProduct(item)
-                          setNewPrice(item.selling_price)
-                          setNewPurchasePrice(item.purchase_price || 0)
-                          setNewTargetMargin(item.target_margin_percentage || 35)
-                          setNewWastage(item.default_wastage_percentage || 0)
-                        }}
-                        className="h-9 px-2.5 text-xs"
-                      >
-                        <Edit3 className="h-3.5 w-3.5 mr-1" /> Price
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleOpenEdit(item)}
-                        className="h-9 px-2.5 text-xs"
-                      >
-                        Edit
-                      </Button>
-                      <Link
-                        href={`/${slug}/products/${item.id}`}
-                        className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
-                      >
-                        Detail
-                      </Link>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* ======================================================== */}
