@@ -138,7 +138,7 @@ export function evaluateMaterialCompatibility(input: any): any {
   }
 
   // 3. Check Usable Remnants in Physical Stock
-  const remnantsList = input.availableRemnants ?? input.available_remnants
+  const remnantsList = input.availableRemnants ?? input.available_remnants ?? input.remnants ?? []
   let matchedRemnant: InventoryRemnantRecord | null = null
   if (remnantsList && remnantsList.length > 0) {
     const usableRemnants = remnantsList.filter(
@@ -152,7 +152,7 @@ export function evaluateMaterialCompatibility(input: any): any {
   }
 
   // 4. Check Available Physical Rolls in Stock
-  const physicalRollsList = input.physicalRolls ?? input.active_physical_rolls
+  const physicalRollsList = input.physicalRolls ?? input.active_physical_rolls ?? input.activePhysicalRolls ?? []
   let matchedRolls: InventoryRollRecord[] = []
   if (physicalRollsList && physicalRollsList.length > 0) {
     matchedRolls = physicalRollsList.filter(

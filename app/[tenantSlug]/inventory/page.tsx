@@ -1271,6 +1271,8 @@ export default function UnifiedInventoryPage() {
           }}
           materials={materials}
           locations={locations}
+          orders={orders}
+          purchaseOrder={selectedPoForReceive}
           selectedMaterialId={selectedMaterialForAction?.id}
           onSuccess={() => {
             showNotification('Stock received and ledger updated successfully.')

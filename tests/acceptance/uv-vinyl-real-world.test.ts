@@ -169,6 +169,12 @@ describe('Real-World Acceptance Test 51: UV Vinyl Print Order for ABC Company', 
       job_order_id: 'JOB-ABC-001',
       operator_name: 'Imran (Press Lead)',
       notes: 'UV Vinyl 4ft 2in x 12ft 2in (5 pcs) for ABC Company',
+      offcut_remnant: {
+        create_remnant: true,
+        width_ft: 5,
+        length_ft: 3.17,
+        condition: 'usable',
+      },
     })
 
     // Assert roll remaining length & area

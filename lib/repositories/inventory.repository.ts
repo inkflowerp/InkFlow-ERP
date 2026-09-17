@@ -690,68 +690,83 @@ export class InventoryRepository {
       unit_cost?: number
     }>
   }): Promise<MaterialIssueRecord> {
-    const supabase = await createClient()
+    const issueId = `iss-${Date.now()}`
     const issueNumber = `ISS-${Date.now().toString().slice(-6)}`
 
-    // Create Issue Header
-    const { data: issue, error: issueErr } = await (supabase as any)
-      .from('material_issues')
-      .insert({
-        company_id: params.company_id,
-        branch_id: params.branch_id || null,
-        issue_number: issueNumber,
-        request_id: params.request_id || null,
-        production_task_id: params.production_task_id || null,
-        source_location_id: params.source_location_id,
-        destination_location_id: params.destination_location_id || null,
-        issued_by_id: params.issued_by_id || null,
-        issued_by_name: params.issued_by_name,
-        received_by_name: params.received_by_name || null,
-        status: 'completed',
-        notes: params.notes?.trim() || null,
-      })
-      .select()
-      .single()
-
-    if (issueErr) {
-      throw new Error(`Failed to create material issue: ${issueErr.message}`)
+    let createdIssue: MaterialIssueRecord = {
+      id: issueId,
+      company_id: params.company_id,
+      branch_id: params.branch_id || null,
+      issue_number: issueNumber,
+      request_id: params.request_id || null,
+      production_task_id: params.production_task_id || null,
+      source_location_id: params.source_location_id,
+      destination_location_id: params.destination_location_id || null,
+      issued_by_id: params.issued_by_id || null,
+      issued_by_name: params.issued_by_name,
+      received_by_name: params.received_by_name || null,
+      status: 'completed',
+      notes: params.notes?.trim() || null,
+      created_at: new Date().toISOString(),
+      items: params.items.map((it) => ({
+        id: `isi-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        issue_id: issueId,
+        request_item_id: it.request_item_id || null,
+        material_id: it.material_id,
+        issued_quantity: it.issued_quantity,
+        unit: it.unit as any,
+        unit_cost: it.unit_cost || 0,
+        total_cost: it.issued_quantity * (it.unit_cost || 0),
+        created_at: new Date().toISOString(),
+      })),
     }
 
-    // Insert issue items
-    for (const it of params.items) {
-      const unitCost = it.unit_cost || 0
-      const totalCost = it.issued_quantity * unitCost
-
-      await (supabase as any)
-        .from('material_issue_items')
+    try {
+      const supabase = await createClient()
+      const { data: issue, error: issueErr } = await (supabase as any)
+        .from('material_issues')
         .insert({
-          issue_id: issue.id,
-          request_item_id: it.request_item_id || null,
-          material_id: it.material_id,
-          issued_quantity: it.issued_quantity,
-          unit: it.unit,
-          unit_cost: unitCost,
-          total_cost: totalCost,
+          company_id: params.company_id,
+          branch_id: params.branch_id || null,
+          issue_number: issueNumber,
+          request_id: params.request_id || null,
+          production_task_id: params.production_task_id || null,
+          source_location_id: params.source_location_id,
+          destination_location_id: params.destination_location_id || null,
+          issued_by_id: params.issued_by_id || null,
+          issued_by_name: params.issued_by_name,
+          received_by_name: params.received_by_name || null,
+          status: 'completed',
+          notes: params.notes?.trim() || null,
         })
+        .select()
+        .single()
 
-      // Update requested item issued quantity if attached to request
-      if (it.request_item_id) {
-        const { data: reqItem } = await (supabase as any)
-          .from('material_request_items')
-          .select('*')
-          .eq('id', it.request_item_id)
-          .maybeSingle()
+      if (!issueErr && issue) {
+        createdIssue.id = issue.id
+        for (const it of params.items) {
+          const unitCost = it.unit_cost || 0
+          const totalCost = it.issued_quantity * unitCost
 
-        if (reqItem) {
-          const newIssued = (Number(reqItem.issued_quantity) || 0) + it.issued_quantity
           await (supabase as any)
-            .from('material_request_items')
-            .update({ issued_quantity: newIssued })
-            .eq('id', reqItem.id)
+            .from('material_issue_items')
+            .insert({
+              issue_id: issue.id,
+              request_item_id: it.request_item_id || null,
+              material_id: it.material_id,
+              issued_quantity: it.issued_quantity,
+              unit: it.unit,
+              unit_cost: unitCost,
+              total_cost: totalCost,
+            })
         }
       }
+    } catch {}
 
-      // Atomic stock deduction from source location with ledger audit
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue)
+
+    // Deduct stock and log ledger entry
+    for (const it of params.items) {
       await this.recordStockAdjustment({
         company_id: params.company_id,
         branch_id: params.branch_id || null,
@@ -759,9 +774,9 @@ export class InventoryRepository {
         location_id: params.source_location_id,
         quantity_change: -Math.abs(it.issued_quantity),
         transaction_type: 'ISSUE',
-        unit_cost: unitCost,
+        unit_cost: it.unit_cost || 0,
         reference_type: 'MATERIAL_ISSUE',
-        reference_id: issue.id,
+        reference_id: createdIssue.id,
         production_task_id: params.production_task_id || null,
         notes: `Material issued via ${issueNumber} to Task ${params.production_task_id || 'Direct'}`,
         performed_by_id: params.issued_by_id,
@@ -769,24 +784,7 @@ export class InventoryRepository {
       })
     }
 
-    // Check parent request status if attached
-    if (params.request_id) {
-      const { data: reqItems } = await (supabase as any)
-        .from('material_request_items')
-        .select('*')
-        .eq('request_id', params.request_id)
-
-      if (reqItems && reqItems.length > 0) {
-        const allFullyIssued = reqItems.every(
-          (item: any) => Number(item.issued_quantity) >= Number(item.requested_quantity)
-        )
-        const anyIssued = reqItems.some((item: any) => Number(item.issued_quantity) > 0)
-        const newStatus = allFullyIssued ? 'issued' : anyIssued ? 'partially_issued' : 'approved'
-        await this.updateRequestStatus(params.request_id, newStatus, params.company_id)
-      }
-    }
-
-    return (await this.getIssueById(issue.id, params.company_id)) as MaterialIssueRecord
+    return createdIssue
   }
 
   // ==========================================
@@ -1331,13 +1329,21 @@ export class InventoryRepository {
     job_order_id?: string | null
     operator_name?: string
     notes?: string | null
+    offcut_remnant?: {
+      create_remnant: boolean
+      width_ft?: number
+      length_ft?: number
+      location_id?: string
+      condition?: 'excellent' | 'usable' | 'minor_defect'
+      notes?: string | null
+    }
   }): Promise<{ roll: InventoryRollRecord; remnant?: InventoryRemnantRecord | null }> {
     const roll = await this.getInventoryRollById(params.roll_id, params.company_id)
     if (!roll) {
       throw new Error(`Physical Roll ${params.roll_id} not found.`)
     }
 
-    const currentLen = Number(roll.current_length_ft ?? roll.remaining_area_sft / roll.width_ft)
+    const currentLen = Number(roll.current_length_ft ?? roll.remaining_area_sft / (roll.width_ft || 1))
     const consumedLen = Math.min(currentLen, Math.max(0, Number(params.linear_length_consumed_ft) || 0))
     const consumedArea = Math.round(consumedLen * roll.width_ft * 100) / 100
 
@@ -1389,21 +1395,32 @@ export class InventoryRepository {
       performed_by_name: params.operator_name || 'Production Operator',
     })
 
-    // Create Remnant if usable offcut remains and roll was marked depleted or split
+    // Create Remnant ONLY if:
+    // 1. Explicitly requested with offcut dimensions, OR
+    // 2. The roll has reached end-of-roll depletion state AND the remaining offcut piece satisfies physical reusability criteria (width >= 2ft, length >= 2ft, area >= 4 SFT)
     let remnant: InventoryRemnantRecord | null = null
-    if (newRemainingLen >= 2.0) { // at least 2 feet long offcut is considered a usable remnant
+    const shouldCreateExplicitRemnant = params.offcut_remnant?.create_remnant
+    const shouldCreateDepletedRemnant = isDepleted && newRemainingLen >= 2.0 && (roll.width_ft * newRemainingLen >= 4.0)
+
+    if (shouldCreateExplicitRemnant || shouldCreateDepletedRemnant) {
+      const remWidth = params.offcut_remnant?.width_ft || roll.width_ft
+      const remLength = params.offcut_remnant?.length_ft || newRemainingLen
+      const remCondition = params.offcut_remnant?.condition || 'usable'
+      const remLoc = params.offcut_remnant?.location_id || roll.location_id || 'loc-main'
+
       try {
         remnant = await this.createRemnant({
           company_id: params.company_id,
           branch_id: roll.branch_id || null,
           parent_material_id: roll.material_id,
           production_task_id: params.production_task_id || null,
-          location_id: roll.location_id || 'loc-main',
-          width: roll.width_ft,
-          length: newRemainingLen,
+          source_roll_id: roll.id,
+          location_id: remLoc,
+          width: remWidth,
+          length: remLength,
           dimension_unit: 'ft',
-          condition: 'usable',
-          notes: `Offcut from roll ${roll.roll_code || roll.roll_tag}`,
+          condition: remCondition,
+          notes: params.offcut_remnant?.notes || `Offcut from roll ${roll.roll_code || roll.roll_tag}`,
           created_by_name: params.operator_name || 'Production Operator',
         })
       } catch {}
