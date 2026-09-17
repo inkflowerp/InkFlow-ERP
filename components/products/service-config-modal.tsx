@@ -349,14 +349,14 @@ export function ServiceConfigModal({
 
       // Load 9-point Direct Cost Breakdown
       const cb = initialData.cost_breakdown || cfg.cost_breakdown || {}
-      const loadedMatCost = cb.material_cost !== undefined ? cb.material_cost : (cb.material !== undefined ? cb.material : (initialData.purchase_price ?? initialData.base_cost ?? ''))
-      const loadedMachineCost = (cb.machine_cost ?? cb.machine) ?? ''
-      const loadedLaborCost = (cb.labor_cost ?? cb.labor) ?? ''
-      const loadedFinishingCost = (cb.finishing_cost ?? cb.finishing) ?? ''
-      const loadedFabricationCost = (cb.fabrication_cost ?? cb.fabrication) ?? ''
-      const loadedInstallationCost = (cb.installation_cost ?? cb.installation) ?? ''
-      const loadedDeliveryCost = (cb.delivery_cost ?? cb.delivery) ?? ''
-      const loadedOtherCost = (cb.other_direct_cost ?? cb.other_direct) ?? ''
+      const loadedMatCost: any = cb.material_cost !== undefined ? cb.material_cost : (cb.material !== undefined ? cb.material : (initialData.purchase_price ?? initialData.base_cost ?? ''))
+      const loadedMachineCost: any = (cb.machine_cost ?? cb.machine) ?? ''
+      const loadedLaborCost: any = (cb.labor_cost ?? cb.labor) ?? ''
+      const loadedFinishingCost: any = (cb.finishing_cost ?? cb.finishing) ?? ''
+      const loadedFabricationCost: any = (cb.fabrication_cost ?? cb.fabrication) ?? ''
+      const loadedInstallationCost: any = (cb.installation_cost ?? cb.installation) ?? ''
+      const loadedDeliveryCost: any = (cb.delivery_cost ?? cb.delivery) ?? ''
+      const loadedOtherCost: any = (cb.other_direct_cost ?? cb.other_direct) ?? ''
 
       setMaterialCost(loadedMatCost !== '' && loadedMatCost !== undefined ? Number(loadedMatCost) : '')
       setMachineCost(loadedMachineCost !== '' && loadedMachineCost !== undefined ? Number(loadedMachineCost) : '')
