@@ -174,7 +174,7 @@ export function MaterialConfigModal({
     <ModalDialog
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      size="2xl"
+      size="5xl"
       title={
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 font-bold shrink-0">
