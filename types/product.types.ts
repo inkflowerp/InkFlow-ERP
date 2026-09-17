@@ -652,6 +652,8 @@ export interface ServiceConfiguration {
   allowance_rule?: ServiceAllowanceRule
   available_widths_ft?: number[]
   extra_width_allowance_ft?: number
+  standard_roll_length_ft?: number
+  available_sheet_sizes?: Array<{ width: number; length: number; label?: string }>
   required_materials?: ServiceRequiredMaterial[]
   finishing_options?: ServiceFinishingOption[]
   additional_options?: ServiceAdditionalOption[]

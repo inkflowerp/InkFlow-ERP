@@ -38,6 +38,7 @@ import {
   ArrowRight,
   Search,
   Star,
+  Layers3,
 } from 'lucide-react'
 import type {
   ProductRecord,
@@ -102,13 +103,13 @@ const STANDARD_ROLL_WIDTHS: number[] = [
   2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 10.0, 10.5, 12.0
 ]
 
-const POPULAR_PRINT_PRESETS: { width: number; length: number; label: string }[] = [
-  { width: 4, length: 12, label: '4ft × 12ft (Shop Signboard)' },
-  { width: 2.5, length: 6, label: '2.5ft × 6ft (X-Stand Banner)' },
-  { width: 3, length: 2, label: '3ft × 2ft (Standard Poster)' },
-  { width: 8, length: 4, label: '8ft × 4ft (Full Sheet Board)' },
-  { width: 10, length: 20, label: '10ft × 20ft (Mega Billboard)' },
-  { width: 6, length: 3, label: '6ft × 3ft (Trade Fair Backdrop)' },
+const STANDARD_SHEET_SIZES: { width: number; length: number; label: string }[] = [
+  { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
+  { width: 4, length: 6, label: '4ft × 6ft' },
+  { width: 3, length: 6, label: '3ft × 6ft' },
+  { width: 2, length: 4, label: '2ft × 4ft' },
+  { width: 4, length: 4, label: '4ft × 4ft' },
+  { width: 2, length: 2, label: '2ft × 2ft' },
 ]
 
 export function ServiceConfigModal({
@@ -131,26 +132,34 @@ export function ServiceConfigModal({
   const [sku, setSku] = useState('')
   const [category, setCategory] = useState('printing_service')
   const [printingMethodName, setPrintingMethodName] = useState('')
-  const [sellingUnit, setSellingUnit] = useState<string>('sft')
-  const [purchaseUnit, setPurchaseUnit] = useState<string>('roll')
-  const [pricingMethod, setPricingMethod] = useState<PricingMethod>('per_area')
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
 
-  // 2. Customer Dimensions & Presets
+  // 2. Commercial Units & Dimensions
+  const [sellingUnit, setSellingUnit] = useState<string>('sft')
+  const [purchaseUnit, setPurchaseUnit] = useState<string>('roll')
+  const [pricingMethod, setPricingMethod] = useState<PricingMethod>('per_area')
   const [dimensionUnit, setDimensionUnit] = useState<string>('ft')
   const [allowCustomDimensions, setAllowCustomDimensions] = useState(true)
   const [minBillableQty, setMinBillableQty] = useState<number>(1)
   const [productionBleedInches, setProductionBleedInches] = useState<number>(0.5)
-  const [presets, setPresets] = useState<ServiceDimensionPreset[]>([])
-  const [newPresetWidth, setNewPresetWidth] = useState<number | ''>('')
-  const [newPresetLength, setNewPresetLength] = useState<number | ''>('')
-  const [newPresetLabel, setNewPresetLabel] = useState('')
 
-  // 2.1 Roll Stock Widths & Machine Feeding
+  // 2.1 Roll Physical Dimensions
   const [availableRollWidths, setAvailableRollWidths] = useState<number[]>([2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
   const [extraWidthAllowance, setExtraWidthAllowance] = useState<number>(0.25)
+  const [standardRollLength, setStandardRollLength] = useState<number>(164)
   const [newRollWidthInput, setNewRollWidthInput] = useState<string>('')
+
+  // 2.2 Sheet Physical Dimensions
+  const [availableSheetSizes, setAvailableSheetSizes] = useState<Array<{ width: number; length: number; label?: string }>>([
+    { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
+    { width: 4, length: 6, label: '4ft × 6ft' },
+    { width: 3, length: 6, label: '3ft × 6ft' },
+    { width: 2, length: 4, label: '2ft × 4ft' },
+  ])
+  const [newSheetWidthInput, setNewSheetWidthInput] = useState<string>('')
+  const [newSheetLengthInput, setNewSheetLengthInput] = useState<string>('')
+  const [newSheetLabelInput, setNewSheetLabelInput] = useState<string>('')
 
   // 3. Required Materials & Geometry Allowances
   const [materialSearchQuery, setMaterialSearchQuery] = useState('')
@@ -234,9 +243,15 @@ export function ServiceConfigModal({
       setPrintingMethodName((initialData as any).printing_method_name || (initialData as any).printing_method || '')
       setDimensionUnit(cfg.dimension_unit || 'ft')
       setAllowCustomDimensions(cfg.allow_custom_dimensions !== false)
-      setPresets(cfg.dimension_presets || cfg.presets || [])
       setAvailableRollWidths(cfg.available_widths_ft || initialData.available_widths_ft || [2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
       setExtraWidthAllowance(cfg.extra_width_allowance_ft ?? (initialData.production_width_allowance ?? 0.25))
+      setStandardRollLength(cfg.standard_roll_length_ft || initialData.standard_roll_length_ft || 164)
+      setAvailableSheetSizes(cfg.available_sheet_sizes || [
+        { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
+        { width: 4, length: 6, label: '4ft × 6ft' },
+        { width: 3, length: 6, label: '3ft × 6ft' },
+        { width: 2, length: 4, label: '2ft × 4ft' },
+      ])
       setRequiredMaterials(cfg.required_materials || [])
       setFinishingOptions(cfg.finishing_options || [])
       setAdditionalOptions(cfg.additional_options || [])
@@ -273,11 +288,12 @@ export function ServiceConfigModal({
       setDefaultWastagePercent(5)
       setAvailableRollWidths([2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
       setExtraWidthAllowance(0.25)
-      setPresets([
-        { width: 4, length: 12, label: '4ft × 12ft (Shop Signboard)' },
-        { width: 2.5, length: 6, label: '2.5ft × 6ft (X-Stand Banner)' },
-        { width: 3, length: 2, label: '3ft × 2ft (Standard Poster)' },
-        { width: 8, length: 4, label: '8ft × 4ft (Full Board)' },
+      setStandardRollLength(164)
+      setAvailableSheetSizes([
+        { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
+        { width: 4, length: 6, label: '4ft × 6ft' },
+        { width: 3, length: 6, label: '3ft × 6ft' },
+        { width: 2, length: 4, label: '2ft × 4ft' },
       ])
       setRequiredMaterials([])
       setFinishingOptions([])
@@ -350,6 +366,7 @@ export function ServiceConfigModal({
     })
   }
 
+  // Roll Width Handlers
   const handleToggleRollWidth = (w: number) => {
     if (availableRollWidths.includes(w)) {
       setAvailableRollWidths(availableRollWidths.filter((x) => x !== w))
@@ -374,26 +391,33 @@ export function ServiceConfigModal({
     setAvailableRollWidths([])
   }
 
-  const handleAddPreset = () => {
-    if (newPresetWidth === '' || newPresetLength === '') return
-    const w = Number(newPresetWidth)
-    const l = Number(newPresetLength)
-    const label = newPresetLabel.trim() || `${w}ft × ${l}ft`
-    setPresets([...presets, { width: w, length: l, label }])
-    setNewPresetWidth('')
-    setNewPresetLength('')
-    setNewPresetLabel('')
-  }
-
-  const handleAddQuickPreset = (p: { width: number; length: number; label: string }) => {
-    const exists = presets.some((x) => x.width === p.width && x.length === p.length)
-    if (!exists) {
-      setPresets([...presets, { width: p.width, length: p.length, label: p.label }])
+  // Sheet Size Handlers
+  const handleToggleSheetSize = (s: { width: number; length: number; label: string }) => {
+    const exists = availableSheetSizes.some((x) => x.width === s.width && x.length === s.length)
+    if (exists) {
+      setAvailableSheetSizes(availableSheetSizes.filter((x) => !(x.width === s.width && x.length === s.length)))
+    } else {
+      setAvailableSheetSizes([...availableSheetSizes, s])
     }
   }
 
-  const handleRemovePreset = (idx: number) => {
-    setPresets(presets.filter((_, i) => i !== idx))
+  const handleAddCustomSheetSize = () => {
+    const w = parseFloat(newSheetWidthInput)
+    const l = parseFloat(newSheetLengthInput)
+    if (!isNaN(w) && w > 0 && !isNaN(l) && l > 0) {
+      const exists = availableSheetSizes.some((x) => x.width === w && x.length === l)
+      if (!exists) {
+        const label = newSheetLabelInput.trim() || `${w}ft × ${l}ft Sheet`
+        setAvailableSheetSizes([...availableSheetSizes, { width: w, length: l, label }])
+        setNewSheetWidthInput('')
+        setNewSheetLengthInput('')
+        setNewSheetLabelInput('')
+      }
+    }
+  }
+
+  const handleRemoveSheetSize = (idx: number) => {
+    setAvailableSheetSizes(availableSheetSizes.filter((_, i) => i !== idx))
   }
 
   const handleToggleMaterial = (mat: MaterialRecord) => {
@@ -575,10 +599,10 @@ export function ServiceConfigModal({
       const serviceConfig: ServiceConfiguration = {
         dimension_unit: dimensionUnit,
         allow_custom_dimensions: allowCustomDimensions,
-        dimension_presets: presets,
-        presets: presets,
-        available_widths_ft: availableRollWidths,
-        extra_width_allowance_ft: Number(extraWidthAllowance) || 0.25,
+        available_widths_ft: purchaseUnit === 'roll' ? availableRollWidths : undefined,
+        extra_width_allowance_ft: purchaseUnit === 'roll' ? (Number(extraWidthAllowance) || 0.25) : undefined,
+        standard_roll_length_ft: purchaseUnit === 'roll' ? (Number(standardRollLength) || 164) : undefined,
+        available_sheet_sizes: purchaseUnit === 'sheet' ? availableSheetSizes : undefined,
         required_materials: requiredMaterials,
         finishing_options: finishingOptions,
         additional_options: additionalOptions,
@@ -611,8 +635,9 @@ export function ServiceConfigModal({
         min_billable_quantity: minBillableQty,
         default_wastage_percentage: defaultWastagePercent,
         available_widths_ft: purchaseUnit === 'roll' ? availableRollWidths : undefined,
-        production_width_allowance: Number(extraWidthAllowance) || 0.25,
-        production_length_allowance: Number(extraWidthAllowance) || 0.25,
+        standard_roll_length_ft: purchaseUnit === 'roll' ? (Number(standardRollLength) || 164) : undefined,
+        production_width_allowance: purchaseUnit === 'roll' ? (Number(extraWidthAllowance) || 0.25) : undefined,
+        production_length_allowance: purchaseUnit === 'roll' ? (Number(extraWidthAllowance) || 0.25) : undefined,
         allowance_unit: 'ft',
         vat_applicable: vatApplicable,
         is_tax_inclusive: isTaxInclusive,
@@ -660,7 +685,7 @@ export function ServiceConfigModal({
               )}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Multi-step configuration for wide format print technology, size rules, substrate feeds, post-press finishing & commercial tiers.
+              Multi-step configuration for wide format print technology, physical media dimensions, post-press finishing & commercial pricing.
             </p>
           </div>
         </div>
@@ -679,7 +704,7 @@ export function ServiceConfigModal({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700/60">
           {[
             { id: 'basic', label: '1. Basic Info', icon: Wrench, count: name ? '✓' : null },
-            { id: 'dimensions', label: '2. Dimensions', icon: Maximize2, count: presets.length > 0 ? presets.length : null },
+            { id: 'dimensions', label: '2. Dimensions', icon: Maximize2, count: purchaseUnit === 'roll' ? `${availableRollWidths.length} rolls` : purchaseUnit === 'sheet' ? `${availableSheetSizes.length} sheets` : '✓' },
             { id: 'materials', label: '3. Media & Bleed', icon: Boxes, count: requiredMaterials.length > 0 ? requiredMaterials.length : null },
             { id: 'finishing', label: '4. Finishing', icon: Sparkles, count: finishingOptions.length > 0 ? finishingOptions.length : null },
             { id: 'additionals', label: '5. Add-ons & Install', icon: PlusCircle, count: (additionalOptions.length + installationOptions.length) > 0 ? (additionalOptions.length + installationOptions.length) : null },
@@ -728,7 +753,7 @@ export function ServiceConfigModal({
                   Service Identity & Machine Technology
                 </h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">Bilingual naming & units</span>
+              <span className="text-[11px] text-slate-400 font-medium">Bilingual naming & catalog scope</span>
             </div>
 
             <div className="space-y-3.5">
@@ -814,18 +839,75 @@ export function ServiceConfigModal({
                 </div>
               </div>
 
-              {/* Selling & Purchase Unit Dual Mapping */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Service Scope & Technical Description
+                </Label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. High resolution 1440 DPI outdoor UV curing print. UV resistant for up to 3 years without color fading..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+                />
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span>Active in Quotation, Invoice & POS Services Catalog</span>
+                </label>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('dimensions')}
+                  className="h-8 text-xs font-bold border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 gap-1"
+                >
+                  <span>Configure Dimensions & Units</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 2: COMMERCIAL MEASUREMENT UNITS & PHYSICAL DIMENSIONS */}
+        {/* ======================================================== */}
+        {activeTab === 'dimensions' && (
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                  2
+                </div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Commercial Measurement Units & Physical Dimensions
+                </h3>
+              </div>
+              <span className="text-[11px] text-slate-400 font-medium">Selling unit, roll widths & sheet sizes</span>
+            </div>
+
+            <div className="space-y-3.5">
+              {/* 1. Commercial Measurement Units Card (Moved to Dimensions Tab) */}
+              <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">
-                    Commercial Measurement Units
+                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Commercial Measurement & Billing Units
                   </span>
-                  <Badge variant="outline" className="text-[10px] font-mono uppercase bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge variant="outline" className="text-[10px] font-mono uppercase bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200">
                     Pricing & Inventory Sync
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
                       Selling Unit (গ্রাহক বিলিং একক) <span className="text-rose-500">*</span>
@@ -838,7 +920,7 @@ export function ServiceConfigModal({
                         const match = COMMON_SELLING_UNITS.find((x) => x.value === u)
                         if (match) setPricingMethod(match.defaultMethod)
                       }}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
                     >
                       {COMMON_SELLING_UNITS.map((u) => (
                         <option key={u.value} value={u.value}>
@@ -850,12 +932,12 @@ export function ServiceConfigModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                      Purchase / Stock Media Unit (ক্রয় ও স্টক একক)
+                      Purchase / Stock Media Unit (ক্রয় ও স্টক একক) <span className="text-rose-500">*</span>
                     </Label>
                     <select
                       value={purchaseUnit}
                       onChange={(e) => setPurchaseUnit(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
                     >
                       {COMMON_PURCHASE_UNITS.map((u) => (
                         <option key={u.value} value={u.value}>
@@ -864,87 +946,27 @@ export function ServiceConfigModal({
                       ))}
                     </select>
                   </div>
-                </div>
 
-                {purchaseUnit === 'roll' && (
-                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-xs">
-                    <span className="text-blue-700 dark:text-blue-300 font-medium">
-                      Roll media stock enabled: <strong>{availableRollWidths.length} physical widths</strong> configured with <strong>+{extraWidthAllowance} ft</strong> machine margin.
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('dimensions')}
-                      className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      Dimension Input Unit (কাস্টমার ইনপুট একক)
+                    </Label>
+                    <select
+                      value={dimensionUnit}
+                      onChange={(e) => setDimensionUnit(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
                     >
-                      <span>Configure Roll Widths in Tab 2</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                      <option value="ft">Feet (ft) — Billboard & Signage</option>
+                      <option value="inch">Inches (in) — Fine Format & Stickers</option>
+                      <option value="meter">Meters (m) — Architectural</option>
+                      <option value="mm">Millimeters (mm) — Precision Fab</option>
+                    </select>
                   </div>
-                )}
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Service Scope & Technical Description
-                </Label>
-                <textarea
-                  rows={2}
-                  placeholder="e.g. High resolution 1440 DPI outdoor UV curing print. UV resistant for up to 3 years without color fading..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-blue-500 outline-none resize-none"
-                />
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
-                  <input
-                    type="checkbox"
-                    checked={isActive}
-                    onChange={(e) => setIsActive(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Active in Quotation, Invoice & POS Services Catalog</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ======================================================== */}
-        {/* TAB 2: CUSTOMER DIMENSIONS, ROLL WIDTHS & SIZE PRESETS */}
-        {/* ======================================================== */}
-        {activeTab === 'dimensions' && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
-                  2
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Customer Dimension Rules & Size Presets
-                </h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">Area thresholds, roll widths & quick sizes</span>
-            </div>
 
-            <div className="space-y-3.5">
-              {/* Rules Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">Dimension Input Unit</Label>
-                  <select
-                    value={dimensionUnit}
-                    onChange={(e) => setDimensionUnit(e.target.value)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
-                  >
-                    <option value="ft">Feet (ft) — Billboard & Signage</option>
-                    <option value="inch">Inches (in) — Fine Format & Stickers</option>
-                    <option value="meter">Meters (m) — Architectural</option>
-                    <option value="mm">Millimeters (mm) — Precision Fab</option>
-                  </select>
-                </div>
-
+              {/* 2. Customer Area & Billing Rules Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
                     Min Billable Area / Qty Floor
@@ -962,11 +984,14 @@ export function ServiceConfigModal({
                       {sellingUnit}
                     </span>
                   </div>
+                  <span className="text-[10px] text-slate-500 mt-0.5 block">
+                    Minimum billable threshold protects against losing money on micro-prints.
+                  </span>
                 </div>
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    Default Bleed / Edge Cut
+                    Default Bleed / Edge Cut Margin
                   </Label>
                   <div className="relative">
                     <Input
@@ -979,6 +1004,9 @@ export function ServiceConfigModal({
                     />
                     <span className="absolute right-3 top-2.5 text-[11px] text-slate-400 font-bold">in</span>
                   </div>
+                  <span className="text-[10px] text-slate-500 mt-0.5 block">
+                    Extra trim allowance per side added for production cutting.
+                  </span>
                 </div>
               </div>
 
@@ -1001,7 +1029,7 @@ export function ServiceConfigModal({
               </div>
 
               {/* ============================================================ */}
-              {/* SPECIALIZED ROLL STOCK WIDTHS & MACHINE EXTRA WIDTH CARD     */}
+              {/* CONDITION A: PURCHASE UNIT = ROLL (AVAILABLE ROLL WIDTHS)   */}
               {/* ============================================================ */}
               {purchaseUnit === 'roll' && (
                 <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-xl space-y-3 shadow-2xs">
@@ -1012,10 +1040,10 @@ export function ServiceConfigModal({
                       </div>
                       <div>
                         <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
-                          Roll Media Stock Widths & Machine Extra Width (+0.25 ft)
+                          Roll Media Stock Widths, Length & Machine Extra Width (+0.25 ft)
                         </span>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Select physical roll widths in workshop stock. Quotation engine automatically nests jobs onto the optimal roll.
+                          Select physical roll widths in workshop stock. Nesting engine picks the optimal roll with minimum offcut waste.
                         </span>
                       </div>
                     </div>
@@ -1070,8 +1098,8 @@ export function ServiceConfigModal({
                     </div>
                   </div>
 
-                  {/* Custom Width Adder & Extra Width Allowance */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-blue-200/80 dark:border-blue-800/60">
+                  {/* Custom Width Adder, Extra Width Allowance & Roll Length */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-blue-200/80 dark:border-blue-800/60">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
                         Add Custom Roll Width (Feet)
@@ -1091,14 +1119,14 @@ export function ServiceConfigModal({
                           onClick={handleAddCustomRollWidth}
                           className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shrink-0"
                         >
-                          <Plus className="w-3.5 h-3.5 mr-1" /> Add Width
+                          <Plus className="w-3.5 h-3.5 mr-1" /> Add
                         </Button>
                       </div>
                     </div>
 
                     <div>
                       <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                        Machine Extra Width Allowance (+ft)
+                        Roll Width + Extra Allowance (+ft)
                       </Label>
                       <div className="relative">
                         <Input
@@ -1112,7 +1140,47 @@ export function ServiceConfigModal({
                         <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">ft (3 in)</span>
                       </div>
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-                        Extra width (+0.25 ft) added for machine pinch rollers, side clamps & cutting margins.
+                        Extra width (+0.25 ft) added for pinch rollers, side clamps & cutting margins.
+                      </span>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                        Standard Roll Length (Feet)
+                      </Label>
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          type="number"
+                          step="any"
+                          value={standardRollLength}
+                          onChange={(e) => setStandardRollLength(parseFloat(e.target.value) || 164)}
+                          className="h-8 text-xs font-mono"
+                        />
+                        <div className="flex gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setStandardRollLength(100)}
+                            className={cn(
+                              'text-[10px] px-1.5 py-1 rounded border font-mono',
+                              standardRollLength === 100 ? 'bg-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-slate-600'
+                            )}
+                          >
+                            100ft
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setStandardRollLength(164)}
+                            className={cn(
+                              'text-[10px] px-1.5 py-1 rounded border font-mono',
+                              standardRollLength === 164 ? 'bg-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-slate-600'
+                            )}
+                          >
+                            164ft
+                          </button>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
+                        Standard 50 meter media roll = 164 ft.
                       </span>
                     </div>
                   </div>
@@ -1141,100 +1209,134 @@ export function ServiceConfigModal({
                 </div>
               )}
 
-              {/* Quick Template Picker */}
-              <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/60 rounded-xl space-y-2">
-                <span className="text-[11px] font-bold text-blue-900 dark:text-blue-300 block uppercase">
-                  Popular Standard Print Sizes (Click to add)
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {POPULAR_PRINT_PRESETS.map((p, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleAddQuickPreset(p)}
-                      className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-700 hover:border-blue-400 text-slate-800 dark:text-slate-200 font-medium transition-all shadow-2xs hover:bg-blue-50 flex items-center gap-1"
-                    >
-                      <Plus className="w-3 h-3 text-blue-600" />
-                      <span>{p.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Custom Size Preset Creator */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl space-y-3">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block uppercase">
-                  Add Custom Size Preset
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
-                  <div>
-                    <Label className="text-[11px] mb-1 block">Width ({dimensionUnit})</Label>
-                    <Input
-                      type="number"
-                      step="any"
-                      placeholder="e.g. 4"
-                      value={newPresetWidth}
-                      onChange={(e) => setNewPresetWidth(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[11px] mb-1 block">Length ({dimensionUnit})</Label>
-                    <Input
-                      type="number"
-                      step="any"
-                      placeholder="e.g. 12"
-                      value={newPresetLength}
-                      onChange={(e) => setNewPresetLength(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label className="text-[11px] mb-1 block">Preset Label (Optional)</Label>
+              {/* ============================================================ */}
+              {/* CONDITION B: PURCHASE UNIT = SHEET (AVAILABLE SHEET SIZES)  */}
+              {/* ============================================================ */}
+              {purchaseUnit === 'sheet' && (
+                <div className="p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 rounded-xl space-y-3 shadow-2xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-indigo-200/60 dark:border-indigo-800/60">
                     <div className="flex items-center gap-2">
-                      <Input
-                        placeholder="e.g. 4ft x 12ft Billboard"
-                        value={newPresetLabel}
-                        onChange={(e) => setNewPresetLabel(e.target.value)}
-                        className="h-8 text-xs flex-1"
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleAddPreset}
-                        className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                      >
-                        <Plus className="w-3.5 h-3.5 mr-1" /> Add
-                      </Button>
+                      <div className="h-6 w-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        <Layers3 className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                          Available Sheet / Board Dimensions (শীট সাইজ ও মাত্রা)
+                        </span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Select available rigid sheet stock sizes (e.g. 4ft × 8ft, 4ft × 6ft) for sheet nesting.
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {presets.length > 0 && (
-                  <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-700">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase">Configured Presets ({presets.length}):</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
-                      {presets.map((p, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs"
-                        >
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">
-                            {p.label} <span className="text-[11px] text-slate-400 font-mono">({p.width}×{p.length} {dimensionUnit})</span>
-                          </span>
+                  {/* Standard Sheet Size Toggle Buttons */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-wider block">
+                      Standard Sheet Dimensions (Click to toggle):
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {STANDARD_SHEET_SIZES.map((s, idx) => {
+                        const isSelected = availableSheetSizes.some((x) => x.width === s.width && x.length === s.length)
+                        return (
                           <button
+                            key={idx}
                             type="button"
-                            onClick={() => handleRemovePreset(idx)}
-                            className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                            onClick={() => handleToggleSheetSize(s)}
+                            className={cn(
+                              'text-xs px-2.5 py-1 rounded-lg border font-medium transition-all flex items-center gap-1 cursor-pointer',
+                              isSelected
+                                ? 'bg-indigo-600 text-white font-bold border-indigo-700 shadow-2xs'
+                                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-indigo-400'
+                            )}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                            <span>{s.label}</span>
                           </button>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Add Custom Sheet Size Form */}
+                  <div className="p-3 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800/80 rounded-xl space-y-2">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block uppercase">
+                      Add Custom Sheet Size
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <Label className="text-[11px] mb-1 block">Width (ft)</Label>
+                        <Input
+                          type="number"
+                          step="any"
+                          placeholder="e.g. 4"
+                          value={newSheetWidthInput}
+                          onChange={(e) => setNewSheetWidthInput(e.target.value)}
+                          className="h-8 text-xs font-mono"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] mb-1 block">Length (ft)</Label>
+                        <Input
+                          type="number"
+                          step="any"
+                          placeholder="e.g. 8"
+                          value={newSheetLengthInput}
+                          onChange={(e) => setNewSheetLengthInput(e.target.value)}
+                          className="h-8 text-xs font-mono"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label className="text-[11px] mb-1 block">Sheet Label (Optional)</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            placeholder="e.g. 4ft x 8ft PVC Board"
+                            value={newSheetLabelInput}
+                            onChange={(e) => setNewSheetLabelInput(e.target.value)}
+                            className="h-8 text-xs flex-1"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleAddCustomSheetSize}
+                            className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+                          >
+                            <Plus className="w-3.5 h-3.5 mr-1" /> Add Sheet
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Configured Sheet Sizes Summary */}
+                  {availableSheetSizes.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 block">
+                        Configured Sheet Sizes ({availableSheetSizes.length}):
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {availableSheetSizes.map((s, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 text-xs"
+                          >
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">
+                              {s.label || `${s.width}ft × ${s.length}ft`} <span className="text-[11px] text-slate-400 font-mono">({s.width * s.length} sqft)</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSheetSize(idx)}
+                              className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
