@@ -30,6 +30,9 @@ const READY_PRODUCT_UNITS: { value: UnitOfMeasure; label: string }[] = [
   { value: 'box', label: 'Box (বক্স)' },
   { value: 'item', label: 'Item (আইটেম)' },
   { value: 'roll', label: 'Roll (রোল)' },
+  { value: 'liter', label: 'Liter (লিটার)' },
+  { value: 'kg', label: 'KG (কেজি)' },
+  { value: 'meter', label: 'Meter (মিটার)' },
 ]
 
 export function ReadyProductModal({
