@@ -806,6 +806,26 @@ export interface MaterialConfiguration {
   storage_location?: string
   pack_quantity?: number
   reorder_level?: number
+  // Extended substrate specifications & procurement
+  brand?: string
+  finish?: string
+  weight_gsm?: number
+  durability_grade?: string
+  landed_cost_markup_percent?: number
+  primary_supplier_id?: string
+  primary_supplier_name?: string
+  supplier_sku?: string
+  moq?: number
+  lead_time_days?: number
+  reorder_quantity?: number
+  max_stock_level?: number
+  barcode?: string
+  track_batches?: boolean
+  shelf_life_months?: number
+  compatible_printing_methods?: string[]
+  compatible_ink_types?: string[]
+  production_role?: string
+  price_tiers?: ProductPriceTiers
 }
 
 export interface PriceHistoryRecord {

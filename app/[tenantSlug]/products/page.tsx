@@ -3696,6 +3696,7 @@ export default function ProductsCatalogPage() {
         onSave={handleSaveRebuiltProduct}
         initialData={editingProduct}
         categories={categories}
+        printingMethods={printingMethods}
       />
 
       {/* Standalone Configuration Master Modals */}
