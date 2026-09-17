@@ -99,10 +99,6 @@ const COMMON_PURCHASE_UNITS: { value: string; label: string }[] = [
   { value: 'job', label: 'Job (জব)' },
 ]
 
-const STANDARD_ROLL_WIDTHS: number[] = [
-  2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 10.0, 10.5, 12.0
-]
-
 const STANDARD_SHEET_SIZES: { width: number; length: number; label: string }[] = [
   { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
   { width: 4, length: 6, label: '4ft × 6ft' },
@@ -422,14 +418,6 @@ export function ServiceConfigModal({
       setAvailableRollWidths([...availableRollWidths, val].sort((a, b) => a - b))
       setNewRollWidthInput('')
     }
-  }
-
-  const handleSelectAllRollWidths = () => {
-    setAvailableRollWidths([...STANDARD_ROLL_WIDTHS])
-  }
-
-  const handleClearRollWidths = () => {
-    setAvailableRollWidths([])
   }
 
   // Sheet Size Handlers
@@ -1292,176 +1280,130 @@ export function ServiceConfigModal({
               {/* ============================================================ */}
               {purchaseUnit === 'roll' && (
                 <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-xl space-y-3 shadow-2xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-blue-200/60 dark:border-blue-800/60">
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                        <Boxes className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
-                          Roll Media Stock Widths, Length & Machine Extra Width (+0.25 ft)
-                        </span>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Select physical roll widths in workshop stock. Nesting engine picks the optimal roll with minimum offcut waste.
-                        </span>
-                      </div>
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-blue-200/60 dark:border-blue-800/60">
+                    <div className="h-6 w-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      <Boxes className="w-3.5 h-3.5" />
                     </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={handleSelectAllRollWidths}
-                        className="h-6 text-[10px] px-2 font-bold border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300"
-                      >
-                        Select All
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleClearRollWidths}
-                        className="h-6 text-[10px] px-2 text-slate-500 hover:text-slate-700"
-                      >
-                        Clear
-                      </Button>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                        Roll Media Stock Widths, Length & Machine Extra Width (+0.25 ft)
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Roll widths available in workshop stock. Nesting engine selects the optimal roll with minimum offcut waste.
+                      </span>
                     </div>
                   </div>
 
-                  {/* Quick-Select Roll Width Buttons */}
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-wider block">
-                      Available Stock Roll Widths (Click to toggle):
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {STANDARD_ROLL_WIDTHS.map((w) => {
-                        const isSelected = availableRollWidths.includes(w)
-                        return (
-                          <button
-                            key={w}
-                            type="button"
-                            onClick={() => handleToggleRollWidth(w)}
-                            className={cn(
-                              'text-xs px-2.5 py-1 rounded-lg border font-mono transition-all flex items-center gap-1 cursor-pointer',
-                              isSelected
-                                ? 'bg-blue-600 text-white font-bold border-blue-700 shadow-2xs'
-                                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-blue-400'
-                            )}
-                          >
-                            {isSelected && <Check className="w-3 h-3 text-white" />}
-                            <span>{w} ft</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Custom Width Adder, Extra Width Allowance & Roll Length */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-blue-200/80 dark:border-blue-800/60">
-                    <div className="flex flex-col justify-between">
-                      <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[20px] flex items-end">
-                        Add Custom Roll Width (Feet)
+                  {/* Inline Roll Width [ ] + [ ]    Roll Length [ ]    Add */}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                    {/* Roll Width [ ] + [ ] */}
+                    <div className="sm:col-span-6">
+                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                        Roll Width (Feet) + Extra Allowance
                       </Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          step="any"
-                          placeholder="e.g. 3.25, 10.5"
-                          value={newRollWidthInput}
-                          onChange={(e) => setNewRollWidthInput(e.target.value)}
-                          className="h-8 text-xs font-mono"
-                        />
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={handleAddCustomRollWidth}
-                          className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shrink-0"
-                        >
-                          <Plus className="w-3.5 h-3.5 mr-1" /> Add
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col justify-between">
-                      <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[20px] flex items-end">
-                        Roll Width + Extra Allowance (+ft)
-                      </Label>
-                      <div>
-                        <div className="relative">
+                      <div className="flex items-center gap-1.5">
+                        <div className="relative flex-1">
+                          <Input
+                            type="number"
+                            step="any"
+                            min="0"
+                            placeholder="e.g. 10"
+                            value={newRollWidthInput}
+                            onChange={(e) => setNewRollWidthInput(e.target.value)}
+                            className="h-9 text-xs font-mono font-bold pr-7"
+                          />
+                          <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                        </div>
+                        <span className="text-sm font-bold text-slate-400">+</span>
+                        <div className="relative w-24">
                           <Input
                             type="number"
                             step="0.05"
                             min="0"
+                            placeholder="0.25"
                             value={extraWidthAllowance}
-                            onChange={(e) => setExtraWidthAllowance(parseFloat(e.target.value) || 0)}
-                            className="h-8 text-xs font-mono font-bold text-blue-600 dark:text-blue-400 pr-14"
+                            onChange={(e) => setExtraWidthAllowance(parseFloat(e.target.value) || 0.25)}
+                            className="h-9 text-xs font-mono font-bold pr-7"
                           />
-                          <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">ft (3 in)</span>
+                          <span className="absolute right-2 top-2 text-[10px] font-bold text-slate-400">ft</span>
                         </div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-                          Extra width (+0.25 ft) added for pinch rollers & cutting margins.
-                        </span>
                       </div>
                     </div>
 
-                    <div className="flex flex-col justify-between">
-                      <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[20px] flex items-end">
-                        Standard Roll Length (Feet)
+                    {/* Roll Length [ ] */}
+                    <div className="sm:col-span-4">
+                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                        Roll Length (Feet)
                       </Label>
-                      <div>
-                        <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <div className="relative flex-1">
                           <Input
                             type="number"
                             step="any"
+                            min="0"
+                            placeholder="e.g. 164"
                             value={standardRollLength}
                             onChange={(e) => setStandardRollLength(parseFloat(e.target.value) || 164)}
-                            className="h-8 text-xs font-mono"
+                            className="h-9 text-xs font-mono font-bold pr-7"
                           />
-                          <div className="flex gap-1 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => setStandardRollLength(100)}
-                              className={cn(
-                                'text-[10px] px-1.5 py-1 rounded border font-mono',
-                                standardRollLength === 100 ? 'bg-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-slate-600'
-                              )}
-                            >
-                              100ft
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setStandardRollLength(164)}
-                              className={cn(
-                                'text-[10px] px-1.5 py-1 rounded border font-mono',
-                                standardRollLength === 164 ? 'bg-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-slate-600'
-                              )}
-                            >
-                              164ft
-                            </button>
-                          </div>
+                          <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
                         </div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-                          Standard 50m media roll = 164 ft.
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setStandardRollLength(100)}
+                          className={cn(
+                            'h-9 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
+                            standardRollLength === 100
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                          )}
+                        >
+                          100ft
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setStandardRollLength(164)}
+                          className={cn(
+                            'h-9 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
+                            standardRollLength === 164
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                          )}
+                        >
+                          164ft
+                        </button>
                       </div>
+                    </div>
+
+                    {/* Add Button */}
+                    <div className="sm:col-span-2">
+                      <Button
+                        type="button"
+                        onClick={handleAddCustomRollWidth}
+                        className="w-full h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1" /> Add
+                      </Button>
                     </div>
                   </div>
 
-                  {/* Selected Roll Widths Summary */}
+                  {/* Configured Roll Sizes List */}
                   {availableRollWidths.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Active Stock Roll Widths:</span>
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mr-1">
+                        Configured Roll Sizes:
+                      </span>
                       {availableRollWidths.map((w) => (
                         <span
                           key={w}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 text-[11px] font-mono font-bold text-blue-700 dark:text-blue-300"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white shadow-2xs"
                         >
-                          <span>{w} ft</span>
+                          <span>{w}ft {extraWidthAllowance ? `(+${extraWidthAllowance}ft)` : ''} × {standardRollLength}ft</span>
                           <button
                             type="button"
                             onClick={() => handleToggleRollWidth(w)}
-                            className="text-slate-400 hover:text-rose-600 cursor-pointer"
+                            className="ml-1 text-slate-400 hover:text-rose-600 cursor-pointer text-sm font-bold"
+                            title="Remove width"
                           >
                             ×
                           </button>
