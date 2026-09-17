@@ -47,8 +47,6 @@ export function ReadyProductModal({
   const [isActive, setIsActive] = useState(true)
   const [description, setDescription] = useState('')
   const [minOrderQty, setMinOrderQty] = useState<number>(1)
-  const [vatApplicable, setVatApplicable] = useState(false)
-  const [taxRate, setTaxRate] = useState<number>(7.5)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -63,8 +61,6 @@ export function ReadyProductModal({
       setIsActive(initialData.is_active !== false)
       setDescription(initialData.description || '')
       setMinOrderQty(initialData.min_order_quantity || 1)
-      setVatApplicable(Boolean(initialData.vat_applicable))
-      setTaxRate(initialData.tax_rate || 7.5)
     } else {
       setName('')
       setNameBn('')
@@ -74,8 +70,6 @@ export function ReadyProductModal({
       setIsActive(true)
       setDescription('')
       setMinOrderQty(1)
-      setVatApplicable(false)
-      setTaxRate(7.5)
     }
     setErrorMessage(null)
   }, [initialData, isOpen])
@@ -113,8 +107,8 @@ export function ReadyProductModal({
         description: description.trim() || undefined,
         min_order_quantity: minOrderQty || 1,
         min_billable_quantity: minOrderQty || 1,
-        vat_applicable: vatApplicable,
-        tax_rate: taxRate,
+        vat_applicable: initialData ? Boolean(initialData.vat_applicable) : false,
+        tax_rate: initialData?.tax_rate || 7.5,
         requires_production: false,
         requires_design: false,
         requires_approval: false,
@@ -284,31 +278,17 @@ export function ReadyProductModal({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Min Order Quantity (MOQ)
-                </Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={minOrderQty}
-                  onChange={(e) => setMinOrderQty(parseInt(e.target.value) || 1)}
-                  className="h-9 text-xs font-mono"
-                />
-              </div>
-
-              <div className="flex items-center pt-5">
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
-                  <input
-                    type="checkbox"
-                    checked={vatApplicable}
-                    onChange={(e) => setVatApplicable(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Standard VAT Applicable ({taxRate}%)</span>
-                </label>
-              </div>
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                Min Order Quantity (MOQ)
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                value={minOrderQty}
+                onChange={(e) => setMinOrderQty(parseInt(e.target.value) || 1)}
+                className="h-9 text-xs font-mono max-w-xs"
+              />
             </div>
 
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
