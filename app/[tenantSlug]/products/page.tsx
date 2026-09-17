@@ -2237,6 +2237,7 @@ export default function ProductsCatalogPage() {
         open={Boolean(fastQuoteProduct)}
         onOpenChange={(open) => !open && setFastQuoteProduct(null)}
         size="2xl"
+        hideFooter={true}
         title={
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
@@ -2537,6 +2538,7 @@ export default function ProductsCatalogPage() {
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         size="3xl"
+        hideFooter={true}
         title={
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
@@ -3457,6 +3459,7 @@ export default function ProductsCatalogPage() {
         open={Boolean(pricingProduct)}
         onOpenChange={(open) => !open && setPricingProduct(null)}
         size="lg"
+        hideFooter={true}
         title={
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
@@ -3568,6 +3571,7 @@ export default function ProductsCatalogPage() {
         open={Boolean(deletingProduct)}
         onOpenChange={(open) => !open && setDeletingProduct(null)}
         size="md"
+        hideFooter={true}
         title={
           <div className="flex items-center gap-2 text-rose-600 font-bold text-base">
             <AlertTriangle className="h-5 w-5" />

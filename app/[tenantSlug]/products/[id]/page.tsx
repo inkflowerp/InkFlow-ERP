@@ -1377,6 +1377,7 @@ export default function ProductDetailPage() {
         open={isPriceModalOpen}
         onOpenChange={setIsPriceModalOpen}
         size="md"
+        hideFooter={true}
         title={
           <div className="flex items-center gap-2">
             <Tag className="h-5 w-5 text-blue-600" />
@@ -1453,6 +1454,7 @@ export default function ProductDetailPage() {
         open={isAddVariantOpen}
         onOpenChange={setIsAddVariantOpen}
         size="md"
+        hideFooter={true}
         title={
           <div className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-blue-600" />
@@ -1535,6 +1537,7 @@ export default function ProductDetailPage() {
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         size="md"
+        hideFooter={true}
         title={
           <div className="flex items-center gap-2 text-rose-600 font-bold text-base">
             <AlertTriangle className="h-5 w-5" />
