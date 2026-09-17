@@ -525,10 +525,12 @@ export function MaterialConfigModal({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Bengali Name (বাংলা নাম - ঐচ্ছিক)
-                </Label>
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Bengali Name (বাংলা নাম - ঐচ্ছিক)
+                  </Label>
+                </div>
                 <Input
                   placeholder="যেমন: স্টার ফ্রন্টলিট ফ্লেক্স ব্যানার"
                   value={nameBn}
@@ -537,10 +539,12 @@ export function MaterialConfigModal({
                 />
               </div>
 
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Material SKU / Stock Code
-                </Label>
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Material SKU / Stock Code
+                  </Label>
+                </div>
                 <Input
                   placeholder="e.g. MAT-FLEX-STAR-280"
                   value={sku}
@@ -551,10 +555,12 @@ export function MaterialConfigModal({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Physical Form / Classification <span className="text-rose-500">*</span>
-                </Label>
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Physical Form / Classification <span className="text-rose-500">*</span>
+                  </Label>
+                </div>
                 <select
                   value={materialType}
                   onChange={(e) => {
@@ -584,10 +590,12 @@ export function MaterialConfigModal({
                 </select>
               </div>
 
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Catalog Category
-                </Label>
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Catalog Category
+                  </Label>
+                </div>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
@@ -641,10 +649,12 @@ export function MaterialConfigModal({
           <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl space-y-3.5">
             {/* Units Selection Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Purchase / Supplier Unit (ক্রয় একক) <span className="text-rose-500">*</span>
-                </Label>
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Purchase Unit (ক্রয় একক) <span className="text-rose-500">*</span>
+                  </Label>
+                </div>
                 <select
                   value={purchaseUnit}
                   onChange={(e) => {
@@ -663,10 +673,12 @@ export function MaterialConfigModal({
                 </select>
               </div>
 
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Stock / Production Usage Unit (খরচ হিসাব একক) <span className="text-rose-500">*</span>
-                </Label>
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Usage Unit (খরচ হিসাব একক) <span className="text-rose-500">*</span>
+                  </Label>
+                </div>
                 <select
                   value={usageUnit}
                   onChange={(e) => setUsageUnit(e.target.value as any)}
@@ -680,10 +692,12 @@ export function MaterialConfigModal({
                 </select>
               </div>
 
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Dimension Unit (পরিমাপ একক)
-                </Label>
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Dimension Unit (পরিমাপ একক)
+                  </Label>
+                </div>
                 <select
                   value={dimensionUnit}
                   onChange={(e) => setDimensionUnit(e.target.value as any)}
@@ -999,12 +1013,12 @@ export function MaterialConfigModal({
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* SFT Purchase Rate Input */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs font-semibold block text-slate-900 dark:text-white">
-                    Purchase Price (৳ / {usageUnit.toUpperCase()}) <span className="text-rose-500">*</span>
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center justify-between mb-1">
+                  <Label className="text-xs font-semibold text-slate-900 dark:text-white truncate">
+                    Purchase Price (৳/{usageUnit.toUpperCase()}) <span className="text-rose-500">*</span>
                   </Label>
-                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.2 rounded">
+                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded shrink-0">
                     SFT Rate
                   </span>
                 </div>
@@ -1020,16 +1034,16 @@ export function MaterialConfigModal({
                     className="pl-7 h-9 text-xs font-mono font-bold bg-blue-50/20 border-blue-200 dark:border-blue-800 focus:border-blue-500"
                   />
                 </div>
-                <span className="text-[10px] text-slate-500 mt-0.5 block">Direct substrate cost per {usageUnit}</span>
+                <span className="text-[10px] text-slate-500 mt-1 block truncate">Direct substrate cost per {usageUnit}</span>
               </div>
 
               {/* Package Purchase Price Input */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs font-semibold block">
-                    Purchase Price (৳ / {purchaseUnit})
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center justify-between mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Purchase Price (৳/{purchaseUnit})
                   </Label>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-slate-400 shrink-0">
                     Total {purchaseUnit}
                   </span>
                 </div>
@@ -1045,13 +1059,16 @@ export function MaterialConfigModal({
                     className="pl-7 h-9 text-xs font-mono font-bold"
                   />
                 </div>
-                <span className="text-[10px] text-slate-500 mt-0.5 block">Supplier invoice package price</span>
+                <span className="text-[10px] text-slate-500 mt-1 block truncate">Supplier invoice package price</span>
               </div>
 
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Expected Wastage Factor (%)
-                </Label>
+              {/* Wastage Factor */}
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center justify-between mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Expected Wastage (%)
+                  </Label>
+                </div>
                 <div className="relative">
                   <Input
                     type="number"
@@ -1064,13 +1081,16 @@ export function MaterialConfigModal({
                   />
                   <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                 </div>
-                <span className="text-[10px] text-slate-500 mt-0.5 block">Production scrap margin</span>
+                <span className="text-[10px] text-slate-500 mt-1 block truncate">Production scrap margin</span>
               </div>
 
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Reorder Alert Level ({purchaseUnit}s)
-                </Label>
+              {/* Reorder Level */}
+              <div className="flex flex-col justify-between">
+                <div className="h-6 flex items-center justify-between mb-1">
+                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    Reorder Alert Level ({purchaseUnit}s)
+                  </Label>
+                </div>
                 <Input
                   type="number"
                   step="1"
@@ -1079,7 +1099,7 @@ export function MaterialConfigModal({
                   onChange={(e) => setReorderLevel(parseInt(e.target.value, 10) || 0)}
                   className="h-9 text-xs font-mono"
                 />
-                <span className="text-[10px] text-slate-500 mt-0.5 block">Min stock warning threshold</span>
+                <span className="text-[10px] text-slate-500 mt-1 block truncate">Min stock warning threshold</span>
               </div>
             </div>
 
