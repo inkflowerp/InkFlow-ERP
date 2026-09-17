@@ -267,7 +267,7 @@ export function ReadyProductModal({
     <ModalDialog
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      size="xl"
+      size="5xl"
       title={
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
