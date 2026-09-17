@@ -1095,14 +1095,14 @@ export function MaterialConfigModal({
 
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {/* SFT Purchase Rate Input */}
+              {/* Usage Unit Purchase Rate Input */}
               <div className="flex flex-col justify-between">
                 <div className="h-6 flex items-center justify-between mb-1">
                   <Label className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                     Purchase Price (৳/{usageUnit.toUpperCase()}) <span className="text-rose-500">*</span>
                   </Label>
                   <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded shrink-0">
-                    SFT Rate
+                    {usageUnit.toUpperCase()} Rate
                   </span>
                 </div>
                 <div className="relative">
@@ -1117,7 +1117,7 @@ export function MaterialConfigModal({
                     className="pl-7 h-9 text-xs font-mono font-bold bg-blue-50/20 border-blue-200 dark:border-blue-800 focus:border-blue-500"
                   />
                 </div>
-                <span className="text-[10px] text-slate-500 mt-1 block truncate">Direct substrate cost per {usageUnit}</span>
+                <span className="text-[10px] text-slate-500 mt-1 block truncate">Direct material cost per {usageUnit}</span>
               </div>
 
               {/* Package Purchase Price Input */}
@@ -1192,7 +1192,7 @@ export function MaterialConfigModal({
                 <div className="flex items-center gap-2">
                   <Calculator className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider">
-                    Calculated Production Substrate Cost
+                    Calculated Production Direct Cost
                   </span>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900 dark:text-emerald-200">
