@@ -140,16 +140,16 @@ export function enrichProductRecord(p: any): ProductRecord {
   }
 
   // Multi-Component Direct Cost Breakdown
-  const cb = p.cost_breakdown || {}
-  const matCost = cb.material_cost !== undefined ? Number(cb.material_cost) : effectiveCost
+  const cb = p.cost_breakdown || p.service_config?.cost_breakdown || formula.cost_breakdown || {}
+  const matCost = cb.material_cost !== undefined ? Number(cb.material_cost) : (cb.material !== undefined ? Number(cb.material) : effectiveCost)
   const inkCost = Number(cb.ink_cost) || Number(cb.ink) || Number(p.ink_cost) || Number(p.service_config?.ink_cost) || Number(p.service_config?.ink_cost_per_unit) || 0
-  const machCost = Number(cb.machine_cost) || 0
-  const labCost = Number(cb.labor_cost) || 0
-  const finCost = Number(cb.finishing_cost) || 0
-  const fabCost = Number(cb.fabrication_cost) || 0
-  const instCost = Number(cb.installation_cost) || 0
-  const delCost = Number(cb.delivery_cost) || 0
-  const othCost = Number(cb.other_direct_cost) || 0
+  const machCost = Number(cb.machine_cost) || Number(cb.machine) || 0
+  const labCost = Number(cb.labor_cost) || Number(cb.labor) || 0
+  const finCost = Number(cb.finishing_cost) || Number(cb.finishing) || 0
+  const fabCost = Number(cb.fabrication_cost) || Number(cb.fabrication) || 0
+  const instCost = Number(cb.installation_cost) || Number(cb.installation) || 0
+  const delCost = Number(cb.delivery_cost) || Number(cb.delivery) || 0
+  const othCost = Number(cb.other_direct_cost) || Number(cb.other_direct) || 0
 
   const directCostSum = matCost + inkCost + machCost + labCost + finCost + fabCost + instCost + delCost + othCost
   const estimatedDirectCost = directCostSum > matCost ? directCostSum : (componentCostTotal > 0 ? effectiveCost + componentCostTotal : effectiveCost)

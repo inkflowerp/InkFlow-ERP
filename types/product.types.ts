@@ -681,6 +681,7 @@ export interface ServiceConfiguration {
   linked_ink_name?: string | null
   ink_cost?: number
   ink_cost_per_unit?: number
+  cost_breakdown?: ProductCostBreakdown
 }
 
 export interface MaterialRollSizeConfig {

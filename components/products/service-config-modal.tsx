@@ -40,9 +40,13 @@ import {
   Star,
   Layers3,
   Droplets,
+  Calculator,
+  RotateCcw,
+  PieChart,
 } from 'lucide-react'
 import type {
   ProductRecord,
+  ProductCostBreakdown,
   ServiceConfiguration,
   ServiceDimensionPreset,
   ServiceRequiredMaterial,
@@ -249,6 +253,16 @@ export function ServiceConfigModal({
   const [minAllowedMargin, setMinAllowedMargin] = useState<number>(15)
   const [allowManualOverride, setAllowManualOverride] = useState(true)
 
+  // 6.1 Direct Unit Cost Breakdown Elements
+  const [materialCost, setMaterialCost] = useState<number | ''>('')
+  const [machineCost, setMachineCost] = useState<number | ''>('')
+  const [laborCost, setLaborCost] = useState<number | ''>('')
+  const [finishingCost, setFinishingCost] = useState<number | ''>('')
+  const [fabricationCost, setFabricationCost] = useState<number | ''>('')
+  const [installationCost, setInstallationCost] = useState<number | ''>('')
+  const [deliveryCost, setDeliveryCost] = useState<number | ''>('')
+  const [otherDirectCost, setOtherDirectCost] = useState<number | ''>('')
+
   // Multi-tier customer prices
   const [priceTiers, setPriceTiers] = useState<{
     retail: number | ''
@@ -333,6 +347,26 @@ export function ServiceConfigModal({
         setInkCostMode('method')
       }
 
+      // Load 9-point Direct Cost Breakdown
+      const cb = initialData.cost_breakdown || cfg.cost_breakdown || {}
+      const loadedMatCost = cb.material_cost !== undefined ? cb.material_cost : (cb.material !== undefined ? cb.material : (initialData.purchase_price ?? initialData.base_cost ?? ''))
+      const loadedMachineCost = (cb.machine_cost ?? cb.machine) ?? ''
+      const loadedLaborCost = (cb.labor_cost ?? cb.labor) ?? ''
+      const loadedFinishingCost = (cb.finishing_cost ?? cb.finishing) ?? ''
+      const loadedFabricationCost = (cb.fabrication_cost ?? cb.fabrication) ?? ''
+      const loadedInstallationCost = (cb.installation_cost ?? cb.installation) ?? ''
+      const loadedDeliveryCost = (cb.delivery_cost ?? cb.delivery) ?? ''
+      const loadedOtherCost = (cb.other_direct_cost ?? cb.other_direct) ?? ''
+
+      setMaterialCost(loadedMatCost !== '' && loadedMatCost !== undefined ? Number(loadedMatCost) : '')
+      setMachineCost(loadedMachineCost !== '' && loadedMachineCost !== undefined ? Number(loadedMachineCost) : '')
+      setLaborCost(loadedLaborCost !== '' && loadedLaborCost !== undefined ? Number(loadedLaborCost) : '')
+      setFinishingCost(loadedFinishingCost !== '' && loadedFinishingCost !== undefined ? Number(loadedFinishingCost) : '')
+      setFabricationCost(loadedFabricationCost !== '' && loadedFabricationCost !== undefined ? Number(loadedFabricationCost) : '')
+      setInstallationCost(loadedInstallationCost !== '' && loadedInstallationCost !== undefined ? Number(loadedInstallationCost) : '')
+      setDeliveryCost(loadedDeliveryCost !== '' && loadedDeliveryCost !== undefined ? Number(loadedDeliveryCost) : '')
+      setOtherDirectCost(loadedOtherCost !== '' && loadedOtherCost !== undefined ? Number(loadedOtherCost) : '')
+
       setDimensionUnit(cfg.dimension_unit || 'ft')
       setAllowCustomDimensions(cfg.allow_custom_dimensions !== false)
       setAvailableRollWidths(cfg.available_widths_ft || initialData.available_widths_ft || [2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
@@ -371,6 +405,14 @@ export function ServiceConfigModal({
       setLinkedInkName(availableMethodsList[0]?.name ? `${availableMethodsList[0].name} Ink` : 'Eco-Solvent Ink')
       setInkCost(3.5)
       setInkCostMode('method')
+      setMaterialCost('')
+      setMachineCost(1.5)
+      setLaborCost(1.0)
+      setFinishingCost(0.5)
+      setFabricationCost(0)
+      setInstallationCost(0)
+      setDeliveryCost(0)
+      setOtherDirectCost(0.25)
       setSellingUnit('sft')
       setPurchaseUnit('roll')
       setSellingPrice('')
@@ -445,14 +487,61 @@ export function ServiceConfigModal({
     setInkCostMode('method')
   }
 
-  // Live Gross Margin Analysis factoring in both Substrate Material & Linked Ink Cost
+  // Total Direct Unit Cost (Substrate + Ink + Machine + Labor + Finishing + Fabrication + Installation + Delivery + Other)
+  const totalDirectCost = useMemo(() => {
+    const mat = Number(materialCost !== '' ? materialCost : (purchasePrice !== '' ? purchasePrice : baseCostEstimate)) || 0
+    const ink = Number(inkCost) || 0
+    const mach = Number(machineCost) || 0
+    const lab = Number(laborCost) || 0
+    const fin = Number(finishingCost) || 0
+    const fab = Number(fabricationCost) || 0
+    const inst = Number(installationCost) || 0
+    const del = Number(deliveryCost) || 0
+    const oth = Number(otherDirectCost) || 0
+    return mat + ink + mach + lab + fin + fab + inst + del + oth
+  }, [materialCost, purchasePrice, baseCostEstimate, inkCost, machineCost, laborCost, finishingCost, fabricationCost, installationCost, deliveryCost, otherDirectCost])
+
+  // Live Gross Margin Analysis factoring in all Direct Cost Breakdown components
   const marginMetrics = useMemo(() => {
-    const substrateCost = Number(purchasePrice !== '' ? purchasePrice : baseCostEstimate) || 0
-    const inkCostNum = Number(inkCost) || 0
-    const totalCost = substrateCost + inkCostNum
     const sp = Number(sellingPrice) || 0
-    return calculateGrossMargin(totalCost, sp)
-  }, [purchasePrice, baseCostEstimate, inkCost, sellingPrice])
+    return calculateGrossMargin(totalDirectCost, sp)
+  }, [totalDirectCost, sellingPrice])
+
+  const handleApplyCostPreset = (preset: 'standard_roll' | 'uv_rigid' | 'signage_fabrication' | 'zero_extras') => {
+    if (preset === 'standard_roll') {
+      setMachineCost(1.5)
+      setLaborCost(1.0)
+      setFinishingCost(0.5)
+      setFabricationCost(0)
+      setInstallationCost(0)
+      setDeliveryCost(0)
+      setOtherDirectCost(0.25)
+    } else if (preset === 'uv_rigid') {
+      setMachineCost(3.5)
+      setLaborCost(2.0)
+      setFinishingCost(1.0)
+      setFabricationCost(0)
+      setInstallationCost(0)
+      setDeliveryCost(0.5)
+      setOtherDirectCost(0.5)
+    } else if (preset === 'signage_fabrication') {
+      setMachineCost(4.0)
+      setLaborCost(5.0)
+      setFinishingCost(2.0)
+      setFabricationCost(8.0)
+      setInstallationCost(4.0)
+      setDeliveryCost(2.0)
+      setOtherDirectCost(1.0)
+    } else if (preset === 'zero_extras') {
+      setMachineCost(0)
+      setLaborCost(0)
+      setFinishingCost(0)
+      setFabricationCost(0)
+      setInstallationCost(0)
+      setDeliveryCost(0)
+      setOtherDirectCost(0)
+    }
+  }
 
   // Auto-fill price tiers based on standard industry percentages
   const handleAutoFillTiers = (discountStrategy: 'standard' | 'aggressive' | 'reset') => {
@@ -632,9 +721,10 @@ export function ServiceConfigModal({
 
       // Auto-populate direct purchase rate per sft/usage unit
       const matBaseCost = (selectedMat as any).base_cost || matCfg.effective_unit_cost || (selectedMat as any).purchase_price || (selectedMat as any).cost_per_unit
-      if (matBaseCost && (purchasePrice === '' || Number(purchasePrice) === 0)) {
+      if (matBaseCost && (purchasePrice === '' || Number(purchasePrice) === 0 || materialCost === '' || Number(materialCost) === 0)) {
         setPurchasePrice(matBaseCost)
         setBaseCostEstimate(matBaseCost)
+        setMaterialCost(Number(matBaseCost))
       }
     }
   }
@@ -816,9 +906,39 @@ export function ServiceConfigModal({
 
       const selectedMat = availableMaterials.find((m) => m.id === printableMaterialId)
       const primaryMethod = selectedPrintingMethods[0] || ''
-      const substrateCostNum = purchasePrice !== '' ? Number(purchasePrice) : (baseCostEstimate !== '' ? Number(baseCostEstimate) : 0)
+      const matCostNum = Number(materialCost !== '' ? materialCost : (purchasePrice !== '' ? purchasePrice : (baseCostEstimate !== '' ? baseCostEstimate : 0))) || 0
       const inkCostNum = Number(inkCost) || 0
-      const totalCombinedCost = substrateCostNum + inkCostNum
+      const machineCostNum = Number(machineCost) || 0
+      const laborCostNum = Number(laborCost) || 0
+      const finishingCostNum = Number(finishingCost) || 0
+      const fabricationCostNum = Number(fabricationCost) || 0
+      const installationCostNum = Number(installationCost) || 0
+      const deliveryCostNum = Number(deliveryCost) || 0
+      const otherCostNum = Number(otherDirectCost) || 0
+      const totalDirectCostNum = matCostNum + inkCostNum + machineCostNum + laborCostNum + finishingCostNum + fabricationCostNum + installationCostNum + deliveryCostNum + otherCostNum
+
+      const costBreakdown: ProductCostBreakdown = {
+        material_cost: matCostNum,
+        ink_cost: inkCostNum,
+        machine_cost: machineCostNum,
+        labor_cost: laborCostNum,
+        finishing_cost: finishingCostNum,
+        fabrication_cost: fabricationCostNum,
+        installation_cost: installationCostNum,
+        delivery_cost: deliveryCostNum,
+        other_direct_cost: otherCostNum,
+        total_direct_cost: totalDirectCostNum,
+        // Shorthands
+        material: matCostNum,
+        ink: inkCostNum,
+        machine: machineCostNum,
+        labor: laborCostNum,
+        finishing: finishingCostNum,
+        fabrication: fabricationCostNum,
+        installation: installationCostNum,
+        delivery: deliveryCostNum,
+        other_direct: otherCostNum,
+      }
 
       const serviceConfig: ServiceConfiguration = {
         dimension_unit: dimensionUnit,
@@ -843,6 +963,7 @@ export function ServiceConfigModal({
         linked_ink_name: linkedInkName || undefined,
         ink_cost: inkCostNum,
         ink_cost_per_unit: inkCostNum,
+        cost_breakdown: costBreakdown,
       }
 
       await onSave({
@@ -867,15 +988,9 @@ export function ServiceConfigModal({
         linked_ink_name: linkedInkName || undefined,
         ink_cost: inkCostNum,
         selling_price: sp,
-        purchase_price: totalCombinedCost,
-        base_cost: totalCombinedCost,
-        cost_breakdown: {
-          material_cost: substrateCostNum,
-          ink_cost: inkCostNum,
-          machine_cost: 0,
-          labor_cost: 0,
-          total_direct_cost: totalCombinedCost,
-        },
+        purchase_price: totalDirectCostNum,
+        base_cost: totalDirectCostNum,
+        cost_breakdown: costBreakdown,
         cost_basis_type: 'direct_cost',
         price_tiers: finalPriceTiers,
         target_margin_percentage: Number(targetMargin) || 35.0,
@@ -2625,15 +2740,20 @@ export function ServiceConfigModal({
         {/* ======================================================== */}
         {activeTab === 'pricing' && (
           <div className="space-y-4 animate-in fade-in-0">
-            {/* 1. Base Rates & Job Floor */}
+            {/* 1. Base Rates & Commercial Selling Price */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
-                  <DollarSign className="w-3.5 h-3.5" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
+                    <DollarSign className="w-3.5 h-3.5" />
+                  </div>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Commercial Selling Rate & Job Floor
+                  </h3>
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Commercial Selling Rate & Job Floor
-                </h3>
+                <Badge variant="outline" className="text-[10px] font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+                  Billing Unit: {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'}
+                </Badge>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -2659,49 +2779,6 @@ export function ServiceConfigModal({
 
                 <div className="flex flex-col justify-between">
                   <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
-                    <span>Substrate Media Cost (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'})</span>
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
-                    <Input
-                      type="number"
-                      step="any"
-                      min="0"
-                      placeholder="e.g. 15.00"
-                      value={purchasePrice !== '' ? purchasePrice : baseCostEstimate}
-                      onChange={(e) => {
-                        const val = e.target.value === '' ? '' : parseFloat(e.target.value)
-                        setPurchasePrice(val)
-                        setBaseCostEstimate(val)
-                      }}
-                      className="pl-7 h-9 text-xs font-mono font-semibold text-slate-800 dark:text-slate-200"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col justify-between">
-                  <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
-                    <span>Linked Ink Cost (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'})</span>
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
-                    <Input
-                      type="number"
-                      step="any"
-                      min="0"
-                      placeholder="e.g. 4.00"
-                      value={inkCost}
-                      onChange={(e) => {
-                        setInkCost(e.target.value === '' ? '' : parseFloat(e.target.value))
-                        setInkCostMode('custom')
-                      }}
-                      className="pl-7 h-9 text-xs font-mono font-semibold text-blue-600 dark:text-blue-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col justify-between">
-                  <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
                     <span>Minimum Order Charge (৳ Floor)</span>
                   </Label>
                   <div className="relative">
@@ -2713,112 +2790,568 @@ export function ServiceConfigModal({
                       placeholder="e.g. 150.00"
                       value={minimumCharge}
                       onChange={(e) => setMinimumCharge(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="pl-7 h-9 text-xs font-mono"
+                      className="pl-7 h-9 text-xs font-mono font-semibold text-slate-800 dark:text-slate-200"
                     />
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-between">
+                  <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
+                    <span>Target Gross Margin (%)</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="1"
+                      min="0"
+                      max="100"
+                      value={targetMargin}
+                      onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
+                      className="h-9 text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                    />
+                    <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-between">
+                  <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
+                    <span>Minimum Allowed Margin (%)</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="1"
+                      min="0"
+                      max="100"
+                      value={minAllowedMargin}
+                      onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
+                      className="h-9 text-xs font-mono font-bold text-rose-600 dark:text-rose-400"
+                    />
+                    <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                   </div>
                 </div>
               </div>
 
-              {/* Combined Base Cost Breakdown Summary Pill */}
-              {(() => {
-                const subCost = Number(purchasePrice !== '' ? purchasePrice : baseCostEstimate) || 0
-                const inkC = Number(inkCost) || 0
-                const combined = subCost + inkC
-                return (
-                  <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+              {/* Tax & VAT settings inline */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2.5 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40">
+                  <input
+                    type="checkbox"
+                    id="vat-check-service"
+                    checked={vatApplicable}
+                    onChange={(e) => setVatApplicable(e.target.checked)}
+                    className="rounded text-blue-600 h-4 w-4"
+                  />
+                  <Label htmlFor="vat-check-service" className="text-xs font-medium cursor-pointer">
+                    VAT Applicable
+                  </Label>
+                </div>
+
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40">
+                  <input
+                    type="checkbox"
+                    id="tax-inc-check-service"
+                    checked={isTaxInclusive}
+                    onChange={(e) => setIsTaxInclusive(e.target.checked)}
+                    className="rounded text-blue-600 h-4 w-4"
+                  />
+                  <Label htmlFor="tax-inc-check-service" className="text-xs font-medium cursor-pointer">
+                    Tax-Inclusive Price
+                  </Label>
+                </div>
+
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40">
+                  <Label className="text-xs font-medium whitespace-nowrap">Tax Rate:</Label>
+                  <div className="relative flex-1">
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={taxRate}
+                      onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                      disabled={!vatApplicable && !isTaxInclusive}
+                      className="h-7 text-xs font-mono font-bold"
+                    />
+                    <span className="absolute right-2 top-1.5 text-slate-400 text-xs">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Comprehensive Direct Cost Breakdown (প্রত্যক্ষ উৎপাদন খরচ বিশ্লেষণ) */}
+            <div className="rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-slate-900/80 p-4 space-y-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-indigo-100 dark:border-indigo-900/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-7 w-7 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/70 dark:text-indigo-300 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                    <Calculator className="w-4 h-4" />
+                  </div>
+                  <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-600 dark:text-slate-400 uppercase text-[11px]">Direct Cost Formula:</span>
-                      <span className="bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
-                        Substrate: ৳{subCost.toFixed(2)}
-                      </span>
-                      <span>+</span>
-                      <span className="bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold">
-                        Ink: ৳{inkC.toFixed(2)}
-                      </span>
-                      <span>=</span>
-                      <span className="bg-emerald-100 dark:bg-emerald-950/70 px-2.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold text-[12px]">
-                        Combined Direct Cost: ৳{combined.toFixed(2)} / {sellingUnit || 'sft'}
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Direct Unit Cost Breakdown (প্রত্যক্ষ উৎপাদন খরচ বিশ্লেষণ)
+                      </h3>
+                      <Badge variant="outline" className="text-[10px] font-mono py-0.5 px-2 bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300">
+                        9 Cost Heads
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Configure granular cost components for substrate, ink, machine depreciation, labor & post-press per {sellingUnit || 'unit'}.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-right">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block font-semibold uppercase tracking-wider">Total Direct Cost</span>
+                    <span className="text-sm font-mono font-bold text-emerald-800 dark:text-emerald-200">
+                      ৳{totalDirectCost.toFixed(2)} / {sellingUnit || 'sft'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Cost Breakdown Preset Bar */}
+              <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 text-xs">
+                <span className="text-[11px] font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1 px-1">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Cost Presets:</span>
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleApplyCostPreset('standard_roll')}
+                  className="h-6 text-[10px] px-2 font-semibold bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 cursor-pointer"
+                >
+                  Standard Flex/Vinyl Roll
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleApplyCostPreset('uv_rigid')}
+                  className="h-6 text-[10px] px-2 font-semibold bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 cursor-pointer"
+                >
+                  UV Flatbed / Rigid Board
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleApplyCostPreset('signage_fabrication')}
+                  className="h-6 text-[10px] px-2 font-semibold bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 cursor-pointer"
+                >
+                  Signage & Lightbox Fabrication
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleApplyCostPreset('zero_extras')}
+                  className="h-6 text-[10px] px-2 font-semibold bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3 mr-1" />
+                  Reset Extra Heads
+                </Button>
+              </div>
+
+              {/* 9 Interactive Direct Cost Input Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {/* 1. Substrate Media Cost */}
+                <div className="p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/30 dark:bg-indigo-950/20 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-indigo-950 dark:text-indigo-200">
+                      <Boxes className="w-3.5 h-3.5 text-indigo-600" />
+                      <Label className="text-xs font-bold">1. Substrate Media (মিডিয়া)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={materialCost !== '' ? materialCost : (purchasePrice !== '' ? purchasePrice : baseCostEstimate)}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : parseFloat(e.target.value)
+                        setMaterialCost(val)
+                        setPurchasePrice(val)
+                        setBaseCostEstimate(val)
+                      }}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-800"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Roll media or board raw substrate cost
+                  </p>
+                </div>
+
+                {/* 2. Ink & Liquid Consumables */}
+                <div className="p-3 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/30 dark:bg-blue-950/20 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-blue-950 dark:text-blue-200">
+                      <Droplets className="w-3.5 h-3.5 text-blue-600" />
+                      <Label className="text-xs font-bold">2. Linked Ink (কালি ও লিকুইড)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={inkCost}
+                      onChange={(e) => {
+                        setInkCost(e.target.value === '' ? '' : parseFloat(e.target.value))
+                        setInkCostMode('custom')
+                      }}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-800"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Eco-Solvent / UV ink & primer per unit
+                  </p>
+                </div>
+
+                {/* 3. Machine Depreciation & Power */}
+                <div className="p-3 rounded-xl border border-amber-200 dark:border-amber-800/80 bg-amber-50/30 dark:bg-amber-950/20 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-amber-950 dark:text-amber-200">
+                      <Settings2 className="w-3.5 h-3.5 text-amber-600" />
+                      <Label className="text-xs font-bold">3. Machine Depr. (মেশিন অবচয়)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={machineCost}
+                      onChange={(e) => setMachineCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-amber-800 dark:text-amber-300 bg-white dark:bg-slate-900 border-amber-200 dark:border-amber-800"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Printhead amortization, electricity & maintenance
+                  </p>
+                </div>
+
+                {/* 4. Direct Labor & Operator */}
+                <div className="p-3 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/20 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-emerald-950 dark:text-emerald-200">
+                      <Wrench className="w-3.5 h-3.5 text-emerald-600" />
+                      <Label className="text-xs font-bold">4. Operator Labor (মজুরি)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={laborCost}
+                      onChange={(e) => setLaborCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300 bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-800"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Technician & printer helper direct wages
+                  </p>
+                </div>
+
+                {/* 5. Base Finishing & Post-Press */}
+                <div className="p-3 rounded-xl border border-purple-200 dark:border-purple-800/80 bg-purple-50/30 dark:bg-purple-950/20 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-purple-950 dark:text-purple-200">
+                      <Scissors className="w-3.5 h-3.5 text-purple-600" />
+                      <Label className="text-xs font-bold">5. Base Finishing (ফিনিশিং)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={finishingCost}
+                      onChange={(e) => setFinishingCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-purple-800 dark:text-purple-300 bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-800"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Eyelet, hemming, trim cutting included in base
+                  </p>
+                </div>
+
+                {/* 6. Fabrication & Structure */}
+                <div className="p-3 rounded-xl border border-orange-200 dark:border-orange-800/80 bg-orange-50/30 dark:bg-orange-950/20 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-orange-950 dark:text-orange-200">
+                      <Building className="w-3.5 h-3.5 text-orange-600" />
+                      <Label className="text-xs font-bold">6. Fabrication (ফ্যাব্রিকেশন)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={fabricationCost}
+                      onChange={(e) => setFabricationCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-orange-800 dark:text-orange-300 bg-white dark:bg-slate-900 border-orange-200 dark:border-orange-800"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    MS frame, acrylic bending & channel work
+                  </p>
+                </div>
+
+                {/* 7. Site Installation & Mounting */}
+                <div className="p-3 rounded-xl border border-sky-200 dark:border-sky-800/80 bg-sky-50/30 dark:bg-sky-950/20 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-sky-950 dark:text-sky-200">
+                      <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />
+                      <Label className="text-xs font-bold">7. Site Install (ইনস্টলেশন)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={installationCost}
+                      onChange={(e) => setInstallationCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-sky-800 dark:text-sky-300 bg-white dark:bg-slate-900 border-sky-200 dark:border-sky-800"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Field installation, scaffolding & mounting
+                  </p>
+                </div>
+
+                {/* 8. Delivery & Packaging */}
+                <div className="p-3 rounded-xl border border-teal-200 dark:border-teal-800/80 bg-teal-50/30 dark:bg-teal-950/20 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-teal-950 dark:text-teal-200">
+                      <Layers className="w-3.5 h-3.5 text-teal-600" />
+                      <Label className="text-xs font-bold">8. Delivery & Pack (প্যাকিং)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={deliveryCost}
+                      onChange={(e) => setDeliveryCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-teal-800 dark:text-teal-300 bg-white dark:bg-slate-900 border-teal-200 dark:border-teal-800"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Bubble wrap, carton packing & local cartage
+                  </p>
+                </div>
+
+                {/* 9. Other Direct Overhead */}
+                <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/40 space-y-1.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-slate-900 dark:text-slate-200">
+                      <Coins className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                      <Label className="text-xs font-bold">9. Other Direct (অন্যান্য)</Label>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">৳/{sellingUnit || 'sft'}</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0.00"
+                      value={otherDirectCost}
+                      onChange={(e) => setOtherDirectCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-6 h-8 text-xs font-mono font-bold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    Wipers, solvent cleaners & shop consumables
+                  </p>
+                </div>
+              </div>
+
+              {/* Dynamic Visual Proportional Breakdown Bar & Formula Summary */}
+              {(() => {
+                const subCost = Number(materialCost !== '' ? materialCost : (purchasePrice !== '' ? purchasePrice : baseCostEstimate)) || 0
+                const inkC = Number(inkCost) || 0
+                const machC = Number(machineCost) || 0
+                const labC = Number(laborCost) || 0
+                const finC = Number(finishingCost) || 0
+                const fabC = Number(fabricationCost) || 0
+                const instC = Number(installationCost) || 0
+                const delC = Number(deliveryCost) || 0
+                const othC = Number(otherDirectCost) || 0
+                const total = subCost + inkC + machC + labC + finC + fabC + instC + delC + othC
+
+                const items = [
+                  { name: 'Substrate', bn: 'মিডিয়া', amount: subCost, color: 'bg-indigo-500', textColor: 'text-indigo-700 dark:text-indigo-300', bgBadge: 'bg-indigo-50 border-indigo-200 dark:bg-indigo-950/60 dark:border-indigo-800' },
+                  { name: 'Ink', bn: 'কালি', amount: inkC, color: 'bg-blue-500', textColor: 'text-blue-700 dark:text-blue-300', bgBadge: 'bg-blue-50 border-blue-200 dark:bg-blue-950/60 dark:border-blue-800' },
+                  { name: 'Machine', bn: 'মেশিন', amount: machC, color: 'bg-amber-500', textColor: 'text-amber-700 dark:text-amber-300', bgBadge: 'bg-amber-50 border-amber-200 dark:bg-amber-950/60 dark:border-amber-800' },
+                  { name: 'Labor', bn: 'মজুরি', amount: labC, color: 'bg-emerald-500', textColor: 'text-emerald-700 dark:text-emerald-300', bgBadge: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/60 dark:border-emerald-800' },
+                  { name: 'Finishing', bn: 'ফিনিশিং', amount: finC, color: 'bg-purple-500', textColor: 'text-purple-700 dark:text-purple-300', bgBadge: 'bg-purple-50 border-purple-200 dark:bg-purple-950/60 dark:border-purple-800' },
+                  { name: 'Fabrication', bn: 'ফ্যাব্রিকেশন', amount: fabC, color: 'bg-orange-500', textColor: 'text-orange-700 dark:text-orange-300', bgBadge: 'bg-orange-50 border-orange-200 dark:bg-orange-950/60 dark:border-orange-800' },
+                  { name: 'Installation', bn: 'ইনস্টলেশন', amount: instC, color: 'bg-sky-500', textColor: 'text-sky-700 dark:text-sky-300', bgBadge: 'bg-sky-50 border-sky-200 dark:bg-sky-950/60 dark:border-sky-800' },
+                  { name: 'Delivery', bn: 'ডেলিভারি', amount: delC, color: 'bg-teal-500', textColor: 'text-teal-700 dark:text-teal-300', bgBadge: 'bg-teal-50 border-teal-200 dark:bg-teal-950/60 dark:border-teal-800' },
+                  { name: 'Other', bn: 'অন্যান্য', amount: othC, color: 'bg-slate-500', textColor: 'text-slate-700 dark:text-slate-300', bgBadge: 'bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700' },
+                ].filter((x) => x.amount > 0)
+
+                return (
+                  <div className="space-y-2.5 pt-2 border-t border-indigo-100 dark:border-indigo-900/40">
+                    {/* Visual Proportional Multi-Segment Progress Bar */}
+                    {total > 0 && items.length > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                          <span className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
+                            <PieChart className="w-3.5 h-3.5 text-indigo-600" />
+                            Cost Distribution Share (%)
+                          </span>
+                          <span className="font-mono text-slate-600 dark:text-slate-400">
+                            {items.length} active cost head{items.length > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <div className="w-full h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex ring-1 ring-slate-200 dark:ring-slate-700">
+                          {items.map((it, idx) => {
+                            const pct = (it.amount / total) * 100
+                            return (
+                              <div
+                                key={idx}
+                                style={{ width: `${pct}%` }}
+                                className={cn('h-full transition-all duration-300', it.color)}
+                                title={`${it.name}: ৳${it.amount.toFixed(2)} (${pct.toFixed(1)}%)`}
+                              />
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Proportional Cost Breakdown Badges */}
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
+                      {items.map((it, idx) => {
+                        const pct = total > 0 ? (it.amount / total) * 100 : 0
+                        return (
+                          <span
+                            key={idx}
+                            className={cn(
+                              'px-2 py-0.5 rounded-md border text-[11px] font-semibold flex items-center gap-1',
+                              it.bgBadge,
+                              it.textColor
+                            )}
+                          >
+                            <span>{it.name}:</span>
+                            <span className="font-bold">৳{it.amount.toFixed(2)}</span>
+                            <span className="text-[10px] opacity-75">({pct.toFixed(0)}%)</span>
+                          </span>
+                        )
+                      })}
+
+                      <span className="ml-auto bg-emerald-100 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-md border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100 font-bold text-xs flex items-center gap-1">
+                        <span>Total Direct Cost:</span>
+                        <span>৳{total.toFixed(2)} / {sellingUnit || 'sft'}</span>
                       </span>
                     </div>
                   </div>
                 )
               })()}
+            </div>
 
-              {/* Live Yield & Margin Economics */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-                    <TrendingUp className="w-4 h-4 text-emerald-600" />
-                    <span>Live Profitability & Margin Economics</span>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      'text-[10px] font-mono uppercase px-2 py-0.5',
-                      marginMetrics.grossMarginPercent >= targetMargin
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
-                        : marginMetrics.grossMarginPercent >= minAllowedMargin
-                        ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
-                        : 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300'
-                    )}
-                  >
-                    {marginMetrics.grossMarginPercent >= targetMargin
-                      ? 'Target Margin Met'
+            {/* 3. Live Profitability & Margin Economics */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <span>Live Profitability & Margin Economics (লাভ ও মার্জিন বিশ্লেষণ)</span>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[10px] font-mono uppercase px-2 py-0.5 font-bold',
+                    marginMetrics.grossMarginPercent >= targetMargin
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
                       : marginMetrics.grossMarginPercent >= minAllowedMargin
-                      ? 'Acceptable Margin'
-                      : 'Low Margin Risk'}
-                  </Badge>
+                      ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
+                      : marginMetrics.grossMarginPercent < 0
+                      ? 'bg-rose-100 text-rose-800 border-rose-400 dark:bg-rose-950 dark:text-rose-200'
+                      : 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300'
+                  )}
+                >
+                  {marginMetrics.grossMarginPercent >= targetMargin
+                    ? `✓ Target Margin Met (≥ ${targetMargin}%)`
+                    : marginMetrics.grossMarginPercent >= minAllowedMargin
+                    ? `Acceptable Margin (≥ ${minAllowedMargin}%)`
+                    : marginMetrics.grossMarginPercent < 0
+                    ? `⚠ Loss Warning (${marginMetrics.grossMarginPercent.toFixed(1)}%)`
+                    : `⚠ Low Margin Risk (< ${minAllowedMargin}%)`}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-500 block uppercase font-semibold">Est. Gross Profit</span>
+                  <span className={cn(
+                    'text-sm font-mono font-bold block mt-0.5',
+                    marginMetrics.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                  )}>
+                    {formatBDT(marginMetrics.grossProfit)} / {sellingUnit || 'sft'}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                  <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-[10px] text-slate-500 block uppercase">Est. Gross Profit</span>
-                    <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatBDT(marginMetrics.grossProfit)} / {sellingUnit}
-                    </span>
-                  </div>
-
-                  <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-[10px] text-slate-500 block uppercase">Gross Margin</span>
-                    <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
-                      {marginMetrics.grossMarginPercent.toFixed(1)}%
-                    </span>
-                  </div>
-
-                  <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-[10px] text-slate-500 block uppercase">Markup Ratio</span>
-                    <span className="text-xs font-mono font-bold text-purple-600 dark:text-purple-400">
-                      {marginMetrics.markupPercent.toFixed(1)}%
-                    </span>
-                  </div>
-
-                  <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-[10px] text-slate-500 block uppercase">Min Job Floor</span>
-                    <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">
-                      {formatBDT(Number(minimumCharge) || 0)}
-                    </span>
-                  </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-500 block uppercase font-semibold">Gross Margin</span>
+                  <span className={cn(
+                    'text-sm font-mono font-bold block mt-0.5',
+                    marginMetrics.grossMarginPercent >= targetMargin
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : marginMetrics.grossMarginPercent >= minAllowedMargin
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-rose-600 dark:text-rose-400'
+                  )}>
+                    {marginMetrics.grossMarginPercent.toFixed(1)}%
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">Target Gross Margin (%)</Label>
-                    <Input
-                      type="number"
-                      value={targetMargin}
-                      onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
-                      className="h-8 text-xs font-mono text-emerald-600 font-bold"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">Minimum Allowed Margin (%)</Label>
-                    <Input
-                      type="number"
-                      value={minAllowedMargin}
-                      onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
-                      className="h-8 text-xs font-mono text-rose-600 font-bold"
-                    />
-                  </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-500 block uppercase font-semibold">Markup Ratio</span>
+                  <span className="text-sm font-mono font-bold text-purple-600 dark:text-purple-400 block mt-0.5">
+                    {marginMetrics.markupPercent.toFixed(1)}%
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-500 block uppercase font-semibold">Min Job Floor</span>
+                  <span className="text-sm font-mono font-bold text-slate-800 dark:text-slate-200 block mt-0.5">
+                    {formatBDT(Number(minimumCharge) || 0)}
+                  </span>
                 </div>
               </div>
             </div>

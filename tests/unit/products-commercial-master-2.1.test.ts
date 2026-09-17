@@ -572,5 +572,70 @@ describe('Unit: Products & Services Commercial Master 2.1 — Final Business-Own
       assert.strictEqual(history.length, 1)
       assert.strictEqual(history[0].authorized_by, 'Managing Director')
     })
+
+    it('8.4 Saves and enriches service configuration with complete 9-head direct cost breakdown', async () => {
+      const createdService = await ProductService.createProduct({
+        company_id: companyId,
+        name: 'UV Vinyl Printing Service (Gloss)',
+        sku: 'SRV-UV-VINYL-GLOSS',
+        product_type: 'print_service',
+        commercial_type: 'service',
+        is_service: true,
+        unit: 'sft',
+        selling_unit: 'sft',
+        purchase_unit: 'roll',
+        pricing_method: 'per_area',
+        selling_price: 45,
+        purchase_price: 24.5,
+        base_cost: 24.5,
+        cost_breakdown: {
+          material_cost: 15.0,
+          ink_cost: 4.0,
+          machine_cost: 2.0,
+          labor_cost: 1.5,
+          finishing_cost: 1.0,
+          fabrication_cost: 0,
+          installation_cost: 0,
+          delivery_cost: 0.5,
+          other_direct_cost: 0.5,
+          total_direct_cost: 24.5,
+        },
+        service_config: {
+          dimension_unit: 'ft',
+          allow_custom_dimensions: true,
+          available_widths_ft: [3, 4, 5],
+          extra_width_allowance_ft: 0.25,
+          standard_roll_length_ft: 164,
+          linked_ink_id: 'mat-uv-ink-01',
+          linked_ink_name: 'Premium UV Curable Ink',
+          ink_cost: 4.0,
+          ink_cost_per_unit: 4.0,
+          cost_breakdown: {
+            material_cost: 15.0,
+            ink_cost: 4.0,
+            machine_cost: 2.0,
+            labor_cost: 1.5,
+            finishing_cost: 1.0,
+            fabrication_cost: 0,
+            installation_cost: 0,
+            delivery_cost: 0.5,
+            other_direct_cost: 0.5,
+            total_direct_cost: 24.5,
+          },
+        },
+      })
+
+      assert.ok(createdService.id)
+      assert.strictEqual(createdService.cost_breakdown?.material_cost, 15.0)
+      assert.strictEqual(createdService.cost_breakdown?.ink_cost, 4.0)
+      assert.strictEqual(createdService.cost_breakdown?.machine_cost, 2.0)
+      assert.strictEqual(createdService.cost_breakdown?.labor_cost, 1.5)
+      assert.strictEqual(createdService.cost_breakdown?.finishing_cost, 1.0)
+      assert.strictEqual(createdService.cost_breakdown?.delivery_cost, 0.5)
+      assert.strictEqual(createdService.cost_breakdown?.other_direct_cost, 0.5)
+      assert.strictEqual(createdService.cost_breakdown?.total_direct_cost, 24.5)
+      assert.strictEqual(createdService.service_config?.linked_ink_name, 'Premium UV Curable Ink')
+      assert.strictEqual(createdService.service_config?.cost_breakdown?.total_direct_cost, 24.5)
+    })
   })
 })
