@@ -87,7 +87,7 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
     label: 'Pricing & Tariffs',
     labelBn: 'মূল্য নির্ধারণ ও ট্যারিফ',
     description: 'Price lists, customer rates, floor margins and calculation formulas',
-    actions: ['view', 'edit', 'manage'],
+    actions: ['view', 'create', 'edit', 'delete', 'approve', 'manage', 'export'],
     defaultScope: 'company',
   },
   customers: {

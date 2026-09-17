@@ -738,7 +738,14 @@ export class CustomerRepository {
       // 1. Get all active products
       const products = await ProductRepository.getProducts(companyId, true)
 
-      // 2. Get configured custom rates
+      // 2. Get customer record & configured custom rates
+      const customer = await this.getCustomerById(customerId, companyId)
+      const customerType = customer?.customer_type || customer?.customer_category || 'retail'
+
+      const pricingRules = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRICING_RULES) || []).filter(
+        (r) => (!r.company_id || r.company_id === companyId) && r.customer_type === customerType && r.status === 'active'
+      )
+
       const customRates = await this.getCustomerRates(companyId, customerId)
       const customRateMap = new Map<string, CustomerRateRecord>()
       for (const cr of customRates) {
@@ -812,11 +819,17 @@ export class CustomerRepository {
         const lastInvoiceRate = lastInvEntry ? lastInvEntry.rate : null
         const defaultRate = Number(prod.selling_price) || 0
 
+        const typeRule = pricingRules.find((r) => r.product_id === prod.id || (!r.product_id && r.category === prod.category))
+        const typeRulePrice = typeRule && typeRule.calculated_price !== undefined ? Number(typeRule.calculated_price) : null
+
         let effectiveRate = defaultRate
         let source: 'custom' | 'last_invoice' | 'default' = 'default'
 
         if (customRate !== null && customRate !== undefined) {
           effectiveRate = customRate
+          source = 'custom'
+        } else if (typeRulePrice !== null && typeRulePrice !== undefined) {
+          effectiveRate = typeRulePrice
           source = 'custom'
         } else if (lastInvoiceRate !== null && lastInvoiceRate !== undefined) {
           effectiveRate = lastInvoiceRate

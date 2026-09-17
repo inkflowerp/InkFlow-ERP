@@ -112,6 +112,14 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           permission: { action: 'view', resource: 'quotations' },
         },
         {
+          key: 'pricing',
+          title: 'Pricing & Tariffs',
+          titleBn: 'মূল্য নির্ধারণ ও ট্যারিফ',
+          href: `/${tenantSlug}/pricing`,
+          icon: 'Tag',
+          permission: { action: 'view', resource: 'pricing' },
+        },
+        {
           key: 'design',
           title: 'Design',
           titleBn: 'ডিজাইন',

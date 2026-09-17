@@ -542,9 +542,9 @@ export default function ProductDetailPage() {
             </Button>
 
             <Link href={`/${slug}/pricing`}>
-              <Button size="sm" variant="outline" className="text-xs">
-                <Calculator className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
-                Live Estimator
+              <Button size="sm" variant="outline" className="text-xs font-bold">
+                <Tag className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
+                Customer Pricing
               </Button>
             </Link>
 

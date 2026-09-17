@@ -1,25 +1,41 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
-import Link from 'next/link'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import {
-  Calculator,
+  Tag,
+  Plus,
   Layers,
-  Sparkles,
-  Scissors,
-  Truck,
-  Wrench,
-  Percent,
+  Copy,
+  Sliders,
+  Search,
+  Filter,
   CheckCircle2,
   AlertTriangle,
-  Copy,
-  Receipt,
-  RotateCcw,
-  ShieldAlert,
-  FileSpreadsheet,
-  Sliders,
+  RefreshCw,
+  Edit2,
+  Trash2,
+  Eye,
+  ArrowRight,
+  TrendingDown,
+  TrendingUp,
+  Percent,
+  Calculator,
+  Calendar,
+  Sparkles,
+  ShieldCheck,
+  Package,
+  Boxes,
+  HelpCircle,
+  Table as TableIcon,
+  Grid as GridIcon,
+  Check,
+  X,
+  ChevronRight,
+  Briefcase,
+  Users,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,692 +45,1595 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
-import { calculateJobPricing } from '@/lib/pricing-engine'
-import { PricingCalculationInput, PriceOverrideRecord, ProductRecord } from '@/types/product.types'
+import {
+  getPricingRulesAction,
+  getPricingSummaryAction,
+  getPricingMatrixAction,
+  savePricingRuleAction,
+  deactivatePricingRuleAction,
+  duplicatePricingRuleAction,
+  bulkPricingAction,
+  copyPricingAction,
+} from '@/actions/pricing.actions'
 import { getProductsAction } from '@/actions/product.actions'
+import type {
+  PricingCustomerType,
+  PricingRuleRecord,
+  PricingRuleInput,
+  PricingRuleType,
+  PricingMethod,
+  RoundingRule,
+  MarginBasis,
+  PricingSummaryStats,
+  PricingMatrixRow,
+  BulkPricingPayload,
+  CopyPricingPayload,
+  PricingTierRange,
+} from '@/types/pricing.types'
+import { CUSTOMER_TYPES_META } from '@/types/pricing.types'
+import type { ProductRecord } from '@/types/product.types'
+import { calculatePricingRulePrice } from '@/lib/pricing/pricing-engine'
 import { formatBDT } from '@/lib/formatters'
 
-const DEFAULT_PRODUCT_TEMPLATE: ProductRecord = {
-  id: 'custom-print',
-  company_id: 'default',
-  name: 'Custom Print Job',
-  name_bn: 'কাস্টম প্রিন্টিং',
-  sku: 'CUSTOM-PRINT',
-  category: 'custom_job',
-  product_type: 'custom_job',
-  unit: 'sft',
-  material_spec: 'Standard Print Media',
-  description: 'Dynamic dimensional pricing calculation template',
-  base_cost: 30,
-  selling_price: 50,
-  min_price: 35,
-  tax_rate: 7.5,
-  pricing_formula: {
-    model: 'dimensional_area',
-    material_rate: 18,
-    print_rate: 12,
-    cutting_rate: 5,
-    lamination_rate: 8,
-    finishing_rate: 3,
-    fabrication_rate: 15,
-    labor_rate: 5,
-    installation_rate: 10,
-    transport_rate: 500,
-    default_margin_percent: 40.0,
-  },
-  is_active: true,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-}
+const CUSTOMER_TYPE_TABS: Array<{ id: PricingCustomerType | 'all'; label: string; labelBn: string }> = [
+  { id: 'all', label: 'All Customer Types', labelBn: 'সকল কাস্টমার ধরন' },
+  { id: 'retail', label: 'Retail (খুচরা)', labelBn: 'খুচরা' },
+  { id: 'reseller', label: 'Reseller (রিসেলার)', labelBn: 'রিসেলার' },
+  { id: 'corporate', label: 'Corporate (কর্পোরেট)', labelBn: 'কর্পোরেট' },
+  { id: 'agency', label: 'Agency (এজেন্সি)', labelBn: 'এজেন্সি' },
+  { id: 'government', label: 'Government (সরকারি)', labelBn: 'সরকারি' },
+  { id: 'regular', label: 'Regular (নিয়মিত)', labelBn: 'নিয়মিত' },
+]
 
-export default function PricingCalculatorPage() {
+export default function PricingManagementPage() {
   const { company } = useTenant()
+  const { can, isOwner } = usePermissions()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
   const companyId = company?.id
 
+  const canEdit = isOwner || can('edit', 'pricing') || can('create', 'pricing') || can('manage', 'pricing')
+
+  // State
+  const [activeTab, setActiveTab] = useState<PricingCustomerType | 'all'>('all')
+  const [viewMode, setViewMode] = useState<'table' | 'matrix'>('table')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+
+  const [rules, setRules] = useState<PricingRuleRecord[]>([])
   const [products, setProducts] = useState<ProductRecord[]>([])
+  const [summaryStats, setSummaryStats] = useState<PricingSummaryStats | null>(null)
+  const [matrixData, setMatrixData] = useState<PricingMatrixRow[]>([])
 
-  React.useEffect(() => {
-    let isMounted = true
-    async function fetchCatalog() {
-      try {
-        const res = await getProductsAction(companyId, true)
-        if (isMounted && res.success && res.data && res.data.length > 0) {
-          setProducts(res.data)
-        }
-      } catch {}
+  const [isLoading, setIsLoading] = useState(true)
+  const [isPending, setIsPending] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  // Modals state
+  const [isRuleModalOpen, setIsRuleModalOpen] = useState(false)
+  const [editingRule, setEditingRule] = useState<PricingRuleRecord | null>(null)
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false)
+
+  // Rule Form state
+  const [formProductId, setFormProductId] = useState<string>('')
+  const [formCustomerType, setFormCustomerType] = useState<PricingCustomerType>('retail')
+  const [formRuleType, setFormRuleType] = useState<PricingRuleType>('percentage_adjustment')
+  const [formAdjustmentType, setFormAdjustmentType] = useState<'percentage' | 'fixed' | 'none'>('percentage')
+  const [formAdjustmentValue, setFormAdjustmentValue] = useState<number>(-10)
+  const [formFixedPrice, setFormFixedPrice] = useState<number>(0)
+  const [formRoundingRule, setFormRoundingRule] = useState<RoundingRule>('none')
+  const [formMinBillableQty, setFormMinBillableQty] = useState<number>(0)
+  const [formMinCharge, setFormMinCharge] = useState<number>(0)
+  const [formEffectiveFrom, setFormEffectiveFrom] = useState<string>('')
+  const [formEffectiveUntil, setFormEffectiveUntil] = useState<string>('')
+  const [formNotes, setFormNotes] = useState<string>('')
+  const [formStatus, setFormStatus] = useState<'active' | 'draft' | 'inactive'>('active')
+
+  // Bulk Form state
+  const [bulkCustomerType, setBulkCustomerType] = useState<PricingCustomerType>('reseller')
+  const [bulkProductIds, setBulkProductIds] = useState<string[]>([])
+  const [bulkAdjustmentType, setBulkAdjustmentType] = useState<'percentage' | 'fixed' | 'fixed_price'>('percentage')
+  const [bulkAdjustmentValue, setBulkAdjustmentValue] = useState<number>(-15)
+  const [bulkRounding, setBulkRounding] = useState<RoundingRule>('none')
+  const [bulkOverrideExisting, setBulkOverrideExisting] = useState(true)
+
+  // Copy Form state
+  const [copySourceType, setCopySourceType] = useState<PricingCustomerType>('retail')
+  const [copyTargetType, setCopyTargetType] = useState<PricingCustomerType>('regular')
+  const [copyModifierPercent, setCopyModifierPercent] = useState<number>(-5)
+  const [copyOverrideExisting, setCopyOverrideExisting] = useState(true)
+
+  const showToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
+    setNotification({ message: msg, type })
+    setTimeout(() => setNotification(null), 4000)
+  }, [])
+
+  // Load Data
+  const loadData = useCallback(async () => {
+    if (!companyId) return
+    setIsLoading(true)
+    setErrorMessage(null)
+
+    try {
+      const [rulesRes, summaryRes, matrixRes, prodRes] = await Promise.all([
+        getPricingRulesAction({ customerType: activeTab === 'all' ? undefined : activeTab }, companyId),
+        getPricingSummaryAction(companyId),
+        getPricingMatrixAction({}, companyId),
+        getProductsAction(companyId, true),
+      ])
+
+      if (rulesRes.success && rulesRes.data) {
+        setRules(rulesRes.data)
+      }
+      if (summaryRes.success && summaryRes.data) {
+        setSummaryStats(summaryRes.data)
+      }
+      if (matrixRes.success && matrixRes.data) {
+        setMatrixData(matrixRes.data)
+      }
+      if (prodRes.success && prodRes.data) {
+        setProducts(prodRes.data)
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to load pricing information.')
+    } finally {
+      setIsLoading(false)
     }
-    fetchCatalog()
-    return () => {
-      isMounted = false
-    }
-  }, [companyId])
+  }, [companyId, activeTab])
 
-  // Selected preset product
-  const [selectedProductId, setSelectedProductId] = useState<string>('')
-  const activeProduct: ProductRecord =
-    (products || []).find((p) => p.id === selectedProductId) ||
-    products?.[0] ||
-    DEFAULT_PRODUCT_TEMPLATE
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
-  // Dimensional Inputs
-  const [width, setWidth] = useState<number>(0)
-  const [height, setHeight] = useState<number>(0)
-  const [dimensionUnit, setDimensionUnit] = useState<'ft' | 'inch' | 'm'>('ft')
-  const [quantity, setQuantity] = useState<number>(1)
+  // Categories list for filter
+  const categories = useMemo(() => {
+    const set = new Set<string>()
+    products.forEach((p) => {
+      if (p.category) set.add(p.category)
+    })
+    return Array.from(set)
+  }, [products])
 
-  // Component Toggles
-  const [includeLamination, setIncludeLamination] = useState(false)
-  const [includeCutting, setIncludeCutting] = useState(false)
-  const [includeFinishing, setIncludeFinishing] = useState(true)
-  const [includeFabrication, setIncludeFabrication] = useState(false)
-  const [includeInstallation, setIncludeInstallation] = useState(false)
-  const [includeTransport, setIncludeTransport] = useState(false)
+  // Filtered Rules
+  const filteredRules = useMemo(() => {
+    return rules.filter((r) => {
+      if (activeTab !== 'all' && r.customer_type !== activeTab) return false
+      if (categoryFilter !== 'all' && r.category !== categoryFilter) return false
+      if (statusFilter !== 'all' && r.status !== statusFilter) return false
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase()
+        const matchName = r.product_name?.toLowerCase().includes(q)
+        const matchSku = r.product_sku?.toLowerCase().includes(q)
+        const matchCat = r.category?.toLowerCase().includes(q)
+        const matchType = r.customer_type.toLowerCase().includes(q)
+        if (!matchName && !matchSku && !matchCat && !matchType) return false
+      }
+      return true
+    })
+  }, [rules, activeTab, categoryFilter, statusFilter, searchQuery])
 
-  // Margin & Discount
-  const [discountPercent, setDiscountPercent] = useState<number>(0)
-  const [discountFlat, setDiscountFlat] = useState<number>(0)
-  const [vatRate, setVatRate] = useState<number>(7.5)
+  // Selected product in Add/Edit modal
+  const selectedProduct = useMemo(() => {
+    return products.find((p) => p.id === formProductId) || null
+  }, [products, formProductId])
 
-  // Custom Price Override Modal
-  const [isOverrideOpen, setIsOverrideOpen] = useState(false)
-  const [overridePrice, setOverridePrice] = useState<number>(0)
-  const [overrideReason, setOverrideReason] = useState<string>('')
-  const [appliedOverride, setAppliedOverride] = useState<PriceOverrideRecord | null>(null)
-  const [notification, setNotification] = useState<string | null>(null)
+  // Live preview calculation in Add/Edit modal
+  const livePreview = useMemo(() => {
+    const basePrice = selectedProduct ? Number(selectedProduct.selling_price) || 0 : 0
+    const baseCost = selectedProduct ? Number(selectedProduct.base_cost) || 0 : 0
 
-  // Live Formula Calculation via Safe Pricing Engine
-  const pricingResult = useMemo(() => {
-    const formula = activeProduct?.pricing_formula || {
-      model: 'dimensional_area',
-      material_rate: (activeProduct?.base_cost || 30) * 0.6,
-      print_rate: (activeProduct?.base_cost || 30) * 0.4,
-      default_margin_percent: 45.0,
-    }
+    return calculatePricingRulePrice({
+      ruleType: formRuleType,
+      basePrice,
+      baseCost,
+      adjustmentType: formAdjustmentType,
+      adjustmentValue: formAdjustmentValue,
+      fixedPrice: formFixedPrice,
+      roundingRule: formRoundingRule,
+    })
+  }, [selectedProduct, formRuleType, formAdjustmentType, formAdjustmentValue, formFixedPrice, formRoundingRule])
 
-    const input: PricingCalculationInput = {
-      width,
-      height,
-      dimensionUnit,
-      quantity,
-      includeLamination,
-      includeCutting,
-      includeFinishing,
-      includeFabrication,
-      includeInstallation,
-      includeTransport,
-      discountPercent,
-      discountFlat,
-      vatRatePercent: vatRate,
-    }
-
-    return calculateJobPricing(formula, input, activeProduct?.min_price || 0)
-  }, [
-    activeProduct,
-    width,
-    height,
-    dimensionUnit,
-    quantity,
-    includeLamination,
-    includeCutting,
-    includeFinishing,
-    includeFabrication,
-    includeInstallation,
-    includeTransport,
-    discountPercent,
-    discountFlat,
-    vatRate,
-  ])
-
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+  // Reset Add/Edit Form
+  const handleOpenAddModal = (initialProductId?: string, initialCustomerType?: PricingCustomerType) => {
+    setEditingRule(null)
+    setFormProductId(initialProductId || products[0]?.id || '')
+    setFormCustomerType(initialCustomerType || (activeTab !== 'all' ? activeTab : 'retail'))
+    setFormRuleType('percentage_adjustment')
+    setFormAdjustmentType('percentage')
+    setFormAdjustmentValue(-10)
+    setFormFixedPrice(0)
+    setFormRoundingRule('none')
+    setFormMinBillableQty(0)
+    setFormMinCharge(0)
+    setFormEffectiveFrom('')
+    setFormEffectiveUntil('')
+    setFormNotes('')
+    setFormStatus('active')
+    setIsRuleModalOpen(true)
   }
 
-  const handleApplyOverride = (e: React.FormEvent) => {
+  const handleOpenEditModal = (rule: PricingRuleRecord) => {
+    setEditingRule(rule)
+    setFormProductId(rule.product_id || '')
+    setFormCustomerType(rule.customer_type)
+    setFormRuleType(rule.pricing_rule_type)
+    setFormAdjustmentType(rule.adjustment_type || 'none')
+    setFormAdjustmentValue(rule.adjustment_value || 0)
+    setFormFixedPrice(rule.fixed_price || 0)
+    setFormRoundingRule(rule.rounding_rule || 'none')
+    setFormMinBillableQty(Number(rule.minimum_billable_quantity) || 0)
+    setFormMinCharge(Number(rule.minimum_charge) || 0)
+    setFormEffectiveFrom(rule.effective_from ? rule.effective_from.split('T')[0] : '')
+    setFormEffectiveUntil(rule.effective_until ? rule.effective_until.split('T')[0] : '')
+    setFormNotes(rule.notes || '')
+    setFormStatus((rule.status as any) || 'active')
+    setIsRuleModalOpen(true)
+  }
+
+  // Handle Save Rule
+  const handleSaveRule = async (e: React.FormEvent) => {
     e.preventDefault()
-    const record: PriceOverrideRecord = {
-      id: `po-${Date.now()}`,
-      company_id: company?.id || 'c-01',
-      product_id: activeProduct?.id || 'custom-print',
-      original_price: pricingResult.grandTotalBDT,
-      override_price: Number(overridePrice),
-      reason: overrideReason,
-      authorized_by_name: 'Current Authenticated User',
-      created_at: new Date().toISOString(),
+    if (!formProductId) {
+      showToast('Please select a product or service.', 'error')
+      return
     }
-    setAppliedOverride(record)
-    setIsOverrideOpen(false)
-    showNotification(`Custom price override of ৳ ${record.override_price} applied and logged to audit table.`)
+
+    setIsPending(true)
+    try {
+      const payload: PricingRuleInput & { id?: string } = {
+        id: editingRule ? editingRule.id : undefined,
+        product_id: formProductId,
+        category: selectedProduct?.category || 'general',
+        customer_type: formCustomerType,
+        pricing_rule_type: formRuleType,
+        pricing_method: (selectedProduct?.pricing_method || 'per_area') as PricingMethod,
+        base_price: Number(selectedProduct?.selling_price) || 0,
+        adjustment_type: formAdjustmentType,
+        adjustment_value: formAdjustmentValue,
+        fixed_price: formRuleType === 'fixed_price' ? formFixedPrice : null,
+        calculated_price: livePreview.calculatedPrice,
+        rounding_rule: formRoundingRule,
+        minimum_billable_quantity: formMinBillableQty,
+        minimum_charge: formMinCharge,
+        effective_from: formEffectiveFrom ? new Date(formEffectiveFrom).toISOString() : null,
+        effective_until: formEffectiveUntil ? new Date(formEffectiveUntil).toISOString() : null,
+        status: formStatus,
+        notes: formNotes,
+      }
+
+      const res = await savePricingRuleAction(payload, companyId)
+      if (res.success) {
+        showToast(editingRule ? 'Pricing rule updated successfully.' : 'Pricing rule created successfully.')
+        setIsRuleModalOpen(false)
+        loadData()
+      } else {
+        showToast(res.error || 'Failed to save pricing rule.', 'error')
+      }
+    } catch (err: any) {
+      showToast(err.message || 'An error occurred.', 'error')
+    } finally {
+      setIsPending(false)
+    }
   }
 
-  const handleCopyBreakdown = () => {
-    const text = `PrintERP Price Estimation
-Item: ${activeProduct?.name || 'Custom Print Job'}
-Dimensions: ${width} × ${height} ${dimensionUnit} (${pricingResult.areaSft} sft, Qty: ${quantity})
-Total Base Cost: ৳ ${pricingResult.totalBaseCost}
-Gross Profit (${pricingResult.grossProfitMarginPercent}%): ৳ ${pricingResult.grossProfitAmount}
-Subtotal: ৳ ${pricingResult.subtotalAfterDiscount}
-VAT (${pricingResult.vatRatePercent}%): ৳ ${pricingResult.vatAmount}
-Final Price: ৳ ${appliedOverride ? appliedOverride.override_price : pricingResult.grandTotalBDT}`
+  // Handle Deactivate Rule
+  const handleDeactivateRule = async (rule: PricingRuleRecord) => {
+    if (!confirm(`Are you sure you want to deactivate this pricing rule for ${rule.product_name} (${rule.customer_type})?`)) {
+      return
+    }
 
-    navigator.clipboard.writeText(text)
-    showNotification('Complete pricing breakdown copied to clipboard!')
+    setIsPending(true)
+    try {
+      const res = await deactivatePricingRuleAction(rule.id, companyId)
+      if (res.success) {
+        showToast('Pricing rule deactivated successfully.')
+        loadData()
+      } else {
+        showToast(res.error || 'Failed to deactivate rule.', 'error')
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error occurred.', 'error')
+    } finally {
+      setIsPending(false)
+    }
   }
 
-  const finalPayable = appliedOverride ? appliedOverride.override_price : pricingResult.grandTotalBDT
+  // Handle Duplicate Rule
+  const handleDuplicateRule = async (rule: PricingRuleRecord, targetType: PricingCustomerType) => {
+    setIsPending(true)
+    try {
+      const res = await duplicatePricingRuleAction(rule.id, targetType, companyId)
+      if (res.success) {
+        showToast(`Rule duplicated to ${targetType} successfully.`)
+        loadData()
+      } else {
+        showToast(res.error || 'Failed to duplicate rule.', 'error')
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error duplicating rule.', 'error')
+    } finally {
+      setIsPending(false)
+    }
+  }
+
+  // Handle Bulk Pricing Submit
+  const handleBulkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (bulkProductIds.length === 0) {
+      showToast('Please select at least one product.', 'error')
+      return
+    }
+
+    setIsPending(true)
+    try {
+      const payload: BulkPricingPayload = {
+        customer_type: bulkCustomerType,
+        product_ids: bulkProductIds,
+        adjustment_type: bulkAdjustmentType,
+        adjustment_value: bulkAdjustmentValue,
+        rounding_rule: bulkRounding,
+        override_existing: bulkOverrideExisting,
+      }
+
+      const res = await bulkPricingAction(payload, companyId)
+      if (res.success && res.data) {
+        showToast(`Bulk pricing applied: ${res.data.createdCount} created, ${res.data.updatedCount} updated.`)
+        setIsBulkModalOpen(false)
+        loadData()
+      } else {
+        showToast(res.error || 'Failed to apply bulk pricing.', 'error')
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error applying bulk pricing.', 'error')
+    } finally {
+      setIsPending(false)
+    }
+  }
+
+  // Handle Copy Pricing Submit
+  const handleCopySubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (copySourceType === copyTargetType) {
+      showToast('Source and target customer types must be different.', 'error')
+      return
+    }
+
+    setIsPending(true)
+    try {
+      const payload: CopyPricingPayload = {
+        source_customer_type: copySourceType,
+        target_customer_type: copyTargetType,
+        adjustment_percent: copyModifierPercent,
+        override_existing: copyOverrideExisting,
+      }
+
+      const res = await copyPricingAction(payload, companyId)
+      if (res.success && res.data) {
+        showToast(`Copied ${res.data.copiedCount} rules to ${copyTargetType} (${res.data.overwrittenCount} overwritten).`)
+        setIsCopyModalOpen(false)
+        loadData()
+      } else {
+        showToast(res.error || 'Failed to copy pricing.', 'error')
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Error copying pricing.', 'error')
+    } finally {
+      setIsPending(false)
+    }
+  }
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      {/* Header */}
+    <div className="space-y-6 pb-12">
+      {/* Toast Notification */}
+      {notification && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold animate-in fade-in slide-in-from-bottom-3 duration-200 ${
+            notification.type === 'success'
+              ? 'bg-emerald-600 text-white border-emerald-700'
+              : 'bg-rose-600 text-white border-rose-700'
+          }`}
+        >
+          {notification.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+          <span>{notification.message}</span>
+          <button onClick={() => setNotification(null)} className="ml-2 hover:opacity-75">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Page Header */}
       <PageHeader
-        titleEn="Live Dimensional Pricing Engine"
-        titleBn="লাইভ পরিমাপ ও দর নির্ধারণ ইঞ্জিন"
-        descriptionEn="Calculate accurate square-foot rates, cutting, lamination, fabrication, labor, and NBR VAT in real-time."
-        descriptionBn="স্কয়ার ফিট রেট, কাটিং, লেমিনেশন, ফেব্রিকেশন, লেবার মজুরি এবং এনবিআর ভ্যাট রিয়েল-টাইমে হিসাব করুন।"
-        icon={Calculator}
-        iconColor="text-blue-600"
+        titleEn="Pricing & Tariffs"
+        titleBn="মূল্য নির্ধারণ ও ট্যারিফ"
+        descriptionEn="Manage customer-specific selling prices, margins, quantity tiers, and commercial tariffs."
+        descriptionBn="গ্রাহকের ধরন অনুযায়ী বিক্রয় মূল্য, মার্জিন, কোয়ান্টিটি টিয়ার এবং বাণিজ্যিক রেট নির্ধারণ করুন।"
+        icon={Tag}
+        badge={
+          <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+            Customer-Type Engine
+          </Badge>
+        }
         actions={
-          <div className="flex items-center gap-2.5">
-            <Button variant="outline" size="sm" onClick={handleCopyBreakdown} className="text-xs bangla-text">
-              <Copy className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('Copy Breakdown', 'হিসাব কপি')}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setCopySourceType('retail')
+                setCopyTargetType('regular')
+                setCopyModifierPercent(-5)
+                setIsCopyModalOpen(true)
+              }}
+              disabled={!canEdit}
+              className="text-xs h-9 rounded-xl font-semibold border-slate-300 dark:border-slate-700"
+            >
+              <Copy className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+              Copy Pricing
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setBulkCustomerType('reseller')
+                setBulkProductIds(products.map((p) => p.id))
+                setBulkAdjustmentValue(-15)
+                setIsBulkModalOpen(true)
+              }}
+              disabled={!canEdit}
+              className="text-xs h-9 rounded-xl font-semibold border-slate-300 dark:border-slate-700"
+            >
+              <Sliders className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+              Bulk Pricing
             </Button>
 
             <Button
               size="sm"
-              onClick={() => {
-                setOverridePrice(pricingResult.grandTotalBDT)
-                setIsOverrideOpen(true)
-              }}
-              className="bg-purple-600 hover:bg-purple-700 text-xs text-white bangla-text"
+              onClick={() => handleOpenAddModal()}
+              disabled={!canEdit}
+              className="text-xs h-9 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
             >
-              <ShieldAlert className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('Price Override', 'বিশেষ মূল্য ছাড়')}
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add Pricing Rule
             </Button>
           </div>
         }
       />
 
-      {/* Notification */}
-      {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span>{notification}</span>
-        </div>
-      )}
-
-      {/* Main Grid: Inputs on Left (7 cols), Live Price Waterfall on Right (5 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* LEFT PANEL: CONFIGURATION INPUTS */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Preset Product Selector */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Product / Service Template
-              </Label>
-              <Link href={`/${slug}/products`} className="text-xs text-blue-600 hover:underline">
-                Manage Catalog →
-              </Link>
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs bg-white/70 dark:bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500">Total Pricing Rules</span>
+            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+              <Tag className="h-4 w-4" />
             </div>
+          </div>
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white font-mono">
+            {summaryStats?.totalRulesCount ?? rules.length}
+          </div>
+          <span className="text-[10px] text-slate-400">Across all customer categories</span>
+        </Card>
 
-            {products && products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {products.slice(0, 6).map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => {
-                      setSelectedProductId(p.id)
-                      setAppliedOverride(null)
-                      // adjust defaults
-                      if (p.category === 'vinyl_sticker') {
-                        setIncludeCutting(true)
-                        setIncludeLamination(true)
-                        setIncludeFinishing(false)
-                      } else if (p.category === 'signage_3d') {
-                        setIncludeFabrication(true)
-                        setIncludeInstallation(true)
-                      }
-                    }}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      activeProduct.id === p.id
-                        ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 dark:border-blue-500 ring-2 ring-blue-600/20'
-                        : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="font-bold text-xs text-slate-900 dark:text-white">{p.name}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">{p.material_spec || 'Standard Media'}</div>
-                    <div className="text-[11px] font-mono font-semibold text-blue-600 dark:text-blue-400 mt-1">
-                      Base: ৳{p.base_cost} • Sell: ৳{p.selling_price}/{p.unit}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="p-3.5 rounded-lg border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Custom SFT Pricing Mode Active
-                  </div>
-                  <div className="text-[11px] text-slate-500">
-                    Live dynamic square footage, labor, finishing, and NBR VAT calculator.
-                  </div>
-                </div>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px]">
-                  Generic Preset
-                </Badge>
-              </div>
+        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs bg-white/70 dark:bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500">Custom Priced Products</span>
+            <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+              <Package className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+            {summaryStats?.productsWithCustomPricingCount ?? 0}
+          </div>
+          <span className="text-[10px] text-slate-400">Physical & ready items</span>
+        </Card>
+
+        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs bg-white/70 dark:bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500">Custom Priced Services</span>
+            <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+              <Layers className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-black text-purple-600 dark:text-purple-400 font-mono">
+            {summaryStats?.servicesWithCustomPricingCount ?? 0}
+          </div>
+          <span className="text-[10px] text-slate-400">Printing, fabrication & install</span>
+        </Card>
+
+        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs bg-white/70 dark:bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500">Configured Types</span>
+            <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+              <Users className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">
+            {summaryStats?.configuredCustomerTypesCount ?? 0} <span className="text-xs font-normal text-slate-400">/ 6</span>
+          </div>
+          <span className="text-[10px] text-slate-400">Retail, Reseller, Corporate...</span>
+        </Card>
+
+        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs bg-white/70 dark:bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500">Using Default Price</span>
+            <div className="p-1.5 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              <Boxes className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-black text-slate-700 dark:text-slate-300 font-mono">
+            {summaryStats?.productsUsingDefaultCount ?? 0}
+          </div>
+          <span className="text-[10px] text-slate-400">Fallback to standard catalog rate</span>
+        </Card>
+      </div>
+
+      {/* Customer Type Tabs Bar */}
+      <div className="border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {CUSTOMER_TYPE_TABS.map((tab) => {
+            const isActive = activeTab === tab.id
+            const count = tab.id === 'all'
+              ? rules.length
+              : rules.filter((r) => r.customer_type === tab.id).length
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Action & Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex flex-1 items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search product, SKU, or rule..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 text-xs h-9 rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+            />
+          </div>
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium text-slate-700 dark:text-slate-300"
+          >
+            <option value="all">All Categories</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c.replace(/_/g, ' ').toUpperCase()}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium text-slate-700 dark:text-slate-300"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active Only</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="expired">Expired</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        {/* View Switcher */}
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+          <button
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              viewMode === 'table'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            <TableIcon className="h-3.5 w-3.5" />
+            <span>Rules Table</span>
+          </button>
+          <button
+            onClick={() => setViewMode('matrix')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              viewMode === 'matrix'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            <GridIcon className="h-3.5 w-3.5" />
+            <span>Pricing Matrix</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content View */}
+      {isLoading ? (
+        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 p-12 text-center bg-white dark:bg-slate-900">
+          <RefreshCw className="h-8 w-8 mx-auto text-blue-600 animate-spin mb-3" />
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Loading pricing rules...</p>
+        </Card>
+      ) : errorMessage ? (
+        <Card className="rounded-2xl border-rose-200 dark:border-rose-900 p-8 text-center bg-rose-50/50 dark:bg-rose-950/20">
+          <AlertTriangle className="h-8 w-8 mx-auto text-rose-600 mb-2" />
+          <h3 className="text-base font-bold text-rose-900 dark:text-rose-200">Unable to load pricing rules</h3>
+          <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">{errorMessage}</p>
+          <Button size="sm" onClick={loadData} className="mt-4 text-xs bg-rose-600 hover:bg-rose-700 text-white">
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Retry
+          </Button>
+        </Card>
+      ) : viewMode === 'table' ? (
+        /* TABLE VIEW */
+        filteredRules.length === 0 ? (
+          <Card className="rounded-2xl border-dashed border-2 border-slate-200 dark:border-slate-800 p-12 text-center bg-white dark:bg-slate-900">
+            <Tag className="h-10 w-10 mx-auto text-slate-400 mb-3" />
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No pricing rules configured yet</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              Configure specialized rates, quantity tiers, and margins for{' '}
+              {activeTab === 'all' ? 'different customer types' : `${activeTab} customers`}.
+            </p>
+            {canEdit && (
+              <Button
+                size="sm"
+                onClick={() => handleOpenAddModal(undefined, activeTab !== 'all' ? activeTab : 'retail')}
+                className="mt-4 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded-xl shadow-xs"
+              >
+                <Plus className="h-4 w-4 mr-1.5" />
+                Add Pricing Rule
+              </Button>
             )}
           </Card>
+        ) : (
+          <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs bg-white dark:bg-slate-900 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                    <th className="py-3 px-4">Product / Service</th>
+                    <th className="py-3 px-3">Category</th>
+                    <th className="py-3 px-3">Customer Type</th>
+                    <th className="py-3 px-3 text-right">Base Price</th>
+                    <th className="py-3 px-3">Strategy / Adjustment</th>
+                    <th className="py-3 px-3 text-right">Final Price</th>
+                    <th className="py-3 px-3 text-center">Min Order / Charge</th>
+                    <th className="py-3 px-3">Effective</th>
+                    <th className="py-3 px-3 text-center">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                  {filteredRules.map((rule) => {
+                    const meta = CUSTOMER_TYPES_META[rule.customer_type] || {
+                      label: rule.customer_type,
+                      badgeClass: 'bg-slate-100 text-slate-700',
+                    }
 
-          {/* Measurements: Width, Height, Unit, Quantity */}
-          <Card className="p-4 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                1. Job Dimensions & Run Quantity
+                    return (
+                      <tr key={rule.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        {/* Product */}
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-slate-900 dark:text-white">
+                            {rule.product_name || 'General Category Rule'}
+                          </div>
+                          <div className="text-[10px] font-mono text-slate-400">
+                            {rule.product_sku ? `SKU: ${rule.product_sku}` : 'All products in category'}
+                          </div>
+                        </td>
+
+                        {/* Category */}
+                        <td className="py-3 px-3">
+                          <Badge variant="outline" className="text-[10px] uppercase font-mono py-0 px-1.5 bg-slate-50 dark:bg-slate-800">
+                            {rule.category || 'General'}
+                          </Badge>
+                        </td>
+
+                        {/* Customer Type */}
+                        <td className="py-3 px-3">
+                          <Badge className={`text-[10px] font-bold border py-0.5 px-2 ${meta.badgeClass}`}>
+                            {meta.label}
+                          </Badge>
+                        </td>
+
+                        {/* Base Price */}
+                        <td className="py-3 px-3 text-right font-mono text-slate-500">
+                          ৳{rule.base_price}
+                        </td>
+
+                        {/* Strategy */}
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-1.5">
+                            {rule.pricing_rule_type === 'percentage_adjustment' && (
+                              <Badge variant="outline" className={`text-[10px] font-bold font-mono py-0 px-1.5 ${
+                                (rule.adjustment_value || 0) < 0
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200'
+                              }`}>
+                                {(rule.adjustment_value || 0) > 0 ? '+' : ''}
+                                {rule.adjustment_value}%
+                              </Badge>
+                            )}
+                            {rule.pricing_rule_type === 'fixed_adjustment' && (
+                              <Badge variant="outline" className="text-[10px] font-bold font-mono py-0 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+                                {(rule.adjustment_value || 0) > 0 ? '+' : ''}৳{rule.adjustment_value}
+                              </Badge>
+                            )}
+                            {rule.pricing_rule_type === 'fixed_price' && (
+                              <Badge variant="outline" className="text-[10px] font-bold py-0 px-1.5 bg-purple-50 text-purple-700 border-purple-200">
+                                Fixed Rate
+                              </Badge>
+                            )}
+                            {rule.pricing_rule_type === 'tiered' && (
+                              <Badge variant="outline" className="text-[10px] font-bold py-0 px-1.5 bg-amber-50 text-amber-700 border-amber-200">
+                                {rule.tier_ranges?.length || 0} Tiers
+                              </Badge>
+                            )}
+                            {rule.pricing_rule_type === 'formula' && (
+                              <Badge variant="outline" className="text-[10px] font-bold py-0 px-1.5 bg-indigo-50 text-indigo-700 border-indigo-200">
+                                Margin Formula
+                              </Badge>
+                            )}
+                            <span className="text-[11px] text-slate-500 capitalize">
+                              {rule.pricing_method.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Final Price */}
+                        <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white text-sm">
+                          <span className="text-blue-600 dark:text-blue-400">৳{rule.calculated_price}</span>
+                        </td>
+
+                        {/* Min Order / Charge */}
+                        <td className="py-3 px-3 text-center text-[11px] text-slate-500 font-mono">
+                          {rule.minimum_billable_quantity ? `${rule.minimum_billable_quantity} Qty` : '—'}
+                          {rule.minimum_charge ? ` / ৳${rule.minimum_charge} min` : ''}
+                        </td>
+
+                        {/* Effective */}
+                        <td className="py-3 px-3 text-[10px] text-slate-500">
+                          {rule.effective_from ? rule.effective_from.split('T')[0] : 'Always'}
+                          {rule.effective_until ? ` → ${rule.effective_until.split('T')[0]}` : ''}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3 px-3 text-center">
+                          <Badge
+                            variant="outline"
+                            className={`text-[9px] uppercase font-bold py-0.5 px-1.5 ${
+                              rule.status === 'active'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                : rule.status === 'scheduled'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : rule.status === 'expired'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : 'bg-slate-100 text-slate-600 border-slate-200'
+                            }`}
+                          >
+                            {rule.status}
+                          </Badge>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {canEdit && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleOpenEditModal(rule)}
+                                  className="h-7 w-7 p-0 text-slate-500 hover:text-blue-600"
+                                  title="Edit Pricing Rule"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeactivateRule(rule)}
+                                  className="h-7 w-7 p-0 text-slate-500 hover:text-rose-600"
+                                  title="Deactivate Rule"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )
+      ) : (
+        /* MATRIX VIEW */
+        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                Customer-Type Multi-Tariff Comparison Matrix
               </span>
-              <span className="text-xs font-mono font-bold text-blue-600">
-                Total Area: {pricingResult.areaSft} sft
-              </span>
+              <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+                Side-by-Side
+              </Badge>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="width">Width (প্রস্থ)</Label>
-                <Input
-                  id="width"
-                  type="number"
-                  step="0.1"
-                  value={width}
-                  onChange={(e) => setWidth(Math.max(0.1, Number(e.target.value)))}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="height">Height (উচ্চতা)</Label>
-                <Input
-                  id="height"
-                  type="number"
-                  step="0.1"
-                  value={height}
-                  onChange={(e) => setHeight(Math.max(0.1, Number(e.target.value)))}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="unit">Unit</Label>
-                <select
-                  id="unit"
-                  value={dimensionUnit}
-                  onChange={(e) => setDimensionUnit(e.target.value as typeof dimensionUnit)}
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-                >
-                  <option value="ft">Feet (ফুট)</option>
-                  <option value="inch">Inches (ইঞ্চি)</option>
-                  <option value="m">Meters (মিটার)</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="qty">Quantity (পরিমাণ)</Label>
-                <Input
-                  id="qty"
-                  type="number"
-                  min="1"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* Pricing Components Checkboxes */}
-          <Card className="p-4 space-y-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              2. Add-on Components & Shop Floor Finishing
+            <span className="text-[11px] text-slate-500 font-medium">
+              Showing {matrixData.length} products & services
             </span>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <label className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeCutting}
-                  onChange={(e) => setIncludeCutting(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                />
-                <div className="text-xs">
-                  <div className="font-semibold text-slate-900 dark:text-white">Die-Cutting / Laser Cut</div>
-                  <div className="text-[11px] text-slate-400">Contour plotting and kiss-cut stickers</div>
-                </div>
-              </label>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-100/70 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-bold uppercase text-[10px] tracking-wider">
+                  <th className="py-3 px-4 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10 min-w-[180px]">
+                    Product / Service
+                  </th>
+                  <th className="py-3 px-3 text-right min-w-[90px]">Default Rate</th>
+                  <th className="py-3 px-3 text-center min-w-[110px] text-emerald-700 dark:text-emerald-400">Retail</th>
+                  <th className="py-3 px-3 text-center min-w-[110px] text-blue-700 dark:text-blue-400">Reseller</th>
+                  <th className="py-3 px-3 text-center min-w-[110px] text-purple-700 dark:text-purple-400">Corporate</th>
+                  <th className="py-3 px-3 text-center min-w-[110px] text-amber-700 dark:text-amber-400">Agency</th>
+                  <th className="py-3 px-3 text-center min-w-[110px] text-rose-700 dark:text-rose-400">Government</th>
+                  <th className="py-3 px-3 text-center min-w-[110px] text-indigo-700 dark:text-indigo-400">Regular</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium font-mono">
+                {matrixData.map((row) => (
+                  <tr key={row.productId} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                    {/* Product Name */}
+                    <td className="py-2.5 px-4 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-slate-100 dark:border-slate-800">
+                      <div className="font-bold text-slate-900 dark:text-white font-sans text-xs">{row.productName}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        {row.productSku} • {row.unit}
+                      </div>
+                    </td>
 
-              <label className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeLamination}
-                  onChange={(e) => setIncludeLamination(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                />
-                <div className="text-xs">
-                  <div className="font-semibold text-slate-900 dark:text-white">Thermal Lamination</div>
-                  <div className="text-[11px] text-slate-400">Optical Gloss or Matte protection film</div>
-                </div>
-              </label>
+                    {/* Default Selling Price */}
+                    <td className="py-2.5 px-3 text-right font-bold text-slate-600 dark:text-slate-400">
+                      ৳{row.defaultSellingPrice}
+                    </td>
 
-              <label className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeFinishing}
-                  onChange={(e) => setIncludeFinishing(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                />
-                <div className="text-xs">
-                  <div className="font-semibold text-slate-900 dark:text-white">Eyelets & Hemming</div>
-                  <div className="text-[11px] text-slate-400">Welded hem borders and metal brass rings</div>
-                </div>
-              </label>
+                    {/* Retail */}
+                    <td className="py-2.5 px-3 text-center">
+                      <div className="font-bold text-emerald-700 dark:text-emerald-400">
+                        ৳{row.prices.retail?.price ?? row.defaultSellingPrice}
+                      </div>
+                      {row.prices.retail?.hasCustomRule && (
+                        <span className="text-[9px] font-sans text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1 rounded">
+                          Custom
+                        </span>
+                      )}
+                    </td>
 
-              <label className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeFabrication}
-                  onChange={(e) => setIncludeFabrication(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                />
-                <div className="text-xs">
-                  <div className="font-semibold text-slate-900 dark:text-white">MS Box Metal Framing</div>
-                  <div className="text-[11px] text-slate-400">Welded 1-inch box pipe structure</div>
-                </div>
-              </label>
+                    {/* Reseller */}
+                    <td className="py-2.5 px-3 text-center">
+                      <div className="font-bold text-blue-700 dark:text-blue-400">
+                        ৳{row.prices.reseller?.price ?? row.defaultSellingPrice}
+                      </div>
+                      {row.prices.reseller?.hasCustomRule && (
+                        <span className="text-[9px] font-sans text-blue-600 bg-blue-50 dark:bg-blue-950 px-1 rounded">
+                          Custom
+                        </span>
+                      )}
+                    </td>
 
-              <label className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeInstallation}
-                  onChange={(e) => setIncludeInstallation(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                />
-                <div className="text-xs">
-                  <div className="font-semibold text-slate-900 dark:text-white">On-Site Installation Crew</div>
-                  <div className="text-[11px] text-slate-400">Ladder, drilling, scaffolding & wiring</div>
-                </div>
-              </label>
+                    {/* Corporate */}
+                    <td className="py-2.5 px-3 text-center">
+                      <div className="font-bold text-purple-700 dark:text-purple-400">
+                        ৳{row.prices.corporate?.price ?? row.defaultSellingPrice}
+                      </div>
+                      {row.prices.corporate?.hasCustomRule && (
+                        <span className="text-[9px] font-sans text-purple-600 bg-purple-50 dark:bg-purple-950 px-1 rounded">
+                          Custom
+                        </span>
+                      )}
+                    </td>
 
-              <label className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeTransport}
-                  onChange={(e) => setIncludeTransport(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                />
-                <div className="text-xs">
-                  <div className="font-semibold text-slate-900 dark:text-white">Delivery Van Transport</div>
-                  <div className="text-[11px] text-slate-400">Local pickup van within Dhaka Metro</div>
-                </div>
-              </label>
+                    {/* Agency */}
+                    <td className="py-2.5 px-3 text-center">
+                      <div className="font-bold text-amber-700 dark:text-amber-400">
+                        ৳{row.prices.agency?.price ?? row.defaultSellingPrice}
+                      </div>
+                      {row.prices.agency?.hasCustomRule && (
+                        <span className="text-[9px] font-sans text-amber-600 bg-amber-50 dark:bg-amber-950 px-1 rounded">
+                          Custom
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Government */}
+                    <td className="py-2.5 px-3 text-center">
+                      <div className="font-bold text-rose-700 dark:text-rose-400">
+                        ৳{row.prices.government?.price ?? row.defaultSellingPrice}
+                      </div>
+                      {row.prices.government?.hasCustomRule && (
+                        <span className="text-[9px] font-sans text-rose-600 bg-rose-50 dark:bg-rose-950 px-1 rounded">
+                          Custom
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Regular */}
+                    <td className="py-2.5 px-3 text-center">
+                      <div className="font-bold text-indigo-700 dark:text-indigo-400">
+                        ৳{row.prices.regular?.price ?? row.defaultSellingPrice}
+                      </div>
+                      {row.prices.regular?.hasCustomRule && (
+                        <span className="text-[9px] font-sans text-indigo-600 bg-indigo-50 dark:bg-indigo-950 px-1 rounded">
+                          Custom
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: ADD / EDIT PRICING RULE */}
+      {/* ======================================================== */}
+      <ModalDialog
+        open={isRuleModalOpen}
+        onOpenChange={setIsRuleModalOpen}
+        size="2xl"
+        hideFooter={true}
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <Tag className="h-5 w-5" />
             </div>
-          </Card>
-
-          {/* Discounts & VAT */}
-          <Card className="p-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              3. Discount & Tax Concessions
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="discPct">Discount %</Label>
-                <Input
-                  id="discPct"
-                  type="number"
-                  placeholder="0"
-                  value={discountPercent || ''}
-                  onChange={(e) => setDiscountPercent(Math.max(0, Number(e.target.value)))}
-                />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-bold text-slate-900 dark:text-white">
+                  {editingRule ? 'Edit Pricing Rule' : 'Add New Pricing Rule'}
+                </span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+                  Dynamic Tariff
+                </Badge>
               </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="discFlat">Flat Discount (৳ BDT)</Label>
-                <Input
-                  id="discFlat"
-                  type="number"
-                  placeholder="0"
-                  value={discountFlat || ''}
-                  onChange={(e) => setDiscountFlat(Math.max(0, Number(e.target.value)))}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="vatR">NBR VAT Rate %</Label>
-                <Input
-                  id="vatR"
-                  type="number"
-                  step="0.5"
-                  value={vatRate}
-                  onChange={(e) => setVatRate(Math.max(0, Number(e.target.value)))}
-                />
-              </div>
+              <p className="text-xs text-slate-500">
+                Configure customer-specific price without modifying the product master default price.
+              </p>
             </div>
-          </Card>
-        </div>
+          </div>
+        }
+      >
+        <form onSubmit={handleSaveRule} className="space-y-4 pt-1 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* Product Select */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                Product / Service <span className="text-rose-500">*</span>
+              </Label>
+              <select
+                value={formProductId}
+                onChange={(e) => setFormProductId(e.target.value)}
+                disabled={Boolean(editingRule)}
+                className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                required
+              >
+                <option value="">Select a Product / Service</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.sku}) — Default: ৳{p.selling_price}/{p.unit}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* RIGHT PANEL: LIVE PRICING WATERFALL BREAKDOWN */}
-        <div className="lg:col-span-5 space-y-4">
-          <Card className="border-blue-200 dark:border-blue-900 shadow-md">
-            <CardHeader className="bg-slate-50/80 dark:bg-slate-900/80 pb-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base font-black text-slate-900 dark:text-white">
-                    Official Quotation Summary
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    {activeProduct.name} ({quantity} {activeProduct.unit})
-                  </CardDescription>
+            {/* Customer Type Select */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                Customer Type <span className="text-rose-500">*</span>
+              </Label>
+              <select
+                value={formCustomerType}
+                onChange={(e) => setFormCustomerType(e.target.value as PricingCustomerType)}
+                className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                required
+              >
+                <option value="retail">Retail (ওয়াক-ইন / খুচরা)</option>
+                <option value="reseller">Reseller (রিসেলার / সাব-কন্ট্রাক্টর)</option>
+                <option value="corporate">Corporate (কর্পোরেট একাউন্ট)</option>
+                <option value="agency">Agency (বিজ্ঞাপন সংস্থা / ডিজাইন)</option>
+                <option value="government">Government (সরকারি / দরপত্র)</option>
+                <option value="regular">Regular (নিয়মিত খদ্দের)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Pricing Strategy Selector */}
+          <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
+            <Label className="text-xs font-bold block text-slate-800 dark:text-slate-200">
+              Pricing Strategy & Calculation Method
+            </Label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFormRuleType('percentage_adjustment')
+                  setFormAdjustmentType('percentage')
+                }}
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  formRuleType === 'percentage_adjustment'
+                    ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                <div className="text-[11px] flex items-center gap-1 font-bold">
+                  <Percent className="h-3.5 w-3.5" />
+                  <span>% Discount / Markup</span>
                 </div>
-                {pricingResult.isBelowMinimum && (
-                  <Badge variant="outline" className="bg-amber-100 text-amber-900 border-amber-300 text-[10px]">
-                    <AlertTriangle className="h-3 w-3 mr-1" /> Below Floor Price
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
+                <p className="text-[10px] text-slate-500 mt-0.5">e.g. -16% for Reseller</p>
+              </button>
 
-            <CardContent className="p-5 space-y-4 text-xs">
-              {/* Applied Price Override Alert */}
-              {appliedOverride && (
-                <div className="p-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-lg text-purple-900 dark:text-purple-300 text-xs flex items-start gap-2">
-                  <ShieldAlert className="h-4 w-4 text-purple-600 shrink-0 mt-0.5" />
+              <button
+                type="button"
+                onClick={() => {
+                  setFormRuleType('fixed_adjustment')
+                  setFormAdjustmentType('fixed')
+                }}
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  formRuleType === 'fixed_adjustment'
+                    ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                <div className="text-[11px] flex items-center gap-1 font-bold">
+                  <Tag className="h-3.5 w-3.5" />
+                  <span>Fixed ৳ Adjustment</span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-0.5">e.g. -৳4 / SFT</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setFormRuleType('fixed_price')
+                  setFormAdjustmentType('none')
+                  setFormFixedPrice(selectedProduct ? Number(selectedProduct.selling_price) : 0)
+                }}
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  formRuleType === 'fixed_price'
+                    ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                <div className="text-[11px] flex items-center gap-1 font-bold">
+                  <Calculator className="h-3.5 w-3.5" />
+                  <span>Direct Fixed Rate</span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-0.5">e.g. ৳21.00 / SFT</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setFormRuleType('unit_rate')
+                  setFormAdjustmentType('none')
+                }}
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  formRuleType === 'unit_rate'
+                    ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                <div className="text-[11px] flex items-center gap-1 font-bold">
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>Standard Unit Rate</span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-0.5">Catalog base rate</p>
+              </button>
+            </div>
+
+            {/* Inputs based on strategy */}
+            <div className="pt-1">
+              {formRuleType === 'percentage_adjustment' && (
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <strong>Custom Price Override Active:</strong> ৳ {formatBDT(appliedOverride.override_price)}
-                    <div className="text-[11px] text-purple-700 dark:text-purple-400 mt-0.5">
-                      Reason: {appliedOverride.reason}
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Adjustment Percentage (%) <span className="text-rose-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="-15"
+                        value={formAdjustmentValue}
+                        onChange={(e) => setFormAdjustmentValue(Number(e.target.value))}
+                        className="text-xs h-9 font-mono font-bold pr-8"
+                        required
+                      />
+                      <span className="absolute right-3 top-2.5 text-slate-400 font-bold">%</span>
                     </div>
-                    <button
-                      onClick={() => setAppliedOverride(null)}
-                      className="text-[11px] underline font-bold mt-1 text-purple-800 dark:text-purple-300"
+                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                      Negative for discount (e.g. -16%), positive for premium markup
+                    </span>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Rounding Policy</Label>
+                    <select
+                      value={formRoundingRule}
+                      onChange={(e) => setFormRoundingRule(e.target.value as RoundingRule)}
+                      className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
                     >
-                      Reset to Calculated Price
-                    </button>
+                      <option value="none">No rounding (Exact 2 decimals)</option>
+                      <option value="round_1">Round to nearest ৳1</option>
+                      <option value="round_5">Round to nearest ৳5</option>
+                      <option value="round_10">Round to nearest ৳10</option>
+                      <option value="ceil_5">Ceiling to next ৳5</option>
+                      <option value="floor_5">Floor to lower ৳5</option>
+                    </select>
                   </div>
                 </div>
               )}
 
-              {/* 13-Component Waterfall */}
-              <div className="space-y-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-                <span className="font-bold uppercase tracking-wider text-[11px] text-slate-400">
-                  Cost Component Waterfall (উৎপাদন খরচ)
-                </span>
-
-                <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                  <span>1. Media Material:</span>
-                  <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.material)}</span>
-                </div>
-
-                <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                  <span>2. Printing Service:</span>
-                  <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.printing)}</span>
-                </div>
-
-                {pricingResult.componentBreakdown.cutting > 0 && (
-                  <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                    <span>3. Die-Cut Plotting:</span>
-                    <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.cutting)}</span>
+              {formRuleType === 'fixed_adjustment' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Fixed Price Difference (৳) <span className="text-rose-500">*</span>
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      placeholder="-4"
+                      value={formAdjustmentValue}
+                      onChange={(e) => setFormAdjustmentValue(Number(e.target.value))}
+                      className="text-xs h-9 font-mono font-bold"
+                      required
+                    />
+                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                      Amount added or subtracted from base price
+                    </span>
                   </div>
-                )}
 
-                {pricingResult.componentBreakdown.lamination > 0 && (
-                  <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                    <span>4. Thermal Lamination:</span>
-                    <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.lamination)}</span>
-                  </div>
-                )}
-
-                {pricingResult.componentBreakdown.finishing > 0 && (
-                  <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                    <span>5. Eyelets & Hemming:</span>
-                    <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.finishing)}</span>
-                  </div>
-                )}
-
-                {pricingResult.componentBreakdown.fabrication > 0 && (
-                  <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                    <span>6. MS Frame Fabrication:</span>
-                    <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.fabrication)}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                  <span>7. Machine Operator Labor:</span>
-                  <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.labor)}</span>
-                </div>
-
-                {pricingResult.componentBreakdown.installation > 0 && (
-                  <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                    <span>8. On-site Installation:</span>
-                    <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.installation)}</span>
-                  </div>
-                )}
-
-                {pricingResult.componentBreakdown.transport > 0 && (
-                  <div className="flex justify-between py-1 text-slate-600 dark:text-slate-300">
-                    <span>9. Van Fare Logistics:</span>
-                    <span className="font-mono font-medium">৳ {formatBDT(pricingResult.componentBreakdown.transport)}</span>
-                  </div>
-                )}
-
-                {/* Subtotal Base Cost */}
-                <div className="flex justify-between py-1.5 font-bold border-t border-dashed border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
-                  <span>Total Base Cost (COGS):</span>
-                  <span className="font-mono">৳ {formatBDT(pricingResult.totalBaseCost)}</span>
-                </div>
-
-                {/* Gross Profit Margin */}
-                <div className="flex justify-between py-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                  <span>Gross Profit ({pricingResult.grossProfitMarginPercent}%):</span>
-                  <span className="font-mono">+ ৳ {formatBDT(pricingResult.grossProfitAmount)}</span>
-                </div>
-              </div>
-
-              {/* Discounts & VAT */}
-              <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-800 pb-3">
-                {pricingResult.discountAmount > 0 && (
-                  <div className="flex justify-between py-1 text-red-600 font-medium">
-                    <span>Concession Discount:</span>
-                    <span className="font-mono">- ৳ {formatBDT(pricingResult.discountAmount)}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between py-1 text-slate-700 dark:text-slate-300 font-medium">
-                  <span>Taxable Amount:</span>
-                  <span className="font-mono">৳ {formatBDT(pricingResult.subtotalAfterDiscount)}</span>
-                </div>
-
-                <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400">
-                  <span>NBR VAT ({pricingResult.vatRatePercent}%):</span>
-                  <span className="font-mono">+ ৳ {formatBDT(pricingResult.vatAmount)}</span>
-                </div>
-              </div>
-
-              {/* Grand Total */}
-              <div className="p-4 rounded-xl bg-slate-900 text-white dark:bg-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <div className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-                    Payable Amount (মোট মূল্য)
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-black text-cyan-300">
-                    ৳ {formatBDT(finalPayable)}
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Rounding Policy</Label>
+                    <select
+                      value={formRoundingRule}
+                      onChange={(e) => setFormRoundingRule(e.target.value as RoundingRule)}
+                      className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    >
+                      <option value="none">No rounding</option>
+                      <option value="round_1">Round to nearest ৳1</option>
+                      <option value="round_5">Round to nearest ৳5</option>
+                    </select>
                   </div>
                 </div>
+              )}
 
-                <div className="sm:text-right border-t sm:border-t-0 pt-1 sm:pt-0 border-slate-800">
-                  <div className="text-[11px] text-slate-400">Unit Rate:</div>
-                  <div className="text-sm font-mono font-bold text-white">
-                    ৳ {formatBDT(Math.round(finalPayable / quantity))} / {activeProduct.unit}
+              {formRuleType === 'fixed_price' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Fixed Selling Price (৳ / {selectedProduct?.unit || 'Unit'}) <span className="text-rose-500">*</span>
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formFixedPrice}
+                      onChange={(e) => setFormFixedPrice(Number(e.target.value))}
+                      className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Rounding Policy</Label>
+                    <select
+                      value={formRoundingRule}
+                      onChange={(e) => setFormRoundingRule(e.target.value as RoundingRule)}
+                      className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    >
+                      <option value="none">No rounding</option>
+                      <option value="round_1">Round to nearest ৳1</option>
+                    </select>
                   </div>
                 </div>
-              </div>
-
-              <div className="pt-2">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-xs font-bold h-10 sm:h-9">
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Save as Official Quotation
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* MODAL: CUSTOM PRICE OVERRIDE WITH AUDIT LOGGING */}
-      <ModalDialog
-        open={isOverrideOpen}
-        onOpenChange={setIsOverrideOpen}
-        title="Apply Custom Price Override"
-        description="Manually adjust quoted rate. System requires an audit reason for compliance."
-      >
-        <form onSubmit={handleApplyOverride} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
-          <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs">
-            <div className="flex justify-between">
-              <span>Calculated Price:</span>
-              <strong>৳ {formatBDT(pricingResult.grandTotalBDT)}</strong>
-            </div>
-            <div className="flex justify-between mt-1">
-              <span>Minimum Floor Price:</span>
-              <strong className="text-red-600">৳ {formatBDT(activeProduct.min_price * quantity)}</strong>
+              )}
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="ovPrice" required>Override Final Total (৳ BDT)</Label>
+          {/* LIVE PRICE PREVIEW BOX */}
+          <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                Calculated {CUSTOMER_TYPES_META[formCustomerType]?.label} Rate
+              </span>
+              <span className="text-[11px] text-slate-500">
+                Base: ৳{selectedProduct?.selling_price || 0} → Adjusted Final Rate:
+              </span>
+            </div>
+            <div className="text-right">
+              <div className="text-xl font-black text-blue-600 dark:text-blue-400 font-mono">
+                ৳{livePreview.calculatedPrice} <span className="text-xs font-normal text-slate-500">/ {selectedProduct?.unit || 'unit'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Commercial Minimums & Validity */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Min Billable Qty</Label>
+              <Input
+                type="number"
+                min="0"
+                placeholder="e.g. 10"
+                value={formMinBillableQty || ''}
+                onChange={(e) => setFormMinBillableQty(Number(e.target.value))}
+                className="text-xs h-9 font-mono"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Minimum Charge (৳)</Label>
+              <Input
+                type="number"
+                min="0"
+                placeholder="e.g. 250"
+                value={formMinCharge || ''}
+                onChange={(e) => setFormMinCharge(Number(e.target.value))}
+                className="text-xs h-9 font-mono"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Effective From</Label>
+              <Input
+                type="date"
+                value={formEffectiveFrom}
+                onChange={(e) => setFormEffectiveFrom(e.target.value)}
+                className="text-xs h-9"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Effective Until</Label>
+              <Input
+                type="date"
+                value={formEffectiveUntil}
+                onChange={(e) => setFormEffectiveUntil(e.target.value)}
+                className="text-xs h-9"
+              />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">Notes / Reason for Commercial Tariff</Label>
             <Input
-              id="ovPrice"
-              type="number"
-              value={overridePrice || ''}
-              onChange={(e) => setOverridePrice(Number(e.target.value))}
-              required
+              placeholder="e.g. Annual wholesale advertising agency pricing contract"
+              value={formNotes}
+              onChange={(e) => setFormNotes(e.target.value)}
+              className="text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="ovReason" required>Mandatory Audit Reason</Label>
-            <textarea
-              id="ovReason"
-              rows={3}
-              placeholder="e.g. Managing Director approved strategic discount for Beximco annual tender."
-              value={overrideReason}
-              onChange={(e) => setOverrideReason(e.target.value)}
-              required
-              className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
-            />
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsOverrideOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
+          {/* Action Buttons */}
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsRuleModalOpen(false)}
+              disabled={isPending}
+              className="w-full sm:w-auto text-xs font-semibold"
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
-              Log Override & Apply
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="w-full sm:w-auto text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm"
+            >
+              {isPending ? 'Saving Rule...' : editingRule ? 'Update Pricing Rule' : 'Save Pricing Rule'}
+            </Button>
+          </div>
+        </form>
+      </ModalDialog>
+
+      {/* ======================================================== */}
+      {/* MODAL: BULK PRICING */}
+      {/* ======================================================== */}
+      <ModalDialog
+        open={isBulkModalOpen}
+        onOpenChange={setIsBulkModalOpen}
+        size="2xl"
+        hideFooter={true}
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <Sliders className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="text-base font-bold text-slate-900 dark:text-white">
+                Bulk Customer-Type Pricing
+              </span>
+              <p className="text-xs text-slate-500">
+                Apply standardized percentage discounts or tariffs across multiple catalog items at once.
+              </p>
+            </div>
+          </div>
+        }
+      >
+        <form onSubmit={handleBulkSubmit} className="space-y-4 pt-1 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Target Customer Type</Label>
+              <select
+                value={bulkCustomerType}
+                onChange={(e) => setBulkCustomerType(e.target.value as PricingCustomerType)}
+                className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold"
+              >
+                <option value="reseller">Reseller (রিসেলার)</option>
+                <option value="corporate">Corporate (কর্পোরেট)</option>
+                <option value="agency">Agency (এজেন্সি)</option>
+                <option value="government">Government (সরকারি)</option>
+                <option value="regular">Regular (নিয়মিত)</option>
+                <option value="retail">Retail (খুচরা)</option>
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Adjustment Type</Label>
+              <select
+                value={bulkAdjustmentType}
+                onChange={(e) => setBulkAdjustmentType(e.target.value as any)}
+                className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold"
+              >
+                <option value="percentage">Percentage Discount / Markup (%)</option>
+                <option value="fixed">Fixed Price Difference (৳)</option>
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                {bulkAdjustmentType === 'percentage' ? 'Discount % (e.g. -15)' : 'Difference ৳'}
+              </Label>
+              <Input
+                type="number"
+                step="0.5"
+                value={bulkAdjustmentValue}
+                onChange={(e) => setBulkAdjustmentValue(Number(e.target.value))}
+                className="text-xs h-9 font-mono font-bold"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Product Multi-select box */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                Select Products to Apply ({bulkProductIds.length} of {products.length} selected)
+              </Label>
+              <div className="flex items-center gap-2 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setBulkProductIds(products.map((p) => p.id))}
+                  className="text-blue-600 hover:underline font-bold"
+                >
+                  Select All
+                </button>
+                <span>•</span>
+                <button
+                  type="button"
+                  onClick={() => setBulkProductIds([])}
+                  className="text-slate-500 hover:underline"
+                >
+                  Deselect All
+                </button>
+              </div>
+            </div>
+
+            <div className="max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 p-2 space-y-1 bg-slate-50/50 dark:bg-slate-900/50">
+              {products.map((p) => {
+                const isChecked = bulkProductIds.includes(p.id)
+                const base = Number(p.selling_price) || 0
+                const calculated = bulkAdjustmentType === 'percentage'
+                  ? Math.round(base * (1 + bulkAdjustmentValue / 100) * 100) / 100
+                  : Math.max(0, base + bulkAdjustmentValue)
+
+                return (
+                  <label
+                    key={p.id}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 cursor-pointer text-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setBulkProductIds((prev) => [...prev, p.id])
+                          } else {
+                            setBulkProductIds((prev) => prev.filter((id) => id !== p.id))
+                          }
+                        }}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">{p.name}</span>
+                      <span className="text-[10px] text-slate-400 font-mono">({p.sku})</span>
+                    </div>
+                    <div className="text-right font-mono text-[11px]">
+                      <span className="text-slate-400 line-through mr-2">৳{base}</span>
+                      <span className="font-bold text-blue-600 dark:text-blue-400">৳{calculated}</span>
+                    </div>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer pt-1">
+            <input
+              type="checkbox"
+              checked={bulkOverrideExisting}
+              onChange={(e) => setBulkOverrideExisting(e.target.checked)}
+              className="rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span>Overwrite existing custom pricing rules for these items</span>
+          </label>
+
+          {/* Actions */}
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsBulkModalOpen(false)}
+              disabled={isPending}
+              className="w-full sm:w-auto text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending || bulkProductIds.length === 0}
+              className="w-full sm:w-auto text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm"
+            >
+              {isPending ? 'Applying...' : `Apply Bulk Pricing (${bulkProductIds.length} Items)`}
+            </Button>
+          </div>
+        </form>
+      </ModalDialog>
+
+      {/* ======================================================== */}
+      {/* MODAL: COPY PRICING */}
+      {/* ======================================================== */}
+      <ModalDialog
+        open={isCopyModalOpen}
+        onOpenChange={setIsCopyModalOpen}
+        size="lg"
+        hideFooter={true}
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+              <Copy className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="text-base font-bold text-slate-900 dark:text-white">
+                Copy Pricing Between Customer Types
+              </span>
+              <p className="text-xs text-slate-500">
+                Clone all rules from one category into another with optional percentage adjustments.
+              </p>
+            </div>
+          </div>
+        }
+      >
+        <form onSubmit={handleCopySubmit} className="space-y-4 pt-1 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Source Customer Type</Label>
+              <select
+                value={copySourceType}
+                onChange={(e) => setCopySourceType(e.target.value as PricingCustomerType)}
+                className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold"
+              >
+                <option value="retail">Retail (খুচরা)</option>
+                <option value="reseller">Reseller (রিসেলার)</option>
+                <option value="corporate">Corporate (কর্পোরেট)</option>
+                <option value="agency">Agency (এজেন্সি)</option>
+                <option value="government">Government (সরকারি)</option>
+                <option value="regular">Regular (নিয়মিত)</option>
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Target Customer Type</Label>
+              <select
+                value={copyTargetType}
+                onChange={(e) => setCopyTargetType(e.target.value as PricingCustomerType)}
+                className="w-full h-9 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-blue-600 dark:text-blue-400"
+              >
+                <option value="regular">Regular (নিয়মিত)</option>
+                <option value="reseller">Reseller (রিসেলার)</option>
+                <option value="corporate">Corporate (কর্পোরেট)</option>
+                <option value="agency">Agency (এজেন্সি)</option>
+                <option value="government">Government (সরকারি)</option>
+                <option value="retail">Retail (খুচরা)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">Optional Modifier (%)</Label>
+            <div className="relative">
+              <Input
+                type="number"
+                step="0.5"
+                placeholder="0"
+                value={copyModifierPercent}
+                onChange={(e) => setCopyModifierPercent(Number(e.target.value))}
+                className="text-xs h-9 font-mono font-bold pr-8"
+              />
+              <span className="absolute right-3 top-2.5 text-slate-400 font-bold">%</span>
+            </div>
+            <span className="text-[10px] text-slate-500 mt-0.5 block">
+              e.g. -5% to make target 5% cheaper than source rates, or 0% for exact clone
+            </span>
+          </div>
+
+          <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer pt-1">
+            <input
+              type="checkbox"
+              checked={copyOverrideExisting}
+              onChange={(e) => setCopyOverrideExisting(e.target.checked)}
+              className="rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span>Overwrite existing rules for {copyTargetType}</span>
+          </label>
+
+          {/* Actions */}
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsCopyModalOpen(false)}
+              disabled={isPending}
+              className="w-full sm:w-auto text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending || copySourceType === copyTargetType}
+              className="w-full sm:w-auto text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm"
+            >
+              {isPending ? 'Copying...' : `Copy to ${copyTargetType}`}
             </Button>
           </div>
         </form>

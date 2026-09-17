@@ -40,6 +40,7 @@ import {
   Zap,
   Layers,
   Disc,
+  Tag,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
@@ -82,6 +83,7 @@ const iconMap: Record<string, React.ElementType> = {
   Zap,
   Layers,
   Disc,
+  Tag,
 }
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'inkflow_sidebar_collapsed'

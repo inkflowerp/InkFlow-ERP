@@ -163,6 +163,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       'Settings',
       'Layers',
       'Disc',
+      'Tag',
     ]
 
     for (const section of navSections) {

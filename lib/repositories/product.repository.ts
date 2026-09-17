@@ -1630,6 +1630,30 @@ export class ProductRepository {
               }
             }
 
+            // Tier 2.4: Check Pricing Rules (pricing_rules)
+            if (!foundPriceListItem) {
+              const pricingRules = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRICING_RULES) || []).filter(
+                (r) => (!r.company_id || r.company_id === companyId) && r.customer_type === customerCategory && r.status === 'active'
+              )
+              const match = pricingRules.find((r) => r.product_id === productId || (!r.product_id && r.category === product.category))
+              if (match && match.calculated_price !== undefined) {
+                resolved = {
+                  productId: product.id,
+                  productName: product.name,
+                  sku: product.sku,
+                  unit: product.unit,
+                  sellingPrice: defaultRate,
+                  effectiveRate: Number(match.calculated_price),
+                  minPrice,
+                  baseCost,
+                  source: 'customer_tier',
+                  sourceLabel: `${customerCategory.toUpperCase()} Pricing`,
+                  sourceDetails: match.notes || `${customerCategory} pricing rate ৳${match.calculated_price}/${product.unit}`,
+                }
+                foundPriceListItem = true
+              }
+            }
+
             // Tier 2.5: Product Direct Price Tiers (retail, corporate, dealer, wholesale, custom)
             if (!foundPriceListItem && product.price_tiers) {
               const tierKey = customerCategory.toLowerCase() as PriceTierKey
