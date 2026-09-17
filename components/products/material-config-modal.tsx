@@ -1708,18 +1708,6 @@ export function MaterialConfigModal({
                 />
               </div>
             </div>
-
-            {/* Next Tab Button */}
-            <div className="flex justify-end pt-1">
-              <Button
-                type="button"
-                onClick={() => setActiveTab('geometry')}
-                className="h-9 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Continue to Geometry & Sizes</span>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
         )}
 
@@ -2219,26 +2207,6 @@ export function MaterialConfigModal({
                 </div>
               )}
             </div>
-
-            {/* Navigation row */}
-            <div className="flex items-center justify-between pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab('basic')}
-                className="h-9 px-4 text-xs font-bold"
-              >
-                Back to Basic Info
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setActiveTab('costing')}
-                className="h-9 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Continue to Costing & Resale</span>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
         )}
 
@@ -2574,26 +2542,6 @@ export function MaterialConfigModal({
                 </div>
               </div>
             </div>
-
-            {/* Navigation row */}
-            <div className="flex items-center justify-between pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab('geometry')}
-                className="h-9 px-4 text-xs font-bold"
-              >
-                Back to Geometry
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setActiveTab('inventory')}
-                className="h-9 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Continue to Inventory & Reorder</span>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
         )}
 
@@ -2788,26 +2736,6 @@ export function MaterialConfigModal({
                 </div>
               </div>
             </div>
-
-            {/* Navigation row */}
-            <div className="flex items-center justify-between pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab('costing')}
-                className="h-9 px-4 text-xs font-bold"
-              >
-                Back to Costing
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setActiveTab('production')}
-                className="h-9 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Continue to Machine Specs</span>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
         )}
 
@@ -2944,18 +2872,6 @@ export function MaterialConfigModal({
                   <span>Active in Raw Material Inventory & Available for Service BOM Consumption</span>
                 </label>
               </div>
-            </div>
-
-            {/* Navigation row */}
-            <div className="flex items-center justify-between pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab('inventory')}
-                className="h-9 px-4 text-xs font-bold"
-              >
-                Back to Inventory
-              </Button>
             </div>
           </div>
         )}
