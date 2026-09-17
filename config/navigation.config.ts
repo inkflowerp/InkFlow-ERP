@@ -131,15 +131,39 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
     },
     {
       id: 'materials',
-      title: 'Materials',
-      titleBn: 'কাঁচামাল',
+      title: 'Materials & Catalog',
+      titleBn: 'কাঁচামাল ও ক্যাটালগ',
       items: [
         {
+          key: 'products',
+          title: 'Products & Services',
+          titleBn: 'পণ্য ও সেবা',
+          href: `/${tenantSlug}/products`,
+          icon: 'Layers',
+          permission: { action: 'view', resource: 'inventory' },
+        },
+        {
           key: 'inventory',
-          title: 'Inventory',
-          titleBn: 'স্টক',
+          title: 'Inventory Stock',
+          titleBn: 'স্টক ব্যালেন্স',
           href: `/${tenantSlug}/inventory`,
           icon: 'Package',
+          permission: { action: 'view', resource: 'inventory' },
+        },
+        {
+          key: 'rolls',
+          title: 'Physical Rolls',
+          titleBn: 'রোল তালিকা',
+          href: `/${tenantSlug}/inventory/rolls`,
+          icon: 'Disc',
+          permission: { action: 'view', resource: 'inventory' },
+        },
+        {
+          key: 'ledger',
+          title: 'Stock Ledger',
+          titleBn: 'স্টক খতিয়ান',
+          href: `/${tenantSlug}/inventory/ledger`,
+          icon: 'FileText',
           permission: { action: 'view', resource: 'inventory' },
         },
         {

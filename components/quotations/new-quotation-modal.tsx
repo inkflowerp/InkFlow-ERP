@@ -826,9 +826,10 @@ export function NewQuotationModal({
   }
 
   return (
-    <ModalDialog
-      open={open}
-      onOpenChange={onOpenChange}
+    <>
+      <ModalDialog
+        open={open}
+        onOpenChange={onOpenChange}
       size="5xl"
       title={
         <div className="flex items-center gap-2.5">
@@ -1186,16 +1187,58 @@ export function NewQuotationModal({
             SECTION 3: ITEM SECTION (MULTI-ITEM BUILDER)
            ========================================================================= */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 3
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Quotation Items ({items.length})
-              </h3>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Quotation Items ({items.length})
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  Commercial Proposal: items do not reserve or decrement physical inventory.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddItem}
+                className="h-7 text-xs font-bold gap-1 text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/30"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add Catalog Item
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const tempId = `item-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
+                  const customItem = DEFAULT_ITEM(tempId)
+                  customItem.description = 'Custom Quotation Item'
+                  customItem.rate_source = 'custom'
+                  setItems([...items, customItem])
+                }}
+                className="h-7 text-xs font-bold gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Add Custom Item
+              </Button>
             </div>
           </div>
+
+          {/* Catalog Empty Soft Notice */}
+          {productsCatalog.length === 0 && (
+            <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-xl text-xs text-blue-800 dark:text-blue-300 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-blue-500 shrink-0" />
+              <span>No catalog products available. You can freely create and price custom quotation items below.</span>
+            </div>
+          )}
 
           <div className="space-y-3.5">
             {items.map((item, index) => (
@@ -1212,6 +1255,9 @@ export function NewQuotationModal({
                       {item.description || 'Line Item Specification'}
                     </span>
                     {getRateSourceBadge(item.rate_source)}
+                    <span className="text-[10px] text-slate-400 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded">
+                      Stock Unreserved
+                    </span>
                   </div>
 
                   {items.length > 1 && (
@@ -1246,7 +1292,7 @@ export function NewQuotationModal({
                       onChange={(e) => handleProductSelect(index, e.target.value)}
                       className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
                     >
-                      <option value="">-- Select Product --</option>
+                      <option value="">-- Custom Quote Item (No Catalog) --</option>
                       {productsCatalog.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.name} ({p.unit}) - ৳{p.selling_price}
@@ -1736,6 +1782,7 @@ export function NewQuotationModal({
           </div>
         </div>
       </div>
+    </ModalDialog>
 
       {/* QUICK ADD PRODUCT MODAL (Phase 15) */}
       <ModalDialog
@@ -1849,6 +1896,6 @@ export function NewQuotationModal({
           </div>
         </form>
       </ModalDialog>
-    </ModalDialog>
+    </>
   )
 }

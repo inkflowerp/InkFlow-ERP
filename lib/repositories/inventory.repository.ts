@@ -239,12 +239,12 @@ export class InventoryRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, data)
+        PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, data, companyId)
         return data as unknown as MaterialRecord
       }
     } catch {}
 
-    const updated = PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload)
+    const updated = PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload, companyId)
     return (updated || { id, company_id: companyId, ...payload }) as MaterialRecord
   }
 

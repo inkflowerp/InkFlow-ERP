@@ -38,6 +38,8 @@ import {
   ChevronDown,
   Headphones,
   Zap,
+  Layers,
+  Disc,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
@@ -78,6 +80,8 @@ const iconMap: Record<string, React.ElementType> = {
   Crown,
   Sparkles,
   Zap,
+  Layers,
+  Disc,
 }
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'inkflow_sidebar_collapsed'

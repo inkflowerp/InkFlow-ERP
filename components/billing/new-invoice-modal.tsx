@@ -45,6 +45,9 @@ import {
   getInvoiceProductsAction,
   CreateInvoiceItemInput,
 } from '@/actions/billing.actions'
+import { evaluateStockAvailability, StockAvailabilityResult } from '@/lib/domain/stock-availability'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import type { MaterialRecord, InventoryRollRecord, InventoryStockBalanceRecord, InventoryRemnantRecord } from '@/types/inventory.types'
 
 export interface NewInvoiceModalProps {
   open: boolean
@@ -180,7 +183,13 @@ export function NewInvoiceModal({
   const sendMenuRef = useRef<HTMLDivElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
-  // Fetch active catalog products
+  // Inventory state for stock availability checking
+  const [materials, setMaterials] = useState<MaterialRecord[]>([])
+  const [stockBalances, setStockBalances] = useState<InventoryStockBalanceRecord[]>([])
+  const [physicalRolls, setPhysicalRolls] = useState<InventoryRollRecord[]>([])
+  const [remnants, setRemnants] = useState<InventoryRemnantRecord[]>([])
+
+  // Fetch active catalog products and inventory data
   useEffect(() => {
     if (!open) return
     getInvoiceProductsAction(company?.id).then((res) => {
@@ -188,6 +197,16 @@ export function NewInvoiceModal({
         setProducts(res.data)
       }
     })
+
+    const matList = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
+    const rollList = PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) || []
+    const balList = PrintERPDataStore.getAll<InventoryStockBalanceRecord>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, company?.id) || []
+    const remList = PrintERPDataStore.getAll<InventoryRemnantRecord>(STORAGE_KEYS.INVENTORY_REMNANTS, company?.id) || []
+
+    setMaterials(matList)
+    setPhysicalRolls(rollList)
+    setStockBalances(balList)
+    setRemnants(remList)
   }, [open, company?.id])
 
   // Close menus on outside click
@@ -897,16 +916,41 @@ export function NewInvoiceModal({
                   key={item.id}
                   className="p-3 bg-slate-50/70 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-[10px]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-[10px] shrink-0">
                         {index + 1}
                       </span>
+                      <select
+                        value={item.productId || ''}
+                        onChange={(e) => {
+                          const pId = e.target.value
+                          const p = products.find((x) => x.id === pId)
+                          if (p) {
+                            handleItemChange(index, 'productId', p.id)
+                            handleItemChange(index, 'itemName', p.name)
+                            handleItemChange(index, 'unit', p.selling_unit || (p as any).sell_unit || p.unit || 'pcs')
+                            handleItemChange(index, 'rate', p.selling_price || 0)
+                          } else {
+                            handleItemChange(index, 'productId', '')
+                          }
+                        }}
+                        className="h-8 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium max-w-[200px]"
+                      >
+                        <option value="">-- Select Active Item --</option>
+                        {products
+                          .filter((p) => p.is_active !== false && p.entity_type !== 'material')
+                          .map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} ({p.entity_type === 'service' ? 'Service' : 'Product'})
+                            </option>
+                          ))}
+                      </select>
                       <Input
                         placeholder="Item Description / Service Name"
                         value={item.itemName}
                         onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                        className="h-8 text-xs font-bold w-48 sm:w-64"
+                        className="h-8 text-xs font-bold flex-1 min-w-[140px]"
                         required
                       />
                       {getRateBadge(item.rateSource)}
@@ -927,6 +971,69 @@ export function NewInvoiceModal({
                       )}
                     </div>
                   </div>
+
+                  {/* REAL-TIME NON-BLOCKING STOCK AVAILABILITY WARNING */}
+                  {(() => {
+                    const matchingProduct = products.find((p) => p.id === item.productId || p.name === item.itemName)
+                    const stockAvail = evaluateStockAvailability({
+                      service: matchingProduct,
+                      materialId: (matchingProduct?.service_config as any)?.required_material_id || matchingProduct?.service_config?.required_materials?.[0]?.material_id,
+                      customerWidthFt: Number(item.width) || 0,
+                      customerLengthFt: Number(item.height) || 0,
+                      quantity: item.quantity,
+                      materials,
+                      stockBalances,
+                      physicalRolls,
+                      remnants,
+                    })
+
+                    if (stockAvail.status === 'INSUFFICIENT_FOR_ORDER') {
+                      return (
+                        <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-800 dark:text-amber-300 text-[11px] flex items-center justify-between gap-2 animate-in fade-in-0">
+                          <div className="flex items-center gap-1.5 font-bold">
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                            <span>INSUFFICIENT FOR THIS ORDER:</span>
+                            <span className="font-normal">{stockAvail.warningMessage}</span>
+                          </div>
+                          <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] shrink-0">
+                            Non-blocking Warning
+                          </Badge>
+                        </div>
+                      )
+                    }
+
+                    if (stockAvail.status === 'LOW_STOCK') {
+                      return (
+                        <div className="p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-800 dark:text-yellow-300 text-[11px] flex items-center justify-between gap-2 animate-in fade-in-0">
+                          <div className="flex items-center gap-1.5 font-bold">
+                            <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 shrink-0" />
+                            <span>LOW STOCK ALERT:</span>
+                            <span className="font-normal">{stockAvail.warningMessage}</span>
+                          </div>
+                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-[10px] shrink-0">
+                            Reorder Threshold
+                          </Badge>
+                        </div>
+                      )
+                    }
+
+                    if (stockAvail.status === 'GEOMETRY_INCOMPATIBLE') {
+                      return (
+                        <div className="p-2 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-800 dark:text-rose-300 text-[11px] flex items-center justify-between gap-2 animate-in fade-in-0">
+                          <div className="flex items-center gap-1.5 font-bold">
+                            <AlertOctagon className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                            <span>PHYSICAL WIDTH INCOMPATIBLE:</span>
+                            <span className="font-normal">{stockAvail.warningMessage}</span>
+                          </div>
+                          <Badge variant="outline" className="bg-rose-100 text-rose-800 border-rose-300 text-[10px] shrink-0">
+                            Physical Roll Alert
+                          </Badge>
+                        </div>
+                      )
+                    }
+
+                    return null
+                  })()}
 
                   <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1">
                     {/* Dimension W */}

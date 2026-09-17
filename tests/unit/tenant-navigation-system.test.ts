@@ -162,6 +162,8 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       'FileText',
       'FileSpreadsheet',
       'Settings',
+      'Layers',
+      'Disc',
     ]
 
     for (const section of navSections) {
