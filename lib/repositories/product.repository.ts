@@ -182,6 +182,7 @@ export function enrichProductRecord(p: any): ProductRecord {
   const serviceConfig = p.service_config || formula.service_config || null
   const materialConfig = p.material_config || formula.material_config || null
   const availableWidths = p.available_widths_ft || materialConfig?.available_widths_ft || formula.available_widths_ft || null
+  const rollSizes = p.roll_sizes || materialConfig?.roll_sizes || formula.roll_sizes || null
   const standardRollLength = p.standard_roll_length_ft || materialConfig?.standard_roll_length_ft || formula.standard_roll_length_ft || null
   const availableSheetSizes = p.available_sheet_sizes || materialConfig?.available_sheet_sizes || formula.available_sheet_sizes || null
   const allowanceUnit = p.allowance_unit || formula.allowance_unit || 'ft'
@@ -214,6 +215,7 @@ export function enrichProductRecord(p: any): ProductRecord {
     entity_type: entityType,
     service_config: serviceConfig,
     material_config: materialConfig,
+    roll_sizes: rollSizes,
     available_widths_ft: availableWidths,
     standard_roll_length_ft: standardRollLength,
     available_sheet_sizes: availableSheetSizes,

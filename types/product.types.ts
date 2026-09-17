@@ -566,6 +566,7 @@ export interface ProductRecord {
   is_ready_product?: boolean
   service_config?: ServiceConfiguration | null
   material_config?: MaterialConfiguration | null
+  roll_sizes?: MaterialRollSizeConfig[]
   available_widths_ft?: number[]
   standard_roll_length_ft?: number
   available_sheet_sizes?: Array<{ width: number; length: number; label?: string }>
@@ -675,9 +676,16 @@ export interface ServiceConfiguration {
   printable_material_name?: string | null
 }
 
+export interface MaterialRollSizeConfig {
+  width: number
+  extra_allowance?: number
+  length?: number
+}
+
 export interface MaterialConfiguration {
   material_type?: 'roll' | 'sheet' | 'rigid' | 'liquid' | 'hardware' | 'accessory'
   available_widths_ft?: number[]
+  roll_sizes?: MaterialRollSizeConfig[]
   standard_roll_length_ft?: number
   available_sheet_sizes?: Array<{ width: number; length: number; label?: string }>
   extra_width_allowance_ft?: number
