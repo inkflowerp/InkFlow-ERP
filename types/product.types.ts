@@ -653,9 +653,15 @@ export interface ServiceRequiredMaterial {
   id?: string
   material_id?: string
   material_name: string
+  sku?: string
+  category?: string
   is_required?: boolean
   is_primary?: boolean
   consumption_rule?: 'roll_geometry' | 'area_direct' | 'linear_direct' | 'liquid_volume' | 'piece_count' | 'roll_linear_length' | 'area_sqft' | string
+  quantity_per_unit?: number
+  quantity_required?: number
+  unit_cost?: number
+  subtotal_cost?: number
   allowance_per_side?: number
   allowance_per_side_in?: number
   allowance_unit?: string

@@ -43,6 +43,7 @@ import {
   Hammer,
   Truck,
   Layers,
+  Zap,
 } from 'lucide-react'
 import type {
   ProductRecord,
@@ -308,7 +309,22 @@ export const DEFAULT_GENERAL_CATEGORIES: Array<{
   { id: 'graphic_design', name: 'Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)', name_bn: 'গ্রাফিক ডিজাইন ও প্রি-প্রেস সার্ভিস', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'vector_ai_pdf' },
   { id: 'technical_survey', name: 'Site Measurement & Feasibility Survey (সাইট ভিজিট)', name_bn: 'সাইট ভিজিট ও মেজারমেন্ট', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'site_survey_cad' },
   { id: 'maintenance_repair', name: 'Signboard Maintenance & LED Repair (সাইনবোর্ড মেরামত)', name_bn: 'সাইনবোর্ড মেরামত ও সার্ভিসিং', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'on_site_repair' },
-  { id: 'custom_job_service', name: 'Miscellaneous Custom Service Work (কাস্টম সার্ভিস জব)', name_bn: 'কাস্টম সার্ভিস জব', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'custom_deliverable' },
+]
+
+export const MATERIAL_FILTER_TABS: Array<{
+  id: 'all' | 'roll' | 'sheet' | 'ink' | 'finishing' | 'metal_pipe' | 'electrical' | 'fasteners' | 'packaging'
+  label: string
+  label_bn: string
+}> = [
+  { id: 'all', label: 'All Raw Materials', label_bn: 'সকল কাঁচামাল' },
+  { id: 'roll', label: 'Roll Media & Vinyl', label_bn: 'রোল মিডিয়া ও ভিনাইল' },
+  { id: 'sheet', label: 'Rigid Sheets & Boards', label_bn: 'শীট ও বোর্ড' },
+  { id: 'ink', label: 'Inks & Chemistry', label_bn: 'কালি ও লিকুইড' },
+  { id: 'finishing', label: 'Finishing & Films', label_bn: 'ল্যামিনেশন ফিল্ম ও আইলেট' },
+  { id: 'metal_pipe', label: 'Metals & Pipes', label_bn: 'মেটাল ও পাইপ কাঠামো' },
+  { id: 'electrical', label: 'LEDs & Power', label_bn: 'এলইডি ও পাওয়ার সাপ্লাই' },
+  { id: 'fasteners', label: 'Fasteners & Adhesives', label_bn: 'স্ক্রু ও সিলিকন' },
+  { id: 'packaging', label: 'Packaging Consumables', label_bn: 'প্যাকেজিং কার্টুন ও বাবল' },
 ]
 
 const INK_CHANNEL_PRESETS = {
@@ -431,6 +447,9 @@ export function ServiceConfigModal({
 
   // 2. Required Materials (BOM) & Wastage
   const [materialSearchQuery, setMaterialSearchQuery] = useState('')
+  const [materialCategoryFilter, setMaterialCategoryFilter] = useState<
+    'all' | 'roll' | 'sheet' | 'ink' | 'finishing' | 'metal_pipe' | 'electrical' | 'fasteners' | 'packaging'
+  >('all')
   const [requiredMaterials, setRequiredMaterials] = useState<Array<ServiceRequiredMaterial & { is_primary?: boolean }>>([])
   const [defaultWastagePercent, setDefaultWastagePercent] = useState<number>(5)
 
@@ -1138,6 +1157,19 @@ export function ServiceConfigModal({
     setErrorMessage(null)
   }, [initialData, isOpen])
 
+  // Helper to extract purchase price/cost from material
+  const getMaterialCost = (mat: MaterialRecord): number => {
+    const cost =
+      (mat as any).purchase_price_per_sft ??
+      (mat as any).base_cost ??
+      (mat as any).purchase_price ??
+      (mat as any).cost_per_unit ??
+      (mat as any).last_purchase_price ??
+      (mat as any).material_config?.purchase_price_per_sft ??
+      0
+    return Number(cost) || 0
+  }
+
   // Handle selecting Printable Material (Inventory Item) and Auto-Syncing its configured sizes and cost
   const handleSelectPrintableMaterial = (matId: string) => {
     setPrintableMaterialId(matId)
@@ -1174,12 +1206,41 @@ export function ServiceConfigModal({
     setPurchaseUnit(pUnit)
 
     // 5. Material Direct Cost (Purchase Rate per SFT)
-    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft
-    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
-      setMaterialCost(Number(matCostVal))
-      setPurchasePrice(Number(matCostVal))
-      setBaseCostEstimate(Number(matCostVal))
+    const matCostVal = getMaterialCost(mat)
+    if (matCostVal > 0) {
+      setMaterialCost(matCostVal)
+      setPurchasePrice(matCostVal)
+      setBaseCostEstimate(matCostVal)
     }
+
+    // Auto-sync into requiredMaterials (BOM)
+    setRequiredMaterials((prev) => {
+      const existingIdx = prev.findIndex((m) => m.material_id === mat.id)
+      if (existingIdx >= 0) {
+        return prev.map((m, i) => ({
+          ...m,
+          is_primary: i === existingIdx,
+          unit_cost: m.unit_cost || matCostVal,
+          subtotal_cost: parseFloat(((Number(m.quantity_per_unit) || 1) * (m.unit_cost || matCostVal) * (1 + (Number(m.waste_percent) || 0) / 100)).toFixed(2)),
+        }))
+      }
+      const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
+        id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        material_id: mat.id,
+        material_name: mat.name,
+        sku: mat.sku || undefined,
+        category: mat.category || undefined,
+        is_required: true,
+        is_primary: true,
+        quantity_per_unit: 1,
+        quantity_required: 1,
+        unit: (mat as any).purchase_unit || mat.unit || 'sft',
+        unit_cost: matCostVal,
+        waste_percent: defaultWastagePercent,
+        subtotal_cost: parseFloat((1 * matCostVal * (1 + defaultWastagePercent / 100)).toFixed(2)),
+      }
+      return [newItem, ...prev.map((m) => ({ ...m, is_primary: false }))]
+    })
   }
 
   // Handle selecting Finishing Raw Material (when serviceType === 'finishing')
@@ -1213,12 +1274,41 @@ export function ServiceConfigModal({
     const pUnit = (mat as any).purchase_unit || mat.unit || 'roll'
     setPurchaseUnit(pUnit)
 
-    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft
-    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
-      setMaterialCost(Number(matCostVal))
-      setPurchasePrice(Number(matCostVal))
-      setBaseCostEstimate(Number(matCostVal))
+    const matCostVal = getMaterialCost(mat)
+    if (matCostVal > 0) {
+      setMaterialCost(matCostVal)
+      setPurchasePrice(matCostVal)
+      setBaseCostEstimate(matCostVal)
     }
+
+    // Auto-sync into requiredMaterials
+    setRequiredMaterials((prev) => {
+      const existingIdx = prev.findIndex((m) => m.material_id === mat.id)
+      if (existingIdx >= 0) {
+        return prev.map((m, i) => ({
+          ...m,
+          is_primary: i === existingIdx,
+          unit_cost: m.unit_cost || matCostVal,
+          subtotal_cost: parseFloat(((Number(m.quantity_per_unit) || 1) * (m.unit_cost || matCostVal) * (1 + (Number(m.waste_percent) || 0) / 100)).toFixed(2)),
+        }))
+      }
+      const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
+        id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        material_id: mat.id,
+        material_name: mat.name,
+        sku: mat.sku || undefined,
+        category: mat.category || undefined,
+        is_required: true,
+        is_primary: true,
+        quantity_per_unit: 1,
+        quantity_required: 1,
+        unit: (mat as any).purchase_unit || mat.unit || 'sft',
+        unit_cost: matCostVal,
+        waste_percent: defaultWastagePercent,
+        subtotal_cost: parseFloat((1 * matCostVal * (1 + defaultWastagePercent / 100)).toFixed(2)),
+      }
+      return [newItem, ...prev.map((m) => ({ ...m, is_primary: false }))]
+    })
   }
 
   // Handle selecting Production Raw Material (Base Substrate/Sheet/Pipe)
@@ -1227,12 +1317,41 @@ export function ServiceConfigModal({
     if (!matId) return
     const mat = availableMaterials.find((m) => m.id === matId)
     if (!mat) return
-    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft ?? mat.cost_per_unit
-    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
-      setMaterialCost(Number(matCostVal))
-      setPurchasePrice(Number(matCostVal))
-      setBaseCostEstimate(Number(matCostVal))
+    const matCostVal = getMaterialCost(mat)
+    if (matCostVal > 0) {
+      setMaterialCost(matCostVal)
+      setPurchasePrice(matCostVal)
+      setBaseCostEstimate(matCostVal)
     }
+
+    // Auto-sync into requiredMaterials
+    setRequiredMaterials((prev) => {
+      const existingIdx = prev.findIndex((m) => m.material_id === mat.id)
+      if (existingIdx >= 0) {
+        return prev.map((m, i) => ({
+          ...m,
+          is_primary: i === existingIdx,
+          unit_cost: m.unit_cost || matCostVal,
+          subtotal_cost: parseFloat(((Number(m.quantity_per_unit) || 1) * (m.unit_cost || matCostVal) * (1 + (Number(m.waste_percent) || 0) / 100)).toFixed(2)),
+        }))
+      }
+      const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
+        id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        material_id: mat.id,
+        material_name: mat.name,
+        sku: mat.sku || undefined,
+        category: mat.category || undefined,
+        is_required: true,
+        is_primary: true,
+        quantity_per_unit: 1,
+        quantity_required: 1,
+        unit: (mat as any).purchase_unit || mat.unit || 'sheet',
+        unit_cost: matCostVal,
+        waste_percent: defaultWastagePercent,
+        subtotal_cost: parseFloat((1 * matCostVal * (1 + defaultWastagePercent / 100)).toFixed(2)),
+      }
+      return [newItem, ...prev.map((m) => ({ ...m, is_primary: false }))]
+    })
   }
 
   // Handle selecting Installation Hardware & Fasteners Material
@@ -1241,10 +1360,28 @@ export function ServiceConfigModal({
     if (!matId) return
     const mat = availableMaterials.find((m) => m.id === matId)
     if (!mat) return
-    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft ?? mat.cost_per_unit
-    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
-      setMaterialCost(Number(matCostVal))
-    }
+    const matCostVal = getMaterialCost(mat)
+
+    // Auto-add to requiredMaterials
+    setRequiredMaterials((prev) => {
+      if (prev.some((m) => m.material_id === mat.id)) return prev
+      const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
+        id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        material_id: mat.id,
+        material_name: mat.name,
+        sku: mat.sku || undefined,
+        category: mat.category || undefined,
+        is_required: true,
+        is_primary: false,
+        quantity_per_unit: 1,
+        quantity_required: 1,
+        unit: (mat as any).purchase_unit || mat.unit || 'piece',
+        unit_cost: matCostVal,
+        waste_percent: 0,
+        subtotal_cost: matCostVal,
+      }
+      return [...prev, newItem]
+    })
   }
 
   // Handle selecting Delivery Packaging Material
@@ -1253,10 +1390,28 @@ export function ServiceConfigModal({
     if (!matId) return
     const mat = availableMaterials.find((m) => m.id === matId)
     if (!mat) return
-    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft ?? mat.cost_per_unit
-    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
-      setMaterialCost(Number(matCostVal))
-    }
+    const matCostVal = getMaterialCost(mat)
+
+    // Auto-add to requiredMaterials
+    setRequiredMaterials((prev) => {
+      if (prev.some((m) => m.material_id === mat.id)) return prev
+      const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
+        id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        material_id: mat.id,
+        material_name: mat.name,
+        sku: mat.sku || undefined,
+        category: mat.category || undefined,
+        is_required: true,
+        is_primary: false,
+        quantity_per_unit: 1,
+        quantity_required: 1,
+        unit: (mat as any).purchase_unit || mat.unit || 'piece',
+        unit_cost: matCostVal,
+        waste_percent: 0,
+        subtotal_cost: matCostVal,
+      }
+      return [...prev, newItem]
+    })
   }
 
   const handleApplyInkPreset = (presetKey: keyof typeof INK_CHANNEL_PRESETS) => {
@@ -1316,6 +1471,19 @@ export function ServiceConfigModal({
     return mat + ink + mach + lab + fin + fab + inst + del + oth
   }, [materialCost, purchasePrice, baseCostEstimate, inkCost, machineCost, laborCost, finishingCost, fabricationCost, installationCost, deliveryCost, otherDirectCost])
 
+  // Total BOM Direct Material Cost (Sum of all line subtotals)
+  const totalBOMCost = useMemo(() => {
+    return requiredMaterials.reduce((acc, item) => {
+      const qty = Number(item.quantity_per_unit ?? item.quantity_required) || 1
+      const cost = Number(item.unit_cost) || 0
+      const waste = Number(item.waste_percent) || 0
+      const lineSubtotal = item.subtotal_cost !== undefined && !isNaN(item.subtotal_cost)
+        ? item.subtotal_cost
+        : qty * cost * (1 + waste / 100)
+      return acc + lineSubtotal
+    }, 0)
+  }, [requiredMaterials])
+
   // Live Gross Margin Analysis
   const marginMetrics = useMemo(() => {
     const sp = Number(sellingPrice) || 0
@@ -1362,23 +1530,120 @@ export function ServiceConfigModal({
     })
   }
 
-  // Material Toggle for Tab 2 (Additional BOM)
+  // Material Toggle for Tab 2 (Add / Remove from BOM)
   const handleToggleMaterial = (mat: MaterialRecord) => {
     const exists = requiredMaterials.some((m) => m.material_id === mat.id)
     if (exists) {
       setRequiredMaterials(requiredMaterials.filter((m) => m.material_id !== mat.id))
     } else {
-      setRequiredMaterials([
-        ...requiredMaterials,
-        {
-          material_id: mat.id,
-          material_name: mat.name,
-          is_required: true,
-          is_primary: requiredMaterials.length === 0,
-          unit: mat.unit,
-          waste_percent: 5,
-        },
-      ])
+      const cost = getMaterialCost(mat)
+      const qty = 1
+      const waste = defaultWastagePercent
+      const subtotal = parseFloat((qty * cost * (1 + waste / 100)).toFixed(2))
+
+      const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
+        id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        material_id: mat.id,
+        material_name: mat.name,
+        sku: mat.sku || undefined,
+        category: mat.category || undefined,
+        is_required: true,
+        is_primary: requiredMaterials.length === 0,
+        quantity_per_unit: qty,
+        quantity_required: qty,
+        unit: (mat as any).purchase_unit || mat.unit || 'unit',
+        unit_cost: cost,
+        waste_percent: waste,
+        subtotal_cost: subtotal,
+      }
+      setRequiredMaterials([...requiredMaterials, newItem])
+    }
+  }
+
+  // Update specific BOM item line
+  const handleUpdateBOMItem = (index: number, field: keyof ServiceRequiredMaterial, value: any) => {
+    const next = [...requiredMaterials]
+    if (!next[index]) return
+    const item = { ...next[index], [field]: value }
+
+    const qty = Number(item.quantity_per_unit ?? item.quantity_required) || 1
+    const cost = Number(item.unit_cost) || 0
+    const waste = Number(item.waste_percent) || 0
+    item.subtotal_cost = parseFloat((qty * cost * (1 + waste / 100)).toFixed(2))
+    item.quantity_required = qty
+    item.quantity_per_unit = qty
+
+    next[index] = item
+    setRequiredMaterials(next)
+  }
+
+  // Toggle or Set Primary Material in BOM
+  const handleSetPrimaryMaterial = (index: number) => {
+    const next = requiredMaterials.map((m, i) => ({
+      ...m,
+      is_primary: i === index,
+    }))
+    setRequiredMaterials(next)
+
+    const selected = next[index]
+    if (selected && selected.material_id) {
+      if (serviceType === 'printing') {
+        handleSelectPrintableMaterial(selected.material_id)
+      } else if (serviceType === 'production') {
+        handleSelectProductionMaterial(selected.material_id)
+      } else if (serviceType === 'finishing') {
+        handleSelectFinishingMaterial(selected.material_id)
+      }
+    }
+  }
+
+  // Remove BOM Item
+  const handleRemoveBOMItem = (index: number) => {
+    setRequiredMaterials(requiredMaterials.filter((_, i) => i !== index))
+  }
+
+  // 1-Click Sync BOM Total to Direct Media Cost
+  const handleSyncBOMToDirectCost = () => {
+    const calcCost = parseFloat(totalBOMCost.toFixed(2))
+    if (calcCost > 0) {
+      setMaterialCost(calcCost)
+      setPurchasePrice(calcCost)
+      setBaseCostEstimate(calcCost)
+    }
+  }
+
+  // 1-Click Auto-Calculate All Direct Costs across BOM, Inks, Finishing, Fabrication & Installation
+  const handleAutoCalculateAllDirectCosts = () => {
+    // 1. Direct Material from BOM
+    let calcMat = totalBOMCost > 0 ? parseFloat(totalBOMCost.toFixed(2)) : (Number(materialCost) || 0)
+    if (calcMat === 0 && (printableMaterialId || productionMaterialId || finishingMaterialId)) {
+      const primaryId = printableMaterialId || productionMaterialId || finishingMaterialId
+      const mat = availableMaterials.find((m) => m.id === primaryId)
+      if (mat) calcMat = getMaterialCost(mat)
+    }
+    setMaterialCost(calcMat)
+    setPurchasePrice(calcMat)
+    setBaseCostEstimate(calcMat)
+
+    // 2. Inks Cost
+    if (serviceType === 'printing') {
+      setInkCost(autoCalculatedInkMetrics.unitInkCost)
+    }
+
+    // 3. Finishing Direct Cost
+    const defaultFinCosts = finishingOptions
+      .filter((f) => f.is_default || f.pricing_method === 'per_sqft' || f.pricing_method === 'per_unit')
+      .reduce((acc, f) => acc + (Number(f.unit_cost ?? f.cost) || 0), 0)
+    if (defaultFinCosts > 0) {
+      setFinishingCost(parseFloat(defaultFinCosts.toFixed(2)))
+    }
+
+    // 4. Installation Direct Cost
+    const defaultInstCosts = installationOptions
+      .filter((i) => i.pricing_method === 'per_sqft' || i.pricing_method === 'per_unit')
+      .reduce((acc, i) => acc + (Number(i.unit_cost ?? i.cost) || 0), 0)
+    if (defaultInstCosts > 0) {
+      setInstallationCost(parseFloat(defaultInstCosts.toFixed(2)))
     }
   }
 
@@ -1571,17 +1836,55 @@ export function ServiceConfigModal({
     setShowCustomAddonForm(false)
   }
 
-  // Filtered raw materials for Tab 2
+  // Filtered raw materials for Tab 2 with rich multi-category quick filters
   const filteredMaterials = useMemo(() => {
-    if (!materialSearchQuery) return substrateMaterials
-    const q = materialSearchQuery.toLowerCase()
-    return substrateMaterials.filter(
+    let list = availableMaterials
+    if (materialCategoryFilter === 'roll') {
+      list = availableMaterials.filter((m) => {
+        const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
+        const c = (m.category || '').toLowerCase()
+        const n = (m.name || '').toLowerCase()
+        return u === 'roll' || c.includes('roll') || c.includes('vinyl') || c.includes('banner') || c.includes('media') || c.includes('flex') || n.includes('vinyl') || n.includes('banner') || n.includes('flex')
+      })
+    } else if (materialCategoryFilter === 'sheet') {
+      list = availableMaterials.filter((m) => {
+        const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
+        const c = (m.category || '').toLowerCase()
+        const n = (m.name || '').toLowerCase()
+        return u === 'sheet' || u === 'piece' || c.includes('sheet') || c.includes('board') || c.includes('foam') || c.includes('acrylic') || c.includes('acp') || c.includes('rigid') || n.includes('sheet') || n.includes('board') || n.includes('foam') || n.includes('acrylic') || n.includes('acp')
+      })
+    } else if (materialCategoryFilter === 'ink') {
+      list = inkMaterials
+    } else if (materialCategoryFilter === 'finishing') {
+      list = finishingMaterials.length > 0 ? finishingMaterials : availableMaterials.filter((m) => {
+        const c = (m.category || '').toLowerCase()
+        const n = (m.name || '').toLowerCase()
+        return c.includes('finish') || c.includes('laminat') || c.includes('film') || c.includes('tape') || c.includes('eyelet') || n.includes('laminat') || n.includes('film') || n.includes('tape')
+      })
+    } else if (materialCategoryFilter === 'metal_pipe') {
+      list = productionMaterials.length > 0 ? productionMaterials : availableMaterials.filter((m) => {
+        const c = (m.category || '').toLowerCase()
+        const n = (m.name || '').toLowerCase()
+        return c.includes('pipe') || c.includes('metal') || c.includes('steel') || c.includes('frame') || n.includes('pipe') || n.includes('ss') || n.includes('ms') || n.includes('frame')
+      })
+    } else if (materialCategoryFilter === 'electrical') {
+      list = electricalMaterials
+    } else if (materialCategoryFilter === 'fasteners') {
+      list = installationHardwareMaterials
+    } else if (materialCategoryFilter === 'packaging') {
+      list = packagingMaterials
+    }
+
+    if (!materialSearchQuery) return list
+    const q = materialSearchQuery.toLowerCase().trim()
+    return list.filter(
       (m) =>
         m.name.toLowerCase().includes(q) ||
+        ((m as any).name_bn && (m as any).name_bn.toLowerCase().includes(q)) ||
         (m.sku && m.sku.toLowerCase().includes(q)) ||
         (m.category && m.category.toLowerCase().includes(q))
     )
-  }, [substrateMaterials, materialSearchQuery])
+  }, [availableMaterials, materialCategoryFilter, materialSearchQuery, inkMaterials, finishingMaterials, productionMaterials, electricalMaterials, installationHardwareMaterials, packagingMaterials])
 
   // Form Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
@@ -3146,96 +3449,373 @@ export function ServiceConfigModal({
         )}
 
         {/* ======================================================== */}
-        {/* TAB 2: COMPATIBLE RAW MEDIA & ADDITIONAL BOM              */}
+        {/* TAB 2: CONNECTED RAW MATERIALS & BILL OF MATERIALS (BOM)  */}
         {/* ======================================================== */}
         {activeTab === 'materials' && (
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
-                  2
+            {/* Header with Title and Summary Badges */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs shrink-0">
+                  <Boxes className="w-4 h-4" />
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Additional Consumables & BOM Media
-                </h3>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Raw Materials & Bill of Materials (BOM) — কাঁচামাল ও রেসিপি কাঠামো
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Connect substrate media, rigid sheets, inks, structural metals & hardware to build the production recipe.
+                  </p>
+                </div>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono uppercase bg-amber-50 text-amber-700 border-amber-200">
-                {requiredMaterials.length} Selected
-              </Badge>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge variant="outline" className="text-[10px] font-mono uppercase bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
+                  {requiredMaterials.length} In Recipe
+                </Badge>
+                <Badge className="bg-emerald-600 text-white text-[10px] font-mono py-0.5">
+                  BOM Direct Cost: ৳{totalBOMCost.toFixed(2)} / {sellingUnit || 'sft'}
+                </Badge>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="relative">
+            {/* Section 1: Interactive Configured Bill of Materials (BOM) Table */}
+            {requiredMaterials.length > 0 && (
+              <div className="p-3.5 rounded-xl border border-amber-200 dark:border-amber-800/80 bg-amber-50/40 dark:bg-amber-950/20 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                    <span className="text-xs font-bold text-amber-950 dark:text-amber-200 uppercase tracking-wider">
+                      Configured BOM Recipe Components ({requiredMaterials.length})
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleSyncBOMToDirectCost}
+                      className="h-7 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1 shadow-2xs cursor-pointer"
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>Sync BOM Total (৳{totalBOMCost.toFixed(2)}) to Media Cost</span>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* BOM Table */}
+                <div className="overflow-x-auto rounded-lg border border-amber-200 dark:border-amber-900 bg-white dark:bg-slate-900">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-amber-100 dark:border-slate-800 bg-amber-50/60 dark:bg-slate-800/50 text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400">
+                        <th className="py-2 px-2 text-center w-10">Primary</th>
+                        <th className="py-2 px-3">Raw Material / Substrate</th>
+                        <th className="py-2 px-2 w-24">Qty / Unit</th>
+                        <th className="py-2 px-2 w-20">Unit</th>
+                        <th className="py-2 px-2 w-24">Unit Cost (৳)</th>
+                        <th className="py-2 px-2 w-20">Wastage %</th>
+                        <th className="py-2 px-3 text-right w-28">Subtotal (৳)</th>
+                        <th className="py-2 px-2 text-center w-10">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {requiredMaterials.map((item, idx) => {
+                        const isPrimary = Boolean(item.is_primary)
+                        const qty = Number(item.quantity_per_unit ?? item.quantity_required) || 1
+                        const cost = Number(item.unit_cost) || 0
+                        const waste = Number(item.waste_percent) || 0
+                        const lineSubtotal = item.subtotal_cost !== undefined ? item.subtotal_cost : (qty * cost * (1 + waste / 100))
+
+                        return (
+                          <tr
+                            key={item.id || idx}
+                            className={cn(
+                              'hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors',
+                              isPrimary && 'bg-amber-50/30 dark:bg-amber-950/20 font-medium'
+                            )}
+                          >
+                            {/* Primary Toggle */}
+                            <td className="py-2 px-2 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleSetPrimaryMaterial(idx)}
+                                title={isPrimary ? 'Primary Base Substrate' : 'Click to set as Primary Substrate'}
+                                className={cn(
+                                  'p-1 rounded-md transition-colors cursor-pointer',
+                                  isPrimary
+                                    ? 'text-amber-500 hover:text-amber-600'
+                                    : 'text-slate-300 hover:text-amber-400'
+                                )}
+                              >
+                                <Star className={cn('w-4 h-4', isPrimary && 'fill-amber-500')} />
+                              </button>
+                            </td>
+
+                            {/* Material Name & SKU */}
+                            <td className="py-2 px-3">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-bold text-slate-900 dark:text-white">
+                                  {item.material_name}
+                                </span>
+                                {item.sku && (
+                                  <span className="text-[10px] text-slate-400 font-mono">
+                                    [{item.sku}]
+                                  </span>
+                                )}
+                                {isPrimary && (
+                                  <Badge className="bg-amber-500 text-white text-[9px] px-1.5 py-0">
+                                    Primary Base
+                                  </Badge>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Quantity Input */}
+                            <td className="py-2 px-2">
+                              <Input
+                                type="number"
+                                step="any"
+                                min="0.01"
+                                value={item.quantity_per_unit ?? 1}
+                                onChange={(e) => handleUpdateBOMItem(idx, 'quantity_per_unit', parseFloat(e.target.value) || 0)}
+                                className="h-7 text-xs font-mono font-bold px-1.5 text-center"
+                              />
+                            </td>
+
+                            {/* Unit */}
+                            <td className="py-2 px-2">
+                              <span className="text-[11px] font-mono text-slate-600 dark:text-slate-300 font-medium block uppercase truncate">
+                                {item.unit || 'sft'}
+                              </span>
+                            </td>
+
+                            {/* Unit Cost */}
+                            <td className="py-2 px-2">
+                              <div className="relative">
+                                <span className="absolute left-1.5 top-1.5 text-[10px] text-slate-400">৳</span>
+                                <Input
+                                  type="number"
+                                  step="any"
+                                  min="0"
+                                  value={item.unit_cost ?? 0}
+                                  onChange={(e) => handleUpdateBOMItem(idx, 'unit_cost', parseFloat(e.target.value) || 0)}
+                                  className="h-7 text-xs font-mono pl-4 pr-1 text-right"
+                                />
+                              </div>
+                            </td>
+
+                            {/* Wastage % */}
+                            <td className="py-2 px-2">
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="50"
+                                  value={item.waste_percent ?? 5}
+                                  onChange={(e) => handleUpdateBOMItem(idx, 'waste_percent', parseFloat(e.target.value) || 0)}
+                                  className="h-7 text-xs font-mono pr-4 text-center"
+                                />
+                                <span className="absolute right-1.5 top-1.5 text-[10px] text-slate-400 font-bold">%</span>
+                              </div>
+                            </td>
+
+                            {/* Subtotal Contribution */}
+                            <td className="py-2 px-3 text-right">
+                              <span className="text-xs font-mono font-bold text-amber-700 dark:text-amber-300">
+                                ৳{Number(lineSubtotal).toFixed(2)}
+                              </span>
+                            </td>
+
+                            {/* Remove Action */}
+                            <td className="py-2 px-2 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveBOMItem(idx)}
+                                className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer transition-colors"
+                                title="Remove component"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t-2 border-amber-200 dark:border-slate-700 bg-amber-50/80 dark:bg-slate-800/80 font-bold text-xs">
+                        <td colSpan={6} className="py-2 px-3 text-right text-slate-700 dark:text-slate-300">
+                          Total Direct Material BOM Cost (per {sellingUnit || 'sft'}):
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono text-sm text-emerald-700 dark:text-emerald-300">
+                          ৳{totalBOMCost.toFixed(2)}
+                        </td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Section 2: Multi-Category Raw Material Explorer & Quick Filters */}
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                  Raw Materials Inventory Catalog (কাঁচামাল ক্যাটালগ ব্রাউজার)
+                </Label>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  {filteredMaterials.length} materials matching filter
+                </span>
+              </div>
+
+              {/* 9-Pill Category Filters */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {MATERIAL_FILTER_TABS.map((tab) => {
+                  const isSelected = materialCategoryFilter === tab.id
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setMaterialCategoryFilter(tab.id)}
+                      className={cn(
+                        'px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer flex items-center gap-1',
+                        isSelected
+                          ? 'bg-amber-600 text-white border-amber-600 shadow-2xs'
+                          : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                      )}
+                    >
+                      <span>{tab.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Search Bar & Default Wastage Buffer */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2 relative">
                   <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                   <Input
-                    placeholder="Search additional materials / accessories..."
+                    placeholder="Search raw materials by name, SKU or category (e.g. Vinyl, Backlit, Acrylic, MS Pipe, SMPS, Foam...)"
                     value={materialSearchQuery}
                     onChange={(e) => setMaterialSearchQuery(e.target.value)}
-                    className="pl-9 h-9 text-xs"
+                    className="pl-9 h-9 text-xs bg-white dark:bg-slate-900"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                    Default Wastage Buffer:
+                    Default Wastage:
                   </Label>
-                  <div className="relative w-28">
+                  <div className="relative w-full">
                     <Input
                       type="number"
                       min="0"
                       max="50"
                       value={defaultWastagePercent}
                       onChange={(e) => setDefaultWastagePercent(parseFloat(e.target.value) || 0)}
-                      className="h-9 text-xs font-mono font-bold pr-8"
+                      className="h-9 text-xs font-mono font-bold pr-8 bg-white dark:bg-slate-900"
                     />
                     <span className="absolute right-3 top-2 text-xs text-slate-400 font-bold">%</span>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+              {/* Material Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto pr-1">
                 {filteredMaterials.length === 0 ? (
-                  <div className="sm:col-span-2 py-8 text-center text-xs text-slate-500">
-                    No matching materials found in inventory stock.
+                  <div className="sm:col-span-3 py-10 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                    No matching raw materials found in this category.
                   </div>
                 ) : (
                   filteredMaterials.map((mat) => {
                     const reqItem = requiredMaterials.find((m) => m.material_id === mat.id)
                     const isSelected = Boolean(reqItem)
+                    const isPrimary = Boolean(reqItem?.is_primary)
+                    const costVal = getMaterialCost(mat)
+                    const pUnit = (mat as any).purchase_unit || mat.unit || 'unit'
+
                     return (
                       <div
                         key={mat.id}
                         className={cn(
-                          'p-3 rounded-xl border text-left transition-all flex items-center justify-between text-xs',
+                          'p-3 rounded-xl border text-xs transition-all flex flex-col justify-between gap-2',
                           isSelected
-                            ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 ring-1 ring-blue-500 shadow-xs'
+                            ? 'border-amber-500 bg-amber-50/70 dark:bg-amber-950/40 text-amber-950 dark:text-amber-100 ring-1 ring-amber-500 shadow-xs'
                             : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
                         )}
                       >
-                        <div className="flex-1 cursor-pointer" onClick={() => handleToggleMaterial(mat)}>
-                          <span className="font-bold">{mat.name}</span>
+                        <div>
+                          <div className="flex items-start justify-between gap-1">
+                            <span className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                              {mat.name}
+                            </span>
+                            <Badge variant="outline" className="text-[9px] uppercase px-1 py-0 font-mono shrink-0">
+                              {mat.category || 'material'}
+                            </Badge>
+                          </div>
+
+                          {(mat as any).name_bn && (
+                            <span className="text-[10px] text-slate-500 font-bengali block">
+                              {(mat as any).name_bn}
+                            </span>
+                          )}
+
                           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mt-0.5">
-                            {mat.sku} • {(mat as any).purchase_unit || mat.unit || 'unit'}
-                            {((mat as any).purchase_price || mat.cost_per_unit || mat.last_purchase_price) ? ` • ৳${(mat as any).purchase_price || mat.cost_per_unit || mat.last_purchase_price}` : ''}
+                            {mat.sku} • {pUnit} {costVal > 0 ? `• ৳${costVal}/${pUnit}` : ''}
                           </span>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleToggleMaterial(mat)}
-                          className={cn(
-                            'p-1.5 rounded-lg text-xs font-bold transition-all shrink-0',
-                            isSelected ? 'text-blue-600' : 'text-slate-400'
-                          )}
-                        >
-                          {isSelected ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                        </button>
+                        <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
+                          <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-300">
+                            {costVal > 0 ? `৳${costVal}/${pUnit}` : 'Raw Consumable'}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleMaterial(mat)}
+                            className={cn(
+                              'px-2 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer',
+                              isSelected
+                                ? 'bg-amber-600 text-white hover:bg-amber-700'
+                                : 'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/60 dark:text-amber-200'
+                            )}
+                          >
+                            {isSelected ? (
+                              <>
+                                <Check className="w-3 h-3" />
+                                <span>{isPrimary ? 'Primary In BOM' : 'In BOM'}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-3 h-3" />
+                                <span>Add to BOM</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     )
                   })
                 )}
               </div>
+            </div>
+
+            {/* Bottom Nav */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">
+                {requiredMaterials.length > 0 ? `✓ ${requiredMaterials.length} raw materials connected to this service recipe.` : 'Select raw materials from the catalog above.'}
+              </span>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab('finishing')}
+                className="h-8 text-xs font-bold border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 gap-1"
+              >
+                <span>Next: Finishing Operations</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
             </div>
           </div>
         )}
@@ -3803,16 +4383,34 @@ export function ServiceConfigModal({
 
             {/* 9-Point Direct Cost Breakdown Panel */}
             <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/40 dark:bg-blue-950/20 space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between pb-1.5 border-b border-blue-200/60 dark:border-blue-800/60">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-blue-200/60 dark:border-blue-800/60 gap-2">
                 <div className="flex items-center gap-2">
                   <Coins className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Direct Unit Cost Breakdown (9 Cost Heads)
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                      Direct Unit Cost Breakdown (9 Cost Heads)
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Material BOM, ink chemistry, machinery & labor contributions
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAutoCalculateAllDirectCosts}
+                    className="h-7 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white gap-1 shadow-2xs cursor-pointer"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Auto-Calculate Direct Costs from BOM</span>
+                  </Button>
+
+                  <span className="text-[11px] font-mono font-bold text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-900 px-2 py-1 rounded border border-blue-200 shadow-2xs">
+                    Total: ৳{totalDirectCost.toFixed(2)} / {sellingUnit || 'sft'}
                   </span>
                 </div>
-                <span className="text-[11px] font-mono font-bold text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-blue-200">
-                  Total Direct: ৳{totalDirectCost.toFixed(2)} / {sellingUnit || 'sft'}
-                </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
