@@ -90,6 +90,60 @@ const COMMON_SELLING_UNITS: { value: string; label: string; defaultMethod: Prici
   { value: 'hour', label: 'Hour — ঘণ্টা', defaultMethod: 'per_hour' },
 ]
 
+export const SERVICE_TYPE_CATEGORIES: Record<
+  'printing' | 'production' | 'finishing' | 'installation' | 'delivery' | 'general',
+  Array<{ id: string; name: string; name_bn?: string; defaultUnit?: string; defaultMethod?: PricingMethod }>
+> = {
+  printing: [
+    { id: 'wide_format_printing', name: 'Wide Format & Eco-Solvent Printing', name_bn: 'ওয়াইড ফরম্যাট ও ইকো-সলভেন্ট প্রিন্টিং', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'solvent_printing', name: 'Solvent Large Format Banner', name_bn: 'সলভেন্ট ব্যানার ও সাইনেজ প্রিন্ট', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'uv_printing', name: 'UV Flatbed & Roll Direct Print', name_bn: 'ইউভি ফ্ল্যাটবেড ও ডিরেক্ট প্রিন্ট', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'digital_print', name: 'Digital Press & Commercial Print', name_bn: 'ডিজিটাল কমার্শিয়াল ও লেজার প্রিন্ট', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+    { id: 'offset_printing', name: 'Commercial Sheetfed & Offset Packaging', name_bn: 'অফসেট প্যাকেজিং ও প্রিন্টিং', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+    { id: 'sublimation_printing', name: 'Dye Sublimation & Fabric Print', name_bn: 'সাবলিমেশন ও ফেব্রিক প্রিন্ট', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'dtf_printing', name: 'DTF Garment & Heat Transfer Print', name_bn: 'ডিটিএফ ও পোশাক প্রিন্ট', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'screen_printing', name: 'Screen Printing & Manual Mesh Print', name_bn: 'স্ক্রিন প্রিন্টিং ও ম্যানুয়াল মেশ', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+  ],
+  production: [
+    { id: 'signage_fabrication', name: 'Signboard & Metal Frame Fabrication', name_bn: 'সাইনবোর্ড ও মেটাল ফ্রেম স্ট্রাকচার', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'acrylic_3d_letters', name: '3D Acrylic, SS & Neon Letters', name_bn: 'এক্রিলিক ও ৩ডি নিয়ন লেটার', defaultUnit: 'inch', defaultMethod: 'per_length' },
+    { id: 'lightbox_led', name: 'LED Backlit & Slim Lightboxes', name_bn: 'লাইটবক্স ও এলইডি ডিসপ্লে ফ্রেম', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'cnc_wood_fabrication', name: 'CNC Router & Laser Engraving', name_bn: 'সিএনসি ও লেজার কাটিং/খোদাই', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'display_kiosks', name: 'POS Displays, Kiosks & Gondolas', name_bn: 'ডিসপ্লে কিয়স্ক ও পিওএসএম বুথ', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+    { id: 'event_backdrops', name: 'Event Staging & Truss Structures', name_bn: 'ইভেন্ট ব্যাকড্রপ ও স্টেজ স্ট্রাকচার', defaultUnit: 'sft', defaultMethod: 'per_area' },
+  ],
+  finishing: [
+    { id: 'thermal_lamination', name: 'Thermal Film Lamination (BOPP/PET)', name_bn: 'থার্মাল ফিল্ম ল্যামিনেশন', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'cold_lamination', name: 'Cold Pressure Sensitive Lamination', name_bn: 'কোল্ড প্রেসার ল্যামিনেশন', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'floor_anti_slip', name: 'Floor Anti-Slip & Heavy Overlaminate', name_bn: 'ফ্লোর এন্টি-স্লিপ ল্যামিনেশন', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'board_mounting', name: 'Foam & PVC Sunboard Mounting', name_bn: 'ফোম ও সানবোর্ড মাউন্টিং', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'eyelets_grommets', name: 'Brass & Metal Eyelet Punching', name_bn: 'আইলেট ও গ্রোমেট পাঞ্চিং', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+    { id: 'edge_hemming', name: 'Banner Edge Hemming & Seaming', name_bn: 'ব্যানার সেলাই ও এজিং', defaultUnit: 'rft', defaultMethod: 'per_length' },
+    { id: 'die_cutting', name: 'Plotter & Flatbed Die-Cutting', name_bn: 'ডাই-কাটিং ও কনট্যুর কাটিং', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+    { id: 'binding_finishing', name: 'Spiral, Comb & Hardcover Binding', name_bn: 'স্পাইরাল ও হার্ডকভার বাইন্ডিং', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+    { id: 'spot_uv_foiling', name: 'Spot UV & Hot Foil Stamping', name_bn: 'স্পট ইউভি ও ফয়েল স্ট্যাম্পিং', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+  ],
+  installation: [
+    { id: 'site_pasting', name: 'Glass & Wall Vinyl Graphics Pasting', name_bn: 'গ্লাস স্টিকার ও ওয়াল পেস্টিং', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'billboard_erection', name: 'Rooftop Billboard & Unipole Fitting', name_bn: 'বিলবোর্ড ও ইউনিপোল স্থাপন', defaultUnit: 'job', defaultMethod: 'per_job' },
+    { id: 'signboard_installation', name: 'Shopfront & Fascia Sign Fitting', name_bn: 'সাইনবোর্ড ও সাইন ফিটিং', defaultUnit: 'sft', defaultMethod: 'per_area' },
+    { id: 'vehicle_branding', name: 'Vehicle Branding & Fleet Wrapping', name_bn: 'গাড়ি ব্র্যান্ডিং ও র‍্যাপিং ফিটিং', defaultUnit: 'job', defaultMethod: 'per_job' },
+    { id: 'exhibition_setup', name: 'Stall Fabrication & Event Setup', name_bn: 'মেলা ও এক্সিবিশন সেটআপ', defaultUnit: 'job', defaultMethod: 'per_job' },
+  ],
+  delivery: [
+    { id: 'local_city_delivery', name: 'Local City Van / Bike Delivery', name_bn: 'সিটি ডেলিভারি ও পরিবহন', defaultUnit: 'trip', defaultMethod: 'per_job' },
+    { id: 'freight_transport', name: 'Inter-District Cargo & Freight Transport', name_bn: 'আন্তঃজেলা কার্গো ও কুরিয়ার', defaultUnit: 'job', defaultMethod: 'per_job' },
+    { id: 'express_delivery', name: 'Priority Express Delivery', name_bn: 'জরুরি এক্সপ্রেস ডেলিভারি', defaultUnit: 'trip', defaultMethod: 'per_job' },
+    { id: 'warehouse_handling', name: 'Packaging, Crating & Dispatch Handling', name_bn: 'প্যাকেজিং ও ওয়্যারহাউস হ্যান্ডলিং', defaultUnit: 'pcs', defaultMethod: 'per_piece' },
+  ],
+  general: [
+    { id: 'graphic_design', name: 'Graphic Design & Color Separation', name_bn: 'গ্রাফিক ডিজাইন ও প্রি-প্রেস সার্ভিস', defaultUnit: 'job', defaultMethod: 'per_job' },
+    { id: 'technical_survey', name: 'Site Measurement & Feasibility Survey', name_bn: 'সাইট ভিজিট ও মেজারমেন্ট', defaultUnit: 'job', defaultMethod: 'per_job' },
+    { id: 'maintenance_repair', name: 'Signboard Maintenance & LED Repair', name_bn: 'সাইনবোর্ড মেরামত ও সার্ভিসিং', defaultUnit: 'job', defaultMethod: 'per_job' },
+    { id: 'custom_job_service', name: 'Miscellaneous Custom Service Work', name_bn: 'কাস্টম সার্ভিস জব', defaultUnit: 'job', defaultMethod: 'per_job' },
+  ],
+}
+
 const DEFAULT_PRINT_CATEGORIES: Array<{ id: string; name: string; name_bn: string; defaultInk: string }> = [
   { id: 'eco_solvent', name: 'Large Format Eco-Solvent Print', name_bn: 'লার্জ ফরম্যাট ইকো-সলভেন্ট প্রিন্ট', defaultInk: 'Eco-Solvent Ink' },
   { id: 'solvent', name: 'Solvent Heavy Duty Print (Banner & Flex)', name_bn: 'সলভেন্ট হেভি ডিউটি প্রিন্ট', defaultInk: 'Solvent Heavy Duty Ink' },
@@ -389,6 +443,147 @@ export function ServiceConfigModal({
     })
   }, [availableMaterials])
 
+  // Filtered Catalog Categories based strictly on the selected Service Type
+  const filteredCatalogCategories = useMemo(() => {
+    const builtIn = SERVICE_TYPE_CATEGORIES[serviceType] || SERVICE_TYPE_CATEGORIES.printing
+
+    const custom = categories.filter((c) => {
+      if (c.applies_to_product_types && Array.isArray(c.applies_to_product_types) && c.applies_to_product_types.length > 0) {
+        return (
+          c.applies_to_product_types.includes(serviceType) ||
+          c.applies_to_product_types.includes('all') ||
+          c.applies_to_product_types.includes('service')
+        )
+      }
+
+      const n = (c.name || '').toLowerCase()
+      const s = (c.slug || '').toLowerCase()
+
+      if (serviceType === 'printing') {
+        return (
+          n.includes('print') ||
+          n.includes('প্রিন্ট') ||
+          s.includes('print') ||
+          n.includes('solvent') ||
+          n.includes('uv') ||
+          n.includes('offset') ||
+          n.includes('sublimation') ||
+          n.includes('dtf')
+        )
+      }
+      if (serviceType === 'finishing') {
+        return (
+          n.includes('finish') ||
+          n.includes('ফিনিশ') ||
+          s.includes('finish') ||
+          n.includes('laminat') ||
+          n.includes('ল্যামিনেশন') ||
+          s.includes('laminat') ||
+          n.includes('cut') ||
+          n.includes('কাটিং') ||
+          n.includes('eyelet') ||
+          n.includes('আইলেট') ||
+          n.includes('bind') ||
+          n.includes('বাইন্ডিং') ||
+          n.includes('mount') ||
+          n.includes('মাউন্টিং') ||
+          n.includes('foil') ||
+          n.includes('uv')
+        )
+      }
+      if (serviceType === 'production') {
+        return (
+          n.includes('fabricat') ||
+          n.includes('প্রোডাকশন') ||
+          s.includes('fabricat') ||
+          n.includes('sign') ||
+          n.includes('সাইনবোর্ড') ||
+          n.includes('letter') ||
+          n.includes('acrylic') ||
+          n.includes('lightbox') ||
+          n.includes('cnc') ||
+          n.includes('wood') ||
+          n.includes('frame') ||
+          n.includes('কাঠামো')
+        )
+      }
+      if (serviceType === 'installation') {
+        return (
+          n.includes('install') ||
+          n.includes('ইন্সটল') ||
+          s.includes('install') ||
+          n.includes('fit') ||
+          n.includes('ফিটিং') ||
+          n.includes('paste') ||
+          n.includes('পেস্টিং') ||
+          n.includes('erect') ||
+          n.includes('setup')
+        )
+      }
+      if (serviceType === 'delivery') {
+        return (
+          n.includes('deliver') ||
+          n.includes('ডেলিভারি') ||
+          s.includes('deliver') ||
+          n.includes('transport') ||
+          n.includes('পরিবহন') ||
+          n.includes('courier') ||
+          n.includes('কুরিয়ার') ||
+          s.includes('freight')
+        )
+      }
+      if (serviceType === 'general') {
+        return (
+          n.includes('service') ||
+          n.includes('সার্ভিস') ||
+          n.includes('design') ||
+          n.includes('ডিজাইন') ||
+          n.includes('survey') ||
+          n.includes('repair') ||
+          n.includes('general')
+        )
+      }
+      return false
+    })
+
+    const combined: Array<{ id: string; name: string; name_bn?: string | null }> = []
+    const seenIds = new Set<string>()
+
+    builtIn.forEach((b) => {
+      seenIds.add(b.id)
+      combined.push(b)
+    })
+
+    custom.forEach((c) => {
+      const key = c.slug || c.id
+      if (!seenIds.has(key)) {
+        seenIds.add(key)
+        combined.push({
+          id: key,
+          name: c.name,
+          name_bn: c.name_bn,
+        })
+      }
+    })
+
+    return combined
+  }, [serviceType, categories])
+
+  // Handle switching Service Type and aligning Catalog Category & default parameters
+  const handleSelectServiceType = (newType: 'printing' | 'production' | 'finishing' | 'installation' | 'delivery' | 'general') => {
+    setServiceType(newType)
+    const availableCats = SERVICE_TYPE_CATEGORIES[newType] || []
+    if (availableCats.length > 0) {
+      setCategory(availableCats[0].id)
+      if (availableCats[0].defaultUnit) {
+        setSellingUnit(availableCats[0].defaultUnit)
+      }
+      if (availableCats[0].defaultMethod) {
+        setPricingMethod(availableCats[0].defaultMethod)
+      }
+    }
+  }
+
   // Auto calculate average ink rate per ml and total ink cost per selling unit
   const autoCalculatedInkMetrics = useMemo(() => {
     if (!selectedInks || selectedInks.length === 0) {
@@ -529,7 +724,7 @@ export function ServiceConfigModal({
       setName('')
       setNameBn('')
       setSku(`SRV-${Date.now().toString().slice(-5)}`)
-      setCategory('printing_service')
+      setCategory('wide_format_printing')
       setServiceType('printing')
       setPrintCategory('Large Format Eco-Solvent Print')
       setFinishingCategory('Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)')
@@ -1326,7 +1521,7 @@ export function ServiceConfigModal({
                   </Label>
                   <select
                     value={serviceType}
-                    onChange={(e) => setServiceType(e.target.value as any)}
+                    onChange={(e) => handleSelectServiceType(e.target.value as any)}
                     className="w-full h-9 text-xs rounded-md border border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30 px-2.5 font-bold text-blue-900 dark:text-blue-200"
                   >
                     <option value="printing">🖨️ Printing Service (প্রিন্টিং সার্ভিস - Large Format, UV, Offset)</option>
@@ -1339,24 +1534,35 @@ export function ServiceConfigModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Catalog Category
-                  </Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold block text-slate-800 dark:text-slate-200">
+                      Catalog Category (ক্যাটালগ ক্যাটাগরি) <span className="text-rose-500">*</span>
+                    </Label>
+                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold uppercase">
+                      {filteredCatalogCategories.length} {serviceType} Categories
+                    </span>
+                  </div>
                   <select
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setCategory(val)
+                      const match = (SERVICE_TYPE_CATEGORIES[serviceType] || []).find((c) => c.id === val)
+                      if (match) {
+                        if (match.defaultUnit) setSellingUnit(match.defaultUnit)
+                        if (match.defaultMethod) setPricingMethod(match.defaultMethod)
+                      }
+                    }}
                     className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
                   >
-                    <option value="printing_service">Wide Format Printing</option>
-                    <option value="solvent_printing">Solvent / Eco-Solvent</option>
-                    <option value="uv_printing">UV Flatbed & Roll</option>
-                    <option value="digital_print">Digital Press & Offset</option>
-                    <option value="fabrication">Signage & Fabrication</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.slug || c.id}>
-                        {c.name}
+                    {filteredCatalogCategories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} {c.name_bn ? `(${c.name_bn})` : ''}
                       </option>
                     ))}
+                    {category && !filteredCatalogCategories.some((c) => c.id === category) && (
+                      <option value={category}>{category}</option>
+                    )}
                   </select>
                 </div>
               </div>
