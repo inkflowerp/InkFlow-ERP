@@ -50,6 +50,34 @@ interface ServiceConfigModalProps {
   installationMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
 }
 
+const COMMON_SELLING_UNITS: { value: string; label: string; defaultMethod: PricingMethod }[] = [
+  { value: 'sft', label: 'Square Feet (sft / sqft) — বর্গফুট', defaultMethod: 'per_area' },
+  { value: 'pcs', label: 'Piece (pcs) — পিস', defaultMethod: 'per_piece' },
+  { value: 'rft', label: 'Running Feet (rft) — রানিং ফিট', defaultMethod: 'per_length' },
+  { value: 'sheet', label: 'Sheet — শীট', defaultMethod: 'per_piece' },
+  { value: 'meter', label: 'Meter (m) — মিটার', defaultMethod: 'per_length' },
+  { value: 'sqm', label: 'Square Meter (sqm) — বর্গমিটার', defaultMethod: 'per_area' },
+  { value: 'inch', label: 'Inch (in) — ইঞ্চি', defaultMethod: 'per_length' },
+  { value: 'set', label: 'Set — সেট', defaultMethod: 'per_piece' },
+  { value: 'job', label: 'Job / Project — এককালীন চার্জ', defaultMethod: 'per_job' },
+  { value: 'hour', label: 'Hour — ঘণ্টা', defaultMethod: 'per_hour' },
+]
+
+const COMMON_PURCHASE_UNITS: { value: string; label: string }[] = [
+  { value: 'roll', label: 'Continuous Roll (রোল - Media Substrate)' },
+  { value: 'sheet', label: 'Rigid Sheet / Board (শীট)' },
+  { value: 'box', label: 'Box (বক্স)' },
+  { value: 'pack', label: 'Pack / Packet (প্যাকেট)' },
+  { value: 'pcs', label: 'Piece / Item (পিস)' },
+  { value: 'set', label: 'Set (সেট)' },
+  { value: 'bottle', label: 'Bottle / Can (বোতল)' },
+  { value: 'liter', label: 'Liter (লিটার)' },
+  { value: 'kg', label: 'Kilogram (কেজি)' },
+  { value: 'meter', label: 'Meter (মিটার)' },
+  { value: 'rft', label: 'Running Feet (rft)' },
+  { value: 'job', label: 'Job (জব)' },
+]
+
 export function ServiceConfigModal({
   isOpen,
   onClose,
@@ -70,6 +98,8 @@ export function ServiceConfigModal({
   const [sku, setSku] = useState('')
   const [category, setCategory] = useState('printing_service')
   const [printingMethodName, setPrintingMethodName] = useState('')
+  const [sellingUnit, setSellingUnit] = useState<string>('sft')
+  const [purchaseUnit, setPurchaseUnit] = useState<string>('roll')
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
 
@@ -109,6 +139,8 @@ export function ServiceConfigModal({
       setNameBn(initialData.name_bn || '')
       setSku(initialData.sku || '')
       setCategory(initialData.category || 'printing_service')
+      setSellingUnit(initialData.selling_unit || initialData.unit || 'sft')
+      setPurchaseUnit(initialData.purchase_unit || 'roll')
       setSellingPrice(initialData.selling_price || '')
       setIsActive(initialData.is_active !== false)
       setDescription(initialData.description || '')
@@ -132,6 +164,8 @@ export function ServiceConfigModal({
       setSku(`SRV-${Date.now().toString().slice(-5)}`)
       setCategory('printing_service')
       setPrintingMethodName(printingMethods[0]?.name || 'Eco-Solvent')
+      setSellingUnit('sft')
+      setPurchaseUnit('roll')
       setSellingPrice('')
       setIsActive(true)
       setDescription('')
@@ -280,8 +314,9 @@ export function ServiceConfigModal({
         product_type: 'print_service',
         entity_type: 'service',
         commercial_type: 'service',
-        unit: pricingMethod === 'per_area' ? 'sft' : 'piece',
-        selling_unit: pricingMethod === 'per_area' ? 'sft' : 'piece',
+        unit: sellingUnit as any,
+        selling_unit: sellingUnit,
+        purchase_unit: purchaseUnit,
         pricing_method: pricingMethod,
         selling_price: Number(sellingPrice),
         base_cost: 0,
@@ -464,6 +499,47 @@ export function ServiceConfigModal({
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Selling Unit (বিক্রয় একক) <span className="text-rose-500">*</span>
+                  </Label>
+                  <select
+                    value={sellingUnit}
+                    onChange={(e) => {
+                      const u = e.target.value
+                      setSellingUnit(u)
+                      const match = COMMON_SELLING_UNITS.find((x) => x.value === u)
+                      if (match) setPricingMethod(match.defaultMethod)
+                    }}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                  >
+                    {COMMON_SELLING_UNITS.map((u) => (
+                      <option key={u.value} value={u.value}>
+                        {u.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Purchase / Media Stock Unit (ক্রয় একক)
+                  </Label>
+                  <select
+                    value={purchaseUnit}
+                    onChange={(e) => setPurchaseUnit(e.target.value)}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                  >
+                    {COMMON_PURCHASE_UNITS.map((u) => (
+                      <option key={u.value} value={u.value}>
+                        {u.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
                   Service Description & Commercial Scope
@@ -505,6 +581,75 @@ export function ServiceConfigModal({
             </div>
 
             <div className="space-y-3">
+              {/* Unit & Measurement Dimension Settings */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                    Commercial Measurement & Units
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-mono uppercase bg-blue-50 text-blue-700 border-blue-200">
+                    Unit Alignment
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-[11px] font-semibold mb-1 block">
+                      Selling Unit (Customer Bill Unit)
+                    </Label>
+                    <select
+                      value={sellingUnit}
+                      onChange={(e) => {
+                        const u = e.target.value
+                        setSellingUnit(u)
+                        const match = COMMON_SELLING_UNITS.find((x) => x.value === u)
+                        if (match) setPricingMethod(match.defaultMethod)
+                      }}
+                      className="w-full h-8 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                    >
+                      {COMMON_SELLING_UNITS.map((u) => (
+                        <option key={u.value} value={u.value}>
+                          {u.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-[11px] font-semibold mb-1 block">
+                      Purchase Media Stock Unit
+                    </Label>
+                    <select
+                      value={purchaseUnit}
+                      onChange={(e) => setPurchaseUnit(e.target.value)}
+                      className="w-full h-8 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                    >
+                      {COMMON_PURCHASE_UNITS.map((u) => (
+                        <option key={u.value} value={u.value}>
+                          {u.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-[11px] font-semibold mb-1 block">
+                      Dimension Input Unit
+                    </Label>
+                    <select
+                      value={dimensionUnit}
+                      onChange={(e) => setDimensionUnit(e.target.value)}
+                      className="w-full h-8 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                    >
+                      <option value="ft">Feet (ft) — Standard Billboard / Signage</option>
+                      <option value="inch">Inches (in) — Fine Format / Labels</option>
+                      <option value="meter">Meters (m) — Metric Scale</option>
+                      <option value="mm">Millimeters (mm) — Precision Engineering</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-slate-900 dark:text-white block">
@@ -782,7 +927,7 @@ export function ServiceConfigModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
-                    Base Selling Rate (৳ / {pricingMethod === 'per_area' ? 'SFT' : 'Piece'}) <span className="text-rose-500">*</span>
+                    Base Selling Rate (৳ / {sellingUnit ? sellingUnit.toUpperCase() : (pricingMethod === 'per_area' ? 'SFT' : 'Piece')}) <span className="text-rose-500">*</span>
                   </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>

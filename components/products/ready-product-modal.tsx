@@ -65,6 +65,7 @@ export function ReadyProductModal({
   const [sku, setSku] = useState('')
   const [category, setCategory] = useState('ready_products')
   const [unit, setUnit] = useState<UnitOfMeasure>('piece')
+  const [purchaseUnit, setPurchaseUnit] = useState<string>('piece')
   const [isActive, setIsActive] = useState(true)
   const [description, setDescription] = useState('')
   const [minOrderQty, setMinOrderQty] = useState<number>(1)
@@ -106,7 +107,8 @@ export function ReadyProductModal({
       setNameBn(initialData.name_bn || '')
       setSku(initialData.sku || '')
       setCategory(initialData.category || 'ready_products')
-      setUnit(initialData.unit || 'piece')
+      setUnit(initialData.selling_unit || initialData.unit || 'piece')
+      setPurchaseUnit(initialData.purchase_unit || initialData.unit || 'piece')
       setIsActive(initialData.is_active !== false)
       setDescription(initialData.description || '')
       setMinOrderQty(initialData.min_order_quantity || 1)
@@ -139,6 +141,7 @@ export function ReadyProductModal({
       setSku(`RP-${Date.now().toString().slice(-5)}`)
       setCategory('ready_products')
       setUnit('piece')
+      setPurchaseUnit('piece')
       setIsActive(true)
       setDescription('')
       setMinOrderQty(1)
@@ -231,7 +234,7 @@ export function ReadyProductModal({
         is_ready_product: true,
         unit,
         selling_unit: unit,
-        purchase_unit: unit,
+        purchase_unit: purchaseUnit || unit,
         pricing_method: 'per_piece',
         selling_price: sp,
         base_cost: cost,
@@ -382,7 +385,7 @@ export function ReadyProductModal({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
                       Category
@@ -407,11 +410,28 @@ export function ReadyProductModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      Sell Unit
+                      Selling Unit (বিক্রয় একক) <span className="text-rose-500">*</span>
                     </Label>
                     <select
                       value={unit}
                       onChange={(e) => setUnit(e.target.value as UnitOfMeasure)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                    >
+                      {READY_PRODUCT_UNITS.map((u) => (
+                        <option key={u.value} value={u.value}>
+                          {u.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Purchase Unit (ক্রয় একক)
+                    </Label>
+                    <select
+                      value={purchaseUnit}
+                      onChange={(e) => setPurchaseUnit(e.target.value)}
                       className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
                     >
                       {READY_PRODUCT_UNITS.map((u) => (
@@ -533,7 +553,7 @@ export function ReadyProductModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
-                    Purchase / Base Cost (৳ / {unit})
+                    Purchase / Base Cost (৳ / {purchaseUnit || unit})
                   </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
