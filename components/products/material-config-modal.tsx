@@ -34,6 +34,7 @@ import {
   Droplets,
   Coins,
   ChevronRight,
+  ChevronLeft,
   Sliders,
   RotateCcw,
   CheckCircle2,
@@ -1435,7 +1436,41 @@ export function MaterialConfigModal({
             Cancel
           </Button>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {activeTab !== 'basic' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (activeTab === 'geometry') setActiveTab('basic')
+                  else if (activeTab === 'costing') setActiveTab('geometry')
+                  else if (activeTab === 'inventory') setActiveTab('costing')
+                  else if (activeTab === 'production') setActiveTab('inventory')
+                }}
+                className="h-10 px-3.5 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back</span>
+              </Button>
+            )}
+
+            {activeTab !== 'production' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (activeTab === 'basic') setActiveTab('geometry')
+                  else if (activeTab === 'geometry') setActiveTab('costing')
+                  else if (activeTab === 'costing') setActiveTab('inventory')
+                  else if (activeTab === 'inventory') setActiveTab('production')
+                }}
+                className="h-10 px-4 rounded-xl font-bold border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 gap-1.5 cursor-pointer"
+              >
+                <span>Next Step</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            )}
+
             <Button
               type="submit"
               disabled={isSubmitting}

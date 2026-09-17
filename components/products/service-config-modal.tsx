@@ -2159,6 +2159,40 @@ export function ServiceConfigModal({
           </Button>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {activeTab !== 'basic' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (activeTab === 'materials') setActiveTab('basic')
+                  else if (activeTab === 'finishing') setActiveTab('materials')
+                  else if (activeTab === 'additionals') setActiveTab('finishing')
+                  else if (activeTab === 'pricing') setActiveTab('additionals')
+                }}
+                className="h-10 px-3.5 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back</span>
+              </Button>
+            )}
+
+            {activeTab !== 'pricing' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (activeTab === 'basic') setActiveTab('materials')
+                  else if (activeTab === 'materials') setActiveTab('finishing')
+                  else if (activeTab === 'finishing') setActiveTab('additionals')
+                  else if (activeTab === 'additionals') setActiveTab('pricing')
+                }}
+                className="h-10 px-4 rounded-xl font-bold border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 gap-1.5 cursor-pointer"
+              >
+                <span>Next Step</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            )}
+
             <Button
               type="submit"
               disabled={isSubmitting}

@@ -17,8 +17,9 @@ import {
   Loader2,
   Tag,
   CreditCard,
-  FileText,
   Percent,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -303,7 +304,58 @@ export function NewCustomerModal({
           </div>
         </div>
       }
-      hideFooter
+      onSubmit={handleSubmit}
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto text-xs min-h-[40px] cursor-pointer"
+          >
+            Cancel
+          </Button>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {activeTab === 'info' ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setActiveTab('rates')}
+                className="h-10 px-4 rounded-xl font-bold border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 gap-1.5 cursor-pointer text-xs"
+              >
+                <span>Next: Custom Rates</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setActiveTab('info')}
+                className="h-10 px-3.5 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer text-xs"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back to Info</span>
+              </Button>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm cursor-pointer rounded-xl"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                  Saving Customer...
+                </>
+              ) : (
+                'Save Customer'
+              )}
+            </Button>
+          </div>
+        </div>
+      }
     >
       <div className="space-y-4 pt-1 pb-2">
         {/* Tab Switcher */}
@@ -408,7 +460,7 @@ export function NewCustomerModal({
 
         {/* TAB 1: Basic Information */}
         {activeTab === 'info' && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             {/* Section 1: Identity & Category */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
@@ -729,34 +781,7 @@ export function NewCustomerModal({
                 </div>
               )}
             </div>
-
-            {/* Footer Action */}
-            <div className="pt-3 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                className="w-full sm:w-auto text-xs min-h-[40px]"
-              >
-                Cancel
-              </Button>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full sm:w-auto text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm cursor-pointer"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                    Saving Customer...
-                  </>
-                ) : (
-                  'Save Customer'
-                )}
-              </Button>
-            </div>
-          </form>
+          </div>
         )}
 
         {/* TAB 2: Customer Rates */}
@@ -830,33 +855,6 @@ export function NewCustomerModal({
                 })}
               </div>
             )}
-
-            <div className="pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-800">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab('info')}
-                className="text-xs min-h-[40px]"
-              >
-                Back to Information
-              </Button>
-
-              <Button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm cursor-pointer"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Customer with Rates'
-                )}
-              </Button>
-            </div>
           </div>
         )}
       </div>
