@@ -112,6 +112,18 @@ const STANDARD_SHEET_SIZES: { width: number; length: number; label: string }[] =
   { width: 2, length: 2, label: '2ft × 2ft' },
 ]
 
+const DEFAULT_PRINTING_METHODS: Array<{ id: string; name: string; name_bn?: string | null }> = [
+  { id: 'eco_solvent', name: 'Eco-Solvent Print', name_bn: 'ইকো-সলভেন্ট প্রিন্ট' },
+  { id: 'solvent', name: 'Solvent Print (Heavy Duty)', name_bn: 'সলভেন্ট প্রিন্ট' },
+  { id: 'uv_roll', name: 'UV Roll-to-Roll Print', name_bn: 'ইউভি রোল প্রিন্ট' },
+  { id: 'uv_flatbed', name: 'UV Flatbed Print', name_bn: 'ইউভি ফ্ল্যাটবেড প্রিন্ট' },
+  { id: 'latex', name: 'HP Latex Print', name_bn: 'এইচপি ল্যাটেক্স প্রিন্ট' },
+  { id: 'digital_press', name: 'Digital Press (Laser/Toner)', name_bn: 'ডিজিটাল প্রেস' },
+  { id: 'offset', name: 'Commercial Offset', name_bn: 'অফসেট প্রিন্টিং' },
+  { id: 'sublimation', name: 'Dye Sublimation', name_bn: 'সাবলিমেশন' },
+  { id: 'dtf', name: 'DTF Printing', name_bn: 'ডিটিএফ প্রিন্ট' },
+]
+
 export function ServiceConfigModal({
   isOpen,
   onClose,
@@ -126,12 +138,18 @@ export function ServiceConfigModal({
 }: ServiceConfigModalProps) {
   const [activeTab, setActiveTab] = useState<'basic' | 'dimensions' | 'materials' | 'finishing' | 'additionals' | 'pricing'>('basic')
 
+  const availableMethodsList = useMemo(() => {
+    if (printingMethods && printingMethods.length > 0) return printingMethods
+    return DEFAULT_PRINTING_METHODS
+  }, [printingMethods])
+
   // 1. Basic Information
   const [name, setName] = useState('')
   const [nameBn, setNameBn] = useState('')
   const [sku, setSku] = useState('')
   const [category, setCategory] = useState('printing_service')
-  const [printingMethodName, setPrintingMethodName] = useState('')
+  const [selectedPrintingMethods, setSelectedPrintingMethods] = useState<string[]>(['Eco-Solvent Print'])
+  const [printableMaterialId, setPrintableMaterialId] = useState<string>('')
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
 
@@ -243,7 +261,25 @@ export function ServiceConfigModal({
       setAllowManualOverride(initialData.allow_manual_override !== false)
 
       const cfg: ServiceConfiguration = initialData.service_config || {}
-      setPrintingMethodName((initialData as any).printing_method_name || (initialData as any).printing_method || '')
+      
+      // Load printing methods
+      const loadedMethods: string[] = (initialData as any).printing_methods || 
+        cfg.printing_methods ||
+        ((initialData as any).printing_method_name ? (initialData as any).printing_method_name.split(',').map((s: string) => s.trim()).filter(Boolean) : []) ||
+        ((initialData as any).printing_method ? [(initialData as any).printing_method] : []) ||
+        (cfg.printing_method ? [cfg.printing_method] : [])
+
+      setSelectedPrintingMethods(
+        loadedMethods.length > 0
+          ? loadedMethods
+          : [availableMethodsList[0]?.name || 'Eco-Solvent Print']
+      )
+
+      // Load printable material
+      const primaryReq = (cfg.required_materials || []).find((m) => m.is_primary)
+      const initialMatId = (initialData as any).printable_material_id || cfg.printable_material_id || primaryReq?.material_id || ''
+      setPrintableMaterialId(initialMatId)
+
       setDimensionUnit(cfg.dimension_unit || 'ft')
       setAllowCustomDimensions(cfg.allow_custom_dimensions !== false)
       setAvailableRollWidths(cfg.available_widths_ft || initialData.available_widths_ft || [2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
@@ -276,7 +312,8 @@ export function ServiceConfigModal({
       setNameBn('')
       setSku(`SRV-${Date.now().toString().slice(-5)}`)
       setCategory('printing_service')
-      setPrintingMethodName(printingMethods[0]?.name || 'Eco-Solvent')
+      setSelectedPrintingMethods([availableMethodsList[0]?.name || 'Eco-Solvent Print'])
+      setPrintableMaterialId('')
       setSellingUnit('sft')
       setPurchaseUnit('roll')
       setSellingPrice('')
@@ -321,7 +358,7 @@ export function ServiceConfigModal({
     }
     setActiveTab('basic')
     setErrorMessage(null)
-  }, [initialData, isOpen, printingMethods])
+  }, [initialData, isOpen, availableMethodsList])
 
   // Live Gross Margin Analysis
   const marginMetrics = useMemo(() => {
@@ -440,6 +477,67 @@ export function ServiceConfigModal({
           waste_percent: defaultWastagePercent,
         },
       ])
+    }
+  }
+
+  const handleTogglePrintingMethod = (methodName: string) => {
+    if (selectedPrintingMethods.includes(methodName)) {
+      if (selectedPrintingMethods.length === 1) {
+        setSelectedPrintingMethods([])
+      } else {
+        setSelectedPrintingMethods(selectedPrintingMethods.filter((m) => m !== methodName))
+      }
+    } else {
+      setSelectedPrintingMethods([...selectedPrintingMethods, methodName])
+    }
+  }
+
+  const handleSelectAllPrintingMethods = () => {
+    setSelectedPrintingMethods(availableMethodsList.map((m) => m.name))
+  }
+
+  const handleClearPrintingMethods = () => {
+    setSelectedPrintingMethods([])
+  }
+
+  const handleSelectPrintableMaterial = (matId: string) => {
+    setPrintableMaterialId(matId)
+    if (!matId) return
+
+    const selectedMat = availableMaterials.find((m) => m.id === matId)
+    if (selectedMat) {
+      const exists = requiredMaterials.find((m) => m.material_id === matId)
+      if (exists) {
+        setRequiredMaterials(
+          requiredMaterials.map((m) => ({
+            ...m,
+            is_primary: m.material_id === matId,
+          }))
+        )
+      } else {
+        setRequiredMaterials([
+          {
+            material_id: selectedMat.id,
+            material_name: selectedMat.name,
+            allowance_per_side_in: productionBleedInches,
+            is_required: true,
+            is_primary: true,
+            waste_percent: defaultWastagePercent,
+          },
+          ...requiredMaterials.map((m) => ({ ...m, is_primary: false })),
+        ])
+      }
+
+      // Auto-populate purchase rate and units if empty
+      const matPurPrice = (selectedMat as any).purchase_price || (selectedMat as any).cost_per_unit || (selectedMat as any).last_purchase_price
+      if (matPurPrice && (purchasePrice === '' || Number(purchasePrice) === 0)) {
+        setPurchasePrice(matPurPrice)
+        setBaseCostEstimate(matPurPrice)
+      }
+      const matPurUnit = (selectedMat as any).purchase_unit || selectedMat.unit
+      if (matPurUnit && (matPurUnit === 'roll' || matPurUnit === 'sheet')) {
+        setPurchaseUnit(matPurUnit)
+      }
     }
   }
 
@@ -618,6 +716,9 @@ export function ServiceConfigModal({
       ;(finalPriceTiers as any).agency = priceTiers.agency !== '' ? Number(priceTiers.agency) : sp
       ;(finalPriceTiers as any).regular = priceTiers.regular !== '' ? Number(priceTiers.regular) : sp
 
+      const selectedMat = availableMaterials.find((m) => m.id === printableMaterialId)
+      const primaryMethod = selectedPrintingMethods[0] || ''
+
       const serviceConfig: ServiceConfiguration = {
         dimension_unit: dimensionUnit,
         allow_custom_dimensions: allowCustomDimensions,
@@ -633,6 +734,10 @@ export function ServiceConfigModal({
         min_charge: minimumCharge !== '' ? Number(minimumCharge) : undefined,
         min_billable_qty: minBillableQty,
         pricing_method: pricingMethod,
+        printing_methods: selectedPrintingMethods,
+        printing_method: primaryMethod,
+        printable_material_id: printableMaterialId || undefined,
+        printable_material_name: selectedMat?.name || undefined,
       }
 
       await onSave({
@@ -648,6 +753,11 @@ export function ServiceConfigModal({
         selling_unit: sellingUnit,
         purchase_unit: purchaseUnit,
         pricing_method: pricingMethod,
+        printing_methods: selectedPrintingMethods,
+        printing_method_name: selectedPrintingMethods.join(', '),
+        printing_method: primaryMethod,
+        printable_material_id: printableMaterialId || undefined,
+        printable_material_name: selectedMat?.name || undefined,
         selling_price: sp,
         purchase_price: purchasePrice !== '' ? Number(purchasePrice) : (baseCostEstimate !== '' ? Number(baseCostEstimate) : 0),
         base_cost: baseCostEstimate !== '' ? Number(baseCostEstimate) : (purchasePrice !== '' ? Number(purchasePrice) : 0),
@@ -820,25 +930,8 @@ export function ServiceConfigModal({
                 </div>
               </div>
 
+              {/* Row: Catalog Category & Printable Material (Inventory Item) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    Printing Method (Technology)
-                  </Label>
-                  <select
-                    value={printingMethodName}
-                    onChange={(e) => setPrintingMethodName(e.target.value)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                  >
-                    <option value="">-- Select Printing Method --</option>
-                    {printingMethods.map((pm) => (
-                      <option key={pm.id} value={pm.name}>
-                        {pm.name} {pm.name_bn ? `(${pm.name_bn})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
                     Catalog Category
@@ -860,6 +953,109 @@ export function ServiceConfigModal({
                     ))}
                   </select>
                 </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold block">
+                      Printable Material (Inventory Item)
+                    </Label>
+                    {printableMaterialId && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
+                        <CheckCircle2 className="w-3 h-3" /> Auto-Linked
+                      </span>
+                    )}
+                  </div>
+                  <select
+                    value={printableMaterialId}
+                    onChange={(e) => handleSelectPrintableMaterial(e.target.value)}
+                    className={cn(
+                      'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
+                      printableMaterialId
+                        ? 'border-emerald-400 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-200'
+                        : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
+                    )}
+                  >
+                    <option value="">-- Select Raw Media Substrate / Paper --</option>
+                    {availableMaterials.map((mat) => {
+                      const costStr = (mat as any).purchase_price || (mat as any).cost_per_unit || (mat as any).last_purchase_price
+                      return (
+                        <option key={mat.id} value={mat.id}>
+                          {mat.name} ({mat.unit || (mat as any).purchase_unit || 'unit'}){costStr ? ` — ৳${costStr}` : ''}
+                        </option>
+                      )
+                    })}
+                  </select>
+                </div>
+              </div>
+
+              {/* Multi-Select Printing Method (Technology) */}
+              <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 p-3 space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Printing Method (Technology) <span className="text-slate-400 font-normal">/ প্রিন্টিং প্রযুক্তি</span>
+                    </Label>
+                    <span className="text-[11px] px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/70 dark:text-blue-300">
+                      {selectedPrintingMethods.length} Selected
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSelectAllPrintingMethods}
+                      className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+                    >
+                      Select All
+                    </button>
+                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <button
+                      type="button"
+                      onClick={handleClearPrintingMethods}
+                      className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {availableMethodsList.map((pm) => {
+                    const isSelected = selectedPrintingMethods.includes(pm.name)
+                    return (
+                      <button
+                        key={pm.id || pm.name}
+                        type="button"
+                        onClick={() => handleTogglePrintingMethod(pm.name)}
+                        className={cn(
+                          'px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer',
+                          isSelected
+                            ? 'bg-blue-600 text-white shadow-xs font-semibold ring-2 ring-blue-400/40'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-slate-800'
+                        )}
+                      >
+                        {isSelected ? (
+                          <Check className="w-3 h-3 text-white shrink-0" />
+                        ) : (
+                          <Plus className="w-3 h-3 text-slate-400 shrink-0" />
+                        )}
+                        <span>{pm.name}</span>
+                        {pm.name_bn && (
+                          <span className={cn('text-[10px] font-bengali opacity-80', isSelected ? 'text-blue-100' : 'text-slate-500')}>
+                            ({pm.name_bn})
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {selectedPrintingMethods.length === 0 && (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium pt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    Please select at least one printing method for production routing.
+                  </p>
+                )}
               </div>
 
               <div>

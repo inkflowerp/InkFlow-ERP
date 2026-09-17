@@ -527,6 +527,11 @@ export interface ProductRecord {
   production_width_allowance?: number | null
   production_length_allowance?: number | null
   allowance_unit?: string | null
+  printing_method?: string | null
+  printing_methods?: string[] | null
+  printing_method_name?: string | null
+  printable_material_id?: string | null
+  printable_material_name?: string | null
   material_spec?: string | null
   description?: string | null
   description_bn?: string | null
@@ -593,6 +598,7 @@ export interface ServiceRequiredMaterial {
   material_id?: string
   material_name: string
   is_required?: boolean
+  is_primary?: boolean
   consumption_rule?: 'roll_geometry' | 'area_direct' | 'linear_direct' | 'liquid_volume' | 'piece_count' | 'roll_linear_length' | 'area_sqft' | string
   allowance_per_side?: number
   allowance_per_side_in?: number
@@ -662,6 +668,10 @@ export interface ServiceConfiguration {
   minimum_charge?: number
   min_billable_qty?: number
   pricing_method?: string
+  printing_methods?: string[]
+  printing_method?: string
+  printable_material_id?: string | null
+  printable_material_name?: string | null
 }
 
 export interface MaterialConfiguration {
