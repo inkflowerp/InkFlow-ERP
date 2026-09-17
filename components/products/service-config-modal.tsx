@@ -528,15 +528,34 @@ export function ServiceConfigModal({
         ])
       }
 
-      // Auto-populate purchase rate and units if empty
-      const matPurPrice = (selectedMat as any).purchase_price || (selectedMat as any).cost_per_unit || (selectedMat as any).last_purchase_price
-      if (matPurPrice && (purchasePrice === '' || Number(purchasePrice) === 0)) {
-        setPurchasePrice(matPurPrice)
-        setBaseCostEstimate(matPurPrice)
-      }
+      // Auto-sync physical geometry & units from substrate
+      const matCfg = (selectedMat as any).material_config || {}
       const matPurUnit = (selectedMat as any).purchase_unit || selectedMat.unit
       if (matPurUnit && (matPurUnit === 'roll' || matPurUnit === 'sheet')) {
         setPurchaseUnit(matPurUnit)
+      }
+
+      if (matCfg.available_widths_ft && matCfg.available_widths_ft.length > 0) {
+        setAvailableRollWidths(matCfg.available_widths_ft)
+      } else if ((selectedMat as any).available_widths_ft && (selectedMat as any).available_widths_ft.length > 0) {
+        setAvailableRollWidths((selectedMat as any).available_widths_ft)
+      }
+
+      if (matCfg.standard_roll_length_ft) {
+        setStandardRollLength(matCfg.standard_roll_length_ft)
+      } else if ((selectedMat as any).standard_roll_length_ft) {
+        setStandardRollLength((selectedMat as any).standard_roll_length_ft)
+      }
+
+      if (matCfg.available_sheet_sizes && matCfg.available_sheet_sizes.length > 0) {
+        setAvailableSheetSizes(matCfg.available_sheet_sizes)
+      }
+
+      // Auto-populate direct purchase rate per sft/usage unit
+      const matBaseCost = (selectedMat as any).base_cost || matCfg.effective_unit_cost || (selectedMat as any).purchase_price || (selectedMat as any).cost_per_unit
+      if (matBaseCost && (purchasePrice === '' || Number(purchasePrice) === 0)) {
+        setPurchasePrice(matBaseCost)
+        setBaseCostEstimate(matBaseCost)
       }
     }
   }
@@ -985,6 +1004,23 @@ export function ServiceConfigModal({
                       )
                     })}
                   </select>
+                  {printableMaterialId && (() => {
+                    const selectedSub = availableMaterials.find((m) => m.id === printableMaterialId)
+                    if (!selectedSub) return null
+                    const unitCost = (selectedSub as any).base_cost || (selectedSub as any).material_config?.effective_unit_cost || (selectedSub as any).purchase_price
+                    return (
+                      <div className="mt-1 flex items-center gap-1.5 flex-wrap text-[11px] text-emerald-700 dark:text-emerald-300 font-mono">
+                        <span className="bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded">
+                          Stock Unit: {(selectedSub as any).purchase_unit || selectedSub.unit || 'roll'}
+                        </span>
+                        {unitCost ? (
+                          <span className="bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-bold">
+                            Direct Cost: ৳{unitCost}/{selectedSub.unit || 'sft'}
+                          </span>
+                        ) : null}
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
 

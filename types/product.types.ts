@@ -678,11 +678,18 @@ export interface MaterialConfiguration {
   material_type?: 'roll' | 'sheet' | 'rigid' | 'liquid' | 'hardware' | 'accessory'
   available_widths_ft?: number[]
   standard_roll_length_ft?: number
+  available_sheet_sizes?: Array<{ width: number; length: number; label?: string }>
+  extra_width_allowance_ft?: number
   purchase_unit?: string
   purchase_price?: number
   usage_unit?: string
   conversion_ratio?: number
   default_allowance_per_side_in?: number
+  waste_percent?: number
+  effective_unit_cost?: number
+  thickness_mm?: number
+  storage_location?: string
+  pack_quantity?: number
   reorder_level?: number
 }
 
