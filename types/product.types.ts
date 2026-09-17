@@ -573,6 +573,12 @@ export interface ProductRecord {
   linked_ink_id?: string | null
   linked_ink_name?: string | null
   ink_cost?: number
+  service_type?: string
+  print_category?: string
+  ink_type?: string
+  selected_inks?: LinkedInkChannel[]
+  consume_per_unit_ml?: number
+  ink_consumption_ml?: number
   // Computed commercial helpers
   effective_unit_cost?: number
   suggested_selling_price?: number
@@ -580,6 +586,17 @@ export interface ProductRecord {
   estimated_material_cost?: number
   estimated_direct_cost?: number
   cost_basis_type?: CostBasisType
+}
+
+export interface LinkedInkChannel {
+  id?: string
+  channel: string
+  color_code?: string
+  material_id?: string
+  material_name?: string
+  unit_price?: number
+  unit?: string
+  cost_per_ml?: number
 }
 
 export type EntityType = 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation'
@@ -677,6 +694,13 @@ export interface ServiceConfiguration {
   printing_method?: string
   printable_material_id?: string | null
   printable_material_name?: string | null
+  service_type?: string
+  print_category?: string
+  ink_type?: string
+  selected_inks?: LinkedInkChannel[]
+  consume_per_unit_ml?: number
+  ink_consumption_ml?: number
+  auto_calculate_ink_cost?: boolean
   linked_ink_id?: string | null
   linked_ink_name?: string | null
   ink_cost?: number
