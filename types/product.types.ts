@@ -575,6 +575,12 @@ export interface ProductRecord {
   ink_cost?: number
   service_type?: string
   print_category?: string
+  finishing_category?: string
+  finishing_material_id?: string | null
+  finishing_material_name?: string | null
+  finishing_method?: string
+  lamination_type?: string
+  lamination_micron?: number | string
   ink_type?: string
   selected_inks?: LinkedInkChannel[]
   consume_per_unit_ml?: number
@@ -696,6 +702,12 @@ export interface ServiceConfiguration {
   printable_material_name?: string | null
   service_type?: string
   print_category?: string
+  finishing_category?: string
+  finishing_material_id?: string | null
+  finishing_material_name?: string | null
+  finishing_method?: string
+  lamination_type?: string
+  lamination_micron?: number | string
   ink_type?: string
   selected_inks?: LinkedInkChannel[]
   consume_per_unit_ml?: number

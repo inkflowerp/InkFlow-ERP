@@ -116,6 +116,37 @@ const DEFAULT_INK_TYPES: Array<{ id: string; name: string; defaultRatePerLiter: 
   { id: 'offset_ink', name: 'Commercial Offset Process Ink', defaultRatePerLiter: 1500 },
 ]
 
+export const DEFAULT_FINISHING_CATEGORIES: Array<{
+  id: string
+  name: string
+  name_bn: string
+  defaultUnit: string
+  defaultRate: number
+  defaultCost: number
+  defaultMethod: string
+}> = [
+  { id: 'thermal_lamination', name: 'Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)', name_bn: 'থার্মাল ফিল্ম ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 8, defaultCost: 3.5, defaultMethod: 'per_sqft' },
+  { id: 'cold_lamination', name: 'Cold Pressure Lamination (কোল্ড ল্যামিনেশন)', name_bn: 'কোল্ড ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 6, defaultCost: 2.8, defaultMethod: 'per_sqft' },
+  { id: 'floor_anti_slip', name: 'Floor & Vehicle Anti-Slip Overlaminate (ফ্লোর ল্যামিনেশন)', name_bn: 'ফ্লোর অ্যান্টি-স্লিপ ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 15, defaultCost: 7.0, defaultMethod: 'per_sqft' },
+  { id: 'board_mounting', name: 'Hardboard & Foam PVC Board Mounting (বোর্ড পেস্টিং)', name_bn: 'বোর্ড মাউন্টিং ও পেস্টিং', defaultUnit: 'sft', defaultRate: 25, defaultCost: 12.0, defaultMethod: 'per_sqft' },
+  { id: 'eyelets_grommets', name: 'Eyelets & Grommets Punching (আইলেটস পাঞ্চিং)', name_bn: 'আইলেটস পাঞ্চিং', defaultUnit: 'pcs', defaultRate: 5, defaultCost: 1.5, defaultMethod: 'per_piece' },
+  { id: 'edge_hemming', name: 'Edge Hemming & Banner Seaming (ব্যানার সিমিং)', name_bn: 'ব্যানার এজ সিমিং', defaultUnit: 'rft', defaultRate: 3, defaultCost: 1.0, defaultMethod: 'per_rft' },
+  { id: 'die_cutting', name: 'Digital & Knife Contour Die-Cutting (ডাই-কাট)', name_bn: 'কনট্যুর ডাই-কাট', defaultUnit: 'pcs', defaultRate: 12, defaultCost: 4.0, defaultMethod: 'per_piece' },
+  { id: 'spiral_binding', name: 'Spiral & Wiro Book Binding (স্পাইরাল বাইন্ডিং)', name_bn: 'স্পাইরাল বুক বাইন্ডিং', defaultUnit: 'pcs', defaultRate: 40, defaultCost: 18.0, defaultMethod: 'per_piece' },
+  { id: 'perfect_binding', name: 'Hot Melt & Perfect Book Binding (হার্ড কভার বাইন্ডিং)', name_bn: 'পারফেক্ট বুক বাইন্ডিং', defaultUnit: 'pcs', defaultRate: 60, defaultCost: 25.0, defaultMethod: 'per_piece' },
+  { id: 'spot_uv', name: 'Spot UV Varnish Coating (স্পট ইউভি)', name_bn: 'স্পট ইউভি কোটিং', defaultUnit: 'sft', defaultRate: 18, defaultCost: 8.0, defaultMethod: 'per_sqft' },
+  { id: 'foil_stamping', name: 'Hot Foil Stamping (Gold/Silver ফয়েল প্রিন্ট)', name_bn: 'হট ফয়েল স্ট্যাম্পিং', defaultUnit: 'pcs', defaultRate: 20, defaultCost: 8.0, defaultMethod: 'per_piece' },
+]
+
+export const LAMINATION_MICRON_PRESETS = [
+  { label: '25 Micron (Ultra Thin BOPP)', value: '25' },
+  { label: '32 Micron (Standard Commercial)', value: '32' },
+  { label: '50 Micron (Medium Heavy)', value: '50' },
+  { label: '75 Micron (Stiff / Identity)', value: '75' },
+  { label: '125 Micron (Rigid Pouch)', value: '125' },
+  { label: '250 Micron (Heavy Duty Rigid)', value: '250' },
+]
+
 const INK_CHANNEL_PRESETS = {
   cmyk: [
     { channel: 'Cyan', color_code: '#00aeef', unit_price: 2800, unit: 'bottle' },
@@ -182,7 +213,14 @@ export function ServiceConfigModal({
   const [autoCalculateInkCost, setAutoCalculateInkCost] = useState<boolean>(true)
   const [inkCost, setInkCost] = useState<number | ''>(3.36)
 
-  // 1.2 Substrate & Auto-Inherited Print Sizes from Selected Printable Material
+  // 1.2 Finishing & Lamination Configuration (when serviceType === 'finishing')
+  const [finishingCategory, setFinishingCategory] = useState<string>('Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)')
+  const [finishingMaterialId, setFinishingMaterialId] = useState<string>('')
+  const [finishingMethod, setFinishingMethod] = useState<string>('Gloss Thermal Lamination')
+  const [laminationMicron, setLaminationMicron] = useState<string | number>('32')
+  const [laminationType, setLaminationType] = useState<string>('Gloss')
+
+  // 1.3 Substrate & Auto-Inherited Print Sizes from Selected Printable Material
   const [availableRollWidths, setAvailableRollWidths] = useState<number[]>([3.25, 4.25, 5.25, 6, 10])
   const [standardRollLength, setStandardRollLength] = useState<number | string>(164)
   const [extraWidthAllowance, setExtraWidthAllowance] = useState<number | string>(0.25)
@@ -190,7 +228,7 @@ export function ServiceConfigModal({
     { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
   ])
 
-  // 1.3 Commercial Billing Units
+  // 1.4 Commercial Billing Units
   const [sellingUnit, setSellingUnit] = useState<string>('sft')
   const [purchaseUnit, setPurchaseUnit] = useState<string>('roll')
   const [pricingMethod, setPricingMethod] = useState<PricingMethod>('per_area')
@@ -204,10 +242,13 @@ export function ServiceConfigModal({
   const [requiredMaterials, setRequiredMaterials] = useState<Array<ServiceRequiredMaterial & { is_primary?: boolean }>>([])
   const [defaultWastagePercent, setDefaultWastagePercent] = useState<number>(5)
 
-  // 3. Finishing Options
+  // 3. Finishing Options & Raw Materials Selection
   const [finishingOptions, setFinishingOptions] = useState<ServiceFinishingOption[]>([])
+  const [finishingMaterialSearchQuery, setFinishingMaterialSearchQuery] = useState('')
+  const [finishingFilterTab, setFinishingFilterTab] = useState<'finishing_only' | 'all_materials'>('finishing_only')
   const [showCustomFinishingForm, setShowCustomFinishingForm] = useState(false)
   const [customFinishingName, setCustomFinishingName] = useState('')
+  const [customFinishingMaterialId, setCustomFinishingMaterialId] = useState('')
   const [customFinishingMethod, setCustomFinishingMethod] = useState('per_sqft')
   const [customFinishingPrice, setCustomFinishingPrice] = useState<number | ''>('')
   const [customFinishingCost, setCustomFinishingCost] = useState<number | ''>('')
@@ -301,6 +342,53 @@ export function ServiceConfigModal({
     })
   }, [availableMaterials])
 
+  // Filter finishing raw materials from inventory (Raw Product - Finishing)
+  const finishingMaterials = useMemo(() => {
+    return availableMaterials.filter((m) => {
+      const cat = (m.category || '').toLowerCase()
+      const n = (m.name || '').toLowerCase()
+      const s = (m.sku || '').toLowerCase()
+      const entityType = ((m as any).entity_type || '').toLowerCase()
+      const productType = ((m as any).product_type || '').toLowerCase()
+
+      return (
+        cat.includes('finishing') ||
+        cat.includes('lamination') ||
+        cat.includes('film') ||
+        cat.includes('eyelet') ||
+        cat.includes('grommet') ||
+        cat.includes('tape') ||
+        cat.includes('binding') ||
+        cat.includes('glue') ||
+        cat.includes('adhesive') ||
+        cat.includes('hardware') ||
+        cat.includes('board') ||
+        cat.includes('sheet') ||
+        cat.includes('rigid') ||
+        entityType === 'finishing' ||
+        productType === 'finishing' ||
+        n.includes('lamination') ||
+        n.includes('ল্যামিনেশন') ||
+        n.includes('film') ||
+        n.includes('ফিল্ম') ||
+        n.includes('eyelet') ||
+        n.includes('আইলেট') ||
+        n.includes('grommet') ||
+        n.includes('tape') ||
+        n.includes('টেপ') ||
+        n.includes('finishing') ||
+        n.includes('ফিনিশিং') ||
+        n.includes('seaming') ||
+        n.includes('সেলাই') ||
+        n.includes('binding') ||
+        n.includes('বন্ডিং') ||
+        n.includes('foam') ||
+        n.includes('board') ||
+        n.includes('বোর্ড')
+      )
+    })
+  }, [availableMaterials])
+
   // Auto calculate average ink rate per ml and total ink cost per selling unit
   const autoCalculatedInkMetrics = useMemo(() => {
     if (!selectedInks || selectedInks.length === 0) {
@@ -332,7 +420,8 @@ export function ServiceConfigModal({
       setNameBn(initialData.name_bn || '')
       setSku(initialData.sku || '')
       setCategory(initialData.category || 'printing_service')
-      setServiceType((initialData as any).service_type || (initialData.product_type === 'print_service' ? 'printing' : 'printing'))
+      const loadedSrvType = (initialData as any).service_type || (initialData.product_type === 'finishing' || (initialData as any).entity_type === 'finishing' ? 'finishing' : 'printing')
+      setServiceType(loadedSrvType)
       setSellingUnit(initialData.selling_unit || initialData.unit || 'sft')
       setPurchaseUnit(initialData.purchase_unit || 'roll')
       setSellingPrice(initialData.selling_price || '')
@@ -356,6 +445,15 @@ export function ServiceConfigModal({
       // Print category & methods
       const loadedPrintCat = (initialData as any).print_category || cfg.print_category || 'Large Format Eco-Solvent Print'
       setPrintCategory(loadedPrintCat)
+
+      // Finishing category & methods (when serviceType === 'finishing')
+      const loadedFinCat = (initialData as any).finishing_category || cfg.finishing_category || 'Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)'
+      setFinishingCategory(loadedFinCat)
+      const loadedFinMatId = (initialData as any).finishing_material_id || cfg.finishing_material_id || ''
+      setFinishingMaterialId(loadedFinMatId)
+      setFinishingMethod((initialData as any).finishing_method || cfg.finishing_method || 'Gloss Thermal Lamination')
+      setLaminationMicron((initialData as any).lamination_micron || cfg.lamination_micron || '32')
+      setLaminationType((initialData as any).lamination_type || cfg.lamination_type || 'Gloss')
 
       const loadedMethods: string[] = (initialData as any).printing_methods || 
         cfg.printing_methods ||
@@ -434,6 +532,11 @@ export function ServiceConfigModal({
       setCategory('printing_service')
       setServiceType('printing')
       setPrintCategory('Large Format Eco-Solvent Print')
+      setFinishingCategory('Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)')
+      setFinishingMaterialId('')
+      setFinishingMethod('Gloss Thermal Lamination')
+      setLaminationMicron('32')
+      setLaminationType('Gloss')
       setSelectedPrintingMethods(['Eco-Solvent Print'])
       setPrintableMaterialId('')
       setInkType('Eco-Solvent High Pigment Ink')
@@ -536,7 +639,44 @@ export function ServiceConfigModal({
     }
   }
 
-  // Handle Preset Ink Channel Selection (4 Inks, 6 Inks, etc.)
+  // Handle selecting Finishing Raw Material (when serviceType === 'finishing')
+  const handleSelectFinishingMaterial = (matId: string) => {
+    setFinishingMaterialId(matId)
+    if (!matId) return
+
+    const mat = availableMaterials.find((m) => m.id === matId)
+    if (!mat) return
+
+    const widths: number[] = mat.available_widths_ft || 
+      (mat as any).material_config?.available_widths_ft || 
+      (mat as any).roll_sizes?.map((r: any) => r.width) ||
+      ((mat as any).width ? [(mat as any).width] : [3.25, 4.25, 5.25, 6])
+
+    if (widths && widths.length > 0) {
+      setAvailableRollWidths(widths)
+    }
+
+    const rLength = mat.standard_roll_length_ft || (mat as any).material_config?.standard_roll_length_ft || (mat as any).length || 164
+    setStandardRollLength(rLength)
+
+    const extraAllowance = (mat as any).production_width_allowance ?? (mat as any).material_config?.extra_width_allowance_ft ?? 0
+    setExtraWidthAllowance(extraAllowance)
+
+    const sheetSizes = (mat as any).available_sheet_sizes || (mat as any).material_config?.available_sheet_sizes
+    if (sheetSizes && Array.isArray(sheetSizes) && sheetSizes.length > 0) {
+      setAvailableSheetSizes(sheetSizes)
+    }
+
+    const pUnit = (mat as any).purchase_unit || mat.unit || 'roll'
+    setPurchaseUnit(pUnit)
+
+    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft
+    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
+      setMaterialCost(Number(matCostVal))
+      setPurchasePrice(Number(matCostVal))
+      setBaseCostEstimate(Number(matCostVal))
+    }
+  }
   const handleApplyInkPreset = (presetKey: keyof typeof INK_CHANNEL_PRESETS) => {
     const preset = INK_CHANNEL_PRESETS[presetKey]
     if (preset) {
@@ -682,13 +822,76 @@ export function ServiceConfigModal({
     }
   }
 
+  // Toggle linking a raw material from inventory (Raw Product - Finishing) directly into finishingOptions
+  const handleToggleFinishingRawMaterial = (mat: MaterialRecord) => {
+    const existsIdx = finishingOptions.findIndex(
+      (f) => f.material_id === mat.id || f.name.toLowerCase() === mat.name.toLowerCase()
+    )
+    if (existsIdx >= 0) {
+      setFinishingOptions(finishingOptions.filter((_, i) => i !== existsIdx))
+      return
+    }
+
+    const pUnit = (mat.unit || (mat as any).purchase_unit || '').toLowerCase()
+    const cat = (mat.category || '').toLowerCase()
+    const n = (mat.name || '').toLowerCase()
+
+    let pricing_method = 'per_sqft'
+    if (
+      pUnit === 'meter' ||
+      pUnit === 'rft' ||
+      cat.includes('seaming') ||
+      cat.includes('hemming') ||
+      n.includes('seaming') ||
+      n.includes('tape') ||
+      n.includes('rope')
+    ) {
+      pricing_method = 'per_rft'
+    } else if (
+      pUnit === 'piece' ||
+      pUnit === 'box' ||
+      pUnit === 'pack' ||
+      cat.includes('eyelet') ||
+      n.includes('eyelet') ||
+      n.includes('grommet') ||
+      n.includes('stand') ||
+      n.includes('ring')
+    ) {
+      pricing_method = 'per_piece'
+    }
+
+    const cost = Number((mat as any).purchase_price_per_sft ?? (mat as any).purchase_price ?? mat.cost_per_unit ?? 0)
+    const markup = cost > 0 ? (pricing_method === 'per_piece' ? Math.max(5, Math.ceil(cost * 2.5)) : Math.max(5, Math.ceil(cost * 1.5))) : 8
+
+    setFinishingOptions([
+      ...finishingOptions,
+      {
+        id: `fin-mat-${mat.id}-${Date.now()}`,
+        name: mat.name,
+        name_bn: (mat as any).name_bn || undefined,
+        material_id: mat.id,
+        material_name: mat.name,
+        pricing_method,
+        unit_price: markup,
+        price: markup,
+        unit_cost: cost,
+        cost: cost,
+        is_default: false,
+      },
+    ])
+  }
+
   const handleAddCustomFinishing = () => {
     if (!customFinishingName.trim()) return
+    const linkedMat = availableMaterials.find((m) => m.id === customFinishingMaterialId)
+
     setFinishingOptions([
       ...finishingOptions,
       {
         id: `custom-fin-${Date.now()}`,
         name: customFinishingName.trim(),
+        material_id: customFinishingMaterialId || undefined,
+        material_name: linkedMat?.name || undefined,
         pricing_method: customFinishingMethod,
         unit_price: Number(customFinishingPrice) || 0,
         price: Number(customFinishingPrice) || 0,
@@ -698,6 +901,7 @@ export function ServiceConfigModal({
       },
     ])
     setCustomFinishingName('')
+    setCustomFinishingMaterialId('')
     setCustomFinishingPrice('')
     setCustomFinishingCost('')
     setShowCustomFinishingForm(false)
@@ -879,7 +1083,13 @@ export function ServiceConfigModal({
         min_billable_qty: minBillableQty,
         pricing_method: pricingMethod,
         service_type: serviceType,
-        print_category: printCategory,
+        print_category: serviceType === 'printing' ? printCategory : undefined,
+        finishing_category: serviceType === 'finishing' ? finishingCategory : undefined,
+        finishing_material_id: serviceType === 'finishing' ? (finishingMaterialId || undefined) : undefined,
+        finishing_material_name: serviceType === 'finishing' ? (availableMaterials.find((m) => m.id === finishingMaterialId)?.name || undefined) : undefined,
+        finishing_method: serviceType === 'finishing' ? finishingMethod : undefined,
+        lamination_micron: serviceType === 'finishing' ? laminationMicron : undefined,
+        lamination_type: serviceType === 'finishing' ? laminationType : undefined,
         printing_methods: selectedPrintingMethods,
         printing_method: primaryMethod,
         printable_material_id: printableMaterialId || undefined,
@@ -896,17 +1106,25 @@ export function ServiceConfigModal({
         cost_breakdown: costBreakdown,
       }
 
+      const selectedFinishingMat = availableMaterials.find((m) => m.id === finishingMaterialId)
+
       await onSave({
         name: name.trim(),
         name_bn: nameBn.trim() || undefined,
         sku: sku.trim() || `SRV-${Date.now().toString().slice(-5)}`,
-        category: category || 'printing_service',
-        product_type: 'print_service',
-        entity_type: 'service',
+        category: category || (serviceType === 'finishing' ? 'finishing_service' : 'printing_service'),
+        product_type: serviceType === 'finishing' ? 'finishing' : 'print_service',
+        entity_type: serviceType === 'finishing' ? 'finishing' : 'service',
         commercial_type: 'service',
         is_service: true,
         service_type: serviceType,
-        print_category: printCategory,
+        print_category: serviceType === 'printing' ? printCategory : undefined,
+        finishing_category: serviceType === 'finishing' ? finishingCategory : undefined,
+        finishing_material_id: serviceType === 'finishing' ? (finishingMaterialId || undefined) : undefined,
+        finishing_material_name: serviceType === 'finishing' ? (selectedFinishingMat?.name || undefined) : undefined,
+        finishing_method: serviceType === 'finishing' ? finishingMethod : undefined,
+        lamination_micron: serviceType === 'finishing' ? laminationMicron : undefined,
+        lamination_type: serviceType === 'finishing' ? laminationType : undefined,
         unit: sellingUnit as any,
         selling_unit: sellingUnit,
         purchase_unit: purchaseUnit,
@@ -1501,6 +1719,186 @@ export function ServiceConfigModal({
               </div>
             )}
 
+            {/* Section 2.1: If Service Type == 'finishing' (Finishing & Lamination) */}
+            {serviceType === 'finishing' && (
+              <div className="space-y-4 p-4 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/30 dark:bg-purple-950/20 animate-in fade-in-0">
+                <div className="flex items-center gap-2 pb-2 border-b border-purple-200/60 dark:border-purple-900/60">
+                  <Scissors className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Finishing & Lamination Configuration
+                  </h4>
+                </div>
+
+                {/* Finishing Category & Primary Finishing Raw Material (Raw Product - Finishing) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Finishing Category (ফিনিশিং ক্যাটাগরি) <span className="text-rose-500">*</span>
+                    </Label>
+                    <select
+                      value={finishingCategory}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setFinishingCategory(val)
+                        const match = DEFAULT_FINISHING_CATEGORIES.find((c) => c.name === val)
+                        if (match) {
+                          setFinishingMethod(match.name)
+                          if (match.defaultUnit) {
+                            setSellingUnit(match.defaultUnit)
+                            const unitMatch = COMMON_SELLING_UNITS.find((u) => u.value === match.defaultUnit)
+                            if (unitMatch) setPricingMethod(unitMatch.defaultMethod)
+                          }
+                          if (match.defaultRate && (!sellingPrice || Number(sellingPrice) === 0)) {
+                            setSellingPrice(match.defaultRate)
+                          }
+                          if (match.defaultCost && (!materialCost || Number(materialCost) === 0)) {
+                            setMaterialCost(match.defaultCost)
+                          }
+                        }
+                      }}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {DEFAULT_FINISHING_CATEGORIES.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name} ({c.name_bn})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs font-semibold block">
+                        Finishing Raw Material (Raw Product — Finishing) <span className="text-rose-500">*</span>
+                      </Label>
+                      {finishingMaterialId && (
+                        <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-0.5">
+                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
+                        </span>
+                      )}
+                    </div>
+                    <select
+                      value={finishingMaterialId}
+                      onChange={(e) => handleSelectFinishingMaterial(e.target.value)}
+                      className={cn(
+                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
+                        finishingMaterialId
+                          ? 'border-purple-400 dark:border-purple-700 bg-purple-50/40 dark:bg-purple-950/20 text-purple-950 dark:text-purple-200 font-bold'
+                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
+                      )}
+                    >
+                      <option value="">-- Select Raw Finishing Media / Film / Hardware --</option>
+                      {(finishingMaterials.length > 0 ? finishingMaterials : availableMaterials).map((mat) => {
+                        const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || (mat as any).cost_per_unit
+                        return (
+                          <option key={mat.id} value={mat.id}>
+                            {mat.name} ({mat.unit || (mat as any).purchase_unit || 'unit'}){costStr ? ` — ৳${costStr}/${mat.unit || 'unit'}` : ''}
+                          </option>
+                        )
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Finishing & Lamination Specs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Film Thickness / Micron (ফিল্মের পুরুত্ব)
+                    </Label>
+                    <select
+                      value={laminationMicron}
+                      onChange={(e) => setLaminationMicron(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {LAMINATION_MICRON_PRESETS.map((m) => (
+                        <option key={m.value} value={m.value}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Surface Finish / Texture (সারফেস ফিনিশ)
+                    </Label>
+                    <select
+                      value={laminationType}
+                      onChange={(e) => setLaminationType(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      <option value="Gloss">Gloss (চকচকে গ্লসি)</option>
+                      <option value="Matt">Matt / Matte (ম্যাট ফিনিশ)</option>
+                      <option value="Soft Touch">Soft Touch / Velvet (ভেলভেট)</option>
+                      <option value="Satin">Satin (সাটিন ফিনিশ)</option>
+                      <option value="Anti-Scratch">Anti-Scratch Heavy Duty (স্ক্র্যাচ-প্রুফ)</option>
+                      <option value="3D Holographic">3D Holographic (হোলোগ্রাফিক)</option>
+                      <option value="Sand Textured">Sand Textured (ফ্লোর স্যান্ড টেক্সচার)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Available Finishing Widths / Sheet Sizes from Linked Material */}
+                <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-800/80 bg-purple-50/50 dark:bg-purple-950/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Maximize2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Available Finishing Sizes (From Linked Raw Material)
+                      </span>
+                    </div>
+                    {finishingMaterialId ? (
+                      <Badge className="bg-purple-600 text-white text-[10px] font-mono py-0.5">
+                        ✓ Linked Material Configured
+                      </Badge>
+                    ) : (
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        (Standard roll & sheet finishing widths)
+                      </span>
+                    )}
+                  </div>
+
+                  {purchaseUnit === 'roll' ? (
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-purple-950 dark:text-purple-200">
+                          Active Roll Sizes:
+                        </span>
+                        {availableRollWidths.map((w) => (
+                          <span
+                            key={w}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-purple-300 dark:border-purple-700 text-xs font-mono font-bold text-purple-900 dark:text-purple-200 shadow-2xs"
+                          >
+                            <span>{w} ft Laminator Roll {extraWidthAllowance !== '' && Number(extraWidthAllowance) > 0 ? `(+${extraWidthAllowance}ft allowance)` : ''}</span>
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-purple-800 dark:text-purple-300">
+                        Roll length: <strong>{standardRollLength} ft</strong> • Automatic nesting will align jobs with these roll dimensions.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-purple-950 dark:text-purple-200">
+                          Active Sheet Sizes:
+                        </span>
+                        {availableSheetSizes.map((s, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-purple-300 dark:border-purple-700 text-xs font-mono font-bold text-purple-900 dark:text-purple-200 shadow-2xs"
+                          >
+                            <span>{s.label || `${s.width}ft × ${s.length}ft`}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Section 3: Commercial Billing Units & Scope */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
               <div>
@@ -1696,7 +2094,7 @@ export function ServiceConfigModal({
         )}
 
         {/* ======================================================== */}
-        {/* TAB 3: FINISHING OPERATIONS                               */}
+        {/* TAB 3: FINISHING OPERATIONS & RAW MATERIALS               */}
         {/* ======================================================== */}
         {activeTab === 'finishing' && (
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
@@ -1705,20 +2103,282 @@ export function ServiceConfigModal({
                 <div className="h-6 w-6 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 flex items-center justify-center font-bold text-xs">
                   3
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Post-Press Finishing Operations
-                </h3>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Post-Press Finishing Operations & Raw Materials
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Select raw materials from inventory (Raw Product — Finishing) or add standard finishing operations.
+                  </p>
+                </div>
               </div>
               <Badge variant="outline" className="text-[10px] font-mono uppercase bg-purple-50 text-purple-700 border-purple-200">
                 {finishingOptions.length} Configured
               </Badge>
             </div>
 
-            <div className="space-y-3">
-              {/* Preset Master Finishing Options */}
-              <div className="space-y-1.5">
+            <div className="space-y-4">
+              {/* Section A: Available Raw Materials from Inventory (Raw Product - Finishing) */}
+              <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-800/80 bg-purple-50/40 dark:bg-purple-950/20 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Scissors className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs font-bold text-purple-950 dark:text-purple-200 uppercase tracking-wider">
+                      Available Raw Materials (Raw Product — Finishing)
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setFinishingFilterTab('finishing_only')}
+                      className={cn(
+                        'px-2 py-1 rounded text-[11px] font-bold border transition-colors cursor-pointer',
+                        finishingFilterTab === 'finishing_only'
+                          ? 'bg-purple-600 text-white border-purple-600'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                      )}
+                    >
+                      Finishing Only ({finishingMaterials.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFinishingFilterTab('all_materials')}
+                      className={cn(
+                        'px-2 py-1 rounded text-[11px] font-bold border transition-colors cursor-pointer',
+                        finishingFilterTab === 'all_materials'
+                          ? 'bg-purple-600 text-white border-purple-600'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                      )}
+                    >
+                      All Raw Materials ({availableMaterials.length})
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search Bar for Raw Finishing Materials */}
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                  <Input
+                    placeholder="Search raw finishing materials (Lamination film, eyelets, tapes, adhesives, boards...)"
+                    value={finishingMaterialSearchQuery}
+                    onChange={(e) => setFinishingMaterialSearchQuery(e.target.value)}
+                    className="pl-9 h-9 text-xs bg-white dark:bg-slate-900"
+                  />
+                </div>
+
+                {/* Raw Finishing Materials Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {(() => {
+                    const sourceList = finishingFilterTab === 'finishing_only'
+                      ? (finishingMaterials.length > 0 ? finishingMaterials : availableMaterials)
+                      : availableMaterials
+
+                    const query = finishingMaterialSearchQuery.toLowerCase().trim()
+                    const filtered = query
+                      ? sourceList.filter(
+                          (m) =>
+                            m.name.toLowerCase().includes(query) ||
+                            ((m as any).name_bn && (m as any).name_bn.toLowerCase().includes(query)) ||
+                            (m.sku && m.sku.toLowerCase().includes(query)) ||
+                            (m.category && m.category.toLowerCase().includes(query))
+                        )
+                      : sourceList
+
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="sm:col-span-3 py-6 text-center text-xs text-slate-500">
+                          No matching raw finishing materials found in inventory.
+                        </div>
+                      )
+                    }
+
+                    return filtered.map((mat) => {
+                      const isLinked = finishingOptions.some(
+                        (f) => f.material_id === mat.id || f.name.toLowerCase() === mat.name.toLowerCase()
+                      )
+                      const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || mat.cost_per_unit || (mat as any).base_cost
+                      const pUnit = (mat as any).purchase_unit || mat.unit || 'unit'
+
+                      return (
+                        <div
+                          key={mat.id}
+                          className={cn(
+                            'p-2.5 rounded-xl border text-xs transition-all flex flex-col justify-between gap-2',
+                            isLinked
+                              ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/60 text-purple-950 dark:text-purple-100 ring-1 ring-purple-500 shadow-xs'
+                              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
+                          )}
+                        >
+                          <div>
+                            <div className="flex items-start justify-between gap-1">
+                              <span className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                                {mat.name}
+                              </span>
+                              <Badge variant="outline" className="text-[9px] uppercase px-1 py-0 font-mono shrink-0">
+                                {mat.category || 'material'}
+                              </Badge>
+                            </div>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mt-0.5">
+                              {mat.sku} • {pUnit}{costStr ? ` • ৳${costStr}/${pUnit}` : ''}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                            <span className="text-[11px] font-mono font-bold text-purple-700 dark:text-purple-300">
+                              {costStr ? `Cost: ৳${costStr}` : 'Raw Item'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleFinishingRawMaterial(mat)}
+                              className={cn(
+                                'px-2 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer',
+                                isLinked
+                                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                                  : 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/60 dark:text-purple-200'
+                              )}
+                            >
+                              {isLinked ? (
+                                <>
+                                  <Check className="w-3 h-3" />
+                                  <span>Linked</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-3 h-3" />
+                                  <span>Add to Service</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })
+                  })()}
+                </div>
+              </div>
+
+              {/* Section B: Configured Finishing Options List */}
+              {finishingOptions.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                      Configured Finishing Operations for this Service ({finishingOptions.length})
+                    </Label>
+                    <span className="text-[11px] text-slate-500">
+                      Customize billing rate & unit cost
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {finishingOptions.map((opt, idx) => (
+                      <div
+                        key={opt.id || idx}
+                        className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-slate-900 dark:text-white">
+                              {opt.name}
+                            </span>
+                            {opt.material_name && (
+                              <Badge variant="outline" className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
+                                🔗 {opt.material_name}
+                              </Badge>
+                            )}
+                            {opt.is_default && (
+                              <Badge className="bg-emerald-600 text-white text-[9px] px-1.5 py-0">
+                                Default
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap shrink-0">
+                          <div>
+                            <Label className="text-[10px] text-slate-500 block mb-0.5">Method</Label>
+                            <select
+                              value={opt.pricing_method}
+                              onChange={(e) => {
+                                const next = [...finishingOptions]
+                                next[idx].pricing_method = e.target.value
+                                setFinishingOptions(next)
+                              }}
+                              className="h-7 text-xs rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 font-medium"
+                            >
+                              <option value="per_sqft">Per Sqft (৳/sft)</option>
+                              <option value="per_rft">Per Rft (৳/rft)</option>
+                              <option value="per_piece">Per Piece (৳/pc)</option>
+                              <option value="fixed">Fixed Charge (৳)</option>
+                              <option value="per_job">Per Job (৳)</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <Label className="text-[10px] text-slate-500 block mb-0.5">Selling Price (৳)</Label>
+                            <Input
+                              type="number"
+                              value={opt.unit_price ?? opt.price ?? ''}
+                              onChange={(e) => {
+                                const next = [...finishingOptions]
+                                const val = e.target.value === '' ? 0 : parseFloat(e.target.value)
+                                next[idx].unit_price = val
+                                next[idx].price = val
+                                setFinishingOptions(next)
+                              }}
+                              className="w-20 h-7 text-xs font-mono font-bold"
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="text-[10px] text-slate-500 block mb-0.5">Unit Cost (৳)</Label>
+                            <Input
+                              type="number"
+                              value={opt.unit_cost ?? opt.cost ?? ''}
+                              onChange={(e) => {
+                                const next = [...finishingOptions]
+                                const val = e.target.value === '' ? 0 : parseFloat(e.target.value)
+                                next[idx].unit_cost = val
+                                next[idx].cost = val
+                                setFinishingOptions(next)
+                              }}
+                              className="w-20 h-7 text-xs font-mono"
+                            />
+                          </div>
+
+                          <label className="flex items-center gap-1 text-[11px] font-medium text-slate-700 dark:text-slate-300 cursor-pointer pt-3">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(opt.is_default)}
+                              onChange={(e) => {
+                                const next = [...finishingOptions]
+                                next[idx].is_default = e.target.checked
+                                setFinishingOptions(next)
+                              }}
+                              className="w-3.5 h-3.5 rounded text-purple-600"
+                            />
+                            <span>Default</span>
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFinishing(idx)}
+                            className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer pt-3"
+                            title="Remove option"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Section C: Preset Standard Finishing Options */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Select Standard Finishing Options:
+                  Quick Standard Finishing Presets:
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {[
@@ -1757,23 +2417,67 @@ export function ServiceConfigModal({
                 </div>
               </div>
 
-              {/* Custom Finishing Form Button & List */}
+              {/* Section D: Custom Finishing Form */}
               <div className="pt-2">
                 {showCustomFinishingForm ? (
-                  <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-purple-200 dark:border-purple-800/60 rounded-xl space-y-2">
+                  <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-purple-200 dark:border-purple-800/60 rounded-xl space-y-3">
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block uppercase">
                       Add Custom Finishing Option
                     </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                       <div className="sm:col-span-2">
-                        <Label className="text-[11px] mb-1 block">Finishing Name</Label>
+                        <Label className="text-[11px] mb-1 block">Finishing Name <span className="text-rose-500">*</span></Label>
                         <Input
-                          placeholder="e.g. 5mm Sunboard Mounting"
+                          placeholder="e.g. 5mm Sunboard Mounting, Spot Foil..."
                           value={customFinishingName}
                           onChange={(e) => setCustomFinishingName(e.target.value)}
-                          className="h-8 text-xs"
+                          className="h-8 text-xs bg-white dark:bg-slate-900"
                         />
                       </div>
+
+                      <div className="sm:col-span-2">
+                        <Label className="text-[11px] mb-1 block">Link Raw Inventory Item (Optional)</Label>
+                        <select
+                          value={customFinishingMaterialId}
+                          onChange={(e) => {
+                            const matId = e.target.value
+                            setCustomFinishingMaterialId(matId)
+                            if (matId) {
+                              const mat = availableMaterials.find((m) => m.id === matId)
+                              if (mat) {
+                                if (!customFinishingName) setCustomFinishingName(mat.name)
+                                const c = Number((mat as any).purchase_price_per_sft || (mat as any).purchase_price || mat.cost_per_unit || 0)
+                                setCustomFinishingCost(c)
+                                setCustomFinishingPrice(c > 0 ? Math.ceil(c * 1.6) : 15)
+                              }
+                            }
+                          }}
+                          className="w-full h-8 text-xs rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                        >
+                          <option value="">-- Optional: Link Raw Material --</option>
+                          {availableMaterials.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.name} ({m.sku})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] mb-1 block">Pricing Method</Label>
+                        <select
+                          value={customFinishingMethod}
+                          onChange={(e) => setCustomFinishingMethod(e.target.value)}
+                          className="w-full h-8 text-xs rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                        >
+                          <option value="per_sqft">Per Sqft (৳/sft)</option>
+                          <option value="per_rft">Per Rft (৳/rft)</option>
+                          <option value="per_piece">Per Piece (৳/pc)</option>
+                          <option value="fixed">Fixed Rate (৳)</option>
+                          <option value="per_job">Per Job (৳)</option>
+                        </select>
+                      </div>
+
                       <div>
                         <Label className="text-[11px] mb-1 block">Selling Price (৳)</Label>
                         <Input
@@ -1781,9 +2485,10 @@ export function ServiceConfigModal({
                           placeholder="25"
                           value={customFinishingPrice}
                           onChange={(e) => setCustomFinishingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="h-8 text-xs font-mono"
+                          className="h-8 text-xs font-mono bg-white dark:bg-slate-900"
                         />
                       </div>
+
                       <div>
                         <Label className="text-[11px] mb-1 block">Unit Cost (৳)</Label>
                         <Input
@@ -1791,16 +2496,17 @@ export function ServiceConfigModal({
                           placeholder="15"
                           value={customFinishingCost}
                           onChange={(e) => setCustomFinishingCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="h-8 text-xs font-mono"
+                          className="h-8 text-xs font-mono bg-white dark:bg-slate-900"
                         />
                       </div>
                     </div>
+
                     <div className="flex justify-end gap-2 pt-1">
                       <Button type="button" size="sm" variant="ghost" onClick={() => setShowCustomFinishingForm(false)} className="h-7 text-xs">
                         Cancel
                       </Button>
-                      <Button type="button" size="sm" onClick={handleAddCustomFinishing} className="h-7 text-xs bg-purple-600 text-white font-bold">
-                        Save Finishing
+                      <Button type="button" size="sm" onClick={handleAddCustomFinishing} className="h-7 text-xs bg-purple-600 text-white font-bold hover:bg-purple-700">
+                        Save Finishing Option
                       </Button>
                     </div>
                   </div>
@@ -1812,7 +2518,7 @@ export function ServiceConfigModal({
                     onClick={() => setShowCustomFinishingForm(true)}
                     className="text-xs border-dashed border-purple-300 text-purple-700 hover:bg-purple-50 dark:text-purple-300 gap-1"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Add Custom Finishing
+                    <Plus className="w-3.5 h-3.5" /> Add Custom Finishing Option
                   </Button>
                 )}
               </div>
