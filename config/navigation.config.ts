@@ -64,6 +64,14 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           permission: { action: 'view', resource: 'customers' },
         },
         {
+          key: 'products',
+          title: 'Products & Services',
+          titleBn: 'পণ্য ও সেবা',
+          href: `/${tenantSlug}/products`,
+          icon: 'Layers',
+          permission: { action: 'view', resource: 'inventory' },
+        },
+        {
           key: 'operator',
           title: 'My Work',
           titleBn: 'আমার কাজ',
@@ -131,17 +139,9 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
     },
     {
       id: 'materials',
-      title: 'Materials & Catalog',
-      titleBn: 'কাঁচামাল ও ক্যাটালগ',
+      title: 'Materials & Inventory',
+      titleBn: 'কাঁচামাল ও ইনভেন্টরি',
       items: [
-        {
-          key: 'products',
-          title: 'Products & Services',
-          titleBn: 'পণ্য ও সেবা',
-          href: `/${tenantSlug}/products`,
-          icon: 'Layers',
-          permission: { action: 'view', resource: 'inventory' },
-        },
         {
           key: 'inventory',
           title: 'Inventory Stock',

@@ -37,6 +37,8 @@ import {
   Crown,
   Sparkles,
   Zap,
+  Layers,
+  Disc,
   LogOut,
   Shield,
   ChevronDown,
@@ -86,6 +88,8 @@ const iconMap: Record<string, React.ElementType> = {
   Crown,
   Sparkles,
   Zap,
+  Layers,
+  Disc,
 }
 
 export function MobileNav() {
