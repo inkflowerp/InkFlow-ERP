@@ -160,8 +160,8 @@ export function ServiceConfigModal({
 
   // 2.1 Roll Physical Dimensions
   const [availableRollWidths, setAvailableRollWidths] = useState<number[]>([2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
-  const [extraWidthAllowance, setExtraWidthAllowance] = useState<number>(0.25)
-  const [standardRollLength, setStandardRollLength] = useState<number>(164)
+  const [extraWidthAllowance, setExtraWidthAllowance] = useState<number | string>(0.25)
+  const [standardRollLength, setStandardRollLength] = useState<number | string>(164)
   const [newRollWidthInput, setNewRollWidthInput] = useState<string>('')
 
   // 2.2 Sheet Physical Dimensions
@@ -1318,11 +1318,11 @@ export function ServiceConfigModal({
                         <div className="relative w-24">
                           <Input
                             type="number"
-                            step="0.05"
+                            step="any"
                             min="0"
                             placeholder="0.25"
                             value={extraWidthAllowance}
-                            onChange={(e) => setExtraWidthAllowance(parseFloat(e.target.value) || 0.25)}
+                            onChange={(e) => setExtraWidthAllowance(e.target.value)}
                             className="h-9 text-xs font-mono font-bold pr-7"
                           />
                           <span className="absolute right-2 top-2 text-[10px] font-bold text-slate-400">ft</span>
@@ -1343,17 +1343,17 @@ export function ServiceConfigModal({
                             min="0"
                             placeholder="e.g. 164"
                             value={standardRollLength}
-                            onChange={(e) => setStandardRollLength(parseFloat(e.target.value) || 164)}
+                            onChange={(e) => setStandardRollLength(e.target.value)}
                             className="h-9 text-xs font-mono font-bold pr-7"
                           />
                           <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
                         </div>
                         <button
                           type="button"
-                          onClick={() => setStandardRollLength(100)}
+                          onClick={() => setStandardRollLength('100')}
                           className={cn(
                             'h-9 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
-                            standardRollLength === 100
+                            Number(standardRollLength) === 100
                               ? 'bg-blue-600 text-white border-blue-600'
                               : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                           )}
@@ -1362,10 +1362,10 @@ export function ServiceConfigModal({
                         </button>
                         <button
                           type="button"
-                          onClick={() => setStandardRollLength(164)}
+                          onClick={() => setStandardRollLength('164')}
                           className={cn(
                             'h-9 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
-                            standardRollLength === 164
+                            Number(standardRollLength) === 164
                               ? 'bg-blue-600 text-white border-blue-600'
                               : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                           )}
@@ -1396,12 +1396,17 @@ export function ServiceConfigModal({
                       {availableRollWidths.map((w) => (
                         <span
                           key={w}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white shadow-2xs"
+                          onClick={() => setNewRollWidthInput(w.toString())}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white shadow-2xs hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
+                          title="Click to edit this width"
                         >
-                          <span>{w}ft {extraWidthAllowance ? `(+${extraWidthAllowance}ft)` : ''} × {standardRollLength}ft</span>
+                          <span>{w}ft {extraWidthAllowance !== '' && Number(extraWidthAllowance) > 0 ? `(+${extraWidthAllowance}ft)` : ''} × {standardRollLength}ft</span>
                           <button
                             type="button"
-                            onClick={() => handleToggleRollWidth(w)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleToggleRollWidth(w)
+                            }}
                             className="ml-1 text-slate-400 hover:text-rose-600 cursor-pointer text-sm font-bold"
                             title="Remove width"
                           >
