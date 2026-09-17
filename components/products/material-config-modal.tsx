@@ -62,10 +62,6 @@ const COMMON_USAGE_UNITS: { value: UnitOfMeasure; label: string }[] = [
   { value: 'kg', label: 'Kilogram (কেজি)' },
 ]
 
-const STANDARD_ROLL_WIDTHS: number[] = [
-  2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 10.0, 10.5, 12.0
-]
-
 const STANDARD_SHEET_SIZES: { width: number; length: number; label: string }[] = [
   { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
   { width: 4, length: 6, label: '4ft × 6ft' },
@@ -97,10 +93,10 @@ export function MaterialConfigModal({
   const [dimensionUnit, setDimensionUnit] = useState<'ft' | 'inch' | 'mm' | 'm'>('ft')
   
   // Roll Geometry
-  const [availableWidths, setAvailableWidths] = useState<number[]>([2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10])
+  const [availableWidths, setAvailableWidths] = useState<number[]>([10])
   const [standardRollLength, setStandardRollLength] = useState<number>(164)
   const [extraWidthAllowance, setExtraWidthAllowance] = useState<number>(0.25)
-  const [newWidthInput, setNewWidthInput] = useState<string>('')
+  const [newWidthInput, setNewWidthInput] = useState<string>('10')
 
   // Sheet Geometry
   const [availableSheetSizes, setAvailableSheetSizes] = useState<Array<{ width: number; length: number; label?: string }>>([
@@ -131,7 +127,10 @@ export function MaterialConfigModal({
   // Derived total package area or count
   const totalUnitArea = useMemo(() => {
     if (materialType === 'roll' || purchaseUnit === 'roll') {
-      const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
+      const parsedInput = parseFloat(newWidthInput)
+      const maxW = availableWidths.length > 0 
+        ? Math.max(...availableWidths) 
+        : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
       return maxW * (standardRollLength || 164)
     }
     if (materialType === 'sheet' || purchaseUnit === 'sheet') {
@@ -142,7 +141,7 @@ export function MaterialConfigModal({
       return Number(packQuantity) || 1000
     }
     return 1
-  }, [materialType, purchaseUnit, availableWidths, standardRollLength, availableSheetSizes, packQuantity])
+  }, [materialType, purchaseUnit, availableWidths, newWidthInput, standardRollLength, availableSheetSizes, packQuantity])
 
   useEffect(() => {
     if (initialData) {
@@ -158,7 +157,7 @@ export function MaterialConfigModal({
       setMaterialType(matCfg.material_type || (initialData.purchase_unit === 'roll' ? 'roll' : initialData.purchase_unit === 'sheet' ? 'sheet' : 'roll'))
       
       const stdLen = matCfg.standard_roll_length_ft || initialData.standard_roll_length_ft || 164
-      const widths = matCfg.available_widths_ft || initialData.available_widths_ft || [2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10]
+      const widths = matCfg.available_widths_ft || initialData.available_widths_ft || [10]
       const sheets = matCfg.available_sheet_sizes || [
         { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
         { width: 4, length: 6, label: '4ft × 6ft' },
@@ -167,6 +166,9 @@ export function MaterialConfigModal({
       ]
       setStandardRollLength(stdLen)
       setAvailableWidths(widths)
+      if (widths.length > 0) {
+        setNewWidthInput(widths[widths.length - 1].toString())
+      }
       setAvailableSheetSizes(sheets)
       setExtraWidthAllowance(matCfg.extra_width_allowance_ft ?? (initialData.production_width_allowance ?? 0.25))
       setUsageUnit((matCfg.usage_unit as any) || initialData.unit || 'sft')
@@ -208,7 +210,8 @@ export function MaterialConfigModal({
       setPurchasePrice('')
       setPurchasePricePerSft('')
       setStandardRollLength(164)
-      setAvailableWidths([2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10])
+      setAvailableWidths([10])
+      setNewWidthInput('10')
       setAvailableSheetSizes([
         { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
         { width: 4, length: 6, label: '4ft × 6ft' },
@@ -255,42 +258,26 @@ export function MaterialConfigModal({
   }
 
   // Roll Width Handlers
-  const handleToggleRollWidth = (w: number) => {
-    let nextWidths: number[]
-    if (availableWidths.includes(w)) {
-      nextWidths = availableWidths.filter((x) => x !== w)
-    } else {
-      nextWidths = [...availableWidths, w].sort((a, b) => a - b)
+  const handleAddCustomWidth = () => {
+    const val = parseFloat(newWidthInput)
+    if (!isNaN(val) && val > 0) {
+      if (!availableWidths.includes(val)) {
+        const nextWidths = [...availableWidths, val].sort((a, b) => a - b)
+        setAvailableWidths(nextWidths)
+        if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+          const maxW = Math.max(...nextWidths)
+          setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * standardRollLength).toFixed(2)))
+        }
+      }
     }
+  }
+
+  const handleRemoveWidth = (w: number) => {
+    const nextWidths = availableWidths.filter((x) => x !== w)
     setAvailableWidths(nextWidths)
     if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0 && nextWidths.length > 0) {
       const maxW = Math.max(...nextWidths)
       setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * standardRollLength).toFixed(2)))
-    }
-  }
-
-  const handleSelectAllRollWidths = () => {
-    setAvailableWidths([...STANDARD_ROLL_WIDTHS])
-    if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-      const maxW = Math.max(...STANDARD_ROLL_WIDTHS)
-      setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * standardRollLength).toFixed(2)))
-    }
-  }
-
-  const handleClearRollWidths = () => {
-    setAvailableWidths([])
-  }
-
-  const handleAddCustomWidth = () => {
-    const val = parseFloat(newWidthInput)
-    if (!isNaN(val) && val > 0 && !availableWidths.includes(val)) {
-      const nextWidths = [...availableWidths, val].sort((a, b) => a - b)
-      setAvailableWidths(nextWidths)
-      setNewWidthInput('')
-      if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-        const maxW = Math.max(...nextWidths)
-        setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * standardRollLength).toFixed(2)))
-      }
     }
   }
 
@@ -337,7 +324,10 @@ export function MaterialConfigModal({
     const effCost = baseUnitCost * (1 + (wastePercent || 0) / 100)
 
     if (materialType === 'roll' || purchaseUnit === 'roll') {
-      const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
+      const parsedInput = parseFloat(newWidthInput)
+      const maxW = availableWidths.length > 0 
+        ? Math.max(...availableWidths) 
+        : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
       const rollArea = maxW * standardRollLength
       return {
         unitCost: baseUnitCost,
@@ -375,7 +365,7 @@ export function MaterialConfigModal({
       yieldLabel: `1 ${usageUnit}`,
       formulaText: `৳${baseUnitCost.toFixed(2)} per ${usageUnit}`,
     }
-  }, [purchasePricePerSft, purchasePrice, totalUnitArea, materialType, purchaseUnit, availableWidths, standardRollLength, availableSheetSizes, wastePercent, packQuantity, usageUnit])
+  }, [purchasePricePerSft, purchasePrice, totalUnitArea, materialType, purchaseUnit, availableWidths, newWidthInput, standardRollLength, availableSheetSizes, wastePercent, packQuantity, usageUnit])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -390,10 +380,15 @@ export function MaterialConfigModal({
     try {
       const pp = purchasePrice !== '' ? Number(purchasePrice) : 0
       const baseDirectCost = calculatedEconomics.unitCost > 0 ? Number(calculatedEconomics.unitCost.toFixed(2)) : (pp > 0 ? pp : 0)
+      
+      const parsedInput = parseFloat(newWidthInput)
+      const finalWidths = availableWidths.length > 0 
+        ? availableWidths 
+        : (!isNaN(parsedInput) && parsedInput > 0 ? [parsedInput] : [10])
 
       const materialConfig: MaterialConfiguration = {
         material_type: materialType,
-        available_widths_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? availableWidths : undefined,
+        available_widths_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? finalWidths : undefined,
         standard_roll_length_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? standardRollLength : undefined,
         available_sheet_sizes: (materialType === 'sheet' || purchaseUnit === 'sheet') ? availableSheetSizes : undefined,
         extra_width_allowance_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? Number(extraWidthAllowance) || 0.25 : undefined,
@@ -431,7 +426,7 @@ export function MaterialConfigModal({
         cost_basis_type: 'direct_cost',
         is_active: isActive,
         description: description.trim() || undefined,
-        available_widths_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? availableWidths : undefined,
+        available_widths_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? finalWidths : undefined,
         standard_roll_length_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? standardRollLength : undefined,
         production_width_allowance: (materialType === 'roll' || purchaseUnit === 'roll') ? Number(extraWidthAllowance) || 0.25 : undefined,
         material_config: materialConfig,
@@ -687,91 +682,92 @@ export function MaterialConfigModal({
               </div>
             </div>
 
-            {/* Geometry Case A: Roll Physical Dimensions */}
+            {/* Geometry Case A: Roll Physical Dimensions: Roll Width [ ] + [ ]    Roll Length [ ]  Add */}
             {(materialType === 'roll' || purchaseUnit === 'roll') && (
               <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      Available Stock Roll Widths (Feet)
-                    </span>
-                    <Badge variant="outline" className="text-[10px] font-mono bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200">
-                      {availableWidths.length} Widths Available
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleSelectAllRollWidths}
-                      className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
-                    >
-                      Select All
-                    </button>
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
-                    <button
-                      type="button"
-                      onClick={handleClearRollWidths}
-                      className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 cursor-pointer"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5">
-                  {STANDARD_ROLL_WIDTHS.map((w) => {
-                    const isSelected = availableWidths.includes(w)
-                    return (
-                      <button
-                        key={w}
-                        type="button"
-                        onClick={() => handleToggleRollWidth(w)}
-                        className={cn(
-                          'text-xs px-2.5 py-1 rounded-md font-mono font-medium transition-all flex items-center gap-1 cursor-pointer',
-                          isSelected
-                            ? 'bg-blue-600 text-white font-bold shadow-2xs ring-1 ring-blue-400'
-                            : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:border-blue-400'
-                        )}
-                      >
-                        {isSelected ? <Check className="w-3 h-3 text-white" /> : <Plus className="w-3 h-3 text-slate-400" />}
-                        <span>{w} ft</span>
-                      </button>
-                    )
-                  })}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Standard Roll Length (Feet)
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                  {/* Roll Width [ ] + [ ] */}
+                  <div className="sm:col-span-6">
+                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      Roll Width (Feet) + Extra Allowance
                     </Label>
                     <div className="flex items-center gap-1.5">
-                      <Input
-                        type="number"
-                        step="any"
-                        value={standardRollLength}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value) || 164
-                          setStandardRollLength(val)
-                          if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-                            const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
-                            setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * val).toFixed(2)))
-                          }
-                        }}
-                        className="h-8 text-xs font-mono font-bold"
-                      />
+                      <div className="relative flex-1">
+                        <Input
+                          type="number"
+                          step="any"
+                          min="0"
+                          placeholder="e.g. 10"
+                          value={newWidthInput}
+                          onChange={(e) => {
+                            setNewWidthInput(e.target.value)
+                            const w = parseFloat(e.target.value)
+                            if (!isNaN(w) && w > 0 && purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                              setPurchasePrice(Number((Number(purchasePricePerSft) * w * standardRollLength).toFixed(2)))
+                            }
+                          }}
+                          className="h-9 text-xs font-mono font-bold pr-7"
+                        />
+                        <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                      </div>
+                      <span className="text-sm font-bold text-slate-400">+</span>
+                      <div className="relative w-24">
+                        <Input
+                          type="number"
+                          step="0.05"
+                          min="0"
+                          placeholder="0.25"
+                          value={extraWidthAllowance}
+                          onChange={(e) => setExtraWidthAllowance(parseFloat(e.target.value) || 0.25)}
+                          className="h-9 text-xs font-mono font-bold pr-7"
+                        />
+                        <span className="absolute right-2 top-2 text-[10px] font-bold text-slate-400">ft</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Roll Length [ ] */}
+                  <div className="sm:col-span-4">
+                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      Roll Length (Feet)
+                    </Label>
+                    <div className="flex items-center gap-1.5">
+                      <div className="relative flex-1">
+                        <Input
+                          type="number"
+                          step="any"
+                          min="0"
+                          placeholder="e.g. 164"
+                          value={standardRollLength}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 164
+                            setStandardRollLength(val)
+                            const parsedInput = parseFloat(newWidthInput)
+                            const w = availableWidths.length > 0 
+                              ? Math.max(...availableWidths) 
+                              : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
+                            if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                              setPurchasePrice(Number((Number(purchasePricePerSft) * w * val).toFixed(2)))
+                            }
+                          }}
+                          className="h-9 text-xs font-mono font-bold pr-7"
+                        />
+                        <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                      </div>
                       <button
                         type="button"
                         onClick={() => {
                           setStandardRollLength(100)
+                          const parsedInput = parseFloat(newWidthInput)
+                          const w = availableWidths.length > 0 
+                            ? Math.max(...availableWidths) 
+                            : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
                           if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-                            const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
-                            setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * 100).toFixed(2)))
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * w * 100).toFixed(2)))
                           }
                         }}
                         className={cn(
-                          'h-8 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
+                          'h-9 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
                           standardRollLength === 100
                             ? 'bg-blue-600 text-white border-blue-600'
                             : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
@@ -783,61 +779,62 @@ export function MaterialConfigModal({
                         type="button"
                         onClick={() => {
                           setStandardRollLength(164)
+                          const parsedInput = parseFloat(newWidthInput)
+                          const w = availableWidths.length > 0 
+                            ? Math.max(...availableWidths) 
+                            : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
                           if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-                            const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
-                            setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * 164).toFixed(2)))
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * w * 164).toFixed(2)))
                           }
                         }}
                         className={cn(
-                          'h-8 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
+                          'h-9 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
                           standardRollLength === 164
                             ? 'bg-blue-600 text-white border-blue-600'
                             : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                         )}
                       >
-                        164ft (50m)
+                        164ft
                       </button>
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Extra Width Allowance (Feet)
-                    </Label>
-                    <Input
-                      type="number"
-                      step="0.05"
-                      value={extraWidthAllowance}
-                      onChange={(e) => setExtraWidthAllowance(parseFloat(e.target.value) || 0.25)}
-                      className="h-8 text-xs font-mono"
-                    />
-                    <span className="text-[10px] text-slate-500">Roll width + 0.25ft machine grip</span>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Add Custom Roll Width (Feet)
-                    </Label>
-                    <div className="flex items-center gap-1.5">
-                      <Input
-                        type="number"
-                        step="any"
-                        placeholder="e.g. 3.25"
-                        value={newWidthInput}
-                        onChange={(e) => setNewWidthInput(e.target.value)}
-                        className="h-8 text-xs font-mono"
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleAddCustomWidth}
-                        className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shrink-0"
-                      >
-                        <Plus className="w-3.5 h-3.5 mr-0.5" /> Add
-                      </Button>
-                    </div>
+                  {/* Add Button */}
+                  <div className="sm:col-span-2">
+                    <Button
+                      type="button"
+                      onClick={handleAddCustomWidth}
+                      className="w-full h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Add
+                    </Button>
                   </div>
                 </div>
+
+                {/* Configured Roll Sizes List */}
+                {availableWidths.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mr-1">
+                      Configured Roll Sizes:
+                    </span>
+                    {availableWidths.map((w) => (
+                      <span
+                        key={w}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white shadow-2xs"
+                      >
+                        <span>{w}ft {extraWidthAllowance ? `(+${extraWidthAllowance}ft)` : ''} × {standardRollLength}ft</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveWidth(w)}
+                          className="ml-1 text-slate-400 hover:text-rose-600 cursor-pointer text-sm font-bold"
+                          title="Remove width"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
