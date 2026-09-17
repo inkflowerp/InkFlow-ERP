@@ -271,6 +271,7 @@ export function ReadyProductModal({
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
       size="5xl"
+      onSubmit={handleSubmit}
       title={
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
@@ -291,9 +292,73 @@ export function ReadyProductModal({
           </div>
         </div>
       }
-      hideFooter={true}
+      footer={
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          >
+            Cancel
+          </Button>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {activeTab === 'basic' ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (!name.trim()) {
+                    setErrorMessage('Product name is required.')
+                    return
+                  }
+                  setErrorMessage(null)
+                  setActiveTab('pricing')
+                }}
+                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1 cursor-pointer"
+              >
+                <span>Next: Pricing</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setErrorMessage(null)
+                  setActiveTab('basic')
+                }}
+                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1 cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back: Basic Info</span>
+              </Button>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>Saving Product...</span>
+                </>
+              ) : (
+                <>
+                  <Package className="h-4 w-4" />
+                  <span>{initialData ? 'Update Ready Product' : 'Save Ready Product'}</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      }
     >
-      <form onSubmit={handleSubmit} className="space-y-4 py-1">
+      <div className="space-y-4 py-1">
         {errorMessage && (
           <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2 font-medium animate-in fade-in-0">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
@@ -896,73 +961,7 @@ export function ReadyProductModal({
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* Standardized Bottom Action Bar */}
-        {/* ======================================================== */}
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            Cancel
-          </Button>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            {activeTab === 'basic' ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (!name.trim()) {
-                    setErrorMessage('Product name is required.')
-                    return
-                  }
-                  setErrorMessage(null)
-                  setActiveTab('pricing')
-                }}
-                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1 cursor-pointer"
-              >
-                <span>Next: Pricing</span>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setErrorMessage(null)
-                  setActiveTab('basic')
-                }}
-                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1 cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Back: Basic Info</span>
-              </Button>
-            )}
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Saving Product...</span>
-                </>
-              ) : (
-                <>
-                  <Package className="h-4 w-4" />
-                  <span>{initialData ? 'Update Ready Product' : 'Save Ready Product'}</span>
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </form>
+      </div>
     </ModalDialog>
   )
 }

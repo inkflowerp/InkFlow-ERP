@@ -399,6 +399,7 @@ export function NewPurchaseModal({
         onOpenChange(v)
       }}
       size="3xl"
+      onSubmit={handleSubmit}
       title={
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-xl bg-amber-600/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
@@ -419,9 +420,35 @@ export function NewPurchaseModal({
           </div>
         </div>
       }
-      hideFooter
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto min-h-[40px] text-xs font-semibold cursor-pointer"
+          >
+            {tBilingual('Cancel', 'বাতিল')}
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto min-h-[40px] text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 shadow-sm cursor-pointer"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                <span>Issuing Purchase Order...</span>
+              </>
+            ) : (
+              <span>{tBilingual('Issue Purchase Order', 'ক্রয় আদেশ জারি করুন')}</span>
+            )}
+          </Button>
+        </div>
+      }
     >
-      <form onSubmit={handleSubmit} className="space-y-4 pt-1 pb-2">
+      <div className="space-y-4 pt-1 pb-2">
         {/* Success Alert */}
         {successMessage && (
           <div className="p-3.5 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200 rounded-xl border border-emerald-300 dark:border-emerald-800 text-xs flex items-center gap-2 animate-in fade-in-0">
@@ -665,33 +692,7 @@ export function NewPurchaseModal({
           />
         </div>
 
-        {/* Action Footer */}
-        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto min-h-[40px] text-xs font-semibold cursor-pointer"
-          >
-            {tBilingual('Cancel', 'বাতিল')}
-          </Button>
-
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full sm:w-auto min-h-[40px] text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 shadow-sm cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                <span>Issuing Purchase Order...</span>
-              </>
-            ) : (
-              <span>{tBilingual('Issue Purchase Order', 'ক্রয় আদেশ জারি করুন')}</span>
-            )}
-          </Button>
-        </div>
-      </form>
+      </div>
     </ModalDialog>
   )
 }

@@ -5,12 +5,14 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogBody,
   DialogTitle,
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
+import { cn } from '@/lib/utils'
 
 export type ModalDialogSize =
   | 'sm'
@@ -34,13 +36,18 @@ interface ModalDialogProps {
   confirmText?: string
   cancelText?: string
   onConfirm?: () => void
+  onSubmit?: (e: React.FormEvent) => void
   isConfirmLoading?: boolean
   confirmVariant?: 'default' | 'destructive' | 'cmyk'
   hideFooter?: boolean
+  footer?: React.ReactNode
   maxWidth?: string
   size?: ModalDialogSize
   style?: React.CSSProperties
   className?: string
+  bodyClassName?: string
+  headerClassName?: string
+  footerClassName?: string
 }
 
 const SIZE_MAP: Record<ModalDialogSize, string> = {
@@ -80,48 +87,82 @@ export function ModalDialog({
   confirmText,
   cancelText,
   onConfirm,
+  onSubmit,
   isConfirmLoading = false,
   confirmVariant = 'default',
   hideFooter = false,
+  footer,
   maxWidth,
   size,
   style,
   className,
+  bodyClassName,
+  headerClassName,
+  footerClassName,
 }: ModalDialogProps) {
   const { t } = useI18n()
 
   const resolvedMaxWidth = maxWidth || (size ? SIZE_MAP[size] : undefined)
   const resolvedStyle = size ? { ...SIZE_STYLE_MAP[size], ...style } : style
 
+  const dialogInner = (
+    <>
+      {/* FIXED HEADER */}
+      <DialogHeader className={headerClassName}>
+        <DialogTitle>{title}</DialogTitle>
+        {description && <DialogDescription className="mt-1">{description}</DialogDescription>}
+      </DialogHeader>
+
+      {/* SCROLLABLE BODY */}
+      <DialogBody className={bodyClassName}>
+        {children}
+      </DialogBody>
+
+      {/* FIXED FOOTER */}
+      {footer ? (
+        <div className={cn('shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xs z-20', footerClassName)}>
+          {footer}
+        </div>
+      ) : !hideFooter ? (
+        <DialogFooter className={footerClassName}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isConfirmLoading}
+            className="cursor-pointer"
+          >
+            {cancelText || t('common.cancel')}
+          </Button>
+          {(onConfirm || onSubmit) && (
+            <Button
+              type={onSubmit ? 'submit' : 'button'}
+              variant={confirmVariant}
+              onClick={onConfirm}
+              isLoading={isConfirmLoading}
+              className="cursor-pointer"
+            >
+              {confirmText || t('common.confirm')}
+            </Button>
+          )}
+        </DialogFooter>
+      ) : null}
+    </>
+  )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange} maxWidth={resolvedMaxWidth} style={resolvedStyle}>
-      <DialogContent onClose={() => onOpenChange(false)} className={resolvedMaxWidth ? `${resolvedMaxWidth} ${className || ''}` : className} style={resolvedStyle}>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
-        </DialogHeader>
-
-        <div className="py-2">{children}</div>
-
-        {!hideFooter && (
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isConfirmLoading}
-            >
-              {cancelText || t('common.cancel')}
-            </Button>
-            {onConfirm && (
-              <Button
-                variant={confirmVariant}
-                onClick={onConfirm}
-                isLoading={isConfirmLoading}
-              >
-                {confirmText || t('common.confirm')}
-              </Button>
-            )}
-          </DialogFooter>
+      <DialogContent
+        onClose={() => onOpenChange(false)}
+        className={cn('flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] overflow-hidden p-0', resolvedMaxWidth, className)}
+        style={resolvedStyle}
+      >
+        {onSubmit ? (
+          <form onSubmit={onSubmit} className="flex flex-col h-full min-h-0 flex-1 overflow-hidden">
+            {dialogInner}
+          </form>
+        ) : (
+          dialogInner
         )}
       </DialogContent>
     </Dialog>

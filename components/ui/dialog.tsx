@@ -80,7 +80,7 @@ export function DialogContent({
     <div
       style={style}
       className={cn(
-        'relative w-full max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] flex flex-col rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl transition-all overflow-hidden dark:border-slate-800 dark:bg-slate-900',
+        'relative w-full max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] flex flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all overflow-hidden dark:border-slate-800 dark:bg-slate-900',
         className
       )}
     >
@@ -88,21 +88,38 @@ export function DialogContent({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3.5 top-3.5 sm:right-4 sm:top-4 z-20 rounded-lg p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="absolute right-3.5 top-3.5 sm:right-4 sm:top-4 z-30 rounded-lg p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
           aria-label="Close dialog"
         >
           <X className="h-4 w-4" />
         </button>
       )}
-      <div className="flex-1 overflow-y-auto pr-1 -mr-1 overscroll-contain">
-        {children}
-      </div>
+      {children}
     </div>
   )
 }
 
 export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex flex-col space-y-1.5 text-left mb-3 sm:mb-4 shrink-0', className)} {...props} />
+  return (
+    <div
+      className={cn(
+        'flex flex-col space-y-1.5 text-left shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs z-20 pr-12',
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export function DialogBody({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn('flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 overscroll-contain', className)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
 }
 
 export function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
@@ -117,7 +134,7 @@ export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLD
   return (
     <div
       className={cn(
-        'flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0',
+        'flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xs z-20 mt-0',
         className
       )}
       {...props}

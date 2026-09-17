@@ -2120,6 +2120,7 @@ export function ServiceConfigModal({
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
       size="5xl"
+      onSubmit={handleSubmit}
       title={
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0 ring-1 ring-blue-500/20">
@@ -2145,9 +2146,41 @@ export function ServiceConfigModal({
           </div>
         </div>
       }
-      hideFooter={true}
+      footer={
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          >
+            Cancel
+          </Button>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>Saving Service...</span>
+                </>
+              ) : (
+                <>
+                  <Wrench className="h-4 w-4" />
+                  <span>{initialData ? 'Update Service' : 'Save Printing Service'}</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      }
     >
-      <form onSubmit={handleSubmit} className="space-y-4 py-1">
+      <div className="space-y-4 py-1">
         {errorMessage && (
           <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2.5 font-medium shadow-xs">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
@@ -4670,73 +4703,7 @@ export function ServiceConfigModal({
           </div>
         )}
 
-        {/* Bottom Navigation & Submit Bar */}
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-          >
-            Cancel
-          </Button>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            {activeTab !== 'basic' && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (activeTab === 'materials') setActiveTab('basic')
-                  else if (activeTab === 'finishing') setActiveTab('materials')
-                  else if (activeTab === 'additionals') setActiveTab('finishing')
-                  else if (activeTab === 'pricing') setActiveTab('additionals')
-                }}
-                className="h-10 px-3.5 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 gap-1"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Previous</span>
-              </Button>
-            )}
-
-            {activeTab !== 'pricing' && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (activeTab === 'basic') setActiveTab('materials')
-                  else if (activeTab === 'materials') setActiveTab('finishing')
-                  else if (activeTab === 'finishing') setActiveTab('additionals')
-                  else if (activeTab === 'additionals') setActiveTab('pricing')
-                }}
-                className="h-10 px-4 rounded-xl font-bold border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 gap-1"
-              >
-                <span>Next Tab</span>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            )}
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Saving Service...</span>
-                </>
-              ) : (
-                <>
-                  <Wrench className="h-4 w-4" />
-                  <span>{initialData ? 'Update Service' : 'Save Printing Service'}</span>
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </form>
+      </div>
     </ModalDialog>
   )
 }
