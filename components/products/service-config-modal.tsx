@@ -471,6 +471,24 @@ export function ServiceConfigModal({
     }
   }
 
+  const updateFinishingOption = (name: string, updates: Partial<ServiceFinishingOption>) => {
+    setFinishingOptions(
+      finishingOptions.map((f) => (f.name === name ? { ...f, ...updates } : f))
+    )
+  }
+
+  const updateAdditionalOption = (name: string, updates: Partial<ServiceAdditionalOption>) => {
+    setAdditionalOptions(
+      additionalOptions.map((a) => (a.name === name ? { ...a, ...updates } : a))
+    )
+  }
+
+  const updateInstallationOption = (name: string, updates: Partial<ServiceInstallationOption>) => {
+    setInstallationOptions(
+      installationOptions.map((inst) => (inst.name === name ? { ...inst, ...updates } : inst))
+    )
+  }
+
   const handleAddCustomFinishing = () => {
     if (!customFinishingName.trim()) return
     const id = `fin-custom-${Date.now()}`
@@ -1550,30 +1568,154 @@ export function ServiceConfigModal({
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto pr-1">
               {finishingMasterOptions.map((f) => {
-                const isSelected = finishingOptions.some((x) => x.name === f.name)
+                const selected = finishingOptions.find((x) => x.name === f.name)
+                const isSelected = Boolean(selected)
+                if (isSelected && selected) {
+                  return (
+                    <div
+                      key={f.id}
+                      className="p-2.5 rounded-xl border border-purple-500 bg-purple-50/70 dark:bg-purple-950/40 text-purple-950 dark:text-purple-100 ring-1 ring-purple-500/50 shadow-xs space-y-2 text-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-5 w-5 rounded-md bg-purple-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                            <Check className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="font-bold text-slate-900 dark:text-white text-xs">{f.name}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleFinishing(f)}
+                          className="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer rounded"
+                          title="Remove finishing"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Inline Price & Unit Customization */}
+                      <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-purple-200/80 dark:border-purple-800/80" onClick={(e) => e.stopPropagation()}>
+                        <div>
+                          <Label className="text-[10px] font-bold text-purple-900 dark:text-purple-200 mb-0.5 block uppercase">
+                            Price (৳)
+                          </Label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1.5 text-slate-400 font-bold text-[11px]">৳</span>
+                            <Input
+                              type="number"
+                              step="any"
+                              min="0"
+                              value={selected.price}
+                              onChange={(e) => updateFinishingOption(f.name, { price: parseFloat(e.target.value) || 0 })}
+                              className="h-7 text-xs pl-5 font-mono font-bold bg-white dark:bg-slate-900 border-purple-300 dark:border-purple-700 text-purple-900 dark:text-purple-100"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-[10px] font-bold text-purple-900 dark:text-purple-200 mb-0.5 block uppercase">
+                            Billing Unit
+                          </Label>
+                          <select
+                            value={selected.pricing_method || 'per_sqft'}
+                            onChange={(e) => updateFinishingOption(f.name, { pricing_method: e.target.value })}
+                            className="w-full h-7 text-xs rounded-md border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-900 px-1.5 font-medium text-purple-900 dark:text-purple-100"
+                          >
+                            <option value="per_sqft">Per Sqft (৳/sft)</option>
+                            <option value="per_piece">Per Piece (৳/pcs)</option>
+                            <option value="per_linear_ft">Per Linear Ft (৳/rft)</option>
+                            <option value="per_rft">Per RFT (৳/rft)</option>
+                            <option value="fixed">Fixed Charge (৳)</option>
+                            <option value="per_job">Per Job (৳/job)</option>
+                            <option value="per_hour">Per Hour (৳/hr)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+
                 return (
                   <div
                     key={f.id}
                     onClick={() => handleToggleFinishing(f)}
-                    className={cn(
-                      'p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between text-xs',
-                      isSelected
-                        ? 'border-purple-600 bg-purple-50/70 dark:bg-purple-950/40 text-purple-950 dark:text-purple-100 ring-1 ring-purple-500 shadow-xs'
-                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
-                    )}
+                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-purple-400 dark:hover:border-purple-700 transition-all cursor-pointer flex items-center justify-between text-xs"
                   >
                     <div>
-                      <span className="font-bold block">{f.name}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block">{f.name}</span>
                       <span className="text-[11px] text-slate-500 font-mono">
-                        {formatBDT(f.selling_price)} / {f.pricing_method}
+                        {formatBDT(f.selling_price)} / {f.pricing_method || 'per_sqft'}
                       </span>
                     </div>
-                    {isSelected ? <Check className="w-4 h-4 text-purple-600" /> : <Plus className="w-4 h-4 text-slate-400" />}
+                    <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold text-xs">
+                      <Plus className="w-3.5 h-3.5" />
+                    </div>
                   </div>
                 )
               })}
+
+              {/* Custom Finishing Options */}
+              {finishingOptions
+                .filter((fo) => !finishingMasterOptions.some((m) => m.name === fo.name))
+                .map((fo) => (
+                  <div
+                    key={fo.id || fo.name}
+                    className="p-2.5 rounded-xl border border-purple-500 bg-purple-50/70 dark:bg-purple-950/40 text-purple-950 dark:text-purple-100 ring-1 ring-purple-500/50 shadow-xs space-y-2 text-xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-5 w-5 rounded-md bg-purple-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                          <Check className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="font-bold text-slate-900 dark:text-white text-xs">{fo.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFinishingOptions(finishingOptions.filter((x) => x.name !== fo.name))}
+                        className="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer rounded"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-purple-200/80 dark:border-purple-800/80">
+                      <div>
+                        <Label className="text-[10px] font-bold text-purple-900 dark:text-purple-200 mb-0.5 block uppercase">
+                          Price (৳)
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-2 top-1.5 text-slate-400 font-bold text-[11px]">৳</span>
+                          <Input
+                            type="number"
+                            step="any"
+                            min="0"
+                            value={fo.price}
+                            onChange={(e) => updateFinishingOption(fo.name, { price: parseFloat(e.target.value) || 0 })}
+                            className="h-7 text-xs pl-5 font-mono font-bold bg-white dark:bg-slate-900 border-purple-300 dark:border-purple-700"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-[10px] font-bold text-purple-900 dark:text-purple-200 mb-0.5 block uppercase">
+                          Billing Unit
+                        </Label>
+                        <select
+                          value={fo.pricing_method || 'per_sqft'}
+                          onChange={(e) => updateFinishingOption(fo.name, { pricing_method: e.target.value })}
+                          className="w-full h-7 text-xs rounded-md border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-900 px-1.5 font-medium"
+                        >
+                          <option value="per_sqft">Per Sqft (৳/sft)</option>
+                          <option value="per_piece">Per Piece (৳/pcs)</option>
+                          <option value="per_linear_ft">Per Linear Ft (৳/rft)</option>
+                          <option value="fixed">Fixed Charge (৳)</option>
+                          <option value="per_job">Per Job (৳/job)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -1672,30 +1814,150 @@ export function ServiceConfigModal({
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block uppercase mb-1.5">
                   Substrate Board Mounting & Pasting
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1">
                   {additionalMasterOptions.map((a) => {
-                    const isSelected = additionalOptions.some((x) => x.name === a.name)
+                    const selected = additionalOptions.find((x) => x.name === a.name)
+                    const isSelected = Boolean(selected)
+                    if (isSelected && selected) {
+                      return (
+                        <div
+                          key={a.id}
+                          className="p-2.5 rounded-xl border border-cyan-500 bg-cyan-50/70 dark:bg-cyan-950/40 text-cyan-950 dark:text-cyan-100 ring-1 ring-cyan-500/50 shadow-xs space-y-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="h-5 w-5 rounded-md bg-cyan-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                                <Check className="w-3.5 h-3.5" />
+                              </div>
+                              <span className="font-bold text-slate-900 dark:text-white text-xs">{a.name}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAdditional(a)}
+                              className="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer rounded"
+                              title="Remove mounting option"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-cyan-200/80 dark:border-cyan-800/80" onClick={(e) => e.stopPropagation()}>
+                            <div>
+                              <Label className="text-[10px] font-bold text-cyan-900 dark:text-cyan-200 mb-0.5 block uppercase">
+                                Price (৳)
+                              </Label>
+                              <div className="relative">
+                                <span className="absolute left-2 top-1.5 text-slate-400 font-bold text-[11px]">৳</span>
+                                <Input
+                                  type="number"
+                                  step="any"
+                                  min="0"
+                                  value={selected.price}
+                                  onChange={(e) => updateAdditionalOption(a.name, { price: parseFloat(e.target.value) || 0 })}
+                                  className="h-7 text-xs pl-5 font-mono font-bold bg-white dark:bg-slate-900 border-cyan-300 dark:border-cyan-700 text-cyan-900 dark:text-cyan-100"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-[10px] font-bold text-cyan-900 dark:text-cyan-200 mb-0.5 block uppercase">
+                                Billing Unit
+                              </Label>
+                              <select
+                                value={selected.pricing_method || 'per_sqft'}
+                                onChange={(e) => updateAdditionalOption(a.name, { pricing_method: e.target.value })}
+                                className="w-full h-7 text-xs rounded-md border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-900 px-1.5 font-medium text-cyan-900 dark:text-cyan-100"
+                              >
+                                <option value="per_sqft">Per Sqft (৳/sft)</option>
+                                <option value="per_piece">Per Piece (৳/pcs)</option>
+                                <option value="per_rft">Per RFT (৳/rft)</option>
+                                <option value="fixed">Fixed Charge (৳)</option>
+                                <option value="per_job">Per Job (৳/job)</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    }
+
                     return (
                       <div
                         key={a.id}
                         onClick={() => handleToggleAdditional(a)}
-                        className={cn(
-                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between text-xs',
-                          isSelected
-                            ? 'border-cyan-600 bg-cyan-50/70 dark:bg-cyan-950/40 text-cyan-950 dark:text-cyan-100 ring-1 ring-cyan-500 shadow-xs'
-                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
-                        )}
+                        className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-cyan-400 dark:hover:border-cyan-700 transition-all cursor-pointer flex items-center justify-between text-xs"
                       >
                         <div>
-                          <span className="font-bold block">{a.name}</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200 block">{a.name}</span>
                           <span className="text-[11px] text-slate-500 font-mono">
                             {formatBDT(a.selling_price)} / {a.pricing_method}
                           </span>
                         </div>
-                        {isSelected ? <Check className="w-4 h-4 text-cyan-600" /> : <Plus className="w-4 h-4 text-slate-400" />}
+                        <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold text-xs">
+                          <Plus className="w-3.5 h-3.5" />
+                        </div>
                       </div>
                     )
                   })}
+
+                  {/* Custom Additional Options */}
+                  {additionalOptions
+                    .filter((ao) => !additionalMasterOptions.some((m) => m.name === ao.name))
+                    .map((ao) => (
+                      <div
+                        key={ao.id || ao.name}
+                        className="p-2.5 rounded-xl border border-cyan-500 bg-cyan-50/70 dark:bg-cyan-950/40 text-cyan-950 dark:text-cyan-100 ring-1 ring-cyan-500/50 shadow-xs space-y-2 text-xs"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-5 w-5 rounded-md bg-cyan-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                              <Check className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="font-bold text-slate-900 dark:text-white text-xs">{ao.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setAdditionalOptions(additionalOptions.filter((x) => x.name !== ao.name))}
+                            className="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer rounded"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-cyan-200/80 dark:border-cyan-800/80">
+                          <div>
+                            <Label className="text-[10px] font-bold text-cyan-900 dark:text-cyan-200 mb-0.5 block uppercase">
+                              Price (৳)
+                            </Label>
+                            <div className="relative">
+                              <span className="absolute left-2 top-1.5 text-slate-400 font-bold text-[11px]">৳</span>
+                              <Input
+                                type="number"
+                                step="any"
+                                min="0"
+                                value={ao.price}
+                                onChange={(e) => updateAdditionalOption(ao.name, { price: parseFloat(e.target.value) || 0 })}
+                                className="h-7 text-xs pl-5 font-mono font-bold bg-white dark:bg-slate-900 border-cyan-300 dark:border-cyan-700"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-[10px] font-bold text-cyan-900 dark:text-cyan-200 mb-0.5 block uppercase">
+                              Billing Unit
+                            </Label>
+                            <select
+                              value={ao.pricing_method || 'per_sqft'}
+                              onChange={(e) => updateAdditionalOption(ao.name, { pricing_method: e.target.value })}
+                              className="w-full h-7 text-xs rounded-md border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-900 px-1.5 font-medium"
+                            >
+                              <option value="per_sqft">Per Sqft (৳/sft)</option>
+                              <option value="per_piece">Per Piece (৳/pcs)</option>
+                              <option value="per_rft">Per RFT (৳/rft)</option>
+                              <option value="fixed">Fixed Charge (৳)</option>
+                              <option value="per_job">Per Job (৳/job)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
 
@@ -1703,30 +1965,150 @@ export function ServiceConfigModal({
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block uppercase mb-1.5">
                   Site Installation, Fitting & Delivery
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1">
                   {installationMasterOptions.map((inst) => {
-                    const isSelected = installationOptions.some((x) => x.name === inst.name)
+                    const selected = installationOptions.find((x) => x.name === inst.name)
+                    const isSelected = Boolean(selected)
+                    if (isSelected && selected) {
+                      return (
+                        <div
+                          key={inst.id}
+                          className="p-2.5 rounded-xl border border-indigo-500 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-100 ring-1 ring-indigo-500/50 shadow-xs space-y-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="h-5 w-5 rounded-md bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                                <Check className="w-3.5 h-3.5" />
+                              </div>
+                              <span className="font-bold text-slate-900 dark:text-white text-xs">{inst.name}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleInstallation(inst)}
+                              className="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer rounded"
+                              title="Remove installation option"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-indigo-200/80 dark:border-indigo-800/80" onClick={(e) => e.stopPropagation()}>
+                            <div>
+                              <Label className="text-[10px] font-bold text-indigo-900 dark:text-indigo-200 mb-0.5 block uppercase">
+                                Price (৳)
+                              </Label>
+                              <div className="relative">
+                                <span className="absolute left-2 top-1.5 text-slate-400 font-bold text-[11px]">৳</span>
+                                <Input
+                                  type="number"
+                                  step="any"
+                                  min="0"
+                                  value={selected.price}
+                                  onChange={(e) => updateInstallationOption(inst.name, { price: parseFloat(e.target.value) || 0 })}
+                                  className="h-7 text-xs pl-5 font-mono font-bold bg-white dark:bg-slate-900 border-indigo-300 dark:border-indigo-700 text-indigo-900 dark:text-indigo-100"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-[10px] font-bold text-indigo-900 dark:text-indigo-200 mb-0.5 block uppercase">
+                                Billing Unit
+                              </Label>
+                              <select
+                                value={selected.pricing_method || 'fixed'}
+                                onChange={(e) => updateInstallationOption(inst.name, { pricing_method: e.target.value })}
+                                className="w-full h-7 text-xs rounded-md border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-slate-900 px-1.5 font-medium text-indigo-900 dark:text-indigo-100"
+                              >
+                                <option value="fixed">Fixed Charge (৳)</option>
+                                <option value="per_sqft">Per Sqft (৳/sft)</option>
+                                <option value="per_piece">Per Piece (৳/pcs)</option>
+                                <option value="per_job">Per Job (৳/job)</option>
+                                <option value="per_hour">Per Hour (৳/hr)</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    }
+
                     return (
                       <div
                         key={inst.id}
                         onClick={() => handleToggleInstallation(inst)}
-                        className={cn(
-                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between text-xs',
-                          isSelected
-                            ? 'border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-100 ring-1 ring-indigo-500 shadow-xs'
-                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
-                        )}
+                        className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-400 dark:hover:border-indigo-700 transition-all cursor-pointer flex items-center justify-between text-xs"
                       >
                         <div>
-                          <span className="font-bold block">{inst.name}</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200 block">{inst.name}</span>
                           <span className="text-[11px] text-slate-500 font-mono">
                             {formatBDT(inst.selling_price)} / {inst.pricing_method}
                           </span>
                         </div>
-                        {isSelected ? <Check className="w-4 h-4 text-indigo-600" /> : <Plus className="w-4 h-4 text-slate-400" />}
+                        <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold text-xs">
+                          <Plus className="w-3.5 h-3.5" />
+                        </div>
                       </div>
                     )
                   })}
+
+                  {/* Custom Installation Options */}
+                  {installationOptions
+                    .filter((io) => !installationMasterOptions.some((m) => m.name === io.name))
+                    .map((io) => (
+                      <div
+                        key={io.id || io.name}
+                        className="p-2.5 rounded-xl border border-indigo-500 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-100 ring-1 ring-indigo-500/50 shadow-xs space-y-2 text-xs"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-5 w-5 rounded-md bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                              <Check className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="font-bold text-slate-900 dark:text-white text-xs">{io.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setInstallationOptions(installationOptions.filter((x) => x.name !== io.name))}
+                            className="text-slate-400 hover:text-rose-600 p-1 text-xs cursor-pointer rounded"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-indigo-200/80 dark:border-indigo-800/80">
+                          <div>
+                            <Label className="text-[10px] font-bold text-indigo-900 dark:text-indigo-200 mb-0.5 block uppercase">
+                              Price (৳)
+                            </Label>
+                            <div className="relative">
+                              <span className="absolute left-2 top-1.5 text-slate-400 font-bold text-[11px]">৳</span>
+                              <Input
+                                type="number"
+                                step="any"
+                                min="0"
+                                value={io.price}
+                                onChange={(e) => updateInstallationOption(io.name, { price: parseFloat(e.target.value) || 0 })}
+                                className="h-7 text-xs pl-5 font-mono font-bold bg-white dark:bg-slate-900 border-indigo-300 dark:border-indigo-700"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-[10px] font-bold text-indigo-900 dark:text-indigo-200 mb-0.5 block uppercase">
+                              Billing Unit
+                            </Label>
+                            <select
+                              value={io.pricing_method || 'fixed'}
+                              onChange={(e) => updateInstallationOption(io.name, { pricing_method: e.target.value })}
+                              className="w-full h-7 text-xs rounded-md border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-slate-900 px-1.5 font-medium"
+                            >
+                              <option value="fixed">Fixed Charge (৳)</option>
+                              <option value="per_sqft">Per Sqft (৳/sft)</option>
+                              <option value="per_piece">Per Piece (৳/pcs)</option>
+                              <option value="per_job">Per Job (৳/job)</option>
+                              <option value="per_hour">Per Hour (৳/hr)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
