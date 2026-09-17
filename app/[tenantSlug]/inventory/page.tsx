@@ -1819,9 +1819,14 @@ export default function UnifiedInventoryPage() {
 
         <StockTransferModal
           open={isTransferOpen}
-          onOpenChange={setIsTransferOpen}
+          onOpenChange={(open) => {
+            setIsTransferOpen(open)
+            if (!open) setSelectedMaterialForAction(null)
+          }}
           materials={materials}
           locations={locations}
+          rolls={rolls}
+          selectedMaterialId={selectedMaterialForAction?.id}
           onSuccess={() => {
             showNotification('Stock transferred between locations successfully.')
             loadAllData()
@@ -1831,9 +1836,14 @@ export default function UnifiedInventoryPage() {
 
         <StockAdjustmentModal
           open={isAdjustmentOpen}
-          onOpenChange={setIsAdjustmentOpen}
+          onOpenChange={(open) => {
+            setIsAdjustmentOpen(open)
+            if (!open) setSelectedMaterialForAction(null)
+          }}
           materials={materials}
           locations={locations}
+          selectedMaterial={selectedMaterialForAction}
+          selectedMaterialId={selectedMaterialForAction?.id}
           onSuccess={() => {
             showNotification('Stock adjustment recorded successfully.')
             loadAllData()
