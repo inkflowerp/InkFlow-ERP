@@ -495,7 +495,7 @@ export function WorkOrderModal({
             <select
               value={material}
               onChange={(e) => setMaterial(e.target.value)}
-              className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+              className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium text-slate-900 dark:text-slate-100"
             >
               {COMMON_MATERIALS.map((m) => (
                 <option key={m} value={m}>
@@ -539,7 +539,7 @@ export function WorkOrderModal({
               <select
                 value={dimensionUnit}
                 onChange={(e) => setDimensionUnit(e.target.value as any)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium text-slate-900 dark:text-slate-100"
               >
                 <option value="ft">Feet (ফুট)</option>
                 <option value="inch">Inch (ইঞ্চি)</option>

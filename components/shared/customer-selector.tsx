@@ -120,7 +120,7 @@ export function CustomerSelector({
             <div className="flex items-center gap-2 pb-1">
               <input
                 type="text"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-800"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-800"
                 placeholder={t('common.type_to_search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

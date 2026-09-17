@@ -664,27 +664,27 @@ export default function QuotationDetailPage() {
             PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
             Standard A4 layout with print-optimized styling
            ========================================================================= */}
-        <div className="bg-white text-slate-900 p-8 sm:p-12 rounded-2xl shadow-xl border border-slate-200 print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
+        <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 p-8 sm:p-12 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
           {/* Document Header */}
-          <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6">
+          <div className="flex justify-between items-start border-b-2 border-slate-900 dark:border-slate-700 print:border-slate-900 pb-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2.5">
                 <div className="h-11 w-11 rounded-xl bg-blue-700 text-white font-black text-2xl flex items-center justify-center shadow-xs">
                   {(company?.name || 'I').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-xl font-black tracking-tight text-slate-900">
+                  <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white print:text-slate-900">
                     {company?.name || 'InkFlow Printing & Signage Solutions'}
                   </h2>
                   {company?.name_bn && (
-                    <div className="text-xs text-slate-600 font-semibold">{company.name_bn}</div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 font-semibold">{company.name_bn}</div>
                   )}
                 </div>
               </div>
-              <p className="text-xs text-slate-600 pt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 pt-1">
                 42 Fakirapool Main Road, Motijheel Commercial Area, Dhaka-1000, Bangladesh
               </p>
-              <div className="text-xs text-slate-600 flex flex-wrap gap-3 pt-0.5">
+              <div className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 flex flex-wrap gap-3 pt-0.5">
                 <span>Phone: +880 1711-000000</span>
                 <span>•</span>
                 <span>BIN: 004819284-0101</span>
@@ -694,20 +694,20 @@ export default function QuotationDetailPage() {
             </div>
 
             <div className="text-right space-y-1">
-              <div className="text-2xl font-black text-blue-800 uppercase tracking-wide">
+              <div className="text-2xl font-black text-blue-800 dark:text-blue-400 uppercase tracking-wide print:text-blue-800">
                 {languageMode === 'bn' ? 'উদ্ধৃতিপত্র / প্রাক্কলন' : 'OFFICIAL QUOTATION'}
               </div>
-              <div className="text-sm font-mono font-bold text-slate-900">
+              <div className="text-sm font-mono font-bold text-slate-900 dark:text-slate-100 print:text-slate-900">
                 {quote.quotation_number}
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-slate-500 dark:text-slate-400 print:text-slate-500">
                 Date: <strong>{quote.quotation_date}</strong>
               </div>
-              <div className="text-xs text-red-600 font-semibold">
+              <div className="text-xs text-red-600 dark:text-red-400 font-semibold print:text-red-600">
                 Valid Until: <strong>{quote.valid_until}</strong>
               </div>
               {quote.reference_no && (
-                <div className="text-xs text-slate-700 font-mono">
+                <div className="text-xs text-slate-700 dark:text-slate-300 print:text-slate-700 font-mono">
                   Ref / PO: <strong>{quote.reference_no}</strong>
                 </div>
               )}
@@ -715,51 +715,51 @@ export default function QuotationDetailPage() {
           </div>
 
           {/* Customer & Project Meta Box */}
-          <div className="grid grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div className="grid grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs print:bg-slate-50 print:border-slate-200">
             <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
                 {languageMode === 'bn' ? 'গ্রাহকের তথ্য (বিল প্রাপক)' : 'Bill To / Client Details'}
               </span>
-              <div className="text-sm font-bold text-slate-900">
+              <div className="text-sm font-bold text-slate-900 dark:text-white print:text-slate-900">
                 {languageMode === 'bn' && quote.customer_name_bn ? quote.customer_name_bn : quote.customer_name}
                 {quote.customer_company && (
-                  <span className="font-normal text-xs text-slate-600 ml-1">({quote.customer_company})</span>
+                  <span className="font-normal text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 ml-1">({quote.customer_company})</span>
                 )}
               </div>
-              {quote.customer_address && <div className="text-slate-600">{quote.customer_address}</div>}
-              <div className="text-slate-600 font-mono">Mobile: {quote.customer_phone}</div>
-              {quote.customer_email && <div className="text-slate-600">Email: {quote.customer_email}</div>}
+              {quote.customer_address && <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">{quote.customer_address}</div>}
+              <div className="text-slate-600 dark:text-slate-400 print:text-slate-600 font-mono">Mobile: {quote.customer_phone}</div>
+              {quote.customer_email && <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">Email: {quote.customer_email}</div>}
               {quote.customer_type && (
-                <div className="text-slate-500 uppercase text-[10px] font-bold pt-0.5">
+                <div className="text-slate-500 dark:text-slate-400 print:text-slate-500 uppercase text-[10px] font-bold pt-0.5">
                   Category: {quote.customer_type}
                 </div>
               )}
             </div>
 
             <div className="space-y-1 text-right sm:text-left">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
                 {languageMode === 'bn' ? 'প্রকল্প বিবরণ' : 'Quotation Specifics'}
               </span>
-              <div className="text-slate-700">
+              <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
                 Sales Representative: <strong>{quote.salesperson_name}</strong>
               </div>
               {quote.delivery_date && (
-                <div className="text-slate-700">
+                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
                   Delivery Date: <strong>{quote.delivery_date}</strong>
                 </div>
               )}
               {quote.delivery_method && (
-                <div className="text-slate-700 capitalize">
+                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700 capitalize">
                   Delivery Method: <strong>{quote.delivery_method.replace('_', ' ')}</strong>
                 </div>
               )}
               {quote.delivery_location && (
-                <div className="text-slate-700">
+                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
                   Delivery Location: <strong>{quote.delivery_location}</strong>
                 </div>
               )}
               {quote.customer_bin && (
-                <div className="text-slate-700 font-mono">
+                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700 font-mono">
                   Customer BIN: <strong>{quote.customer_bin}</strong>
                 </div>
               )}
@@ -770,7 +770,7 @@ export default function QuotationDetailPage() {
           <div className="my-6">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-900 text-white">
+                <tr className="bg-slate-900 dark:bg-slate-800 text-white print:bg-slate-900">
                   <th className="py-2.5 px-3 font-bold w-12 text-center">#</th>
                   <th className="py-2.5 px-3 font-bold">
                     {languageMode === 'bn' ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}
@@ -789,21 +789,21 @@ export default function QuotationDetailPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 border-b border-slate-200">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 print:divide-slate-200 print:border-slate-200">
                 {quote.items.map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-slate-50/50">
-                    <td className="py-3 px-3 text-center font-mono font-bold text-slate-500">
+                  <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 print:hover:bg-transparent">
+                    <td className="py-3 px-3 text-center font-mono font-bold text-slate-500 dark:text-slate-400 print:text-slate-500">
                       {idx + 1}
                     </td>
                     <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900">
+                      <div className="font-bold text-slate-900 dark:text-white print:text-slate-900">
                         {languageMode === 'bn' && item.description_bn ? item.description_bn : item.description}
                       </div>
                       {item.material_spec && (
-                        <div className="text-[11px] text-slate-500">{item.material_spec}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500">{item.material_spec}</div>
                       )}
                       {item.finishing && item.finishing !== 'None' && (
-                        <div className="text-[10px] text-blue-600 font-medium">Finishing: {item.finishing}</div>
+                        <div className="text-[10px] text-blue-600 dark:text-blue-400 print:text-blue-600 font-medium">Finishing: {item.finishing}</div>
                       )}
                     </td>
                     <td className="py-3 px-3 text-center font-mono">
@@ -815,7 +815,7 @@ export default function QuotationDetailPage() {
                     <td className="py-3 px-3 text-right font-mono font-medium">
                       {formatBDT(item.unit_rate)}
                     </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
+                    <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
                       {formatBDT(item.item_total)}
                     </td>
                   </tr>
@@ -829,45 +829,45 @@ export default function QuotationDetailPage() {
             {/* Terms and Notes */}
             <div className="space-y-3 text-xs">
               <div>
-                <span className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px] print:text-slate-900">
                   {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Terms & Conditions:'}
                 </span>
-                <pre className="font-sans whitespace-pre-line text-slate-600 text-[11px] leading-relaxed mt-1">
+                <pre className="font-sans whitespace-pre-line text-slate-600 dark:text-slate-400 print:text-slate-600 text-[11px] leading-relaxed mt-1">
                   {quote.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
                 </pre>
               </div>
               {quote.notes && (
-                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700">
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 print:bg-slate-50 print:border-slate-200 print:text-slate-700">
                   <strong>Note:</strong> {quote.notes}
                 </div>
               )}
             </div>
 
             {/* Subtotal, Discount, VAT & Grand Total */}
-            <div className="space-y-2 text-xs border border-slate-200 rounded-xl p-4 bg-slate-50">
-              <div className="flex justify-between py-1 text-slate-600">
+            <div className="space-y-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 print:border-slate-200">
+              <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400 print:text-slate-600">
                 <span>{languageMode === 'bn' ? 'উপমোট (Subtotal):' : 'Subtotal:'}</span>
                 <span className="font-mono font-semibold">{formatBDT(quote.subtotal)}</span>
               </div>
 
               {quote.discount_amount > 0 && (
-                <div className="flex justify-between py-1 text-red-600 font-semibold">
+                <div className="flex justify-between py-1 text-red-600 dark:text-red-400 font-semibold print:text-red-600">
                   <span>{languageMode === 'bn' ? 'বিশেষ ছাড় (Special Discount):' : 'Negotiated Discount:'}</span>
                   <span className="font-mono">- {formatBDT(quote.discount_amount)}</span>
                 </div>
               )}
 
-              <div className="flex justify-between py-1 text-slate-600">
+              <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400 print:text-slate-600">
                 <span>{languageMode === 'bn' ? `ভ্যাট / মূসক (${quote.vat_rate}%):` : `NBR VAT (${quote.vat_rate}%):`}</span>
                 <span className="font-mono">+ {formatBDT(quote.vat_amount)}</span>
               </div>
 
-              <div className="flex justify-between py-2 border-t-2 border-slate-900 font-black text-sm text-slate-900">
+              <div className="flex justify-between py-2 border-t-2 border-slate-900 dark:border-slate-700 print:border-slate-900 font-black text-sm text-slate-900 dark:text-white print:text-slate-900">
                 <span>{languageMode === 'bn' ? 'সর্বমোট মূল্য (Grand Total):' : 'Grand Total (BDT):'}</span>
-                <span className="font-mono text-base text-blue-700">{formatBDT(quote.grand_total)}</span>
+                <span className="font-mono text-base text-blue-700 dark:text-blue-400 print:text-blue-700">{formatBDT(quote.grand_total)}</span>
               </div>
 
-              <div className="text-[11px] text-slate-500 pt-1 italic">
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500 pt-1 italic">
                 {languageMode === 'bn'
                   ? `কথায়: ${numberToWordsBangla(quote.grand_total)}`
                   : `In Words: ${numberToWordsBDT(quote.grand_total)}`}
@@ -876,17 +876,17 @@ export default function QuotationDetailPage() {
           </div>
 
           {/* Signature Block */}
-          <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-slate-300 text-xs">
+          <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 text-xs">
             <div className="text-center space-y-1">
-              <div className="font-bold text-slate-900">{quote.salesperson_name}</div>
-              <div className="text-[11px] text-slate-500">
+              <div className="font-bold text-slate-900 dark:text-white print:text-slate-900">{quote.salesperson_name}</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500">
                 {languageMode === 'bn' ? 'প্রস্তুতকারক (বিক্রয় বিভাগ)' : 'Prepared By (Sales Dept)'}
               </div>
             </div>
 
             <div className="text-center space-y-1">
-              <div className="font-bold text-slate-900">Authorized Signatory</div>
-              <div className="text-[11px] text-slate-500">
+              <div className="font-bold text-slate-900 dark:text-white print:text-slate-900">Authorized Signatory</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500">
                 {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'InkFlow Solutions'}`}
               </div>
             </div>

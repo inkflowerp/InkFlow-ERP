@@ -89,7 +89,7 @@ export function ProductSelector({
           <div className="absolute left-0 top-11 z-40 w-full rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
             <input
               type="text"
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-800 bangla-text"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-800 bangla-text"
               placeholder={t('common.type_to_search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

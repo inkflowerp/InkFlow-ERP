@@ -55,6 +55,7 @@ import { Sheet, SheetHeader, SheetContent, SheetFooter } from '@/components/ui/s
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { LanguageSwitcher } from './language-switcher'
+import { ThemeToggle } from './theme-toggle'
 import { cn } from '@/lib/utils'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -218,8 +219,11 @@ export function MobileNav() {
               </div>
             </Link>
 
-            {/* 1-Click Language Switcher */}
-            <LanguageSwitcher compact size="sm" />
+            {/* Actions: Theme Toggle & Language Switcher */}
+            <div className="flex items-center gap-1.5">
+              <ThemeToggle size="sm" />
+              <LanguageSwitcher compact size="sm" />
+            </div>
           </div>
         </SheetHeader>
 

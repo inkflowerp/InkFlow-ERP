@@ -7,6 +7,7 @@ import { Breadcrumbs } from './breadcrumbs'
 import { NotificationsDropdown } from './notifications-dropdown'
 import { UserMenu } from './user-menu'
 import { MobileNav } from './mobile-nav'
+import { ThemeToggle } from './theme-toggle'
 import { Search, QrCode } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -116,6 +117,9 @@ export function TopNav() {
         >
           <QrCode className="h-4 w-4" />
         </button>
+
+        {/* Theme Toggle Button */}
+        <ThemeToggle />
 
         {/* Notifications Dropdown */}
         <NotificationsDropdown />

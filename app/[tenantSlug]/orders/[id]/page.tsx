@@ -647,52 +647,52 @@ export default function OrderDetailPage() {
         description="Physical traveler ticket attached to raw media rolls and work-in-progress carts."
       >
         {selectedJobForPrint && (
-          <div className="space-y-4 p-4 rounded-xl border-2 border-slate-900 bg-white text-slate-900 text-xs">
-            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-3">
+          <div className="space-y-4 p-4 rounded-xl border-2 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs print:bg-white print:text-slate-900 print:border-slate-900">
+            <div className="flex justify-between items-start border-b-2 border-slate-900 dark:border-slate-700 print:border-slate-900 pb-3">
               <div>
-                <span className="font-mono font-black text-xl text-blue-800">
+                <span className="font-mono font-black text-xl text-blue-800 dark:text-blue-400 print:text-blue-800">
                   {selectedJobForPrint.job_number}
                 </span>
-                <div className="text-slate-600">Sales Order: {order.order_number}</div>
+                <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">Sales Order: {order.order_number}</div>
               </div>
               <div className="text-right">
-                <div className="font-bold uppercase tracking-wider">{selectedJobForPrint.assigned_department}</div>
-                <div className="text-red-600 font-bold">Deadline: {selectedJobForPrint.deadline}</div>
+                <div className="font-bold uppercase tracking-wider text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.assigned_department}</div>
+                <div className="text-red-600 dark:text-red-400 font-bold print:text-red-600">Deadline: {selectedJobForPrint.deadline}</div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 py-2 border-b border-slate-200">
+            <div className="grid grid-cols-2 gap-3 py-2 border-b border-slate-200 dark:border-slate-800 print:border-slate-200">
               <div>
-                <span className="text-slate-500">Customer:</span>
-                <strong className="block text-slate-900">{selectedJobForPrint.customer_name}</strong>
+                <span className="text-slate-500 dark:text-slate-400 print:text-slate-500">Customer:</span>
+                <strong className="block text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.customer_name}</strong>
               </div>
               <div>
-                <span className="text-slate-500">Operator:</span>
-                <strong className="block text-slate-900">{selectedJobForPrint.assigned_employee_name}</strong>
+                <span className="text-slate-500 dark:text-slate-400 print:text-slate-500">Operator:</span>
+                <strong className="block text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.assigned_employee_name}</strong>
               </div>
             </div>
 
             <div className="space-y-1 py-1">
-              <span className="text-slate-500">Item Specification:</span>
-              <div className="font-bold text-sm text-slate-900">{selectedJobForPrint.product_name}</div>
-              <div className="font-mono">Dimensions: {selectedJobForPrint.size_spec} • Qty: {selectedJobForPrint.quantity}</div>
-              <div>Material: {selectedJobForPrint.material_spec}</div>
+              <span className="text-slate-500 dark:text-slate-400 print:text-slate-500">Item Specification:</span>
+              <div className="font-bold text-sm text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.product_name}</div>
+              <div className="font-mono text-slate-700 dark:text-slate-300 print:text-slate-700">Dimensions: {selectedJobForPrint.size_spec} • Qty: {selectedJobForPrint.quantity}</div>
+              <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">Material: {selectedJobForPrint.material_spec}</div>
             </div>
 
             {selectedJobForPrint.production_instructions && (
-              <div className="p-2.5 rounded bg-slate-100 border border-slate-300">
+              <div className="p-2.5 rounded bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 print:bg-slate-100 print:border-slate-300 print:text-slate-900">
                 <strong>Machine Operator Instructions:</strong>
                 <p className="mt-0.5">{selectedJobForPrint.production_instructions}</p>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-300 text-center text-[10px]">
+            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 text-center text-[10px] text-slate-600 dark:text-slate-400 print:text-slate-600">
               <div>Operator Initial & Machine #</div>
               <div>QC Inspector Passed</div>
             </div>
 
             <div className="flex justify-end pt-2 print:hidden">
-              <Button onClick={() => window.print()} className="bg-slate-900 text-white text-xs">
+              <Button onClick={() => window.print()} className="bg-slate-900 dark:bg-slate-800 hover:dark:bg-slate-700 text-white text-xs">
                 <Printer className="h-3.5 w-3.5 mr-1" />
                 Print Traveler Ticket
               </Button>

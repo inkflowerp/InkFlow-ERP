@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { LogOut, Settings, User as UserIcon, Shield, Headphones } from 'lucide-react'
+import { LogOut, Settings, User as UserIcon, Shield, Headphones, Sun, Moon, Laptop } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { LanguageSwitcher } from './language-switcher'
+import { useTheme } from '@/components/providers/theme-provider'
 import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -17,6 +18,7 @@ export function UserMenu() {
   const { signOut } = useAuth()
   const { company, currentRole, currentBranch, currentUser } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const { theme, setTheme } = useTheme()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -117,10 +119,52 @@ export function UserMenu() {
             </button>
           </div>
 
-          {/* Quick Language Toggle */}
+          {/* Quick Language & Theme Controls */}
           <div className="border-t border-slate-100 px-3 py-2 flex items-center justify-between dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
             <span className="bangla-text font-medium">{tBilingual('Language', 'ভাষা')}</span>
             <LanguageSwitcher size="sm" />
+          </div>
+
+          <div className="border-t border-slate-100 px-3 py-2 flex items-center justify-between dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+            <span className="bangla-text font-medium">{tBilingual('Theme', 'থিম')}</span>
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                className={`p-1 rounded-md transition-colors cursor-pointer ${
+                  theme === 'light'
+                    ? 'bg-white text-slate-900 shadow-xs dark:bg-slate-700 dark:text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                }`}
+                title="Light Mode"
+              >
+                <Sun className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                className={`p-1 rounded-md transition-colors cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-white text-slate-900 shadow-xs dark:bg-slate-700 dark:text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                }`}
+                title="Dark Mode"
+              >
+                <Moon className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme('system')}
+                className={`p-1 rounded-md transition-colors cursor-pointer ${
+                  theme === 'system'
+                    ? 'bg-white text-slate-900 shadow-xs dark:bg-slate-700 dark:text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                }`}
+                title="System Mode"
+              >
+                <Laptop className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
 
           <div className="border-t border-slate-100 pt-1 dark:border-slate-800">
