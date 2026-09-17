@@ -229,11 +229,13 @@ export interface SupplierRecord {
   name_bn?: string | null
   company?: string | null
   contact_person?: string | null
+  designation?: string | null
   mobile: string
   alt_phone?: string | null
   whatsapp?: string | null
   email?: string | null
   address?: string | null
+  market_hub?: string | null
   division?: string | null
   district?: string | null
   upazila?: string | null
@@ -247,6 +249,11 @@ export interface SupplierRecord {
   credit_limit?: number
   lead_time_days?: number
   default_currency?: string
+  bank_name?: string | null
+  bank_account_name?: string | null
+  bank_account_number?: string | null
+  bank_branch?: string | null
+  bank_routing_number?: string | null
   notes?: string | null
   is_active: boolean
   outstanding_balance?: number
@@ -261,13 +268,17 @@ export interface SupplierMaterialPrice {
   id: string
   company_id: string
   supplier_id: string
+  material_id?: string | null
   material_name: string
   category: string
   unit: string
   contract_price_bdt: number
+  moq?: number
+  lead_time_days?: number
   effective_date: string
   notes?: string | null
   created_at: string
+  updated_at?: string
 }
 
 export interface DuplicateMatchResult {
