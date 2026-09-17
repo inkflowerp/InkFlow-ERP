@@ -118,7 +118,8 @@ export function MaterialConfigModal({
   const [packQuantity, setPackQuantity] = useState<number | ''>(1000)
   const [liquidVolumeMl, setLiquidVolumeMl] = useState<number | ''>(1000)
 
-  // 3. Purchasing, Costing & Reorder
+  // 3. Purchasing, Costing & Reorder (Direct SFT & Package Rate)
+  const [purchasePricePerSft, setPurchasePricePerSft] = useState<number | ''>('')
   const [purchasePrice, setPurchasePrice] = useState<number | ''>('')
   const [wastePercent, setWastePercent] = useState<number>(5)
   const [reorderLevel, setReorderLevel] = useState<number>(5)
@@ -126,6 +127,22 @@ export function MaterialConfigModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  // Derived total package area or count
+  const totalUnitArea = useMemo(() => {
+    if (materialType === 'roll' || purchaseUnit === 'roll') {
+      const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
+      return maxW * (standardRollLength || 164)
+    }
+    if (materialType === 'sheet' || purchaseUnit === 'sheet') {
+      const firstSheet = availableSheetSizes[0] || { width: 4, length: 8 }
+      return (firstSheet.width || 4) * (firstSheet.length || 8)
+    }
+    if (purchaseUnit === 'box' || purchaseUnit === 'pack') {
+      return Number(packQuantity) || 1000
+    }
+    return 1
+  }, [materialType, purchaseUnit, availableWidths, standardRollLength, availableSheetSizes, packQuantity])
 
   useEffect(() => {
     if (initialData) {
@@ -136,18 +153,21 @@ export function MaterialConfigModal({
       setIsActive(initialData.is_active !== false)
       setDescription(initialData.description || '')
       setPurchaseUnit(initialData.purchase_unit || 'roll')
-      setPurchasePrice(initialData.purchase_price || '')
 
       const matCfg: MaterialConfiguration = initialData.material_config || {}
       setMaterialType(matCfg.material_type || (initialData.purchase_unit === 'roll' ? 'roll' : initialData.purchase_unit === 'sheet' ? 'sheet' : 'roll'))
-      setStandardRollLength(matCfg.standard_roll_length_ft || initialData.standard_roll_length_ft || 164)
-      setAvailableWidths(matCfg.available_widths_ft || initialData.available_widths_ft || [2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10])
-      setAvailableSheetSizes(matCfg.available_sheet_sizes || [
+      
+      const stdLen = matCfg.standard_roll_length_ft || initialData.standard_roll_length_ft || 164
+      const widths = matCfg.available_widths_ft || initialData.available_widths_ft || [2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10]
+      const sheets = matCfg.available_sheet_sizes || [
         { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
         { width: 4, length: 6, label: '4ft × 6ft' },
         { width: 3, length: 6, label: '3ft × 6ft' },
         { width: 2, length: 4, label: '2ft × 4ft' },
-      ])
+      ]
+      setStandardRollLength(stdLen)
+      setAvailableWidths(widths)
+      setAvailableSheetSizes(sheets)
       setExtraWidthAllowance(matCfg.extra_width_allowance_ft ?? (initialData.production_width_allowance ?? 0.25))
       setUsageUnit((matCfg.usage_unit as any) || initialData.unit || 'sft')
       setWastePercent(matCfg.waste_percent ?? (initialData.default_wastage_percentage ?? 5))
@@ -155,6 +175,27 @@ export function MaterialConfigModal({
       setThicknessMm(matCfg.thickness_mm || '')
       setStorageLocation(matCfg.storage_location || 'Main Store - Media Rack')
       setPackQuantity(matCfg.pack_quantity || 1000)
+
+      // Calculate initial purchase price and purchase price per SFT
+      const area = (matCfg.material_type === 'sheet' || initialData.purchase_unit === 'sheet')
+        ? ((sheets[0]?.width || 4) * (sheets[0]?.length || 8))
+        : (Math.max(...widths) * stdLen)
+
+      const rawPurPrice = initialData.purchase_price || matCfg.purchase_price || ''
+      const rawBaseCost = initialData.base_cost || matCfg.effective_unit_cost || ''
+
+      if (rawPurPrice !== '' && Number(rawPurPrice) > 0) {
+        setPurchasePrice(rawPurPrice)
+        if (area > 0) {
+          setPurchasePricePerSft(Number((Number(rawPurPrice) / area).toFixed(2)))
+        }
+      } else if (rawBaseCost !== '' && Number(rawBaseCost) > 0) {
+        setPurchasePricePerSft(rawBaseCost)
+        setPurchasePrice(Number((Number(rawBaseCost) * area).toFixed(2)))
+      } else {
+        setPurchasePrice('')
+        setPurchasePricePerSft('')
+      }
     } else {
       setName('')
       setNameBn('')
@@ -165,6 +206,7 @@ export function MaterialConfigModal({
       setDescription('')
       setPurchaseUnit('roll')
       setPurchasePrice('')
+      setPurchasePricePerSft('')
       setStandardRollLength(164)
       setAvailableWidths([2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10])
       setAvailableSheetSizes([
@@ -185,17 +227,54 @@ export function MaterialConfigModal({
     setErrorMessage(null)
   }, [initialData, isOpen])
 
+  // Two-way interactive price syncing
+  const handlePricePerSftChange = (val: string) => {
+    if (val === '') {
+      setPurchasePricePerSft('')
+      setPurchasePrice('')
+      return
+    }
+    const num = parseFloat(val)
+    setPurchasePricePerSft(isNaN(num) ? '' : num)
+    if (!isNaN(num) && totalUnitArea > 0) {
+      setPurchasePrice(Number((num * totalUnitArea).toFixed(2)))
+    }
+  }
+
+  const handleTotalPurchasePriceChange = (val: string) => {
+    if (val === '') {
+      setPurchasePrice('')
+      setPurchasePricePerSft('')
+      return
+    }
+    const num = parseFloat(val)
+    setPurchasePrice(isNaN(num) ? '' : num)
+    if (!isNaN(num) && totalUnitArea > 0) {
+      setPurchasePricePerSft(Number((num / totalUnitArea).toFixed(2)))
+    }
+  }
+
   // Roll Width Handlers
   const handleToggleRollWidth = (w: number) => {
+    let nextWidths: number[]
     if (availableWidths.includes(w)) {
-      setAvailableWidths(availableWidths.filter((x) => x !== w))
+      nextWidths = availableWidths.filter((x) => x !== w)
     } else {
-      setAvailableWidths([...availableWidths, w].sort((a, b) => a - b))
+      nextWidths = [...availableWidths, w].sort((a, b) => a - b)
+    }
+    setAvailableWidths(nextWidths)
+    if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0 && nextWidths.length > 0) {
+      const maxW = Math.max(...nextWidths)
+      setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * standardRollLength).toFixed(2)))
     }
   }
 
   const handleSelectAllRollWidths = () => {
     setAvailableWidths([...STANDARD_ROLL_WIDTHS])
+    if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+      const maxW = Math.max(...STANDARD_ROLL_WIDTHS)
+      setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * standardRollLength).toFixed(2)))
+    }
   }
 
   const handleClearRollWidths = () => {
@@ -205,13 +284,14 @@ export function MaterialConfigModal({
   const handleAddCustomWidth = () => {
     const val = parseFloat(newWidthInput)
     if (!isNaN(val) && val > 0 && !availableWidths.includes(val)) {
-      setAvailableWidths([...availableWidths, val].sort((a, b) => a - b))
+      const nextWidths = [...availableWidths, val].sort((a, b) => a - b)
+      setAvailableWidths(nextWidths)
       setNewWidthInput('')
+      if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+        const maxW = Math.max(...nextWidths)
+        setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * standardRollLength).toFixed(2)))
+      }
     }
-  }
-
-  const handleRemoveWidth = (w: number) => {
-    setAvailableWidths(availableWidths.filter((x) => x !== w))
   }
 
   // Sheet Size Handlers
@@ -239,69 +319,63 @@ export function MaterialConfigModal({
     }
   }
 
-  const handleRemoveSheetSize = (idx: number) => {
-    setAvailableSheetSizes(availableSheetSizes.filter((_, i) => i !== idx))
-  }
-
-  // Cost & Economics Calculations
+  // Real-Time Cost Economics Calculations
   const calculatedEconomics = useMemo(() => {
-    const pp = Number(purchasePrice) || 0
-    if (pp <= 0) {
+    const perSftCost = Number(purchasePricePerSft) || 0
+    const totalPkgCost = Number(purchasePrice) || 0
+
+    if (perSftCost <= 0 && totalPkgCost <= 0) {
       return {
         unitCost: 0,
         effectiveCost: 0,
         yieldLabel: '0 sft',
-        formulaText: 'Enter purchase price to calculate unit cost',
+        formulaText: 'Enter Purchase Price (Sft) or Total Package Price to calculate unit cost',
       }
     }
+
+    const baseUnitCost = perSftCost > 0 ? perSftCost : (totalUnitArea > 0 ? totalPkgCost / totalUnitArea : 0)
+    const effCost = baseUnitCost * (1 + (wastePercent || 0) / 100)
 
     if (materialType === 'roll' || purchaseUnit === 'roll') {
       const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
       const rollArea = maxW * standardRollLength
-      const baseUnitCost = rollArea > 0 ? pp / rollArea : 0
-      const effCost = baseUnitCost * (1 + (wastePercent || 0) / 100)
       return {
         unitCost: baseUnitCost,
         effectiveCost: effCost,
         yieldLabel: `${rollArea.toLocaleString()} sft (${maxW}ft × ${standardRollLength}ft)`,
-        formulaText: `৳${pp.toLocaleString()} ÷ ${rollArea.toLocaleString()} sft = ৳${baseUnitCost.toFixed(2)}/sft (+ ${wastePercent}% waste = ৳${effCost.toFixed(2)}/sft)`,
+        formulaText: `৳${baseUnitCost.toFixed(2)}/sft × ${rollArea.toLocaleString()} sft = ৳${(baseUnitCost * rollArea).toFixed(0)}/roll (+ ${wastePercent}% waste = ৳${effCost.toFixed(2)}/sft)`,
       }
     }
 
     if (materialType === 'sheet' || purchaseUnit === 'sheet') {
       const firstSheet = availableSheetSizes[0] || { width: 4, length: 8 }
       const sheetArea = firstSheet.width * firstSheet.length
-      const baseUnitCost = sheetArea > 0 ? pp / sheetArea : 0
-      const effCost = baseUnitCost * (1 + (wastePercent || 0) / 100)
       return {
         unitCost: baseUnitCost,
         effectiveCost: effCost,
         yieldLabel: `${sheetArea} sft (${firstSheet.width}ft × ${firstSheet.length}ft)`,
-        formulaText: `৳${pp.toLocaleString()} ÷ ${sheetArea} sft = ৳${baseUnitCost.toFixed(2)}/sft (+ ${wastePercent}% waste = ৳${effCost.toFixed(2)}/sft)`,
+        formulaText: `৳${baseUnitCost.toFixed(2)}/sft × ${sheetArea} sft = ৳${(baseUnitCost * sheetArea).toFixed(0)}/sheet (+ ${wastePercent}% waste = ৳${effCost.toFixed(2)}/sft)`,
       }
     }
 
     if (purchaseUnit === 'box' || purchaseUnit === 'pack') {
       const count = Number(packQuantity) || 1000
-      const baseUnitCost = count > 0 ? pp / count : 0
-      const effCost = baseUnitCost * (1 + (wastePercent || 0) / 100)
       return {
         unitCost: baseUnitCost,
         effectiveCost: effCost,
         yieldLabel: `${count.toLocaleString()} pcs / ${purchaseUnit}`,
-        formulaText: `৳${pp.toLocaleString()} ÷ ${count.toLocaleString()} pcs = ৳${baseUnitCost.toFixed(2)}/pc`,
+        formulaText: `৳${(baseUnitCost * count).toFixed(0)} ÷ ${count.toLocaleString()} pcs = ৳${baseUnitCost.toFixed(2)}/pc`,
       }
     }
 
     // Default 1:1
-    const effCost = pp * (1 + (wastePercent || 0) / 100)
     return {
-      unitCost: pp,
+      unitCost: baseUnitCost,
       effectiveCost: effCost,
       yieldLabel: `1 ${usageUnit}`,
-      formulaText: `৳${pp.toLocaleString()} per ${purchaseUnit}`,
+      formulaText: `৳${baseUnitCost.toFixed(2)} per ${usageUnit}`,
     }
-  }, [purchasePrice, materialType, purchaseUnit, availableWidths, standardRollLength, availableSheetSizes, wastePercent, packQuantity, usageUnit])
+  }, [purchasePricePerSft, purchasePrice, totalUnitArea, materialType, purchaseUnit, availableWidths, standardRollLength, availableSheetSizes, wastePercent, packQuantity, usageUnit])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -315,6 +389,8 @@ export function MaterialConfigModal({
 
     try {
       const pp = purchasePrice !== '' ? Number(purchasePrice) : 0
+      const baseDirectCost = calculatedEconomics.unitCost > 0 ? Number(calculatedEconomics.unitCost.toFixed(2)) : (pp > 0 ? pp : 0)
+
       const materialConfig: MaterialConfiguration = {
         material_type: materialType,
         available_widths_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? availableWidths : undefined,
@@ -346,7 +422,7 @@ export function MaterialConfigModal({
         selling_unit: usageUnit,
         purchase_unit: purchaseUnit,
         purchase_price: pp,
-        base_cost: calculatedEconomics.unitCost > 0 ? Number(calculatedEconomics.unitCost.toFixed(2)) : pp,
+        base_cost: baseDirectCost,
         selling_price: 0,
         default_wastage_percentage: wastePercent,
         target_margin_percentage: 35.0,
@@ -675,12 +751,25 @@ export function MaterialConfigModal({
                         type="number"
                         step="any"
                         value={standardRollLength}
-                        onChange={(e) => setStandardRollLength(parseFloat(e.target.value) || 164)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 164
+                          setStandardRollLength(val)
+                          if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                            const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * val).toFixed(2)))
+                          }
+                        }}
                         className="h-8 text-xs font-mono font-bold"
                       />
                       <button
                         type="button"
-                        onClick={() => setStandardRollLength(100)}
+                        onClick={() => {
+                          setStandardRollLength(100)
+                          if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                            const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * 100).toFixed(2)))
+                          }
+                        }}
                         className={cn(
                           'h-8 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
                           standardRollLength === 100
@@ -692,7 +781,13 @@ export function MaterialConfigModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => setStandardRollLength(164)}
+                        onClick={() => {
+                          setStandardRollLength(164)
+                          if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                            const maxW = availableWidths.length > 0 ? Math.max(...availableWidths) : 10
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * 164).toFixed(2)))
+                          }
+                        }}
                         className={cn(
                           'h-8 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
                           standardRollLength === 164
@@ -849,7 +944,13 @@ export function MaterialConfigModal({
                     min="1"
                     placeholder="e.g. 1000 Eyelets"
                     value={packQuantity}
-                    onChange={(e) => setPackQuantity(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10) || 1000
+                      setPackQuantity(val)
+                      if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                        setPurchasePrice(Number((Number(purchasePricePerSft) * val).toFixed(2)))
+                      }
+                    }}
                     className="h-9 text-xs font-mono font-bold"
                   />
                   <span className="text-[10px] text-slate-500">Auto-converts purchase pack price to piece cost</span>
@@ -860,7 +961,7 @@ export function MaterialConfigModal({
         </div>
 
         {/* ======================================================== */}
-        {/* SECTION 3: PURCHASING, COSTING & INVENTORY REORDER */}
+        {/* SECTION 3: PURCHASING, DIRECT COSTING & INVENTORY REORDER */}
         {/* ======================================================== */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
@@ -876,11 +977,42 @@ export function MaterialConfigModal({
           </div>
 
           <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* SFT Purchase Rate Input */}
               <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Purchase Price (৳ per {purchaseUnit}) <span className="text-rose-500">*</span>
-                </Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="text-xs font-semibold block text-slate-900 dark:text-white">
+                    Purchase Price (৳ / {usageUnit.toUpperCase()}) <span className="text-rose-500">*</span>
+                  </Label>
+                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.2 rounded">
+                    SFT Rate
+                  </span>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                  <Input
+                    type="number"
+                    step="any"
+                    min="0"
+                    placeholder="e.g. 5.20"
+                    value={purchasePricePerSft}
+                    onChange={(e) => handlePricePerSftChange(e.target.value)}
+                    className="pl-7 h-9 text-xs font-mono font-bold bg-blue-50/20 border-blue-200 dark:border-blue-800 focus:border-blue-500"
+                  />
+                </div>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">Direct substrate cost per {usageUnit}</span>
+              </div>
+
+              {/* Package Purchase Price Input */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="text-xs font-semibold block">
+                    Purchase Price (৳ / {purchaseUnit})
+                  </Label>
+                  <span className="text-[10px] text-slate-400">
+                    Total {purchaseUnit}
+                  </span>
+                </div>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
                   <Input
@@ -889,10 +1021,11 @@ export function MaterialConfigModal({
                     min="0"
                     placeholder="e.g. 8500"
                     value={purchasePrice}
-                    onChange={(e) => setPurchasePrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                    onChange={(e) => handleTotalPurchasePriceChange(e.target.value)}
                     className="pl-7 h-9 text-xs font-mono font-bold"
                   />
                 </div>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">Supplier invoice package price</span>
               </div>
 
               <div>
@@ -911,6 +1044,7 @@ export function MaterialConfigModal({
                   />
                   <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                 </div>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">Production scrap margin</span>
               </div>
 
               <div>
@@ -925,6 +1059,7 @@ export function MaterialConfigModal({
                   onChange={(e) => setReorderLevel(parseInt(e.target.value, 10) || 0)}
                   className="h-9 text-xs font-mono"
                 />
+                <span className="text-[10px] text-slate-500 mt-0.5 block">Min stock warning threshold</span>
               </div>
             </div>
 
