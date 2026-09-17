@@ -19,6 +19,8 @@ import {
   Check,
   ChevronRight,
   HelpCircle,
+  Palette,
+  RefreshCw,
 } from 'lucide-react'
 import type {
   ProductRecord,
@@ -32,6 +34,7 @@ import type {
 } from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import type { MaterialRecord } from '@/types/inventory.types'
+import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 interface ServiceConfigModalProps {
@@ -100,176 +103,144 @@ export function ServiceConfigModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Load initial data
   useEffect(() => {
     if (initialData) {
       setName(initialData.name || '')
       setNameBn(initialData.name_bn || '')
       setSku(initialData.sku || '')
       setCategory(initialData.category || 'printing_service')
-      setDescription(initialData.description || '')
-      setIsActive(initialData.is_active !== false)
-      setPricingMethod(initialData.pricing_method || 'per_area')
       setSellingPrice(initialData.selling_price || '')
-      setMinimumCharge(initialData.minimum_charge || '')
-      setTargetMargin(initialData.target_margin_percentage || 35)
-      setMinAllowedMargin(initialData.min_allowed_margin_percent || 15)
+      setIsActive(initialData.is_active !== false)
+      setDescription(initialData.description || '')
+      setPricingMethod((initialData.pricing_method as any) || 'per_area')
 
       const cfg: ServiceConfiguration = initialData.service_config || {}
+      setPrintingMethodName((initialData as any).printing_method_name || (initialData as any).printing_method || '')
       setDimensionUnit(cfg.dimension_unit || 'ft')
       setAllowCustomDimensions(cfg.allow_custom_dimensions !== false)
-      setPresets(cfg.presets || [])
+      setPresets(cfg.dimension_presets || cfg.presets || [])
       setRequiredMaterials(cfg.required_materials || [])
       setFinishingOptions(cfg.finishing_options || [])
       setAdditionalOptions(cfg.additional_options || [])
       setInstallationOptions(cfg.installation_options || [])
+      setMinimumCharge(cfg.minimum_charge || cfg.min_charge || '')
+      setTargetMargin(initialData.target_margin_percentage || 35)
+      setMinAllowedMargin(initialData.min_allowed_margin_percent || 15)
     } else {
-      // Default initial service configuration (e.g. Reference UV Vinyl)
       setName('')
       setNameBn('')
       setSku(`SRV-${Date.now().toString().slice(-5)}`)
       setCategory('printing_service')
-      setDescription('')
+      setPrintingMethodName(printingMethods[0]?.name || 'Eco-Solvent')
+      setSellingPrice('')
       setIsActive(true)
+      setDescription('')
+      setPricingMethod('per_area')
       setDimensionUnit('ft')
       setAllowCustomDimensions(true)
       setPresets([
-        { id: 'p1', width: 3, length: 10, label: '3 × 10 ft' },
-        { id: 'p2', width: 4, length: 10, label: '4 × 10 ft' },
-        { id: 'p3', width: 5, length: 10, label: '5 × 10 ft' },
+        { width: 4, length: 12, label: '4ft × 12ft (Billboard / Shop Front)' },
+        { width: 2.5, length: 6, label: '2.5ft × 6ft (X-Stand / Roll-up)' },
       ])
-      setRequiredMaterials([
-        {
-          id: 'mat-1',
-          material_name: 'Vinyl Sticker / PVC',
-          is_required: true,
-          consumption_rule: 'roll_linear_length',
-          allowance_per_side_in: 1.0,
-          compatible_widths_ft: [3, 4, 5],
-          consumption_unit: 'sqft',
-        },
-        {
-          id: 'mat-2',
-          material_name: 'UV Ink / Eco Solvent Ink',
-          is_required: true,
-          consumption_rule: 'area_sqft',
-          allowance_per_side_in: 0,
-          consumption_unit: 'ml',
-        },
-      ])
-      setFinishingOptions([
-        { id: 'f-none', name: 'None (কাটিং ছাড়া)', pricing_method: 'per_piece', unit_price: 0 },
-        { id: 'f-glossy', name: 'Glossy Lamination', pricing_method: 'per_sqft', unit_price: 5.0 },
-        { id: 'f-matte', name: 'Matte Lamination', pricing_method: 'per_sqft', unit_price: 6.0 },
-        { id: 'f-sparkle', name: 'Sparkle Lamination', pricing_method: 'per_sqft', unit_price: 8.0 },
-      ])
-      setAdditionalOptions([
-        { id: 'a-pvc-3mm', name: '3mm PVC Board Pasting', pricing_method: 'per_sqft', unit_price: 25.0 },
-        { id: 'a-xstand', name: 'X-Stand Hardware', pricing_method: 'per_piece', unit_price: 350.0 },
-      ])
-      setInstallationOptions([
-        { id: 'inst-shop', name: 'Shop Delivery / Dispatch', fulfillment_type: 'delivery', pricing_method: 'per_piece', unit_price: 0 },
-        { id: 'inst-onsite', name: 'On-Site Installation', fulfillment_type: 'installation', pricing_method: 'per_sqft', unit_price: 15.0 },
-      ])
-      setPricingMethod('per_area')
-      setSellingPrice('')
+      setRequiredMaterials([])
+      setFinishingOptions([])
+      setAdditionalOptions([])
+      setInstallationOptions([])
       setMinimumCharge('')
       setTargetMargin(35)
       setMinAllowedMargin(15)
     }
     setActiveTab('basic')
     setErrorMessage(null)
-  }, [initialData, isOpen])
+  }, [initialData, isOpen, printingMethods])
 
-  // Presets Handlers
   const handleAddPreset = () => {
-    if (!newPresetWidth || !newPresetLength) return
+    if (newPresetWidth === '' || newPresetLength === '') return
     const w = Number(newPresetWidth)
     const l = Number(newPresetLength)
-    const label = newPresetLabel.trim() || `${w} × ${l} ${dimensionUnit}`
-    setPresets([...presets, { id: crypto.randomUUID(), width: w, length: l, label }])
+    const label = newPresetLabel.trim() || `${w}ft × ${l}ft`
+    setPresets([...presets, { width: w, length: l, label }])
     setNewPresetWidth('')
     setNewPresetLength('')
     setNewPresetLabel('')
   }
 
-  const handleRemovePreset = (id: string) => {
-    setPresets(presets.filter((p) => p.id !== id))
+  const handleRemovePreset = (idx: number) => {
+    setPresets(presets.filter((_, i) => i !== idx))
   }
 
-  // Required Materials Handlers
-  const handleAddMaterialRow = () => {
-    setRequiredMaterials([
-      ...requiredMaterials,
-      {
-        id: crypto.randomUUID(),
-        material_name: 'Raw Material',
-        is_required: true,
-        consumption_rule: 'roll_linear_length',
-        allowance_per_side_in: 1.0,
-        compatible_widths_ft: [3, 4, 5],
-        consumption_unit: 'sqft',
-      },
-    ])
+  const handleToggleMaterial = (mat: MaterialRecord) => {
+    const exists = requiredMaterials.find((m) => m.material_id === mat.id)
+    if (exists) {
+      setRequiredMaterials(requiredMaterials.filter((m) => m.material_id !== mat.id))
+    } else {
+      setRequiredMaterials([
+        ...requiredMaterials,
+        {
+          material_id: mat.id,
+          material_name: mat.name,
+          allowance_per_side_in: mat.default_allowance_per_side_in ?? 1.0,
+          is_required: true,
+        },
+      ])
+    }
   }
 
-  const handleUpdateMaterialRow = (idx: number, updates: Partial<ServiceRequiredMaterial>) => {
-    const updated = [...requiredMaterials]
-    updated[idx] = { ...updated[idx], ...updates }
-    setRequiredMaterials(updated)
+  const handleToggleFinishing = (f: { id: string; name: string; pricing_method: string; selling_price: number; cost: number }) => {
+    const exists = finishingOptions.find((x) => x.name === f.name)
+    if (exists) {
+      setFinishingOptions(finishingOptions.filter((x) => x.name !== f.name))
+    } else {
+      setFinishingOptions([
+        ...finishingOptions,
+        {
+          id: f.id,
+          name: f.name,
+          pricing_method: f.pricing_method || 'per_piece',
+          price: f.selling_price || 0,
+          cost: f.cost || 0,
+          is_default: false,
+        },
+      ])
+    }
   }
 
-  const handleRemoveMaterialRow = (idx: number) => {
-    setRequiredMaterials(requiredMaterials.filter((_, i) => i !== idx))
+  const handleToggleAdditional = (a: { id: string; name: string; pricing_method: string; selling_price: number; cost: number }) => {
+    const exists = additionalOptions.find((x) => x.name === a.name)
+    if (exists) {
+      setAdditionalOptions(additionalOptions.filter((x) => x.name !== a.name))
+    } else {
+      setAdditionalOptions([
+        ...additionalOptions,
+        {
+          id: a.id,
+          name: a.name,
+          pricing_method: a.pricing_method || 'per_sqft',
+          price: a.selling_price || 0,
+          cost: a.cost || 0,
+        },
+      ])
+    }
   }
 
-  // Finishing Handlers
-  const handleAddFinishingRow = () => {
-    setFinishingOptions([
-      ...finishingOptions,
-      {
-        id: crypto.randomUUID(),
-        name: 'New Finishing',
-        pricing_method: 'per_sqft',
-        unit_price: 0,
-      },
-    ])
+  const handleToggleInstallation = (inst: { id: string; name: string; pricing_method: string; selling_price: number; cost: number }) => {
+    const exists = installationOptions.find((x) => x.name === inst.name)
+    if (exists) {
+      setInstallationOptions(installationOptions.filter((x) => x.name !== inst.name))
+    } else {
+      setInstallationOptions([
+        ...installationOptions,
+        {
+          id: inst.id,
+          name: inst.name,
+          pricing_method: inst.pricing_method || 'per_job',
+          price: inst.selling_price || 0,
+          cost: inst.cost || 0,
+        },
+      ])
+    }
   }
 
-  const handleUpdateFinishingRow = (idx: number, updates: Partial<ServiceFinishingOption>) => {
-    const updated = [...finishingOptions]
-    updated[idx] = { ...updated[idx], ...updates }
-    setFinishingOptions(updated)
-  }
-
-  const handleRemoveFinishingRow = (idx: number) => {
-    setFinishingOptions(finishingOptions.filter((_, i) => i !== idx))
-  }
-
-  // Additional Handlers
-  const handleAddAdditionalRow = () => {
-    setAdditionalOptions([
-      ...additionalOptions,
-      {
-        id: crypto.randomUUID(),
-        name: 'New Additional',
-        pricing_method: 'per_sqft',
-        unit_price: 0,
-      },
-    ])
-  }
-
-  const handleUpdateAdditionalRow = (idx: number, updates: Partial<ServiceAdditionalOption>) => {
-    const updated = [...additionalOptions]
-    updated[idx] = { ...updated[idx], ...updates }
-    setAdditionalOptions(updated)
-  }
-
-  const handleRemoveAdditionalRow = (idx: number) => {
-    setAdditionalOptions(additionalOptions.filter((_, i) => i !== idx))
-  }
-
-  // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
@@ -278,7 +249,7 @@ export function ServiceConfigModal({
       return
     }
     if (sellingPrice === '' || Number(sellingPrice) < 0) {
-      setErrorMessage('Please enter a valid selling price.')
+      setErrorMessage('Please enter a valid base selling rate.')
       setActiveTab('pricing')
       return
     }
@@ -290,40 +261,40 @@ export function ServiceConfigModal({
       const serviceConfig: ServiceConfiguration = {
         dimension_unit: dimensionUnit,
         allow_custom_dimensions: allowCustomDimensions,
+        dimension_presets: presets,
         presets: presets,
         required_materials: requiredMaterials,
         finishing_options: finishingOptions,
         additional_options: additionalOptions,
         installation_options: installationOptions,
+        minimum_charge: minimumCharge !== '' ? Number(minimumCharge) : undefined,
+        min_charge: minimumCharge !== '' ? Number(minimumCharge) : undefined,
         pricing_method: pricingMethod,
-        minimum_charge: minimumCharge !== '' ? Number(minimumCharge) : 0,
       }
 
-      const payload: Partial<ProductRecord> = {
+      await onSave({
         name: name.trim(),
         name_bn: nameBn.trim() || undefined,
-        sku: sku.trim().toUpperCase() || `SRV-${Date.now().toString().slice(-5)}`,
-        category: category.trim() || 'printing_service',
-        entity_type: 'service',
+        sku: sku.trim() || `SRV-${Date.now().toString().slice(-5)}`,
+        category: category || 'printing_service',
         product_type: 'print_service',
+        entity_type: 'service',
         commercial_type: 'service',
-        measurement_type: pricingMethod === 'per_area' ? 'area' : 'piece',
+        unit: pricingMethod === 'per_area' ? 'sft' : 'piece',
+        selling_unit: pricingMethod === 'per_area' ? 'sft' : 'piece',
         pricing_method: pricingMethod,
-        unit: dimensionUnit === 'ft' ? 'sft' : 'piece',
-        selling_unit: dimensionUnit === 'ft' ? 'sft' : 'piece',
-        selling_price: Number(sellingPrice) || 0,
-        minimum_charge: minimumCharge !== '' ? Number(minimumCharge) : 0,
-        target_margin_percentage: targetMargin || 35,
-        min_allowed_margin_percent: minAllowedMargin || 15,
+        selling_price: Number(sellingPrice),
+        base_cost: 0,
+        cost_basis_type: 'direct_cost',
         is_active: isActive,
-        is_service: true,
-        is_ready_product: false,
-        service_config: serviceConfig,
         description: description.trim() || undefined,
+        service_config: serviceConfig,
         requires_production: true,
-      }
-
-      await onSave(payload)
+        requires_design: true,
+        requires_approval: true,
+        requires_finishing: finishingOptions.length > 0,
+        requires_installation: installationOptions.length > 0,
+      })
       onClose()
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to save service configuration.')
@@ -336,621 +307,538 @@ export function ServiceConfigModal({
     <ModalDialog
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      title={initialData ? `Configure Service: ${initialData.name}` : 'New Print / Production Service'}
-      description="Configure customer dimensions, required materials with bleed rules, finishing, and installation."
       size="3xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 font-bold shrink-0">
+            <Wrench className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-bold text-slate-900 dark:text-white">
+                {initialData ? `Configure Service: ${initialData.name}` : 'New Printing & Production Service'}
+              </span>
+              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200">
+                Custom Production
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Configure printing method, media bleeds, finishing, additional pasting, and area tariffs.
+            </p>
+          </div>
+        </div>
+      }
       hideFooter={true}
     >
       <form onSubmit={handleSubmit} className="space-y-4 py-1">
         {errorMessage && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2 font-medium">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-border/80 overflow-x-auto gap-1 pb-1 scrollbar-none text-xs font-medium">
-          <button
-            type="button"
-            onClick={() => setActiveTab('basic')}
-            className={cn(
-              'px-3 py-2 rounded-t-lg transition-colors cursor-pointer shrink-0',
-              activeTab === 'basic' ? 'bg-primary/10 text-primary border-b-2 border-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            1. Basic
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('dimensions')}
-            className={cn(
-              'px-3 py-2 rounded-t-lg transition-colors cursor-pointer shrink-0',
-              activeTab === 'dimensions' ? 'bg-primary/10 text-primary border-b-2 border-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            2. Dimensions & Presets
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('materials')}
-            className={cn(
-              'px-3 py-2 rounded-t-lg transition-colors cursor-pointer shrink-0',
-              activeTab === 'materials' ? 'bg-primary/10 text-primary border-b-2 border-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            3. Materials & Allowance
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('finishing')}
-            className={cn(
-              'px-3 py-2 rounded-t-lg transition-colors cursor-pointer shrink-0',
-              activeTab === 'finishing' ? 'bg-primary/10 text-primary border-b-2 border-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            4. Finishing & Add-ons
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('pricing')}
-            className={cn(
-              'px-3 py-2 rounded-t-lg transition-colors cursor-pointer shrink-0',
-              activeTab === 'pricing' ? 'bg-primary/10 text-primary border-b-2 border-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            5. Pricing & Margins
-          </button>
+        {/* Tab Navigation Pill Bar */}
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold overflow-x-auto scrollbar-none">
+          {[
+            { id: 'basic', label: '1. Basic Info', icon: Wrench },
+            { id: 'dimensions', label: '2. Dimensions', icon: Boxes },
+            { id: 'materials', label: '3. Media & Bleed', icon: Boxes },
+            { id: 'finishing', label: '4. Finishing', icon: Sparkles },
+            { id: 'additionals', label: '5. Add-ons & Install', icon: PlusCircle },
+            { id: 'pricing', label: '6. Pricing & Margins', icon: DollarSign },
+          ].map((tab) => {
+            const Icon = tab.icon
+            const isSelected = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as any)}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-xs',
+                  isSelected
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium'
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
+              </button>
+            )
+          })}
         </div>
 
         {/* TAB 1: BASIC INFORMATION */}
         {activeTab === 'basic' && (
-          <div className="space-y-3 py-1">
-            <div>
-              <Label htmlFor="srv-name" className="text-sm font-medium">
-                Service Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="srv-name"
-                placeholder="e.g. UV Vinyl Print, Eco PVC Banner Print"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="mt-1"
-                autoFocus
-              />
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
+                1
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Service Identity & Technology
+              </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-3">
               <div>
-                <Label htmlFor="srv-name-bn" className="text-xs text-muted-foreground">
-                  Bengali Name (ঐচ্ছিক)
+                <Label className="text-xs font-semibold mb-1 block">
+                  Service Name <span className="text-rose-500">*</span>
                 </Label>
                 <Input
-                  id="srv-name-bn"
-                  placeholder="যেমন: ইউভি ভিনাইল প্রিন্ট"
-                  value={nameBn}
-                  onChange={(e) => setNameBn(e.target.value)}
-                  className="mt-1 text-sm"
+                  placeholder="e.g. UV Vinyl Sticker Printing, Eco PVC Banner Print..."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="h-9 text-xs"
+                  autoFocus
                 />
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Bengali Name (ঐচ্ছিক)
+                  </Label>
+                  <Input
+                    placeholder="যেমন: ইউভি ভিনাইল প্রিন্টিং"
+                    value={nameBn}
+                    onChange={(e) => setNameBn(e.target.value)}
+                    className="h-9 text-xs font-bengali"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Service Code / SKU
+                  </Label>
+                  <Input
+                    placeholder="e.g. SRV-UV-VINYL"
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                    className="h-9 text-xs font-mono uppercase"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Printing Method (Technology)
+                  </Label>
+                  <select
+                    value={printingMethodName}
+                    onChange={(e) => setPrintingMethodName(e.target.value)}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                  >
+                    <option value="">-- Select Configured Printing Method --</option>
+                    {printingMethods.map((pm) => (
+                      <option key={pm.id} value={pm.name}>
+                        {pm.name} {pm.name_bn ? `(${pm.name_bn})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Category
+                  </Label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                  >
+                    <option value="printing_service">Wide Format Printing</option>
+                    <option value="solvent_printing">Solvent / Eco-Solvent</option>
+                    <option value="uv_printing">UV Flatbed & Roll</option>
+                    <option value="digital_print">Digital & Offset</option>
+                    <option value="fabrication">Signage & Fabrication</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.slug || c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
-                <Label htmlFor="srv-sku" className="text-xs text-muted-foreground">
-                  Service Code / SKU
+                <Label className="text-xs font-semibold mb-1 block">
+                  Service Description & Commercial Scope
                 </Label>
-                <Input
-                  id="srv-sku"
-                  placeholder="e.g. SRV-UV-VINYL"
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                  className="mt-1 uppercase text-sm font-mono"
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Outdoor durable high-resolution UV print on 120 GSM self-adhesive vinyl..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-blue-500 outline-none resize-none"
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="srv-category" className="text-sm font-medium">
-                  Category
-                </Label>
-                <select
-                  id="srv-category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  <option value="printing_service">Large Format Printing</option>
-                  <option value="uv_printing">UV Flatbed & Roll Print</option>
-                  <option value="eco_solvent">Eco Solvent Banner Print</option>
-                  <option value="signage_fabrication">Signage & Fabrication</option>
-                  <option value="cnc_laser">Laser / CNC Cutting</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.slug || c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+              <div className="pt-1">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span>Active in Quotation & Invoice Catalog</span>
+                </label>
               </div>
-
-              <div>
-                <Label htmlFor="srv-printing-method" className="text-sm font-medium">
-                  Printing Method
-                </Label>
-                <select
-                  id="srv-printing-method"
-                  value={printingMethodName}
-                  onChange={(e) => setPrintingMethodName(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  <option value="">-- Select Printing Method --</option>
-                  <option value="Eco-Solvent Print">Eco-Solvent Print (ইকো-সলভেন্ট)</option>
-                  <option value="UV Flatbed Print">UV Flatbed Print (ইউভি ফ্ল্যাটবেড)</option>
-                  <option value="UV Roll-to-Roll Print">UV Roll-to-Roll Print</option>
-                  <option value="Solvent Print">Solvent Flex Print (সলভেন্ট)</option>
-                  <option value="Sublimation Print">Sublimation Print (সাবলিমেশন)</option>
-                  <option value="DTF Print">DTF Print (ডিটিএফ)</option>
-                  <option value="Latex Print">Latex Print (ল্যাটেক্স)</option>
-                  <option value="Screen Print">Screen Print (স্ক্রিন প্রিন্ট)</option>
-                  {printingMethods.map((pm) => (
-                    <option key={pm.id} value={pm.name}>
-                      {pm.name} {pm.name_bn ? `(${pm.name_bn})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="srv-pricing-method" className="text-sm font-medium">
-                  Charging Method
-                </Label>
-                <select
-                  id="srv-pricing-method"
-                  value={pricingMethod}
-                  onChange={(e) => setPricingMethod(e.target.value as PricingMethod)}
-                  className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  <option value="per_area">Per Square Foot (প্রতি বর্গফুট - sqft)</option>
-                  <option value="per_piece">Per Piece / Unit (প্রতি পিস)</option>
-                  <option value="per_length">Per Running Foot (প্রতি রানিং ফুট - rft)</option>
-                  <option value="per_job">Per Job / Fixed (ফিক্সড চার্জ)</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="srv-desc" className="text-xs text-muted-foreground">
-                Customer-Facing Description
-              </Label>
-              <textarea
-                id="srv-desc"
-                rows={2}
-                placeholder="High-resolution 1440dpi outdoor print with 2-year color durability..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full mt-1 p-2 border rounded-md bg-background text-xs focus:ring-2 focus:ring-primary/20 outline-none resize-none"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 pt-1">
-              <input
-                type="checkbox"
-                id="srv-active"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded text-primary"
-              />
-              <Label htmlFor="srv-active" className="text-sm font-medium cursor-pointer">
-                Active in Service Catalog
-              </Label>
             </div>
           </div>
         )}
 
         {/* TAB 2: DIMENSIONS & PRESETS */}
         {activeTab === 'dimensions' && (
-          <div className="space-y-4 py-1">
-            <div className="p-3 bg-card border rounded-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">Customer Dimensions</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Customers enter variable width × length for this service.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">Unit:</span>
-                  <select
-                    value={dimensionUnit}
-                    onChange={(e) => setDimensionUnit(e.target.value as any)}
-                    className="px-2 py-1 border rounded text-xs bg-background font-semibold"
-                  >
-                    <option value="ft">Feet (ft)</option>
-                    <option value="inch">Inches (in)</option>
-                    <option value="cm">Centimeters (cm)</option>
-                    <option value="mm">Millimeters (mm)</option>
-                  </select>
-                </div>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                2
               </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Customer Dimension Rules & Size Presets
+              </h3>
+            </div>
 
-              <div className="flex items-center gap-2 pt-1">
+            <div className="space-y-3">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                    Allow Arbitrary Customer Dimensions
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Salesperson can enter custom Width × Height (e.g. 4.5ft × 11.25ft)
+                  </span>
+                </div>
                 <input
                   type="checkbox"
-                  id="allow-custom"
                   checked={allowCustomDimensions}
                   onChange={(e) => setAllowCustomDimensions(e.target.checked)}
-                  className="w-4 h-4 rounded text-primary"
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
                 />
-                <Label htmlFor="allow-custom" className="text-xs font-medium cursor-pointer">
-                  Allow Custom Dimensions (Customers can order any custom size like 4 × 12, 3 × 5.5, etc.)
-                </Label>
-              </div>
-            </div>
-
-            {/* Size Presets for Speed */}
-            <div className="p-3 bg-card border rounded-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">Common Size Presets</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Quick-selection buttons for salespeople in Fast Quote & Quotations.
-                  </p>
-                </div>
               </div>
 
-              {/* Existing Chips */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {presets.map((preset) => (
-                  <div
-                    key={preset.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold"
-                  >
-                    <span>{preset.label || `${preset.width} × ${preset.length} ${dimensionUnit}`}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePreset(preset.id || '')}
-                      className="hover:text-destructive p-0.5 rounded-full"
-                    >
-                      ×
-                    </button>
+              {/* Add Standard Size Presets */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl space-y-3">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block uppercase">
+                  Add Quick Select Size Preset
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                  <div>
+                    <Label className="text-[11px] mb-1 block">Width (ft)</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      placeholder="e.g. 4"
+                      value={newPresetWidth}
+                      onChange={(e) => setNewPresetWidth(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="h-8 text-xs font-mono"
+                    />
                   </div>
-                ))}
-                {presets.length === 0 && (
-                  <span className="text-xs text-muted-foreground italic">No presets configured yet.</span>
+                  <div>
+                    <Label className="text-[11px] mb-1 block">Length (ft)</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      placeholder="e.g. 12"
+                      value={newPresetLength}
+                      onChange={(e) => setNewPresetLength(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="h-8 text-xs font-mono"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label className="text-[11px] mb-1 block">Preset Label (Optional)</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="e.g. 4ft x 12ft Billboard"
+                        value={newPresetLabel}
+                        onChange={(e) => setNewPresetLabel(e.target.value)}
+                        className="h-8 text-xs flex-1"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleAddPreset}
+                        className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1" /> Add
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {presets.length > 0 && (
+                  <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase">Configured Presets:</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {presets.map((p, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs"
+                        >
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {p.label} <span className="text-[11px] text-slate-400 font-mono">({p.width}×{p.length} ft)</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePreset(idx)}
+                            className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {/* Add New Preset Row */}
-              <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-                <Input
-                  type="number"
-                  step="any"
-                  placeholder="Width"
-                  value={newPresetWidth}
-                  onChange={(e) => setNewPresetWidth(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                  className="w-20 text-xs"
-                />
-                <span className="text-muted-foreground text-xs font-bold">×</span>
-                <Input
-                  type="number"
-                  step="any"
-                  placeholder="Length"
-                  value={newPresetLength}
-                  onChange={(e) => setNewPresetLength(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                  className="w-20 text-xs"
-                />
-                <Input
-                  placeholder="Label (e.g. 3×10 Banner)"
-                  value={newPresetLabel}
-                  onChange={(e) => setNewPresetLabel(e.target.value)}
-                  className="flex-1 text-xs"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddPreset}
-                  disabled={!newPresetWidth || !newPresetLength}
-                  className="text-xs shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1" />
-                  Add Preset
-                </Button>
-              </div>
             </div>
           </div>
         )}
 
-        {/* TAB 3: REQUIRED MATERIALS & ALLOWANCE */}
+        {/* TAB 3: REQUIRED MATERIALS & BLEEDS */}
         {activeTab === 'materials' && (
-          <div className="space-y-3 py-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">Required Materials & Allowance Rules</h4>
-                <p className="text-xs text-muted-foreground">
-                  Stores production allowance (e.g. 1-inch on each side) and compatible physical roll widths.
-                </p>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
+                3
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={handleAddMaterialRow} className="text-xs">
-                <Plus className="w-3.5 h-3.5 mr-1" /> Add Material
-              </Button>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Compatible Roll Media & Production Allowance
+              </h3>
             </div>
 
-            <div className="space-y-2.5">
-              {requiredMaterials.map((mat, idx) => (
-                <div key={mat.id || idx} className="p-3 border rounded-xl bg-card space-y-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <Input
-                      placeholder="Material Name (e.g. Vinyl Sticker, PVC, UV Ink)"
-                      value={mat.material_name}
-                      onChange={(e) => handleUpdateMaterialRow(idx, { material_name: e.target.value })}
-                      className="font-medium text-sm flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMaterialRow(idx)}
-                      className="text-muted-foreground hover:text-destructive p-1 rounded-md"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+            <p className="text-xs text-slate-500">
+              Select stock materials that this service can be printed onto. Production geometry will check roll widths in real-time.
+            </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
+              {availableMaterials.map((mat) => {
+                const isSelected = requiredMaterials.some((m) => m.material_id === mat.id)
+                return (
+                  <div
+                    key={mat.id}
+                    onClick={() => handleToggleMaterial(mat)}
+                    className={cn(
+                      'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between text-xs',
+                      isSelected
+                        ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 ring-1 ring-blue-500 shadow-xs'
+                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                    )}
+                  >
                     <div>
-                      <Label className="text-[11px] text-muted-foreground">Consumption Rule</Label>
-                      <select
-                        value={mat.consumption_rule}
-                        onChange={(e) => handleUpdateMaterialRow(idx, { consumption_rule: e.target.value as any })}
-                        className="w-full mt-1 p-1.5 border rounded bg-background text-xs"
-                      >
-                        <option value="roll_linear_length">Physical Roll Linear Length</option>
-                        <option value="area_sqft">Exact Printed Area (sqft)</option>
-                        <option value="fixed_per_piece">Fixed Per Piece</option>
-                      </select>
+                      <span className="font-bold block">{mat.name}</span>
+                      <span className="text-[11px] text-slate-500 font-mono">
+                        {mat.sku} • {mat.unit || 'sft'}
+                      </span>
                     </div>
-
-                    <div>
-                      <Label className="text-[11px] text-muted-foreground">Production Bleed / Allowance</Label>
-                      <div className="relative mt-1">
-                        <Input
-                          type="number"
-                          step="any"
-                          value={mat.allowance_per_side_in ?? 1.0}
-                          onChange={(e) =>
-                            handleUpdateMaterialRow(idx, {
-                              allowance_per_side_in: parseFloat(e.target.value) || 0,
-                            })
-                          }
-                          className="text-xs pr-12"
-                        />
-                        <span className="absolute right-2 top-2 text-[10px] text-muted-foreground font-semibold">
-                          in / side
-                        </span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-[11px] text-muted-foreground">Compatible Widths (ft)</Label>
-                      <Input
-                        placeholder="e.g. 3, 4, 5 or 3.25, 4.25, 5.25"
-                        value={Array.isArray(mat.compatible_widths_ft) ? mat.compatible_widths_ft.join(', ') : ''}
-                        onChange={(e) => {
-                          const parsed = e.target.value
-                            .split(',')
-                            .map((s) => parseFloat(s.trim()))
-                            .filter((n) => !isNaN(n))
-                          handleUpdateMaterialRow(idx, { compatible_widths_ft: parsed })
-                        }}
-                        className="mt-1 text-xs"
-                      />
-                    </div>
+                    {isSelected && <Check className="w-4 h-4 text-blue-600" />}
                   </div>
-
-                  <div className="text-[11px] text-muted-foreground bg-muted/40 p-2 rounded-lg flex items-center gap-1.5">
-                    <HelpCircle className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span>
-                      Example for 4×12ft: Production dimension = 4ft 2in × 12ft 2in (+{((mat.allowance_per_side_in ?? 1.0) * 2).toFixed(0)}in total).
-                    </span>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
 
-        {/* TAB 4: FINISHING & ADD-ONS */}
+        {/* TAB 4: FINISHING OPTIONS */}
         {activeTab === 'finishing' && (
-          <div className="space-y-4 py-1">
-            {/* Finishing Options */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">Finishing Options</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Optional finishing (Glossy Lamination, Matte Lamination, Eyelet, MS Frame).
-                  </p>
-                </div>
-                <Button type="button" variant="outline" size="sm" onClick={handleAddFinishingRow} className="text-xs">
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Finishing
-                </Button>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 flex items-center justify-center font-bold text-xs">
+                4
               </div>
-
-              <div className="space-y-2">
-                {finishingOptions.map((fin, idx) => (
-                  <div key={fin.id || idx} className="p-2.5 border rounded-lg bg-card flex items-center gap-2">
-                    <Input
-                      placeholder="Finishing Name (e.g. Glossy Lamination)"
-                      value={fin.name}
-                      onChange={(e) => handleUpdateFinishingRow(idx, { name: e.target.value })}
-                      className="text-xs flex-1"
-                    />
-                    <select
-                      value={fin.pricing_method}
-                      onChange={(e) => handleUpdateFinishingRow(idx, { pricing_method: e.target.value as any })}
-                      className="p-1.5 border rounded text-xs bg-background"
-                    >
-                      <option value="per_sqft">Per sqft</option>
-                      <option value="per_piece">Per piece</option>
-                      <option value="per_length">Per rft</option>
-                    </select>
-                    <div className="relative w-24">
-                      <span className="absolute left-2 top-1.5 text-xs text-muted-foreground">৳</span>
-                      <Input
-                        type="number"
-                        step="any"
-                        placeholder="0.00"
-                        value={fin.unit_price}
-                        onChange={(e) => handleUpdateFinishingRow(idx, { unit_price: parseFloat(e.target.value) || 0 })}
-                        className="text-xs pl-5 font-semibold"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFinishingRow(idx)}
-                      className="text-muted-foreground hover:text-destructive p-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Compatible Finishing Operations
+              </h3>
             </div>
 
-            {/* Additional Options */}
-            <div className="space-y-2 pt-3 border-t border-border/60">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">Additional Work & Hardware</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Optional additions (3mm PVC Board Pasting, X-Stand Standee, Foam Board).
-                  </p>
+            <p className="text-xs text-slate-500">
+              Select available post-press finishing options for this service (Lamination, Eyelet, MS Frame).
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
+              {finishingMasterOptions.map((f) => {
+                const isSelected = finishingOptions.some((x) => x.name === f.name)
+                return (
+                  <div
+                    key={f.id}
+                    onClick={() => handleToggleFinishing(f)}
+                    className={cn(
+                      'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between text-xs',
+                      isSelected
+                        ? 'border-purple-600 bg-purple-50/70 dark:bg-purple-950/40 text-purple-950 dark:text-purple-100 ring-1 ring-purple-500 shadow-xs'
+                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
+                    )}
+                  >
+                    <div>
+                      <span className="font-bold block">{f.name}</span>
+                      <span className="text-[11px] text-slate-500">
+                        {formatBDT(f.selling_price)} / {f.pricing_method}
+                      </span>
+                    </div>
+                    {isSelected && <Check className="w-4 h-4 text-purple-600" />}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: ADD-ONS & INSTALLATION */}
+        {activeTab === 'additionals' && (
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-cyan-100 text-cyan-700 dark:bg-cyan-900/60 dark:text-cyan-300 flex items-center justify-center font-bold text-xs">
+                5
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Additional Work (Board Pasting & Installation)
+              </h3>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block uppercase mb-1.5">
+                  Pasting / Substrate Mounting Add-ons
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {additionalMasterOptions.map((a) => {
+                    const isSelected = additionalOptions.some((x) => x.name === a.name)
+                    return (
+                      <div
+                        key={a.id}
+                        onClick={() => handleToggleAdditional(a)}
+                        className={cn(
+                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between text-xs',
+                          isSelected
+                            ? 'border-cyan-600 bg-cyan-50/70 dark:bg-cyan-950/40 text-cyan-950 dark:text-cyan-100 ring-1 ring-cyan-500 shadow-xs'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
+                        )}
+                      >
+                        <div>
+                          <span className="font-bold block">{a.name}</span>
+                          <span className="text-[11px] text-slate-500">
+                            {formatBDT(a.selling_price)} / {a.pricing_method}
+                          </span>
+                        </div>
+                        {isSelected && <Check className="w-4 h-4 text-cyan-600" />}
+                      </div>
+                    )
+                  })}
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={handleAddAdditionalRow} className="text-xs">
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Additional
-                </Button>
               </div>
 
-              <div className="space-y-2">
-                {additionalOptions.map((add, idx) => (
-                  <div key={add.id || idx} className="p-2.5 border rounded-lg bg-card flex items-center gap-2">
-                    <Input
-                      placeholder="Additional Name (e.g. 3mm PVC Board Pasting)"
-                      value={add.name}
-                      onChange={(e) => handleUpdateAdditionalRow(idx, { name: e.target.value })}
-                      className="text-xs flex-1"
-                    />
-                    <select
-                      value={add.pricing_method}
-                      onChange={(e) => handleUpdateAdditionalRow(idx, { pricing_method: e.target.value as any })}
-                      className="p-1.5 border rounded text-xs bg-background"
-                    >
-                      <option value="per_sqft">Per sqft</option>
-                      <option value="per_piece">Per piece</option>
-                    </select>
-                    <div className="relative w-24">
-                      <span className="absolute left-2 top-1.5 text-xs text-muted-foreground">৳</span>
-                      <Input
-                        type="number"
-                        step="any"
-                        placeholder="0.00"
-                        value={add.unit_price}
-                        onChange={(e) => handleUpdateAdditionalRow(idx, { unit_price: parseFloat(e.target.value) || 0 })}
-                        className="text-xs pl-5 font-semibold"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAdditionalRow(idx)}
-                      className="text-muted-foreground hover:text-destructive p-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block uppercase mb-1.5">
+                  Installation & Delivery Options
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {installationMasterOptions.map((inst) => {
+                    const isSelected = installationOptions.some((x) => x.name === inst.name)
+                    return (
+                      <div
+                        key={inst.id}
+                        onClick={() => handleToggleInstallation(inst)}
+                        className={cn(
+                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between text-xs',
+                          isSelected
+                            ? 'border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-100 ring-1 ring-indigo-500 shadow-xs'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
+                        )}
+                      >
+                        <div>
+                          <span className="font-bold block">{inst.name}</span>
+                          <span className="text-[11px] text-slate-500">
+                            {formatBDT(inst.selling_price)} / {inst.pricing_method}
+                          </span>
+                        </div>
+                        {isSelected && <Check className="w-4 h-4 text-indigo-600" />}
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 5: PRICING & MARGINS */}
+        {/* TAB 6: PRICING & MARGINS */}
         {activeTab === 'pricing' && (
-          <div className="space-y-4 py-1">
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-4">
-              <h4 className="text-sm font-semibold text-foreground">Base Commercial Selling Price</h4>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
+                6
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Selling Tariffs & Target Profit Margins
+              </h3>
+            </div>
 
+            <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="srv-price" className="text-sm font-semibold text-foreground flex items-center gap-1">
-                    <span>Base Selling Rate (৳)</span>
-                    <span className="text-destructive">*</span>
+                  <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
+                    Base Selling Rate (৳ / {pricingMethod === 'per_area' ? 'SFT' : 'Piece'}) <span className="text-rose-500">*</span>
                   </Label>
-                  <div className="relative mt-1">
-                    <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-semibold">৳</span>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
                     <Input
-                      id="srv-price"
                       type="number"
                       step="any"
                       min="0"
-                      placeholder="0.00"
+                      placeholder="e.g. 45.00"
                       value={sellingPrice}
                       onChange={(e) => setSellingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
                       required
-                      className="pl-7 font-semibold text-base"
+                      className="pl-7 h-9 text-xs font-mono font-bold text-blue-600 dark:text-blue-400"
                     />
                   </div>
-                  <span className="text-[11px] text-muted-foreground mt-0.5 block">
-                    Charged {pricingMethod === 'per_area' ? 'per square foot (sqft)' : 'per piece'}
-                  </span>
                 </div>
 
                 <div>
-                  <Label htmlFor="srv-min-charge" className="text-sm text-muted-foreground">
-                    Minimum Job Charge (৳)
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Minimum Order Charge (৳) <span className="text-[10px] text-slate-400">(Job Floor)</span>
                   </Label>
-                  <div className="relative mt-1">
-                    <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-semibold">৳</span>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
                     <Input
-                      id="srv-min-charge"
                       type="number"
                       step="any"
                       min="0"
                       placeholder="e.g. 150.00"
                       value={minimumCharge}
                       onChange={(e) => setMinimumCharge(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="pl-7 text-sm"
+                      className="pl-7 h-9 text-xs font-mono"
                     />
                   </div>
-                  <span className="text-[11px] text-muted-foreground mt-0.5 block">
-                    Small orders are billed at least this minimum charge.
-                  </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-primary/10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-blue-200/60 dark:border-blue-800/60">
                 <div>
-                  <Label htmlFor="srv-target-margin" className="text-xs text-muted-foreground">
+                  <Label className="text-xs font-semibold mb-1 block">
                     Target Gross Margin (%)
                   </Label>
                   <Input
-                    id="srv-target-margin"
                     type="number"
                     value={targetMargin}
                     onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
-                    className="mt-1 text-xs"
+                    className="h-9 text-xs font-mono font-bold text-emerald-600"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="srv-min-margin" className="text-xs text-muted-foreground">
+                  <Label className="text-xs font-semibold mb-1 block">
                     Minimum Allowed Margin (%)
                   </Label>
                   <Input
-                    id="srv-min-margin"
                     type="number"
                     value={minAllowedMargin}
                     onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
-                    className="mt-1 text-xs"
+                    className="h-9 text-xs font-mono"
                   />
                 </div>
               </div>
@@ -958,34 +846,53 @@ export function ServiceConfigModal({
           </div>
         )}
 
-        {/* Footer Actions */}
-        <div className="pt-3 border-t border-border flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
-            {activeTab !== 'pricing' ? (
-              <button
+        {/* Standardized Bottom Action Bar */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            Cancel
+          </Button>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {activeTab !== 'pricing' && (
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => {
                   if (activeTab === 'basic') setActiveTab('dimensions')
                   else if (activeTab === 'dimensions') setActiveTab('materials')
                   else if (activeTab === 'materials') setActiveTab('finishing')
-                  else if (activeTab === 'finishing') setActiveTab('pricing')
+                  else if (activeTab === 'finishing') setActiveTab('additionals')
+                  else if (activeTab === 'additionals') setActiveTab('pricing')
                 }}
-                className="text-primary font-medium flex items-center gap-1 hover:underline cursor-pointer"
+                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1"
               >
-                <span>Next Section</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            ) : (
-              <span>Ready to save service configuration</span>
+                <span>Next Tab</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             )}
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
-              {isSubmitting ? 'Saving...' : initialData ? 'Update Service' : 'Save Service'}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>Saving Service...</span>
+                </>
+              ) : (
+                <>
+                  <Wrench className="h-4 w-4" />
+                  <span>{initialData ? 'Update Service' : 'Save Service'}</span>
+                </>
+              )}
             </Button>
           </div>
         </div>

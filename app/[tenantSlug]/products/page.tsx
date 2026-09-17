@@ -1467,39 +1467,43 @@ export default function ProductsCatalogPage() {
     <div className="space-y-6 max-w-7xl pb-12">
       {/* Header */}
       <PageHeader
-        titleEn="Products & Services Master 2.0"
-        titleBn="পণ্য ও সেবা কমার্শিয়াল মাস্টার ২.০"
-        descriptionEn="Commercial source of truth: Purchase Units, Conversions, Usable Yield, Costing, Target Margins, Minimum Charges, and Fast Quotes."
-        descriptionBn="ক্রয় একক, কনভার্সন রেশিও, অপচয়/ফলন, বিক্রয় মূল্য, মার্জিন এবং নূন্যতম চার্জের পূর্ণাঙ্গ মাস্টার।"
+        titleEn="Products & Services"
+        titleBn="পণ্য ও সেবা"
+        descriptionEn="Commercial catalog & specifications • Ready products, services, raw media, and commercial tariffs"
+        descriptionBn="রেডি প্রোডাক্ট, প্রিন্টিং সার্ভিস, কাঁচামাল ও কমার্শিয়াল ট্যারিফ নিয়ন্ত্রণ কেন্দ্র"
         icon={Package}
         iconColor="text-blue-600"
         actions={
           <div className="flex items-center gap-2.5">
             <Button
-              variant="outline"
               size="sm"
-              onClick={loadProducts}
-              disabled={isLoading}
-              className="text-xs"
+              onClick={handleOpenCreate}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
-              <RefreshCw className={cn('mr-1.5 h-3.5 w-3.5', isLoading && 'animate-spin')} />
-              Refresh
+              <Plus className="h-4 w-4" />
+              <span>{tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}</span>
             </Button>
 
             <Link href={`/${slug}/pricing`}>
-              <Button variant="outline" size="sm" className="text-xs bangla-text">
-                <Calculator className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
-                {tBilingual('Live Estimator', 'লাইভ ক্যালকুলেটর')}
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
+              >
+                <Calculator className="h-4 w-4 text-blue-600" />
+                <span>{tBilingual('Live Estimator', 'লাইভ ক্যালকুলেটর')}</span>
               </Button>
             </Link>
 
             <Button
+              variant="outline"
               size="sm"
-              onClick={handleOpenCreate}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs bangla-text shadow-sm"
+              onClick={loadProducts}
+              disabled={isLoading}
+              className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}
+              <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
+              <span>Refresh</span>
             </Button>
           </div>
         }
@@ -1537,43 +1541,63 @@ export default function ProductsCatalogPage() {
         </div>
       )}
 
-      {/* Business Owner Operational Signal Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="p-3.5 border-l-4 border-l-blue-600 bg-white dark:bg-slate-900/60 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Active Catalog Items</span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+      {/* Business Owner KPI Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* 1. Total Active Catalog Items */}
+        <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            Active Catalog Items
+          </div>
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
             {metrics.totalActive}
           </div>
-          <span className="text-[11px] text-slate-400">Commercial master ready</span>
+          <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">
+            Commercial Master Active
+          </div>
         </Card>
 
-        <Card className="p-3.5 border-l-4 border-l-emerald-500 bg-white dark:bg-slate-900/60 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Average Gross Margin</span>
-          <div className="text-2xl font-black text-emerald-600 mt-1">
+        {/* 2. Average Gross Margin */}
+        <Card className="p-3.5 bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/60 shadow-xs">
+          <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+            Average Gross Margin
+          </div>
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
             {metrics.avgMargin}%
           </div>
-          <span className="text-[11px] text-emerald-600/80 font-medium">Yield-adjusted profitability</span>
+          <div className="text-xs text-emerald-600/90 font-numeric tabular-nums mt-0.5">
+            Yield-Adjusted Profitability
+          </div>
         </Card>
 
-        <Card className="p-3.5 border-l-4 border-l-amber-500 bg-white dark:bg-slate-900/60 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Low Margin Alert (&lt;20%)</span>
-          <div className="text-2xl font-black text-amber-600 mt-1">
+        {/* 3. Low Margin Alert */}
+        <Card className="p-3.5 bg-white dark:bg-slate-900 border-amber-200 dark:border-amber-900/60 shadow-xs">
+          <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+            Low Margin Alert (&lt;20%)
+          </div>
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1">
             {metrics.lowMarginCount}
           </div>
-          <span className="text-[11px] text-amber-600/80 font-medium">Review raw purchase tariffs</span>
+          <div className="text-xs text-amber-600/90 font-numeric tabular-nums mt-0.5">
+            Review Raw Purchase Tariffs
+          </div>
         </Card>
 
-        <Card className="p-3.5 border-l-4 border-l-slate-400 bg-white dark:bg-slate-900/60 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Archived Items</span>
-          <div className="text-2xl font-black text-slate-700 dark:text-slate-300 mt-1">
+        {/* 4. Archived Items */}
+        <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            Archived Items
+          </div>
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
             {metrics.totalArchived}
           </div>
-          <span className="text-[11px] text-slate-400">Historical snapshots preserved</span>
+          <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">
+            Historical Snapshots Preserved
+          </div>
         </Card>
       </div>
 
-      {/* Architectural Entity Type Tabs */}
-      <div className="flex border-b border-border/70 gap-1.5 overflow-x-auto pb-2 scrollbar-none text-xs font-semibold">
+      {/* Main Navigation Tabs Header */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
         {[
           { id: 'all', label: 'All Items' },
           { id: 'product', label: 'Ready Products' },
@@ -1589,10 +1613,10 @@ export default function ProductsCatalogPage() {
             type="button"
             onClick={() => setEntityTypeFilter(tab.id as any)}
             className={cn(
-              'px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap text-xs',
+              'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
               entityTypeFilter === tab.id
-                ? 'bg-primary text-primary-foreground shadow-xs font-bold'
-                : 'bg-card border border-border/60 text-muted-foreground hover:bg-accent hover:text-foreground'
+                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             )}
           >
             {tab.label}
@@ -1601,122 +1625,120 @@ export default function ProductsCatalogPage() {
       </div>
 
       {/* Search, Category, Commercial Type & Status Filters */}
-      <Card className="p-4 shadow-xs">
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search by English name, বাংলা নাম, SKU, material spec..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 text-xs h-9"
-            />
-          </div>
-
-          {/* Category Dropdown & Quick Add */}
-          <div className="w-full md:w-auto flex items-center gap-1.5">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full md:w-auto h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-            >
-              <option value="all">All Categories (সকল ক্যাটাগরি)</option>
-              {categories.length > 0 ? (
-                categories.map((cat) => (
-                  <option key={cat.id} value={cat.slug || cat.name}>
-                    {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
-                  </option>
-                ))
-              ) : (
-                <>
-                  <option value="flex_banner">Flex & Vinyl Banner</option>
-                  <option value="backlit_flex">Backlit Signage</option>
-                  <option value="vinyl_sticker">Vinyl & Stickers</option>
-                  <option value="rigid_board">Rigid Board Mounts</option>
-                  <option value="signage_3d">3D Letter & Signage</option>
-                  <option value="display_stand">Display & Standee</option>
-                  <option value="commercial_print">Visiting Card & Leaflet</option>
-                  <option value="finishing">Finishing & Binding</option>
-                  <option value="installation">Installation & Site Work</option>
-                  <option value="design_service">Design & Artwork</option>
-                  <option value="delivery_logistics">Delivery & Logistics</option>
-                </>
-              )}
-            </select>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setEditingCategory(null)
-                setIsCategoryModalOpen(true)
-              }}
-              title="Add New Category"
-              className="h-9 px-2.5 text-xs text-slate-600 dark:text-slate-300 border-dashed hover:border-cyan-500 hover:text-cyan-600 shrink-0"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Category
-            </Button>
-          </div>
-
-          {/* Commercial Type Dropdown */}
-          <div className="w-full md:w-auto">
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full md:w-auto h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-            >
-              <option value="all">All Commercial Types</option>
-              {COMMERCIAL_PRODUCT_TYPES.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Status Tabs */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-full md:w-auto text-xs font-semibold">
-            <button
-              onClick={() => setStatusFilter('active')}
-              className={cn(
-                'px-3 py-1 rounded-md transition-all',
-                statusFilter === 'active' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
-              )}
-            >
-              Active ({metrics.totalActive})
-            </button>
-            <button
-              onClick={() => setStatusFilter('low_margin')}
-              className={cn(
-                'px-3 py-1 rounded-md transition-all',
-                statusFilter === 'low_margin' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500'
-              )}
-            >
-              Low Margin ({metrics.lowMarginCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter('archived')}
-              className={cn(
-                'px-3 py-1 rounded-md transition-all',
-                statusFilter === 'archived' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-xs' : 'text-slate-500'
-              )}
-            >
-              Archived ({metrics.totalArchived})
-            </button>
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={cn(
-                'px-3 py-1 rounded-md transition-all',
-                statusFilter === 'all' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-xs' : 'text-slate-500'
-              )}
-            >
-              All
-            </button>
-          </div>
+      <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[220px]">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Search by English name, বাংলা নাম, SKU, material spec..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8 text-xs h-9"
+          />
         </div>
-      </Card>
+
+        {/* Category Dropdown & Quick Add */}
+        <div className="flex items-center gap-1.5">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+          >
+            <option value="all">All Categories (সকল ক্যাটাগরি)</option>
+            {categories.length > 0 ? (
+              categories.map((cat) => (
+                <option key={cat.id} value={cat.slug || cat.name}>
+                  {cat.name} {cat.name_bn ? `(${cat.name_bn})` : ''}
+                </option>
+              ))
+            ) : (
+              <>
+                <option value="flex_banner">Flex & Vinyl Banner</option>
+                <option value="backlit_flex">Backlit Signage</option>
+                <option value="vinyl_sticker">Vinyl & Stickers</option>
+                <option value="rigid_board">Rigid Board Mounts</option>
+                <option value="signage_3d">3D Letter & Signage</option>
+                <option value="display_stand">Display & Standee</option>
+                <option value="commercial_print">Visiting Card & Leaflet</option>
+                <option value="finishing">Finishing & Binding</option>
+                <option value="installation">Installation & Site Work</option>
+                <option value="design_service">Design & Artwork</option>
+                <option value="delivery_logistics">Delivery & Logistics</option>
+              </>
+            )}
+          </select>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setEditingCategory(null)
+              setIsCategoryModalOpen(true)
+            }}
+            title="Add New Category"
+            className="h-9 px-2.5 text-xs text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-blue-500 hover:text-blue-600 shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Category
+          </Button>
+        </div>
+
+        {/* Commercial Type Dropdown */}
+        <div>
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+          >
+            <option value="all">All Commercial Types</option>
+            {COMMERCIAL_PRODUCT_TYPES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Status Tabs */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-bold">
+          <button
+            onClick={() => setStatusFilter('active')}
+            className={cn(
+              'px-3 py-1.5 rounded-md transition-all cursor-pointer',
+              statusFilter === 'active' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            Active ({metrics.totalActive})
+          </button>
+          <button
+            onClick={() => setStatusFilter('low_margin')}
+            className={cn(
+              'px-3 py-1.5 rounded-md transition-all cursor-pointer',
+              statusFilter === 'low_margin' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            Low Margin ({metrics.lowMarginCount})
+          </button>
+          <button
+            onClick={() => setStatusFilter('archived')}
+            className={cn(
+              'px-3 py-1.5 rounded-md transition-all cursor-pointer',
+              statusFilter === 'archived' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            Archived ({metrics.totalArchived})
+          </button>
+          <button
+            onClick={() => setStatusFilter('all')}
+            className={cn(
+              'px-3 py-1.5 rounded-md transition-all cursor-pointer',
+              statusFilter === 'all' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            All
+          </button>
+        </div>
+      </div>
 
       {/* Printing Methods Master View vs Catalog Table */}
       {entityTypeFilter === 'printing_methods' ? (

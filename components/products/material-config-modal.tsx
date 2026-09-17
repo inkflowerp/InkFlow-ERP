@@ -17,10 +17,12 @@ import {
   Building,
   Plus,
   Trash2,
+  Check,
+  RefreshCw,
 } from 'lucide-react'
 import type { ProductRecord, MaterialConfiguration, UnitOfMeasure } from '@/types/product.types'
-import type { MaterialRecord } from '@/types/inventory.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
+import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 interface MaterialConfigModalProps {
@@ -102,7 +104,7 @@ export function MaterialConfigModal({
   }, [initialData, isOpen])
 
   const handleAddWidth = () => {
-    const val = parseFloat(newWidthInput.trim())
+    const val = parseFloat(newWidthInput)
     if (!isNaN(val) && val > 0 && !availableWidths.includes(val)) {
       setAvailableWidths([...availableWidths, val].sort((a, b) => a - b))
       setNewWidthInput('')
@@ -110,7 +112,7 @@ export function MaterialConfigModal({
   }
 
   const handleRemoveWidth = (w: number) => {
-    setAvailableWidths(availableWidths.filter((item) => item !== w))
+    setAvailableWidths(availableWidths.filter((x) => x !== w))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,50 +126,43 @@ export function MaterialConfigModal({
     setErrorMessage(null)
 
     try {
-      const matConfig: MaterialConfiguration = {
+      const materialConfig: MaterialConfiguration = {
         material_type: materialType,
         available_widths_ft: materialType === 'roll' ? availableWidths : undefined,
-        standard_roll_length_ft: materialType === 'roll' ? Number(standardRollLength) || 164 : undefined,
+        standard_roll_length_ft: materialType === 'roll' ? standardRollLength : undefined,
         usage_unit: usageUnit,
-        default_allowance_per_side_in: Number(allowancePerSide) || 0,
-        purchase_unit: purchaseUnit,
-        purchase_price: purchasePrice !== '' ? Number(purchasePrice) : 0,
+        default_allowance_per_side_in: allowancePerSide,
+        reorder_level: reorderLevel,
       }
 
-      const primaryWidth = availableWidths.length > 0 ? availableWidths[0] : 4
-      const rollArea = Math.round(primaryWidth * standardRollLength * 100) / 100
-
-      const payload: Partial<ProductRecord> = {
+      await onSave({
         name: name.trim(),
         name_bn: nameBn.trim() || undefined,
-        sku: sku.trim().toUpperCase() || `MAT-${Date.now().toString().slice(-5)}`,
-        category: category.trim() || 'materials',
-        entity_type: 'material',
+        sku: sku.trim() || `MAT-${Date.now().toString().slice(-5)}`,
+        category: category || 'materials',
         product_type: 'material',
+        entity_type: 'material',
         commercial_type: 'material',
-        measurement_type: materialType === 'roll' ? 'area' : 'piece',
-        pricing_method: materialType === 'roll' ? 'per_area' : 'per_piece',
         unit: usageUnit,
         selling_unit: usageUnit,
         purchase_unit: purchaseUnit,
         purchase_price: purchasePrice !== '' ? Number(purchasePrice) : 0,
-        conversion_ratio: materialType === 'roll' ? rollArea : 1.0,
-        selling_price: purchasePrice !== '' ? Math.round((Number(purchasePrice) / (rollArea || 1)) * 1.35 * 100) / 100 : 0,
+        base_cost: purchasePrice !== '' && standardRollLength > 0 && availableWidths.length > 0
+          ? Number((Number(purchasePrice) / (availableWidths[0] * standardRollLength)).toFixed(2))
+          : 0,
+        selling_price: 0,
+        pricing_method: 'per_piece',
+        cost_basis_type: 'direct_cost',
         is_active: isActive,
-        is_service: false,
-        is_ready_product: false,
-        material_config: matConfig,
-        available_widths_ft: availableWidths,
-        standard_roll_length_ft: standardRollLength,
         description: description.trim() || undefined,
-        min_order_quantity: reorderLevel,
+        available_widths_ft: materialType === 'roll' ? availableWidths : undefined,
+        standard_roll_length_ft: materialType === 'roll' ? standardRollLength : undefined,
+        material_config: materialConfig,
         requires_production: false,
-      }
-
-      await onSave(payload)
+      })
       onClose()
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to save material.')
+      setErrorMessage(err.message || 'Failed to save material configuration.')
     } finally {
       setIsSubmitting(false)
     }
@@ -177,263 +172,289 @@ export function MaterialConfigModal({
     <ModalDialog
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      title={initialData ? `Edit Material: ${initialData.name}` : 'New Inventory Material'}
-      description="Stock materials purchased in rolls/bulk and consumed during job production."
       size="2xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 font-bold shrink-0">
+            <Boxes className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-bold text-slate-900 dark:text-white">
+                {initialData ? `Edit Material: ${initialData.name}` : 'New Raw Material Master'}
+              </span>
+              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-amber-50 text-amber-700 border-amber-200">
+                Inventory Stock
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Purchased roll/sheet stock tracked by physical dimensions and consumed in production.
+            </p>
+          </div>
+        </div>
+      }
       hideFooter={true}
     >
       <form onSubmit={handleSubmit} className="space-y-4 py-1">
         {errorMessage && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2 font-medium">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Basic Information */}
-        <div className="space-y-3">
-          <div>
-            <Label htmlFor="mat-name" className="text-sm font-medium">
-              Material Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="mat-name"
-              placeholder="e.g. Vinyl Sticker, PVC Frontlit, Glossy Lamination Film"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="mt-1"
-              autoFocus
-            />
+        {/* Section 1: Material Identity */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
+              1
+            </div>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Material Identity & Physical Form
+            </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-3">
             <div>
-              <Label htmlFor="mat-name-bn" className="text-xs text-muted-foreground">
-                Bengali Name (ঐচ্ছিক)
+              <Label className="text-xs font-semibold mb-1 block">
+                Material Name <span className="text-rose-500">*</span>
               </Label>
               <Input
-                id="mat-name-bn"
-                placeholder="যেমন: ভিনাইল স্টিকার রোল"
-                value={nameBn}
-                onChange={(e) => setNameBn(e.target.value)}
-                className="mt-1 text-sm"
+                placeholder="e.g. Self-Adhesive Vinyl Sticker White Glossy, Frontlit Flex 280 GSM..."
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="h-9 text-xs"
+                autoFocus
               />
             </div>
 
-            <div>
-              <Label htmlFor="mat-sku" className="text-xs text-muted-foreground">
-                SKU / Material Code
-              </Label>
-              <Input
-                id="mat-sku"
-                placeholder="e.g. MAT-VINYL-WHITE"
-                value={sku}
-                onChange={(e) => setSku(e.target.value)}
-                className="mt-1 uppercase text-sm font-mono"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="mat-type" className="text-sm font-medium">
-                Physical Form / Type
-              </Label>
-              <select
-                id="mat-type"
-                value={materialType}
-                onChange={(e) => setMaterialType(e.target.value as any)}
-                className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-sm focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-              >
-                <option value="roll">Roll Material (Physical Width × Length)</option>
-                <option value="sheet">Flat Sheet / Board (PVC, Acrylic, Foam)</option>
-                <option value="liquid">Liquid / Inks (UV Ink, Eco Solvent, Flush)</option>
-                <option value="rigid">Rigid Profile (MS Pipe, Aluminum Channel)</option>
-                <option value="hardware">Hardware / Accessories (Eyelets, Screws)</option>
-              </select>
-            </div>
-
-            <div>
-              <Label htmlFor="mat-category" className="text-sm font-medium">
-                Category
-              </Label>
-              <select
-                id="mat-category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-              >
-                <option value="materials">Print Media & Rolls</option>
-                <option value="inks">Inks & Solvents</option>
-                <option value="lamination_media">Lamination & Overlays</option>
-                <option value="boards_sheets">Boards & Substrates</option>
-                <option value="hardware_acc">Display Hardware & Acc</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.slug || c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Roll Dimensions & Purchase Configuration (for roll materials) */}
-          {materialType === 'roll' && (
-            <div className="p-3.5 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-3">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                <Boxes className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span>Physical Roll Specifications</span>
-              </h4>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">
-                  Available Purchase Widths (ft)
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Bengali Name (ঐচ্ছিক)
                 </Label>
-                <div className="flex flex-wrap items-center gap-2">
-                  {availableWidths.map((w) => (
-                    <div
-                      key={w}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-xs font-bold text-amber-700 dark:text-amber-300"
-                    >
-                      <span>{w} ft roll</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveWidth(w)}
-                        className="hover:text-destructive text-sm leading-none p-0.5"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      step="any"
-                      placeholder="e.g. 5.25"
-                      value={newWidthInput}
-                      onChange={(e) => setNewWidthInput(e.target.value)}
-                      className="w-24 h-7 text-xs"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAddWidth}
-                      className="h-7 px-2 text-xs"
-                    >
-                      <Plus className="w-3 h-3 mr-0.5" /> Add
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-amber-500/15">
-                <div>
-                  <Label htmlFor="mat-roll-len" className="text-xs font-medium text-muted-foreground">
-                    Standard Roll Length (ft)
-                  </Label>
-                  <Input
-                    id="mat-roll-len"
-                    type="number"
-                    step="any"
-                    value={standardRollLength}
-                    onChange={(e) => setStandardRollLength(parseFloat(e.target.value) || 164)}
-                    className="mt-1 text-sm font-semibold"
-                  />
-                  <span className="text-[11px] text-muted-foreground mt-0.5 block">
-                    Standard roll is typically 50m (~164 ft).
-                  </span>
-                </div>
-
-                <div>
-                  <Label htmlFor="mat-price" className="text-xs font-medium text-muted-foreground">
-                    Purchase Price per Roll (৳)
-                  </Label>
-                  <div className="relative mt-1">
-                    <span className="absolute left-3 top-2 text-muted-foreground text-sm font-semibold">৳</span>
-                    <Input
-                      id="mat-price"
-                      type="number"
-                      step="any"
-                      min="0"
-                      placeholder="e.g. 8500.00"
-                      value={purchasePrice}
-                      onChange={(e) => setPurchasePrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="pl-7 text-sm font-semibold"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-[11px] text-muted-foreground bg-muted/40 p-2 rounded-lg flex items-center gap-1.5">
-                <HelpCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                <span>
-                  When receiving goods (GRN), discrete rolls with these width/length specs will be spawned into inventory.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Usage & Allowance */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="mat-usage-unit" className="text-sm font-medium">
-                Consumption / Usage Unit
-              </Label>
-              <select
-                id="mat-usage-unit"
-                value={usageUnit}
-                onChange={(e) => setUsageUnit(e.target.value as any)}
-                className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-              >
-                <option value="sft">Square Feet (sqft)</option>
-                <option value="rft">Running Feet (rft)</option>
-                <option value="piece">Piece / Unit</option>
-                <option value="meter">Meter</option>
-                <option value="roll">Roll</option>
-              </select>
-            </div>
-
-            <div>
-              <Label htmlFor="mat-allowance" className="text-sm font-medium">
-                Production Allowance per Side (in)
-              </Label>
-              <div className="relative mt-1">
                 <Input
-                  id="mat-allowance"
-                  type="number"
-                  step="any"
-                  value={allowancePerSide}
-                  onChange={(e) => setAllowancePerSide(parseFloat(e.target.value) || 0)}
-                  className="pr-12 text-sm"
+                  placeholder="যেমন: ভিনাইল স্টিকার গ্লসি"
+                  value={nameBn}
+                  onChange={(e) => setNameBn(e.target.value)}
+                  className="h-9 text-xs font-bengali"
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-semibold">inches</span>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  SKU / Material Code
+                </Label>
+                <Input
+                  placeholder="e.g. MAT-VINYL-GLOSS"
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  className="h-9 text-xs font-mono uppercase"
+                />
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-between py-1">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded text-primary focus:ring-primary"
-              />
-              <span className="text-sm font-medium">Active in Inventory Catalog</span>
-            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Physical Form / Type
+                </Label>
+                <select
+                  value={materialType}
+                  onChange={(e) => setMaterialType(e.target.value as any)}
+                  className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                >
+                  <option value="roll">Continuous Roll Media (Vinyl, Flex, Paper)</option>
+                  <option value="sheet">Rigid Sheet / Board (PVC Board, Acrylic)</option>
+                  <option value="liquid">Liquid Consumable (Solvent / UV Ink, Lube)</option>
+                  <option value="rigid">Framing & Metal (MS Pipe, Aluminum Channel)</option>
+                  <option value="accessory">Accessory (Eyelet, Double Tape, Rope)</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Category
+                </Label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                >
+                  <option value="materials">Raw Materials & Substrates</option>
+                  <option value="roll_media">Roll Media</option>
+                  <option value="rigid_sheets">Rigid Sheets</option>
+                  <option value="inks">Inks & Chemicals</option>
+                  <option value="hardware_stock">Hardware Stock</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.slug || c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="pt-3 border-t border-border flex items-center justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        {/* Section 2: Purchase vs Usage Dimensions */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+              2
+            </div>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Purchase Unit vs. Usage Dimensions
+            </h3>
+          </div>
+
+          <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">Purchase Unit</Label>
+                <select
+                  value={purchaseUnit}
+                  onChange={(e) => setPurchaseUnit(e.target.value)}
+                  className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                >
+                  <option value="roll">Roll (রোল)</option>
+                  <option value="sheet">Sheet / Board (শীট)</option>
+                  <option value="bottle">Bottle / Liter (বোতল)</option>
+                  <option value="box">Box / Pack (বক্স)</option>
+                  <option value="piece">Piece (পিস)</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">Usage / Billing Unit</Label>
+                <select
+                  value={usageUnit}
+                  onChange={(e) => setUsageUnit(e.target.value as any)}
+                  className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                >
+                  <option value="sft">Square Feet (SFT)</option>
+                  <option value="sqin">Square Inch (SQIN)</option>
+                  <option value="piece">Piece (পিস)</option>
+                  <option value="liter">Liter / ML (লিটার)</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Purchase Price (৳ / {purchaseUnit})
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                  <Input
+                    type="number"
+                    step="any"
+                    min="0"
+                    placeholder="e.g. 8500"
+                    value={purchasePrice}
+                    onChange={(e) => setPurchasePrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                    className="pl-7 h-9 text-xs font-mono font-bold"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Roll Dimensions */}
+            {materialType === 'roll' && (
+              <div className="pt-2 border-t border-blue-200/60 dark:border-blue-800/60 space-y-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Standard Roll Length (Feet)
+                    </Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      value={standardRollLength}
+                      onChange={(e) => setStandardRollLength(parseFloat(e.target.value) || 164)}
+                      className="h-9 text-xs font-mono"
+                    />
+                    <span className="text-[10px] text-slate-400">Standard 50m roll = 164 ft</span>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Add Available Physical Width (Feet)
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        step="any"
+                        placeholder="e.g. 3.25, 4.25, 5.25"
+                        value={newWidthInput}
+                        onChange={(e) => setNewWidthInput(e.target.value)}
+                        className="h-9 text-xs font-mono"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleAddWidth}
+                        className="h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shrink-0"
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1" /> Add Width
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {availableWidths.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Available Roll Widths:</span>
+                    {availableWidths.map((w) => (
+                      <span
+                        key={w}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white"
+                      >
+                        <span>{w} ft</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveWidth(w)}
+                          className="text-slate-400 hover:text-rose-600 cursor-pointer"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Standardized Bottom Action Bar */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting} className="min-w-[110px]">
-            {isSubmitting ? 'Saving...' : initialData ? 'Update Material' : 'Save Material'}
+
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <span>Saving Material...</span>
+              </>
+            ) : (
+              <>
+                <Boxes className="h-4 w-4" />
+                <span>{initialData ? 'Update Material' : 'Save Material'}</span>
+              </>
+            )}
           </Button>
         </div>
       </form>

@@ -2,7 +2,8 @@
 
 import React from 'react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
-import { Package, Wrench, Boxes, Sparkles, PlusCircle, ArrowRight, ShieldCheck, Palette } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Package, Wrench, Boxes, Sparkles, PlusCircle, ArrowRight, ShieldCheck, Palette, Layers } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface EntityTypeSelectorModalProps {
@@ -20,10 +21,9 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
       description: 'Physical items sold ready-to-use by piece/pack. No roll formulas or production bleeds.',
       icon: Package,
       badge: 'Ready to Sell',
-      color: 'blue',
-      borderClass: 'border-blue-500/30 hover:border-blue-500 hover:bg-blue-500/5',
-      badgeClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-      iconClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+      borderClass: 'border-blue-200 dark:border-blue-900/60 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30',
+      badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+      iconClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300',
     },
     {
       id: 'service' as const,
@@ -32,10 +32,9 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
       description: 'Custom work configured by dimensions, required materials, finishing, and allowance geometry.',
       icon: Wrench,
       badge: 'Custom Jobs',
-      color: 'emerald',
-      borderClass: 'border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-500/5',
-      badgeClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-      iconClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+      borderClass: 'border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30',
+      badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+      iconClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300',
     },
     {
       id: 'material' as const,
@@ -44,10 +43,9 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
       description: 'Stock materials purchased in bulk/rolls, tracked by roll length, and consumed during production.',
       icon: Boxes,
       badge: 'Inventory Stock',
-      color: 'amber',
-      borderClass: 'border-amber-500/30 hover:border-amber-500 hover:bg-amber-500/5',
-      badgeClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-      iconClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+      borderClass: 'border-amber-200 dark:border-amber-900/60 hover:border-amber-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30',
+      badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+      iconClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300',
     },
   ]
 
@@ -57,28 +55,28 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
       title: 'Finishing Operation',
       description: 'Glossy/Matte Lamination, Eyelet, MS Frame',
       icon: Sparkles,
-      colorClass: 'hover:border-purple-500 hover:bg-purple-500/5',
+      colorClass: 'hover:border-purple-400 hover:bg-purple-50/40 dark:hover:bg-purple-950/30',
     },
     {
       id: 'additional' as const,
       title: 'Additional Work / Pasting',
       description: '3mm PVC Board Pasting, Foam Board, Framing',
       icon: PlusCircle,
-      colorClass: 'hover:border-cyan-500 hover:bg-cyan-500/5',
+      colorClass: 'hover:border-cyan-400 hover:bg-cyan-50/40 dark:hover:bg-cyan-950/30',
     },
     {
       id: 'installation' as const,
       title: 'Installation / Fulfillment',
       description: 'On-Site Installation, Shop Delivery, Dispatch',
       icon: ShieldCheck,
-      colorClass: 'hover:border-indigo-500 hover:bg-indigo-500/5',
+      colorClass: 'hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30',
     },
     {
       id: 'printing_method' as const,
       title: 'Printing Method',
       description: 'Eco-Solvent, UV Flatbed, DTF, Latex',
       icon: Palette,
-      colorClass: 'hover:border-rose-500 hover:bg-rose-500/5',
+      colorClass: 'hover:border-rose-400 hover:bg-rose-50/40 dark:hover:bg-rose-950/30',
     },
   ]
 
@@ -86,12 +84,27 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
     <ModalDialog
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      title="What would you like to add?"
-      description="Select the appropriate entity type to open the dedicated configuration form."
       size="2xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
+            <Layers className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-bold text-slate-900 dark:text-white">
+                What would you like to add?
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Select the appropriate entity type to open the dedicated commercial configuration form.
+            </p>
+          </div>
+        </div>
+      }
       hideFooter={true}
     >
-      <div className="space-y-4 py-2">
+      <div className="space-y-4 py-1">
         <div className="grid grid-cols-1 gap-3">
           {options.map((opt) => {
             const Icon = opt.icon
@@ -104,44 +117,44 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
                   onClose()
                 }}
                 className={cn(
-                  'w-full text-left p-4 rounded-xl border-2 transition-all duration-150 flex items-start justify-between group bg-card shadow-sm hover:shadow-md cursor-pointer',
+                  'w-full text-left p-4 rounded-xl border bg-white dark:bg-slate-900 transition-all duration-150 flex items-start justify-between group shadow-xs hover:shadow-md cursor-pointer',
                   opt.borderClass
                 )}
               >
                 <div className="flex items-start gap-3.5">
-                  <div className={cn('p-3 rounded-lg mt-0.5 shrink-0 transition-transform group-hover:scale-105', opt.iconClass)}>
-                    <Icon className="w-6 h-6" />
+                  <div className={cn('p-2.5 rounded-xl mt-0.5 shrink-0 transition-transform group-hover:scale-105', opt.iconClass)}>
+                    <Icon className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">
+                      <span className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {opt.title}
                       </span>
-                      <span className={cn('px-2 py-0.5 text-xs font-medium rounded-full border', opt.badgeClass)}>
+                      <span className={cn('px-2 py-0.5 text-[10px] font-bold rounded-md border', opt.badgeClass)}>
                         {opt.badge}
                       </span>
                     </div>
-                    <p className="text-xs font-medium text-muted-foreground mt-0.5">
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">
                       {opt.subtitle}
                     </p>
-                    <p className="text-xs text-muted-foreground/80 mt-1 leading-relaxed">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                       {opt.description}
                     </p>
                   </div>
                 </div>
-                <div className="p-2 rounded-full text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0">
-                  <ArrowRight className="w-5 h-5" />
+                <div className="p-2 rounded-full text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0">
+                  <ArrowRight className="w-4 h-4" />
                 </div>
               </button>
             )
           })}
         </div>
 
-        <div className="pt-2 border-t border-border/50">
-          <div className="text-xs font-medium text-muted-foreground mb-2">
-            Reusable Operations & Add-ons:
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
+            Reusable Operations & Add-ons
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {auxiliaryOptions.map((aux) => {
               const AuxIcon = aux.icon
               return (
@@ -153,21 +166,33 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
                     onClose()
                   }}
                   className={cn(
-                    'p-2.5 rounded-lg border border-border/70 text-left transition-all hover:shadow-xs group cursor-pointer bg-card/60',
+                    'p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-left transition-all hover:shadow-xs group cursor-pointer bg-white dark:bg-slate-900',
                     aux.colorClass
                   )}
                 >
-                  <div className="flex items-center gap-2 text-foreground font-medium text-xs">
-                    <AuxIcon className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                  <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-xs">
+                    <AuxIcon className="w-4 h-4 text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                     <span>{aux.title}</span>
                   </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                     {aux.description}
                   </div>
                 </button>
               )
             })}
           </div>
+        </div>
+
+        {/* Standardized Bottom Action */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            Cancel
+          </Button>
         </div>
       </div>
     </ModalDialog>
