@@ -125,14 +125,18 @@ export function MaterialConfigModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Derived total package area or count
+  // Derived total package area or count
   const totalUnitArea = useMemo(() => {
     if (materialType === 'roll' || purchaseUnit === 'roll') {
       const parsedInput = parseFloat(newWidthInput)
       const maxW = availableWidths.length > 0 
         ? Math.max(...availableWidths) 
         : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
+      const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
+      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
+      const effectiveW = maxW + allowance
       const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
-      return maxW * parsedLen
+      return Number((effectiveW * parsedLen).toFixed(2))
     }
     if (materialType === 'sheet' || purchaseUnit === 'sheet') {
       const firstSheet = availableSheetSizes[0] || { width: 4, length: 8 }
@@ -142,7 +146,7 @@ export function MaterialConfigModal({
       return Number(packQuantity) || 1000
     }
     return 1
-  }, [materialType, purchaseUnit, availableWidths, newWidthInput, standardRollLength, availableSheetSizes, packQuantity])
+  }, [materialType, purchaseUnit, availableWidths, newWidthInput, extraWidthAllowance, standardRollLength, availableSheetSizes, packQuantity])
 
   useEffect(() => {
     if (initialData && isOpen) {
@@ -181,9 +185,14 @@ export function MaterialConfigModal({
 
       // Calculate initial purchase price and purchase price per SFT
       const parsedStdLen = typeof stdLen === 'number' ? stdLen : (parseFloat(stdLen) || 164)
+      const rawAllowance = matCfg.extra_width_allowance_ft ?? (initialData.production_width_allowance ?? 0.25)
+      const parsedAllowance = typeof rawAllowance === 'number' ? rawAllowance : (parseFloat(rawAllowance) || 0)
+      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
+      const maxW = widths.length > 0 ? Math.max(...widths) : 10
+      const effectiveW = maxW + allowance
       const area = (matCfg.material_type === 'sheet' || initialData.purchase_unit === 'sheet')
         ? ((sheets[0]?.width || 4) * (sheets[0]?.length || 8))
-        : (Math.max(...widths) * parsedStdLen)
+        : Number((effectiveW * parsedStdLen).toFixed(2))
 
       const rawPurPrice = initialData.purchase_price || matCfg.purchase_price || ''
       const rawBaseCost = initialData.base_cost || matCfg.effective_unit_cost || ''
@@ -263,13 +272,16 @@ export function MaterialConfigModal({
   const handleAddCustomWidth = () => {
     const val = parseFloat(newWidthInput)
     const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
+    const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
+    const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
     if (!isNaN(val) && val > 0) {
       if (!availableWidths.includes(val)) {
         const nextWidths = [...availableWidths, val].sort((a, b) => a - b)
         setAvailableWidths(nextWidths)
         if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
           const maxW = Math.max(...nextWidths)
-          setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * parsedLen).toFixed(2)))
+          const effectiveW = maxW + allowance
+          setPurchasePrice(Number((Number(purchasePricePerSft) * effectiveW * parsedLen).toFixed(2)))
         }
       }
     }
@@ -278,10 +290,13 @@ export function MaterialConfigModal({
   const handleRemoveWidth = (w: number) => {
     const nextWidths = availableWidths.filter((x) => x !== w)
     const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
+    const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
+    const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
     setAvailableWidths(nextWidths)
     if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0 && nextWidths.length > 0) {
       const maxW = Math.max(...nextWidths)
-      setPurchasePrice(Number((Number(purchasePricePerSft) * maxW * parsedLen).toFixed(2)))
+      const effectiveW = maxW + allowance
+      setPurchasePrice(Number((Number(purchasePricePerSft) * effectiveW * parsedLen).toFixed(2)))
     }
   }
 
@@ -337,11 +352,15 @@ export function MaterialConfigModal({
         ? Math.max(...availableWidths) 
         : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
       const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
-      const rollArea = maxW * parsedLen
+      const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
+      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
+      const effectiveW = maxW + allowance
+      const rollArea = Number((effectiveW * parsedLen).toFixed(2))
+      const allowanceText = allowance > 0 ? ` (${maxW}ft + ${allowance}ft allowance × ${parsedLen}ft)` : ` (${maxW}ft × ${parsedLen}ft)`
       return {
         unitCost: baseUnitCost,
         effectiveCost: effCost,
-        yieldLabel: `${rollArea.toLocaleString()} sft (${maxW}ft × ${parsedLen}ft)`,
+        yieldLabel: `${rollArea.toLocaleString()} sft${allowanceText}`,
         formulaText: `৳${baseUnitCost.toFixed(2)}/sft × ${rollArea.toLocaleString()} sft = ৳${(baseUnitCost * rollArea).toFixed(0)}/roll (+ ${wastePercent}% waste = ৳${effCost.toFixed(2)}/sft)`,
       }
     }
@@ -374,7 +393,7 @@ export function MaterialConfigModal({
       yieldLabel: `1 ${usageUnit}`,
       formulaText: `৳${baseUnitCost.toFixed(2)} per ${usageUnit}`,
     }
-  }, [purchasePricePerSft, purchasePrice, totalUnitArea, materialType, purchaseUnit, availableWidths, newWidthInput, standardRollLength, availableSheetSizes, wastePercent, packQuantity, usageUnit])
+  }, [purchasePricePerSft, purchasePrice, totalUnitArea, materialType, purchaseUnit, availableWidths, newWidthInput, extraWidthAllowance, standardRollLength, availableSheetSizes, wastePercent, packQuantity, usageUnit])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -733,8 +752,11 @@ export function MaterialConfigModal({
                             setNewWidthInput(val)
                             const w = parseFloat(val)
                             const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
+                            const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
+                            const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
                             if (!isNaN(w) && w > 0 && purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-                              setPurchasePrice(Number((Number(purchasePricePerSft) * w * parsedLen).toFixed(2)))
+                              const effectiveW = w + allowance
+                              setPurchasePrice(Number((Number(purchasePricePerSft) * effectiveW * parsedLen).toFixed(2)))
                             }
                           }}
                           className="h-9 text-xs font-mono font-bold pr-7"
@@ -749,7 +771,26 @@ export function MaterialConfigModal({
                           min="0"
                           placeholder="0.25"
                           value={extraWidthAllowance}
-                          onChange={(e) => setExtraWidthAllowance(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setExtraWidthAllowance(val)
+                            const parsedAllowance = parseFloat(val)
+                            const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
+                            const parsedInput = parseFloat(newWidthInput)
+                            const w = availableWidths.length > 0 
+                              ? Math.max(...availableWidths) 
+                              : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
+                            const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
+                            const effectiveW = w + allowance
+                            if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                              setPurchasePrice(Number((Number(purchasePricePerSft) * effectiveW * parsedLen).toFixed(2)))
+                            } else if (purchasePrice !== '' && Number(purchasePrice) > 0) {
+                              const totalArea = effectiveW * parsedLen
+                              if (totalArea > 0) {
+                                setPurchasePricePerSft(Number((Number(purchasePrice) / totalArea).toFixed(2)))
+                              }
+                            }
+                          }}
                           className="h-9 text-xs font-mono font-bold pr-7"
                         />
                         <span className="absolute right-2 top-2 text-[10px] font-bold text-slate-400">ft</span>
@@ -778,8 +819,11 @@ export function MaterialConfigModal({
                             const w = availableWidths.length > 0 
                               ? Math.max(...availableWidths) 
                               : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
+                            const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
+                            const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
+                            const effectiveW = w + allowance
                             if (!isNaN(parsedLen) && parsedLen > 0 && purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-                              setPurchasePrice(Number((Number(purchasePricePerSft) * w * parsedLen).toFixed(2)))
+                              setPurchasePrice(Number((Number(purchasePricePerSft) * effectiveW * parsedLen).toFixed(2)))
                             }
                           }}
                           className="h-9 text-xs font-mono font-bold pr-7"
@@ -794,8 +838,11 @@ export function MaterialConfigModal({
                           const w = availableWidths.length > 0 
                             ? Math.max(...availableWidths) 
                             : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
+                          const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
+                          const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
+                          const effectiveW = w + allowance
                           if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-                            setPurchasePrice(Number((Number(purchasePricePerSft) * w * 100).toFixed(2)))
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * effectiveW * 100).toFixed(2)))
                           }
                         }}
                         className={cn(
@@ -815,8 +862,11 @@ export function MaterialConfigModal({
                           const w = availableWidths.length > 0 
                             ? Math.max(...availableWidths) 
                             : (!isNaN(parsedInput) && parsedInput > 0 ? parsedInput : 10)
+                          const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
+                          const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
+                          const effectiveW = w + allowance
                           if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
-                            setPurchasePrice(Number((Number(purchasePricePerSft) * w * 164).toFixed(2)))
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * effectiveW * 164).toFixed(2)))
                           }
                         }}
                         className={cn(
