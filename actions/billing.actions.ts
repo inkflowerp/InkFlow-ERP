@@ -32,13 +32,22 @@ export interface ServerActionResult<T> {
 
 export interface CreateInvoiceItemInput {
   product_id?: string
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  product_type?: string
   item_name: string
+  dimensions_spec?: string
   width?: number
   height?: number
+  dimension_unit?: 'ft' | 'inch' | 'm' | string
+  area_sft?: number
   quantity: number
   unit?: string
   unit_price: number
+  tier_applied?: string
+  moq?: number
+  unit_cost?: number
   finishing?: string
+  selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }>
   total_price?: number
 }
 

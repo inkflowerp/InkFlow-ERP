@@ -18,9 +18,12 @@ export interface QuotationItemRecord {
   id: string
   quotation_id?: string
   product_id?: string | null
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  product_type?: string | null
   description: string
   description_bn?: string | null
   material_spec?: string | null
+  dimensions_spec?: string | null
   width: number
   height: number
   dimension_unit: 'ft' | 'inch' | 'm'
@@ -29,10 +32,16 @@ export interface QuotationItemRecord {
   unit: string
   unit_rate: number
   rate_source?: RateSource
+  tier_applied?: string | null
+  moq?: number | null
   finishing?: string | null
+  selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
+  selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
+  selected_installation?: { id: string; name: string; rate?: number; cost?: number } | null
   color_spec?: string | null
   artwork_required?: boolean
   installation_required?: boolean
+  unit_cost?: number
   material_cost?: number
   labor_cost?: number
   finishing_cost?: number
@@ -140,9 +149,12 @@ export interface ApplyNegotiationPayload {
 export interface CreateQuotationItemInput {
   id?: string
   product_id?: string | null
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  product_type?: string | null
   description: string
   description_bn?: string | null
   material_spec?: string | null
+  dimensions_spec?: string | null
   width?: number
   height?: number
   dimension_unit?: 'ft' | 'inch' | 'm'
@@ -151,10 +163,16 @@ export interface CreateQuotationItemInput {
   unit?: string
   unit_rate: number
   rate_source?: RateSource
+  tier_applied?: string | null
+  moq?: number | null
   finishing?: string | null
+  selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
+  selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
+  selected_installation?: { id: string; name: string; rate?: number; cost?: number } | null
   color_spec?: string | null
   artwork_required?: boolean
   installation_required?: boolean
+  unit_cost?: number
   material_cost?: number
   labor_cost?: number
   finishing_cost?: number

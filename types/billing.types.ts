@@ -26,15 +26,26 @@ export interface InvoiceItemRecord {
   id: string
   invoice_id?: string
   product_id?: string | null
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  product_type?: string | null
   item_name?: string | null
   item_description: string
   dimensions_spec?: string | null
+  width?: number
+  height?: number
+  dimension_unit?: 'ft' | 'inch' | 'm' | string
+  area_sft?: number
   quantity: number
   unit: string
   unit_price: number
   vat_percentage: number
   total_price: number
+  tier_applied?: string | null
+  moq?: number | null
+  unit_cost?: number
   finishing?: string | null
+  selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
+  selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
 }
 
 export type FinancialPersistenceMode = 'production' | 'training' | 'test'

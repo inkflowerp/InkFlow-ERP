@@ -295,8 +295,8 @@ export interface ProductUsageStats {
   isReferenced: boolean
 }
 
-export type PriceTierKey = 'retail' | 'corporate' | 'dealer' | 'wholesale' | 'custom'
-export type ProductPriceTiers = Partial<Record<PriceTierKey, number>>
+export type PriceTierKey = 'retail' | 'corporate' | 'dealer' | 'wholesale' | 'custom' | 'vip' | string
+export type ProductPriceTiers = Record<string, number>
 
 export interface ProductSupplierPriceRecord {
   id: string

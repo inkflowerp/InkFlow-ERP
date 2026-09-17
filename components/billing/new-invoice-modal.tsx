@@ -61,37 +61,55 @@ export interface NewInvoiceModalProps {
 interface ItemRowState {
   id: string
   productId?: string
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  product_type?: string
   itemName: string
+  dimensions_spec?: string
   width: string
   height: string
+  dimension_unit?: 'ft' | 'inch' | 'm' | string
   quantity: number
   unit: string
   rate: number
   finishing: string
   rateSource?: 'custom' | 'last_invoice' | 'default' | 'manual'
+  tier_applied?: string
+  moq?: number
+  pcs_per_carton?: number
+  unit_cost?: number
+  available_dimension_presets?: Array<{ label?: string; width: number; length: number; unit?: string }>
+  available_finishing_options?: Array<{ id: string; name: string; pricing_method?: string; unit_price?: number; unit_cost?: number }>
+  printable_material_name?: string
+  showAdvanced?: boolean
   isManualRate?: boolean
 }
 
 const FINISHING_OPTIONS = [
   'None',
   'Cutting',
-  'Eyelet',
+  'Eyelet / Grommets',
   'Lamination (Gloss)',
   'Lamination (Matt)',
   'Folding',
-  'Mounting (Board)',
+  'Mounting (PVC Board)',
+  'Pocket & Pipe',
+  'Hemming / Border',
   'Stitching',
   'Perforation',
   'Die Cutting',
 ]
 
 const UNIT_OPTIONS = [
-  { value: 'sft', label: 'SFT' },
-  { value: 'sqin', label: 'SQIN' },
-  { value: 'pcs', label: 'PCS' },
-  { value: 'page', label: 'PAGE' },
-  { value: 'book', label: 'BOOK' },
-  { value: 'set', label: 'SET' },
+  { value: 'sft', label: 'SFT (স্কয়ার ফুট)' },
+  { value: 'pcs', label: 'PCS (পিস)' },
+  { value: 'set', label: 'SET (সেট)' },
+  { value: 'rft', label: 'RFT (রানিং ফুট)' },
+  { value: 'roll', label: 'ROLL (রোল)' },
+  { value: 'sheet', label: 'SHEET (শিট)' },
+  { value: 'box', label: 'BOX (বক্স)' },
+  { value: 'pack', label: 'PACK (প্যাক)' },
+  { value: 'pair', label: 'PAIR (জোড়া)' },
+  { value: 'sqin', label: 'SQIN (ইঞ্চি)' },
 ]
 
 export function NewInvoiceModal({
@@ -150,14 +168,17 @@ export function NewInvoiceModal({
     {
       id: `item-${Date.now()}-1`,
       productId: '',
+      item_kind: 'service',
       itemName: 'Pana Flex Banner Print',
       width: '4',
       height: '6',
+      dimension_unit: 'ft',
       quantity: 1,
       unit: 'sft',
       rate: 22,
       finishing: 'None',
       rateSource: 'default',
+      showAdvanced: false,
     },
   ])
 
@@ -316,8 +337,64 @@ export function NewInvoiceModal({
     }
   }
 
+  // Categorized product catalog lists
+  const servicesList = useMemo(() => {
+    return products.filter(
+      (p) =>
+        p.is_service ||
+        p.entity_type === 'service' ||
+        p.product_type === 'service' ||
+        p.product_type === 'print_service' ||
+        p.product_type === 'fabrication_service' ||
+        p.product_type === 'installation_service' ||
+        p.pricing_method?.startsWith('per_') ||
+        p.unit === 'sft' ||
+        p.unit === 'sqft' ||
+        p.unit === 'rft'
+    )
+  }, [products])
+
+  const readyProductsList = useMemo(() => {
+    return products.filter(
+      (p) =>
+        p.is_ready_product ||
+        p.entity_type === 'product' ||
+        p.commercial_type === 'ready_product' ||
+        p.product_type === 'ready_product' ||
+        p.product_type === 'finished_product'
+    )
+  }, [products])
+
+  const materialsList = useMemo(() => {
+    return products.filter(
+      (p) =>
+        p.entity_type === 'material' ||
+        p.product_type === 'material' ||
+        (!servicesList.some((s) => s.id === p.id) && !readyProductsList.some((r) => r.id === p.id))
+    )
+  }, [products, servicesList, readyProductsList])
+
   // Line Item Handlers
   const handleProductSelect = (index: number, productId: string) => {
+    if (!productId) {
+      setItems((prev) => {
+        const next = [...prev]
+        next[index] = {
+          ...next[index],
+          productId: '',
+          item_kind: 'custom',
+          tier_applied: undefined,
+          moq: undefined,
+          pcs_per_carton: undefined,
+          available_dimension_presets: [],
+          available_finishing_options: [],
+          printable_material_name: undefined,
+        }
+        return next
+      })
+      return
+    }
+
     const prd = products.find((p) => p.id === productId)
     if (!prd) return
 
@@ -328,6 +405,7 @@ export function NewInvoiceModal({
       const defaultPrice = Number(prd.selling_price) || Number((prd as any).base_price) || 20
       let effectiveRate = defaultPrice
       let rateSrc: 'custom' | 'last_invoice' | 'default' = 'default'
+      let tierApplied: string | undefined = undefined
 
       if (customerId && customerRates.length > 0) {
         const resolved = customerRates.find((r) => r.productId === prd.id)
@@ -337,17 +415,146 @@ export function NewInvoiceModal({
         }
       }
 
-      const prdUnit = prd.unit || (prd as any).unit_of_measure || current.unit
+      const isService =
+        prd.is_service ||
+        prd.entity_type === 'service' ||
+        prd.product_type === 'service' ||
+        prd.product_type === 'print_service' ||
+        prd.product_type === 'fabrication_service' ||
+        prd.product_type === 'installation_service' ||
+        prd.pricing_method?.startsWith('per_') ||
+        prd.unit === 'sft' ||
+        prd.unit === 'sqft' ||
+        prd.unit === 'rft'
+
+      const isReady =
+        prd.is_ready_product ||
+        prd.entity_type === 'product' ||
+        prd.commercial_type === 'ready_product' ||
+        prd.product_type === 'ready_product' ||
+        prd.product_type === 'finished_product'
+
+      const isMat = prd.entity_type === 'material' || prd.product_type === 'material'
+
+      const itemKind: 'service' | 'ready_product' | 'material' | 'custom' = isService
+        ? 'service'
+        : isReady
+        ? 'ready_product'
+        : isMat
+        ? 'material'
+        : 'service'
+
+      // Tier price resolution for ready products if not overridden by rate map
+      if (isReady && prd.price_tiers && rateSrc === 'default') {
+        const cType = (customerType || selectedCustomer?.customer_type || 'retail').toLowerCase()
+        if (cType === 'corporate' && (prd.price_tiers['corporate'] || prd.price_tiers['corporate_price'])) {
+          effectiveRate = Number(prd.price_tiers['corporate'] ?? prd.price_tiers['corporate_price'])
+          tierApplied = 'Corporate Tier'
+        } else if ((cType === 'reseller' || cType === 'dealer') && (prd.price_tiers['dealer'] || prd.price_tiers['dealer_price'])) {
+          effectiveRate = Number(prd.price_tiers['dealer'] ?? prd.price_tiers['dealer_price'])
+          tierApplied = 'Dealer Tier'
+        } else if (cType === 'wholesale' && (prd.price_tiers['wholesale'] || prd.price_tiers['wholesale_price'])) {
+          effectiveRate = Number(prd.price_tiers['wholesale'] ?? prd.price_tiers['wholesale_price'])
+          tierApplied = 'Wholesale Tier'
+        } else if (cType === 'vip' && (prd.price_tiers['vip'] || prd.price_tiers['vip_price'])) {
+          effectiveRate = Number(prd.price_tiers['vip'] ?? prd.price_tiers['vip_price'])
+          tierApplied = 'VIP Tier'
+        }
+      }
+
+      const dimensionPresets =
+        prd.service_config?.dimension_presets ||
+        prd.service_config?.presets ||
+        (prd as any).dimension_presets ||
+        []
+
+      const finishingOptions =
+        prd.service_config?.finishing_options ||
+        (prd as any).finishing_options ||
+        []
+
+      const printableMaterial =
+        prd.service_config?.printable_material_name ||
+        prd.printable_material_name ||
+        prd.material_spec
+
+      let w = isReady ? '0' : (current.width || '4')
+      let h = isReady ? '0' : (current.height || '6')
+      let dimUnit = current.dimension_unit || (prd.service_config?.default_unit as any) || 'ft'
+
+      if (isService && (!current.width || current.width === '0') && (!current.height || current.height === '0')) {
+        if (dimensionPresets.length > 0) {
+          w = String(dimensionPresets[0].width || 4)
+          h = String(dimensionPresets[0].length || 6)
+          dimUnit = dimensionPresets[0].unit || 'ft'
+        } else {
+          w = '4'
+          h = '6'
+        }
+      }
+
+      const prdUnit = isReady
+        ? prd.selling_unit || prd.unit || (prd as any).unit_of_measure || 'pcs'
+        : prd.selling_unit || prd.unit || (prd as any).unit_of_measure || 'sft'
 
       next[index] = {
         ...current,
         productId: prd.id,
+        item_kind: itemKind,
+        product_type: prd.product_type,
         itemName: prd.name,
+        dimensions_spec: (prd.dimensions_spec || (isReady ? (prd as any).size_spec : undefined)) || undefined,
+        width: w,
+        height: h,
+        dimension_unit: dimUnit,
         unit: prdUnit,
         rate: effectiveRate,
         rateSource: rateSrc,
+        tier_applied: tierApplied,
+        moq: prd.min_order_quantity || undefined,
+        pcs_per_carton: (prd as any).pcs_per_carton || undefined,
+        unit_cost: Number(prd.effective_unit_cost ?? prd.base_cost) || 0,
         isManualRate: false,
+        available_dimension_presets: dimensionPresets,
+        available_finishing_options: finishingOptions,
+        printable_material_name: printableMaterial || undefined,
       }
+      return next
+    })
+  }
+
+  const handleToggleItemKind = (index: number, newKind: 'service' | 'ready_product') => {
+    setItems((prev) => {
+      const next = [...prev]
+      const current = next[index]
+      next[index] = {
+        ...current,
+        item_kind: newKind,
+        width: newKind === 'service' ? (current.width || '4') : '0',
+        height: newKind === 'service' ? (current.height || '6') : '0',
+        unit: newKind === 'service' ? 'sft' : 'pcs',
+      }
+      return next
+    })
+  }
+
+  const handleApplyPreset = (index: number, preset: { width: number; length: number; unit?: string }) => {
+    setItems((prev) => {
+      const next = [...prev]
+      next[index] = {
+        ...next[index],
+        width: String(preset.width),
+        height: String(preset.length),
+        dimension_unit: preset.unit || next[index].dimension_unit || 'ft',
+      }
+      return next
+    })
+  }
+
+  const handleToggleAdvanced = (index: number) => {
+    setItems((prev) => {
+      const next = [...prev]
+      next[index] = { ...next[index], showAdvanced: !next[index].showAdvanced }
       return next
     })
   }
@@ -366,7 +573,7 @@ export function NewInvoiceModal({
   }
 
   const handleAddItem = () => {
-    const defaultProduct = products[0]
+    const defaultProduct = servicesList[0] || products[0]
     const defaultPrice = defaultProduct
       ? Number(defaultProduct.selling_price) || Number((defaultProduct as any).base_price) || 25
       : 25
@@ -377,14 +584,67 @@ export function NewInvoiceModal({
       {
         id: `item-${Date.now()}-${prev.length + 1}`,
         productId: defaultProduct?.id || '',
+        item_kind: 'service',
         itemName: defaultProduct?.name || 'Printing Service Item',
         width: '4',
         height: '6',
+        dimension_unit: 'ft',
         quantity: 1,
         unit: defaultUnit,
         rate: defaultPrice,
         finishing: 'None',
         rateSource: 'default',
+        showAdvanced: false,
+      },
+    ])
+  }
+
+  const handleAddReadyProductItem = () => {
+    const defaultProduct = readyProductsList[0] || products.find((p) => p.entity_type === 'product')
+    const defaultPrice = defaultProduct ? Number(defaultProduct.selling_price) || 500 : 500
+    const defaultUnit = defaultProduct ? defaultProduct.selling_unit || defaultProduct.unit || 'pcs' : 'pcs'
+
+    setItems((prev) => [
+      ...prev,
+      {
+        id: `item-${Date.now()}-${prev.length + 1}`,
+        productId: defaultProduct?.id || '',
+        item_kind: 'ready_product',
+        itemName: defaultProduct?.name || 'Ready Product / Display Stand',
+        width: '0',
+        height: '0',
+        dimension_unit: 'ft',
+        quantity: 1,
+        unit: defaultUnit,
+        rate: defaultPrice,
+        finishing: 'None',
+        rateSource: 'default',
+        dimensions_spec: defaultProduct?.dimensions_spec || undefined,
+        moq: defaultProduct?.min_order_quantity || undefined,
+        pcs_per_carton: (defaultProduct as any)?.pcs_per_carton || undefined,
+        unit_cost: Number(defaultProduct?.effective_unit_cost ?? defaultProduct?.base_cost) || 0,
+        showAdvanced: false,
+      },
+    ])
+  }
+
+  const handleAddCustomItem = () => {
+    setItems((prev) => [
+      ...prev,
+      {
+        id: `item-${Date.now()}-${prev.length + 1}`,
+        productId: '',
+        item_kind: 'custom',
+        itemName: 'Custom Line Item',
+        width: '4',
+        height: '6',
+        dimension_unit: 'ft',
+        quantity: 1,
+        unit: 'sft',
+        rate: 0,
+        finishing: 'None',
+        rateSource: 'custom',
+        showAdvanced: false,
       },
     ])
   }
@@ -401,11 +661,18 @@ export function NewInvoiceModal({
       const rate = Math.max(0, Number(item.rate) || 0)
       const w = Number(item.width) || 0
       const h = Number(item.height) || 0
+      const isReady = item.item_kind === 'ready_product'
 
       let lineTotal = 0
       let area = 0
-      if (w > 0 && h > 0 && (item.unit === 'sft' || item.unit === 'sqft' || item.unit === 'sqin')) {
-        area = item.unit === 'sqin' ? (w * h) / 144 : w * h
+      if (!isReady && w > 0 && h > 0 && (item.unit === 'sft' || item.unit === 'sqft' || item.unit === 'sqin' || item.dimension_unit === 'ft' || item.dimension_unit === 'inch' || item.dimension_unit === 'm')) {
+        if (item.dimension_unit === 'inch' || item.unit === 'sqin') {
+          area = (w * h) / 144
+        } else if (item.dimension_unit === 'm') {
+          area = w * h * 10.7639
+        } else {
+          area = w * h
+        }
         lineTotal = Math.round(area * qty * rate)
       } else {
         lineTotal = Math.round(qty * rate)
@@ -482,12 +749,20 @@ export function NewInvoiceModal({
 
     const payloadItems: CreateInvoiceItemInput[] = calculatedItems.map((it) => ({
       product_id: it.productId || undefined,
+      item_kind: it.item_kind || (it.width && it.height ? 'service' : 'ready_product'),
+      product_type: it.product_type || undefined,
       item_name: it.itemName,
+      dimensions_spec: it.dimensions_spec || undefined,
       width: Number(it.width) || undefined,
       height: Number(it.height) || undefined,
+      dimension_unit: it.dimension_unit || undefined,
+      area_sft: it.area ? Number(it.area.toFixed(2)) : undefined,
       quantity: Number(it.quantity) || 1,
       unit: it.unit,
       unit_price: Number(it.rate) || 0,
+      tier_applied: it.tier_applied || undefined,
+      moq: it.moq || undefined,
+      unit_cost: it.unit_cost || undefined,
       finishing: it.finishing,
       total_price: it.lineTotal,
     }))
@@ -881,94 +1156,234 @@ export function NewInvoiceModal({
         </div>
 
         {/* =========================================================================
-            SECTION 2: INVOICE ITEMS & PRINT SPECS
+            SECTION 2: INVOICE ITEMS & SPECS (PRODUCT & SERVICE AWARE)
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 2
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Line Items & Print Specs
-              </h3>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Invoice Items & Specs ({items.length})
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  Billing & Fulfillment: Supports Printing Services, Ready Products & Hardware, and Materials.
+                </p>
+              </div>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddItem}
-              className="h-7 text-xs font-bold gap-1 text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/30"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add Line Item
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddItem}
+                className="h-7 text-xs font-bold gap-1 text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/30 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add Service / Catalog Item
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddReadyProductItem}
+                className="h-7 text-xs font-bold gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add Ready Product
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddCustomItem}
+                className="h-7 text-xs font-bold gap-1 text-amber-700 border-amber-300 bg-amber-50/50 hover:bg-amber-100 dark:bg-amber-950/30 cursor-pointer"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Add Custom Item
+              </Button>
+            </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {items.map((item, index) => {
               const calc = calculatedItems[index]
-              const isDimensionUnit = item.unit === 'sft' || item.unit === 'sqin' || item.unit === 'sqft'
+              const isService = item.item_kind === 'service' || (item.item_kind !== 'ready_product' && item.item_kind !== 'material' && Boolean(Number(item.width) > 0 && Number(item.height) > 0))
+              const isReadyProduct = item.item_kind === 'ready_product'
+              const isMaterial = item.item_kind === 'material'
+              const isCustom = !item.productId
+
+              // Internal estimated economics
+              const estimatedUnitCost = item.unit_cost || 0
+              const estimatedDirectCost = isService ? (calc?.area || 1) * (Number(item.quantity) || 1) * estimatedUnitCost : (Number(item.quantity) || 1) * estimatedUnitCost
+              const total = Number(calc?.lineTotal) || 0
+              const estMarginPercent = total > 0 && estimatedDirectCost > 0
+                ? Math.round(((total - estimatedDirectCost) / total) * 100)
+                : 0
 
               return (
                 <div
                   key={item.id}
-                  className="p-3 bg-slate-50/70 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs"
+                  className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5 transition-all"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1">
-                      <span className="h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-[10px] shrink-0">
-                        {index + 1}
+                  {/* Item Header & Badges */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
+                        Item #{index + 1}
                       </span>
-                      <select
-                        value={item.productId || ''}
-                        onChange={(e) => {
-                          const pId = e.target.value
-                          const p = products.find((x) => x.id === pId)
-                          if (p) {
-                            handleItemChange(index, 'productId', p.id)
-                            handleItemChange(index, 'itemName', p.name)
-                            handleItemChange(index, 'unit', p.selling_unit || (p as any).sell_unit || p.unit || 'pcs')
-                            handleItemChange(index, 'rate', p.selling_price || 0)
-                          } else {
-                            handleItemChange(index, 'productId', '')
-                          }
-                        }}
-                        className="h-8 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium max-w-[200px]"
-                      >
-                        <option value="">-- Select Active Item --</option>
-                        {products
-                          .filter((p) => p.is_active !== false && p.entity_type !== 'material')
-                          .map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name} ({p.entity_type === 'service' ? 'Service' : 'Product'})
-                            </option>
-                          ))}
-                      </select>
-                      <Input
-                        placeholder="Item Description / Service Name"
-                        value={item.itemName}
-                        onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                        className="h-8 text-xs font-bold flex-1 min-w-[140px]"
-                        required
-                      />
+
+                      {/* Item Kind Badge */}
+                      {isService && (
+                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-[10px] font-bold">
+                          🖨️ Printing & Service
+                        </Badge>
+                      )}
+                      {isReadyProduct && (
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] font-bold">
+                          📦 Ready Product
+                        </Badge>
+                      )}
+                      {isMaterial && (
+                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-[10px] font-bold">
+                          🧵 Raw Material
+                        </Badge>
+                      )}
+                      {isCustom && (
+                        <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] font-bold">
+                          ✨ Custom Item
+                        </Badge>
+                      )}
+
+                      {/* Tier Rate Applied Badge */}
+                      {item.tier_applied && (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 text-[10px] font-bold">
+                          💎 {item.tier_applied}
+                        </Badge>
+                      )}
+
+                      {/* Rate Source */}
                       {getRateBadge(item.rateSource)}
+
+                      {/* MOQ Notice */}
+                      {item.moq && item.quantity < item.moq && (
+                        <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3 text-amber-600" />
+                          Below MOQ ({item.moq} {item.unit})
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-sm text-slate-900 dark:text-white">
-                        {formatBDT(calc?.lineTotal || 0)}
-                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleAdvanced(index)}
+                        className="h-7 px-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 text-xs font-semibold cursor-pointer"
+                      >
+                        {item.showAdvanced ? 'Simple Specs' : 'More Specs'}
+                      </Button>
+
                       {items.length > 1 && (
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleRemoveItem(index)}
-                          className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                          className="h-7 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs cursor-pointer"
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                          <Trash2 className="h-3.5 w-3.5 mr-1" />
+                          Remove
+                        </Button>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Primary Product Selection & Description */}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <div className="sm:col-span-5">
+                      <Label className="text-xs font-semibold mb-1 block">Select Catalog Item</Label>
+                      <select
+                        value={item.productId || ''}
+                        onChange={(e) => handleProductSelect(index, e.target.value)}
+                        className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
+                      >
+                        <option value="">-- Custom Item (No Catalog) --</option>
+
+                        {servicesList.length > 0 && (
+                          <optgroup label="🖨️ Printing & Fabrication Services">
+                            {servicesList.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} ({p.unit || 'sft'}) - ৳{p.selling_price}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+
+                        {readyProductsList.length > 0 && (
+                          <optgroup label="📦 Ready Products & Display Hardware">
+                            {readyProductsList.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} ({p.unit || 'pcs'}) - ৳{p.selling_price}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+
+                        {materialsList.length > 0 && (
+                          <optgroup label="🧵 Raw Materials">
+                            {materialsList.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} ({p.unit || 'roll'}) - ৳{p.selling_price}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-7">
+                      <div className="flex items-center justify-between mb-1">
+                        <Label className="text-xs font-semibold block">
+                          Item Description / Service Name <span className="text-rose-500">*</span>
+                        </Label>
+                        {isCustom && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-400 mr-1">Mode:</span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleItemKind(index, 'service')}
+                              className={cn(
+                                'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                                isService ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
+                              )}
+                            >
+                              📐 Sqft Area
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleItemKind(index, 'ready_product')}
+                              className={cn(
+                                'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                                isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
+                              )}
+                            >
+                              📦 Unit Pcs
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <Input
+                        placeholder="e.g. Star Flex Banner 40ft × 20ft with Eyelets"
+                        value={item.itemName}
+                        onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
+                        className="text-xs h-9 font-medium"
+                        required
+                      />
                     </div>
                   </div>
 
@@ -1035,95 +1450,308 @@ export function NewInvoiceModal({
                     return null
                   })()}
 
-                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1">
-                    {/* Dimension W */}
-                    <div>
-                      <Label className="text-[10px] text-slate-400 font-semibold mb-0.5 block">Width</Label>
-                      <Input
-                        type="number"
-                        placeholder="Width"
-                        value={item.width}
-                        onChange={(e) => handleItemChange(index, 'width', e.target.value)}
-                        className="h-8 text-xs font-mono"
-                      />
-                    </div>
-
-                    {/* Dimension H */}
-                    <div>
-                      <Label className="text-[10px] text-slate-400 font-semibold mb-0.5 block">Height</Label>
-                      <Input
-                        type="number"
-                        placeholder="Height"
-                        value={item.height}
-                        onChange={(e) => handleItemChange(index, 'height', e.target.value)}
-                        className="h-8 text-xs font-mono"
-                      />
-                    </div>
-
-                    {/* Quantity */}
-                    <div>
-                      <Label className="text-[10px] text-slate-400 font-semibold mb-0.5 block">Qty</Label>
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                        className="h-8 text-xs font-mono font-bold"
-                        min={1}
-                        required
-                      />
-                    </div>
-
-                    {/* Unit */}
-                    <div>
-                      <Label className="text-[10px] text-slate-400 font-semibold mb-0.5 block">Unit</Label>
-                      <select
-                        value={item.unit}
-                        onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                        className="w-full h-8 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
-                      >
-                        {UNIT_OPTIONS.map((u) => (
-                          <option key={u.value} value={u.value}>
-                            {u.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Rate */}
-                    <div>
-                      <Label className="text-[10px] text-slate-400 font-semibold mb-0.5 block">Rate (৳)</Label>
-                      <Input
-                        type="number"
-                        value={item.rate}
-                        onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
-                        className="h-8 text-xs font-mono font-bold"
-                        min={0}
-                        required
-                      />
-                    </div>
-
-                    {/* Finishing */}
-                    <div>
-                      <Label className="text-[10px] text-slate-400 font-semibold mb-0.5 block">Finishing</Label>
-                      <select
-                        value={item.finishing}
-                        onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
-                        className="w-full h-8 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2"
-                      >
-                        {FINISHING_OPTIONS.map((f) => (
-                          <option key={f} value={f}>
-                            {f}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {isDimensionUnit && calc && calc.area > 0 && (
-                    <div className="text-[11px] text-slate-500 font-mono">
-                      Area: <strong>{calc.area.toFixed(2)} {item.unit.toUpperCase()}</strong> • Total SFT: <strong>{(calc.area * item.quantity).toFixed(2)}</strong>
+                  {/* Dimension Presets for Services */}
+                  {isService && item.available_dimension_presets && item.available_dimension_presets.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                      <span className="text-[11px] font-bold text-slate-400 mr-1">Standard Sizes:</span>
+                      {item.available_dimension_presets.map((preset, pIdx) => (
+                        <button
+                          key={pIdx}
+                          type="button"
+                          onClick={() => handleApplyPreset(index, preset)}
+                          className={cn(
+                            'px-2 py-0.5 rounded-md text-[11px] font-semibold border transition-all cursor-pointer',
+                            item.width === String(preset.width) && item.height === String(preset.length)
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                          )}
+                        >
+                          {preset.label || `${preset.width} × ${preset.length} ${preset.unit || 'ft'}`}
+                        </button>
+                      ))}
                     </div>
                   )}
+
+                  {/* SERVICE CONTROLS (Width × Height + Unit + Qty + Rate + Dynamic Finishing) */}
+                  {isService && (
+                    <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Width</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="0"
+                          value={item.width}
+                          onChange={(e) => handleItemChange(index, 'width', e.target.value)}
+                          className="text-xs h-9 font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Height</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="0"
+                          value={item.height}
+                          onChange={(e) => handleItemChange(index, 'height', e.target.value)}
+                          className="text-xs h-9 font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Dim. Unit</Label>
+                        <select
+                          value={item.dimension_unit || 'ft'}
+                          onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
+                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                        >
+                          <option value="ft">ft (ফুট)</option>
+                          <option value="inch">inch (ইঞ্চি)</option>
+                          <option value="m">m (মিটার)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Qty (Prints)</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
+                          className="text-xs h-9 font-mono font-bold"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Rate / sft (৳)</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          value={item.rate}
+                          onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
+                          className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Finishing</Label>
+                        <select
+                          value={item.finishing || 'None'}
+                          onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
+                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                        >
+                          <option value="None">None</option>
+                          {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
+                            item.available_finishing_options.map((f) => (
+                              <option key={f.id} value={f.name}>
+                                {f.name} {f.unit_price ? `(+৳${f.unit_price})` : ''}
+                              </option>
+                            ))
+                          ) : (
+                            FINISHING_OPTIONS.map((f) => (
+                              <option key={f} value={f}>
+                                {f}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* READY PRODUCT CONTROLS (Physical Spec + Discrete Unit + Qty + Rate) */}
+                  {isReadyProduct && (
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                      <div className="sm:col-span-5 flex flex-col justify-center">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Physical Specs & Packaging</span>
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                          {item.dimensions_spec ? (
+                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[11px]">
+                              📐 {item.dimensions_spec}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 italic text-[11px]">Standard Factory Size</span>
+                          )}
+                          {item.pcs_per_carton ? (
+                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">
+                              📦 {item.pcs_per_carton} pcs/box
+                            </span>
+                          ) : null}
+                          {item.moq ? (
+                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">
+                              Min Order: {item.moq} {item.unit}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="sm:col-span-3">
+                        <Label className="text-[11px] font-semibold mb-1 block">Quantity</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
+                          className="text-xs h-9 font-mono font-bold"
+                          required
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <Label className="text-[11px] font-semibold mb-1 block">Unit</Label>
+                        <select
+                          value={item.unit}
+                          onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                        >
+                          <option value="pcs">pcs (পিস)</option>
+                          <option value="set">set (সেট)</option>
+                          <option value="pack">pack (প্যাক)</option>
+                          <option value="box">box (বক্স)</option>
+                          <option value="pair">pair (জোড়া)</option>
+                          <option value="carton">carton (কার্টুন)</option>
+                        </select>
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <Label className="text-[11px] font-semibold mb-1 block">Unit Price (৳)</Label>
+                        <Input
+                          type="number"
+                          step="1"
+                          value={item.rate}
+                          onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
+                          className="text-xs h-9 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* RAW MATERIAL CONTROLS */}
+                  {isMaterial && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Quantity</Label>
+                        <Input
+                          type="number"
+                          min="0.1"
+                          step="0.1"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
+                          className="text-xs h-9 font-mono font-bold"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Usage Unit</Label>
+                        <select
+                          value={item.unit}
+                          onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                        >
+                          <option value="roll">roll (রোল)</option>
+                          <option value="sheet">sheet (শিট)</option>
+                          <option value="sft">sft (স্কয়ার ফুট)</option>
+                          <option value="rft">rft (রানিং ফুট)</option>
+                          <option value="kg">kg (কেজি)</option>
+                          <option value="liter">liter (লিটার)</option>
+                          <option value="pcs">pcs (পিস)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Rate / Unit (৳)</Label>
+                        <Input
+                          type="number"
+                          step="1"
+                          value={item.rate}
+                          onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
+                          className="text-xs h-9 font-mono font-bold text-purple-600 dark:text-purple-400"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Material Spec</Label>
+                        <Input
+                          placeholder="e.g. 280 GSM Frontlit"
+                          value={item.dimensions_spec || ''}
+                          onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
+                          className="text-xs h-9"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Substrate / Printable Material pill for service */}
+                  {isService && item.printable_material_name && (
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                      <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                      <span>Linked Substrate: <strong>{item.printable_material_name}</strong></span>
+                    </div>
+                  )}
+
+                  {/* Advanced Specs Drawer */}
+                  {(item.showAdvanced || isAdvancedMode) && (
+                    <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-xs animate-in fade-in-0">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                        Advanced Production Specs
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-[11px] font-semibold mb-1 block">Material / Structure Spec</Label>
+                          <Input
+                            placeholder="e.g. 3mm Cast Acrylic, 280 GSM Frontlit"
+                            value={item.dimensions_spec || ''}
+                            onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
+                            className="text-xs h-8"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[11px] font-semibold mb-1 block">Item Internal Cost (৳)</Label>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            value={item.unit_cost || ''}
+                            onChange={(e) => handleItemChange(index, 'unit_cost', Number(e.target.value) || 0)}
+                            className="text-xs h-8 font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Line Calculation Summary HUD */}
+                  <div className="flex flex-wrap items-center justify-between text-xs pt-1.5 px-1 text-slate-500 font-medium border-t border-slate-200/50 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                      {(calc?.area || 0) > 0 ? (
+                        <span>
+                          Area: <strong>{calc?.area.toFixed(2)} sft</strong> ({item.width}ft × {item.height}ft × {item.quantity})
+                        </span>
+                      ) : (
+                        <span>
+                          Quantity: <strong>{item.quantity} {item.unit}</strong>
+                        </span>
+                      )}
+
+                      {estimatedDirectCost > 0 && (
+                        <span className="text-[11px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono">
+                          Est. Cost: ৳{Math.round(estimatedDirectCost)} • Margin: {estMarginPercent}%
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-[11px] text-slate-400 mr-2">Line Total:</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
+                        {formatBDT(calc?.lineTotal || 0)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               )
             })}
