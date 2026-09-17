@@ -86,7 +86,7 @@ export function MaterialConfigModal({
   // Roll Geometry
   const [availableWidths, setAvailableWidths] = useState<number[]>([10])
   const [standardRollLength, setStandardRollLength] = useState<number | string>(164)
-  const [extraWidthAllowance, setExtraWidthAllowance] = useState<number | string>(0.25)
+  const [extraWidthAllowance, setExtraWidthAllowance] = useState<number | string>(0)
   const [newWidthInput, setNewWidthInput] = useState<string>('10')
 
   // Sheet Geometry
@@ -198,7 +198,7 @@ export function MaterialConfigModal({
         ? initialData.production_width_allowance
         : formula.production_width_allowance !== undefined
         ? formula.production_width_allowance
-        : 0.25
+        : 0
       setExtraWidthAllowance(rawAllowance)
       setUsageUnit((matCfg.usage_unit as any) || initialData.unit || initialData.selling_unit || 'sft')
       setWastePercent(matCfg.waste_percent ?? initialData.default_wastage_percentage ?? 5)
@@ -263,7 +263,7 @@ export function MaterialConfigModal({
       ])
       setNewSheetWidthInput('4')
       setNewSheetLengthInput('8')
-      setExtraWidthAllowance(0.25)
+      setExtraWidthAllowance(0)
       setUsageUnit('sft')
       setWastePercent(5)
       setReorderLevel(5)
@@ -467,7 +467,7 @@ export function MaterialConfigModal({
         : (!isNaN(parsedInput) && parsedInput > 0 ? [parsedInput] : [10])
 
       const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : parseFloat(extraWidthAllowance)
-      const finalAllowance = isNaN(parsedAllowance) ? 0.25 : parsedAllowance
+      const finalAllowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
 
       const parsedLength = typeof standardRollLength === 'number' ? standardRollLength : parseFloat(standardRollLength)
       const finalLength = isNaN(parsedLength) || parsedLength <= 0 ? 164 : parsedLength
@@ -824,7 +824,7 @@ export function MaterialConfigModal({
                           type="number"
                           step="any"
                           min="0"
-                          placeholder="0.25"
+                          placeholder="0"
                           value={extraWidthAllowance}
                           onChange={(e) => {
                             const val = e.target.value
