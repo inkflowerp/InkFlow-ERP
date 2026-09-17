@@ -817,9 +817,27 @@ export default function ProductsCatalogPage() {
 
   const handleOpenEdit = (p: ProductRecord) => {
     setEditingProduct(p)
-    if (p.entity_type === 'service' || p.product_type === 'print_service' || p.product_type === 'service') {
+    const isService =
+      p.entity_type === 'service' ||
+      p.product_type === 'print_service' ||
+      p.product_type === 'service' ||
+      p.commercial_type === 'service' ||
+      p.commercial_type === 'installation' ||
+      p.commercial_type === 'delivery'
+    const isMaterial =
+      p.entity_type === 'material' ||
+      p.product_type === 'material' ||
+      p.commercial_type === 'material' ||
+      p.category === 'materials' ||
+      p.category === 'roll_media' ||
+      p.category === 'rigid_sheets' ||
+      p.category === 'inks' ||
+      p.category === 'hardware_stock' ||
+      Boolean(p.material_config)
+
+    if (isService) {
       setIsServiceModalOpen(true)
-    } else if (p.entity_type === 'material' || p.product_type === 'material') {
+    } else if (isMaterial) {
       setIsMaterialModalOpen(true)
     } else {
       setIsReadyProductModalOpen(true)

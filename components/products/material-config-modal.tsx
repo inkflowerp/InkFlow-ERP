@@ -147,11 +147,20 @@ export function MaterialConfigModal({
       setSku(initialData.sku || '')
       setCategory(initialData.category || 'materials')
       setIsActive(initialData.is_active !== false)
-      setDescription(initialData.description || '')
+      setDescription(initialData.description || initialData.material_spec || '')
       setPurchaseUnit(initialData.purchase_unit || 'roll')
 
       const matCfg: MaterialConfiguration = initialData.material_config || {}
-      setMaterialType(matCfg.material_type || (initialData.purchase_unit === 'roll' ? 'roll' : initialData.purchase_unit === 'sheet' ? 'sheet' : 'roll'))
+      setMaterialType(
+        matCfg.material_type ||
+          (initialData.purchase_unit === 'sheet'
+            ? 'sheet'
+            : initialData.purchase_unit === 'bottle' || initialData.purchase_unit === 'liter'
+            ? 'liquid'
+            : initialData.purchase_unit === 'box' || initialData.purchase_unit === 'piece'
+            ? 'accessory'
+            : 'roll')
+      )
       
       const stdLen = matCfg.standard_roll_length_ft || initialData.standard_roll_length_ft || 164
       const widths = matCfg.available_widths_ft || initialData.available_widths_ft || [10]
@@ -169,7 +178,7 @@ export function MaterialConfigModal({
         setNewSheetLengthInput(sheets[sheets.length - 1].length.toString())
       }
       setExtraWidthAllowance(matCfg.extra_width_allowance_ft ?? (initialData.production_width_allowance ?? 0.25))
-      setUsageUnit((matCfg.usage_unit as any) || initialData.unit || 'sft')
+      setUsageUnit((matCfg.usage_unit as any) || initialData.unit || initialData.selling_unit || 'sft')
       setWastePercent(matCfg.waste_percent ?? (initialData.default_wastage_percentage ?? 5))
       setReorderLevel(matCfg.reorder_level || initialData.min_order_quantity || 5)
       setThicknessMm(matCfg.thickness_mm || '')
@@ -183,26 +192,33 @@ export function MaterialConfigModal({
       const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
       const currentW = widths.length > 0 ? widths[widths.length - 1] : 10
       const effectiveW = currentW + allowance
+      const rollArea = Number((effectiveW * parsedStdLen).toFixed(2))
       const area = (matCfg.material_type === 'sheet' || initialData.purchase_unit === 'sheet')
         ? ((sheets[0]?.width || 4) * (sheets[0]?.length || 8))
-        : Number((effectiveW * parsedStdLen).toFixed(2))
+        : (initialData.purchase_unit === 'box' || initialData.purchase_unit === 'pack')
+        ? (Number(matCfg.pack_quantity) || 1000)
+        : rollArea
 
-      const rawPurPrice = initialData.purchase_price || matCfg.purchase_price || ''
-      const rawBaseCost = initialData.base_cost || matCfg.effective_unit_cost || ''
+      const rawPerSftPrice = matCfg.purchase_price_per_sft
+      const rawPurPrice = initialData.purchase_price ?? matCfg.purchase_price
+      const rawBaseCost = initialData.base_cost ?? matCfg.effective_unit_cost
 
-      if (rawPurPrice !== '' && Number(rawPurPrice) > 0) {
+      if (rawPerSftPrice !== undefined && Number(rawPerSftPrice) > 0) {
+        setPurchasePricePerSft(rawPerSftPrice)
+        setPurchasePrice(Number((Number(rawPerSftPrice) * area).toFixed(2)))
+      } else if (rawPurPrice !== undefined && Number(rawPurPrice) > 0) {
         setPurchasePrice(rawPurPrice)
         if (area > 0) {
           setPurchasePricePerSft(Number((Number(rawPurPrice) / area).toFixed(2)))
         }
-      } else if (rawBaseCost !== '' && Number(rawBaseCost) > 0) {
+      } else if (rawBaseCost !== undefined && Number(rawBaseCost) > 0) {
         setPurchasePricePerSft(rawBaseCost)
         setPurchasePrice(Number((Number(rawBaseCost) * area).toFixed(2)))
       } else {
         setPurchasePrice('')
         setPurchasePricePerSft('')
       }
-    } else {
+    } else if (!initialData && isOpen) {
       setName('')
       setNameBn('')
       setSku(`MAT-${Date.now().toString().slice(-5)}`)
@@ -438,6 +454,7 @@ export function MaterialConfigModal({
         extra_width_allowance_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? finalAllowance : undefined,
         purchase_unit: purchaseUnit,
         purchase_price: pp,
+        purchase_price_per_sft: purchasePricePerSft !== '' ? Number(purchasePricePerSft) : undefined,
         usage_unit: usageUnit,
         waste_percent: wastePercent,
         effective_unit_cost: calculatedEconomics.effectiveCost,
@@ -462,14 +479,15 @@ export function MaterialConfigModal({
         purchase_unit: purchaseUnit,
         purchase_price: pp,
         base_cost: baseDirectCost,
-        selling_price: 0,
+        selling_price: initialData?.selling_price || 0,
         default_wastage_percentage: wastePercent,
-        target_margin_percentage: 35.0,
-        min_allowed_margin_percent: 15.0,
-        pricing_method: 'per_piece',
+        target_margin_percentage: initialData?.target_margin_percentage || 35.0,
+        min_allowed_margin_percent: initialData?.min_allowed_margin_percent || 15.0,
+        pricing_method: initialData?.pricing_method || 'per_piece',
         cost_basis_type: 'direct_cost',
         is_active: isActive,
         description: description.trim() || undefined,
+        material_spec: description.trim() || undefined,
         available_widths_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? finalWidths : undefined,
         standard_roll_length_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? finalLength : undefined,
         production_width_allowance: (materialType === 'roll' || purchaseUnit === 'roll') ? finalAllowance : undefined,

@@ -46,8 +46,12 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { MaterialConfigModal } from '@/components/products/material-config-modal'
+import { ServiceConfigModal } from '@/components/products/service-config-modal'
+import { ReadyProductModal } from '@/components/products/ready-product-modal'
 import {
   getProductByIdAction,
+  updateProductAction,
   updateProductPriceAction,
   archiveProductAction,
   deleteProductAction,
@@ -113,6 +117,9 @@ export default function ProductDetailPage() {
 
   // Modals
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false)
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
+  const [isReadyProductModalOpen, setIsReadyProductModalOpen] = useState(false)
   const [newPrice, setNewPrice] = useState<number>(0)
   const [newPurchasePrice, setNewPurchasePrice] = useState<number>(0)
   const [newTargetMargin, setNewTargetMargin] = useState<number>(35)
@@ -136,6 +143,43 @@ export default function ProductDetailPage() {
   // Delete Safety
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [deletionSafety, setDeletionSafety] = useState<{ isSafe: boolean; references: any; reason?: string } | null>(null)
+
+  const handleOpenEdit = () => {
+    if (!product) return
+    const isService =
+      product.entity_type === 'service' ||
+      product.product_type === 'print_service' ||
+      product.product_type === 'service' ||
+      product.commercial_type === 'service' ||
+      product.commercial_type === 'installation' ||
+      product.commercial_type === 'delivery'
+    const isMaterial =
+      product.entity_type === 'material' ||
+      product.product_type === 'material' ||
+      product.commercial_type === 'material' ||
+      product.category === 'materials' ||
+      product.category === 'roll_media' ||
+      product.category === 'rigid_sheets' ||
+      product.category === 'inks' ||
+      product.category === 'hardware_stock' ||
+      Boolean(product.material_config)
+
+    if (isService) {
+      setIsServiceModalOpen(true)
+    } else if (isMaterial) {
+      setIsMaterialModalOpen(true)
+    } else {
+      setIsReadyProductModalOpen(true)
+    }
+  }
+
+  const handleSaveProductConfig = async (productData: Partial<ProductRecord>) => {
+    if (!product) return
+    const res = await updateProductAction(product.id, productData, companyId)
+    if (!res.success) throw new Error(res.error || 'Failed to update item.')
+    showNotification(`Updated '${productData.name || product.name}' successfully.`)
+    await loadProductData()
+  }
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ message, type })
@@ -534,8 +578,18 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <Button
               size="sm"
-              onClick={() => setIsPriceModalOpen(true)}
+              onClick={handleOpenEdit}
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs"
+            >
+              <Boxes className="mr-1.5 h-3.5 w-3.5" />
+              Edit {product.entity_type === 'material' || product.product_type === 'material' || product.commercial_type === 'material' || Boolean(product.material_config) ? 'Material' : 'Product'}
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsPriceModalOpen(true)}
+              className="text-xs font-bold text-slate-700 dark:text-slate-200"
             >
               <Edit3 className="mr-1.5 h-3.5 w-3.5" />
               Adjust Price
@@ -1575,6 +1629,28 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </ModalDialog>
+
+      {/* Edit Configuration Modals */}
+      <MaterialConfigModal
+        isOpen={isMaterialModalOpen}
+        onClose={() => setIsMaterialModalOpen(false)}
+        onSave={handleSaveProductConfig}
+        initialData={product}
+      />
+
+      <ServiceConfigModal
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        onSave={handleSaveProductConfig}
+        initialData={product}
+      />
+
+      <ReadyProductModal
+        isOpen={isReadyProductModalOpen}
+        onClose={() => setIsReadyProductModalOpen(false)}
+        onSave={handleSaveProductConfig}
+        initialData={product}
+      />
     </div>
   )
 }

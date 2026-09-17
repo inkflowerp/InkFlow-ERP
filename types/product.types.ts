@@ -682,6 +682,7 @@ export interface MaterialConfiguration {
   extra_width_allowance_ft?: number
   purchase_unit?: string
   purchase_price?: number
+  purchase_price_per_sft?: number
   usage_unit?: string
   conversion_ratio?: number
   default_allowance_per_side_in?: number
