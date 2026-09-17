@@ -727,7 +727,7 @@ export interface MaterialRollSizeConfig {
 }
 
 export interface MaterialConfiguration {
-  material_type?: 'roll' | 'sheet' | 'rigid' | 'liquid' | 'hardware' | 'accessory'
+  material_type?: 'roll' | 'sheet' | 'rigid' | 'liquid' | 'hardware' | 'accessory' | 'electrical'
   available_widths_ft?: number[]
   roll_sizes?: MaterialRollSizeConfig[]
   standard_roll_length_ft?: number

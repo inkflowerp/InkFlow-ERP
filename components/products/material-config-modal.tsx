@@ -62,6 +62,59 @@ const COMMON_USAGE_UNITS: { value: UnitOfMeasure; label: string }[] = [
   { value: 'kg', label: 'Kilogram (কেজি)' },
 ]
 
+export const MATERIAL_TYPE_CATEGORIES: Record<
+  'roll' | 'sheet' | 'liquid' | 'rigid' | 'accessory' | 'electrical',
+  Array<{ id: string; name: string; name_bn?: string; defaultPurchaseUnit: string; defaultUsageUnit: UnitOfMeasure }>
+> = {
+  roll: [
+    { id: 'flex_banner', name: 'PVC Flex Banner (Frontlit / Backlit / Blackout)', name_bn: 'পিভিসি ব্যানার রোল (ফ্রন্টলিট / ব্যাকলিট)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'adhesive_vinyl', name: 'Self-Adhesive Vinyl (Gloss / Matt / Clear / Frosted)', name_bn: 'ভিনাইল স্টিকার রোল (গ্লস / ম্যাট / ফ্রস্টেড)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'one_way_vision', name: 'One-Way Vision Window Perforated Film', name_bn: 'ওয়ান-ওয়ে ভিশন গ্লাস ফিল্ম', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'reflective_vinyl', name: 'Reflective & Specialty Vinyl Sheeting', name_bn: 'রিফ্লেক্টিভ স্টিকার রোল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'lamination_rolls', name: 'Thermal & Cold Lamination Film Rolls', name_bn: 'ল্যামিনেশন ফিল্ম রোল (থার্মাল / কোল্ড)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'canvas_fabrics', name: 'Canvas, Satin & Textile Print Fabrics', name_bn: 'ক্যানভাস ও টেক্সটাইল ফেব্রিক রোল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'photo_papers', name: 'High-Gloss Photo Paper & PP Synthetic Rolls', name_bn: 'ফটো পেপার ও সিন্থেটিক মিডিয়া রোল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'mesh_backlit', name: 'Mesh Banner & Backlit PET Film Rolls', name_bn: 'মেশ ও ব্যাকলিট ফিল্ম রোল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+  ],
+  sheet: [
+    { id: 'pvc_foam_board', name: 'PVC Foam Sheet & Sunboard (3mm–18mm)', name_bn: 'পিভিসি ফোম বোর্ড ও সানবোর্ড', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
+    { id: 'acrylic_sheets', name: 'Cast Acrylic Sheets (Clear / Opal / Color 2mm–12mm)', name_bn: 'কাস্ট এক্রিলিক শীট (স্বচ্ছ / কালার)', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
+    { id: 'acp_sheets', name: 'Aluminum Composite Panels (ACP 3mm, 4mm)', name_bn: 'অ্যালুমিনিয়াম কম্পোজিট প্যানেল (ACP)', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
+    { id: 'coroplast_sheets', name: 'PP Coroplast / Hollow Flute Board (3mm–5mm)', name_bn: 'করোপ্লাস্ট ও পিপি ফ্লুট শীট', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
+    { id: 'mdf_wood_boards', name: 'MDF, HDF & Plywood Craft Sheets', name_bn: 'এমডিএফ ও কাঠের বোর্ড শীট', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
+    { id: 'commercial_paper_cards', name: 'Art Paper, Art Card & Kraft Board Sheets', name_bn: 'আর্ট পেপার ও কার্ড শীট (১২০–৩৫০ জিএসএম)', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'piece' },
+  ],
+  liquid: [
+    { id: 'eco_solvent_inks', name: 'Eco-Solvent Inks (CMYK + Light Colors)', name_bn: 'ইকো-সলভেন্ট কালি (বোতল)', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
+    { id: 'solvent_inks', name: 'Solvent Heavy Duty Inks (CMYK 5L / 1L)', name_bn: 'সলভেন্ট ব্যানার কালি (ক্যান/বোতল)', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
+    { id: 'uv_curable_inks', name: 'UV Curable LED Inks (CMYK + White + Varnish)', name_bn: 'ইউভি কিউরেবল এলইডি কালি', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
+    { id: 'textile_inks', name: 'Dye Sublimation & DTF Textile Inks', name_bn: 'সাবলিমেশন ও ডিটিএফ টেক্সটাইল কালি', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
+    { id: 'offset_process_inks', name: 'Commercial Offset Sheetfed Process Inks', name_bn: 'অফসেট প্রসেস পেস্ট কালি', defaultPurchaseUnit: 'kg', defaultUsageUnit: 'kg' },
+    { id: 'screen_print_inks', name: 'Screen Printing Plastisol & Water Paste Inks', name_bn: 'স্ক্রিন প্রিন্ট পেস্ট ও কেমিক্যাল', defaultPurchaseUnit: 'kg', defaultUsageUnit: 'kg' },
+    { id: 'cleaning_chemicals', name: 'Printhead Cleaning Solutions & Flushing Fluids', name_bn: 'হেড ক্লিনিং সলিউশন ও ফ্লাশিং ফ্লুইড', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
+  ],
+  rigid: [
+    { id: 'ms_pipes_bars', name: 'Mild Steel (MS) Box Pipes & Angle Bars', name_bn: 'এমএস স্কয়ার বক্স পাইপ ও এঙ্গেল বার', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'rft' },
+    { id: 'aluminum_profiles', name: 'Aluminum Extrusion Channels & Snap Profiles', name_bn: 'অ্যালুমিনিয়াম চ্যানেল ও ফ্রেম প্রোফাইল', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'rft' },
+    { id: 'ss_pipes_strips', name: 'Stainless Steel (SS 201/304) Pipes & Flat Strips', name_bn: 'এসএস পাইপ ও স্ট্রিপ', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'rft' },
+    { id: 'gi_pipes_truss', name: 'GI Pipes & Structural Billboard Truss Steel', name_bn: 'জিআই পাইপ ও হেভি ট্রাস মেটাল', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'rft' },
+  ],
+  accessory: [
+    { id: 'eyelets_grommets', name: 'Brass, Nickel & Metal Eyelets / Grommets', name_bn: 'আইলেট ও গ্রোমেট (বক্স/প্যাকেট)', defaultPurchaseUnit: 'box', defaultUsageUnit: 'piece' },
+    { id: 'display_stands', name: 'Portable Display Stands (X-Banner, Roll-up, Pop-up)', name_bn: 'এক্স-ব্যানার ও রোল-আপ ডিসপ্লে স্ট্যান্ড', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'piece' },
+    { id: 'adhesives_tapes', name: 'Industrial VHB Foam Tapes & Double Tapes', name_bn: 'ভিএইচবি ফোম টেপ ও আঠা', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'piece' },
+    { id: 'standoff_studs', name: 'Acrylic & Signboard Standoff Spacer Studs', name_bn: 'স্টাড নাট-বোল্ট ও স্পেসার', defaultPurchaseUnit: 'box', defaultUsageUnit: 'piece' },
+    { id: 'binding_spirals', name: 'Wiro Binding Coils, Spirals & Hard Covers', name_bn: 'স্পাইরাল কয়েল ও বাইন্ডিং মেটেরিয়াল', defaultPurchaseUnit: 'box', defaultUsageUnit: 'piece' },
+    { id: 'packaging_materials', name: 'Protective Bubble Wrap, Stretch Film & Packaging', name_bn: 'বাবল র‍্যাপ ও প্যাকেজিং মেটেরিয়াল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'piece' },
+  ],
+  electrical: [
+    { id: 'led_modules', name: 'Injection LED Modules (1.2W / 1.5W Samsung/Epistar)', name_bn: 'ইনজেকশন এলইডি মডিউল (স্ট্রিং)', defaultPurchaseUnit: 'pack', defaultUsageUnit: 'piece' },
+    { id: 'power_supplies', name: 'Rainproof Switching Power Supplies (12V / 24V SMPS)', name_bn: '১২ভি/২৪ভি পাওয়ার সাপ্লাই ট্রান্সফরমার', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'piece' },
+    { id: 'led_neon_strips', name: 'Flexible LED Neon Strips & Silicone Diffusers', name_bn: 'ফ্লেক্সিবল এলইডি নিয়ন স্ট্রিপ', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'rft' },
+    { id: 'cables_controllers', name: 'Multi-Core Electrical Cables & Dimmers', name_bn: 'কপার কেবল, টাইমার ও কন্ট্রোলার', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'rft' },
+  ],
+}
+
 export function MaterialConfigModal({
   isOpen,
   onClose,
@@ -73,8 +126,8 @@ export function MaterialConfigModal({
   const [name, setName] = useState('')
   const [nameBn, setNameBn] = useState('')
   const [sku, setSku] = useState('')
-  const [category, setCategory] = useState('materials')
-  const [materialType, setMaterialType] = useState<'roll' | 'sheet' | 'liquid' | 'rigid' | 'hardware' | 'accessory'>('roll')
+  const [category, setCategory] = useState('flex_banner')
+  const [materialType, setMaterialType] = useState<'roll' | 'sheet' | 'liquid' | 'rigid' | 'hardware' | 'accessory' | 'electrical'>('roll')
   const [isActive, setIsActive] = useState(true)
   const [description, setDescription] = useState('')
 
@@ -142,6 +195,154 @@ export function MaterialConfigModal({
     }
     return 1
   }, [materialType, purchaseUnit, configuredRolls, newWidthInput, extraWidthAllowance, standardRollLength, availableSheetSizes, newSheetWidthInput, newSheetLengthInput, packQuantity])
+
+  // Filtered Catalog Categories based strictly on the selected Physical Form / Classification
+  const filteredCatalogCategories = useMemo(() => {
+    const builtIn = MATERIAL_TYPE_CATEGORIES[materialType as keyof typeof MATERIAL_TYPE_CATEGORIES] || MATERIAL_TYPE_CATEGORIES.roll
+
+    const custom = categories.filter((c) => {
+      if (c.applies_to_product_types && Array.isArray(c.applies_to_product_types) && c.applies_to_product_types.length > 0) {
+        return (
+          c.applies_to_product_types.includes(materialType) ||
+          c.applies_to_product_types.includes('all') ||
+          c.applies_to_product_types.includes('material') ||
+          c.applies_to_product_types.includes('materials')
+        )
+      }
+
+      const n = (c.name || '').toLowerCase()
+      const s = (c.slug || '').toLowerCase()
+
+      if (materialType === 'roll') {
+        return (
+          n.includes('roll') ||
+          n.includes('রোল') ||
+          s.includes('roll') ||
+          n.includes('vinyl') ||
+          n.includes('flex') ||
+          n.includes('banner') ||
+          n.includes('sticker') ||
+          n.includes('film') ||
+          n.includes('canvas') ||
+          n.includes('paper')
+        )
+      }
+      if (materialType === 'sheet') {
+        return (
+          n.includes('sheet') ||
+          n.includes('শীট') ||
+          s.includes('sheet') ||
+          n.includes('board') ||
+          n.includes('বোর্ড') ||
+          n.includes('acrylic') ||
+          n.includes('foam') ||
+          n.includes('acp') ||
+          n.includes('sunboard')
+        )
+      }
+      if (materialType === 'liquid') {
+        return (
+          n.includes('ink') ||
+          n.includes('কালি') ||
+          s.includes('ink') ||
+          n.includes('liquid') ||
+          n.includes('chemical') ||
+          n.includes('flush') ||
+          n.includes('cleaning')
+        )
+      }
+      if (materialType === 'rigid') {
+        return (
+          n.includes('pipe') ||
+          n.includes('পাইপ') ||
+          n.includes('profile') ||
+          n.includes('metal') ||
+          n.includes('channel') ||
+          n.includes('steel') ||
+          n.includes('aluminum') ||
+          n.includes('frame')
+        )
+      }
+      if (materialType === 'accessory') {
+        return (
+          n.includes('hardware') ||
+          n.includes('accessory') ||
+          n.includes('eyelet') ||
+          n.includes('আইলেট') ||
+          n.includes('stand') ||
+          n.includes('tape') ||
+          n.includes('glue') ||
+          n.includes('stud')
+        )
+      }
+      if (materialType === 'electrical') {
+        return (
+          n.includes('led') ||
+          n.includes('এলইডি') ||
+          n.includes('power') ||
+          n.includes('supply') ||
+          n.includes('smps') ||
+          n.includes('neon') ||
+          n.includes('light') ||
+          n.includes('electric')
+        )
+      }
+      return false
+    })
+
+    const combined: Array<{ id: string; name: string; name_bn?: string | null }> = []
+    const seenIds = new Set<string>()
+
+    builtIn.forEach((b) => {
+      seenIds.add(b.id)
+      combined.push(b)
+    })
+
+    custom.forEach((c) => {
+      const key = c.slug || c.id
+      if (!seenIds.has(key)) {
+        seenIds.add(key)
+        combined.push({
+          id: key,
+          name: c.name,
+          name_bn: c.name_bn,
+        })
+      }
+    })
+
+    return combined
+  }, [materialType, categories])
+
+  // Handle switching Physical Form / Classification and aligning Catalog Category & default purchase units
+  const handleSelectMaterialType = (t: 'roll' | 'sheet' | 'liquid' | 'rigid' | 'accessory' | 'electrical') => {
+    setMaterialType(t)
+    const availableCats = MATERIAL_TYPE_CATEGORIES[t] || []
+    if (availableCats.length > 0) {
+      setCategory(availableCats[0].id)
+      setPurchaseUnit(availableCats[0].defaultPurchaseUnit)
+      setUsageUnit(availableCats[0].defaultUsageUnit)
+    } else {
+      if (t === 'roll') {
+        setPurchaseUnit('roll')
+        setUsageUnit('sft')
+      } else if (t === 'sheet') {
+        setPurchaseUnit('sheet')
+        setUsageUnit('sft')
+      } else if (t === 'liquid') {
+        setPurchaseUnit('bottle')
+        setUsageUnit('liter')
+      } else if (t === 'rigid') {
+        setPurchaseUnit('piece')
+        setUsageUnit('rft')
+      } else if (t === 'accessory') {
+        setPurchaseUnit('box')
+        setUsageUnit('piece')
+      } else if (t === 'electrical') {
+        setPurchaseUnit('piece')
+        setUsageUnit('piece')
+      }
+    }
+  }
 
   useEffect(() => {
     if (initialData && isOpen) {
@@ -800,54 +1001,48 @@ export function MaterialConfigModal({
                 </div>
                 <select
                   value={materialType}
-                  onChange={(e) => {
-                    const t = e.target.value as any
-                    setMaterialType(t)
-                    if (t === 'roll') {
-                      setPurchaseUnit('roll')
-                      setUsageUnit('sft')
-                    } else if (t === 'sheet') {
-                      setPurchaseUnit('sheet')
-                      setUsageUnit('sft')
-                    } else if (t === 'liquid') {
-                      setPurchaseUnit('bottle')
-                      setUsageUnit('liter')
-                    } else if (t === 'accessory') {
-                      setPurchaseUnit('box')
-                      setUsageUnit('piece')
-                    }
-                  }}
-                  className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                  onChange={(e) => handleSelectMaterialType(e.target.value as any)}
+                  className="w-full h-9 text-xs rounded-md border border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30 px-2.5 font-bold text-amber-900 dark:text-amber-200"
                 >
-                  <option value="roll">Continuous Roll Media (Vinyl, Flex, Paper, Canvas)</option>
-                  <option value="sheet">Rigid Sheet / Board (PVC Board, Acrylic, Foam Board)</option>
-                  <option value="liquid">Liquid Consumable (Solvent / UV / Dye Ink, Cleaning Fluid)</option>
-                  <option value="rigid">Framing & Metal Profile (MS Pipe, Aluminum Channel)</option>
-                  <option value="accessory">Hardware & Accessory (Eyelet, Double Tape, Standee, Rope)</option>
+                  <option value="roll">📜 Continuous Roll Media (Vinyl, Flex Banner, Paper, Canvas)</option>
+                  <option value="sheet">🔲 Rigid Sheet & Flat Board (PVC Board, Acrylic, ACP, Foam Board)</option>
+                  <option value="liquid">🧪 Liquid Consumable (Solvent / UV / Eco Inks, Cleaning Fluid)</option>
+                  <option value="rigid">🏗️ Framing & Metal Profile (MS Pipe, Aluminum Channel, Angle Bar)</option>
+                  <option value="accessory">🔩 Hardware & Fasteners (Eyelet, Double Tape, Standee, Standoff)</option>
+                  <option value="electrical">⚡ Electrical & Lighting (LED Modules, 12V SMPS Power, Neon Strip)</option>
                 </select>
               </div>
 
               <div className="flex flex-col justify-between">
-                <div className="h-6 flex items-center mb-1">
+                <div className="h-6 flex items-center justify-between mb-1">
                   <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
-                    Catalog Category
+                    Catalog Category (ক্যাটালগ ক্যাটাগরি) <span className="text-rose-500">*</span>
                   </Label>
+                  <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold uppercase">
+                    {filteredCatalogCategories.length} {materialType} Categories
+                  </span>
                 </div>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setCategory(val)
+                    const match = (MATERIAL_TYPE_CATEGORIES[materialType as keyof typeof MATERIAL_TYPE_CATEGORIES] || []).find((c) => c.id === val)
+                    if (match) {
+                      if (match.defaultPurchaseUnit) setPurchaseUnit(match.defaultPurchaseUnit)
+                      if (match.defaultUsageUnit) setUsageUnit(match.defaultUsageUnit)
+                    }
+                  }}
                   className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
                 >
-                  <option value="materials">Raw Materials & Substrates</option>
-                  <option value="roll_media">Roll Media</option>
-                  <option value="rigid_sheets">Rigid Sheets & Boards</option>
-                  <option value="inks">Inks & Chemical Consumables</option>
-                  <option value="hardware_stock">Hardware & Fabrication Stock</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.slug || c.id}>
-                      {c.name}
+                  {filteredCatalogCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.name_bn ? `(${c.name_bn})` : ''}
                     </option>
                   ))}
+                  {category && !filteredCatalogCategories.some((c) => c.id === category) && (
+                    <option value={category}>{category}</option>
+                  )}
                 </select>
               </div>
             </div>
