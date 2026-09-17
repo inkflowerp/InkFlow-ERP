@@ -42,6 +42,8 @@ import {
   Calendar,
   Eye,
   FileSpreadsheet,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
@@ -87,7 +89,16 @@ import { StockAdjustmentModal } from '@/components/inventory/stock-adjustment-mo
 import { NewLocationModal } from '@/components/inventory/new-location-modal'
 import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
 
-export type InventoryViewTab = 'stock' | 'rolls' | 'purchases' | 'receiving' | 'ledger'
+export type InventoryViewTab =
+  | 'materials'
+  | 'ready_products'
+  | 'rolls'
+  | 'requests'
+  | 'remnants'
+  | 'locations'
+  | 'purchases'
+  | 'receiving'
+  | 'ledger'
 
 export default function UnifiedInventoryPage() {
   const router = useRouter()
@@ -102,16 +113,20 @@ export default function UnifiedInventoryPage() {
   // URL-addressable view tab
   const rawView = searchParams.get('view')
   const currentView: InventoryViewTab = useMemo(() => {
+    if (rawView === 'ready_products' || rawView === 'products') return 'ready_products'
     if (rawView === 'rolls') return 'rolls'
+    if (rawView === 'requests') return 'requests'
+    if (rawView === 'remnants') return 'remnants'
+    if (rawView === 'locations') return 'locations'
     if (rawView === 'purchases') return 'purchases'
     if (rawView === 'receiving') return 'receiving'
     if (rawView === 'ledger') return 'ledger'
-    return 'stock'
+    return 'materials'
   }, [rawView])
 
   const setViewTab = (tab: InventoryViewTab) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (tab === 'stock') {
+    if (tab === 'materials') {
       params.delete('view')
     } else {
       params.set('view', tab)
@@ -119,9 +134,6 @@ export default function UnifiedInventoryPage() {
     const queryString = params.toString()
     router.replace(`${pathname}${queryString ? `?${queryString}` : ''}`, { scroll: false })
   }
-
-  // Sub-tabs inside Stock view
-  const [stockSubTab, setStockSubTab] = useState<'materials' | 'ready_products' | 'locations' | 'requests' | 'remnants'>('materials')
 
   // Core Data States
   const [materials, setMaterials] = useState<MaterialRecord[]>([])
@@ -150,7 +162,6 @@ export default function UnifiedInventoryPage() {
   const [selectedRollStatus, setSelectedRollStatus] = useState('all')
   const [selectedPoStatus, setSelectedPoStatus] = useState('all')
   const [selectedLedgerType, setSelectedLedgerType] = useState('all')
-  const [selectedLocationFilter, setSelectedLocationFilter] = useState('all')
   const [notification, setNotification] = useState<string | null>(null)
 
   // Modals state
@@ -167,8 +178,6 @@ export default function UnifiedInventoryPage() {
   const [selectedMaterialForAction, setSelectedMaterialForAction] = useState<MaterialRecord | null>(null)
   const [selectedRollForAction, setSelectedRollForAction] = useState<InventoryRollRecord | null>(null)
   const [selectedPoForReceive, setSelectedPoForReceive] = useState<PurchaseOrderRecord | null>(null)
-
-  const productCheck = checkCanCreate('max_products')
 
   const showNotification = (msg: string) => {
     setNotification(msg)
@@ -216,7 +225,8 @@ export default function UnifiedInventoryPage() {
         m.name.toLowerCase().includes(q) ||
         m.sku.toLowerCase().includes(q) ||
         (m.name_bn && m.name_bn.includes(q)) ||
-        (m.brand && m.brand.toLowerCase().includes(q))
+        (m.brand && m.brand.toLowerCase().includes(q)) ||
+        (m.specification && m.specification.toLowerCase().includes(q))
       return matchCat && matchSearch
     })
   }, [materials, selectedCategory, search])
@@ -225,7 +235,14 @@ export default function UnifiedInventoryPage() {
   const filteredReadyProducts = useMemo(() => {
     return readyProducts.filter((p) => {
       const q = search.trim().toLowerCase()
-      return !q || p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
+      return (
+        !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q) ||
+        (p.name_bn && p.name_bn.includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (p.dimensions_spec && p.dimensions_spec.toLowerCase().includes(q))
+      )
     })
   }, [readyProducts, search])
 
@@ -243,6 +260,49 @@ export default function UnifiedInventoryPage() {
       return matchStatus && matchSearch
     })
   }, [rolls, selectedRollStatus, search])
+
+  // Filtered Requests
+  const filteredRequests = useMemo(() => {
+    return requests.filter((r) => {
+      const q = search.trim().toLowerCase()
+      return (
+        !q ||
+        r.request_number.toLowerCase().includes(q) ||
+        (r.requested_by_name && r.requested_by_name.toLowerCase().includes(q)) ||
+        (r.production_task?.title && r.production_task.title.toLowerCase().includes(q)) ||
+        (r.production_task?.task_code && r.production_task.task_code.toLowerCase().includes(q)) ||
+        (r.notes && r.notes.toLowerCase().includes(q))
+      )
+    })
+  }, [requests, search])
+
+  // Filtered Remnants
+  const filteredRemnants = useMemo(() => {
+    return remnants.filter((rem) => {
+      const q = search.trim().toLowerCase()
+      return (
+        !q ||
+        rem.remnant_code.toLowerCase().includes(q) ||
+        (rem.parent_material?.name && rem.parent_material.name.toLowerCase().includes(q)) ||
+        (rem.location?.location_name && rem.location.location_name.toLowerCase().includes(q)) ||
+        (rem.notes && rem.notes.toLowerCase().includes(q))
+      )
+    })
+  }, [remnants, search])
+
+  // Filtered Locations
+  const filteredLocations = useMemo(() => {
+    return locations.filter((loc) => {
+      const q = search.trim().toLowerCase()
+      return (
+        !q ||
+        loc.location_name.toLowerCase().includes(q) ||
+        loc.location_code.toLowerCase().includes(q) ||
+        loc.location_type.toLowerCase().includes(q) ||
+        (loc.description && loc.description.toLowerCase().includes(q))
+      )
+    })
+  }, [locations, search])
 
   // Filtered Purchase Orders
   const filteredOrders = useMemo(() => {
@@ -291,6 +351,11 @@ export default function UnifiedInventoryPage() {
   const pendingInwardPOs = useMemo(() => {
     return orders.filter((po) => po.status === 'issued' || po.status === 'partially_received' || po.status === 'approved')
   }, [orders])
+
+  // Pending Requests count
+  const pendingRequestsCount = useMemo(() => {
+    return requests.filter((r) => r.status === 'requested').length
+  }, [requests])
 
   // Handlers for Request Actions
   const handleApproveRequest = async (id: string) => {
@@ -393,7 +458,7 @@ export default function UnifiedInventoryPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsTransferOpen(true)}
-                className="text-xs h-9"
+                className="text-xs h-9 cursor-pointer"
               >
                 <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
                 Transfer
@@ -403,7 +468,7 @@ export default function UnifiedInventoryPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsAdjustmentOpen(true)}
-                className="text-xs h-9"
+                className="text-xs h-9 cursor-pointer"
               >
                 <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
                 Adjust Stock
@@ -413,7 +478,7 @@ export default function UnifiedInventoryPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsIssueOpen(true)}
-                className="text-xs h-9"
+                className="text-xs h-9 cursor-pointer"
               >
                 <Send className="mr-1.5 h-3.5 w-3.5 text-indigo-600" />
                 Issue to Floor
@@ -422,7 +487,7 @@ export default function UnifiedInventoryPage() {
               <Button
                 size="sm"
                 onClick={() => setIsNewPurchaseOpen(true)}
-                className="bg-violet-600 hover:bg-violet-700 text-xs text-white h-9 shadow-sm"
+                className="bg-violet-600 hover:bg-violet-700 text-xs text-white h-9 shadow-xs font-bold cursor-pointer"
               >
                 <ShoppingBag className="mr-1.5 h-3.5 w-3.5" />
                 + New Purchase Order
@@ -434,10 +499,22 @@ export default function UnifiedInventoryPage() {
                   setSelectedMaterialForAction(null)
                   setIsReceiveStockOpen(true)
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 shadow-sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 shadow-xs font-bold cursor-pointer"
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 + Receive Stock (GRN)
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadAllData}
+                disabled={loading}
+                className="text-xs h-9 cursor-pointer"
+                title="Refresh all inventory data"
+              >
+                <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
             </div>
           }
@@ -445,19 +522,66 @@ export default function UnifiedInventoryPage() {
 
         {/* Notification Toast Alert */}
         {notification && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
+          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 shadow-xs">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
             <span>{notification}</span>
           </div>
         )}
 
         {/* ========================================================= */}
-        {/* 5-TAB PRIMARY WORKSPACE NAVIGATION (URL ADDRESSABLE) */}
+        {/* KPI METRICS HUD SUMMARY CARDS */}
         {/* ========================================================= */}
-        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-2 scrollbar-none">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <Card className="p-3.5 border-l-4 border-l-emerald-600 bg-emerald-50/10">
+            <span className="text-[11px] font-semibold text-slate-500">Total Stock Value</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5 font-numeric">
+              <CurrencyDisplay amount={summary.totalAvailableStockValue} />
+            </div>
+            <span className="text-[10px] text-emerald-600 font-medium">{materials.length} Materials • {readyProducts.length} Products</span>
+          </Card>
+
+          <Card className={cn('p-3.5 border-l-4', lowStockMaterials.length > 0 ? 'border-l-amber-500 bg-amber-50/10' : 'border-l-slate-300')}>
+            <span className="text-[11px] font-semibold text-slate-500">Low Stock Warning</span>
+            <div className="text-xl font-black text-amber-600 mt-0.5 font-numeric">{lowStockMaterials.length}</div>
+            <span className="text-[10px] text-amber-600 font-medium">Below reorder point</span>
+          </Card>
+
+          <Card className={cn('p-3.5 border-l-4', outOfStockMaterials.length > 0 ? 'border-l-red-500 bg-red-50/10' : 'border-l-slate-300')}>
+            <span className="text-[11px] font-semibold text-slate-500">Out of Stock</span>
+            <div className="text-xl font-black text-red-600 mt-0.5 font-numeric">{outOfStockMaterials.length}</div>
+            <span className="text-[10px] text-red-600 font-medium">Zero warehouse stock</span>
+          </Card>
+
+          <Card className="p-3.5 border-l-4 border-l-indigo-600 bg-indigo-50/10">
+            <span className="text-[11px] font-semibold text-slate-500">Active Rolls</span>
+            <div className="text-xl font-black text-indigo-600 mt-0.5 font-numeric">{rolls.length}</div>
+            <span className="text-[10px] text-indigo-600 font-medium">Discrete large media</span>
+          </Card>
+
+          <Card className={cn('p-3.5 border-l-4', pendingInwardPOs.length > 0 ? 'border-l-blue-500 bg-blue-50/10' : 'border-l-slate-300')}>
+            <span className="text-[11px] font-semibold text-slate-500">Pending Inward</span>
+            <div className="text-xl font-black text-blue-600 mt-0.5 font-numeric">{pendingInwardPOs.length} POs</div>
+            <span className="text-[10px] text-blue-600 font-medium">Awaiting GRN receipt</span>
+          </Card>
+
+          <Card className="p-3.5 border-l-4 border-l-purple-500 bg-purple-50/10">
+            <span className="text-[11px] font-semibold text-slate-500">Usable Remnants</span>
+            <div className="text-xl font-black text-purple-600 mt-0.5 font-numeric">{remnants.length}</div>
+            <span className="text-[10px] text-purple-600 font-medium">Available offcuts</span>
+          </Card>
+        </div>
+
+        {/* ========================================================= */}
+        {/* 9-TAB PRIMARY WORKSPACE NAVIGATION (URL ADDRESSABLE) */}
+        {/* ========================================================= */}
+        <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-2 scrollbar-thin">
           {[
-            { id: 'stock', label: 'Stock Balances', labelBn: 'স্টক ব্যালেন্স', icon: Package, count: materials.length + readyProducts.length },
+            { id: 'materials', label: 'Raw Materials', labelBn: 'কাঁচামাল ও রোল মিডিয়া', icon: Layers, count: materials.length },
+            { id: 'ready_products', label: 'Ready Products', labelBn: 'রেডি প্রোডাক্ট স্টক', icon: Package, count: readyProducts.length },
             { id: 'rolls', label: 'Physical Rolls', labelBn: 'রোল তালিকা', icon: Disc, count: rolls.length },
+            { id: 'requests', label: 'Material Requests', labelBn: 'রিকুইজিশন', icon: Send, count: requests.length, alert: pendingRequestsCount > 0 },
+            { id: 'remnants', label: 'Off-Cuts & Remnants', labelBn: 'অফ-কাট ও অবশিষ্টাংশ', icon: Scissors, count: remnants.length },
+            { id: 'locations', label: 'Locations & Stores', labelBn: 'স্টোর ও ওয়্যারহাউস', icon: MapPin, count: locations.length },
             { id: 'purchases', label: 'Purchase Orders', labelBn: 'কেনাকাটা (PO)', icon: ShoppingBag, count: orders.length },
             { id: 'receiving', label: 'Receiving (GRN)', labelBn: 'রিসিভিং (GRN)', icon: Truck, count: pendingInwardPOs.length, alert: pendingInwardPOs.length > 0 },
             { id: 'ledger', label: 'Stock Ledger', labelBn: 'স্টক খতিয়ান', icon: FileText, count: ledger.length },
@@ -469,23 +593,23 @@ export default function UnifiedInventoryPage() {
                 key={tab.id}
                 onClick={() => setViewTab(tab.id as InventoryViewTab)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap',
+                  'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border shrink-0',
                   isActive
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm ring-2 ring-slate-900/10 dark:ring-white/10'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white shadow-xs'
+                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                 )}
               >
-                <Icon className={cn('h-4 w-4', isActive ? 'text-emerald-400 dark:text-emerald-600' : 'text-slate-400')} />
+                <Icon className={cn('h-3.5 w-3.5', isActive ? 'text-emerald-400 dark:text-emerald-600' : 'text-slate-400')} />
                 <span>{tBilingual(tab.label, tab.labelBn)}</span>
                 {tab.count !== undefined && (
                   <span
                     className={cn(
-                      'px-1.5 py-0.5 rounded-full text-[10px] font-black',
+                      'px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold',
                       tab.alert
-                        ? 'bg-amber-500 text-white'
+                        ? 'bg-amber-500 text-white animate-pulse'
                         : isActive
-                        ? 'bg-slate-700 text-slate-200 dark:bg-slate-200 dark:text-slate-800'
-                        : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                        ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                     )}
                   >
                     {tab.count}
@@ -497,61 +621,26 @@ export default function UnifiedInventoryPage() {
         </div>
 
         {/* ========================================================= */}
-        {/* VIEW 1: STOCK BALANCES & MATERIAL MASTERS */}
+        {/* VIEW 1: RAW MATERIALS & MEDIA SUBSTRATES TAB */}
         {/* ========================================================= */}
-        {currentView === 'stock' && (
-          <div className="space-y-6">
-            {/* KPI Summary Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              <Card className="p-3.5 border-l-4 border-l-emerald-600 bg-emerald-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Total Stock Value</span>
-                <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                  <CurrencyDisplay amount={summary.totalAvailableStockValue} />
-                </div>
-                <span className="text-[10px] text-emerald-600 font-medium">{materials.length} Materials + {readyProducts.length} Products</span>
-              </Card>
-
-              <Card className={cn('p-3.5 border-l-4', lowStockMaterials.length > 0 ? 'border-l-amber-500 bg-amber-50/10' : 'border-l-slate-300')}>
-                <span className="text-[11px] font-semibold text-slate-500">Low Stock Warning</span>
-                <div className="text-xl font-black text-amber-600 mt-0.5">{lowStockMaterials.length}</div>
-                <span className="text-[10px] text-amber-600 font-medium">Below reorder point</span>
-              </Card>
-
-              <Card className={cn('p-3.5 border-l-4', outOfStockMaterials.length > 0 ? 'border-l-red-500 bg-red-50/10' : 'border-l-slate-300')}>
-                <span className="text-[11px] font-semibold text-slate-500">Out of Stock</span>
-                <div className="text-xl font-black text-red-600 mt-0.5">{outOfStockMaterials.length}</div>
-                <span className="text-[10px] text-red-600 font-medium">Zero warehouse stock</span>
-              </Card>
-
-              <Card className="p-3.5 border-l-4 border-l-blue-500 bg-blue-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Pending Inward</span>
-                <div className="text-xl font-black text-blue-600 mt-0.5">{pendingInwardPOs.length} POs</div>
-                <span className="text-[10px] text-blue-600 font-medium">Awaiting GRN receipt</span>
-              </Card>
-
-              <Card className="p-3.5 border-l-4 border-l-purple-500 bg-purple-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Usable Remnants</span>
-                <div className="text-xl font-black text-purple-600 mt-0.5">{remnants.length}</div>
-                <span className="text-[10px] text-purple-600 font-medium">Available offcuts</span>
-              </Card>
-            </div>
-
+        {currentView === 'materials' && (
+          <div className="space-y-4">
             {/* Filter & Search Bar */}
             <Card className="p-3.5">
               <div className="flex flex-col md:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                   <Input
-                    placeholder="Search material/product name, SKU, brand, Bengali Unicode..."
+                    placeholder="Search raw material name, SKU, brand, specifications..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9 text-xs h-9"
                   />
                 </div>
 
-                <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto">
+                <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto scrollbar-thin">
                   {[
-                    { id: 'all', label: 'All Media' },
+                    { id: 'all', label: 'All Substrates' },
                     { id: 'flex', label: 'Flex' },
                     { id: 'vinyl', label: 'Vinyl' },
                     { id: 'acrylic', label: 'Acrylic' },
@@ -564,7 +653,7 @@ export default function UnifiedInventoryPage() {
                       size="sm"
                       variant={selectedCategory === cat.id ? 'default' : 'outline'}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className="text-xs h-8 px-3"
+                      className="text-xs h-8 px-3 cursor-pointer shrink-0"
                     >
                       {cat.label}
                     </Button>
@@ -579,12 +668,13 @@ export default function UnifiedInventoryPage() {
                 <table className="w-full text-xs text-left">
                   <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-b font-bold">
                     <tr>
-                      <th className="p-3">Item / Material</th>
-                      <th className="p-3">Category / Type</th>
+                      <th className="p-3">Material & SKU</th>
+                      <th className="p-3">Category & Spec</th>
                       <th className="p-3 text-right">Available Stock</th>
                       <th className="p-3">Unit</th>
-                      <th className="p-3 text-right">Unit Avg Cost</th>
+                      <th className="p-3 text-right">Avg Unit Cost</th>
                       <th className="p-3 text-right">Total Valuation</th>
+                      <th className="p-3">Reorder Point</th>
                       <th className="p-3">Status</th>
                       <th className="p-3 text-right">Actions</th>
                     </tr>
@@ -592,9 +682,9 @@ export default function UnifiedInventoryPage() {
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredMaterials.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-500">
-                          <Package className="h-8 w-8 mx-auto mb-2 text-slate-400" />
-                          <p className="font-bold">No stock items match your search.</p>
+                        <td colSpan={9} className="p-8 text-center text-slate-500">
+                          <Layers className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                          <p className="font-bold">No raw materials match your search.</p>
                           <Button
                             size="sm"
                             onClick={() => setIsReceiveStockOpen(true)}
@@ -611,21 +701,28 @@ export default function UnifiedInventoryPage() {
                         const reorder = Number(mat.reorder_level || mat.min_stock_level || 0)
                         const isLow = stockQty <= reorder && stockQty > 0
                         const isOut = stockQty <= 0
-                        const avgCost = Number(mat.average_cost || 0)
+                        const avgCost = Number(mat.average_cost || mat.last_purchase_price || 0)
 
                         return (
                           <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
                             <td className="p-3">
-                              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                              <Link
+                                href={`/${slug}/inventory/${mat.id}`}
+                                className="font-bold text-slate-900 dark:text-white hover:text-emerald-600 flex items-center gap-1.5"
+                              >
                                 <span>{mat.name}</span>
-                                {mat.name_bn && <span className="text-[11px] text-slate-400 font-normal">({mat.name_bn})</span>}
-                              </div>
-                              <div className="text-[10px] text-slate-500 font-mono">SKU: {mat.sku}</div>
+                                <ExternalLink className="h-3 w-3 opacity-60" />
+                              </Link>
+                              {mat.name_bn && <div className="text-[11px] text-slate-400 font-bengali">{mat.name_bn}</div>}
+                              <div className="text-[10px] text-slate-500 font-mono mt-0.5">SKU: {mat.sku}</div>
                             </td>
                             <td className="p-3">
                               <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                 {mat.category?.replace('_', ' ')}
                               </span>
+                              {mat.specification && (
+                                <div className="text-[10px] text-slate-400 mt-0.5">{mat.specification}</div>
+                              )}
                             </td>
                             <td className="p-3 text-right font-black font-mono text-sm text-slate-900 dark:text-white">
                               {stockQty.toLocaleString()}
@@ -638,6 +735,9 @@ export default function UnifiedInventoryPage() {
                             </td>
                             <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                               <CurrencyDisplay amount={stockQty * avgCost} />
+                            </td>
+                            <td className="p-3 font-mono text-xs text-slate-500">
+                              {reorder > 0 ? `${reorder} ${mat.unit}` : '—'}
                             </td>
                             <td className="p-3">
                               {isOut ? (
@@ -672,6 +772,17 @@ export default function UnifiedInventoryPage() {
                                 >
                                   Receive
                                 </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedMaterialForAction(mat)
+                                    setIsAdjustmentOpen(true)
+                                  }}
+                                  className="h-7 px-2 text-[11px] text-amber-600 hover:bg-amber-50"
+                                >
+                                  Adjust
+                                </Button>
                               </div>
                             </td>
                           </tr>
@@ -686,40 +797,117 @@ export default function UnifiedInventoryPage() {
         )}
 
         {/* ========================================================= */}
-        {/* VIEW 2: PHYSICAL ROLLS TRACKER */}
+        {/* VIEW 2: READY PRODUCTS STOCK TAB */}
+        {/* ========================================================= */}
+        {currentView === 'ready_products' && (
+          <div className="space-y-4">
+            {/* Filter & Search Bar */}
+            <Card className="p-3.5">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search ready products, display hardware, standees, POP displays..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 text-xs h-9"
+                />
+              </div>
+            </Card>
+
+            {/* Ready Products Table */}
+            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-b font-bold">
+                    <tr>
+                      <th className="p-3">Product Name & SKU</th>
+                      <th className="p-3">Packaging & Specs</th>
+                      <th className="p-3 text-right">Stock On Hand</th>
+                      <th className="p-3">Unit</th>
+                      <th className="p-3 text-right">Unit Base Cost</th>
+                      <th className="p-3 text-right">Selling Rate</th>
+                      <th className="p-3 text-right">Total Valuation</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredReadyProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="p-8 text-center text-slate-500">
+                          <Package className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                          <p className="font-bold">No ready products stock recorded.</p>
+                          <p className="text-[11px] text-slate-400 mt-1">
+                            Ready products like roll-up standees and POP hardware are managed here.
+                          </p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredReadyProducts.map((p) => {
+                        const stockQty = Number((p as any).current_stock || p.usage_stats?.jobCount || 0)
+                        const cost = Number(p.base_cost || 0)
+
+                        return (
+                          <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
+                            <td className="p-3 font-bold text-slate-900 dark:text-white">
+                              <div>{p.name}</div>
+                              {p.name_bn && <div className="text-[11px] text-slate-400 font-bengali font-normal">{p.name_bn}</div>}
+                              <div className="text-[10px] text-slate-500 font-mono mt-0.5">SKU: {p.sku}</div>
+                            </td>
+                            <td className="p-3">
+                              <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                                {p.dimensions_spec || p.material_spec || 'Standard Spec'}
+                              </span>
+                              {p.min_order_quantity && (
+                                <div className="text-[10px] text-slate-400 font-mono">MOQ: {p.min_order_quantity}</div>
+                              )}
+                            </td>
+                            <td className="p-3 text-right font-black font-mono text-sm text-slate-900 dark:text-white">
+                              {stockQty.toLocaleString()}
+                            </td>
+                            <td className="p-3 text-slate-500 uppercase font-mono font-bold text-[11px]">
+                              {p.selling_unit || p.unit || 'pcs'}
+                            </td>
+                            <td className="p-3 text-right font-mono text-slate-600 dark:text-slate-300">
+                              <CurrencyDisplay amount={cost} />
+                            </td>
+                            <td className="p-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">
+                              <CurrencyDisplay amount={p.selling_price || 0} />
+                            </td>
+                            <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                              <CurrencyDisplay amount={stockQty * cost} />
+                            </td>
+                            <td className="p-3">
+                              <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                Active Catalog
+                              </Badge>
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Link href={`/${slug}/products/${p.id}`}>
+                                  <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]">
+                                    <Eye className="h-3.5 w-3.5 mr-1" />
+                                    View
+                                  </Button>
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* VIEW 3: PHYSICAL ROLLS TRACKER TAB */}
         {/* ========================================================= */}
         {currentView === 'rolls' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Card className="p-3.5 border-l-4 border-l-indigo-600 bg-indigo-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Active Physical Rolls</span>
-                <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{rolls.length}</div>
-                <span className="text-[10px] text-indigo-600 font-medium">Discrete tracked rolls</span>
-              </Card>
-
-              <Card className="p-3.5 border-l-4 border-l-emerald-600 bg-emerald-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Available in Warehouse</span>
-                <div className="text-xl font-black text-emerald-600 mt-0.5">
-                  {rolls.filter((r) => r.status === 'available').length}
-                </div>
-                <span className="text-[10px] text-emerald-600 font-medium">Ready for job mounting</span>
-              </Card>
-
-              <Card className="p-3.5 border-l-4 border-l-blue-500 bg-blue-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Mounted on Press</span>
-                <div className="text-xl font-black text-blue-600 mt-0.5">
-                  {rolls.filter((r) => r.status === 'mounted' || r.status === 'in_use').length}
-                </div>
-                <span className="text-[10px] text-blue-600 font-medium">Currently printing</span>
-              </Card>
-
-              <Card className="p-3.5 border-l-4 border-l-purple-500 bg-purple-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Usable Remnants Rack</span>
-                <div className="text-xl font-black text-purple-600 mt-0.5">{remnants.length}</div>
-                <span className="text-[10px] text-purple-600 font-medium">Offcuts $\ge$ usable width</span>
-              </Card>
-            </div>
-
+          <div className="space-y-4">
             {/* Rolls Filter Bar */}
             <Card className="p-3.5">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -745,7 +933,7 @@ export default function UnifiedInventoryPage() {
                       size="sm"
                       variant={selectedRollStatus === st.id ? 'default' : 'outline'}
                       onClick={() => setSelectedRollStatus(st.id)}
-                      className="text-xs h-8 px-3"
+                      className="text-xs h-8 px-3 cursor-pointer shrink-0"
                     >
                       {st.label}
                     </Button>
@@ -854,42 +1042,330 @@ export default function UnifiedInventoryPage() {
         )}
 
         {/* ========================================================= */}
-        {/* VIEW 3: PURCHASES VIEW (PURCHASE ORDERS) */}
+        {/* VIEW 4: FLOOR MATERIAL REQUESTS TAB */}
+        {/* ========================================================= */}
+        {currentView === 'requests' && (
+          <div className="space-y-4">
+            <Card className="p-3.5">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="relative flex-1 w-full">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Search request number, task title, requested by..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 text-xs h-9"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setIsRequestOpen(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shrink-0"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  + New Material Request
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-b font-bold">
+                    <tr>
+                      <th className="p-3">Request #</th>
+                      <th className="p-3">Production Task</th>
+                      <th className="p-3">Requested By</th>
+                      <th className="p-3">Priority</th>
+                      <th className="p-3">Items Count</th>
+                      <th className="p-3">Date</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredRequests.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="p-8 text-center text-slate-500">
+                          <Send className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                          <p className="font-bold">No material requisitions found.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRequests.map((req) => (
+                        <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
+                          <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
+                            {req.request_number}
+                          </td>
+                          <td className="p-3">
+                            <div className="font-semibold text-slate-800 dark:text-slate-200">
+                              {req.production_task?.title || 'Production Task'}
+                            </div>
+                            {req.production_task?.task_code && (
+                              <div className="text-[10px] text-slate-400 font-mono">{req.production_task.task_code}</div>
+                            )}
+                          </td>
+                          <td className="p-3 text-slate-600 dark:text-slate-300">
+                            {req.requested_by_name}
+                          </td>
+                          <td className="p-3">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'text-[10px] capitalize font-bold',
+                                req.priority === 'urgent'
+                                  ? 'bg-rose-50 text-rose-700 border-rose-300'
+                                  : req.priority === 'high'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-300'
+                                  : 'bg-slate-50 text-slate-600'
+                              )}
+                            >
+                              {req.priority}
+                            </Badge>
+                          </td>
+                          <td className="p-3 font-mono text-xs">
+                            {req.items?.length || 1} items
+                          </td>
+                          <td className="p-3 text-slate-500 font-mono text-[11px]">
+                            {new Date(req.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={cn(
+                                'capitalize px-2 py-0.5 rounded text-[10px] font-bold border',
+                                req.status === 'approved' || req.status === 'issued'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                  : req.status === 'rejected'
+                                  ? 'bg-rose-50 text-rose-800 border-rose-300'
+                                  : 'bg-blue-50 text-blue-800 border-blue-300'
+                              )}
+                            >
+                              {req.status}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {req.status === 'requested' && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleApproveRequest(req.id)}
+                                    className="h-7 px-2 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                                  >
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleRejectRequest(req.id)}
+                                    className="h-7 px-2 text-[11px] text-rose-600 hover:bg-rose-50"
+                                  >
+                                    Reject
+                                  </Button>
+                                </>
+                              )}
+                              {req.status === 'approved' && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => setIsIssueOpen(true)}
+                                  className="h-7 px-2.5 text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+                                >
+                                  <Send className="h-3 w-3 mr-1" />
+                                  Issue Stock
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* VIEW 5: REMNANTS & USABLE OFF-CUTS TAB */}
+        {/* ========================================================= */}
+        {currentView === 'remnants' && (
+          <div className="space-y-4">
+            <Card className="p-3.5">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search remnant code, parent substrate, location..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 text-xs h-9"
+                />
+              </div>
+            </Card>
+
+            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-b font-bold">
+                    <tr>
+                      <th className="p-3">Remnant Code</th>
+                      <th className="p-3">Parent Substrate</th>
+                      <th className="p-3 text-right">Dimensions (W × L)</th>
+                      <th className="p-3 text-right">Calculated Area</th>
+                      <th className="p-3">Store Location</th>
+                      <th className="p-3">Condition</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredRemnants.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="p-8 text-center text-slate-500">
+                          <Scissors className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                          <p className="font-bold">No off-cuts or remnants currently logged.</p>
+                          <p className="text-[11px] text-slate-400 mt-1">
+                            Remnants are automatically saved when logging large format cutting sign-offs.
+                          </p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRemnants.map((rem) => {
+                        const area = Number(rem.area_sft || (rem.width * rem.length))
+
+                        return (
+                          <tr key={rem.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
+                            <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
+                              {rem.remnant_code}
+                            </td>
+                            <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
+                              {rem.parent_material?.name || 'Raw Material'}
+                            </td>
+                            <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                              {rem.width} {rem.dimension_unit} × {rem.length} {rem.dimension_unit}
+                            </td>
+                            <td className="p-3 text-right font-mono font-black text-purple-600">
+                              {area.toFixed(1)} SFT
+                            </td>
+                            <td className="p-3 text-slate-500">
+                              {rem.location?.location_name || 'Remnant Rack'}
+                            </td>
+                            <td className="p-3">
+                              <Badge variant="outline" className="text-[10px] capitalize">
+                                {rem.condition?.replace('_', ' ')}
+                              </Badge>
+                            </td>
+                            <td className="p-3">
+                              <span
+                                className={cn(
+                                  'capitalize px-2 py-0.5 rounded text-[10px] font-bold border',
+                                  rem.status === 'available'
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                    : rem.status === 'consumed'
+                                    ? 'bg-blue-50 text-blue-800 border-blue-300'
+                                    : 'bg-slate-100 text-slate-700 border-slate-300'
+                                )}
+                              >
+                                {rem.status}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {rem.status === 'available' && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleRemnantStatusChange(rem.id, 'consumed')}
+                                      className="h-7 px-2 text-[11px] text-blue-600"
+                                    >
+                                      Use in Job
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleRemnantStatusChange(rem.id, 'scrapped')}
+                                      className="h-7 px-2 text-[11px] text-rose-500 hover:bg-rose-50"
+                                    >
+                                      Scrap
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* VIEW 6: WAREHOUSES & LOCATIONS TAB */}
+        {/* ========================================================= */}
+        {currentView === 'locations' && (
+          <div className="space-y-4">
+            <Card className="p-3.5">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="relative flex-1 w-full">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Search location code, name, type..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 text-xs h-9"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setIsNewLocationOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shrink-0"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  + Add Store Location
+                </Button>
+              </div>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredLocations.length === 0 ? (
+                <div className="col-span-full p-12 text-center text-slate-500">
+                  <MapPin className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                  <p className="font-bold">No store locations found.</p>
+                </div>
+              ) : (
+                filteredLocations.map((loc) => (
+                  <Card key={loc.id} className="p-4 space-y-3 border shadow-xs">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="font-mono text-xs font-bold text-blue-600">{loc.location_code}</div>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">{loc.location_name}</h4>
+                      </div>
+                      <Badge variant="outline" className="capitalize text-[10px]">
+                        {loc.location_type?.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    {loc.description && <p className="text-xs text-slate-500">{loc.description}</p>}
+                    <div className="flex items-center justify-between pt-2 border-t text-xs">
+                      <span className="text-slate-400">Status:</span>
+                      <span className="font-bold text-emerald-600">Active Location</span>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* VIEW 7: PURCHASES VIEW (PURCHASE ORDERS) */}
         {/* ========================================================= */}
         {currentView === 'purchases' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Card className="p-3.5 border-l-4 border-l-violet-600 bg-violet-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Total Purchase Orders</span>
-                <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{orders.length}</div>
-                <span className="text-[10px] text-violet-600 font-medium">Recorded POs</span>
-              </Card>
-
-              <Card className="p-3.5 border-l-4 border-l-blue-500 bg-blue-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Awaiting Delivery</span>
-                <div className="text-xl font-black text-blue-600 mt-0.5">
-                  {orders.filter((p) => p.status === 'issued' || p.status === 'approved').length}
-                </div>
-                <span className="text-[10px] text-blue-600 font-medium">In transit from vendor</span>
-              </Card>
-
-              <Card className="p-3.5 border-l-4 border-l-amber-500 bg-amber-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Partially Received</span>
-                <div className="text-xl font-black text-amber-600 mt-0.5">
-                  {orders.filter((p) => p.status === 'partially_received').length}
-                </div>
-                <span className="text-[10px] text-amber-600 font-medium">Partial shipments arrived</span>
-              </Card>
-
-              <Card className="p-3.5 border-l-4 border-l-emerald-600 bg-emerald-50/10">
-                <span className="text-[11px] font-semibold text-slate-500">Fully Received</span>
-                <div className="text-xl font-black text-emerald-600 mt-0.5">
-                  {orders.filter((p) => p.status === 'received').length}
-                </div>
-                <span className="text-[10px] text-emerald-600 font-medium">Completed & in stock</span>
-              </Card>
-            </div>
-
+          <div className="space-y-4">
             {/* PO Filter Bar */}
             <Card className="p-3.5">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -915,7 +1391,7 @@ export default function UnifiedInventoryPage() {
                       size="sm"
                       variant={selectedPoStatus === st.id ? 'default' : 'outline'}
                       onClick={() => setSelectedPoStatus(st.id)}
-                      className="text-xs h-8 px-3"
+                      className="text-xs h-8 px-3 cursor-pointer shrink-0"
                     >
                       {st.label}
                     </Button>
@@ -1023,10 +1499,10 @@ export default function UnifiedInventoryPage() {
         )}
 
         {/* ========================================================= */}
-        {/* VIEW 4: RECEIVING VIEW (GOODS RECEIVED NOTES / INWARD) */}
+        {/* VIEW 8: RECEIVING VIEW (GOODS RECEIVED NOTES / INWARD) */}
         {/* ========================================================= */}
         {currentView === 'receiving' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Inward Pending Deliveries Queue */}
             <Card className="p-4 border border-blue-200 dark:border-blue-900/50 bg-blue-50/10">
               <div className="flex items-center justify-between mb-3">
@@ -1039,7 +1515,7 @@ export default function UnifiedInventoryPage() {
                 <Button
                   size="sm"
                   onClick={() => setIsReceiveStockOpen(true)}
-                  className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                 >
                   <Plus className="h-3 w-3 mr-1" />
                   Manual GRN Ingestion
@@ -1053,7 +1529,7 @@ export default function UnifiedInventoryPage() {
                   {pendingInwardPOs.map((po) => (
                     <div
                       key={po.id}
-                      className="p-3 rounded-lg border bg-white dark:bg-slate-900 flex items-center justify-between gap-2 shadow-sm"
+                      className="p-3 rounded-lg border bg-white dark:bg-slate-900 flex items-center justify-between gap-2 shadow-xs"
                     >
                       <div className="space-y-0.5">
                         <div className="font-mono font-bold text-xs text-indigo-600">{po.po_number}</div>
@@ -1143,10 +1619,10 @@ export default function UnifiedInventoryPage() {
         )}
 
         {/* ========================================================= */}
-        {/* VIEW 5: STOCK AUDIT LEDGER */}
+        {/* VIEW 9: STOCK AUDIT LEDGER TAB */}
         {/* ========================================================= */}
         {currentView === 'ledger' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Filter Bar */}
             <Card className="p-3.5">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -1175,7 +1651,7 @@ export default function UnifiedInventoryPage() {
                       size="sm"
                       variant={selectedLedgerType === tx.id ? 'default' : 'outline'}
                       onClick={() => setSelectedLedgerType(tx.id)}
-                      className="text-xs h-8 px-3"
+                      className="text-xs h-8 px-3 cursor-pointer shrink-0"
                     >
                       {tx.label}
                     </Button>
@@ -1288,6 +1764,18 @@ export default function UnifiedInventoryPage() {
             showNotification(`Purchase Order ${po.po_number} created successfully.`)
             loadAllData()
           }}
+        />
+
+        <MaterialRequestModal
+          open={isRequestOpen}
+          onOpenChange={setIsRequestOpen}
+          materials={materials}
+          locations={locations}
+          onSuccess={() => {
+            showNotification('Material requisition submitted successfully.')
+            loadAllData()
+          }}
+          companyId={companyId}
         />
 
         <MaterialIssueModal
