@@ -650,6 +650,8 @@ export interface ServiceConfiguration {
   default_unit?: 'ft' | 'inch' | 'm' | string
   dimension_unit?: 'ft' | 'inch' | 'm' | string
   allowance_rule?: ServiceAllowanceRule
+  available_widths_ft?: number[]
+  extra_width_allowance_ft?: number
   required_materials?: ServiceRequiredMaterial[]
   finishing_options?: ServiceFinishingOption[]
   additional_options?: ServiceAdditionalOption[]

@@ -363,8 +363,41 @@ export function MaterialConfigModal({
 
             {/* Roll Dimensions */}
             {materialType === 'roll' && (
-              <div className="pt-2 border-t border-blue-200/60 dark:border-blue-800/60 space-y-2.5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="pt-2 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3">
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block uppercase">
+                    Quick Toggle Standard Stock Roll Widths:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 10.0, 10.5, 12.0].map((w) => {
+                      const isSelected = availableWidths.includes(w)
+                      return (
+                        <button
+                          key={w}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setAvailableWidths(availableWidths.filter((x) => x !== w))
+                            } else {
+                              setAvailableWidths([...availableWidths, w].sort((a, b) => a - b))
+                            }
+                          }}
+                          className={cn(
+                            'text-xs px-2 py-0.5 rounded-md border font-mono transition-all flex items-center gap-1 cursor-pointer',
+                            isSelected
+                              ? 'bg-blue-600 text-white font-bold border-blue-700 shadow-2xs'
+                              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-blue-400'
+                          )}
+                        >
+                          {isSelected && <Check className="w-3 h-3 text-white" />}
+                          <span>{w} ft</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-blue-200/60 dark:border-blue-800/60">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
                       Standard Roll Length (Feet)
@@ -381,13 +414,13 @@ export function MaterialConfigModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      Add Available Physical Width (Feet)
+                      Add Custom Physical Width (Feet)
                     </Label>
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
                         step="any"
-                        placeholder="e.g. 3.25, 4.25, 5.25"
+                        placeholder="e.g. 3.25, 10.5"
                         value={newWidthInput}
                         onChange={(e) => setNewWidthInput(e.target.value)}
                         className="h-9 text-xs font-mono"
@@ -406,7 +439,7 @@ export function MaterialConfigModal({
 
                 {availableWidths.length > 0 && (
                   <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Available Roll Widths:</span>
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Configured Roll Widths:</span>
                     {availableWidths.map((w) => (
                       <span
                         key={w}

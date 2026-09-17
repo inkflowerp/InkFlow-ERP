@@ -98,6 +98,10 @@ const COMMON_PURCHASE_UNITS: { value: string; label: string }[] = [
   { value: 'job', label: 'Job (জব)' },
 ]
 
+const STANDARD_ROLL_WIDTHS: number[] = [
+  2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 10.0, 10.5, 12.0
+]
+
 const POPULAR_PRINT_PRESETS: { width: number; length: number; label: string }[] = [
   { width: 4, length: 12, label: '4ft × 12ft (Shop Signboard)' },
   { width: 2.5, length: 6, label: '2.5ft × 6ft (X-Stand Banner)' },
@@ -142,6 +146,11 @@ export function ServiceConfigModal({
   const [newPresetWidth, setNewPresetWidth] = useState<number | ''>('')
   const [newPresetLength, setNewPresetLength] = useState<number | ''>('')
   const [newPresetLabel, setNewPresetLabel] = useState('')
+
+  // 2.1 Roll Stock Widths & Machine Feeding
+  const [availableRollWidths, setAvailableRollWidths] = useState<number[]>([2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
+  const [extraWidthAllowance, setExtraWidthAllowance] = useState<number>(0.25)
+  const [newRollWidthInput, setNewRollWidthInput] = useState<string>('')
 
   // 3. Required Materials & Geometry Allowances
   const [materialSearchQuery, setMaterialSearchQuery] = useState('')
@@ -226,6 +235,8 @@ export function ServiceConfigModal({
       setDimensionUnit(cfg.dimension_unit || 'ft')
       setAllowCustomDimensions(cfg.allow_custom_dimensions !== false)
       setPresets(cfg.dimension_presets || cfg.presets || [])
+      setAvailableRollWidths(cfg.available_widths_ft || initialData.available_widths_ft || [2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
+      setExtraWidthAllowance(cfg.extra_width_allowance_ft ?? (initialData.production_width_allowance ?? 0.25))
       setRequiredMaterials(cfg.required_materials || [])
       setFinishingOptions(cfg.finishing_options || [])
       setAdditionalOptions(cfg.additional_options || [])
@@ -260,6 +271,8 @@ export function ServiceConfigModal({
       setMinBillableQty(1)
       setProductionBleedInches(0.5)
       setDefaultWastagePercent(5)
+      setAvailableRollWidths([2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
+      setExtraWidthAllowance(0.25)
       setPresets([
         { width: 4, length: 12, label: '4ft × 12ft (Shop Signboard)' },
         { width: 2.5, length: 6, label: '2.5ft × 6ft (X-Stand Banner)' },
@@ -335,6 +348,30 @@ export function ServiceConfigModal({
       regular: Math.round(sp * 0.95),   // 5% loyal client discount
       custom: sp,
     })
+  }
+
+  const handleToggleRollWidth = (w: number) => {
+    if (availableRollWidths.includes(w)) {
+      setAvailableRollWidths(availableRollWidths.filter((x) => x !== w))
+    } else {
+      setAvailableRollWidths([...availableRollWidths, w].sort((a, b) => a - b))
+    }
+  }
+
+  const handleAddCustomRollWidth = () => {
+    const val = parseFloat(newRollWidthInput)
+    if (!isNaN(val) && val > 0 && !availableRollWidths.includes(val)) {
+      setAvailableRollWidths([...availableRollWidths, val].sort((a, b) => a - b))
+      setNewRollWidthInput('')
+    }
+  }
+
+  const handleSelectAllRollWidths = () => {
+    setAvailableRollWidths([...STANDARD_ROLL_WIDTHS])
+  }
+
+  const handleClearRollWidths = () => {
+    setAvailableRollWidths([])
   }
 
   const handleAddPreset = () => {
@@ -540,6 +577,8 @@ export function ServiceConfigModal({
         allow_custom_dimensions: allowCustomDimensions,
         dimension_presets: presets,
         presets: presets,
+        available_widths_ft: availableRollWidths,
+        extra_width_allowance_ft: Number(extraWidthAllowance) || 0.25,
         required_materials: requiredMaterials,
         finishing_options: finishingOptions,
         additional_options: additionalOptions,
@@ -571,9 +610,10 @@ export function ServiceConfigModal({
         min_allowed_margin_percent: Number(minAllowedMargin) || 15.0,
         min_billable_quantity: minBillableQty,
         default_wastage_percentage: defaultWastagePercent,
-        production_width_allowance: productionBleedInches,
-        production_length_allowance: productionBleedInches,
-        allowance_unit: 'inch',
+        available_widths_ft: purchaseUnit === 'roll' ? availableRollWidths : undefined,
+        production_width_allowance: Number(extraWidthAllowance) || 0.25,
+        production_length_allowance: Number(extraWidthAllowance) || 0.25,
+        allowance_unit: 'ft',
         vat_applicable: vatApplicable,
         is_tax_inclusive: isTaxInclusive,
         tax_rate: Number(taxRate) || 0,
@@ -825,6 +865,22 @@ export function ServiceConfigModal({
                     </select>
                   </div>
                 </div>
+
+                {purchaseUnit === 'roll' && (
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                    <span className="text-blue-700 dark:text-blue-300 font-medium">
+                      Roll media stock enabled: <strong>{availableRollWidths.length} physical widths</strong> configured with <strong>+{extraWidthAllowance} ft</strong> machine margin.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('dimensions')}
+                      className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Configure Roll Widths in Tab 2</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -856,7 +912,7 @@ export function ServiceConfigModal({
         )}
 
         {/* ======================================================== */}
-        {/* TAB 2: CUSTOMER DIMENSIONS, MIN BILLABLE & PRESETS */}
+        {/* TAB 2: CUSTOMER DIMENSIONS, ROLL WIDTHS & SIZE PRESETS */}
         {/* ======================================================== */}
         {activeTab === 'dimensions' && (
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
@@ -869,7 +925,7 @@ export function ServiceConfigModal({
                   Customer Dimension Rules & Size Presets
                 </h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">Area thresholds & quick sizes</span>
+              <span className="text-[11px] text-slate-400 font-medium">Area thresholds, roll widths & quick sizes</span>
             </div>
 
             <div className="space-y-3.5">
@@ -891,7 +947,7 @@ export function ServiceConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    Min Billable Area / Qty
+                    Min Billable Area / Qty Floor
                   </Label>
                   <div className="relative">
                     <Input
@@ -943,6 +999,147 @@ export function ServiceConfigModal({
                   className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
                 />
               </div>
+
+              {/* ============================================================ */}
+              {/* SPECIALIZED ROLL STOCK WIDTHS & MACHINE EXTRA WIDTH CARD     */}
+              {/* ============================================================ */}
+              {purchaseUnit === 'roll' && (
+                <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-xl space-y-3 shadow-2xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-blue-200/60 dark:border-blue-800/60">
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        <Boxes className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                          Roll Media Stock Widths & Machine Extra Width (+0.25 ft)
+                        </span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Select physical roll widths in workshop stock. Quotation engine automatically nests jobs onto the optimal roll.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleSelectAllRollWidths}
+                        className="h-6 text-[10px] px-2 font-bold border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300"
+                      >
+                        Select All
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleClearRollWidths}
+                        className="h-6 text-[10px] px-2 text-slate-500 hover:text-slate-700"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Quick-Select Roll Width Buttons */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-wider block">
+                      Available Stock Roll Widths (Click to toggle):
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {STANDARD_ROLL_WIDTHS.map((w) => {
+                        const isSelected = availableRollWidths.includes(w)
+                        return (
+                          <button
+                            key={w}
+                            type="button"
+                            onClick={() => handleToggleRollWidth(w)}
+                            className={cn(
+                              'text-xs px-2.5 py-1 rounded-lg border font-mono transition-all flex items-center gap-1 cursor-pointer',
+                              isSelected
+                                ? 'bg-blue-600 text-white font-bold border-blue-700 shadow-2xs'
+                                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-blue-400'
+                            )}
+                          >
+                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                            <span>{w} ft</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Custom Width Adder & Extra Width Allowance */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-blue-200/80 dark:border-blue-800/60">
+                    <div>
+                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                        Add Custom Roll Width (Feet)
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          step="any"
+                          placeholder="e.g. 3.25, 10.5"
+                          value={newRollWidthInput}
+                          onChange={(e) => setNewRollWidthInput(e.target.value)}
+                          className="h-8 text-xs font-mono"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleAddCustomRollWidth}
+                          className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shrink-0"
+                        >
+                          <Plus className="w-3.5 h-3.5 mr-1" /> Add Width
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                        Machine Extra Width Allowance (+ft)
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          step="0.05"
+                          min="0"
+                          value={extraWidthAllowance}
+                          onChange={(e) => setExtraWidthAllowance(parseFloat(e.target.value) || 0)}
+                          className="h-8 text-xs font-mono font-bold text-blue-600 dark:text-blue-400 pr-14"
+                        />
+                        <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">ft (3 in)</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
+                        Extra width (+0.25 ft) added for machine pinch rollers, side clamps & cutting margins.
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Selected Roll Widths Summary */}
+                  {availableRollWidths.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Active Stock Roll Widths:</span>
+                      {availableRollWidths.map((w) => (
+                        <span
+                          key={w}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 text-[11px] font-mono font-bold text-blue-700 dark:text-blue-300"
+                        >
+                          <span>{w} ft</span>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleRollWidth(w)}
+                            className="text-slate-400 hover:text-rose-600 cursor-pointer"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Quick Template Picker */}
               <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/60 rounded-xl space-y-2">
