@@ -576,8 +576,8 @@ export class ProductRepository {
         requires_installation: Boolean(product.requires_installation),
         requires_delivery: Boolean(product.requires_delivery),
         entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : 'product'),
-        service_config: product.service_config || null,
-        material_config: product.material_config || null,
+        service_config: product.service_config || {},
+        material_config: product.material_config || {},
         is_service: product.is_service !== undefined ? Boolean(product.is_service) : (product.entity_type === 'service' || product.product_type === 'print_service'),
         is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (product.entity_type === 'product' || product.product_type === 'ready_product'),
         default_department: product.default_department || 'printing',
@@ -698,12 +698,12 @@ export class ProductRepository {
         formulaUpdates.entity_type = updates.entity_type
       }
       if (updates.service_config !== undefined) {
-        payload.service_config = updates.service_config
-        formulaUpdates.service_config = updates.service_config
+        payload.service_config = updates.service_config || {}
+        formulaUpdates.service_config = updates.service_config || {}
       }
       if (updates.material_config !== undefined) {
-        payload.material_config = updates.material_config
-        formulaUpdates.material_config = updates.material_config
+        payload.material_config = updates.material_config || {}
+        formulaUpdates.material_config = updates.material_config || {}
       }
       if (updates.available_widths_ft !== undefined) {
         payload.available_widths_ft = updates.available_widths_ft
