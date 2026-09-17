@@ -343,9 +343,6 @@ export function MaterialConfigModal({
       }
     }
 
-    const baseUnitCost = perSftCost > 0 ? perSftCost : (totalUnitArea > 0 ? totalPkgCost / totalUnitArea : 0)
-    const effCost = baseUnitCost * (1 + (wastePercent || 0) / 100)
-
     if (materialType === 'roll' || purchaseUnit === 'roll') {
       const parsedInput = parseFloat(newWidthInput)
       const maxW = availableWidths.length > 0 
@@ -354,16 +351,39 @@ export function MaterialConfigModal({
       const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
       const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
       const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
+
+      // Nominal Area (WITHOUT extra allowance) -> Usable & Sellable square footage
+      const nominalRollArea = Number((maxW * parsedLen).toFixed(2))
+
+      // Physical Area (WITH extra allowance) -> Purchased substrate package area
       const effectiveW = maxW + allowance
-      const rollArea = Number((effectiveW * parsedLen).toFixed(2))
-      const allowanceText = allowance > 0 ? ` (${maxW}ft + ${allowance}ft allowance × ${parsedLen}ft)` : ` (${maxW}ft × ${parsedLen}ft)`
+      const physicalRollArea = Number((effectiveW * parsedLen).toFixed(2))
+
+      // Effective Package Cost
+      const effectivePkgCost = totalPkgCost > 0 
+        ? totalPkgCost 
+        : (perSftCost > 0 ? Number((perSftCost * physicalRollArea).toFixed(2)) : 0)
+
+      // Direct Base Cost (৳ / SFT) calculated WITHOUT extra allowance:
+      // Package Cost divided by Nominal Usable Area
+      const baseUnitCost = nominalRollArea > 0 && effectivePkgCost > 0
+        ? effectivePkgCost / nominalRollArea
+        : (perSftCost > 0 ? perSftCost : 0)
+
+      const effCost = baseUnitCost * (1 + (wastePercent || 0) / 100)
+
       return {
         unitCost: baseUnitCost,
         effectiveCost: effCost,
-        yieldLabel: `${rollArea.toLocaleString()} sft${allowanceText}`,
-        formulaText: `৳${baseUnitCost.toFixed(2)}/sft × ${rollArea.toLocaleString()} sft = ৳${(baseUnitCost * rollArea).toFixed(0)}/roll (+ ${wastePercent}% waste = ৳${effCost.toFixed(2)}/sft)`,
+        yieldLabel: `${nominalRollArea.toLocaleString()} sft (${maxW}ft × ${parsedLen}ft)`,
+        formulaText: effectivePkgCost > 0 && nominalRollArea > 0
+          ? `৳${effectivePkgCost.toLocaleString()}/roll ÷ ${nominalRollArea.toLocaleString()} sft (nominal yield) = ৳${baseUnitCost.toFixed(2)}/sft (+ ${wastePercent}% waste = ৳${effCost.toFixed(2)}/sft)`
+          : `৳${baseUnitCost.toFixed(2)}/sft × ${nominalRollArea.toLocaleString()} sft = ৳${(baseUnitCost * nominalRollArea).toFixed(0)}/roll (+ ${wastePercent}% waste = ৳${effCost.toFixed(2)}/sft)`,
       }
     }
+
+    const baseUnitCost = perSftCost > 0 ? perSftCost : (totalUnitArea > 0 ? totalPkgCost / totalUnitArea : 0)
+    const effCost = baseUnitCost * (1 + (wastePercent || 0) / 100)
 
     if (materialType === 'sheet' || purchaseUnit === 'sheet') {
       const firstSheet = availableSheetSizes[0] || { width: 4, length: 8 }
