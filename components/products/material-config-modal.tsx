@@ -243,6 +243,17 @@ const QUICK_ROLL_WIDTH_PRESETS = [
   { width: 16, label: '16ft (192")' },
 ]
 
+// Quick Preset Roll Lengths
+const QUICK_ROLL_LENGTH_PRESETS = [
+  { length: 50, label: '50ft' },
+  { length: 100, label: '100ft' },
+  { length: 150, label: '150ft' },
+  { length: 164, label: '164ft (50m)' },
+  { length: 200, label: '200ft' },
+  { length: 328, label: '328ft (100m)' },
+  { length: 500, label: '500ft' },
+]
+
 // Quick Preset Sheet Sizes
 const QUICK_SHEET_PRESETS = [
   { width: 4, length: 8, label: '4ft × 8ft (Standard Board)' },
@@ -448,14 +459,19 @@ export function MaterialConfigModal({
   const totalUnitArea = useMemo(() => {
     if (materialType === 'roll' || purchaseUnit === 'roll') {
       const parsedInput = parseFloat(newWidthInput)
-      const activeRoll = configuredRolls.find((r) => r.width === parsedInput)
+      const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
+      const currentLen = isNaN(parsedLen) || parsedLen <= 0 ? 164 : parsedLen
+
+      const activeRoll = configuredRolls.find((r) => r.width === parsedInput && (r.length || 164) === currentLen)
+        || configuredRolls.find((r) => r.width === parsedInput)
+        || (configuredRolls.length > 0 ? configuredRolls[0] : null)
+
       const currentW = !isNaN(parsedInput) && parsedInput > 0
         ? parsedInput
-        : (activeRoll?.width || (configuredRolls.length > 0 ? configuredRolls[0].width : 10))
+        : (activeRoll?.width || 10)
       const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
-      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? (activeRoll?.extra_allowance ?? 0) : parsedAllowance
-      const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
-      const len = isNaN(parsedLen) || parsedLen <= 0 ? (activeRoll?.length ?? 164) : parsedLen
+      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? (activeRoll?.extra_allowance ?? 0.25) : parsedAllowance
+      const len = currentLen
       const effectiveW = currentW + allowance
       return Number((effectiveW * len).toFixed(2))
     }
@@ -918,7 +934,7 @@ export function MaterialConfigModal({
   // Roll Selection & Editing Handlers
   const handleSelectRoll = (roll: MaterialRollSizeConfig) => {
     setNewWidthInput(roll.width.toString())
-    setExtraWidthAllowance(roll.extra_allowance ?? 0.25)
+    setExtraWidthAllowance(roll.extra_allowance !== undefined ? roll.extra_allowance : 0.25)
     setStandardRollLength(roll.length ?? 164)
 
     const perSftCost = Number(purchasePricePerSft) || 0
@@ -932,20 +948,24 @@ export function MaterialConfigModal({
 
   const handleWidthInputChange = (val: string) => {
     setNewWidthInput(val)
-    const parsed = parseFloat(val)
-    if (!isNaN(parsed) && parsed > 0) {
-      const matched = configuredRolls.find((r) => r.width === parsed)
-      const allowance = matched !== undefined ? (matched.extra_allowance ?? 0.25) : (typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0.25))
-      const len = matched !== undefined ? (matched.length ?? 164) : (typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164))
+    const parsedW = parseFloat(val)
+    if (!isNaN(parsedW) && parsedW > 0) {
+      const currentLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
+      const matchedExact = configuredRolls.find((r) => r.width === parsedW && (r.length || 164) === currentLen)
+      const matchedAny = matchedExact || configuredRolls.find((r) => r.width === parsedW)
 
-      if (matched) {
-        setExtraWidthAllowance(allowance)
-        setStandardRollLength(len)
+      if (matchedAny) {
+        setExtraWidthAllowance(matchedAny.extra_allowance ?? 0.25)
+        if (matchedExact) {
+          setStandardRollLength(matchedExact.length ?? 164)
+        }
       }
 
+      const allowance = matchedAny?.extra_allowance ?? (typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0.25))
+      const len = matchedExact?.length ?? currentLen
       const perSftCost = Number(purchasePricePerSft) || 0
       if (perSftCost > 0) {
-        const effectiveW = parsed + (isNaN(allowance) || allowance < 0 ? 0 : allowance)
+        const effectiveW = parsedW + (isNaN(allowance) || allowance < 0 ? 0 : allowance)
         const effectiveLen = isNaN(len) || len <= 0 ? 164 : len
         setPurchasePrice(Number((perSftCost * effectiveW * effectiveLen).toFixed(2)))
       }
@@ -963,7 +983,7 @@ export function MaterialConfigModal({
 
     if (!isNaN(parsedW) && parsedW > 0) {
       setConfiguredRolls((prev) =>
-        prev.map((r) => (r.width === parsedW ? { ...r, extra_allowance: allowance, length: len } : r))
+        prev.map((r) => (r.width === parsedW && (r.length || 164) === len ? { ...r, extra_allowance: allowance } : r))
       )
 
       const effectiveW = parsedW + allowance
@@ -988,11 +1008,13 @@ export function MaterialConfigModal({
     const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
 
     if (!isNaN(parsedW) && parsedW > 0) {
-      setConfiguredRolls((prev) =>
-        prev.map((r) => (r.width === parsedW ? { ...r, length: len, extra_allowance: allowance } : r))
-      )
+      const matched = configuredRolls.find((r) => r.width === parsedW && (r.length || 164) === len)
+      if (matched && matched.extra_allowance !== undefined) {
+        setExtraWidthAllowance(matched.extra_allowance)
+      }
 
-      const effectiveW = parsedW + allowance
+      const effectiveAllowance = matched?.extra_allowance ?? allowance
+      const effectiveW = parsedW + effectiveAllowance
       if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
         setPurchasePrice(Number((Number(purchasePricePerSft) * effectiveW * len).toFixed(2)))
       } else if (purchasePrice !== '' && Number(purchasePrice) > 0) {
@@ -1004,7 +1026,7 @@ export function MaterialConfigModal({
     }
   }
 
-  const handleAddCustomWidth = () => {
+  const handleAddRollSize = () => {
     const val = parseFloat(newWidthInput)
     if (isNaN(val) || val <= 0) return
 
@@ -1014,7 +1036,7 @@ export function MaterialConfigModal({
     const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0 : parsedAllowance
 
     setConfiguredRolls((prev) => {
-      const idx = prev.findIndex((r) => r.width === val)
+      const idx = prev.findIndex((r) => r.width === val && (r.length || 164) === len)
       let next: MaterialRollSizeConfig[]
       if (idx >= 0) {
         next = [...prev]
@@ -1022,7 +1044,7 @@ export function MaterialConfigModal({
       } else {
         next = [...prev, { width: val, extra_allowance: allowance, length: len }]
       }
-      return next.sort((a, b) => a.width - b.width)
+      return next.sort((a, b) => a.width - b.width || (a.length || 0) - (b.length || 0))
     })
 
     const effectiveW = val + allowance
@@ -1040,18 +1062,27 @@ export function MaterialConfigModal({
     const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? 0.25 : parsedAllowance
 
     setConfiguredRolls((prev) => {
-      const exists = prev.some((r) => r.width === width)
+      const exists = prev.some((r) => r.width === width && (r.length || 164) === len)
       if (exists) return prev
-      return [...prev, { width, extra_allowance: allowance, length: len }].sort((a, b) => a.width - b.width)
+      return [...prev, { width, extra_allowance: allowance, length: len }].sort((a, b) => a.width - b.width || (a.length || 0) - (b.length || 0))
     })
+
+    const effectiveW = width + allowance
+    const physicalArea = Number((effectiveW * len).toFixed(2))
+    if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+      setPurchasePrice(Number((Number(purchasePricePerSft) * physicalArea).toFixed(2)))
+    }
   }
 
-  const handleRemoveWidth = (w: number) => {
-    const nextRolls = configuredRolls.filter((x) => x.width !== w)
+  const handleRemoveRoll = (w: number, len: number) => {
+    const nextRolls = configuredRolls.filter((x) => !(x.width === w && (x.length || 164) === len))
     setConfiguredRolls(nextRolls)
     if (nextRolls.length > 0) {
       const activeW = parseFloat(newWidthInput)
-      const nextActive = nextRolls.find((r) => r.width === activeW) || nextRolls[nextRolls.length - 1]
+      const activeL = parseFloat(standardRollLength.toString()) || 164
+      const nextActive = nextRolls.find((r) => r.width === activeW && (r.length || 164) === activeL)
+        || nextRolls.find((r) => r.width === activeW)
+        || nextRolls[nextRolls.length - 1]
       setNewWidthInput(nextActive.width.toString())
       setExtraWidthAllowance(nextActive.extra_allowance ?? 0.25)
       setStandardRollLength(nextActive.length ?? 164)
@@ -1059,8 +1090,8 @@ export function MaterialConfigModal({
       const perSftCost = Number(purchasePricePerSft) || 0
       if (perSftCost > 0) {
         const effectiveW = nextActive.width + (nextActive.extra_allowance ?? 0.25)
-        const len = nextActive.length ?? 164
-        setPurchasePrice(Number((perSftCost * effectiveW * len).toFixed(2)))
+        const effLen = nextActive.length ?? 164
+        setPurchasePrice(Number((perSftCost * effectiveW * effLen).toFixed(2)))
       }
     }
   }
@@ -1132,16 +1163,21 @@ export function MaterialConfigModal({
 
     if (materialType === 'roll' || purchaseUnit === 'roll') {
       const parsedInput = parseFloat(newWidthInput)
-      const activeRoll = configuredRolls.find((r) => r.width === parsedInput)
+      const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
+      const currentLen = isNaN(parsedLen) || parsedLen <= 0 ? 164 : parsedLen
+
+      const activeRoll = configuredRolls.find((r) => r.width === parsedInput && (r.length || 164) === currentLen)
+        || configuredRolls.find((r) => r.width === parsedInput)
+        || (configuredRolls.length > 0 ? configuredRolls[0] : null)
+
       const currentW = !isNaN(parsedInput) && parsedInput > 0
         ? parsedInput
-        : (activeRoll?.width || (configuredRolls.length > 0 ? configuredRolls[0].width : 10))
+        : (activeRoll?.width || 10)
 
       const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
-      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? (activeRoll?.extra_allowance ?? 0) : parsedAllowance
+      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? (activeRoll?.extra_allowance ?? 0.25) : parsedAllowance
 
-      const parsedLen = typeof standardRollLength === 'number' ? standardRollLength : (parseFloat(standardRollLength) || 164)
-      const len = isNaN(parsedLen) || parsedLen <= 0 ? (activeRoll?.length ?? 164) : parsedLen
+      const len = currentLen
 
       // Nominal Area (WITHOUT extra allowance) -> Usable & Sellable square footage
       const nominalRollArea = Number((currentW * len).toFixed(2))
@@ -1249,7 +1285,7 @@ export function MaterialConfigModal({
 
       let finalRolls = [...configuredRolls]
       if (!isNaN(parsedInput) && parsedInput > 0) {
-        const idx = finalRolls.findIndex((r) => r.width === parsedInput)
+        const idx = finalRolls.findIndex((r) => r.width === parsedInput && (r.length || 164) === finalLength)
         if (idx >= 0) {
           finalRolls[idx] = { width: parsedInput, extra_allowance: finalAllowance, length: finalLength }
         } else if (finalRolls.length === 0) {
@@ -1259,8 +1295,8 @@ export function MaterialConfigModal({
       if (finalRolls.length === 0) {
         finalRolls = [{ width: 10, extra_allowance: 0.25, length: 164 }]
       }
-      finalRolls.sort((a, b) => a.width - b.width)
-      const finalWidths = finalRolls.map((r) => r.width)
+      finalRolls.sort((a, b) => a.width - b.width || (a.length || 0) - (b.length || 0))
+      const finalWidths = Array.from(new Set(finalRolls.map((r) => r.width)))
 
       const finalPriceTiers: ProductPriceTiers = {}
       if (priceTiers.retail !== '') finalPriceTiers.retail = Number(priceTiers.retail)
@@ -1794,46 +1830,46 @@ export function MaterialConfigModal({
                   </div>
 
                   {/* Roll Width & Allowance Input Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1">
-                    <div className="sm:col-span-6">
-                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                        Roll Width (Feet) + Extra Allowance
-                      </Label>
-                      <div className="flex items-center gap-1.5">
-                        <div className="relative flex-1">
-                          <Input
-                            type="number"
-                            step="any"
-                            min="0"
-                            placeholder="e.g. 10"
-                            value={newWidthInput}
-                            onChange={(e) => handleWidthInputChange(e.target.value)}
-                            className="h-9 text-xs font-mono font-bold pr-7"
-                          />
-                          <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
-                        </div>
-                        <span className="text-sm font-bold text-slate-400">+</span>
-                        <div className="relative w-24">
-                          <Input
-                            type="number"
-                            step="any"
-                            min="0"
-                            placeholder="0.25"
-                            value={extraWidthAllowance}
-                            onChange={(e) => handleAllowanceChange(e.target.value)}
-                            className="h-9 text-xs font-mono font-bold pr-7"
-                          />
-                          <span className="absolute right-2 top-2 text-[10px] font-bold text-slate-400">ft</span>
+                  <div className="space-y-2.5 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                      <div className="sm:col-span-5">
+                        <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                          Roll Width (Feet) + Extra Allowance
+                        </Label>
+                        <div className="flex items-center gap-1.5">
+                          <div className="relative flex-1">
+                            <Input
+                              type="number"
+                              step="any"
+                              min="0"
+                              placeholder="e.g. 10"
+                              value={newWidthInput}
+                              onChange={(e) => handleWidthInputChange(e.target.value)}
+                              className="h-9 text-xs font-mono font-bold pr-7"
+                            />
+                            <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                          </div>
+                          <span className="text-sm font-bold text-slate-400">+</span>
+                          <div className="relative w-24">
+                            <Input
+                              type="number"
+                              step="any"
+                              min="0"
+                              placeholder="0.25"
+                              value={extraWidthAllowance}
+                              onChange={(e) => handleAllowanceChange(e.target.value)}
+                              className="h-9 text-xs font-mono font-bold pr-7"
+                            />
+                            <span className="absolute right-2 top-2 text-[10px] font-bold text-slate-400">ft</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="sm:col-span-4">
-                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                        Roll Length (Feet)
-                      </Label>
-                      <div className="flex items-center gap-1.5">
-                        <div className="relative flex-1">
+                      <div className="sm:col-span-5">
+                        <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                          Roll Length (Feet)
+                        </Label>
+                        <div className="relative">
                           <Input
                             type="number"
                             step="any"
@@ -1845,63 +1881,71 @@ export function MaterialConfigModal({
                           />
                           <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
                         </div>
-                        <button
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <Button
                           type="button"
-                          onClick={() => handleRollLengthChange('100')}
-                          className={cn(
-                            'h-9 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
-                            Number(standardRollLength) === 100
-                              ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                          )}
+                          onClick={handleAddRollSize}
+                          className="w-full h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer shadow-xs"
                         >
-                          100ft
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRollLengthChange('164')}
-                          className={cn(
-                            'h-9 px-2 rounded-md text-[11px] font-bold border transition-colors cursor-pointer shrink-0',
-                            Number(standardRollLength) === 164
-                              ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                          )}
-                        >
-                          164ft (50m)
-                        </button>
+                          <Plus className="w-3.5 h-3.5 mr-1" /> Add Size
+                        </Button>
                       </div>
                     </div>
 
-                    <div className="sm:col-span-2">
-                      <Button
-                        type="button"
-                        onClick={handleAddCustomWidth}
-                        className="w-full h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5 mr-1" /> Add
-                      </Button>
+                    {/* Quick Preset Roll Length Buttons */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mr-1">
+                        Preset Lengths:
+                      </span>
+                      {QUICK_ROLL_LENGTH_PRESETS.map((lp) => {
+                        const isSelected = Number(standardRollLength) === lp.length
+                        return (
+                          <button
+                            key={lp.length}
+                            type="button"
+                            onClick={() => handleRollLengthChange(lp.length.toString())}
+                            className={cn(
+                              'px-2 py-0.5 rounded-md text-[10px] font-mono font-bold transition-all cursor-pointer border',
+                              isSelected
+                                ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                                : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                            )}
+                          >
+                            {lp.label}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
                   {/* Configured Roll Sizes Matrix */}
                   {configuredRolls.length > 0 && (
-                    <div className="pt-2 border-t border-blue-200/40 dark:border-blue-900/40">
-                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                        Active Configured Roll Widths & Discrete Economics:
-                      </span>
+                    <div className="pt-2.5 border-t border-blue-200/40 dark:border-blue-900/40 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                          Active Configured Roll Sizes (Width × Length) & Discrete Economics:
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          {configuredRolls.length} configured variant{configuredRolls.length > 1 ? 's' : ''}
+                        </span>
+                      </div>
                       <div className="flex flex-wrap items-center gap-1.5">
                         {configuredRolls.map((roll) => {
-                          const rollAllowance = roll.extra_allowance ?? 0.25
+                          const rollAllowance = roll.extra_allowance !== undefined ? roll.extra_allowance : 0.25
                           const rollLen = roll.length ?? 164
                           const effectiveW = roll.width + rollAllowance
                           const rollArea = effectiveW * rollLen
                           const perSftCost = Number(purchasePricePerSft) || 0
                           const rollPrice = perSftCost > 0 ? Number((perSftCost * rollArea).toFixed(0)) : null
-                          const isCurrentActive = parseFloat(newWidthInput) === roll.width
+                          const isCurrentActive =
+                            parseFloat(newWidthInput) === roll.width &&
+                            (parseFloat(standardRollLength.toString()) || 164) === rollLen
 
                           return (
                             <span
-                              key={roll.width}
+                              key={`${roll.width}x${rollLen}`}
                               onClick={() => handleSelectRoll(roll)}
                               className={cn(
                                 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer shadow-2xs',
@@ -1923,10 +1967,10 @@ export function MaterialConfigModal({
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  handleRemoveWidth(roll.width)
+                                  handleRemoveRoll(roll.width, rollLen)
                                 }}
                                 className="ml-0.5 text-slate-400 hover:text-rose-600 cursor-pointer text-sm font-bold"
-                                title="Remove width"
+                                title={`Remove ${roll.width}ft × ${rollLen}ft roll`}
                               >
                                 ×
                               </button>
