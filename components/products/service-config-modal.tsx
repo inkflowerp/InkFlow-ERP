@@ -186,6 +186,7 @@ export function ServiceConfigModal({
 
   // 6. Pricing, Customer Tiers & Margins
   const [sellingPrice, setSellingPrice] = useState<number | ''>('')
+  const [purchasePrice, setPurchasePrice] = useState<number | ''>('')
   const [minimumCharge, setMinimumCharge] = useState<number | ''>('')
   const [baseCostEstimate, setBaseCostEstimate] = useState<number | ''>('')
   const [targetMargin, setTargetMargin] = useState<number>(35)
@@ -226,7 +227,9 @@ export function ServiceConfigModal({
       setSellingUnit(initialData.selling_unit || initialData.unit || 'sft')
       setPurchaseUnit(initialData.purchase_unit || 'roll')
       setSellingPrice(initialData.selling_price || '')
-      setBaseCostEstimate(initialData.base_cost || '')
+      const cost = initialData.purchase_price ?? initialData.base_cost ?? ''
+      setPurchasePrice(cost)
+      setBaseCostEstimate(cost)
       setIsActive(initialData.is_active !== false)
       setDescription(initialData.description || '')
       setPricingMethod((initialData.pricing_method as any) || 'per_area')
@@ -277,6 +280,7 @@ export function ServiceConfigModal({
       setSellingUnit('sft')
       setPurchaseUnit('roll')
       setSellingPrice('')
+      setPurchasePrice('')
       setBaseCostEstimate('')
       setIsActive(true)
       setDescription('')
@@ -321,10 +325,10 @@ export function ServiceConfigModal({
 
   // Live Gross Margin Analysis
   const marginMetrics = useMemo(() => {
-    const cost = Number(baseCostEstimate) || 0
+    const cost = Number(purchasePrice !== '' ? purchasePrice : baseCostEstimate) || 0
     const sp = Number(sellingPrice) || 0
     return calculateGrossMargin(cost, sp)
-  }, [baseCostEstimate, sellingPrice])
+  }, [purchasePrice, baseCostEstimate, sellingPrice])
 
   // Auto-fill price tiers based on standard industry percentages
   const handleAutoFillTiers = (discountStrategy: 'standard' | 'aggressive' | 'reset') => {
@@ -627,7 +631,8 @@ export function ServiceConfigModal({
         purchase_unit: purchaseUnit,
         pricing_method: pricingMethod,
         selling_price: sp,
-        base_cost: baseCostEstimate !== '' ? Number(baseCostEstimate) : 0,
+        purchase_price: purchasePrice !== '' ? Number(purchasePrice) : (baseCostEstimate !== '' ? Number(baseCostEstimate) : 0),
+        base_cost: baseCostEstimate !== '' ? Number(baseCostEstimate) : (purchasePrice !== '' ? Number(purchasePrice) : 0),
         cost_basis_type: 'direct_cost',
         price_tiers: finalPriceTiers,
         target_margin_percentage: Number(targetMargin) || 35.0,
@@ -1745,9 +1750,9 @@ export function ServiceConfigModal({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
-                    Base Selling Rate (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'}) <span className="text-rose-500">*</span>
+                <div className="flex flex-col justify-between">
+                  <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
+                    <span>Base Selling Rate (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'}) <span className="text-rose-500">*</span></span>
                   </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
@@ -1765,9 +1770,31 @@ export function ServiceConfigModal({
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
-                    Minimum Order Charge (৳ Floor)
+                <div className="flex flex-col justify-between">
+                  <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
+                    <span>Purchase Price (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'})</span>
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="e.g. 24.00"
+                      value={purchasePrice !== '' ? purchasePrice : baseCostEstimate}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : parseFloat(e.target.value)
+                        setPurchasePrice(val)
+                        setBaseCostEstimate(val)
+                      }}
+                      className="pl-7 h-9 text-xs font-mono font-semibold text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-between">
+                  <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
+                    <span>Minimum Order Charge (৳ Floor)</span>
                   </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
@@ -1779,24 +1806,6 @@ export function ServiceConfigModal({
                       value={minimumCharge}
                       onChange={(e) => setMinimumCharge(e.target.value === '' ? '' : parseFloat(e.target.value))}
                       className="pl-7 h-9 text-xs font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
-                    Base Material Cost Basis (৳ / {sellingUnit})
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
-                    <Input
-                      type="number"
-                      step="any"
-                      min="0"
-                      placeholder="e.g. 24.00"
-                      value={baseCostEstimate}
-                      onChange={(e) => setBaseCostEstimate(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="pl-7 h-9 text-xs font-mono font-semibold"
                     />
                   </div>
                 </div>
