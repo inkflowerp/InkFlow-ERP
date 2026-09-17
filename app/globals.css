@@ -167,11 +167,6 @@ h6 {
 /* Base font-family and sizing inheritance for controls */
 button, input, select, textarea {
   font-family: inherit;
-  color: inherit;
-}
-
-select {
-  color: inherit;
 }
 
 option {
@@ -180,8 +175,13 @@ option {
 }
 
 .dark option {
-  background-color: #0f172a;
-  color: #f8fafc;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.dark optgroup {
+  background-color: #0f172a !important;
+  color: #94a3b8 !important;
 }
 
 /* Numeric & Tabular Data - Tabular alignment on primary UI font for financial figures, KPIs, tables, codes & IDs */
