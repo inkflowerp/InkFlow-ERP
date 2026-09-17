@@ -9,6 +9,7 @@ export type ProductType =
   | 'material'
   | 'ready_product'
   | 'production_product'
+  | 'production'
   | 'service'
   | 'finishing'
   | 'additional'
@@ -585,6 +586,33 @@ export interface ProductRecord {
   selected_inks?: LinkedInkChannel[]
   consume_per_unit_ml?: number
   ink_consumption_ml?: number
+  // Production & Fabrication fields
+  production_category?: string
+  production_material_id?: string | null
+  production_material_name?: string | null
+  structure_frame_type?: string
+  frame_depth?: string
+  lighting_type?: string
+  led_module_material_id?: string | null
+  power_supply_material_id?: string | null
+  fabrication_method?: string
+  // Installation fields
+  installation_category?: string
+  installation_hardware_id?: string | null
+  installation_hardware_name?: string | null
+  installation_height_tier?: string
+  installation_crew_size?: number
+  safety_equipment_required?: boolean
+  // Delivery fields
+  delivery_category?: string
+  delivery_vehicle_type?: string
+  packaging_material_id?: string | null
+  packaging_material_name?: string | null
+  delivery_distance_zone?: string
+  // General fields
+  general_category?: string
+  deliverable_format?: string
+  turnaround_hours?: number
   // Computed commercial helpers
   effective_unit_cost?: number
   suggested_selling_price?: number
@@ -718,6 +746,33 @@ export interface ServiceConfiguration {
   ink_cost?: number
   ink_cost_per_unit?: number
   cost_breakdown?: ProductCostBreakdown
+  // Production & Fabrication fields
+  production_category?: string
+  production_material_id?: string | null
+  production_material_name?: string | null
+  structure_frame_type?: string
+  frame_depth?: string
+  lighting_type?: string
+  led_module_material_id?: string | null
+  power_supply_material_id?: string | null
+  fabrication_method?: string
+  // Installation fields
+  installation_category?: string
+  installation_hardware_id?: string | null
+  installation_hardware_name?: string | null
+  installation_height_tier?: string
+  installation_crew_size?: number
+  safety_equipment_required?: boolean
+  // Delivery fields
+  delivery_category?: string
+  delivery_vehicle_type?: string
+  packaging_material_id?: string | null
+  packaging_material_name?: string | null
+  delivery_distance_zone?: string
+  // General fields
+  general_category?: string
+  deliverable_format?: string
+  turnaround_hours?: number
 }
 
 export interface MaterialRollSizeConfig {

@@ -201,6 +201,116 @@ export const LAMINATION_MICRON_PRESETS = [
   { label: '250 Micron (Heavy Duty Rigid)', value: '250' },
 ]
 
+export const DEFAULT_PRODUCTION_CATEGORIES: Array<{
+  id: string
+  name: string
+  name_bn: string
+  defaultUnit: string
+  defaultMethod: PricingMethod
+  defaultFrame: string
+  defaultDepth: string
+  defaultLighting: string
+}> = [
+  { id: 'signage_fabrication', name: 'Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)', name_bn: 'সাইনবোর্ড ও মেটাল ফ্রেম স্ট্রাকচার', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: '1" MS Square Box Pipe (20 gauge)', defaultDepth: '2 inch', defaultLighting: 'none' },
+  { id: 'acrylic_3d_letters', name: '3D Acrylic, SS & Neon Letters (এক্রিলিক ও ৩ডি নিয়ন লেটার)', name_bn: 'এক্রিলিক ও ৩ডি নিয়ন লেটার', defaultUnit: 'inch', defaultMethod: 'per_length', defaultFrame: 'SS 304 Mirror Gold/Silver Profile', defaultDepth: '2 inch', defaultLighting: 'led_backlit' },
+  { id: 'lightbox_led', name: 'LED Backlit & Slim Lightboxes (লাইটবক্স ও এলইডি ফ্রেম)', name_bn: 'লাইটবক্স ও এলইডি ডিসপ্লে ফ্রেম', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Aluminum Profile Snap Frame', defaultDepth: '4 inch', defaultLighting: 'led_backlit' },
+  { id: 'cnc_wood_fabrication', name: 'CNC Router & Laser Engraving (সিএনসি ও লেজার কাটিং/খোদাই)', name_bn: 'সিএনসি ও লেজার কাটিং/খোদাই', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Frameless ACP/MDF Backing', defaultDepth: '1 inch', defaultLighting: 'none' },
+  { id: 'display_kiosks', name: 'POS Displays, Kiosks & Gondolas (ডিসপ্লে কিয়স্ক ও পিওএসএম বুথ)', name_bn: 'ডিসপ্লে কিয়স্ক ও পিওএসএম বুথ', defaultUnit: 'pcs', defaultMethod: 'per_piece', defaultFrame: '1.5" Heavy MS Angle Frame', defaultDepth: 'Custom Depth', defaultLighting: 'led_edgelit' },
+  { id: 'event_backdrops', name: 'Event Staging & Truss Structures (ইভেন্ট ব্যাকড্রপ ও স্টেজ)', name_bn: 'ইভেন্ট ব্যাকড্রপ ও স্টেজ স্ট্রাকচার', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Heavy Truss & Pipe Structure', defaultDepth: '3 inch', defaultLighting: 'spotlight' },
+]
+
+export const STRUCTURE_FRAME_PRESETS = [
+  { label: '1" MS Square Box Pipe (20 gauge)', value: '1" MS Square Box Pipe (20 gauge)' },
+  { label: '1.5" Heavy MS Angle & Box Frame', value: '1.5" Heavy MS Angle & Box Frame' },
+  { label: '2" Heavy Duty Structural Steel Pipe', value: '2" Heavy Duty Structural Steel Pipe' },
+  { label: 'Aluminum Profile Snap & Fabric Frame', value: 'Aluminum Profile Snap & Fabric Frame' },
+  { label: 'SS 304 Mirror Gold / Silver Finish Frame', value: 'SS 304 Mirror Gold / Silver Finish Frame' },
+  { label: 'Frameless ACP / Foam Board Backing', value: 'Frameless ACP / Foam Board Backing' },
+]
+
+export const FRAME_DEPTH_PRESETS = [
+  { label: '1 inch (Flat Wall Mounted)', value: '1 inch' },
+  { label: '1.5 inch (Standard Signbox)', value: '1.5 inch' },
+  { label: '2 inch (Medium 3D Depth)', value: '2 inch' },
+  { label: '3 inch (Single-Side Lightbox)', value: '3 inch' },
+  { label: '4 inch (Deep Backlit Lightbox)', value: '4 inch' },
+  { label: '6 inch (Double-Sided Projecting Box)', value: '6 inch' },
+  { label: 'Custom Depth Specification', value: 'Custom Depth' },
+]
+
+export const LIGHTING_TYPE_PRESETS = [
+  { label: 'Non-lit (আলোবিহীন সাধারণ স্ট্রাকচার)', value: 'none' },
+  { label: 'LED Backlit Injection Modules (পিছন থেকে সমান্তরাল আলো)', value: 'led_backlit' },
+  { label: 'LED Edge-lit Perimeter Strip (চারপাশ থেকে এজ-লাইট)', value: 'led_edgelit' },
+  { label: 'Flexible Silicone Neon Glow (সিলিকন নিয়ন ফ্লেক্স)', value: 'neon_flex' },
+  { label: 'Frontlit Flood / Spot Light Arms (সামনে থেকে ফ্লাডলাইট)', value: 'spotlight' },
+]
+
+export const FABRICATION_METHOD_PRESETS = [
+  { label: 'Welding, Metal Assembly & Rust-Proof Coating', value: 'Welding & Metal Assembly' },
+  { label: 'Precision CNC Router Cutting & 3D Carving', value: 'CNC Router Cutting' },
+  { label: 'High-Accuracy Acrylic Laser Cutting & Engraving', value: 'Laser Cutting & Engraving' },
+  { label: '3D Letter Automated Channel Bending & Face Gluing', value: 'Letter Channel Bending' },
+  { label: 'Woodwork, Carpentry & Duco Spray Paint Finish', value: 'Woodwork & Duco Paint' },
+]
+
+export const DEFAULT_INSTALLATION_CATEGORIES: Array<{
+  id: string
+  name: string
+  name_bn: string
+  defaultUnit: string
+  defaultMethod: PricingMethod
+  defaultHeight: string
+  defaultCrew: number
+}> = [
+  { id: 'site_pasting', name: 'Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)', name_bn: 'গ্লাস স্টিকার ও ওয়াল পেস্টিং', defaultUnit: 'sft', defaultMethod: 'per_area', defaultHeight: 'ground', defaultCrew: 2 },
+  { id: 'billboard_erection', name: 'Rooftop Billboard & Unipole Fitting (বিলবোর্ড স্থাপন)', name_bn: 'বিলবোর্ড ও ইউনিপোল স্থাপন', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'high_elevation', defaultCrew: 4 },
+  { id: 'signboard_installation', name: 'Shopfront & Fascia Sign Fitting (সাইনবোর্ড ফিটিং)', name_bn: 'সাইনবোর্ড ও সাইন ফিটিং', defaultUnit: 'sft', defaultMethod: 'per_area', defaultHeight: 'fascia_mid', defaultCrew: 2 },
+  { id: 'vehicle_branding', name: 'Vehicle Branding & Fleet Wrapping (গাড়ি ব্র্যান্ডিং)', name_bn: 'গাড়ি ব্র্যান্ডিং ও র‍্যাপিং ফিটিং', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'ground', defaultCrew: 2 },
+  { id: 'exhibition_setup', name: 'Stall Fabrication & Event Setup (মেলা ও স্টল সেটআপ)', name_bn: 'মেলা ও এক্সিবিশন সেটআপ', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'ground', defaultCrew: 3 },
+]
+
+export const HEIGHT_TIER_PRESETS = [
+  { label: 'Ground Level / Indoor (0–10 ft) — সাধারণ মই', value: 'ground' },
+  { label: 'Shopfront / Fascia 1st Floor (10–20 ft) — উঁচু মই', value: 'fascia_mid' },
+  { label: 'Rooftop / High Elevation (> 20 ft) — স্ক্যাফোল্ডিং ও রশি', value: 'high_elevation' },
+]
+
+export const DEFAULT_DELIVERY_CATEGORIES: Array<{
+  id: string
+  name: string
+  name_bn: string
+  defaultUnit: string
+  defaultMethod: PricingMethod
+  defaultVehicle: string
+}> = [
+  { id: 'local_city_delivery', name: 'Local City Van / Bike Delivery (সিটি ডেলিভারি)', name_bn: 'সিটি ডেলিভারি ও পরিবহন', defaultUnit: 'trip', defaultMethod: 'per_job', defaultVehicle: 'pickup_van' },
+  { id: 'freight_transport', name: 'Inter-District Cargo & Freight Transport (আন্তঃজেলা কুরিয়ার)', name_bn: 'আন্তঃজেলা কার্গো ও কুরিয়ার', defaultUnit: 'job', defaultMethod: 'per_job', defaultVehicle: 'covered_van' },
+  { id: 'express_delivery', name: 'Priority Express Delivery (জরুরি এক্সপ্রেস ডেলিভারি)', name_bn: 'জরুরি এক্সপ্রেস ডেলিভারি', defaultUnit: 'trip', defaultMethod: 'per_job', defaultVehicle: 'bike_courier' },
+  { id: 'warehouse_handling', name: 'Packaging, Crating & Dispatch Handling (প্যাকিং ও হ্যান্ডলিং)', name_bn: 'প্যাকেজিং ও ওয়্যারহাউস হ্যান্ডলিং', defaultUnit: 'pcs', defaultMethod: 'per_piece', defaultVehicle: 'pickup_van' },
+]
+
+export const VEHICLE_TYPE_PRESETS = [
+  { label: 'Pickup Van / 1-Ton Truck (পিকআপ ভ্যান / ১-টন ট্রাক)', value: 'pickup_van' },
+  { label: 'Covered Van (কাভার্ড ভ্যান)', value: 'covered_van' },
+  { label: 'Motorbike / Rider Courier (মোটরসাইকেল কুরিয়ার)', value: 'bike_courier' },
+  { label: 'CNG Auto Rickshaw (সিএনজি)', value: 'cng_auto' },
+]
+
+export const DEFAULT_GENERAL_CATEGORIES: Array<{
+  id: string
+  name: string
+  name_bn: string
+  defaultUnit: string
+  defaultMethod: PricingMethod
+  defaultFormat: string
+}> = [
+  { id: 'graphic_design', name: 'Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)', name_bn: 'গ্রাফিক ডিজাইন ও প্রি-প্রেস সার্ভিস', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'vector_ai_pdf' },
+  { id: 'technical_survey', name: 'Site Measurement & Feasibility Survey (সাইট ভিজিট)', name_bn: 'সাইট ভিজিট ও মেজারমেন্ট', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'site_survey_cad' },
+  { id: 'maintenance_repair', name: 'Signboard Maintenance & LED Repair (সাইনবোর্ড মেরামত)', name_bn: 'সাইনবোর্ড মেরামত ও সার্ভিসিং', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'on_site_repair' },
+  { id: 'custom_job_service', name: 'Miscellaneous Custom Service Work (কাস্টম সার্ভিস জব)', name_bn: 'কাস্টম সার্ভিস জব', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'custom_deliverable' },
+]
+
 const INK_CHANNEL_PRESETS = {
   cmyk: [
     { channel: 'Cyan', color_code: '#00aeef', unit_price: 2800, unit: 'bottle' },
@@ -273,6 +383,34 @@ export function ServiceConfigModal({
   const [finishingMethod, setFinishingMethod] = useState<string>('Gloss Thermal Lamination')
   const [laminationMicron, setLaminationMicron] = useState<string | number>('32')
   const [laminationType, setLaminationType] = useState<string>('Gloss')
+
+  // 1.2.1 Production & Fabrication Configuration (when serviceType === 'production')
+  const [productionCategory, setProductionCategory] = useState<string>('Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)')
+  const [productionMaterialId, setProductionMaterialId] = useState<string>('')
+  const [structureFrameType, setStructureFrameType] = useState<string>('1" MS Square Box Pipe (20 gauge)')
+  const [frameDepth, setFrameDepth] = useState<string>('2 inch')
+  const [lightingType, setLightingType] = useState<string>('none')
+  const [ledModuleMaterialId, setLedModuleMaterialId] = useState<string>('')
+  const [powerSupplyMaterialId, setPowerSupplyMaterialId] = useState<string>('')
+  const [fabricationMethod, setFabricationMethod] = useState<string>('Welding & Metal Assembly')
+
+  // 1.2.2 Installation Configuration (when serviceType === 'installation')
+  const [installationCategory, setInstallationCategory] = useState<string>('Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)')
+  const [installationHardwareId, setInstallationHardwareId] = useState<string>('')
+  const [installationHeightTier, setInstallationHeightTier] = useState<string>('ground')
+  const [installationCrewSize, setInstallationCrewSize] = useState<number>(2)
+  const [safetyEquipmentRequired, setSafetyEquipmentRequired] = useState<boolean>(false)
+
+  // 1.2.3 Delivery Configuration (when serviceType === 'delivery')
+  const [deliveryCategory, setDeliveryCategory] = useState<string>('Local City Van / Bike Delivery (সিটি ডেলিভারি)')
+  const [deliveryVehicleType, setDeliveryVehicleType] = useState<string>('pickup_van')
+  const [packagingMaterialId, setPackagingMaterialId] = useState<string>('')
+  const [deliveryDistanceZone, setDeliveryDistanceZone] = useState<string>('inside_city')
+
+  // 1.2.4 General Configuration (when serviceType === 'general')
+  const [generalCategory, setGeneralCategory] = useState<string>('Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)')
+  const [deliverableFormat, setDeliverableFormat] = useState<string>('vector_ai_pdf')
+  const [turnaroundHours, setTurnaroundHours] = useState<number>(24)
 
   // 1.3 Substrate & Auto-Inherited Print Sizes from Selected Printable Material
   const [availableRollWidths, setAvailableRollWidths] = useState<number[]>([3.25, 4.25, 5.25, 6, 10])
@@ -443,6 +581,124 @@ export function ServiceConfigModal({
     })
   }, [availableMaterials])
 
+  // Filter production & fabrication materials from inventory
+  const productionMaterials = useMemo(() => {
+    return availableMaterials.filter((m) => {
+      const cat = (m.category || '').toLowerCase()
+      const n = (m.name || '').toLowerCase()
+      const s = (m.sku || '').toLowerCase()
+      const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
+      return (
+        cat.includes('sheet') ||
+        cat.includes('rigid') ||
+        cat.includes('board') ||
+        cat.includes('foam') ||
+        cat.includes('acrylic') ||
+        cat.includes('acp') ||
+        cat.includes('metal') ||
+        cat.includes('pipe') ||
+        cat.includes('wood') ||
+        cat.includes('mdf') ||
+        cat.includes('hardware') ||
+        cat.includes('structure') ||
+        u === 'sheet' ||
+        u === 'piece' ||
+        u === 'kg' ||
+        u === 'meter' ||
+        u === 'rft' ||
+        n.includes('acrylic') ||
+        n.includes('এক্রিলিক') ||
+        n.includes('foam') ||
+        n.includes('ফোম') ||
+        n.includes('acp') ||
+        n.includes('board') ||
+        n.includes('বোর্ড') ||
+        n.includes('pipe') ||
+        n.includes('পাইপ') ||
+        n.includes('ss') ||
+        n.includes('ms') ||
+        n.includes('sheet') ||
+        n.includes('শীট')
+      )
+    })
+  }, [availableMaterials])
+
+  // Filter electrical & lighting materials from inventory
+  const electricalMaterials = useMemo(() => {
+    return availableMaterials.filter((m) => {
+      const cat = (m.category || '').toLowerCase()
+      const n = (m.name || '').toLowerCase()
+      const s = (m.sku || '').toLowerCase()
+      return (
+        cat.includes('electric') ||
+        cat.includes('led') ||
+        cat.includes('light') ||
+        cat.includes('power') ||
+        cat.includes('smps') ||
+        n.includes('led') ||
+        n.includes('এলইডি') ||
+        n.includes('module') ||
+        n.includes('মডিউল') ||
+        n.includes('smps') ||
+        n.includes('power supply') ||
+        n.includes('পাওয়ার সাপ্লাই') ||
+        n.includes('neon') ||
+        n.includes('নিয়ন') ||
+        n.includes('driver')
+      )
+    })
+  }, [availableMaterials])
+
+  // Filter installation hardware & fasteners from inventory
+  const installationHardwareMaterials = useMemo(() => {
+    return availableMaterials.filter((m) => {
+      const cat = (m.category || '').toLowerCase()
+      const n = (m.name || '').toLowerCase()
+      return (
+        cat.includes('hardware') ||
+        cat.includes('fastener') ||
+        cat.includes('screw') ||
+        cat.includes('bolt') ||
+        cat.includes('tape') ||
+        cat.includes('adhesive') ||
+        cat.includes('silicone') ||
+        n.includes('screw') ||
+        n.includes('bolt') ||
+        n.includes('নাট') ||
+        n.includes('স্ক্রু') ||
+        n.includes('silicone') ||
+        n.includes('সিলিকন') ||
+        n.includes('tape') ||
+        n.includes('টেপ') ||
+        n.includes('anchor') ||
+        n.includes('রয়্যাল প্লাগ')
+      )
+    })
+  }, [availableMaterials])
+
+  // Filter packaging consumables from inventory
+  const packagingMaterials = useMemo(() => {
+    return availableMaterials.filter((m) => {
+      const cat = (m.category || '').toLowerCase()
+      const n = (m.name || '').toLowerCase()
+      return (
+        cat.includes('pack') ||
+        cat.includes('box') ||
+        cat.includes('carton') ||
+        cat.includes('bubble') ||
+        cat.includes('film') ||
+        n.includes('bubble') ||
+        n.includes('বাবল') ||
+        n.includes('carton') ||
+        n.includes('কার্টুন') ||
+        n.includes('box') ||
+        n.includes('বক্স') ||
+        n.includes('stretch') ||
+        n.includes('স্ট্র্যাপ')
+      )
+    })
+  }, [availableMaterials])
+
   // Filtered Catalog Categories based strictly on the selected Service Type
   const filteredCatalogCategories = useMemo(() => {
     const builtIn = SERVICE_TYPE_CATEGORIES[serviceType] || SERVICE_TYPE_CATEGORIES.printing
@@ -582,6 +838,38 @@ export function ServiceConfigModal({
         setPricingMethod(availableCats[0].defaultMethod)
       }
     }
+    if (newType === 'production') {
+      setProductionCategory('Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)')
+      setStructureFrameType('1" MS Square Box Pipe (20 gauge)')
+      setFrameDepth('2 inch')
+      setLightingType('none')
+      setFabricationMethod('Welding & Metal Assembly')
+      setSellingUnit('sft')
+      setPricingMethod('per_area')
+      setPurchaseUnit('sheet')
+    } else if (newType === 'installation') {
+      setInstallationCategory('Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)')
+      setInstallationHeightTier('ground')
+      setInstallationCrewSize(2)
+      setSafetyEquipmentRequired(false)
+      setSellingUnit('sft')
+      setPricingMethod('per_area')
+      setPurchaseUnit('job')
+    } else if (newType === 'delivery') {
+      setDeliveryCategory('Local City Van / Bike Delivery (সিটি ডেলিভারি)')
+      setDeliveryVehicleType('pickup_van')
+      setDeliveryDistanceZone('inside_city')
+      setSellingUnit('trip')
+      setPricingMethod('per_job')
+      setPurchaseUnit('trip')
+    } else if (newType === 'general') {
+      setGeneralCategory('Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)')
+      setDeliverableFormat('vector_ai_pdf')
+      setTurnaroundHours(24)
+      setSellingUnit('job')
+      setPricingMethod('per_job')
+      setPurchaseUnit('job')
+    }
   }
 
   // Auto calculate average ink rate per ml and total ink cost per selling unit
@@ -649,6 +937,41 @@ export function ServiceConfigModal({
       setFinishingMethod((initialData as any).finishing_method || cfg.finishing_method || 'Gloss Thermal Lamination')
       setLaminationMicron((initialData as any).lamination_micron || cfg.lamination_micron || '32')
       setLaminationType((initialData as any).lamination_type || cfg.lamination_type || 'Gloss')
+
+      // Production & Fabrication (when serviceType === 'production')
+      const loadedProdCat = (initialData as any).production_category || cfg.production_category || 'Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)'
+      setProductionCategory(loadedProdCat)
+      const loadedProdMatId = (initialData as any).production_material_id || cfg.production_material_id || ''
+      setProductionMaterialId(loadedProdMatId)
+      setStructureFrameType((initialData as any).structure_frame_type || cfg.structure_frame_type || '1" MS Square Box Pipe (20 gauge)')
+      setFrameDepth((initialData as any).frame_depth || cfg.frame_depth || '2 inch')
+      setLightingType((initialData as any).lighting_type || cfg.lighting_type || 'none')
+      setLedModuleMaterialId((initialData as any).led_module_material_id || cfg.led_module_material_id || '')
+      setPowerSupplyMaterialId((initialData as any).power_supply_material_id || cfg.power_supply_material_id || '')
+      setFabricationMethod((initialData as any).fabrication_method || cfg.fabrication_method || 'Welding & Metal Assembly')
+
+      // Installation & Fitting (when serviceType === 'installation')
+      const loadedInstCat = (initialData as any).installation_category || cfg.installation_category || 'Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)'
+      setInstallationCategory(loadedInstCat)
+      const loadedInstHwId = (initialData as any).installation_hardware_id || cfg.installation_hardware_id || ''
+      setInstallationHardwareId(loadedInstHwId)
+      setInstallationHeightTier((initialData as any).installation_height_tier || cfg.installation_height_tier || 'ground')
+      setInstallationCrewSize((initialData as any).installation_crew_size || cfg.installation_crew_size || 2)
+      setSafetyEquipmentRequired(Boolean((initialData as any).safety_equipment_required ?? cfg.safety_equipment_required))
+
+      // Delivery & Logistics (when serviceType === 'delivery')
+      const loadedDelCat = (initialData as any).delivery_category || cfg.delivery_category || 'Local City Van / Bike Delivery (সিটি ডেলিভারি)'
+      setDeliveryCategory(loadedDelCat)
+      setDeliveryVehicleType((initialData as any).delivery_vehicle_type || cfg.delivery_vehicle_type || 'pickup_van')
+      const loadedPackMatId = (initialData as any).packaging_material_id || cfg.packaging_material_id || ''
+      setPackagingMaterialId(loadedPackMatId)
+      setDeliveryDistanceZone((initialData as any).delivery_distance_zone || cfg.delivery_distance_zone || 'inside_city')
+
+      // General & Design Services (when serviceType === 'general')
+      const loadedGenCat = (initialData as any).general_category || cfg.general_category || 'Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)'
+      setGeneralCategory(loadedGenCat)
+      setDeliverableFormat((initialData as any).deliverable_format || cfg.deliverable_format || 'vector_ai_pdf')
+      setTurnaroundHours((initialData as any).turnaround_hours || cfg.turnaround_hours || 24)
 
       const loadedMethods: string[] = (initialData as any).printing_methods || 
         cfg.printing_methods ||
@@ -732,6 +1055,31 @@ export function ServiceConfigModal({
       setFinishingMethod('Gloss Thermal Lamination')
       setLaminationMicron('32')
       setLaminationType('Gloss')
+
+      setProductionCategory('Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)')
+      setProductionMaterialId('')
+      setStructureFrameType('1" MS Square Box Pipe (20 gauge)')
+      setFrameDepth('2 inch')
+      setLightingType('none')
+      setLedModuleMaterialId('')
+      setPowerSupplyMaterialId('')
+      setFabricationMethod('Welding & Metal Assembly')
+
+      setInstallationCategory('Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)')
+      setInstallationHardwareId('')
+      setInstallationHeightTier('ground')
+      setInstallationCrewSize(2)
+      setSafetyEquipmentRequired(false)
+
+      setDeliveryCategory('Local City Van / Bike Delivery (সিটি ডেলিভারি)')
+      setDeliveryVehicleType('pickup_van')
+      setPackagingMaterialId('')
+      setDeliveryDistanceZone('inside_city')
+
+      setGeneralCategory('Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)')
+      setDeliverableFormat('vector_ai_pdf')
+      setTurnaroundHours(24)
+
       setSelectedPrintingMethods(['Eco-Solvent Print'])
       setPrintableMaterialId('')
       setInkType('Eco-Solvent High Pigment Ink')
@@ -872,6 +1220,45 @@ export function ServiceConfigModal({
       setBaseCostEstimate(Number(matCostVal))
     }
   }
+
+  // Handle selecting Production Raw Material (Base Substrate/Sheet/Pipe)
+  const handleSelectProductionMaterial = (matId: string) => {
+    setProductionMaterialId(matId)
+    if (!matId) return
+    const mat = availableMaterials.find((m) => m.id === matId)
+    if (!mat) return
+    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft ?? mat.cost_per_unit
+    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
+      setMaterialCost(Number(matCostVal))
+      setPurchasePrice(Number(matCostVal))
+      setBaseCostEstimate(Number(matCostVal))
+    }
+  }
+
+  // Handle selecting Installation Hardware & Fasteners Material
+  const handleSelectInstallationHardware = (matId: string) => {
+    setInstallationHardwareId(matId)
+    if (!matId) return
+    const mat = availableMaterials.find((m) => m.id === matId)
+    if (!mat) return
+    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft ?? mat.cost_per_unit
+    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
+      setMaterialCost(Number(matCostVal))
+    }
+  }
+
+  // Handle selecting Delivery Packaging Material
+  const handleSelectPackagingMaterial = (matId: string) => {
+    setPackagingMaterialId(matId)
+    if (!matId) return
+    const mat = availableMaterials.find((m) => m.id === matId)
+    if (!mat) return
+    const matCostVal = (mat as any).purchase_price_per_sft ?? (mat as any).base_cost ?? (mat as any).purchase_price ?? (mat as any).material_config?.purchase_price_per_sft ?? mat.cost_per_unit
+    if (matCostVal !== undefined && matCostVal !== null && matCostVal !== '' && Number(matCostVal) > 0) {
+      setMaterialCost(Number(matCostVal))
+    }
+  }
+
   const handleApplyInkPreset = (presetKey: keyof typeof INK_CHANNEL_PRESETS) => {
     const preset = INK_CHANNEL_PRESETS[presetKey]
     if (preset) {
@@ -1285,6 +1672,29 @@ export function ServiceConfigModal({
         finishing_method: serviceType === 'finishing' ? finishingMethod : undefined,
         lamination_micron: serviceType === 'finishing' ? laminationMicron : undefined,
         lamination_type: serviceType === 'finishing' ? laminationType : undefined,
+        production_category: serviceType === 'production' ? productionCategory : undefined,
+        production_material_id: serviceType === 'production' ? (productionMaterialId || undefined) : undefined,
+        production_material_name: serviceType === 'production' ? (availableMaterials.find((m) => m.id === productionMaterialId)?.name || undefined) : undefined,
+        structure_frame_type: serviceType === 'production' ? structureFrameType : undefined,
+        frame_depth: serviceType === 'production' ? frameDepth : undefined,
+        lighting_type: serviceType === 'production' ? lightingType : undefined,
+        led_module_material_id: serviceType === 'production' ? (ledModuleMaterialId || undefined) : undefined,
+        power_supply_material_id: serviceType === 'production' ? (powerSupplyMaterialId || undefined) : undefined,
+        fabrication_method: serviceType === 'production' ? fabricationMethod : undefined,
+        installation_category: serviceType === 'installation' ? installationCategory : undefined,
+        installation_hardware_id: serviceType === 'installation' ? (installationHardwareId || undefined) : undefined,
+        installation_hardware_name: serviceType === 'installation' ? (availableMaterials.find((m) => m.id === installationHardwareId)?.name || undefined) : undefined,
+        installation_height_tier: serviceType === 'installation' ? installationHeightTier : undefined,
+        installation_crew_size: serviceType === 'installation' ? Number(installationCrewSize) || 2 : undefined,
+        safety_equipment_required: serviceType === 'installation' ? safetyEquipmentRequired : undefined,
+        delivery_category: serviceType === 'delivery' ? deliveryCategory : undefined,
+        delivery_vehicle_type: serviceType === 'delivery' ? deliveryVehicleType : undefined,
+        packaging_material_id: serviceType === 'delivery' ? (packagingMaterialId || undefined) : undefined,
+        packaging_material_name: serviceType === 'delivery' ? (availableMaterials.find((m) => m.id === packagingMaterialId)?.name || undefined) : undefined,
+        delivery_distance_zone: serviceType === 'delivery' ? deliveryDistanceZone : undefined,
+        general_category: serviceType === 'general' ? generalCategory : undefined,
+        deliverable_format: serviceType === 'general' ? deliverableFormat : undefined,
+        turnaround_hours: serviceType === 'general' ? Number(turnaroundHours) || 24 : undefined,
         printing_methods: selectedPrintingMethods,
         printing_method: primaryMethod,
         printable_material_id: printableMaterialId || undefined,
@@ -1302,13 +1712,16 @@ export function ServiceConfigModal({
       }
 
       const selectedFinishingMat = availableMaterials.find((m) => m.id === finishingMaterialId)
+      const selectedProductionMat = availableMaterials.find((m) => m.id === productionMaterialId)
+      const selectedInstallationHardwareMat = availableMaterials.find((m) => m.id === installationHardwareId)
+      const selectedPackagingMat = availableMaterials.find((m) => m.id === packagingMaterialId)
 
       await onSave({
         name: name.trim(),
         name_bn: nameBn.trim() || undefined,
         sku: sku.trim() || `SRV-${Date.now().toString().slice(-5)}`,
-        category: category || (serviceType === 'finishing' ? 'finishing_service' : 'printing_service'),
-        product_type: serviceType === 'finishing' ? 'finishing' : 'print_service',
+        category: category || (serviceType === 'finishing' ? 'finishing_service' : (serviceType === 'production' ? 'production_service' : 'printing_service')),
+        product_type: serviceType === 'finishing' ? 'finishing' : (serviceType === 'production' ? 'fabrication' : 'print_service'),
         entity_type: serviceType === 'finishing' ? 'finishing' : 'service',
         commercial_type: 'service',
         is_service: true,
@@ -1320,6 +1733,29 @@ export function ServiceConfigModal({
         finishing_method: serviceType === 'finishing' ? finishingMethod : undefined,
         lamination_micron: serviceType === 'finishing' ? laminationMicron : undefined,
         lamination_type: serviceType === 'finishing' ? laminationType : undefined,
+        production_category: serviceType === 'production' ? productionCategory : undefined,
+        production_material_id: serviceType === 'production' ? (productionMaterialId || undefined) : undefined,
+        production_material_name: serviceType === 'production' ? (selectedProductionMat?.name || undefined) : undefined,
+        structure_frame_type: serviceType === 'production' ? structureFrameType : undefined,
+        frame_depth: serviceType === 'production' ? frameDepth : undefined,
+        lighting_type: serviceType === 'production' ? lightingType : undefined,
+        led_module_material_id: serviceType === 'production' ? (ledModuleMaterialId || undefined) : undefined,
+        power_supply_material_id: serviceType === 'production' ? (powerSupplyMaterialId || undefined) : undefined,
+        fabrication_method: serviceType === 'production' ? fabricationMethod : undefined,
+        installation_category: serviceType === 'installation' ? installationCategory : undefined,
+        installation_hardware_id: serviceType === 'installation' ? (installationHardwareId || undefined) : undefined,
+        installation_hardware_name: serviceType === 'installation' ? (selectedInstallationHardwareMat?.name || undefined) : undefined,
+        installation_height_tier: serviceType === 'installation' ? installationHeightTier : undefined,
+        installation_crew_size: serviceType === 'installation' ? Number(installationCrewSize) || 2 : undefined,
+        safety_equipment_required: serviceType === 'installation' ? safetyEquipmentRequired : undefined,
+        delivery_category: serviceType === 'delivery' ? deliveryCategory : undefined,
+        delivery_vehicle_type: serviceType === 'delivery' ? deliveryVehicleType : undefined,
+        packaging_material_id: serviceType === 'delivery' ? (packagingMaterialId || undefined) : undefined,
+        packaging_material_name: serviceType === 'delivery' ? (selectedPackagingMat?.name || undefined) : undefined,
+        delivery_distance_zone: serviceType === 'delivery' ? deliveryDistanceZone : undefined,
+        general_category: serviceType === 'general' ? generalCategory : undefined,
+        deliverable_format: serviceType === 'general' ? deliverableFormat : undefined,
+        turnaround_hours: serviceType === 'general' ? Number(turnaroundHours) || 24 : undefined,
         unit: sellingUnit as any,
         selling_unit: sellingUnit,
         purchase_unit: purchaseUnit,
@@ -2101,6 +2537,511 @@ export function ServiceConfigModal({
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Section 2.2: If Service Type == 'production' (Production & Fabrication) */}
+            {serviceType === 'production' && (
+              <div className="space-y-4 p-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20 animate-in fade-in-0">
+                <div className="flex items-center gap-2 pb-2 border-b border-amber-200/60 dark:border-amber-900/60">
+                  <Hammer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Production & Fabrication Parameters (কাঠামো ও মেটাল আর্কিটেকচার)
+                  </h4>
+                </div>
+
+                {/* Production Category & Base Substrate / Sheet / Pipe Material */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Fabrication Category (প্রোডাকশন ক্যাটাগরি) <span className="text-rose-500">*</span>
+                    </Label>
+                    <select
+                      value={productionCategory}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setProductionCategory(val)
+                        const match = DEFAULT_PRODUCTION_CATEGORIES.find((c) => c.name === val)
+                        if (match) {
+                          setStructureFrameType(match.defaultFrame)
+                          setFrameDepth(match.defaultDepth)
+                          setLightingType(match.defaultLighting)
+                          if (match.defaultUnit) {
+                            setSellingUnit(match.defaultUnit)
+                            setPricingMethod(match.defaultMethod)
+                          }
+                        }
+                      }}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {DEFAULT_PRODUCTION_CATEGORIES.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name} ({c.name_bn})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs font-semibold block">
+                        Base Substrate / Sheet / Pipe (Inventory Item)
+                      </Label>
+                      {productionMaterialId && (
+                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-0.5">
+                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
+                        </span>
+                      )}
+                    </div>
+                    <select
+                      value={productionMaterialId}
+                      onChange={(e) => handleSelectProductionMaterial(e.target.value)}
+                      className={cn(
+                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
+                        productionMaterialId
+                          ? 'border-amber-400 dark:border-amber-700 bg-amber-50/40 dark:bg-amber-950/20 text-amber-950 dark:text-amber-200 font-bold'
+                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
+                      )}
+                    >
+                      <option value="">-- Select Sheet Board, Acrylic or MS Pipe --</option>
+                      {(productionMaterials.length > 0 ? productionMaterials : availableMaterials).map((mat) => {
+                        const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || (mat as any).cost_per_unit
+                        return (
+                          <option key={mat.id} value={mat.id}>
+                            {mat.name} ({mat.unit || (mat as any).purchase_unit || 'unit'}){costStr ? ` — ৳${costStr}/${mat.unit || 'unit'}` : ''}
+                          </option>
+                        )
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Structure Frame Type & Frame Depth */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Structure Frame Type (কাঠামো ও ফ্রেমের ধরন)
+                    </Label>
+                    <select
+                      value={structureFrameType}
+                      onChange={(e) => setStructureFrameType(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {STRUCTURE_FRAME_PRESETS.map((f) => (
+                        <option key={f.value} value={f.value}>
+                          {f.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Structure / 3D Frame Depth (কাঠামোর পুরুত্ব/গভীরতা)
+                    </Label>
+                    <select
+                      value={frameDepth}
+                      onChange={(e) => setFrameDepth(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {FRAME_DEPTH_PRESETS.map((d) => (
+                        <option key={d.value} value={d.value}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Lighting Type & Fabrication Method */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Lighting & Illumination (আলোর সংস্থাপন)
+                    </Label>
+                    <select
+                      value={lightingType}
+                      onChange={(e) => setLightingType(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {LIGHTING_TYPE_PRESETS.map((l) => (
+                        <option key={l.value} value={l.value}>
+                          {l.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Fabrication Method (প্রস্তুত প্রণালী ও কৌশল)
+                    </Label>
+                    <select
+                      value={fabricationMethod}
+                      onChange={(e) => setFabricationMethod(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {FABRICATION_METHOD_PRESETS.map((m) => (
+                        <option key={m.value} value={m.value}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* If Lighting is enabled, show Electrical Sub-BOM linkage */}
+                {lightingType !== 'none' && (
+                  <div className="p-3.5 rounded-xl border border-amber-300 dark:border-amber-800/80 bg-amber-100/40 dark:bg-amber-950/40 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Electrical & LED Injection Module Auto-Linkage
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                          LED Module / Strip (Inventory Item)
+                        </Label>
+                        <select
+                          value={ledModuleMaterialId}
+                          onChange={(e) => setLedModuleMaterialId(e.target.value)}
+                          className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                        >
+                          <option value="">-- Select LED Module / Strip --</option>
+                          {electricalMaterials.map((mat) => (
+                            <option key={mat.id} value={mat.id}>
+                              {mat.name} ({mat.unit || 'pcs'})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                          Power Supply SMPS / Transformer (Inventory Item)
+                        </Label>
+                        <select
+                          value={powerSupplyMaterialId}
+                          onChange={(e) => setPowerSupplyMaterialId(e.target.value)}
+                          className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                        >
+                          <option value="">-- Select SMPS Power Supply --</option>
+                          {electricalMaterials.map((mat) => (
+                            <option key={mat.id} value={mat.id}>
+                              {mat.name} ({mat.unit || 'pcs'})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Section 2.3: If Service Type == 'installation' (Installation & Fitting) */}
+            {serviceType === 'installation' && (
+              <div className="space-y-4 p-4 rounded-xl border border-cyan-200 dark:border-cyan-900/60 bg-cyan-50/30 dark:bg-cyan-950/20 animate-in fade-in-0">
+                <div className="flex items-center gap-2 pb-2 border-b border-cyan-200/60 dark:border-cyan-900/60">
+                  <Wrench className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Site Installation & Fitting Configuration
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Installation Category (ইন্সটলেশন ক্যাটাগরি) <span className="text-rose-500">*</span>
+                    </Label>
+                    <select
+                      value={installationCategory}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setInstallationCategory(val)
+                        const match = DEFAULT_INSTALLATION_CATEGORIES.find((c) => c.name === val)
+                        if (match) {
+                          setInstallationHeightTier(match.defaultHeight)
+                          setInstallationCrewSize(match.defaultCrew)
+                          if (match.defaultUnit) {
+                            setSellingUnit(match.defaultUnit)
+                            setPricingMethod(match.defaultMethod)
+                          }
+                        }
+                      }}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {DEFAULT_INSTALLATION_CATEGORIES.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name} ({c.name_bn})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs font-semibold block">
+                        Hardware, Fasteners & Sealants (Inventory Item)
+                      </Label>
+                      {installationHardwareId && (
+                        <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold flex items-center gap-0.5">
+                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
+                        </span>
+                      )}
+                    </div>
+                    <select
+                      value={installationHardwareId}
+                      onChange={(e) => handleSelectInstallationHardware(e.target.value)}
+                      className={cn(
+                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
+                        installationHardwareId
+                          ? 'border-cyan-400 dark:border-cyan-700 bg-cyan-50/40 dark:bg-cyan-950/20 text-cyan-950 dark:text-cyan-200 font-bold'
+                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
+                      )}
+                    >
+                      <option value="">-- Select Fastener, Screws, Silicone or Adhesive --</option>
+                      {(installationHardwareMaterials.length > 0 ? installationHardwareMaterials : availableMaterials).map((mat) => (
+                        <option key={mat.id} value={mat.id}>
+                          {mat.name} ({mat.unit || 'unit'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Elevation / Height Tier (কাজের উচ্চতা)
+                    </Label>
+                    <select
+                      value={installationHeightTier}
+                      onChange={(e) => setInstallationHeightTier(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {HEIGHT_TIER_PRESETS.map((h) => (
+                        <option key={h.value} value={h.value}>
+                          {h.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Technician Crew Size (জনবল)
+                    </Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={installationCrewSize}
+                      onChange={(e) => setInstallationCrewSize(parseInt(e.target.value, 10) || 1)}
+                      className="h-9 text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="flex flex-col justify-end">
+                    <label className="flex items-center gap-2 h-9 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={safetyEquipmentRequired}
+                        onChange={(e) => setSafetyEquipmentRequired(e.target.checked)}
+                        className="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
+                      />
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                        Scaffolding & Safety Gear
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Section 2.4: If Service Type == 'delivery' (Delivery & Logistics) */}
+            {serviceType === 'delivery' && (
+              <div className="space-y-4 p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/30 dark:bg-emerald-950/20 animate-in fade-in-0">
+                <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/60 dark:border-emerald-900/60">
+                  <Truck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Delivery & Logistics Transport Configuration
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Delivery Category (ডেলিভারি ক্যাটাগরি) <span className="text-rose-500">*</span>
+                    </Label>
+                    <select
+                      value={deliveryCategory}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setDeliveryCategory(val)
+                        const match = DEFAULT_DELIVERY_CATEGORIES.find((c) => c.name === val)
+                        if (match) {
+                          setDeliveryVehicleType(match.defaultVehicle)
+                          if (match.defaultUnit) {
+                            setSellingUnit(match.defaultUnit)
+                            setPricingMethod(match.defaultMethod)
+                          }
+                        }
+                      }}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {DEFAULT_DELIVERY_CATEGORIES.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name} ({c.name_bn})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs font-semibold block">
+                        Packaging Consumables (Inventory Item)
+                      </Label>
+                      {packagingMaterialId && (
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
+                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
+                        </span>
+                      )}
+                    </div>
+                    <select
+                      value={packagingMaterialId}
+                      onChange={(e) => handleSelectPackagingMaterial(e.target.value)}
+                      className={cn(
+                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
+                        packagingMaterialId
+                          ? 'border-emerald-400 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-200 font-bold'
+                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
+                      )}
+                    >
+                      <option value="">-- Select Bubble Wrap, Carton or Box --</option>
+                      {(packagingMaterials.length > 0 ? packagingMaterials : availableMaterials).map((mat) => (
+                        <option key={mat.id} value={mat.id}>
+                          {mat.name} ({mat.unit || 'unit'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Vehicle Type (যানবাহন)
+                    </Label>
+                    <select
+                      value={deliveryVehicleType}
+                      onChange={(e) => setDeliveryVehicleType(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {VEHICLE_TYPE_PRESETS.map((v) => (
+                        <option key={v.value} value={v.value}>
+                          {v.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Coverage Zone (ডেলিভারি অঞ্চল)
+                    </Label>
+                    <select
+                      value={deliveryDistanceZone}
+                      onChange={(e) => setDeliveryDistanceZone(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      <option value="inside_city">Inside City Metro (মহানগরীর ভেতরে)</option>
+                      <option value="suburbs">Greater Suburbs / Outer Radius (উপশহর ও সীমানা)</option>
+                      <option value="inter_district">Inter-District Courier / Nationwide (সারাদেশে কুরিয়ার)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Section 2.5: If Service Type == 'general' (General & Design Services) */}
+            {serviceType === 'general' && (
+              <div className="space-y-4 p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-indigo-950/20 animate-in fade-in-0">
+                <div className="flex items-center gap-2 pb-2 border-b border-indigo-200/60 dark:border-indigo-900/60">
+                  <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    General Service & Design Deliverable Configuration
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      General Service Category (সার্ভিস ক্যাটাগরি) <span className="text-rose-500">*</span>
+                    </Label>
+                    <select
+                      value={generalCategory}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setGeneralCategory(val)
+                        const match = DEFAULT_GENERAL_CATEGORIES.find((c) => c.name === val)
+                        if (match) {
+                          setDeliverableFormat(match.defaultFormat)
+                          if (match.defaultUnit) {
+                            setSellingUnit(match.defaultUnit)
+                            setPricingMethod(match.defaultMethod)
+                          }
+                        }
+                      }}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {DEFAULT_GENERAL_CATEGORIES.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name} ({c.name_bn})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Deliverable Format / Output (ফলাফল বা আউটপুট)
+                    </Label>
+                    <select
+                      value={deliverableFormat}
+                      onChange={(e) => setDeliverableFormat(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      <option value="vector_ai_pdf">Print-Ready Vector Files (AI, PDF, EPS)</option>
+                      <option value="site_survey_cad">Site Measurement Sheet & CAD Layout</option>
+                      <option value="on_site_repair">On-Site Technical Maintenance & Inspection</option>
+                      <option value="custom_deliverable">Custom Job Deliverable</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Standard Turnaround Time (সার্ভিস ডেলিভারি সময়)
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={720}
+                        value={turnaroundHours}
+                        onChange={(e) => setTurnaroundHours(parseInt(e.target.value, 10) || 24)}
+                        className="h-9 text-xs font-semibold w-28"
+                      />
+                      <span className="text-xs text-slate-500 font-medium">Hours (ঘণ্টা)</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
