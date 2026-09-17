@@ -570,6 +570,9 @@ export interface ProductRecord {
   available_widths_ft?: number[]
   standard_roll_length_ft?: number
   available_sheet_sizes?: Array<{ width: number; length: number; label?: string }>
+  linked_ink_id?: string | null
+  linked_ink_name?: string | null
+  ink_cost?: number
   // Computed commercial helpers
   effective_unit_cost?: number
   suggested_selling_price?: number
@@ -674,6 +677,10 @@ export interface ServiceConfiguration {
   printing_method?: string
   printable_material_id?: string | null
   printable_material_name?: string | null
+  linked_ink_id?: string | null
+  linked_ink_name?: string | null
+  ink_cost?: number
+  ink_cost_per_unit?: number
 }
 
 export interface MaterialRollSizeConfig {

@@ -142,7 +142,7 @@ export function enrichProductRecord(p: any): ProductRecord {
   // Multi-Component Direct Cost Breakdown
   const cb = p.cost_breakdown || {}
   const matCost = cb.material_cost !== undefined ? Number(cb.material_cost) : effectiveCost
-  const inkCost = Number(cb.ink_cost) || 0
+  const inkCost = Number(cb.ink_cost) || Number(cb.ink) || Number(p.ink_cost) || Number(p.service_config?.ink_cost) || Number(p.service_config?.ink_cost_per_unit) || 0
   const machCost = Number(cb.machine_cost) || 0
   const labCost = Number(cb.labor_cost) || 0
   const finCost = Number(cb.finishing_cost) || 0
@@ -252,6 +252,9 @@ export function enrichProductRecord(p: any): ProductRecord {
       other_direct_cost: othCost,
       total_direct_cost: estimatedDirectCost,
     },
+    linked_ink_id: p.linked_ink_id || serviceConfig?.linked_ink_id || formula.linked_ink_id || null,
+    linked_ink_name: p.linked_ink_name || serviceConfig?.linked_ink_name || formula.linked_ink_name || null,
+    ink_cost: inkCost,
     components,
     supplier_prices: p.supplier_prices || [],
     vat_applicable: Boolean(p.vat_applicable),

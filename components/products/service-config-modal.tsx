@@ -39,6 +39,7 @@ import {
   Search,
   Star,
   Layers3,
+  Droplets,
 } from 'lucide-react'
 import type {
   ProductRecord,
@@ -148,6 +149,47 @@ export function ServiceConfigModal({
   const [printableMaterialId, setPrintableMaterialId] = useState<string>('')
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
+
+  // 1.1 Ink Linking & Consumables State
+  const [linkedInkId, setLinkedInkId] = useState<string>('')
+  const [linkedInkName, setLinkedInkName] = useState<string>('')
+  const [inkCost, setInkCost] = useState<number | ''>('')
+  const [inkCostMode, setInkCostMode] = useState<'method' | 'inventory' | 'custom'>('method')
+
+  // Ink materials filter from inventory
+  const inkMaterials = useMemo(() => {
+    return availableMaterials.filter((m) => {
+      const cat = (m.category || '').toLowerCase()
+      const n = (m.name || '').toLowerCase()
+      const s = (m.sku || '').toLowerCase()
+      const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
+      return (
+        cat.includes('ink') ||
+        cat.includes('liquid') ||
+        cat.includes('chemical') ||
+        cat === 'inks' ||
+        cat === 'ink_chemistry' ||
+        n.includes('ink') ||
+        n.includes('ইঙ্ক') ||
+        n.includes('কালি') ||
+        s.includes('ink') ||
+        u === 'liter' ||
+        u === 'ml' ||
+        u === 'bottle' ||
+        u === 'can'
+      )
+    })
+  }, [availableMaterials])
+
+  // Substrate materials (media rolls, boards, etc.)
+  const substrateMaterials = useMemo(() => {
+    return availableMaterials.filter((m) => {
+      const cat = (m.category || '').toLowerCase()
+      const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
+      const isExplicitInkOnly = (cat === 'ink' || cat === 'inks' || cat === 'ink_chemistry') && (u === 'liter' || u === 'ml' || u === 'bottle')
+      return !isExplicitInkOnly
+    })
+  }, [availableMaterials])
 
   // 2. Commercial Units & Dimensions
   const [sellingUnit, setSellingUnit] = useState<string>('sft')
@@ -276,6 +318,21 @@ export function ServiceConfigModal({
       const initialMatId = (initialData as any).printable_material_id || cfg.printable_material_id || primaryReq?.material_id || ''
       setPrintableMaterialId(initialMatId)
 
+      // Load linked ink configuration
+      const loadedInkId = (initialData as any).linked_ink_id || cfg.linked_ink_id || ''
+      const loadedInkName = (initialData as any).linked_ink_name || cfg.linked_ink_name || ''
+      const loadedInkCost = (initialData.cost_breakdown?.ink_cost ?? initialData.cost_breakdown?.ink ?? cfg.ink_cost ?? cfg.ink_cost_per_unit ?? (initialData as any).ink_cost) ?? ''
+      setLinkedInkId(loadedInkId)
+      setLinkedInkName(loadedInkName)
+      setInkCost(loadedInkCost !== undefined && loadedInkCost !== null && loadedInkCost !== '' ? Number(loadedInkCost) : '')
+      if (loadedInkId) {
+        setInkCostMode('inventory')
+      } else if (loadedInkCost !== '' && Number(loadedInkCost) > 0) {
+        setInkCostMode('custom')
+      } else {
+        setInkCostMode('method')
+      }
+
       setDimensionUnit(cfg.dimension_unit || 'ft')
       setAllowCustomDimensions(cfg.allow_custom_dimensions !== false)
       setAvailableRollWidths(cfg.available_widths_ft || initialData.available_widths_ft || [2, 2.5, 3, 3.5, 4, 4.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10])
@@ -310,6 +367,10 @@ export function ServiceConfigModal({
       setCategory('printing_service')
       setSelectedPrintingMethods([availableMethodsList[0]?.name || 'Eco-Solvent Print'])
       setPrintableMaterialId('')
+      setLinkedInkId('')
+      setLinkedInkName(availableMethodsList[0]?.name ? `${availableMethodsList[0].name} Ink` : 'Eco-Solvent Ink')
+      setInkCost(3.5)
+      setInkCostMode('method')
       setSellingUnit('sft')
       setPurchaseUnit('roll')
       setSellingPrice('')
@@ -356,12 +417,42 @@ export function ServiceConfigModal({
     setErrorMessage(null)
   }, [initialData, isOpen, availableMethodsList])
 
-  // Live Gross Margin Analysis
+  const handleSelectInkMaterial = (matId: string) => {
+    setLinkedInkId(matId)
+    if (!matId) {
+      setLinkedInkName('')
+      return
+    }
+    const mat = availableMaterials.find((m) => m.id === matId)
+    if (mat) {
+      setLinkedInkName(mat.name)
+      const cost = (mat as any).base_cost || (mat as any).material_config?.effective_unit_cost || (mat as any).cost_per_unit || (mat as any).purchase_price
+      if (cost !== undefined && cost !== null && cost !== '' && Number(cost) > 0) {
+        setInkCost(Number(cost))
+      }
+      setInkCostMode('inventory')
+    }
+  }
+
+  const handleApplyMethodInkRate = (methodName?: string) => {
+    const targetName = methodName || selectedPrintingMethods[0] || availableMethodsList[0]?.name || 'Eco-Solvent Print'
+    const targetMethod = availableMethodsList.find((m) => m.name === targetName)
+    setLinkedInkId('')
+    setLinkedInkName(targetMethod?.name_bn ? `${targetMethod.name} (${targetMethod.name_bn})` : (targetMethod?.name || 'Standard Ink'))
+    const rate = (targetMethod as any)?.cost_per_sqft !== undefined ? Number((targetMethod as any).cost_per_sqft) : 3.5
+    const realisticRate = rate > 20 ? 8.0 : (rate > 0 ? rate : 3.5)
+    setInkCost(realisticRate)
+    setInkCostMode('method')
+  }
+
+  // Live Gross Margin Analysis factoring in both Substrate Material & Linked Ink Cost
   const marginMetrics = useMemo(() => {
-    const cost = Number(purchasePrice !== '' ? purchasePrice : baseCostEstimate) || 0
+    const substrateCost = Number(purchasePrice !== '' ? purchasePrice : baseCostEstimate) || 0
+    const inkCostNum = Number(inkCost) || 0
+    const totalCost = substrateCost + inkCostNum
     const sp = Number(sellingPrice) || 0
-    return calculateGrossMargin(cost, sp)
-  }, [purchasePrice, baseCostEstimate, sellingPrice])
+    return calculateGrossMargin(totalCost, sp)
+  }, [purchasePrice, baseCostEstimate, inkCost, sellingPrice])
 
   // Auto-fill price tiers based on standard industry percentages
   const handleAutoFillTiers = (discountStrategy: 'standard' | 'aggressive' | 'reset') => {
@@ -725,6 +816,9 @@ export function ServiceConfigModal({
 
       const selectedMat = availableMaterials.find((m) => m.id === printableMaterialId)
       const primaryMethod = selectedPrintingMethods[0] || ''
+      const substrateCostNum = purchasePrice !== '' ? Number(purchasePrice) : (baseCostEstimate !== '' ? Number(baseCostEstimate) : 0)
+      const inkCostNum = Number(inkCost) || 0
+      const totalCombinedCost = substrateCostNum + inkCostNum
 
       const serviceConfig: ServiceConfiguration = {
         dimension_unit: dimensionUnit,
@@ -745,6 +839,10 @@ export function ServiceConfigModal({
         printing_method: primaryMethod,
         printable_material_id: printableMaterialId || undefined,
         printable_material_name: selectedMat?.name || undefined,
+        linked_ink_id: linkedInkId || undefined,
+        linked_ink_name: linkedInkName || undefined,
+        ink_cost: inkCostNum,
+        ink_cost_per_unit: inkCostNum,
       }
 
       await onSave({
@@ -765,9 +863,19 @@ export function ServiceConfigModal({
         printing_method: primaryMethod,
         printable_material_id: printableMaterialId || undefined,
         printable_material_name: selectedMat?.name || undefined,
+        linked_ink_id: linkedInkId || undefined,
+        linked_ink_name: linkedInkName || undefined,
+        ink_cost: inkCostNum,
         selling_price: sp,
-        purchase_price: purchasePrice !== '' ? Number(purchasePrice) : (baseCostEstimate !== '' ? Number(baseCostEstimate) : 0),
-        base_cost: baseCostEstimate !== '' ? Number(baseCostEstimate) : (purchasePrice !== '' ? Number(purchasePrice) : 0),
+        purchase_price: totalCombinedCost,
+        base_cost: totalCombinedCost,
+        cost_breakdown: {
+          material_cost: substrateCostNum,
+          ink_cost: inkCostNum,
+          machine_cost: 0,
+          labor_cost: 0,
+          total_direct_cost: totalCombinedCost,
+        },
         cost_basis_type: 'direct_cost',
         price_tiers: finalPriceTiers,
         target_margin_percentage: Number(targetMargin) || 35.0,
@@ -1080,6 +1188,197 @@ export function ServiceConfigModal({
                     Please select at least one printing method for production routing.
                   </p>
                 )}
+              </div>
+
+              {/* Link Ink & Consumables Cost (কালি ও ইঙ্ক খরচ সংযুক্তি) */}
+              <div className="rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/40 dark:bg-blue-950/20 p-3.5 space-y-3 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-blue-200/60 dark:border-blue-800/60">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                      <Droplets className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                          Link Ink & Consumables Cost (কালি ও ইঙ্ক খরচ)
+                        </span>
+                        {inkCost !== '' && Number(inkCost) > 0 && (
+                          <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5 bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300">
+                            ৳{Number(inkCost).toFixed(2)}/{sellingUnit || 'sft'}
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Link ink chemistry from inventory or set technology consumption rate per {sellingUnit || 'sft'}.
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Mode Selector */}
+                  <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-0.5 rounded-lg border border-blue-200 dark:border-blue-800 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => handleApplyMethodInkRate()}
+                      className={cn(
+                        'px-2 py-0.5 rounded-md font-semibold transition-colors cursor-pointer',
+                        inkCostMode === 'method'
+                          ? 'bg-blue-600 text-white shadow-2xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-blue-600'
+                      )}
+                    >
+                      Method Default
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInkCostMode('inventory')}
+                      className={cn(
+                        'px-2 py-0.5 rounded-md font-semibold transition-colors cursor-pointer',
+                        inkCostMode === 'inventory'
+                          ? 'bg-blue-600 text-white shadow-2xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-blue-600'
+                      )}
+                    >
+                      Stock Item
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInkCostMode('custom')}
+                      className={cn(
+                        'px-2 py-0.5 rounded-md font-semibold transition-colors cursor-pointer',
+                        inkCostMode === 'custom'
+                          ? 'bg-blue-600 text-white shadow-2xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-blue-600'
+                      )}
+                    >
+                      Custom Rate
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Ink Selection or Method Source */}
+                  <div className="sm:col-span-2 space-y-1">
+                    <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                      {inkCostMode === 'inventory'
+                        ? 'Select Ink from Inventory Stock (ইনভেন্টরি ইঙ্ক/কালি)'
+                        : 'Linked Ink Description / Formulation Name'}
+                    </Label>
+                    {inkCostMode === 'inventory' ? (
+                      <select
+                        value={linkedInkId}
+                        onChange={(e) => handleSelectInkMaterial(e.target.value)}
+                        className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                      >
+                        <option value="">-- Choose Stock Ink Item --</option>
+                        {inkMaterials.length > 0 ? (
+                          inkMaterials.map((ink) => (
+                            <option key={ink.id} value={ink.id}>
+                              {ink.name} ({ink.unit || (ink as any).purchase_unit || 'bottle'}) — ৳{(ink as any).purchase_price || ink.cost_per_unit || (ink as any).base_cost || 0}
+                            </option>
+                          ))
+                        ) : (
+                          availableMaterials.map((mat) => (
+                            <option key={mat.id} value={mat.id}>
+                              {mat.name} ({mat.unit || (mat as any).purchase_unit})
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    ) : (
+                      <Input
+                        placeholder="e.g. Eco-Solvent High Pigment CMYK, UV Flexible 4-Color Ink..."
+                        value={linkedInkName}
+                        onChange={(e) => {
+                          setLinkedInkName(e.target.value)
+                          setLinkedInkId('')
+                          setInkCostMode('custom')
+                        }}
+                        className="h-9 text-xs bg-white dark:bg-slate-900"
+                      />
+                    )}
+                  </div>
+
+                  {/* Ink Rate Field (৳ / SFT) */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                        Ink Rate (৳ / {sellingUnit || 'sft'})
+                      </Label>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">৳</span>
+                      <Input
+                        type="number"
+                        step="any"
+                        min="0"
+                        placeholder="e.g. 3.50"
+                        value={inkCost}
+                        onChange={(e) => {
+                          setInkCost(e.target.value === '' ? '' : parseFloat(e.target.value))
+                          setInkCostMode('custom')
+                        }}
+                        className="h-9 text-xs font-mono font-bold pl-6 bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Ink Rate Presets */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">
+                    Quick Rates:
+                  </span>
+                  {[
+                    { label: 'Eco-Solvent (৳3.5/sft)', rate: 3.5, name: 'Eco-Solvent CMYK Ink' },
+                    { label: 'Solvent Flex (৳2.5/sft)', rate: 2.5, name: 'Heavy Solvent Ink' },
+                    { label: 'UV Flexible (৳6.5/sft)', rate: 6.5, name: 'UV Flexible Ink' },
+                    { label: 'UV Flatbed (৳8.0/sft)', rate: 8.0, name: 'UV Curable Ink' },
+                    { label: 'HP Latex (৳10.0/sft)', rate: 10.0, name: 'HP Latex Ink' },
+                    { label: 'DTF Textile (৳7.0/sft)', rate: 7.0, name: 'DTF Textile Ink' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        setLinkedInkId('')
+                        setLinkedInkName(preset.name)
+                        setInkCost(preset.rate)
+                        setInkCostMode('custom')
+                      }}
+                      className={cn(
+                        'px-2 py-0.5 rounded-md text-[11px] font-mono border transition-all cursor-pointer',
+                        Number(inkCost) === preset.rate
+                          ? 'bg-blue-600 text-white border-blue-600 font-bold shadow-2xs'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Live Combined Cost Helper Banner */}
+                {(() => {
+                  const subCost = Number(purchasePrice !== '' ? purchasePrice : baseCostEstimate) || 0
+                  const inkC = Number(inkCost) || 0
+                  const combined = subCost + inkC
+                  return (
+                    <div className="p-2 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-blue-100 dark:border-blue-900/40 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                      <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                        <span>Substrate: <strong className="text-slate-900 dark:text-white">৳{subCost.toFixed(2)}</strong></span>
+                        <span>+</span>
+                        <span>Ink: <strong className="text-blue-600 dark:text-blue-400">৳{inkC.toFixed(2)}</strong></span>
+                        <span>=</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                          Direct Base Cost: ৳{combined.toFixed(2)} / {sellingUnit || 'sft'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-sans">
+                        Auto-synchronizes with Tab 6 pricing & margins
+                      </span>
+                    </div>
+                  )
+                })()}
               </div>
 
               <div>
@@ -1664,6 +1963,33 @@ export function ServiceConfigModal({
                     )
                   })
                 )}
+              </div>
+
+              {/* Linked Ink & Consumables Formulation Summary */}
+              <div className="p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-amber-600/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
+                    <Droplets className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-900 dark:text-white block">
+                      Linked Ink & Consumables Formulation
+                    </span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {linkedInkName || 'Default Printing Method Ink'} • Rate: ৳{Number(inkCost || 0).toFixed(2)} / {sellingUnit || 'sft'}
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('basic')}
+                  className="h-7 text-xs border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-100/50 cursor-pointer"
+                >
+                  Configure Ink in Tab 1
+                </Button>
               </div>
             </div>
           </div>
@@ -2310,7 +2636,7 @@ export function ServiceConfigModal({
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="flex flex-col justify-between">
                   <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
                     <span>Base Selling Rate (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'}) <span className="text-rose-500">*</span></span>
@@ -2333,7 +2659,7 @@ export function ServiceConfigModal({
 
                 <div className="flex flex-col justify-between">
                   <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
-                    <span>Purchase Price (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'})</span>
+                    <span>Substrate Media Cost (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'})</span>
                   </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
@@ -2341,7 +2667,7 @@ export function ServiceConfigModal({
                       type="number"
                       step="any"
                       min="0"
-                      placeholder="e.g. 24.00"
+                      placeholder="e.g. 15.00"
                       value={purchasePrice !== '' ? purchasePrice : baseCostEstimate}
                       onChange={(e) => {
                         const val = e.target.value === '' ? '' : parseFloat(e.target.value)
@@ -2349,6 +2675,27 @@ export function ServiceConfigModal({
                         setBaseCostEstimate(val)
                       }}
                       className="pl-7 h-9 text-xs font-mono font-semibold text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-between">
+                  <Label className="text-xs font-semibold mb-1 text-slate-900 dark:text-white min-h-[20px] flex items-end">
+                    <span>Linked Ink Cost (৳ / {sellingUnit ? sellingUnit.toUpperCase() : 'SFT'})</span>
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="e.g. 4.00"
+                      value={inkCost}
+                      onChange={(e) => {
+                        setInkCost(e.target.value === '' ? '' : parseFloat(e.target.value))
+                        setInkCostMode('custom')
+                      }}
+                      className="pl-7 h-9 text-xs font-mono font-semibold text-blue-600 dark:text-blue-400"
                     />
                   </div>
                 </div>
@@ -2371,6 +2718,31 @@ export function ServiceConfigModal({
                   </div>
                 </div>
               </div>
+
+              {/* Combined Base Cost Breakdown Summary Pill */}
+              {(() => {
+                const subCost = Number(purchasePrice !== '' ? purchasePrice : baseCostEstimate) || 0
+                const inkC = Number(inkCost) || 0
+                const combined = subCost + inkC
+                return (
+                  <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-600 dark:text-slate-400 uppercase text-[11px]">Direct Cost Formula:</span>
+                      <span className="bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+                        Substrate: ৳{subCost.toFixed(2)}
+                      </span>
+                      <span>+</span>
+                      <span className="bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold">
+                        Ink: ৳{inkC.toFixed(2)}
+                      </span>
+                      <span>=</span>
+                      <span className="bg-emerald-100 dark:bg-emerald-950/70 px-2.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold text-[12px]">
+                        Combined Direct Cost: ৳{combined.toFixed(2)} / {sellingUnit || 'sft'}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Live Yield & Margin Economics */}
               <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
