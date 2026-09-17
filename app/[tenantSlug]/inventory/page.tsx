@@ -67,7 +67,6 @@ import {
 } from '@/actions/inventory.actions'
 
 // Modals
-import { NewMaterialModal } from '@/components/inventory/new-material-modal'
 import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
 import { MaterialRequestModal } from '@/components/inventory/material-request-modal'
 import { MaterialIssueModal } from '@/components/inventory/material-issue-modal'
@@ -111,7 +110,6 @@ export default function InventoryDashboardPage() {
   const [notification, setNotification] = useState<string | null>(null)
 
   // Modals state
-  const [isNewMaterialOpen, setIsNewMaterialOpen] = useState(false)
   const [isReceiveStockOpen, setIsReceiveStockOpen] = useState(false)
   const [isRequestOpen, setIsRequestOpen] = useState(false)
   const [isIssueOpen, setIsIssueOpen] = useState(false)
@@ -272,31 +270,15 @@ export default function InventoryDashboardPage() {
               </Button>
 
               <Button
-                variant="outline"
                 size="sm"
                 onClick={() => {
                   setSelectedMaterialForAction(null)
                   setIsReceiveStockOpen(true)
                 }}
-                className="text-xs border-emerald-300 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Receive GRN
-              </Button>
-
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (!productCheck.allowed) {
-                    openLimitExceededModal('max_products')
-                    return
-                  }
-                  setIsNewMaterialOpen(true)
-                }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white"
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Add Material
+                Receive GRN
               </Button>
             </div>
           }
@@ -1098,17 +1080,6 @@ export default function InventoryDashboardPage() {
         )}
 
         {/* MODALS */}
-        <NewMaterialModal
-          open={isNewMaterialOpen}
-          onOpenChange={setIsNewMaterialOpen}
-          onSuccess={() => {
-            showNotification('New material registered successfully.')
-            loadAllData()
-            refreshUsage()
-          }}
-          companyId={companyId}
-        />
-
         <ReceiveStockModal
           open={isReceiveStockOpen}
           onOpenChange={setIsReceiveStockOpen}
