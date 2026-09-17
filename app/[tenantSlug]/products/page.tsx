@@ -978,7 +978,7 @@ export default function ProductsCatalogPage() {
       base_cost: Number(p.base_cost) || 0,
       selling_price: Number(p.selling_price) || 0,
       min_price: Number(p.min_price) || 0,
-      tax_rate: Number(p.tax_rate) !== undefined ? Number(p.tax_rate) : 7.5,
+      tax_rate: p.tax_rate !== undefined && p.tax_rate !== null && !isNaN(Number(p.tax_rate)) ? Number(p.tax_rate) : 7.5,
       requires_design: Boolean(p.requires_design),
       requires_approval: Boolean(p.requires_approval),
       requires_production: p.requires_production !== undefined ? Boolean(p.requires_production) : true,

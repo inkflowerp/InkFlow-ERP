@@ -109,8 +109,8 @@ export function enrichProductRecord(p: any): ProductRecord {
   const purchasePrice = Number(p.purchase_price) || 0
   const conversionRatio = Math.max(0.0001, Number(p.conversion_ratio) || 1.0)
   const defaultWastage = Math.max(0, Number(p.default_wastage_percentage) || 0)
-  const targetMargin = Number(p.target_margin_percentage) !== undefined ? Number(p.target_margin_percentage) : 35.0
-  const minAllowedMargin = Number(p.min_allowed_margin_percent) !== undefined ? Number(p.min_allowed_margin_percent) : 15.0
+  const targetMargin = p.target_margin_percentage !== undefined && p.target_margin_percentage !== null && !isNaN(Number(p.target_margin_percentage)) ? Number(p.target_margin_percentage) : 35.0
+  const minAllowedMargin = p.min_allowed_margin_percent !== undefined && p.min_allowed_margin_percent !== null && !isNaN(Number(p.min_allowed_margin_percent)) ? Number(p.min_allowed_margin_percent) : 15.0
   const sellingPrice = Number(p.selling_price) || 0
 
   let effectiveCost = Number(p.base_cost) || 0
@@ -457,7 +457,9 @@ export class ProductRepository {
       const purchasePrice = Math.max(0, Number(product.purchase_price) || 0)
       const conversionRatio = Math.max(0.0001, Number(product.conversion_ratio) || 1.0)
       const defaultWastage = Math.max(0, Number(product.default_wastage_percentage) || 0)
-      const targetMargin = Number(product.target_margin_percentage) !== undefined ? Number(product.target_margin_percentage) : 35.0
+      const targetMargin = product.target_margin_percentage !== undefined && product.target_margin_percentage !== null && !isNaN(Number(product.target_margin_percentage))
+        ? Number(product.target_margin_percentage)
+        : 35.0
 
       // Calculate effective base cost if purchase economics are provided
       let calculatedBaseCost = Math.max(0, Number(product.base_cost) || 0)
@@ -514,7 +516,9 @@ export class ProductRepository {
         production_unit: product.production_unit || product.unit,
         default_wastage_percentage: defaultWastage,
         target_margin_percentage: targetMargin,
-        min_allowed_margin_percent: product.min_allowed_margin_percent !== undefined ? Number(product.min_allowed_margin_percent) : 15.0,
+        min_allowed_margin_percent: product.min_allowed_margin_percent !== undefined && product.min_allowed_margin_percent !== null && !isNaN(Number(product.min_allowed_margin_percent))
+          ? Number(product.min_allowed_margin_percent)
+          : 15.0,
         minimum_charge: Math.max(0, Number(product.minimum_charge) || 0),
         min_billable_quantity: product.min_billable_quantity !== undefined && product.min_billable_quantity !== null ? Math.max(0, Number(product.min_billable_quantity)) : 0,
         min_order_quantity: product.min_order_quantity !== undefined && product.min_order_quantity !== null ? Math.max(0.01, Number(product.min_order_quantity)) : 1.0,
@@ -538,7 +542,7 @@ export class ProductRepository {
         base_cost: calculatedBaseCost,
         selling_price: Math.max(0, Number(product.selling_price) || 0),
         min_price: Math.max(0, Number(product.min_price) || 0),
-        tax_rate: product.tax_rate !== undefined ? Number(product.tax_rate) : 7.5,
+        tax_rate: product.tax_rate !== undefined && product.tax_rate !== null && !isNaN(Number(product.tax_rate)) ? Number(product.tax_rate) : 7.5,
         pricing_formula: {
           ...(typeof product.pricing_formula === 'object' && product.pricing_formula !== null ? product.pricing_formula : {}),
           entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : 'product'),
@@ -561,7 +565,7 @@ export class ProductRepository {
         is_service: product.is_service !== undefined ? Boolean(product.is_service) : (product.entity_type === 'service' || product.product_type === 'print_service'),
         is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (product.entity_type === 'product' || product.product_type === 'ready_product'),
         default_department: product.default_department || 'printing',
-        estimated_production_time_hours: Number(product.estimated_production_time_hours) || 4.0,
+        estimated_production_time_hours: product.estimated_production_time_hours !== undefined && product.estimated_production_time_hours !== null && !isNaN(Number(product.estimated_production_time_hours)) ? Number(product.estimated_production_time_hours) : 4.0,
         default_finishing: product.default_finishing?.trim() || null,
         production_instructions: product.production_instructions?.trim() || null,
         internal_notes: product.internal_notes?.trim() || null,
@@ -652,22 +656,22 @@ export class ProductRepository {
       delete payload.formulas
       delete payload.usage_stats
 
-      if (payload.base_cost !== undefined) payload.base_cost = Math.max(0, Number(payload.base_cost))
-      if (payload.selling_price !== undefined) payload.selling_price = Math.max(0, Number(payload.selling_price))
-      if (payload.min_price !== undefined) payload.min_price = Math.max(0, Number(payload.min_price))
-      if (payload.tax_rate !== undefined) payload.tax_rate = Number(payload.tax_rate)
-      if (payload.purchase_price !== undefined) payload.purchase_price = Math.max(0, Number(payload.purchase_price))
-      if (payload.conversion_ratio !== undefined) payload.conversion_ratio = Math.max(0.0001, Number(payload.conversion_ratio))
-      if (payload.default_wastage_percentage !== undefined) payload.default_wastage_percentage = Math.max(0, Number(payload.default_wastage_percentage))
-      if (payload.target_margin_percentage !== undefined) payload.target_margin_percentage = Number(payload.target_margin_percentage)
-      if (payload.minimum_charge !== undefined) payload.minimum_charge = Math.max(0, Number(payload.minimum_charge))
-      if (payload.min_order_quantity !== undefined) payload.min_order_quantity = Math.max(0.01, Number(payload.min_order_quantity))
-      if (payload.min_billable_quantity !== undefined) payload.min_billable_quantity = Math.max(0, Number(payload.min_billable_quantity))
-      if (payload.min_allowed_margin_percent !== undefined) payload.min_allowed_margin_percent = Number(payload.min_allowed_margin_percent)
+      if (payload.base_cost !== undefined) payload.base_cost = !isNaN(Number(payload.base_cost)) ? Math.max(0, Number(payload.base_cost)) : 0
+      if (payload.selling_price !== undefined) payload.selling_price = !isNaN(Number(payload.selling_price)) ? Math.max(0, Number(payload.selling_price)) : 0
+      if (payload.min_price !== undefined) payload.min_price = !isNaN(Number(payload.min_price)) ? Math.max(0, Number(payload.min_price)) : 0
+      if (payload.tax_rate !== undefined) payload.tax_rate = !isNaN(Number(payload.tax_rate)) ? Number(payload.tax_rate) : 7.5
+      if (payload.purchase_price !== undefined) payload.purchase_price = !isNaN(Number(payload.purchase_price)) ? Math.max(0, Number(payload.purchase_price)) : 0
+      if (payload.conversion_ratio !== undefined) payload.conversion_ratio = !isNaN(Number(payload.conversion_ratio)) ? Math.max(0.0001, Number(payload.conversion_ratio)) : 1.0
+      if (payload.default_wastage_percentage !== undefined) payload.default_wastage_percentage = !isNaN(Number(payload.default_wastage_percentage)) ? Math.max(0, Number(payload.default_wastage_percentage)) : 0
+      if (payload.target_margin_percentage !== undefined) payload.target_margin_percentage = !isNaN(Number(payload.target_margin_percentage)) ? Number(payload.target_margin_percentage) : 35.0
+      if (payload.minimum_charge !== undefined) payload.minimum_charge = !isNaN(Number(payload.minimum_charge)) ? Math.max(0, Number(payload.minimum_charge)) : 0
+      if (payload.min_order_quantity !== undefined) payload.min_order_quantity = !isNaN(Number(payload.min_order_quantity)) ? Math.max(0.01, Number(payload.min_order_quantity)) : 1.0
+      if (payload.min_billable_quantity !== undefined) payload.min_billable_quantity = !isNaN(Number(payload.min_billable_quantity)) ? Math.max(0, Number(payload.min_billable_quantity)) : 0
+      if (payload.min_allowed_margin_percent !== undefined) payload.min_allowed_margin_percent = !isNaN(Number(payload.min_allowed_margin_percent)) ? Number(payload.min_allowed_margin_percent) : 15.0
       if (payload.allow_manual_override !== undefined) payload.allow_manual_override = Boolean(payload.allow_manual_override)
       if (payload.pricing_method !== undefined) payload.pricing_method = normalizePricingMethod(payload.pricing_method)
-      if (payload.production_width_allowance !== undefined) payload.production_width_allowance = Number(payload.production_width_allowance)
-      if (payload.production_length_allowance !== undefined) payload.production_length_allowance = Number(payload.production_length_allowance)
+      if (payload.production_width_allowance !== undefined) payload.production_width_allowance = !isNaN(Number(payload.production_width_allowance)) ? Number(payload.production_width_allowance) : 0
+      if (payload.production_length_allowance !== undefined) payload.production_length_allowance = !isNaN(Number(payload.production_length_allowance)) ? Number(payload.production_length_allowance) : 0
       if (payload.allowance_unit !== undefined) payload.allowance_unit = String(payload.allowance_unit)
 
       // Merge extension fields into pricing_formula
@@ -1683,8 +1687,12 @@ export class ProductRepository {
       const purchasePrice = Number(product.purchase_price) || 0
       const conversionRatio = Math.max(0.0001, Number(product.conversion_ratio) || 1.0)
       const defaultWastage = Math.max(0, Number(product.default_wastage_percentage) || 0)
-      const targetMargin = Number(product.target_margin_percentage) !== undefined ? Number(product.target_margin_percentage) : 35.0
-      const minAllowedMargin = Number(product.min_allowed_margin_percent) !== undefined ? Number(product.min_allowed_margin_percent) : 15.0
+      const targetMargin = product.target_margin_percentage !== undefined && product.target_margin_percentage !== null && !isNaN(Number(product.target_margin_percentage))
+        ? Number(product.target_margin_percentage)
+        : 35.0
+      const minAllowedMargin = product.min_allowed_margin_percent !== undefined && product.min_allowed_margin_percent !== null && !isNaN(Number(product.min_allowed_margin_percent))
+        ? Number(product.min_allowed_margin_percent)
+        : 15.0
       const minimumCharge = Number(product.minimum_charge) || 0
       const minOrderQty = Number(product.min_order_quantity) || 1.0
       const minBillableQty = product.min_billable_quantity !== undefined && product.min_billable_quantity !== null ? Math.max(0, Number(product.min_billable_quantity)) : 0

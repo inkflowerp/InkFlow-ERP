@@ -1136,8 +1136,12 @@ export function calculateCommercialPricing(params: {
   const minBillableQty = Math.max(0, Number(params.minBillableQuantity) || 0)
   const moq = Math.max(0, Number(params.minOrderQuantity) || 0)
   const minCharge = Math.max(0, Number(params.minimumCharge) || 0)
-  const targetMargin = Number(params.targetMarginPercent) !== undefined ? Number(params.targetMarginPercent) : 35.0
-  const minAllowedMargin = Number(params.minAllowedMarginPercent) !== undefined ? Number(params.minAllowedMarginPercent) : 15.0
+  const targetMargin = params.targetMarginPercent !== undefined && params.targetMarginPercent !== null && !isNaN(Number(params.targetMarginPercent))
+    ? Number(params.targetMarginPercent)
+    : 35.0
+  const minAllowedMargin = params.minAllowedMarginPercent !== undefined && params.minAllowedMarginPercent !== null && !isNaN(Number(params.minAllowedMarginPercent))
+    ? Number(params.minAllowedMarginPercent)
+    : 15.0
 
   // 1. Price Resolution Hierarchy:
   // Manual Override > Customer Specific Rate > Price Tier > Default Catalog Rate

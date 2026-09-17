@@ -151,6 +151,8 @@ export function MaterialConfigModal({
           ? Number((Number(purchasePrice) / (availableWidths[0] * standardRollLength)).toFixed(2))
           : 0,
         selling_price: 0,
+        target_margin_percentage: 35.0,
+        min_allowed_margin_percent: 15.0,
         pricing_method: 'per_piece',
         cost_basis_type: 'direct_cost',
         is_active: isActive,

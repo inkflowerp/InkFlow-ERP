@@ -112,6 +112,13 @@ export function ReadyProductModal({
     setIsSubmitting(true)
     setErrorMessage(null)
 
+    const sp = Number(sellingPrice)
+    const bc = baseCost !== '' ? Number(baseCost) : 0
+    const calculatedMargin =
+      sp > 0 && bc >= 0
+        ? Number((((sp - bc) / sp) * 100).toFixed(2))
+        : 35.0
+
     try {
       await onSave({
         name: name.trim(),
@@ -125,9 +132,11 @@ export function ReadyProductModal({
         selling_unit: unit,
         purchase_unit: unit,
         pricing_method: 'per_piece',
-        selling_price: Number(sellingPrice),
-        base_cost: baseCost !== '' ? Number(baseCost) : 0,
-        purchase_price: baseCost !== '' ? Number(baseCost) : 0,
+        selling_price: sp,
+        base_cost: bc,
+        purchase_price: bc,
+        target_margin_percentage: calculatedMargin,
+        min_allowed_margin_percent: 15.0,
         cost_basis_type: 'direct_cost',
         is_active: isActive,
         description: description.trim() || undefined,
