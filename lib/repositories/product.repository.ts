@@ -30,7 +30,82 @@ import {
   validateCircularBOM,
 } from '../units.ts'
 
-export function enrichProductRecord(p: ProductRecord): ProductRecord {
+export function sanitizeProductDbPayload(raw: Record<string, any>): Record<string, any> {
+  const allowed = new Set([
+    'id',
+    'company_id',
+    'branch_id',
+    'category_id',
+    'name',
+    'name_bn',
+    'sku',
+    'category',
+    'product_type',
+    'commercial_type',
+    'measurement_type',
+    'unit',
+    'selling_unit',
+    'purchase_unit',
+    'production_unit',
+    'purchase_price',
+    'conversion_ratio',
+    'base_cost',
+    'selling_price',
+    'min_price',
+    'tax_rate',
+    'default_wastage_percentage',
+    'target_margin_percentage',
+    'minimum_charge',
+    'min_order_quantity',
+    'min_billable_quantity',
+    'min_allowed_margin_percent',
+    'pricing_method',
+    'allow_manual_override',
+    'price_tiers',
+    'cost_breakdown',
+    'components',
+    'pricing_formula',
+    'vat_applicable',
+    'is_tax_inclusive',
+    'roll_width_ft',
+    'roll_length_ft',
+    'sheet_width_ft',
+    'sheet_length_ft',
+    'material_spec',
+    'description',
+    'description_bn',
+    'dimensions_spec',
+    'internal_notes',
+    'production_instructions',
+    'default_finishing',
+    'default_department',
+    'estimated_production_time_hours',
+    'requires_design',
+    'requires_approval',
+    'requires_production',
+    'requires_fabrication',
+    'requires_finishing',
+    'requires_installation',
+    'requires_delivery',
+    'is_active',
+    'created_by',
+    'created_at',
+    'updated_at',
+  ])
+
+  const out: Record<string, any> = {}
+  for (const [k, v] of Object.entries(raw)) {
+    if (allowed.has(k) && v !== undefined) {
+      out[k] = v
+    }
+  }
+  return out
+}
+
+export function enrichProductRecord(p: any): ProductRecord {
+  if (!p) return p
+  const formula = (typeof p.pricing_formula === 'object' && p.pricing_formula !== null ? p.pricing_formula : {}) as any
+
   const purchasePrice = Number(p.purchase_price) || 0
   const conversionRatio = Math.max(0.0001, Number(p.conversion_ratio) || 1.0)
   const defaultWastage = Math.max(0, Number(p.default_wastage_percentage) || 0)
@@ -101,8 +176,19 @@ export function enrichProductRecord(p: ProductRecord): ProductRecord {
       ? 'per_hour'
       : 'per_piece')) as PricingMethod
 
+  const serviceConfig = p.service_config || formula.service_config || null
+  const materialConfig = p.material_config || formula.material_config || null
+  const allowanceUnit = p.allowance_unit || formula.allowance_unit || 'ft'
+  const prodWidthAllowance = p.production_width_allowance !== null && p.production_width_allowance !== undefined
+    ? Number(p.production_width_allowance)
+    : Number(formula.production_width_allowance) || 0
+  const prodLengthAllowance = p.production_length_allowance !== null && p.production_length_allowance !== undefined
+    ? Number(p.production_length_allowance)
+    : Number(formula.production_length_allowance) || 0
+
   const entityType =
     p.entity_type ||
+    formula.entity_type ||
     (p.product_type === 'ready_product'
       ? 'product'
       : p.product_type === 'material'
@@ -120,8 +206,8 @@ export function enrichProductRecord(p: ProductRecord): ProductRecord {
   return {
     ...p,
     entity_type: entityType,
-    service_config: p.service_config || null,
-    material_config: p.material_config || null,
+    service_config: serviceConfig,
+    material_config: materialConfig,
     is_service: p.is_service !== undefined ? Boolean(p.is_service) : entityType === 'service',
     is_ready_product: p.is_ready_product !== undefined ? Boolean(p.is_ready_product) : entityType === 'product',
     commercial_type: p.commercial_type || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'production_product' : 'service'),
@@ -139,9 +225,9 @@ export function enrichProductRecord(p: ProductRecord): ProductRecord {
     min_billable_quantity: p.min_billable_quantity !== null && p.min_billable_quantity !== undefined ? Math.max(0, Number(p.min_billable_quantity)) : 0,
     min_order_quantity: p.min_order_quantity !== null && p.min_order_quantity !== undefined ? Math.max(0, Number(p.min_order_quantity)) : 1.0,
     allow_manual_override: p.allow_manual_override !== undefined ? Boolean(p.allow_manual_override) : true,
-    production_width_allowance: p.production_width_allowance !== null && p.production_width_allowance !== undefined ? Number(p.production_width_allowance) : 0,
-    production_length_allowance: p.production_length_allowance !== null && p.production_length_allowance !== undefined ? Number(p.production_length_allowance) : 0,
-    allowance_unit: p.allowance_unit || 'ft',
+    production_width_allowance: prodWidthAllowance,
+    production_length_allowance: prodLengthAllowance,
+    allowance_unit: allowanceUnit,
     price_tiers: p.price_tiers || {},
     cost_breakdown: {
       material_cost: matCost,
@@ -229,10 +315,6 @@ export class ProductRepository {
           query = query.eq('is_active', true)
         }
 
-        if (entityType && entityType !== 'all') {
-          query = query.eq('entity_type', entityType)
-        }
-
         if (category && category !== 'all') {
           query = query.or(`category.eq.${category},product_type.eq.${category}`)
         }
@@ -248,7 +330,10 @@ export class ProductRepository {
           throw new Error(`Failed to load products: ${error.message}`)
         }
 
-        const enriched = ((data || []) as ProductRecord[]).map(enrichProductRecord)
+        let enriched = ((data || []) as ProductRecord[]).map(enrichProductRecord)
+        if (entityType && entityType !== 'all') {
+          enriched = enriched.filter((p) => p.entity_type === entityType)
+        }
         return enriched
       } catch (err: any) {
         throw new Error(`Database error fetching products: ${err.message}`)
@@ -454,7 +539,15 @@ export class ProductRepository {
         selling_price: Math.max(0, Number(product.selling_price) || 0),
         min_price: Math.max(0, Number(product.min_price) || 0),
         tax_rate: product.tax_rate !== undefined ? Number(product.tax_rate) : 7.5,
-        pricing_formula: product.pricing_formula || null,
+        pricing_formula: {
+          ...(typeof product.pricing_formula === 'object' && product.pricing_formula !== null ? product.pricing_formula : {}),
+          entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : 'product'),
+          service_config: product.service_config || null,
+          material_config: product.material_config || null,
+          allowance_unit: product.allowance_unit || 'ft',
+          production_width_allowance: product.production_width_allowance !== undefined && product.production_width_allowance !== null ? Number(product.production_width_allowance) : 0,
+          production_length_allowance: product.production_length_allowance !== undefined && product.production_length_allowance !== null ? Number(product.production_length_allowance) : 0,
+        },
         requires_design: Boolean(product.requires_design),
         requires_approval: Boolean(product.requires_approval),
         requires_production: product.requires_production !== undefined ? Boolean(product.requires_production) : true,
@@ -491,10 +584,11 @@ export class ProductRepository {
       }
 
       try {
+        const dbPayload = sanitizeProductDbPayload(payload)
         const supabase = await createClient()
         const { data, error } = await (supabase as any)
           .from('products')
-          .insert(payload)
+          .insert(dbPayload)
           .select()
           .single()
 
@@ -576,6 +670,20 @@ export class ProductRepository {
       if (payload.production_length_allowance !== undefined) payload.production_length_allowance = Number(payload.production_length_allowance)
       if (payload.allowance_unit !== undefined) payload.allowance_unit = String(payload.allowance_unit)
 
+      // Merge extension fields into pricing_formula
+      const existingFormula = typeof updates.pricing_formula === 'object' && updates.pricing_formula !== null ? updates.pricing_formula : {}
+      const formulaUpdates: Record<string, any> = { ...existingFormula }
+      if (updates.entity_type !== undefined) formulaUpdates.entity_type = updates.entity_type
+      if (updates.service_config !== undefined) formulaUpdates.service_config = updates.service_config
+      if (updates.material_config !== undefined) formulaUpdates.material_config = updates.material_config
+      if (updates.allowance_unit !== undefined) formulaUpdates.allowance_unit = updates.allowance_unit
+      if (updates.production_width_allowance !== undefined) formulaUpdates.production_width_allowance = updates.production_width_allowance
+      if (updates.production_length_allowance !== undefined) formulaUpdates.production_length_allowance = updates.production_length_allowance
+
+      if (Object.keys(formulaUpdates).length > 0) {
+        payload.pricing_formula = formulaUpdates
+      }
+
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
           const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
@@ -589,10 +697,11 @@ export class ProductRepository {
       }
 
       try {
+        const dbPayload = sanitizeProductDbPayload(payload)
         const supabase = await createClient()
         const { data, error } = await (supabase as any)
           .from('products')
-          .update(payload)
+          .update(dbPayload)
           .eq('id', id)
           .eq('company_id', companyId)
           .select()
