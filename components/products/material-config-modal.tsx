@@ -62,15 +62,6 @@ const COMMON_USAGE_UNITS: { value: UnitOfMeasure; label: string }[] = [
   { value: 'kg', label: 'Kilogram (কেজি)' },
 ]
 
-const STANDARD_SHEET_SIZES: { width: number; length: number; label: string }[] = [
-  { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
-  { width: 4, length: 6, label: '4ft × 6ft' },
-  { width: 3, length: 6, label: '3ft × 6ft' },
-  { width: 2, length: 4, label: '2ft × 4ft' },
-  { width: 4, length: 4, label: '4ft × 4ft' },
-  { width: 2, length: 2, label: '2ft × 2ft' },
-]
-
 export function MaterialConfigModal({
   isOpen,
   onClose,
@@ -100,14 +91,10 @@ export function MaterialConfigModal({
 
   // Sheet Geometry
   const [availableSheetSizes, setAvailableSheetSizes] = useState<Array<{ width: number; length: number; label?: string }>>([
-    { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
-    { width: 4, length: 6, label: '4ft × 6ft' },
-    { width: 3, length: 6, label: '3ft × 6ft' },
-    { width: 2, length: 4, label: '2ft × 4ft' },
+    { width: 4, length: 8, label: '4ft × 8ft' },
   ])
-  const [newSheetWidthInput, setNewSheetWidthInput] = useState<string>('')
-  const [newSheetLengthInput, setNewSheetLengthInput] = useState<string>('')
-  const [newSheetLabelInput, setNewSheetLabelInput] = useState<string>('')
+  const [newSheetWidthInput, setNewSheetWidthInput] = useState<string>('4')
+  const [newSheetLengthInput, setNewSheetLengthInput] = useState<string>('8')
   const [thicknessMm, setThicknessMm] = useState<number | ''>('')
 
   // Liquid & Accessory Specs
@@ -164,10 +151,7 @@ export function MaterialConfigModal({
       const stdLen = matCfg.standard_roll_length_ft || initialData.standard_roll_length_ft || 164
       const widths = matCfg.available_widths_ft || initialData.available_widths_ft || [10]
       const sheets = matCfg.available_sheet_sizes || [
-        { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
-        { width: 4, length: 6, label: '4ft × 6ft' },
-        { width: 3, length: 6, label: '3ft × 6ft' },
-        { width: 2, length: 4, label: '2ft × 4ft' },
+        { width: 4, length: 8, label: '4ft × 8ft' },
       ]
       setStandardRollLength(stdLen)
       setAvailableWidths(widths)
@@ -175,6 +159,10 @@ export function MaterialConfigModal({
         setNewWidthInput(widths[widths.length - 1].toString())
       }
       setAvailableSheetSizes(sheets)
+      if (sheets.length > 0) {
+        setNewSheetWidthInput(sheets[sheets.length - 1].width.toString())
+        setNewSheetLengthInput(sheets[sheets.length - 1].length.toString())
+      }
       setExtraWidthAllowance(matCfg.extra_width_allowance_ft ?? (initialData.production_width_allowance ?? 0.25))
       setUsageUnit((matCfg.usage_unit as any) || initialData.unit || 'sft')
       setWastePercent(matCfg.waste_percent ?? (initialData.default_wastage_percentage ?? 5))
@@ -224,11 +212,10 @@ export function MaterialConfigModal({
       setAvailableWidths([10])
       setNewWidthInput('10')
       setAvailableSheetSizes([
-        { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
-        { width: 4, length: 6, label: '4ft × 6ft' },
-        { width: 3, length: 6, label: '3ft × 6ft' },
-        { width: 2, length: 4, label: '2ft × 4ft' },
+        { width: 4, length: 8, label: '4ft × 8ft' },
       ])
+      setNewSheetWidthInput('4')
+      setNewSheetLengthInput('8')
       setExtraWidthAllowance(0.25)
       setUsageUnit('sft')
       setWastePercent(5)
@@ -301,32 +288,29 @@ export function MaterialConfigModal({
   }
 
   // Sheet Size Handlers
-  const handleToggleSheetSize = (s: { width: number; length: number; label: string }) => {
-    const exists = availableSheetSizes.some((x) => x.width === s.width && x.length === s.length)
-    if (exists) {
-      setAvailableSheetSizes(availableSheetSizes.filter((x) => !(x.width === s.width && x.length === s.length)))
-    } else {
-      setAvailableSheetSizes([...availableSheetSizes, s])
-    }
-  }
-
   const handleAddCustomSheetSize = () => {
     const w = parseFloat(newSheetWidthInput)
     const l = parseFloat(newSheetLengthInput)
     if (!isNaN(w) && w > 0 && !isNaN(l) && l > 0) {
       const exists = availableSheetSizes.some((x) => x.width === w && x.length === l)
       if (!exists) {
-        const label = newSheetLabelInput.trim() || `${w}ft × ${l}ft Sheet`
-        setAvailableSheetSizes([...availableSheetSizes, { width: w, length: l, label }])
-        setNewSheetWidthInput('')
-        setNewSheetLengthInput('')
-        setNewSheetLabelInput('')
+        const nextSheets = [...availableSheetSizes, { width: w, length: l, label: `${w}ft × ${l}ft` }]
+        setAvailableSheetSizes(nextSheets)
+        if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+          const firstSheet = nextSheets[0] || { width: w, length: l }
+          setPurchasePrice(Number((Number(purchasePricePerSft) * firstSheet.width * firstSheet.length).toFixed(2)))
+        }
       }
     }
   }
 
   const handleRemoveSheetSize = (index: number) => {
-    setAvailableSheetSizes(availableSheetSizes.filter((_, i) => i !== index))
+    const nextSheets = availableSheetSizes.filter((_, i) => i !== index)
+    setAvailableSheetSizes(nextSheets)
+    if (purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0 && nextSheets.length > 0) {
+      const firstSheet = nextSheets[0]
+      setPurchasePrice(Number((Number(purchasePricePerSft) * firstSheet.width * firstSheet.length).toFixed(2)))
+    }
   }
 
   // Real-Time Cost Economics Calculations
@@ -948,92 +932,121 @@ export function MaterialConfigModal({
             {/* Geometry Case B: Sheet Physical Dimensions */}
             {(materialType === 'sheet' || purchaseUnit === 'sheet') && (
               <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Standard Rigid Sheet / Board Dimensions
-                  </span>
-                  <Badge variant="outline" className="text-[10px] font-mono bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200">
-                    {availableSheetSizes.length} Sheet Sizes Configured
-                  </Badge>
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                  {/* Sheet Width [ ] */}
+                  <div className="sm:col-span-3">
+                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      Sheet Width (Feet)
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="any"
+                        min="0"
+                        placeholder="e.g. 4"
+                        value={newSheetWidthInput}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setNewSheetWidthInput(val)
+                          const w = parseFloat(val)
+                          const l = parseFloat(newSheetLengthInput) || 8
+                          if (!isNaN(w) && w > 0 && purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * w * l).toFixed(2)))
+                          }
+                        }}
+                        className="h-9 text-xs font-mono font-bold pr-7"
+                      />
+                      <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                    </div>
+                  </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {STANDARD_SHEET_SIZES.map((s) => {
-                    const isSelected = availableSheetSizes.some((x) => x.width === s.width && x.length === s.length)
-                    return (
-                      <button
-                        key={`${s.width}x${s.length}`}
-                        type="button"
-                        onClick={() => handleToggleSheetSize(s)}
-                        className={cn(
-                          'text-xs px-2.5 py-1 rounded-md font-mono font-medium transition-all flex items-center gap-1 cursor-pointer',
-                          isSelected
-                            ? 'bg-blue-600 text-white font-bold shadow-2xs ring-1 ring-blue-400'
-                            : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:border-blue-400'
-                        )}
-                      >
-                        {isSelected ? <Check className="w-3 h-3 text-white" /> : <Plus className="w-3 h-3 text-slate-400" />}
-                        <span>{s.width}ft × {s.length}ft</span>
-                      </button>
-                    )
-                  })}
-                </div>
+                  {/* Sheet Length [ ] */}
+                  <div className="sm:col-span-3">
+                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      Sheet Length (Feet)
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="any"
+                        min="0"
+                        placeholder="e.g. 8"
+                        value={newSheetLengthInput}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setNewSheetLengthInput(val)
+                          const l = parseFloat(val)
+                          const w = parseFloat(newSheetWidthInput) || 4
+                          if (!isNaN(l) && l > 0 && purchasePricePerSft !== '' && Number(purchasePricePerSft) > 0) {
+                            setPurchasePrice(Number((Number(purchasePricePerSft) * w * l).toFixed(2)))
+                          }
+                        }}
+                        className="h-9 text-xs font-mono font-bold pr-7"
+                      />
+                      <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-2">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">Width (ft)</Label>
+                  {/* Board Thickness */}
+                  <div className="sm:col-span-4">
+                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      Board Thickness (mm / gsm)
+                    </Label>
                     <Input
                       type="number"
                       step="any"
-                      placeholder="e.g. 4"
-                      value={newSheetWidthInput}
-                      onChange={(e) => setNewSheetWidthInput(e.target.value)}
-                      className="h-8 text-xs font-mono"
+                      min="0"
+                      placeholder="e.g. 3mm or 5mm Board"
+                      value={thicknessMm}
+                      onChange={(e) => setThicknessMm(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="h-9 text-xs font-mono"
                     />
                   </div>
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">Length (ft)</Label>
-                    <Input
-                      type="number"
-                      step="any"
-                      placeholder="e.g. 8"
-                      value={newSheetLengthInput}
-                      onChange={(e) => setNewSheetLengthInput(e.target.value)}
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">Label (Optional)</Label>
-                    <Input
-                      placeholder="e.g. 4x8ft Board"
-                      value={newSheetLabelInput}
-                      onChange={(e) => setNewSheetLabelInput(e.target.value)}
-                      className="h-8 text-xs"
-                    />
-                  </div>
-                  <div className="flex items-end">
+
+                  {/* Add Button */}
+                  <div className="sm:col-span-2">
                     <Button
                       type="button"
-                      size="sm"
                       onClick={handleAddCustomSheetSize}
-                      className="w-full h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                      className="w-full h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
                     >
-                      <Plus className="w-3.5 h-3.5 mr-1" /> Add Sheet Size
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Add
                     </Button>
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <Label className="text-xs font-semibold mb-1 block">Board Thickness (mm / gsm)</Label>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="e.g. 3mm or 5mm Acrylic / PVC Board"
-                    value={thicknessMm}
-                    onChange={(e) => setThicknessMm(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                    className="h-8 text-xs font-mono max-w-xs"
-                  />
-                </div>
+                {/* Configured Sheet Sizes List */}
+                {availableSheetSizes.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mr-1">
+                      Configured Sheet Sizes:
+                    </span>
+                    {availableSheetSizes.map((s, index) => (
+                      <span
+                        key={`${s.width}x${s.length}-${index}`}
+                        onClick={() => {
+                          setNewSheetWidthInput(s.width.toString())
+                          setNewSheetLengthInput(s.length.toString())
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white shadow-2xs hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
+                        title="Click to edit this sheet size"
+                      >
+                        <span>{s.width}ft × {s.length}ft</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRemoveSheetSize(index)
+                          }}
+                          className="ml-1 text-slate-400 hover:text-rose-600 cursor-pointer text-sm font-bold"
+                          title="Remove sheet size"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
