@@ -42,6 +42,7 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
     'category',
     'product_type',
     'commercial_type',
+    'entity_type',
     'measurement_type',
     'unit',
     'selling_unit',
@@ -65,6 +66,16 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
     'cost_breakdown',
     'components',
     'pricing_formula',
+    'material_config',
+    'service_config',
+    'available_widths_ft',
+    'standard_roll_length_ft',
+    'available_sheet_sizes',
+    'production_width_allowance',
+    'production_length_allowance',
+    'allowance_unit',
+    'is_service',
+    'is_ready_product',
     'vat_applicable',
     'is_tax_inclusive',
     'roll_width_ft',
@@ -178,10 +189,13 @@ export function enrichProductRecord(p: any): ProductRecord {
 
   const serviceConfig = p.service_config || formula.service_config || null
   const materialConfig = p.material_config || formula.material_config || null
+  const availableWidths = p.available_widths_ft || materialConfig?.available_widths_ft || formula.available_widths_ft || null
+  const standardRollLength = p.standard_roll_length_ft || materialConfig?.standard_roll_length_ft || formula.standard_roll_length_ft || null
+  const availableSheetSizes = p.available_sheet_sizes || materialConfig?.available_sheet_sizes || formula.available_sheet_sizes || null
   const allowanceUnit = p.allowance_unit || formula.allowance_unit || 'ft'
   const prodWidthAllowance = p.production_width_allowance !== null && p.production_width_allowance !== undefined
     ? Number(p.production_width_allowance)
-    : Number(formula.production_width_allowance) || 0
+    : (materialConfig?.extra_width_allowance_ft !== undefined ? Number(materialConfig.extra_width_allowance_ft) : (Number(formula.production_width_allowance) || 0))
   const prodLengthAllowance = p.production_length_allowance !== null && p.production_length_allowance !== undefined
     ? Number(p.production_length_allowance)
     : Number(formula.production_length_allowance) || 0
@@ -208,6 +222,9 @@ export function enrichProductRecord(p: any): ProductRecord {
     entity_type: entityType,
     service_config: serviceConfig,
     material_config: materialConfig,
+    available_widths_ft: availableWidths,
+    standard_roll_length_ft: standardRollLength,
+    available_sheet_sizes: availableSheetSizes,
     is_service: p.is_service !== undefined ? Boolean(p.is_service) : entityType === 'service',
     is_ready_product: p.is_ready_product !== undefined ? Boolean(p.is_ready_product) : entityType === 'product',
     commercial_type: p.commercial_type || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'production_product' : 'service'),
@@ -532,6 +549,9 @@ export class ProductRepository {
         roll_length_ft: product.roll_length_ft !== undefined && product.roll_length_ft !== null ? Number(product.roll_length_ft) : null,
         sheet_width_ft: product.sheet_width_ft !== undefined && product.sheet_width_ft !== null ? Number(product.sheet_width_ft) : null,
         sheet_length_ft: product.sheet_length_ft !== undefined && product.sheet_length_ft !== null ? Number(product.sheet_length_ft) : null,
+        available_widths_ft: product.available_widths_ft || product.material_config?.available_widths_ft || null,
+        standard_roll_length_ft: product.standard_roll_length_ft || product.material_config?.standard_roll_length_ft || null,
+        available_sheet_sizes: product.available_sheet_sizes || product.material_config?.available_sheet_sizes || null,
         production_width_allowance: product.production_width_allowance !== undefined && product.production_width_allowance !== null ? Number(product.production_width_allowance) : 0,
         production_length_allowance: product.production_length_allowance !== undefined && product.production_length_allowance !== null ? Number(product.production_length_allowance) : 0,
         allowance_unit: product.allowance_unit || 'ft',
@@ -545,11 +565,15 @@ export class ProductRepository {
         tax_rate: product.tax_rate !== undefined && product.tax_rate !== null && !isNaN(Number(product.tax_rate)) ? Number(product.tax_rate) : 7.5,
         pricing_formula: {
           ...(typeof product.pricing_formula === 'object' && product.pricing_formula !== null ? product.pricing_formula : {}),
-          entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : 'product'),
+          entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : 'product'),
           service_config: product.service_config || null,
           material_config: product.material_config || null,
+          available_widths_ft: product.available_widths_ft || product.material_config?.available_widths_ft || null,
+          standard_roll_length_ft: product.standard_roll_length_ft || product.material_config?.standard_roll_length_ft || null,
+          available_sheet_sizes: product.available_sheet_sizes || product.material_config?.available_sheet_sizes || null,
+          purchase_price_per_sft: product.material_config?.purchase_price_per_sft || null,
           allowance_unit: product.allowance_unit || 'ft',
-          production_width_allowance: product.production_width_allowance !== undefined && product.production_width_allowance !== null ? Number(product.production_width_allowance) : 0,
+          production_width_allowance: product.production_width_allowance !== undefined && product.production_width_allowance !== null ? Number(product.production_width_allowance) : (product.material_config?.extra_width_allowance_ft ?? 0),
           production_length_allowance: product.production_length_allowance !== undefined && product.production_length_allowance !== null ? Number(product.production_length_allowance) : 0,
         },
         requires_design: Boolean(product.requires_design),
@@ -559,7 +583,7 @@ export class ProductRepository {
         requires_finishing: Boolean(product.requires_finishing),
         requires_installation: Boolean(product.requires_installation),
         requires_delivery: Boolean(product.requires_delivery),
-        entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : 'product'),
+        entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : 'product'),
         service_config: product.service_config || null,
         material_config: product.material_config || null,
         is_service: product.is_service !== undefined ? Boolean(product.is_service) : (product.entity_type === 'service' || product.product_type === 'print_service'),
@@ -677,12 +701,41 @@ export class ProductRepository {
       // Merge extension fields into pricing_formula
       const existingFormula = typeof updates.pricing_formula === 'object' && updates.pricing_formula !== null ? updates.pricing_formula : {}
       const formulaUpdates: Record<string, any> = { ...existingFormula }
-      if (updates.entity_type !== undefined) formulaUpdates.entity_type = updates.entity_type
-      if (updates.service_config !== undefined) formulaUpdates.service_config = updates.service_config
-      if (updates.material_config !== undefined) formulaUpdates.material_config = updates.material_config
-      if (updates.allowance_unit !== undefined) formulaUpdates.allowance_unit = updates.allowance_unit
-      if (updates.production_width_allowance !== undefined) formulaUpdates.production_width_allowance = updates.production_width_allowance
-      if (updates.production_length_allowance !== undefined) formulaUpdates.production_length_allowance = updates.production_length_allowance
+      if (updates.entity_type !== undefined) {
+        payload.entity_type = updates.entity_type
+        formulaUpdates.entity_type = updates.entity_type
+      }
+      if (updates.service_config !== undefined) {
+        payload.service_config = updates.service_config
+        formulaUpdates.service_config = updates.service_config
+      }
+      if (updates.material_config !== undefined) {
+        payload.material_config = updates.material_config
+        formulaUpdates.material_config = updates.material_config
+      }
+      if (updates.available_widths_ft !== undefined) {
+        payload.available_widths_ft = updates.available_widths_ft
+        formulaUpdates.available_widths_ft = updates.available_widths_ft
+      }
+      if (updates.standard_roll_length_ft !== undefined) {
+        payload.standard_roll_length_ft = updates.standard_roll_length_ft
+        formulaUpdates.standard_roll_length_ft = updates.standard_roll_length_ft
+      }
+      if (updates.available_sheet_sizes !== undefined) {
+        payload.available_sheet_sizes = updates.available_sheet_sizes
+        formulaUpdates.available_sheet_sizes = updates.available_sheet_sizes
+      }
+      if (updates.material_config?.purchase_price_per_sft !== undefined) {
+        formulaUpdates.purchase_price_per_sft = updates.material_config.purchase_price_per_sft
+      }
+      if (updates.production_width_allowance !== undefined) {
+        payload.production_width_allowance = updates.production_width_allowance
+        formulaUpdates.production_width_allowance = updates.production_width_allowance
+      }
+      if (updates.production_length_allowance !== undefined) {
+        payload.production_length_allowance = updates.production_length_allowance
+        formulaUpdates.production_length_allowance = updates.production_length_allowance
+      }
 
       if (Object.keys(formulaUpdates).length > 0) {
         payload.pricing_formula = formulaUpdates

@@ -568,6 +568,7 @@ export interface ProductRecord {
   material_config?: MaterialConfiguration | null
   available_widths_ft?: number[]
   standard_roll_length_ft?: number
+  available_sheet_sizes?: Array<{ width: number; length: number; label?: string }>
   // Computed commercial helpers
   effective_unit_cost?: number
   suggested_selling_price?: number
