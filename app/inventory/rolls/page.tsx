@@ -3,5 +3,5 @@ import { getTenantRedirectSlug } from '@/lib/auth/tenant-auth'
 
 export default async function GlobalInventoryRollsRedirect() {
   const slug = await getTenantRedirectSlug()
-  redirect(`/${slug}/inventory/rolls`)
+  redirect(`/${slug}/inventory?view=rolls`)
 }

@@ -3,5 +3,5 @@ import { getTenantRedirectSlug } from '@/lib/auth/tenant-auth'
 
 export default async function GlobalPurchasesRedirect() {
   const slug = await getTenantRedirectSlug()
-  redirect(`/${slug}/purchases`)
+  redirect(`/${slug}/inventory?view=purchases`)
 }

@@ -121,10 +121,9 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     assert.ok(!operatorAllowed.includes('accounting'), 'Operator cannot see Finance')
     assert.ok(!operatorAllowed.includes('reports'), 'Operator cannot see Reports')
 
-    // E. Store Manager: can access inventory and purchases
+    // E. Store Manager: can access inventory and suppliers (with purchases unified inside inventory workspace)
     const storeAllowed = allItems.filter((i) => isAllowedForRole(i, 'store_manager')).map((i) => i.key)
     assert.ok(storeAllowed.includes('inventory'), 'Store Manager must see Inventory')
-    assert.ok(storeAllowed.includes('purchases'), 'Store Manager must see Purchases')
     assert.ok(storeAllowed.includes('suppliers'), 'Store Manager must see Suppliers')
 
     // F. Accountant: can access billing and finance/accounting

@@ -144,34 +144,10 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
       items: [
         {
           key: 'inventory',
-          title: 'Inventory Stock',
-          titleBn: 'স্টক ব্যালেন্স',
+          title: 'Inventory',
+          titleBn: 'ইনভেন্টরি',
           href: `/${tenantSlug}/inventory`,
           icon: 'Package',
-          permission: { action: 'view', resource: 'inventory' },
-        },
-        {
-          key: 'rolls',
-          title: 'Physical Rolls',
-          titleBn: 'রোল তালিকা',
-          href: `/${tenantSlug}/inventory/rolls`,
-          icon: 'Disc',
-          permission: { action: 'view', resource: 'inventory' },
-        },
-        {
-          key: 'ledger',
-          title: 'Stock Ledger',
-          titleBn: 'স্টক খতিয়ান',
-          href: `/${tenantSlug}/inventory/ledger`,
-          icon: 'FileText',
-          permission: { action: 'view', resource: 'inventory' },
-        },
-        {
-          key: 'purchases',
-          title: 'Purchases',
-          titleBn: 'কেনাকাটা',
-          href: `/${tenantSlug}/purchases`,
-          icon: 'ShoppingBag',
           permission: { action: 'view', resource: 'inventory' },
         },
         {

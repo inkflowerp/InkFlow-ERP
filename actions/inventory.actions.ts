@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { InventoryService } from '@/services/inventory.service'
 import { AuditService } from '@/services/audit.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
+import { PurchaseService } from '@/services/purchase.service'
+import { ProductRepository } from '@/lib/repositories/product.repository'
 import {
   MaterialRecord,
   InventoryLocationRecord,
@@ -14,7 +16,9 @@ import {
   InventoryAdjustmentRecord,
   StockLedgerRecord,
   TaskMaterialRequirementRecord,
+  InventoryRollRecord,
 } from '@/types/inventory.types'
+import type { PurchaseOrderRecord, GoodsReceivedNoteRecord } from '@/types/purchase.types'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -613,6 +617,10 @@ export interface InventoryDashboardData {
   issues: MaterialIssueRecord[]
   remnants: InventoryRemnantRecord[]
   ledger: StockLedgerRecord[]
+  rolls: InventoryRollRecord[]
+  orders: PurchaseOrderRecord[]
+  goodsReceivedNotes: GoodsReceivedNoteRecord[]
+  readyProducts: any[]
   summary: any
 }
 
@@ -629,15 +637,19 @@ export async function getInventoryDashboardDataAction(
     }
     const companyId = tenant.companyId
 
-    const [matData, locData, balData, reqData, issData, remData, ledData, sumData] = await Promise.all([
-      InventoryService.getMaterials(companyId),
-      InventoryService.getLocations(companyId),
-      InventoryService.getStockBalances(companyId),
-      InventoryService.getRequests(companyId),
-      InventoryService.getIssues(companyId),
-      InventoryService.getRemnants(companyId),
-      InventoryService.getStockLedger(companyId),
-      InventoryService.getInventorySummary(companyId),
+    const [matData, locData, balData, reqData, issData, remData, ledData, sumData, rollsData, posData, grnData, prodsData] = await Promise.all([
+      InventoryService.getMaterials(companyId).catch(() => []),
+      InventoryService.getLocations(companyId).catch(() => []),
+      InventoryService.getStockBalances(companyId).catch(() => []),
+      InventoryService.getRequests(companyId).catch(() => []),
+      InventoryService.getIssues(companyId).catch(() => []),
+      InventoryService.getRemnants(companyId).catch(() => []),
+      InventoryService.getStockLedger(companyId).catch(() => []),
+      InventoryService.getInventorySummary(companyId).catch(() => ({})),
+      InventoryService.getInventoryRolls(companyId).catch(() => []),
+      PurchaseService.getPurchaseOrders(companyId).catch(() => []),
+      PurchaseService.getGoodsReceivedNotes(companyId).catch(() => []),
+      ProductRepository.getProducts(companyId, false, 'all', undefined, 'product').catch(() => []),
     ])
 
     return {
@@ -650,6 +662,10 @@ export async function getInventoryDashboardDataAction(
         issues: issData || [],
         remnants: remData || [],
         ledger: ledData || [],
+        rolls: rollsData || [],
+        orders: posData || [],
+        goodsReceivedNotes: grnData || [],
+        readyProducts: prodsData || [],
         summary: sumData,
       },
     }
