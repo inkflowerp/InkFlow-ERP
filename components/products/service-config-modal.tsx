@@ -908,9 +908,9 @@ export function ServiceConfigModal({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                      Selling Unit (গ্রাহক বিলিং একক) <span className="text-rose-500">*</span>
+                  <div className="flex flex-col justify-between">
+                    <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[34px] flex items-end">
+                      <span>Selling Unit (গ্রাহক বিলিং একক) <span className="text-rose-500">*</span></span>
                     </Label>
                     <select
                       value={sellingUnit}
@@ -930,9 +930,9 @@ export function ServiceConfigModal({
                     </select>
                   </div>
 
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                      Purchase / Stock Media Unit (ক্রয় ও স্টক একক) <span className="text-rose-500">*</span>
+                  <div className="flex flex-col justify-between">
+                    <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[34px] flex items-end">
+                      <span>Purchase / Stock Unit (ক্রয় ও স্টক একক) <span className="text-rose-500">*</span></span>
                     </Label>
                     <select
                       value={purchaseUnit}
@@ -947,9 +947,9 @@ export function ServiceConfigModal({
                     </select>
                   </div>
 
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                      Dimension Input Unit (কাস্টমার ইনপুট একক)
+                  <div className="flex flex-col justify-between">
+                    <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[34px] flex items-end">
+                      <span>Dimension Input Unit (কাস্টমার ইনপুট একক)</span>
                     </Label>
                     <select
                       value={dimensionUnit}
@@ -967,46 +967,50 @@ export function ServiceConfigModal({
 
               {/* 2. Customer Area & Billing Rules Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
+                <div className="flex flex-col justify-between">
+                  <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[20px] flex items-end">
                     Min Billable Area / Qty Floor
                   </Label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      step="any"
-                      min="0.1"
-                      value={minBillableQty}
-                      onChange={(e) => setMinBillableQty(parseFloat(e.target.value) || 1)}
-                      className="h-9 text-xs font-mono pr-12"
-                    />
-                    <span className="absolute right-3 top-2.5 text-[11px] text-slate-400 font-bold uppercase">
-                      {sellingUnit}
+                  <div>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="any"
+                        min="0.1"
+                        value={minBillableQty}
+                        onChange={(e) => setMinBillableQty(parseFloat(e.target.value) || 1)}
+                        className="h-9 text-xs font-mono pr-12"
+                      />
+                      <span className="absolute right-3 top-2.5 text-[11px] text-slate-400 font-bold uppercase">
+                        {sellingUnit}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                      Minimum billable threshold protects against losing money on micro-prints.
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-0.5 block">
-                    Minimum billable threshold protects against losing money on micro-prints.
-                  </span>
                 </div>
 
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
+                <div className="flex flex-col justify-between">
+                  <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[20px] flex items-end">
                     Default Bleed / Edge Cut Margin
                   </Label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      step="any"
-                      min="0"
-                      value={productionBleedInches}
-                      onChange={(e) => setProductionBleedInches(parseFloat(e.target.value) || 0)}
-                      className="h-9 text-xs font-mono pr-10"
-                    />
-                    <span className="absolute right-3 top-2.5 text-[11px] text-slate-400 font-bold">in</span>
+                  <div>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="any"
+                        min="0"
+                        value={productionBleedInches}
+                        onChange={(e) => setProductionBleedInches(parseFloat(e.target.value) || 0)}
+                        className="h-9 text-xs font-mono pr-10"
+                      />
+                      <span className="absolute right-3 top-2.5 text-[11px] text-slate-400 font-bold">in</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                      Extra trim allowance per side added for production cutting.
+                    </span>
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-0.5 block">
-                    Extra trim allowance per side added for production cutting.
-                  </span>
                 </div>
               </div>
 
@@ -1100,8 +1104,8 @@ export function ServiceConfigModal({
 
                   {/* Custom Width Adder, Extra Width Allowance & Roll Length */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-blue-200/80 dark:border-blue-800/60">
-                    <div>
-                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <div className="flex flex-col justify-between">
+                      <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[20px] flex items-end">
                         Add Custom Roll Width (Feet)
                       </Label>
                       <div className="flex items-center gap-2">
@@ -1124,64 +1128,68 @@ export function ServiceConfigModal({
                       </div>
                     </div>
 
-                    <div>
-                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <div className="flex flex-col justify-between">
+                      <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[20px] flex items-end">
                         Roll Width + Extra Allowance (+ft)
                       </Label>
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          step="0.05"
-                          min="0"
-                          value={extraWidthAllowance}
-                          onChange={(e) => setExtraWidthAllowance(parseFloat(e.target.value) || 0)}
-                          className="h-8 text-xs font-mono font-bold text-blue-600 dark:text-blue-400 pr-14"
-                        />
-                        <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">ft (3 in)</span>
+                      <div>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            step="0.05"
+                            min="0"
+                            value={extraWidthAllowance}
+                            onChange={(e) => setExtraWidthAllowance(parseFloat(e.target.value) || 0)}
+                            className="h-8 text-xs font-mono font-bold text-blue-600 dark:text-blue-400 pr-14"
+                          />
+                          <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">ft (3 in)</span>
+                        </div>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
+                          Extra width (+0.25 ft) added for pinch rollers & cutting margins.
+                        </span>
                       </div>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-                        Extra width (+0.25 ft) added for pinch rollers, side clamps & cutting margins.
-                      </span>
                     </div>
 
-                    <div>
-                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <div className="flex flex-col justify-between">
+                      <Label className="text-xs font-semibold mb-1 text-slate-800 dark:text-slate-200 min-h-[20px] flex items-end">
                         Standard Roll Length (Feet)
                       </Label>
-                      <div className="flex items-center gap-1.5">
-                        <Input
-                          type="number"
-                          step="any"
-                          value={standardRollLength}
-                          onChange={(e) => setStandardRollLength(parseFloat(e.target.value) || 164)}
-                          className="h-8 text-xs font-mono"
-                        />
-                        <div className="flex gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setStandardRollLength(100)}
-                            className={cn(
-                              'text-[10px] px-1.5 py-1 rounded border font-mono',
-                              standardRollLength === 100 ? 'bg-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-slate-600'
-                            )}
-                          >
-                            100ft
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setStandardRollLength(164)}
-                            className={cn(
-                              'text-[10px] px-1.5 py-1 rounded border font-mono',
-                              standardRollLength === 164 ? 'bg-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-slate-600'
-                            )}
-                          >
-                            164ft
-                          </button>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            step="any"
+                            value={standardRollLength}
+                            onChange={(e) => setStandardRollLength(parseFloat(e.target.value) || 164)}
+                            className="h-8 text-xs font-mono"
+                          />
+                          <div className="flex gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setStandardRollLength(100)}
+                              className={cn(
+                                'text-[10px] px-1.5 py-1 rounded border font-mono',
+                                standardRollLength === 100 ? 'bg-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-slate-600'
+                              )}
+                            >
+                              100ft
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setStandardRollLength(164)}
+                              className={cn(
+                                'text-[10px] px-1.5 py-1 rounded border font-mono',
+                                standardRollLength === 164 ? 'bg-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-slate-600'
+                              )}
+                            >
+                              164ft
+                            </button>
+                          </div>
                         </div>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
+                          Standard 50m media roll = 164 ft.
+                        </span>
                       </div>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-                        Standard 50 meter media roll = 164 ft.
-                      </span>
                     </div>
                   </div>
 
