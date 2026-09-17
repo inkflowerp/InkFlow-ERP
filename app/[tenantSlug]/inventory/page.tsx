@@ -178,6 +178,7 @@ export default function UnifiedInventoryPage() {
   const [selectedMaterialForAction, setSelectedMaterialForAction] = useState<MaterialRecord | null>(null)
   const [selectedRollForAction, setSelectedRollForAction] = useState<InventoryRollRecord | null>(null)
   const [selectedPoForReceive, setSelectedPoForReceive] = useState<PurchaseOrderRecord | null>(null)
+  const [selectedRequestForIssue, setSelectedRequestForIssue] = useState<MaterialRequestRecord | null>(null)
 
   const showNotification = (msg: string) => {
     setNotification(msg)
@@ -1167,8 +1168,11 @@ export default function UnifiedInventoryPage() {
                               {req.status === 'approved' && (
                                 <Button
                                   size="sm"
-                                  onClick={() => setIsIssueOpen(true)}
-                                  className="h-7 px-2.5 text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+                                  onClick={() => {
+                                    setSelectedRequestForIssue(req)
+                                    setIsIssueOpen(true)
+                                  }}
+                                  className="h-7 px-2.5 text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold cursor-pointer"
                                 >
                                   <Send className="h-3 w-3 mr-1" />
                                   Issue Stock
@@ -1780,9 +1784,16 @@ export default function UnifiedInventoryPage() {
 
         <MaterialIssueModal
           open={isIssueOpen}
-          onOpenChange={setIsIssueOpen}
+          onOpenChange={(open) => {
+            setIsIssueOpen(open)
+            if (!open) setSelectedRequestForIssue(null)
+          }}
           materials={materials}
           locations={locations}
+          requests={requests}
+          rolls={rolls}
+          request={selectedRequestForIssue}
+          selectedMaterialId={selectedMaterialForAction?.id}
           onSuccess={() => {
             showNotification('Material issued to print floor successfully.')
             loadAllData()
