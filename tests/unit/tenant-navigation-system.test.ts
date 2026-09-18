@@ -19,27 +19,27 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     const sectionIds = navSections.map((s) => s.id)
     assert.deepEqual(sectionIds, ['today', 'work', 'management', 'settings'])
 
-    // Verify inventory, suppliers, pricing, hr (Workforce & Payroll), and attendance are positioned in today section
+    // Verify inventory, suppliers, pricing, and hr (Workforce, Attendance & Payroll) are positioned in today section
     const todayItems = navSections.find((s) => s.id === 'today')!.items.map((i) => i.key)
     const productsIndex = todayItems.indexOf('products')
     const inventoryIndex = todayItems.indexOf('inventory')
     const suppliersIndex = todayItems.indexOf('suppliers')
     const pricingIndex = todayItems.indexOf('pricing')
     const hrIndex = todayItems.indexOf('hr')
-    const attendanceIndex = todayItems.indexOf('attendance')
 
     assert.ok(productsIndex !== -1, 'products must exist in today section')
     assert.equal(inventoryIndex, productsIndex + 1, 'inventory must immediately follow products')
     assert.equal(suppliersIndex, productsIndex + 2, 'suppliers must immediately follow inventory')
     assert.equal(pricingIndex, productsIndex + 3, 'pricing must immediately follow suppliers')
     assert.equal(hrIndex, productsIndex + 4, 'hr must immediately follow pricing')
-    assert.equal(attendanceIndex, productsIndex + 5, 'attendance must immediately follow hr')
+
+    const hrItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'hr')
+    assert.equal(hrItem?.title, 'Workforce, Attendance & Payroll', 'hr item must be titled Workforce, Attendance & Payroll')
+    assert.equal(hrItem?.titleBn, 'কর্মী, হাজিরা ও পেরোল', 'hr item must have correct Bengali title')
+    assert.equal(hrItem?.hasDividerBelow, true, 'hr item must have hasDividerBelow flag set to true')
 
     const pricingItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'pricing')
     assert.equal(pricingItem?.hasDividerBelow, true, 'pricing item must have hasDividerBelow flag set to true')
-
-    const attendanceItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'attendance')
-    assert.equal(attendanceItem?.hasDividerBelow, true, 'attendance item must have hasDividerBelow flag set to true')
   })
 
   it('2. Every navigation section and item has complete English and Bengali titles', () => {

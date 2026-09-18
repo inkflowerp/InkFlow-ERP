@@ -99,21 +99,13 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
         },
         {
           key: 'hr',
-          title: 'Workforce & Payroll',
-          titleBn: 'কর্মী ও পেরোল',
+          title: 'Workforce, Attendance & Payroll',
+          titleBn: 'কর্মী, হাজিরা ও পেরোল',
           href: `/${tenantSlug}/hr`,
           icon: 'Users2',
           permission: { action: 'view', resource: 'settings' },
           badge: 'HR',
           badgeVariant: 'pro',
-        },
-        {
-          key: 'attendance',
-          title: 'Attendance Punch',
-          titleBn: 'উপস্থিতি পাঞ্চ',
-          href: `/${tenantSlug}/attendance`,
-          icon: 'UserCheck',
-          permission: { action: 'view', resource: 'settings' },
           hasDividerBelow: true,
         },
         {

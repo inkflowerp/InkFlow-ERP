@@ -5,9 +5,9 @@
 // Designed for Bangladeshi Print & Signage SaaS Owners, HR & Shop-Floor Managers
 // ==============================================================================
 
-import React, { useState, useEffect, useTransition } from 'react'
+import React, { useState, useEffect, useTransition, Suspense } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import {
   Users2,
   Plus,
@@ -99,11 +99,24 @@ export default function WorkforcePage() {
   const { locale, tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'vision-sign'
 
+  const searchParams = useSearchParams()
+
   const [isPending, startTransition] = useTransition()
   const [activeTab, setActiveTab] = useState<'employees' | 'attendance' | 'overtime' | 'advances' | 'payroll'>('employees')
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
+
+  // Handle URL tab & punch query parameters
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab')
+    if (tabParam && ['employees', 'attendance', 'overtime', 'advances', 'payroll'].includes(tabParam)) {
+      setActiveTab(tabParam as any)
+    }
+    if (searchParams?.get('punch') === 'true') {
+      setIsMobilePunchOpen(true)
+    }
+  }, [searchParams])
 
   // Data States
   const [summary, setSummary] = useState<WorkforceSummaryKPIs | null>(null)
@@ -510,6 +523,16 @@ export default function WorkforcePage() {
               <Button
                 size="sm"
                 variant="outline"
+                onClick={() => setIsMobilePunchOpen(true)}
+                className="text-xs border-indigo-300 text-indigo-800 bg-indigo-50/50 hover:bg-indigo-100/80 dark:border-indigo-800 dark:text-indigo-300 dark:bg-indigo-950/40 font-bold bangla-text shadow-xs"
+              >
+                <UserCheck className="mr-1.5 h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                {tBilingual('Employee Shift Punch', 'কর্মচারী শিফট পাঞ্চ')}
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => setIsAttendanceModalOpen(true)}
                 className="text-xs border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 bangla-text"
               >
@@ -858,6 +881,40 @@ export default function WorkforcePage() {
            ========================================================================= */}
         {activeTab === 'attendance' && (
           <div className="space-y-4">
+            {/* Live Shift Punch Banner & Quick Action */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-emerald-50/40 dark:from-indigo-950/40 dark:via-blue-950/20 dark:to-emerald-950/20 border border-indigo-100 dark:border-indigo-900/60 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-xs">
+                  <UserCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    {tBilingual('Employee Shift Punch & QR Attendance', 'কর্মচারী শিফট পাঞ্চ ও কিউআর হাজিরা')}
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {tBilingual('Live camera QR code scan, geofenced GPS verification, and shift punch-in / punch-out.', 'লাইভ কিউআর স্ক্যান এবং জিপিএস সীমানার ভেতর স্বয়ংক্রিয় শিফট হাজিরা ও প্রস্থান।')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Button
+                  size="sm"
+                  onClick={() => setIsMobilePunchOpen(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8.5 rounded-xl font-bold gap-1.5 shadow-xs"
+                >
+                  <QrCode className="h-3.5 w-3.5" />
+                  <span>{tBilingual('Open Shift Punch Terminal', 'শিফট পাঞ্চ টার্মিনাল')}</span>
+                </Button>
+                <Link
+                  href={`/${tenantSlug}/attendance`}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 underline underline-offset-2 px-2 py-1"
+                >
+                  {tBilingual('Dedicated Terminal View →', 'ডেডিকেটেড ভিউ →')}
+                </Link>
+              </div>
+            </div>
+
             {/* Attendance Filters */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -2114,6 +2171,18 @@ export default function WorkforcePage() {
             </div>
           </ModalDialog>
         )}
+
+        {/* =========================================================================
+            MODAL: LIVE ATTENDANCE SHIFT PUNCH TERMINAL
+           ========================================================================= */}
+        <AttendancePunchModal
+          open={isMobilePunchOpen}
+          onClose={() => {
+            setIsMobilePunchOpen(false)
+            loadAllData()
+          }}
+          tenantSlug={tenantSlug}
+        />
       </div>
     </FeatureGate>
   )
