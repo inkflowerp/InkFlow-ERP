@@ -16,12 +16,424 @@ import type {
   PayrollItemRecord,
   SalaryPaymentRecord,
   WorkforceAuditLogRecord,
+  EmploymentType,
+  SalaryBasis,
+  PaymentMethod,
 } from '../../types/workforce.types.ts'
+
+function isMatchingCompany(recordCompanyId?: string | null, targetCompanyId?: string | null): boolean {
+  if (!recordCompanyId || !targetCompanyId) return true
+  if (recordCompanyId === targetCompanyId) return true
+  const norm1 = recordCompanyId.toLowerCase().replace(/^comp-/, '').replace(/^co-/, '')
+  const norm2 = targetCompanyId.toLowerCase().replace(/^comp-/, '').replace(/^co-/, '')
+  if (norm1 === norm2) return true
+  const isVision1 = norm1 === 'vision-sign' || norm1 === 'c0000000-0000-0000-0000-000000000001'
+  const isVision2 = norm2 === 'vision-sign' || norm2 === 'c0000000-0000-0000-0000-000000000001'
+  if (isVision1 && isVision2) return true
+  return false
+}
 
 export class WorkforceRepository {
   // ============================================================================
   // 1. EMPLOYEES
   // ============================================================================
+
+  static async seedDefaultEmployees(companyId: string): Promise<EmployeeRecord[]> {
+    const now = new Date().toISOString()
+    const cleanId = companyId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 8) || 'default'
+
+    const rawSeeds = [
+      {
+        id: `emp-seed-1-${cleanId}`,
+        employee_id_number: 'EMP-2024-1001',
+        name: 'Md. Rafiqul Islam',
+        name_bn: 'মো. রফিকুল ইসলাম',
+        mobile: '+8801711234501',
+        email: 'rafiqul.print@example.com',
+        role: 'Master Offset Machine Operator',
+        designation: 'Senior Machine Operator',
+        department: 'printing',
+        employee_type: 'permanent' as EmploymentType,
+        salary_basis: 'monthly' as SalaryBasis,
+        joining_date: '2023-01-15',
+        allowed_monthly_leaves: 2,
+        payment_method: 'bank' as PaymentMethod,
+        base_salary: 35000,
+        daily_rate: 1200,
+        hourly_rate: 168,
+        overtime_hourly_rate: 250,
+        current_advance_balance: 0,
+        is_daily_worker: false,
+        salary_structure: {
+          basic: 21000,
+          house_allowance: 7000,
+          transport_allowance: 3500,
+          medical_allowance: 3500,
+          food_allowance: 0,
+          other_allowances: 0,
+        },
+        duty_settings: {
+          office_start_time: '09:00',
+          office_end_time: '18:00',
+          daily_duty_hours: 9,
+          late_grace_minutes: 15,
+          weekly_off_day: 'Friday',
+          ot_calc_type: '1.5x_standard' as const,
+          overtime_rate_value: 250,
+          absent_deduction_allowed: true,
+          late_fine_enabled: true,
+          late_fine_policy: '3_late_1_day_salary' as const,
+        },
+        bank_payment_info: {
+          bank_name: 'Dutch-Bangla Bank (DBBL)',
+          account_name: 'Md. Rafiqul Islam',
+          account_number: '115.120.345678',
+          branch_name: 'Motijheel Branch, Dhaka',
+        },
+        status: 'active' as const,
+        address: 'Fakirapool, Arambagh, Motijheel, Dhaka',
+        educational_qualification: 'Diploma in Graphic Arts & Printing',
+      },
+      {
+        id: `emp-seed-2-${cleanId}`,
+        employee_id_number: 'EMP-2024-1002',
+        name: 'Tanvir Ahmed',
+        name_bn: 'তানভীর আহমেদ',
+        mobile: '+8801812345678',
+        email: 'tanvir.uv@example.com',
+        role: 'Large Format & UV Flatbed Operator',
+        designation: 'UV Machine Incharge',
+        department: 'printing',
+        employee_type: 'permanent' as EmploymentType,
+        salary_basis: 'monthly' as SalaryBasis,
+        joining_date: '2023-05-10',
+        allowed_monthly_leaves: 2,
+        payment_method: 'bkash' as PaymentMethod,
+        base_salary: 26000,
+        daily_rate: 900,
+        hourly_rate: 125,
+        overtime_hourly_rate: 190,
+        current_advance_balance: 0,
+        is_daily_worker: false,
+        salary_structure: {
+          basic: 15600,
+          house_allowance: 5200,
+          transport_allowance: 2600,
+          medical_allowance: 2600,
+          food_allowance: 0,
+          other_allowances: 0,
+        },
+        duty_settings: {
+          office_start_time: '09:00',
+          office_end_time: '18:00',
+          daily_duty_hours: 9,
+          late_grace_minutes: 15,
+          weekly_off_day: 'Friday',
+          ot_calc_type: '1.5x_standard' as const,
+          overtime_rate_value: 190,
+          absent_deduction_allowed: true,
+          late_fine_enabled: true,
+          late_fine_policy: '3_late_1_day_salary' as const,
+        },
+        mfs_payment_info: {
+          provider: 'bkash' as const,
+          wallet_number: '+8801812345678',
+          account_type: 'personal' as const,
+        },
+        status: 'active' as const,
+        address: 'Naya Paltan, Dhaka',
+        educational_qualification: 'HSC Passed',
+      },
+      {
+        id: `emp-seed-3-${cleanId}`,
+        employee_id_number: 'EMP-2024-1003',
+        name: 'Kawsar Hossain',
+        name_bn: 'কাওসার হোসেন',
+        mobile: '+8801913456789',
+        email: 'kawsar.finishing@example.com',
+        role: 'Finishing & Die-Cutting Specialist',
+        designation: 'Finishing Incharge',
+        department: 'finishing',
+        employee_type: 'permanent' as EmploymentType,
+        salary_basis: 'monthly' as SalaryBasis,
+        joining_date: '2023-08-01',
+        allowed_monthly_leaves: 2,
+        payment_method: 'cash' as PaymentMethod,
+        base_salary: 22000,
+        daily_rate: 800,
+        hourly_rate: 105,
+        overtime_hourly_rate: 160,
+        current_advance_balance: 0,
+        is_daily_worker: false,
+        salary_structure: {
+          basic: 13200,
+          house_allowance: 4400,
+          transport_allowance: 2200,
+          medical_allowance: 2200,
+          food_allowance: 0,
+          other_allowances: 0,
+        },
+        duty_settings: {
+          office_start_time: '09:00',
+          office_end_time: '18:00',
+          daily_duty_hours: 9,
+          late_grace_minutes: 15,
+          weekly_off_day: 'Friday',
+          ot_calc_type: '1.5x_standard' as const,
+          overtime_rate_value: 160,
+          absent_deduction_allowed: true,
+          late_fine_enabled: true,
+        },
+        status: 'active' as const,
+        address: 'Sadarghat, Old Dhaka',
+        educational_qualification: 'SSC Passed',
+      },
+      {
+        id: `emp-seed-4-${cleanId}`,
+        employee_id_number: 'EMP-2024-1004',
+        name: 'Rubel Mia',
+        name_bn: 'রুবেল মিয়া',
+        mobile: '+8801724567890',
+        email: 'rubel.sign@example.com',
+        role: 'Signage & Acrylic CNC Fabricator',
+        designation: 'Master Fabricator',
+        department: 'fabrication',
+        employee_type: 'permanent' as EmploymentType,
+        salary_basis: 'monthly' as SalaryBasis,
+        joining_date: '2023-03-20',
+        allowed_monthly_leaves: 2,
+        payment_method: 'nagad' as PaymentMethod,
+        base_salary: 28000,
+        daily_rate: 950,
+        hourly_rate: 135,
+        overtime_hourly_rate: 200,
+        current_advance_balance: 0,
+        is_daily_worker: false,
+        salary_structure: {
+          basic: 16800,
+          house_allowance: 5600,
+          transport_allowance: 2800,
+          medical_allowance: 2800,
+          food_allowance: 0,
+          other_allowances: 0,
+        },
+        duty_settings: {
+          office_start_time: '09:00',
+          office_end_time: '18:00',
+          daily_duty_hours: 9,
+          late_grace_minutes: 15,
+          weekly_off_day: 'Friday',
+          ot_calc_type: '1.5x_standard' as const,
+          overtime_rate_value: 200,
+          absent_deduction_allowed: true,
+          late_fine_enabled: true,
+        },
+        mfs_payment_info: {
+          provider: 'nagad' as const,
+          wallet_number: '+8801724567890',
+          account_type: 'personal' as const,
+        },
+        status: 'active' as const,
+        address: 'Keraniganj, Dhaka',
+        educational_qualification: 'Technical Vocational Training',
+      },
+      {
+        id: `emp-seed-5-${cleanId}`,
+        employee_id_number: 'EMP-2024-1005',
+        name: 'Sumon Barua',
+        name_bn: 'সুমন বড়ুয়া',
+        mobile: '+8801635678901',
+        email: 'sumon.design@example.com',
+        role: 'Senior Graphic Designer & Prepress',
+        designation: 'Prepress Specialist',
+        department: 'design',
+        employee_type: 'permanent' as EmploymentType,
+        salary_basis: 'monthly' as SalaryBasis,
+        joining_date: '2022-11-01',
+        allowed_monthly_leaves: 2,
+        payment_method: 'bank' as PaymentMethod,
+        base_salary: 30000,
+        daily_rate: 1000,
+        hourly_rate: 144,
+        overtime_hourly_rate: 220,
+        current_advance_balance: 0,
+        is_daily_worker: false,
+        salary_structure: {
+          basic: 18000,
+          house_allowance: 6000,
+          transport_allowance: 3000,
+          medical_allowance: 3000,
+          food_allowance: 0,
+          other_allowances: 0,
+        },
+        duty_settings: {
+          office_start_time: '09:30',
+          office_end_time: '18:30',
+          daily_duty_hours: 9,
+          late_grace_minutes: 15,
+          weekly_off_day: 'Friday',
+          ot_calc_type: '1.5x_standard' as const,
+          overtime_rate_value: 220,
+          absent_deduction_allowed: true,
+          late_fine_enabled: true,
+        },
+        bank_payment_info: {
+          bank_name: 'BRAC Bank',
+          account_name: 'Sumon Barua',
+          account_number: '1501204987654001',
+          branch_name: 'Gulshan Branch, Dhaka',
+        },
+        status: 'active' as const,
+        address: 'Badda, Dhaka',
+        educational_qualification: 'BFA in Graphic Design',
+      },
+      {
+        id: `emp-seed-6-${cleanId}`,
+        employee_id_number: 'EMP-2024-1006',
+        name: 'Farzana Akhter',
+        name_bn: 'ফারজানা আক্তার',
+        mobile: '+8801746789012',
+        email: 'farzana.accounts@example.com',
+        role: 'Accounts & Billing Officer',
+        designation: 'Accounts Officer',
+        department: 'accounts',
+        employee_type: 'permanent' as EmploymentType,
+        salary_basis: 'monthly' as SalaryBasis,
+        joining_date: '2023-06-15',
+        allowed_monthly_leaves: 2,
+        payment_method: 'bank' as PaymentMethod,
+        base_salary: 28000,
+        daily_rate: 950,
+        hourly_rate: 135,
+        overtime_hourly_rate: 200,
+        current_advance_balance: 0,
+        is_daily_worker: false,
+        salary_structure: {
+          basic: 16800,
+          house_allowance: 5600,
+          transport_allowance: 2800,
+          medical_allowance: 2800,
+          food_allowance: 0,
+          other_allowances: 0,
+        },
+        duty_settings: {
+          office_start_time: '09:00',
+          office_end_time: '18:00',
+          daily_duty_hours: 9,
+          late_grace_minutes: 15,
+          weekly_off_day: 'Friday',
+          ot_calc_type: '1.5x_standard' as const,
+          overtime_rate_value: 200,
+          absent_deduction_allowed: true,
+          late_fine_enabled: true,
+        },
+        bank_payment_info: {
+          bank_name: 'The City Bank',
+          account_name: 'Farzana Akhter',
+          account_number: '210345678901',
+          branch_name: 'Dhanmondi Branch, Dhaka',
+        },
+        status: 'active' as const,
+        address: 'Dhanmondi, Dhaka',
+        educational_qualification: 'BBA in Accounting',
+      },
+      {
+        id: `emp-seed-7-${cleanId}`,
+        employee_id_number: 'EMP-2024-1007',
+        name: 'Shakil Ahmed',
+        name_bn: 'শাকিল আহমেদ',
+        mobile: '+8801557890123',
+        email: null,
+        role: 'Daily Production Laborer',
+        designation: 'Floor Worker',
+        department: 'printing',
+        employee_type: 'daily_worker' as EmploymentType,
+        salary_basis: 'daily_rate' as SalaryBasis,
+        joining_date: '2024-01-01',
+        allowed_monthly_leaves: 0,
+        payment_method: 'cash' as PaymentMethod,
+        base_salary: 0,
+        daily_rate: 800,
+        hourly_rate: 100,
+        overtime_hourly_rate: 150,
+        current_advance_balance: 0,
+        is_daily_worker: true,
+        salary_structure: {
+          basic: 0,
+          house_allowance: 0,
+          transport_allowance: 0,
+          medical_allowance: 0,
+          food_allowance: 0,
+          other_allowances: 0,
+        },
+        duty_settings: {
+          office_start_time: '08:30',
+          office_end_time: '17:30',
+          daily_duty_hours: 9,
+          late_grace_minutes: 15,
+          weekly_off_day: 'Friday',
+          ot_calc_type: 'fixed_rate' as const,
+          overtime_rate_value: 150,
+          absent_deduction_allowed: false,
+          late_fine_enabled: false,
+        },
+        status: 'active' as const,
+        address: 'Bangshal, Old Dhaka',
+        educational_qualification: 'Class 8 Passed',
+      },
+    ]
+
+    const seeded: EmployeeRecord[] = rawSeeds.map((s) => ({
+      ...s,
+      company_id: companyId,
+      branch_id: null,
+      branch_name: null,
+      user_id: null,
+      created_at: now,
+      updated_at: now,
+    }))
+
+    // 1. Persist to DataStore in all relevant scopes
+    for (const emp of seeded) {
+      PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, companyId)
+      const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+      if (cleanSlug !== companyId) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, cleanSlug)
+      }
+      PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
+    }
+
+    // 2. Attempt DB insertion (best-effort)
+    try {
+      const admin = createAdminClient()
+      for (const emp of seeded) {
+        try {
+          await (admin as any).from('employees').insert({
+            company_id: emp.company_id,
+            employee_id_number: emp.employee_id_number,
+            name: emp.name,
+            name_bn: emp.name_bn,
+            mobile: emp.mobile,
+            address: emp.address,
+            role: emp.role,
+            department: emp.department,
+            employee_type: emp.employee_type === 'daily_worker' ? 'daily_labor' : emp.employee_type,
+            salary_type: emp.salary_basis === 'daily_rate' ? 'daily_rate' : 'monthly',
+            joining_date: emp.joining_date,
+            base_salary: emp.base_salary,
+            daily_rate: emp.daily_rate,
+            overtime_hourly_rate: emp.overtime_hourly_rate,
+            current_advance_balance: 0,
+            status: emp.status,
+            created_at: now,
+            updated_at: now,
+          })
+        } catch {}
+      }
+    } catch {}
+
+    return seeded
+  }
 
   static async getEmployees(
     companyId: string,
@@ -60,13 +472,19 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getEmployees] DB query fallback to store:', e)
     }
 
-    // Retrieve from local store (both tenant scoped and default scope)
-    const storeEmpsScoped = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
+    // Retrieve from local store across tenant partitions (scoped, clean-slug, comp-slug, and global)
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    const storeEmpsScoped1 = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
+    const storeEmpsScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, cleanSlug) || []) : []
+    const storeEmpsScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, compSlug) || []) : []
     const storeEmpsGlobal = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []
-    const allStoreEmps = [...storeEmpsScoped, ...storeEmpsGlobal]
+
+    const allStoreEmps = [...storeEmpsScoped1, ...storeEmpsScoped2, ...storeEmpsScoped3, ...storeEmpsGlobal]
 
     const filteredStoreEmps = allStoreEmps.filter((e) => {
-      if (e.company_id && e.company_id !== companyId) return false
+      if (e.company_id && !isMatchingCompany(e.company_id, companyId)) return false
       if (options?.branchId && e.branch_id !== options.branchId) return false
       if (options?.status && e.status !== options.status) return false
       if (options?.department && e.department !== options.department) return false
@@ -128,8 +546,12 @@ export class WorkforceRepository {
   }
 
   static async createEmployee(emp: EmployeeRecord): Promise<EmployeeRecord> {
-    // 1. Always save to DataStore in both tenant scope and general scope to guarantee local persistence
+    // 1. Always save to DataStore in tenant scope, clean slug scope, and general scope to guarantee local persistence
+    const cleanSlug = emp.company_id.replace(/^comp-/, '').replace(/^co-/, '')
     PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, emp.company_id)
+    if (cleanSlug !== emp.company_id) {
+      PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, cleanSlug)
+    }
     PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
 
     // 2. Attempt DB insertion with schema sanitization
@@ -206,8 +628,12 @@ export class WorkforceRepository {
   ): Promise<EmployeeRecord | null> {
     const payload = { ...updates, updated_at: new Date().toISOString() }
 
-    // 1. Update DataStore in both scopes
+    // 1. Update DataStore in all scopes (companyId, cleanSlug, and global)
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, companyId)
+    if (cleanSlug !== companyId) {
+      PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, cleanSlug)
+    }
     PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload)
 
     // 2. Update DB
@@ -244,6 +670,9 @@ export class WorkforceRepository {
             (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id)
           const merged = { ...(storeEmp || {}), ...data, ...updates }
           PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, companyId)
+          if (cleanSlug !== companyId) {
+            PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, cleanSlug)
+          }
           PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged)
           return merged
         }
@@ -271,7 +700,11 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.deleteEmployee] DB delete fallback:', e)
     }
 
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, companyId)
+    if (cleanSlug !== companyId) {
+      PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, cleanSlug)
+    }
     PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id)
     return true
   }

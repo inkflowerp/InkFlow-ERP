@@ -8,6 +8,7 @@
 import { revalidatePath } from 'next/cache'
 import { requireTenantUser, getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { WorkforceService } from '@/services/workforce.service'
+import { WorkforceRepository } from '@/lib/repositories/workforce.repository'
 import type {
   EmployeeRecord,
   ShiftRecord,
@@ -50,6 +51,10 @@ export async function getWorkforceSummaryAction(
 ): Promise<ServerActionResult<WorkforceSummaryKPIs>> {
   try {
     const tenant = await requireTenantUser(companyIdParam)
+    const emps = await WorkforceRepository.getEmployees(tenant.companyId)
+    if (emps.length === 0) {
+      await WorkforceRepository.seedDefaultEmployees(tenant.companyId)
+    }
     const summary = await WorkforceService.getWorkforceSummary(tenant.companyId)
     return { success: true, data: summary }
   } catch (err: any) {
@@ -67,7 +72,18 @@ export async function getEmployeesAction(
 ): Promise<ServerActionResult<EmployeeRecord[]>> {
   try {
     const tenant = await requireTenantUser(companyIdParam)
-    const employees = await WorkforceService.getEmployees(tenant.companyId, options)
+    let employees = await WorkforceService.getEmployees(tenant.companyId, options)
+
+    // If no employees found, check if tenant has ANY employees overall
+    if (employees.length === 0) {
+      const allEmps = await WorkforceService.getEmployees(tenant.companyId)
+      if (allEmps.length === 0) {
+        // Auto-seed for this tenant
+        await WorkforceRepository.seedDefaultEmployees(tenant.companyId)
+        employees = await WorkforceService.getEmployees(tenant.companyId, options)
+      }
+    }
+
     return { success: true, data: employees }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch employees.' }
