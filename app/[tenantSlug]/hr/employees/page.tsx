@@ -46,6 +46,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { PageHeader } from '@/components/shared/page-header'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type { BranchRow } from '@/types/tenant.types'
@@ -314,53 +315,42 @@ export default function EmployeeListPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20">
-              <Users className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                {tBilingual('Employee Directory', 'কর্মীদের তালিকা ও ব্যবস্থাপনা')}
-                <Badge variant="secondary" className="font-bold text-xs">
-                  {filteredEmployees.length} {tBilingual('Staff', 'জন')}
-                </Badge>
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {tBilingual(
-                  'Manage permanent staff, daily laborers, operator assignments & salary packages',
-                  'স্থায়ী কর্মী, দৈনিক চুক্তিবদ্ধ শ্রমিক ও অপারেটরদের প্রোফাইল ও বেতন কাঠামো'
-                )}
-              </p>
-            </div>
+      {/* Page Header */}
+      <PageHeader
+        titleEn="Employee Directory"
+        titleBn="কর্মীদের তালিকা ও ব্যবস্থাপনা"
+        descriptionEn="Manage permanent staff, daily laborers, operator assignments & salary packages"
+        descriptionBn="স্থায়ী কর্মী, দৈনিক চুক্তিবদ্ধ শ্রমিক ও অপারেটরদের প্রোফাইল ও বেতন কাঠামো"
+        icon={Users}
+        iconColor="text-blue-600 dark:text-blue-400"
+        badge={
+          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 bangla-text">
+            {filteredEmployees.length} {tBilingual('Staff', 'জন')}
+          </Badge>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadData}
+              disabled={isLoading}
+              className="gap-1.5 text-xs h-9"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              {tBilingual('Refresh', 'রিফ্রেশ')}
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleOpenAdd}
+              className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-xs bangla-text"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {tBilingual('Add New Employee', 'নতুন কর্মী যোগ করুন')}
+            </Button>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadData}
-            disabled={isLoading}
-            className="gap-1.5 text-xs h-9"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            {tBilingual('Refresh', 'রিফ্রেশ')}
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={handleOpenAdd}
-            className="gap-1.5 text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            {tBilingual('Add New Employee', 'নতুন কর্মী যোগ করুন')}
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Top Stat Summary Pills */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

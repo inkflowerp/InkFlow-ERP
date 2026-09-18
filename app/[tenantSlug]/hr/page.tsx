@@ -153,65 +153,52 @@ export default function HrmDashboardPage() {
         </div>
       )}
 
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary ring-1 ring-primary/20">
-              <LayoutDashboard className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                {tBilingual('HRM Dashboard', 'এইচআরএম ড্যাশবোর্ড')}
-                <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 text-xs">
-                  Live
-                </Badge>
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {tBilingual(
-                  'Workforce command center, realtime attendance radar & payroll intelligence',
-                  'কর্মী ব্যবস্থাপনা, লাইভ হাজিরা পর্যবেক্ষণ ও বেতন নিয়ন্ত্রণ কেন্দ্র'
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadData}
-            disabled={isLoading}
-            className="gap-1.5 text-xs h-9"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            {tBilingual('Refresh', 'রিফ্রেশ')}
-          </Button>
-
-          <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs h-9">
+      {/* Page Header */}
+      <PageHeader
+        titleEn="HRM Dashboard"
+        titleBn="এইচআরএম ড্যাশবোর্ড"
+        descriptionEn="Workforce command center, realtime attendance radar & payroll intelligence"
+        descriptionBn="কর্মী ব্যবস্থাপনা, লাইভ হাজিরা পর্যবেক্ষণ ও বেতন নিয়ন্ত্রণ কেন্দ্র"
+        icon={LayoutDashboard}
+        iconColor="text-indigo-600 dark:text-indigo-400"
+        badge={
+          <Badge variant="outline" className="text-xs bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 bangla-text">
+            {tBilingual('Live Floor Sync', 'লাইভ ফ্লোর সিঙ্ক')}
+          </Badge>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadData}
+              disabled={isLoading}
+              className="gap-1.5 text-xs h-9"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              {tBilingual('Refresh', 'রিফ্রেশ')}
+            </Button>
             <Link href={`/${tenantSlug}/hr/attendance`}>
-              <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              {tBilingual('Floor Attendance', 'হাজিরা')}
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                {tBilingual('Floor Attendance', 'হাজিরা')}
+              </Button>
             </Link>
-          </Button>
-
-          <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs h-9">
             <Link href={`/${tenantSlug}/hr/payroll`}>
-              <Wallet className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              {tBilingual('Payroll & Salary', 'পেরোল ও বেতন')}
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9">
+                <Wallet className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                {tBilingual('Payroll & Salary', 'পেরোল ও বেতন')}
+              </Button>
             </Link>
-          </Button>
-
-          <Button asChild size="sm" className="gap-1.5 text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground">
             <Link href={`/${tenantSlug}/hr/employees?action=new`}>
-              <UserPlus className="w-3.5 h-3.5" />
-              {tBilingual('Add Employee', 'নতুন কর্মী')}
+              <Button size="sm" className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-xs">
+                <UserPlus className="w-3.5 h-3.5" />
+                {tBilingual('Add Employee', 'নতুন কর্মী')}
+              </Button>
             </Link>
-          </Button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {/* 4 Top Executive KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

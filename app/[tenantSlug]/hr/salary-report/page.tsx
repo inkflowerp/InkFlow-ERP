@@ -34,6 +34,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { PageHeader } from '@/components/shared/page-header'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
   EmployeeRecord,
@@ -204,48 +205,43 @@ export default function SalaryReportPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 print:p-0 print:max-w-none print:w-full print:bg-white print:text-black">
       {/* Non-Print Header */}
-      <div className="print:hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20">
-              <FileSpreadsheet className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                {tBilingual('Salery Report', 'বেতন ও ব্যাংক ট্রান্সফার রিপোর্ট')}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {tBilingual(
-                  'Monthly salary breakdown, bank disbursement advice & department labor costing',
-                  'মাসিক বেতন শিট, ব্যাংক ট্রান্সফার শিডিউল ও বিভাগভিত্তিক মজুরি ব্যয় বিশ্লেষণ'
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="print:hidden">
+        <PageHeader
+          titleEn="Salery Report"
+          titleBn="বেতন ও ব্যাংক ট্রান্সফার রিপোর্ট"
+          descriptionEn="Monthly salary breakdown, bank disbursement advice & department labor costing"
+          descriptionBn="মাসিক বেতন শিট, ব্যাংক ট্রান্সফার শিডিউল ও বিভাগভিত্তিক মজুরি ব্যয় বিশ্লেষণ"
+          icon={FileSpreadsheet}
+          iconColor="text-amber-600 dark:text-amber-400"
+          badge={
+            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 bangla-text">
+              {selectedPeriod?.period_name || tBilingual('Monthly Audit', 'মাসিক অডিট')}
+            </Badge>
+          }
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrint}
+                className="gap-1.5 text-xs h-9"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                {tBilingual('Print Report', 'প্রিন্ট রিপোর্ট')}
+              </Button>
 
-        {/* Header Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrint}
-            className="gap-1.5 text-xs h-9"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            {tBilingual('Print Report', 'প্রিন্ট রিপোর্ট')}
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={handleExportCsv}
-            disabled={filteredItems.length === 0}
-            className="gap-1.5 text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <Download className="w-3.5 h-3.5" />
-            {tBilingual('Export CSV / Excel', 'এক্সেল এক্সপোর্ট')}
-          </Button>
-        </div>
+              <Button
+                size="sm"
+                onClick={handleExportCsv}
+                disabled={filteredItems.length === 0}
+                className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-xs bangla-text"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {tBilingual('Export CSV / Excel', 'এক্সেল এক্সপোর্ট')}
+              </Button>
+            </div>
+          }
+        />
       </div>
 
       {/* Print-Only Header Banner */}

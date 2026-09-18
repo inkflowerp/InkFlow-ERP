@@ -40,6 +40,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { PageHeader } from '@/components/shared/page-header'
 import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
 import { PrintableQrPoster } from '@/components/attendance/printable-qr-poster'
 import { formatBDT, formatDate } from '@/lib/formatters'
@@ -343,59 +344,52 @@ export default function AttendancePage() {
         </div>
       )}
 
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20">
-              <UserCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                {tBilingual('Floor Attendance & Overtime', 'কারখানার হাজিরা ও ওভারটাইম')}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {tBilingual(
-                  'Daily check-ins, QR scan station, late monitoring & overtime approvals',
-                  'দৈনিক উপস্থিতি, কিউআর কোড স্ক্যান, বিলম্ব পর্যবেক্ষণ ও ওভারটাইম অনুমোদন'
-                )}
-              </p>
-            </div>
+      {/* Page Header */}
+      <PageHeader
+        titleEn="Floor Attendance & Overtime"
+        titleBn="কারখানার হাজিরা ও ওভারটাইম"
+        descriptionEn="Daily check-ins, QR scan station, late monitoring & overtime approvals"
+        descriptionBn="দৈনিক উপস্থিতি, কিউআর কোড স্ক্যান, বিলম্ব পর্যবেক্ষণ ও ওভারটাইম অনুমোদন"
+        icon={UserCheck}
+        iconColor="text-emerald-600 dark:text-emerald-400"
+        badge={
+          <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 bangla-text">
+            {tBilingual('Live Shift Tracker', 'লাইভ শিফট ট্র্যাকার')}
+          </Badge>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsQrPosterOpen(true)}
+              className="gap-1.5 text-xs h-9"
+            >
+              <Printer className="w-3.5 h-3.5 text-muted-foreground" />
+              {tBilingual('Print QR Poster', 'পোস্টার প্রিন্ট')}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPunchModalOpen(true)}
+              className="gap-1.5 text-xs h-9 bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              {tBilingual('Live QR Scanner', 'কিউআর স্ক্যানার')}
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => handleOpenManualModal()}
+              className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-xs bangla-text"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {tBilingual('Mark Manual Attendance', 'ম্যানুয়াল হাজিরা')}
+            </Button>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsQrPosterOpen(true)}
-            className="gap-1.5 text-xs h-9"
-          >
-            <Printer className="w-3.5 h-3.5 text-muted-foreground" />
-            {tBilingual('Print QR Poster', 'পোস্টার প্রিন্ট')}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsPunchModalOpen(true)}
-            className="gap-1.5 text-xs h-9 bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20"
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            {tBilingual('Live QR Scanner', 'কিউআর স্ক্যানার')}
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => handleOpenManualModal()}
-            className="gap-1.5 text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            {tBilingual('Mark Manual Attendance', 'ম্যানুয়াল হাজিরা')}
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Date Navigator Bar & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/20 border border-border/60 rounded-xl p-3">

@@ -42,6 +42,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { PageHeader } from '@/components/shared/page-header'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
@@ -306,49 +307,42 @@ export default function PayrollPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-purple-500/10 rounded-xl text-purple-600 dark:text-purple-400 ring-1 ring-purple-500/20">
-              <Wallet className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                {tBilingual('Payroll and Salery', 'পেরোল ও বেতন ব্যবস্থাপনা')}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {tBilingual(
-                  'Automated monthly salary sheets, advance deductions & MFS disbursements',
-                  'স্বয়ংক্রিয় মাসিক বেতন শিট, অগ্রিম কর্তন ও ব্যাংক/বিকাশ বেতন প্রদান'
-                )}
-              </p>
-            </div>
+      {/* Page Header */}
+      <PageHeader
+        titleEn="Payroll and Salery"
+        titleBn="পেরোল ও বেতন ব্যবস্থাপনা"
+        descriptionEn="Automated monthly salary sheets, advance deductions & MFS disbursements"
+        descriptionBn="স্বয়ংক্রিয় মাসিক বেতন শিট, অগ্রিম কর্তন ও ব্যাংক/বিকাশ বেতন প্রদান"
+        icon={Wallet}
+        iconColor="text-blue-600 dark:text-blue-400"
+        badge={
+          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 bangla-text">
+            {currentPeriod?.period_name || tBilingual('Monthly Cycle', 'মাসিক বেতন')}
+          </Badge>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsAdvanceModalOpen(true)}
+              className="gap-1.5 text-xs h-9 bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
+            >
+              <DollarSign className="w-3.5 h-3.5" />
+              {tBilingual('Disburse Advance', 'অগ্রিম বেতন')}
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => setIsGenPayrollModalOpen(true)}
+              className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-xs bangla-text"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {tBilingual('Generate Payroll Draft', 'নতুন বেতন শিট তৈরি')}
+            </Button>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAdvanceModalOpen(true)}
-            className="gap-1.5 text-xs h-9 bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
-          >
-            <DollarSign className="w-3.5 h-3.5" />
-            {tBilingual('Disburse Advance', 'অগ্রিম বেতন')}
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => setIsGenPayrollModalOpen(true)}
-            className="gap-1.5 text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            {tBilingual('Generate Payroll Draft', 'নতুন বেতন শিট তৈরি')}
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Top 4 KPI Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
