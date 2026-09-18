@@ -1,4 +1,4 @@
-import {
+import type {
   ProductionTaskRecord,
   CreateProductionTaskInput,
   UpdateProductionTaskInput,
@@ -8,10 +8,11 @@ import {
   ProductionTaskStatus,
   MachineQueueGroup,
   MachineQueueItem,
-} from '@/types/production.types'
-import { ProductionTaskRepository, TaskFilterOptions } from '@/lib/repositories/production-task.repository'
-import { MachineryRepository } from '@/lib/repositories/machinery.repository'
-import { MachineryService } from '@/services/machinery.service'
+} from '../types/production.types.ts'
+import { ProductionTaskRepository, type TaskFilterOptions } from '../lib/repositories/production-task.repository.ts'
+import { MachineryRepository } from '../lib/repositories/machinery.repository.ts'
+import { MachineryService } from './machinery.service.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 // Concurrency mutex lock per (companyId + machineId) to serialize concurrent booking promises
 const scheduleLocks = new Map<string, Promise<void>>()
@@ -78,11 +79,18 @@ export class ProductionPlanningService {
       jobTasksMap.set(task.job_order_id, list)
     }
 
-    // Evaluate sequential dependencies
+    // Load store context for commercial & design gates
+    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const salesOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+
+    // Evaluate sequential dependencies and commercial/design gates
     for (const task of tasks) {
       if (task.status === 'completed' || task.status === 'cancelled') {
         task.is_blocked_by_dependency = false
         task.blocking_dependency_task_name = null
+        task.is_blocked_by_commercial_gate = false
+        task.is_blocked_by_design_gate = false
         continue
       }
 
@@ -97,6 +105,48 @@ export class ProductionPlanningService {
       } else {
         task.is_blocked_by_dependency = false
         task.blocking_dependency_task_name = null
+      }
+
+      // Check commercial gate
+      const jo = jobOrders.find((j) => j.id === task.job_order_id)
+      const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id) : null
+      const hasInvoice = Boolean(
+        jo?.invoice_id ||
+        so?.invoice_id ||
+        (so && invoices.some((inv) => inv.sales_order_id === so.id)) ||
+        (jo && invoices.some((inv) => inv.job_order_id === jo.id))
+      )
+
+      if (!hasInvoice && task.department !== 'design') {
+        task.is_blocked_by_commercial_gate = true
+        task.commercial_gate_reason = 'Official invoice not created yet'
+      } else {
+        task.is_blocked_by_commercial_gate = false
+        task.commercial_gate_reason = null
+      }
+
+      // Check design gate
+      const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const isDesignJobApproved = designJobs.some(
+        (dj) =>
+          (!companyId || dj.company_id === companyId) &&
+          ((so && (dj.order_id === so.id || dj.sales_order_id === so.id)) ||
+           (jo && (dj.id === jo.design_job_id || dj.order_id === jo.order_id || dj.job_order_id === jo.id))) &&
+          dj.status === 'approved'
+      )
+      const routing = jo?.workflow_routing || so?.workflow_routing || 'design_required'
+      const isDesignApproved =
+        jo?.artwork_status === 'approved' ||
+        routing === 'design_ok' ||
+        routing === 'ready_production' ||
+        isDesignJobApproved
+
+      if (routing === 'design_required' && !isDesignApproved && task.department !== 'design') {
+        task.is_blocked_by_design_gate = true
+        task.design_gate_reason = 'Customer design approval required'
+      } else {
+        task.is_blocked_by_design_gate = false
+        task.design_gate_reason = null
       }
     }
 
@@ -122,8 +172,54 @@ export class ProductionPlanningService {
       task.blocking_dependency_task_name = null
     }
 
+    // Check commercial & design gates
+    const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const salesOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+
+    const jo = jobOrders.find((j) => j.id === task.job_order_id)
+    const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id) : null
+    const hasInvoice = Boolean(
+      jo?.invoice_id ||
+      so?.invoice_id ||
+      (so && invoices.some((inv) => inv.sales_order_id === so.id)) ||
+      (jo && invoices.some((inv) => inv.job_order_id === jo.id))
+    )
+
+    if (!hasInvoice && task.department !== 'design') {
+      task.is_blocked_by_commercial_gate = true
+      task.commercial_gate_reason = 'Official invoice not created yet'
+    } else {
+      task.is_blocked_by_commercial_gate = false
+      task.commercial_gate_reason = null
+    }
+
+    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const isDesignJobApproved = designJobs.some(
+      (dj) =>
+        (!companyId || dj.company_id === companyId) &&
+        ((so && (dj.order_id === so.id || dj.sales_order_id === so.id)) ||
+         (jo && (dj.id === jo.design_job_id || dj.order_id === jo.order_id || dj.job_order_id === jo.id))) &&
+        dj.status === 'approved'
+    )
+    const routing = jo?.workflow_routing || so?.workflow_routing || 'design_required'
+    const isDesignApproved =
+      jo?.artwork_status === 'approved' ||
+      routing === 'design_ok' ||
+      routing === 'ready_production' ||
+      isDesignJobApproved
+
+    if (routing === 'design_required' && !isDesignApproved && task.department !== 'design') {
+      task.is_blocked_by_design_gate = true
+      task.design_gate_reason = 'Customer design approval required'
+    } else {
+      task.is_blocked_by_design_gate = false
+      task.design_gate_reason = null
+    }
+
     return task
   }
+
 
   /**
    * Create a new production task.
@@ -329,9 +425,22 @@ export class ProductionPlanningService {
       )
     }
 
+    if (task.is_blocked_by_commercial_gate) {
+      throw new Error(
+        `Cannot start production: Commercial gate blocked - ${task.commercial_gate_reason || 'Official invoice not created yet.'}`
+      )
+    }
+
+    if (task.is_blocked_by_design_gate) {
+      throw new Error(
+        `Cannot start production: Design gate blocked - ${task.design_gate_reason || 'Customer design approval required.'}`
+      )
+    }
+
     if (!this.isValidStatusTransition(task.status, 'in_progress')) {
       throw new Error(`Invalid status transition from ${task.status} to in_progress`)
     }
+
 
     const extraUpdates: Partial<ProductionTaskRecord> = {
       actual_start: new Date().toISOString(),

@@ -1,6 +1,7 @@
 export type DesignStatus =
   | 'received'
   | 'designing'
+  | 'in_progress'
   | 'customer_approval'
   | 'revision'
   | 'approved'
@@ -12,18 +13,27 @@ export type DesignPriority = 'normal' | 'urgent' | 'very_urgent'
 
 export interface DesignVersionRecord {
   id: string
+  company_id?: string
   design_job_id: string
   version_number: number
-  version_label: string
-  proof_file_url: string // Web previewable for jpg, png, pdf, svg
-  proof_file_name: string
+  version_label?: string
+  proof_file_url?: string // Web previewable for jpg, png, pdf, svg
+  proof_file_name?: string
+  preview_url?: string | null
+  file_name?: string
+  file_url?: string
+  file_type?: string | null
   source_file_url?: string | null // Raw AI, PSD, CDR, ZIP download link
   source_file_name?: string | null
-  file_format: DesignFormat
-  file_size_bytes?: number
+  file_format?: DesignFormat
+  file_size_bytes?: number | null
   change_notes?: string | null
-  uploaded_by_name: string
-  is_approved: boolean
+  notes?: string | null
+  customer_feedback?: string | null
+  uploaded_by_name?: string
+  created_by_name?: string
+  approval_status?: 'pending_review' | 'approved' | 'rejected' | 'changes_requested' | 'revision_requested'
+  is_approved?: boolean
   created_at: string
 }
 
@@ -43,26 +53,36 @@ export interface DesignJobRecord {
   design_number: string
   job_order_id?: string | null
   sales_order_id?: string | null
+  order_id?: string | null
+  order_number?: string | null
   customer_id?: string | null
   customer_name: string
   title: string
   designer_id?: string | null
   designer_name: string
-  priority: DesignPriority
+  priority?: DesignPriority
   status: DesignStatus
   deadline: string
   instructions?: string | null
   dimensions_spec?: string | null
-  current_version: number
-  revision_count: number
+  current_version?: number
+  revision_count?: number
+  version_count?: number
   customer_feedback?: string | null
   approved_version?: number | null
   approved_by?: string | null
   approval_timestamp?: string | null
   approval_note?: string | null
-  is_locked: boolean // Prevents accidental replacement once approved
+  is_locked?: boolean // Prevents accidental replacement once approved
+  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'custom'
+  commercial_status?: 'invoice_required' | 'invoice_requested' | 'invoice_created' | 'unpaid' | 'partially_paid' | 'paid'
+  invoice_id?: string | null
+  invoice_number?: string | null
+  invoice_request_id?: string | null
+  is_invoice_created?: boolean
   versions: DesignVersionRecord[]
   feedback_logs?: DesignFeedbackRecord[]
   created_at: string
   updated_at: string
 }
+

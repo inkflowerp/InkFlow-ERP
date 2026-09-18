@@ -23,6 +23,8 @@ export type JobDepartment =
   | 'fabrication'
   | 'finishing'
   | 'installation'
+  | 'delivery'
+  | 'other'
 
 export type JobStatus =
   | 'queued'
@@ -58,12 +60,17 @@ export interface JobOrderRecord {
   size_spec: string
   material_spec: string
   artwork_url?: string | null
-  artwork_status: 'pending' | 'approved' | 'revised'
+  artwork_status: 'pending' | 'approved' | 'revised' | 'not_required'
   deadline: string
   assigned_department: JobDepartment
   assigned_employee_name?: string | null
   production_instructions?: string | null
   status: JobStatus
+  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'custom'
+  commercial_status?: 'invoice_required' | 'invoice_requested' | 'invoice_created' | 'unpaid' | 'partially_paid' | 'paid'
+  production_gate_status?: 'blocked_commercial' | 'blocked_design' | 'blocked_approval' | 'ready_for_production' | 'in_production' | 'completed'
+  invoice_id?: string | null
+  invoice_number?: string | null
   notes?: string | null
   created_at: string
   updated_at: string
@@ -104,6 +111,12 @@ export interface SalesOrderRecord {
   priority: OrderPriority
   status: OrderStatus
   payment_terms: PaymentTerm
+  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'custom'
+  commercial_status?: 'invoice_required' | 'invoice_requested' | 'invoice_created' | 'unpaid' | 'partially_paid' | 'paid'
+  production_gate_status?: 'blocked_commercial' | 'blocked_design' | 'blocked_approval' | 'ready_for_production' | 'in_production' | 'completed'
+  invoice_id?: string | null
+  invoice_number?: string | null
+  invoice_requested_at?: string | null
   subtotal: number
   discount_amount: number
   vat_amount: number
@@ -117,3 +130,4 @@ export interface SalesOrderRecord {
   created_at: string
   updated_at: string
 }
+

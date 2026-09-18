@@ -168,6 +168,7 @@ export interface NewWorkIntakeInput {
   selectedFinishings?: string[]
   deliveryDate: string
   deliveryType?: 'pickup' | 'courier' | 'installation'
+  workflowRouting?: 'design_required' | 'design_ok' | 'ready_production' | 'custom'
   notes?: string
   assignedMachine?: string
   priority?: 'normal' | 'urgent' | 'very_urgent'
@@ -198,8 +199,10 @@ export async function createNewWorkIntakeAction(
     const { BillingRepository } = await import('@/lib/repositories/billing.repository')
     const { ProductionRepository } = await import('@/lib/repositories/production.repository')
     const { ProductionTaskRepository } = await import('@/lib/repositories/production-task.repository')
+    const { DesignRepository } = await import('@/lib/repositories/design.repository')
 
     const custPhone = input.customerPhone || ''
+    const routing = input.workflowRouting || 'design_required'
 
     // 1. Generate Document Numbers transactionally
     const invoiceNumber = await BillingRepository.getNextDocumentNumber(companyId, 'invoice')
@@ -214,6 +217,8 @@ export async function createNewWorkIntakeAction(
       customer_phone: custPhone,
       customer_address: input.customerAddress || '',
       invoice_number: invoiceNumber,
+      order_number: orderNumber,
+      job_number: jobNumber,
       subtotal: input.totalAmount,
       discount_amount: 0,
       vat_amount: 0,
@@ -251,15 +256,35 @@ export async function createNewWorkIntakeAction(
       })
     }
 
-    // 4. Create Production Job
+    // 4. If Design is required, create a Designer job ticket
+    let designJobId: string | null = null
+    if (routing === 'design_required') {
+      const designJob = await DesignRepository.createDesignJob({
+        company_id: companyId,
+        title: input.jobTitle,
+        customer_id: input.customerId,
+        customer_name: input.customerName,
+        deadline: input.deliveryDate,
+        priority: input.priority || 'normal',
+        status: 'received',
+        workflow_routing: 'design_required',
+        commercial_status: 'invoice_created',
+        invoice_id: invoice.id,
+        invoice_number: invoice.invoice_number,
+        instructions: input.notes || `Artwork design needed for ${input.jobTitle} (${input.width}x${input.height} ${input.unit})`,
+      })
+      designJobId = designJob.id
+    }
+
+    // 5. Create Production Job
     const finishings = input.selectedFinishings || []
     const prodJob = await ProductionRepository.createProductionJob({
       company_id: companyId,
       production_job_number: jobNumber,
       customer_name: input.customerName,
       product_name: input.jobTitle,
-      department: 'printing',
-      stage: 'printing',
+      department: routing === 'design_required' ? 'design' : 'printing',
+      stage: routing === 'design_required' ? 'design' : 'printing',
       status: 'queued',
       priority: input.priority || 'normal',
       deadline: input.deliveryDate,
@@ -272,7 +297,7 @@ export async function createNewWorkIntakeAction(
       rework_count: 0,
     })
 
-    // 5. Create Production Task
+    // 6. Create Production Task
     const totalSqft =
       input.unit === 'ft'
         ? input.width * input.height * input.quantity
@@ -309,11 +334,12 @@ export async function createNewWorkIntakeAction(
           order_number: orderNumber,
           invoice_number: invoiceNumber,
           job_number: jobNumber,
+          workflow_routing: routing,
           customer_name: input.customerName,
           total_amount: input.totalAmount,
           advance_paid: input.advancePaid,
         },
-        `Created new work order ${orderNumber} (${jobNumber}) for customer ${input.customerName}`
+        `Created new work order ${orderNumber} (${jobNumber}) for customer ${input.customerName} (Routing: ${routing})`
       )
     } catch {}
 
@@ -333,4 +359,5 @@ export async function createNewWorkIntakeAction(
     return { success: false, error: error.message || 'Failed to create work intake' }
   }
 }
+
 

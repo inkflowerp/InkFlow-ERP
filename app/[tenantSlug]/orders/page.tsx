@@ -408,7 +408,33 @@ export default function OrdersPage() {
                         <span>{order.order_number}</span>
                         <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Link>
-                      <div className="mt-1">{getPriorityBadge(order.priority)}</div>
+                      <div className="flex flex-wrap items-center gap-1 mt-1">
+                        {getPriorityBadge(order.priority)}
+                        {order.workflow_routing && (
+                          <Badge variant="outline" className="text-[10px] font-semibold">
+                            {order.workflow_routing === 'design_required'
+                              ? '🎨 Design Req'
+                              : order.workflow_routing === 'design_ok'
+                              ? '⚡ Design OK'
+                              : '🚀 Ready Prod'}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="mt-1">
+                        {order.invoice_id || order.commercial_status === 'invoice_created' ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                            <CheckCircle2 className="h-2.5 w-2.5" /> Invoice OK
+                          </span>
+                        ) : order.commercial_status === 'invoice_requested' ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                            <Clock className="h-2.5 w-2.5" /> Inv Requested
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800">
+                            <AlertTriangle className="h-2.5 w-2.5" /> Inv Required
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Customer */}
@@ -496,7 +522,18 @@ export default function OrdersPage() {
                       <span>{order.order_number}</span>
                       <ExternalLink className="h-3.5 w-3.5 opacity-70" />
                     </Link>
-                    {getPriorityBadge(order.priority)}
+                    <div className="flex items-center gap-1.5">
+                      {order.workflow_routing && (
+                        <Badge variant="outline" className="text-[10px] font-semibold">
+                          {order.workflow_routing === 'design_required'
+                            ? '🎨 Design Req'
+                            : order.workflow_routing === 'design_ok'
+                            ? '⚡ Design OK'
+                            : '🚀 Ready Prod'}
+                        </Badge>
+                      )}
+                      {getPriorityBadge(order.priority)}
+                    </div>
                   </div>
 
                   {/* Customer Info & Status */}
@@ -509,9 +546,24 @@ export default function OrdersPage() {
                         </a>
                       )}
                     </div>
-                    <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
-                      {order.payment_terms}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      {order.invoice_id || order.commercial_status === 'invoice_created' ? (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200">
+                          Invoice OK
+                        </span>
+                      ) : order.commercial_status === 'invoice_requested' ? (
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200">
+                          Inv Requested
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200">
+                          Inv Required
+                        </span>
+                      )}
+                      <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                        {order.payment_terms}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Details Grid */}

@@ -90,6 +90,7 @@ export function WorkOrderModal({
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
 
   // Work Order specs
+  const [workflowRouting, setWorkflowRouting] = useState<'design_required' | 'design_ok' | 'ready_production'>('design_required')
   const [material, setMaterial] = useState(COMMON_MATERIALS[0])
   const [width, setWidth] = useState<number | ''>(10)
   const [height, setHeight] = useState<number | ''>(4)
@@ -190,9 +191,9 @@ export function WorkOrderModal({
     try {
       // 1. Get collision-free document numbers
       const orderNumber = PrintERPDataStore.getNextDocumentNumber(companyId, 'order')
+      const orderId = `ord-${Date.now()}`
 
       // 2. Build Sales Order record
-      const orderId = `ord-${Date.now()}`
       const newOrder: SalesOrderRecord = {
         id: orderId,
         company_id: companyId,
@@ -207,13 +208,16 @@ export function WorkOrderModal({
         priority: 'urgent',
         status: sendInvoiceRequest ? 'confirmed' : 'draft',
         payment_terms: 'advance',
+        workflow_routing: workflowRouting,
+        commercial_status: sendInvoiceRequest ? 'invoice_requested' : 'invoice_required',
+        production_gate_status: 'blocked_commercial',
         subtotal: 0,
         discount_amount: 0,
         vat_amount: 0,
         final_price: 0,
         advance_amount: 0,
         due_amount: 0,
-        notes: `Work Order: ${material} (${numWidth}×${numHeight} ${dimensionUnit}). Finishing: ${selectedFinishings.join(', ')}. ${notes}`,
+        notes: `Work Order: ${material} (${numWidth}×${numHeight} ${dimensionUnit}). Finishing: ${selectedFinishings.join(', ')}. Routing: ${workflowRouting}. ${notes}`,
         items: [
           {
             id: `oi-${Date.now()}`,
@@ -236,63 +240,69 @@ export function WorkOrderModal({
       PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, newOrder)
       refreshUsage()
 
-      // 3. Create Pre-Press Design Job Ticket
-      const newDesignJob: DesignJobRecord = {
-        id: `dsn-${Date.now()}`,
-        company_id: companyId,
-        design_number: `DSN-${orderNumber.replace('ORD-', '')}`,
-        customer_id: newOrder.customer_id,
-        customer_name: finalName,
-        title: `${material} (${numWidth}×${numHeight} ${dimensionUnit})`,
-        designer_name: currentUser?.profile?.full_name || 'Designer Workbench',
-        priority: 'urgent',
-        status: 'designing',
-        deadline: `${newOrder.delivery_date} 18:00`,
-        instructions: `Finishing: ${selectedFinishings.join(', ')}. ${notes}`,
-        dimensions_spec: `${numWidth}×${numHeight} ${dimensionUnit} (Qty: ${numQty})`,
-        current_version: 1,
-        revision_count: 0,
-        is_locked: false,
-        versions: [
-          {
-            id: `dv-${Date.now()}`,
-            design_job_id: `dsn-${Date.now()}`,
-            version_number: 1,
-            version_label: 'Version 1 (Initial Brief)',
-            proof_file_name: referenceFileName || 'customer_brief.pdf',
-            proof_file_url:
-              'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-            file_format: 'ai',
-            change_notes: 'Initial work order artwork brief registered.',
-            uploaded_by_name: currentUser?.profile?.full_name || 'Designer',
-            is_approved: false,
-            created_at: 'Just now',
-          },
-        ],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-      PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newDesignJob)
-
-      // 4. If Send Invoice Request is selected, dispatch Manager notification & task
-      if (sendInvoiceRequest) {
-        const notifId = `notif-${Date.now()}`
-        const managerNotification = {
-          id: notifId,
+      // 3. Create Pre-Press Design Job Ticket only if Design Required
+      let designJobId: string | null = null
+      if (workflowRouting === 'design_required') {
+        designJobId = `dsn-${Date.now()}`
+        const newDesignJob: DesignJobRecord = {
+          id: designJobId,
           company_id: companyId,
-          roles: ['owner', 'manager', 'accountant'],
-          type: 'invoice_request',
-          title: `Invoice Request for Order #${orderNumber}`,
-          title_bn: `অর্ডার #${orderNumber} এর জন্য ইনভয়েস তৈরির অনুরোধ`,
-          message: `${finalName} ordered ${numQty} ${unit} of ${material} (${numWidth}×${numHeight} ${dimensionUnit}). Designer: ${currentUser?.profile?.full_name || 'Designer'}. Please generate official invoice.`,
-          message_bn: `${finalName} ${numQty} ${unit} ${material} অর্ডার করেছে। ডিজাইনার: ${currentUser?.profile?.full_name_bn || currentUser?.profile?.full_name || 'ডিজাইনার'}। অফিসিয়াল ইনভয়েস প্রস্তুত করুন।`,
-          action_url: `/billing?action=create_invoice&order_id=${newOrder.id}&customer_id=${newOrder.customer_id}`,
-          read: false,
-          is_read: false,
-          created_at: 'Just now',
+          sales_order_id: newOrder.id,
+          design_number: `DSN-${orderNumber.replace('ORD-', '')}`,
+          customer_id: newOrder.customer_id,
+          customer_name: finalName,
+          title: `${material} (${numWidth}×${numHeight} ${dimensionUnit})`,
+          designer_name: currentUser?.profile?.full_name || 'Designer Workbench',
+          priority: 'urgent',
+          status: 'designing',
+          workflow_routing: 'design_required',
+          commercial_status: sendInvoiceRequest ? 'invoice_requested' : 'invoice_required',
+          deadline: `${newOrder.delivery_date} 18:00`,
+          instructions: `Finishing: ${selectedFinishings.join(', ')}. ${notes}`,
+          dimensions_spec: `${numWidth}×${numHeight} ${dimensionUnit} (Qty: ${numQty})`,
+          current_version: 1,
+          revision_count: 0,
+          is_locked: false,
+          versions: [
+            {
+              id: `dv-${Date.now()}`,
+              design_job_id: designJobId,
+              version_number: 1,
+              version_label: 'Version 1 (Initial Brief)',
+              proof_file_name: referenceFileName || 'customer_brief.pdf',
+              proof_file_url:
+                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+              file_format: 'ai',
+              change_notes: 'Initial work order artwork brief registered.',
+              uploaded_by_name: currentUser?.profile?.full_name || 'Designer',
+              is_approved: false,
+              created_at: 'Just now',
+            },
+          ],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.IN_APP_NOTIFICATIONS, managerNotification)
+        PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newDesignJob)
       }
+
+      // 4. If Send Invoice Request is selected, dispatch Manager notification & create invoice_requests record
+      if (sendInvoiceRequest) {
+        const { createInvoiceRequestAction } = await import('@/actions/invoice-request.actions')
+        await createInvoiceRequestAction({
+          companyId,
+          customerId: newOrder.customer_id,
+          customerName: finalName,
+          customerPhone: customerPhone,
+          salesOrderId: newOrder.id,
+          orderNumber: orderNumber,
+          designJobId: designJobId,
+          designNumber: designJobId ? `DSN-${orderNumber.replace('ORD-', '')}` : null,
+          itemsSummary: `${material} (${numWidth}×${numHeight} ${dimensionUnit}, Qty: ${numQty})`,
+          estimatedAmount: totalSft * 50 || 1000,
+          notes: `Work order submitted with routing: ${workflowRouting}. Notes: ${notes}`,
+        })
+      }
+
 
       setSuccessMessage(
         sendInvoiceRequest
@@ -363,6 +373,96 @@ export function WorkOrderModal({
             <span>{successMessage}</span>
           </div>
         )}
+
+        {/* Section 0: Production Workflow Routing */}
+        <div className="rounded-xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/40 dark:bg-indigo-950/20 p-4 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                ★
+              </div>
+              <h3 className="text-xs font-bold text-indigo-950 dark:text-indigo-200 uppercase tracking-wider">
+                {tBilingual('Production Workflow Routing', 'প্রোডাকশন ওয়ার্কফ্লো রাউটিং')}
+              </h3>
+            </div>
+            <span className="text-[11px] text-indigo-700 dark:text-indigo-400 font-medium">
+              {workflowRouting === 'design_required' && '🎨 Designer ➔ Proof ➔ Customer Approval ➔ Print'}
+              {workflowRouting === 'design_ok' && '⚡ Artwork Verified ➔ Direct Machine Queue'}
+              {workflowRouting === 'ready_production' && '🚀 Fast-Track ➔ Direct Delivery Dispatch'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button
+              type="button"
+              onClick={() => setWorkflowRouting('design_required')}
+              className={cn(
+                'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
+                workflowRouting === 'design_required'
+                  ? 'border-indigo-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-indigo-500/20'
+                  : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 opacity-70 hover:opacity-100'
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                  🎨 Design Required
+                </span>
+                {workflowRouting === 'design_required' && (
+                  <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Creates Designer task. Requires customer proof approval before printing.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWorkflowRouting('design_ok')}
+              className={cn(
+                'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
+                workflowRouting === 'design_ok'
+                  ? 'border-emerald-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-emerald-500/20'
+                  : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 opacity-70 hover:opacity-100'
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                  ⚡ Design OK (Print Ready)
+                </span>
+                {workflowRouting === 'design_ok' && (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Print-ready file verified. Skips design step & routes to print floor.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWorkflowRouting('ready_production')}
+              className={cn(
+                'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
+                workflowRouting === 'ready_production'
+                  ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-blue-500/20'
+                  : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 opacity-70 hover:opacity-100'
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                  🚀 Ready Production
+                </span>
+                {workflowRouting === 'ready_production' && (
+                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Operational fast-track. Readymade goods dispatched directly to delivery.
+              </p>
+            </button>
+          </div>
+        </div>
 
         {/* Section 1: Customer Information */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">

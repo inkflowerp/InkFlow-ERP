@@ -672,6 +672,11 @@ export class BillingRepository {
           PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [finalInvoice, ...filtered])
         } catch {}
 
+        // Commercial workflow synchronization
+        try {
+          await this.syncCommercialWorkflowOnInvoiceCreated(finalInvoice as InvoiceRecord, invoice.company_id)
+        } catch {}
+
         return finalInvoice as InvoiceRecord
       }
     } catch (err: any) {
@@ -723,8 +728,174 @@ export class BillingRepository {
       }
     }
 
+    // Commercial workflow synchronization for fallback mode
+    try {
+      await this.syncCommercialWorkflowOnInvoiceCreated(finalLocalInvoice, invoice.company_id)
+    } catch {}
+
     return finalLocalInvoice
   }
+
+  /**
+   * Synchronize commercial workflow status across orders, designs, job tickets, and invoice requests upon invoice generation
+   */
+  static async syncCommercialWorkflowOnInvoiceCreated(
+    invoice: InvoiceRecord,
+    companyId: string
+  ): Promise<void> {
+    try {
+      const { InvoiceRequestRepository } = await import('./invoice-request.repository.ts')
+      // 1. Resolve pending invoice requests linked to this sales_order_id, job_order_id, or customer
+      await InvoiceRequestRepository.resolveRequestWithInvoice(
+        {
+          salesOrderId: invoice.sales_order_id || undefined,
+          jobOrderId: invoice.job_order_id || undefined,
+        },
+        invoice.id,
+        invoice.invoice_number,
+        companyId
+      )
+
+      // 2. Update Sales Order
+      if (invoice.sales_order_id) {
+        try {
+          const supabase = await createClient()
+          await (supabase as any)
+            .from('sales_orders')
+            .update({
+              commercial_status: 'invoice_created',
+              production_gate_status: 'ready_for_production',
+              invoice_id: invoice.id,
+              invoice_number: invoice.invoice_number,
+            })
+            .eq('id', invoice.sales_order_id)
+            .eq('company_id', companyId)
+        } catch {}
+
+        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const ord = orders.find((o) => o.id === invoice.sales_order_id)
+        if (ord) {
+          ord.commercial_status = 'invoice_created'
+          ord.invoice_id = invoice.id
+          ord.invoice_number = invoice.invoice_number
+          if (
+            !ord.production_gate_status ||
+            ord.production_gate_status === 'blocked_commercial'
+          ) {
+            ord.production_gate_status = 'ready_for_production'
+          }
+          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+        }
+      }
+
+      // 3. Update Design Jobs linked to sales_order or customer
+      const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      for (const dj of designJobs) {
+        if (
+          dj.company_id === companyId &&
+          (dj.sales_order_id === invoice.sales_order_id || (dj.customer_id && dj.customer_id === invoice.customer_id))
+        ) {
+          dj.commercial_status = 'invoice_created'
+          dj.invoice_id = invoice.id
+          dj.invoice_number = invoice.invoice_number
+        }
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
+
+      try {
+        const supabase = await createClient()
+        if (invoice.sales_order_id) {
+          await (supabase as any)
+            .from('design_jobs')
+            .update({
+              commercial_status: 'invoice_created',
+              invoice_id: invoice.id,
+              invoice_number: invoice.invoice_number,
+            })
+            .eq('sales_order_id', invoice.sales_order_id)
+            .eq('company_id', companyId)
+        }
+      } catch {}
+
+      // 4. Update Job Orders & Production Jobs
+      const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+      for (const jo of jobOrders) {
+        if (
+          jo.company_id === companyId &&
+          (jo.order_id === invoice.sales_order_id || jo.id === invoice.job_order_id)
+        ) {
+          jo.commercial_status = 'invoice_created'
+          jo.invoice_id = invoice.id
+          jo.invoice_number = invoice.invoice_number
+          if (
+            !jo.production_gate_status ||
+            jo.production_gate_status === 'blocked_commercial' ||
+            jo.workflow_routing === 'design_ok' ||
+            jo.workflow_routing === 'ready_production' ||
+            jo.artwork_status === 'approved'
+          ) {
+            jo.production_gate_status = 'ready_for_production'
+          }
+        }
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
+
+      // 5. Update Production Jobs
+      const prodJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+      for (const pj of prodJobs) {
+        if (
+          pj.company_id === companyId &&
+          (pj.sales_order_id === invoice.sales_order_id || pj.job_order_id === invoice.job_order_id)
+        ) {
+          pj.commercial_gate_status = 'ready_for_production'
+          pj.is_blocked_by_commercial_gate = false
+          pj.invoice_id = invoice.id
+        }
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, prodJobs)
+
+      // 6. Dispatch In-App Notification to Production & Prepress Teams
+      const notifActionUrl = invoice.sales_order_id ? `/orders/${invoice.sales_order_id}` : `/billing?id=${invoice.id}`
+      const notifTitle = `Commercial Gate Cleared: ${invoice.invoice_number}`
+      const notifTitleBn = `কমার্শিয়াল গেট অনুমোদন সম্পন্ন: ${invoice.invoice_number}`
+      const notifMsg = `Official invoice ${invoice.invoice_number} created for ${invoice.customer_name}. Production hold cleared.`
+      const notifMsgBn = `${invoice.customer_name}-এর জন্য ইনভয়েস ${invoice.invoice_number} তৈরি হয়েছে। কমার্শিয়াল গেট উন্মুক্ত।`
+
+      try {
+        const supabase = await createClient()
+        await (supabase as any).from('in_app_notifications').insert({
+          company_id: companyId,
+          type: 'production_gate_cleared',
+          title: notifTitle,
+          title_bn: notifTitleBn,
+          message: notifMsg,
+          message_bn: notifMsgBn,
+          action_url: notifActionUrl,
+          is_read: false,
+          created_at: new Date().toISOString(),
+        })
+      } catch {
+        const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+        notifs.unshift({
+          id: `notif-${Date.now()}`,
+          company_id: companyId,
+          user_id: null,
+          type: 'production_gate_cleared',
+          title: notifTitle,
+          title_bn: notifTitleBn,
+          message: notifMsg,
+          message_bn: notifMsgBn,
+          action_url: notifActionUrl,
+          is_read: false,
+          created_at: new Date().toISOString(),
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
+      }
+    } catch (e) {
+      console.warn('syncCommercialWorkflowOnInvoiceCreated notice:', e)
+    }
+  }
+
 
   static async updateInvoice(
     id: string,

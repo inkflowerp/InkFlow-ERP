@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import {
@@ -23,6 +23,9 @@ import {
   AlertTriangle,
   History,
   CornerDownRight,
+  Receipt,
+  Send,
+  HelpCircle,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -36,16 +39,20 @@ import {
   isRenderableFormat,
   getFormatBadgeColor,
 } from '@/lib/formatters'
-import {
+import type {
   DesignJobRecord,
   DesignVersionRecord,
   DesignStatus,
   DesignFormat,
   DesignFeedbackRecord,
 } from '@/types/design.types'
+import type { InvoiceRecord } from '@/types/billing.types'
+import type { InvoiceRequestRecord } from '@/types/workflow.types'
 
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
+import { markDesignReadyAction } from '@/actions/design.actions'
 
 export default function DesignDetailPage() {
   const params = useParams()
@@ -54,7 +61,11 @@ export default function DesignDetailPage() {
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
+  const [isPending, startTransition] = useTransition()
   const [jobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [])
+  const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
+  const [invoiceRequests] = useDataStore<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS, [])
+
   const job = jobs.find((j: DesignJobRecord) => j.id === jobId || j.design_number === jobId)
   const [activeVersionNumber, setActiveVersionNumber] = useState<number>(job?.current_version || 1)
 
@@ -62,7 +73,8 @@ export default function DesignDetailPage() {
   const [isUploadOpen, setIsUploadOpen] = useState(false)
   const [isApproveOpen, setIsApproveOpen] = useState(false)
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
-  const [notification, setNotification] = useState<string | null>(null)
+  const [isInvoiceRequestOpen, setIsInvoiceRequestOpen] = useState(false)
+  const [notification, setNotification] = useState<{ type: 'success' | 'warning' | 'info'; text: string } | null>(null)
 
   // New Version Form State
   const [newVersionNotes, setNewVersionNotes] = useState('')
@@ -76,9 +88,13 @@ export default function DesignDetailPage() {
   // Feedback Form State
   const [feedbackText, setFeedbackText] = useState('')
 
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+  // Invoice Request Form State
+  const [requestNotes, setRequestNotes] = useState('')
+  const [estimatedAmount, setEstimatedAmount] = useState<number>(5000)
+
+  const showNotification = (text: string, type: 'success' | 'warning' | 'info' = 'success') => {
+    setNotification({ text, type })
+    setTimeout(() => setNotification(null), 4000)
   }
 
   if (!job) {
@@ -104,6 +120,21 @@ export default function DesignDetailPage() {
       </div>
     )
   }
+
+  // Determine Invoice State & Requests
+  const linkedInvoice =
+    invoices.find((i) => (job.invoice_id && i.id === job.invoice_id) || (job.sales_order_id && i.sales_order_id === job.sales_order_id)) || null
+  const hasInvoice = Boolean(job.invoice_id || linkedInvoice)
+  const invoiceNumber = linkedInvoice?.invoice_number || job.invoice_number || 'INV-XXXX'
+
+  const pendingRequest =
+    invoiceRequests.find(
+      (r) =>
+        r.company_id === job.company_id &&
+        r.status === 'pending' &&
+        (r.design_job_id === job.id || (job.sales_order_id && r.sales_order_id === job.sales_order_id))
+    ) || null
+  const hasPendingRequest = Boolean(pendingRequest || job.commercial_status === 'invoice_requested')
 
   // Active version object
   const activeVersion =
@@ -131,11 +162,73 @@ export default function DesignDetailPage() {
     showNotification(`Job status moved to ${newStatus.replace('_', ' ').toUpperCase()}`)
   }
 
+  // Action: Mark Design Ready
+  const handleMarkDesignReady = async () => {
+    startTransition(async () => {
+      try {
+        await markDesignReadyAction(job.id, 'Designer marked design ready for production proofing', job.company_id)
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
+          status: 'customer_approval',
+          commercial_status: hasInvoice ? 'invoice_created' : 'invoice_required',
+          updated_at: new Date().toISOString(),
+        })
+
+        if (hasInvoice) {
+          showNotification('Design marked READY! Invoice is linked. Proceeding to Customer Approval.')
+        } else {
+          showNotification('Design marked READY! Invoice is missing — please click "Send Invoice Request" below.', 'warning')
+          setIsInvoiceRequestOpen(true)
+        }
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to update status', 'warning')
+      }
+    })
+  }
+
+  // Action: Send Invoice Request to Sales/Manager
+  const handleSendInvoiceRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    startTransition(async () => {
+      try {
+        const res = await createInvoiceRequestAction({
+          companyId: job.company_id,
+          customerId: job.customer_id || null,
+          customerName: job.customer_name,
+          salesOrderId: job.sales_order_id || null,
+          orderNumber: (job as any).order_number || null,
+          designJobId: job.id,
+          designNumber: job.design_number,
+          itemsSummary: `${job.title} (${job.dimensions_spec || 'Standard'})`,
+          estimatedAmount: estimatedAmount,
+          notes: requestNotes || `Artwork ${job.design_number} ready for billing`,
+        })
+
+        if (!res.success) {
+          showNotification(res.error || 'Failed to dispatch request', 'warning')
+          return
+        }
+
+        // Update local store
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
+          commercial_status: 'invoice_requested',
+          invoice_request_id: res.data?.id,
+          updated_at: new Date().toISOString(),
+        })
+
+        setIsInvoiceRequestOpen(false)
+        setRequestNotes('')
+        showNotification(`Invoice Request dispatched to Sales/Billing! (Req #${res.data?.request_number})`)
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to dispatch request', 'warning')
+      }
+    })
+  }
+
   // Upload New Version (Prevented if locked)
   const handleUploadVersion = (e: React.FormEvent) => {
     e.preventDefault()
     if (job.is_locked) {
-      showNotification('Artwork is currently locked! Unlock first to upload a revision.')
+      showNotification('Artwork is currently locked! Unlock first to upload a revision.', 'warning')
       return
     }
 
@@ -184,7 +277,7 @@ export default function DesignDetailPage() {
       approved_by: approverName,
       approval_timestamp: new Date().toISOString(),
       approval_note: approvalNote,
-      is_locked: true, // LOCK ARTWORK FROM ACCIDENTAL REPLACEMENT
+      is_locked: true,
       versions: updatedVersions,
       updated_at: new Date().toISOString(),
     }
@@ -236,7 +329,8 @@ export default function DesignDetailPage() {
     showNotification(`Customer feedback registered. Job marked for REVISION (Rev #${nextRevCount}).`)
   }
 
-  const isRenderable = isRenderableFormat(activeVersion.file_format)
+  const currentFormat = activeVersion?.file_format || ((activeVersion?.file_name || activeVersion?.proof_file_name || '').split('.').pop() as any) || 'pdf'
+  const isRenderable = isRenderableFormat(currentFormat)
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -252,13 +346,29 @@ export default function DesignDetailPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono">
                 {job.design_number}
               </h1>
               <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-pink-50 text-pink-700 border border-pink-200 dark:bg-pink-950/40 dark:text-pink-300">
                 {job.status.replace('_', ' ')}
               </span>
+
+              {/* COMMERCIAL INVOICE GATE BADGE */}
+              {hasInvoice ? (
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300">
+                  <Receipt className="h-3 w-3" /> Invoice Linked: {invoiceNumber}
+                </span>
+              ) : hasPendingRequest ? (
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950 dark:text-amber-300">
+                  <Clock className="h-3 w-3 animate-spin" /> Invoice Requested (Pending Sales)
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950 dark:text-rose-300">
+                  <AlertCircle className="h-3 w-3" /> Invoice Required
+                </span>
+              )}
+
               {job.is_locked && (
                 <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
                   <Lock className="h-3 w-3" /> Locked for Production
@@ -273,24 +383,42 @@ export default function DesignDetailPage() {
               <span>•</span>
               <span>Designer: <strong>{job.designer_name}</strong></span>
               <span>•</span>
-              <span>Target Specs: <strong>{job.dimensions_spec}</strong></span>
+              <span>Target Specs: <strong>{job.dimensions_spec || 'Standard'}</strong></span>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* Status Select */}
-            <select
-              value={job.status}
-              onChange={(e) => handleStatusChange(e.target.value as DesignStatus)}
-              className="h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold"
-            >
-              <option value="received">Received</option>
-              <option value="designing">Designing</option>
-              <option value="customer_approval">Customer Approval</option>
-              <option value="revision">Revision</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
+            {/* ACTION: MARK DESIGN READY */}
+            {job.status !== 'approved' && (
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handleMarkDesignReady}
+                disabled={isPending}
+                className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1" />
+                Mark Design Ready
+              </Button>
+            )}
+
+            {/* ACTION: SEND INVOICE REQUEST IF INVOICE MISSING */}
+            {!hasInvoice && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsInvoiceRequestOpen(true)}
+                disabled={isPending || hasPendingRequest}
+                className={`h-8 text-xs font-bold ${
+                  hasPendingRequest
+                    ? 'text-amber-700 border-amber-300 bg-amber-50 dark:bg-amber-950/40'
+                    : 'text-rose-700 border-rose-300 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100'
+                }`}
+              >
+                <Send className="h-3.5 w-3.5 mr-1" />
+                {hasPendingRequest ? 'Invoice Requested' : 'Send Invoice Request'}
+              </Button>
+            )}
 
             {/* Customer Feedback Button */}
             <Button
@@ -342,16 +470,58 @@ export default function DesignDetailPage() {
 
       {/* Notification */}
       {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span>{notification}</span>
+        <div
+          className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 border animate-in fade-in-0 ${
+            notification.type === 'warning'
+              ? 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800'
+              : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+          }`}
+        >
+          {notification.type === 'warning' ? (
+            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          )}
+          <span>{notification.text}</span>
         </div>
       )}
 
-      {/* =========================================================================
-          CUSTOMER APPROVAL & IMMUTABILITY LOCK BANNER
-          Prevents accidental replacement or deletion once approved.
-         ========================================================================= */}
+      {/* COMMERCIAL GATE HOLD BANNER (When Invoice is Missing) */}
+      {!hasInvoice && (
+        <div className="p-4 rounded-xl bg-rose-50 border-2 border-rose-400 dark:bg-rose-950/40 dark:border-rose-700 text-rose-950 dark:text-rose-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0">
+              <Receipt className="h-5 w-5" />
+            </div>
+            <div className="space-y-0.5">
+              <h3 className="font-black text-sm text-rose-900 dark:text-rose-200 flex items-center gap-2">
+                Production Hold: Invoice Not Created
+              </h3>
+              <p className="text-xs text-rose-800 dark:text-rose-300">
+                Print Floor machines cannot start printing this job until an official invoice is generated by Manager / Sales.
+                {hasPendingRequest && (
+                  <span className="font-bold block mt-0.5 text-amber-800 dark:text-amber-300">
+                    ➔ Invoice Request is currently pending review with Sales.
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          {!hasPendingRequest && (
+            <Button
+              size="sm"
+              onClick={() => setIsInvoiceRequestOpen(true)}
+              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 self-start sm:self-center"
+            >
+              <Send className="h-3.5 w-3.5 mr-1" />
+              Send Invoice Request
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* CUSTOMER APPROVAL & IMMUTABILITY LOCK BANNER */}
       {job.is_locked && (
         <div className="p-4 rounded-xl bg-emerald-50 border-2 border-emerald-500 dark:bg-emerald-950/40 dark:border-emerald-600 text-emerald-950 dark:text-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-start gap-3">
@@ -401,19 +571,17 @@ export default function DesignDetailPage() {
 
                 <span
                   className={`uppercase text-xs font-black px-2 py-0.5 rounded border ${getFormatBadgeColor(
-                    activeVersion.file_format
+                    currentFormat
                   )}`}
                 >
-                  .{activeVersion.file_format}
+                  .{currentFormat}
                 </span>
               </div>
             </CardHeader>
 
             <CardContent className="p-4 space-y-4">
-              {/* SAFE FORMAT RENDERING ENGINE
-                  Rule: Do NOT attempt to render unsupported design formats (.ai, .psd, .cdr, .zip) */}
+              {/* SAFE FORMAT RENDERING ENGINE */}
               {isRenderable ? (
-                /* High-Res Renderable Proof (JPG, PNG, PDF, SVG) */
                 <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center min-h-[360px] relative group">
                   <img
                     src={activeVersion.proof_file_url}
@@ -433,118 +601,99 @@ export default function DesignDetailPage() {
                   </div>
                 </div>
               ) : (
-                /* Unsupported Raw Format Card (AI, PSD, CDR, ZIP) */
                 <div className="p-8 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-center space-y-3">
                   <div className="h-16 w-16 mx-auto rounded-2xl bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 flex items-center justify-center font-black text-2xl">
-                    .{activeVersion.file_format.toUpperCase()}
+                    .{currentFormat.toUpperCase()}
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                       Raw Vector/Raster Production File
                     </h3>
                     <p className="text-xs text-slate-500 max-w-md mx-auto">
-                      Format <code>.{activeVersion.file_format.toUpperCase()}</code> contains native layers, spot colors, and contour paths. Browser rendering is bypassed to protect vector accuracy.
+                      Format <code>.{currentFormat.toUpperCase()}</code> contains native layers, spot colors, and contour paths. Browser rendering is bypassed to protect vector accuracy.
                     </p>
-                  </div>
-                  <div className="pt-2">
-                    <Button className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold">
-                      <Download className="mr-1.5 h-3.5 w-3.5" />
-                      Download {activeVersion.source_file_name || activeVersion.proof_file_name}
-                      {activeVersion.file_size_bytes && (
-                        <span className="opacity-75 ml-1">
-                          ({(activeVersion.file_size_bytes / 1000000).toFixed(1)} MB)
-                        </span>
-                      )}
-                    </Button>
                   </div>
                 </div>
               )}
 
-              {/* Version Change Notes */}
-              {activeVersion.change_notes && (
-                <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
-                  <span className="font-bold text-slate-700 dark:text-slate-300">
-                    Version Notes & Adjustments:
-                  </span>
-                  <p className="text-slate-600 dark:text-slate-400 mt-0.5">
-                    {activeVersion.change_notes}
-                  </p>
+              {/* Version details footer */}
+              <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-lg text-xs">
+                <div className="space-y-0.5">
+                  <div className="font-bold text-slate-700 dark:text-slate-300">File Reference:</div>
+                  <code className="text-[11px] text-slate-500">{activeVersion.source_file_name || activeVersion.proof_file_name}</code>
                 </div>
-              )}
+                {activeVersion.change_notes && (
+                  <div className="text-slate-600 dark:text-slate-400 text-right max-w-xs">
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">Notes: </span>
+                    {activeVersion.change_notes}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* RIGHT PANEL: VERSION SELECTOR & FEEDBACK TIMELINE */}
+        {/* RIGHT PANEL: VERSION HISTORY & CUSTOMER REVISIONS */}
         <div className="lg:col-span-5 space-y-4">
-          {/* Version Selector Tabs */}
           <Card>
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <History className="h-4 w-4 text-indigo-600" />
-                  Artwork Versions ({job.versions.length})
-                </CardTitle>
-                <span className="text-xs text-slate-400">Select version to inspect</span>
-              </div>
+              <CardTitle className="text-sm font-bold flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <History className="h-4 w-4 text-slate-500" />
+                  Version & Approval Timeline
+                </span>
+                <span className="text-xs text-slate-400 font-normal">
+                  {job.versions?.length || 1} versions
+                </span>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 space-y-2">
-              {job.versions.map((ver: DesignVersionRecord) => (
-                <div
+            <CardContent className="p-3 space-y-2 max-h-[320px] overflow-y-auto">
+              {(job.versions || []).map((ver: DesignVersionRecord) => (
+                <button
                   key={ver.id}
                   onClick={() => setActiveVersionNumber(ver.version_number)}
-                  className={`p-3 rounded-lg border text-xs cursor-pointer transition-all ${
-                    activeVersionNumber === ver.version_number
-                      ? 'border-pink-600 bg-pink-50/50 dark:bg-pink-950/30 ring-2 ring-pink-600/20'
-                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                    ver.version_number === activeVersionNumber
+                      ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 dark:border-indigo-700 ring-1 ring-indigo-500'
+                      : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900'
                   }`}
                 >
-                  <div className="flex items-center justify-between font-bold">
-                    <span className="text-slate-900 dark:text-white flex items-center gap-1.5">
-                      {ver.version_label}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs text-slate-900 dark:text-white">
+                        {ver.version_label}
+                      </span>
                       {ver.is_approved && (
-                        <span className="text-[10px] text-emerald-600 font-black">✓ APPROVED</span>
+                        <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0 h-4">
+                          Approved
+                        </Badge>
                       )}
-                    </span>
-                    <span
-                      className={`uppercase text-[10px] font-black px-1.5 py-0.5 rounded border ${getFormatBadgeColor(
-                        ver.file_format
-                      )}`}
-                    >
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-400 uppercase">
                       .{ver.file_format}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 line-clamp-1 mt-1">
-                    {ver.change_notes || 'No change notes recorded.'}
-                  </p>
-                  <div className="text-[10px] text-slate-400 mt-1 flex justify-between">
-                    <span>By {ver.uploaded_by_name}</span>
-                    <span>{ver.created_at}</span>
+                  {ver.change_notes && (
+                    <p className="text-[11px] text-slate-500 line-clamp-2 mt-1">
+                      {ver.change_notes}
+                    </p>
+                  )}
+                  <div className="text-[10px] text-slate-400 mt-1">
+                    Uploaded by {ver.uploaded_by_name} • {ver.created_at}
                   </div>
-                </div>
+                </button>
               ))}
             </CardContent>
           </Card>
 
-          {/* Customer Feedback Thread */}
           <Card>
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-purple-600" />
-                  Customer Feedback & Revision Thread
-                </CardTitle>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsFeedbackOpen(true)}
-                  className="h-7 text-[11px] px-2"
-                >
-                  + Add Remarks
-                </Button>
-              </div>
+              <CardTitle className="text-sm font-bold flex items-center gap-1.5">
+                <MessageSquare className="h-4 w-4 text-purple-600" />
+                Customer Revision Feedback
+              </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-3 text-xs max-h-[360px] overflow-y-auto">
+            <CardContent className="p-3 space-y-2 max-h-[240px] overflow-y-auto">
               {job.feedback_logs && job.feedback_logs.length > 0 ? (
                 job.feedback_logs.map((log: DesignFeedbackRecord) => (
                   <div
@@ -575,6 +724,58 @@ export default function DesignDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* MODAL: SEND INVOICE REQUEST */}
+      <ModalDialog
+        open={isInvoiceRequestOpen}
+        onOpenChange={setIsInvoiceRequestOpen}
+        title="Send Invoice Request to Sales / Billing"
+        description="Notify the responsible Manager / Sales Representative to create the official invoice so production can proceed."
+      >
+        <form onSubmit={handleSendInvoiceRequest} className="space-y-4 pt-1">
+          <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs space-y-1">
+            <strong className="text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+              <Send className="h-4 w-4" /> Commercial Pipeline Dispatch
+            </strong>
+            <p className="text-indigo-800 dark:text-indigo-300 text-[11px]">
+              Customer: <strong>{job.customer_name}</strong> | Design: <strong>{job.design_number}</strong>
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="reqAmt" required>Estimated Job Amount (৳ BDT)</Label>
+            <Input
+              id="reqAmt"
+              type="number"
+              value={estimatedAmount}
+              onChange={(e) => setEstimatedAmount(Number(e.target.value))}
+              required
+              min={1}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="reqNotes">Notes / Specifications for Billing</Label>
+            <textarea
+              id="reqNotes"
+              rows={3}
+              placeholder="e.g. 500 SFT Flex Banner with eyelet finishing and bamboo frames."
+              value={requestNotes}
+              onChange={(e) => setRequestNotes(e.target.value)}
+              className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsInvoiceRequestOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
+              Dispatch Request & Notify Sales
+            </Button>
+          </div>
+        </form>
+      </ModalDialog>
 
       {/* MODAL: UPLOAD NEW VERSION */}
       <ModalDialog

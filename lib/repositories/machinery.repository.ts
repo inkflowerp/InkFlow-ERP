@@ -1,5 +1,5 @@
 import { createClient } from '../supabase/server.ts'
-import {
+import type {
   MachineryRecord,
   MachineryAssignmentRecord,
   MachineryMaintenanceRecord,

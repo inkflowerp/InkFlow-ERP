@@ -3,13 +3,13 @@
 // Authoritative PostgreSQL persistence via DesignRepository
 // ==============================================================================
 
-import {
+import type {
   DesignJobRecord,
   DesignVersionRecord,
   DesignFeedbackRecord,
   DesignFormat,
-} from '@/types/design.types'
-import { DesignRepository } from '@/lib/repositories/design.repository'
+} from '../types/design.types.ts'
+import { DesignRepository } from '../lib/repositories/design.repository.ts'
 
 export function isRenderableFormat(format: DesignFormat): boolean {
   return ['jpg', 'png', 'svg', 'pdf'].includes(format.toLowerCase())
@@ -75,10 +75,21 @@ export class DesignService {
   static async updateVersionApproval(params: {
     company_id: string
     version_id: string
-    approval_status: 'approved' | 'rejected' | 'changes_requested'
+    approval_status: 'approved' | 'rejected' | 'changes_requested' | 'revision_requested'
     customer_feedback?: string | null
     design_job_id: string
   }): Promise<void> {
     return await DesignRepository.updateVersionApproval(params)
   }
+
+  static async markReady(id: string, companyId: string, notes?: string): Promise<DesignJobRecord | null> {
+    if (!id || !companyId) return null
+    return await DesignRepository.markDesignReady(id, companyId, notes)
+  }
+
+  static async updateJob(id: string, companyId: string, updates: Partial<DesignJobRecord>): Promise<DesignJobRecord | null> {
+    if (!id || !companyId) return null
+    return await DesignRepository.updateDesignJob(id, companyId, updates)
+  }
 }
+

@@ -30,6 +30,12 @@ export type InAppNotificationType =
   | 'overdue_invoice'
   | 'low_stock'
   | 'leave_approval'
+  | 'invoice_request'
+  | 'design_ready'
+  | 'customer_approval_needed'
+  | 'production_gate_cleared'
+  | 'production_ready'
+
 
 export type EmailEventType =
   | 'invoice_created'

@@ -150,7 +150,7 @@ export interface ProductionTaskRecord {
   required_material?: string | null
   width?: number | null
   height?: number | null
-  estimated_duration_minutes: number
+  estimated_duration_minutes?: number
   assigned_machine_id?: string | null
   assigned_machine_name?: string | null
   assigned_operator_id?: string | null
@@ -162,10 +162,10 @@ export interface ProductionTaskRecord {
   status: ProductionTaskStatus
   hold_reason?: HoldReason | null
   hold_notes?: string | null
-  is_rework: boolean
+  is_rework?: boolean
   rework_parent_task_id?: string | null
-  good_quantity: number
-  rejected_quantity: number
+  good_quantity?: number
+  rejected_quantity?: number
   notes?: string | null
   created_at: string
   updated_at: string
@@ -177,7 +177,14 @@ export interface ProductionTaskRecord {
   job_deadline?: string
   is_blocked_by_dependency?: boolean
   blocking_dependency_task_name?: string | null
+  is_blocked_by_commercial_gate?: boolean
+  commercial_gate_reason?: string | null
+  is_blocked_by_design_gate?: boolean
+  design_gate_reason?: string | null
+  invoice_id?: string | null
+  invoice_number?: string | null
 }
+
 
 export interface CreateProductionTaskInput {
   job_order_id: string

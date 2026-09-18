@@ -115,6 +115,26 @@ export function ProductionBoardCard({
         </div>
 
         {/* Blocking Warning Banners */}
+        {task.is_blocked_by_commercial_gate && task.status !== 'completed' && (
+          <div className="p-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded text-[11px] text-rose-900 dark:text-rose-200 flex items-start gap-1.5">
+            <Lock className="h-3.5 w-3.5 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">COMMERCIAL HOLD:</span>{' '}
+              {task.commercial_gate_reason || 'Invoice required before production can start.'}
+            </div>
+          </div>
+        )}
+
+        {task.is_blocked_by_design_gate && !task.is_blocked_by_commercial_gate && task.status !== 'completed' && (
+          <div className="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded text-[11px] text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
+            <Lock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">DESIGN HOLD:</span>{' '}
+              {task.design_gate_reason || 'Customer design approval required.'}
+            </div>
+          </div>
+        )}
+
         {task.is_blocked_by_dependency && task.status !== 'completed' && (
           <div className="p-2 bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
             <Lock className="h-3.5 w-3.5 text-slate-500 shrink-0" />
@@ -206,8 +226,8 @@ export function ProductionBoardCard({
               size="sm"
               variant="default"
               onClick={() => onStart(task)}
-              disabled={task.is_blocked_by_dependency}
-              className="h-7 text-[11px] px-2 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 font-semibold"
+              disabled={task.is_blocked_by_dependency || task.is_blocked_by_commercial_gate || task.is_blocked_by_design_gate}
+              className="h-7 text-[11px] px-2 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play className="h-3 w-3 fill-current" />
               Start

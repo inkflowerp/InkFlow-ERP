@@ -23,13 +23,13 @@ export type PaymentMethod =
   | 'other_mfs'
 
 export interface InvoiceItemRecord {
-  id: string
+  id?: string
   invoice_id?: string
   product_id?: string | null
   item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
   product_type?: string | null
   item_name?: string | null
-  item_description: string
+  item_description?: string | null
   dimensions_spec?: string | null
   width?: number
   height?: number
@@ -38,7 +38,7 @@ export interface InvoiceItemRecord {
   quantity: number
   unit: string
   unit_price: number
-  vat_percentage: number
+  vat_percentage?: number
   total_price: number
   tier_applied?: string | null
   moq?: number | null

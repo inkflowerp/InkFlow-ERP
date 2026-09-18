@@ -121,7 +121,9 @@ export default function BillingPage() {
   const [receivablesAging, setReceivablesAging] = useState<ReceivablesAgingSummary | null>(null)
 
   // Modals State
-  const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(false)
+  const actionParam = searchParams?.get('action')
+  const orderIdParam = searchParams?.get('order_id') || undefined
+  const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(actionParam === 'create_invoice')
   const [isReceivePaymentOpen, setIsReceivePaymentOpen] = useState(false)
   const [selectedCustomerIdForPayment, setSelectedCustomerIdForPayment] = useState<string | undefined>(undefined)
   const [selectedInvoiceIdForPayment, setSelectedInvoiceIdForPayment] = useState<string | undefined>(undefined)
@@ -1525,6 +1527,7 @@ export default function BillingPage() {
       <NewInvoiceModal
         open={isNewInvoiceOpen}
         onOpenChange={setIsNewInvoiceOpen}
+        preselectedSalesOrderId={orderIdParam}
         onInvoiceCreated={(inv) => {
           showNotification(`Invoice #${inv.invoice_number} created successfully.`)
           loadBillingData()

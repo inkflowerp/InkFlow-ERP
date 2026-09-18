@@ -3,8 +3,8 @@
 // Authoritative Business Logic, Conflict Detection & Operational State Machine
 // ==============================================================================
 
-import { MachineryRepository } from '@/lib/repositories/machinery.repository'
-import {
+import { MachineryRepository } from '../lib/repositories/machinery.repository.ts'
+import type {
   MachineryRecord,
   MachineryAssignmentRecord,
   MachineryMaintenanceRecord,
@@ -21,7 +21,7 @@ import {
   EligibleMachineSummary,
   CreateMachineryAssignmentInput,
   ReassignBreakdownInput,
-} from '@/types/machinery.types'
+} from '../types/machinery.types.ts'
 
 export class MachineryService {
   /**

@@ -23,6 +23,8 @@ import {
   Sparkles,
   ExternalLink,
   FileText,
+  Send,
+  Lock,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -44,6 +46,7 @@ import {
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
 
 const LIFECYCLE_STAGES = [
   { id: 'quotation', label: 'Quotation' },
@@ -75,6 +78,9 @@ export default function OrderDetailPage() {
   // Modals
   const [isAddJobOpen, setIsAddJobOpen] = useState(false)
   const [isPayOpen, setIsPayOpen] = useState(false)
+  const [isInvoiceRequestOpen, setIsInvoiceRequestOpen] = useState(false)
+  const [invoiceNotes, setInvoiceNotes] = useState('')
+  const [isSubmittingInvoiceRequest, setIsSubmittingInvoiceRequest] = useState(false)
   const [selectedJobForPrint, setSelectedJobForPrint] = useState<JobOrderRecord | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
 
@@ -93,6 +99,37 @@ export default function OrderDetailPage() {
   const showNotification = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
+  }
+
+  const handleSendInvoiceRequest = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    if (!order) return
+    setIsSubmittingInvoiceRequest(true)
+    try {
+      const res = await createInvoiceRequestAction({
+        order_id: order.id,
+        order_number: order.order_number,
+        customer_id: order.customer_id,
+        customer_name: order.customer_name,
+        notes: invoiceNotes || 'Commercial invoice requested for production gating clearance.',
+        priority: order.priority === 'very_urgent' ? 'urgent' : 'normal',
+      })
+      if (res.success) {
+        showNotification('Invoice request dispatched to sales/management!')
+        setIsInvoiceRequestOpen(false)
+        setInvoiceNotes('')
+        PrintERPDataStore.updateItem<SalesOrderRecord>(STORAGE_KEYS.ORDERS, order.id, {
+          commercial_status: 'invoice_requested',
+          invoice_requested_at: new Date().toISOString(),
+        })
+      } else {
+        showNotification(res.error || 'Failed to dispatch invoice request.')
+      }
+    } catch (err: any) {
+      showNotification(err.message || 'Error creating invoice request.')
+    } finally {
+      setIsSubmittingInvoiceRequest(false)
+    }
   }
 
   if (!order) {
@@ -161,6 +198,9 @@ export default function OrderDetailPage() {
       assigned_employee_name: jobOperator || 'Unassigned',
       production_instructions: jobInstructions,
       status: 'queued',
+      workflow_routing: order.workflow_routing || 'design_required',
+      commercial_status: order.commercial_status || 'invoice_required',
+      production_gate_status: (order.invoice_id || order.commercial_status === 'invoice_created') ? 'ready_for_production' : 'blocked_commercial',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
@@ -231,7 +271,7 @@ export default function OrderDetailPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono">
                 {order.order_number}
               </h1>
@@ -239,6 +279,44 @@ export default function OrderDetailPage() {
               <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300">
                 {order.status.replace('_', ' ')}
               </span>
+
+              {/* Workflow Routing Badge */}
+              {order.workflow_routing && (
+                <Badge
+                  variant="outline"
+                  className={`text-xs font-bold ${
+                    order.workflow_routing === 'design_required'
+                      ? 'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300'
+                      : order.workflow_routing === 'design_ok'
+                      ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
+                  }`}
+                >
+                  {order.workflow_routing === 'design_required'
+                    ? '🎨 Design Required'
+                    : order.workflow_routing === 'design_ok'
+                    ? '⚡ Design OK'
+                    : '🚀 Ready Production'}
+                </Badge>
+              )}
+
+              {/* Commercial Invoice Gate Status */}
+              {order.invoice_id || order.commercial_status === 'invoice_created' ? (
+                <Badge className="bg-emerald-600 text-white text-xs font-bold flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Invoice Linked {order.invoice_number ? `(#${order.invoice_number})` : ''}
+                </Badge>
+              ) : order.commercial_status === 'invoice_requested' ? (
+                <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-bold flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-amber-600" />
+                  Invoice Requested
+                </Badge>
+              ) : (
+                <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs font-bold flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3 text-rose-600" />
+                  Invoice Required
+                </Badge>
+              )}
             </div>
             <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
               Customer: {order.customer_name}
@@ -258,7 +336,19 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {(!order.invoice_id && order.commercial_status !== 'invoice_created') && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsInvoiceRequestOpen(true)}
+                className="text-xs border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300"
+              >
+                <Send className="mr-1.5 h-3.5 w-3.5 text-rose-600" />
+                Request Invoice
+              </Button>
+            )}
+
             <Button
               size="sm"
               variant="outline"
@@ -283,6 +373,44 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Commercial Hold Gate Warning Banner */}
+      {(!order.invoice_id && order.commercial_status !== 'invoice_created') && (
+        <div className="p-4 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/70 dark:bg-rose-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <Lock className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-xs font-bold text-rose-900 dark:text-rose-200">
+                Commercial Gate: Official Invoice Not Created
+              </h4>
+              <p className="text-xs text-rose-700 dark:text-rose-300 mt-0.5">
+                Production floor execution is blocked until an official invoice is generated by sales or accounts.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {order.commercial_status !== 'invoice_requested' ? (
+              <Button
+                size="sm"
+                onClick={() => setIsInvoiceRequestOpen(true)}
+                className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5"
+              >
+                <Send className="h-3.5 w-3.5" />
+                Send Invoice Request
+              </Button>
+            ) : (
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-3 py-1.5 rounded-lg border border-amber-300">
+                Invoice Request Dispatched
+              </span>
+            )}
+            <Link href={`/${slug}/billing?action=create_invoice&order_id=${order.id}`}>
+              <Button size="sm" variant="outline" className="text-xs">
+                Create Invoice
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Notification */}
       {notification && (
@@ -413,18 +541,34 @@ export default function OrderDetailPage() {
                   <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 text-xs">
                     {job.job_number}
                   </span>
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] font-bold capitalize ${
-                      job.status === 'completed'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                        : job.status === 'in_progress'
-                        ? 'bg-blue-50 text-blue-700 border-blue-300'
-                        : 'bg-amber-50 text-amber-800 border-amber-300'
-                    }`}
-                  >
-                    {job.status.replace('_', ' ')}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    {job.workflow_routing && (
+                      <Badge variant="outline" className="text-[9px] font-semibold">
+                        {job.workflow_routing === 'design_required'
+                          ? '🎨 Design'
+                          : job.workflow_routing === 'design_ok'
+                          ? '⚡ Design OK'
+                          : '🚀 Ready Prod'}
+                      </Badge>
+                    )}
+                    {job.production_gate_status && job.production_gate_status !== 'ready_for_production' && (
+                      <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-[9px] font-bold">
+                        {job.production_gate_status === 'blocked_commercial' ? 'Locked (No Invoice)' : 'Design Hold'}
+                      </Badge>
+                    )}
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] font-bold capitalize ${
+                        job.status === 'completed'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                          : job.status === 'in_progress'
+                          ? 'bg-blue-50 text-blue-700 border-blue-300'
+                          : 'bg-amber-50 text-amber-800 border-amber-300'
+                      }`}
+                    >
+                      {job.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
                 </div>
                 <CardTitle className="text-sm font-bold mt-1 text-slate-900 dark:text-white">
                   {job.product_name}
@@ -699,6 +843,48 @@ export default function OrderDetailPage() {
             </div>
           </div>
         )}
+      </ModalDialog>
+
+      {/* MODAL: SEND INVOICE REQUEST */}
+      <ModalDialog
+        open={isInvoiceRequestOpen}
+        onOpenChange={setIsInvoiceRequestOpen}
+        title="Send Invoice Request to Sales / Management"
+        description={`Request official invoice creation for Order ${order.order_number} to clear commercial production gating.`}
+      >
+        <form onSubmit={handleSendInvoiceRequest} className="space-y-4 pt-1">
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-xl text-xs text-blue-900 dark:text-blue-200 space-y-1">
+            <p className="font-semibold">Commercial Workflow Gating</p>
+            <p className="text-[11px] opacity-90">
+              Submitting this request alerts sales and billing management. Once the invoice is generated, this order will automatically unlock for shop floor printing and production.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="reqNotes">Notes / Commercial Instructions (Optional)</Label>
+            <textarea
+              id="reqNotes"
+              rows={3}
+              placeholder="e.g. Design is ready and customer approved quotation amount. Please issue invoice # so floor can print."
+              value={invoiceNotes}
+              onChange={(e) => setInvoiceNotes(e.target.value)}
+              className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsInvoiceRequestOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmittingInvoiceRequest}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
+            >
+              {isSubmittingInvoiceRequest ? 'Dispatching...' : 'Dispatch Request'}
+            </Button>
+          </div>
+        </form>
       </ModalDialog>
     </div>
   )

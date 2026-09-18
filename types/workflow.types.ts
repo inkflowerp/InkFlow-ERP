@@ -189,3 +189,61 @@ export const ACTION_DEFINITIONS: ActionOptionDefinition[] = [
     description: 'Assign press operator, pre-press designer, or delivery rider',
   },
 ]
+
+// ==============================================================================
+// PRODUCTION & COMMERCIAL GATING WORKFLOW TYPES
+// ==============================================================================
+
+export type WorkflowRoutingType =
+  | 'design_required'
+  | 'design_ok'
+  | 'ready_production'
+  | 'custom'
+
+export type CommercialStatus =
+  | 'invoice_required'
+  | 'invoice_requested'
+  | 'invoice_created'
+  | 'unpaid'
+  | 'partially_paid'
+  | 'paid'
+
+export type ProductionGateStatus =
+  | 'blocked_commercial'
+  | 'blocked_design'
+  | 'blocked_approval'
+  | 'ready_for_production'
+  | 'in_production'
+  | 'completed'
+
+export type InvoiceRequestStatus =
+  | 'pending'
+  | 'invoice_created'
+  | 'rejected'
+  | 'cancelled'
+
+export interface InvoiceRequestRecord {
+  id: string
+  company_id: string
+  request_number: string
+  customer_id?: string | null
+  customer_name: string
+  customer_phone?: string | null
+  sales_order_id?: string | null
+  order_number?: string | null
+  job_order_id?: string | null
+  job_number?: string | null
+  design_job_id?: string | null
+  design_number?: string | null
+  requested_by_id?: string | null
+  requested_by_name: string
+  status: InvoiceRequestStatus
+  invoice_id?: string | null
+  invoice_number?: string | null
+  items_summary?: string | null
+  estimated_amount: number
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+

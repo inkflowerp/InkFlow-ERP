@@ -194,8 +194,8 @@ export class ProductionTaskRepository {
     let updates: Partial<ProductionTaskRecord> = {}
 
     if (typeof param2 === 'string') {
-      companyId = param1
-      id = param2
+      id = param1
+      companyId = param2
       updates = (typeof param3 === 'object' ? param3 : {}) as Partial<ProductionTaskRecord>
     } else {
       id = param1
@@ -273,42 +273,62 @@ export class ProductionTaskRepository {
     completedSequence: number,
     companyId: string
   ): Promise<ProductionTaskRecord | null> {
-    const supabase = await createClient()
+    try {
+      const supabase = await createClient()
 
-    // Find the next task in order for this job order
-    const { data: nextTasks, error } = await (supabase as any)
-      .from('production_tasks')
-      .select('*')
-      .eq('company_id', companyId)
-      .eq('job_order_id', jobOrderId)
-      .gt('sequence_order', completedSequence)
-      .order('sequence_order', { ascending: true })
-      .limit(1)
+      // Find the next task in order for this job order
+      const { data: nextTasks, error } = await (supabase as any)
+        .from('production_tasks')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('job_order_id', jobOrderId)
+        .gt('sequence_order', completedSequence)
+        .order('sequence_order', { ascending: true })
+        .limit(1)
 
-    if (error || !nextTasks || nextTasks.length === 0) {
+      if (!error && nextTasks && nextTasks.length > 0) {
+        const nextTask = nextTasks[0]
+        if (nextTask.status === 'queued' || nextTask.status === 'scheduled') {
+          const { data: updated, error: updateErr } = await (supabase as any)
+            .from('production_tasks')
+            .update({
+              status: 'ready',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', nextTask.id)
+            .eq('company_id', companyId)
+            .select()
+            .single()
+
+          if (!updateErr && updated) {
+            return updated as ProductionTaskRecord
+          }
+        }
+        return nextTask as ProductionTaskRecord
+      }
+    } catch {}
+
+    // Local datastore fallback
+    const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const matchingTasks = all
+      .filter((t: ProductionTaskRecord) => t.job_order_id === jobOrderId && (!companyId || t.company_id === companyId) && (t.sequence_order ?? 0) > completedSequence)
+      .sort((a: ProductionTaskRecord, b: ProductionTaskRecord) => (a.sequence_order ?? 0) - (b.sequence_order ?? 0))
+
+    if (matchingTasks.length === 0) {
       return null
     }
 
-    const nextTask = nextTasks[0]
-    // If the next task is in 'queued' or 'scheduled' state, update it to 'ready'
+    const nextTask = matchingTasks[0]
     if (nextTask.status === 'queued' || nextTask.status === 'scheduled') {
-      const { data: updated, error: updateErr } = await (supabase as any)
-        .from('production_tasks')
-        .update({
-          status: 'ready',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', nextTask.id)
-        .eq('company_id', companyId)
-        .select()
-        .single()
-
-      if (!updateErr && updated) {
-        return updated as ProductionTaskRecord
+      nextTask.status = 'ready'
+      nextTask.updated_at = new Date().toISOString()
+      const idx = all.findIndex((t: ProductionTaskRecord) => t.id === nextTask.id)
+      if (idx >= 0) {
+        all[idx] = nextTask
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
       }
     }
-
-    return nextTask as ProductionTaskRecord
+    return nextTask
   }
 
   static async deleteTask(id: string, companyId: string): Promise<boolean> {
