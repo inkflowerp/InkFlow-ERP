@@ -407,7 +407,7 @@ describe('Unit: Commercial Master 2.2 — Final Business-Owner Audit & Hardening
         company_id: companyId,
         product_id: product.id,
         supplier_id: 'sup-a',
-        supplier_name: 'Meghna Inks & Media',
+        supplier_name: 'National Inks & Media',
         purchase_price: 8500,
         purchase_unit: 'roll',
         conversion_ratio: 1640,

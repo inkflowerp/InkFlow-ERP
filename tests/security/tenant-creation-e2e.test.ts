@@ -212,19 +212,19 @@ describe('Tenant & Business Creation End-to-End Audit & Verification', () => {
   test('1. Platform Admin: Provision new business with Business Plan and Owner account', () => {
     const db = new MockTenantDatabase()
     const result = db.createCompany({
-      name: 'Padma Printing & Packaging',
-      name_bn: 'পদ্মা প্রিন্টিং অ্যান্ড প্যাকেজিং',
-      slug: 'padma-print',
+      name: 'Pinnacle Printing & Packaging',
+      name_bn: 'পিনাকল প্রিন্টিং অ্যান্ড প্যাকেজিং',
+      slug: 'pinnacle-print',
       business_type: 'packaging',
       owner_name: 'Engr. Enamul Huq',
-      owner_email: 'enamul@padmaprint.com.bd',
+      owner_email: 'enamul@pinnacleprint.com.bd',
       owner_phone: '01712345678',
       plan: 'business',
       default_locale: 'bn',
     })
 
     assert.ok(result.company.id)
-    assert.strictEqual(result.company.slug, 'padma-print')
+    assert.strictEqual(result.company.slug, 'pinnacle-print')
     assert.strictEqual(result.company.is_active, true)
     assert.strictEqual(result.company.default_locale, 'bn')
 
@@ -238,7 +238,7 @@ describe('Tenant & Business Creation End-to-End Audit & Verification', () => {
     const companyUser = db.companyUsers.find((cu) => cu.company_id === result.company.id)
     assert.ok(companyUser)
     assert.strictEqual(companyUser.profile.full_name, 'Engr. Enamul Huq')
-    assert.strictEqual(companyUser.profile.email, 'enamul@padmaprint.com.bd')
+    assert.strictEqual(companyUser.profile.email, 'enamul@pinnacleprint.com.bd')
     assert.deepStrictEqual(companyUser.responsibilities, ['business_owner'])
   })
 
@@ -344,7 +344,7 @@ describe('Tenant & Business Creation End-to-End Audit & Verification', () => {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '')
 
-    assert.strictEqual(slugify('Meghna Offset & Digital Printers!'), 'meghna-offset-digital-printers')
+    assert.strictEqual(slugify('Modern Offset & Digital Printers!'), 'modern-offset-digital-printers')
     assert.strictEqual(slugify('  Dhaka   Flex   Printing  Ltd. '), 'dhaka-flex-printing-ltd')
     assert.strictEqual(slugify('Shamol_Press_2026'), 'shamol-press-2026')
   })

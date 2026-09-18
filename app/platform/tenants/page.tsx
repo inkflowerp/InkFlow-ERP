@@ -1279,7 +1279,7 @@ export default function PlatformTenantsPage() {
                       </label>
                       <Input
                         required
-                        placeholder="e.g. Meghna Offset Printers"
+                        placeholder="e.g. Dhaka Offset Printers"
                         value={provisionName}
                         onChange={(e) => handleNameChange(e.target.value)}
                         className="bg-slate-950 border-slate-800 text-white text-xs h-9"
@@ -1306,7 +1306,7 @@ export default function PlatformTenantsPage() {
                       </div>
                       <Input
                         required
-                        placeholder="meghna-offset"
+                        placeholder="dhaka-offset"
                         value={provisionSlug}
                         onChange={(e) => {
                           setSlugManuallyEdited(true)
@@ -1321,7 +1321,7 @@ export default function PlatformTenantsPage() {
                     <div className="space-y-1">
                       <label className="font-semibold text-slate-300">Bengali Name (ঐচ্ছিক বাংলা নাম)</label>
                       <Input
-                        placeholder="যেমন: মেঘনা অফসেট প্রিন্টার্স"
+                        placeholder="যেমন: ঢাকা অফসেট প্রিন্টার্স"
                         value={provisionNameBn}
                         onChange={(e) => setProvisionNameBn(e.target.value)}
                         className="bg-slate-950 border-slate-800 text-white text-xs h-9"
@@ -1369,7 +1369,7 @@ export default function PlatformTenantsPage() {
                       <label className="font-semibold text-slate-300">Owner Email (Login Account)</label>
                       <Input
                         type="email"
-                        placeholder="owner@meghna-offset.com"
+                        placeholder="owner@dhakapress.com.bd"
                         value={provisionOwnerEmail}
                         onChange={(e) => setProvisionOwnerEmail(e.target.value)}
                         className="bg-slate-950 border-slate-800 text-white text-xs h-9"

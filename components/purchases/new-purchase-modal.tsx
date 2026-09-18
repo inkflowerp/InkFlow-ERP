@@ -976,7 +976,7 @@ export function NewPurchaseModal({
                       Supplier / Company Name <span className="text-rose-500">*</span>
                     </Label>
                     <Input
-                      placeholder="e.g. Meghna Paper & Board Mills Ltd."
+                      placeholder="e.g. Bengal Paper & Board Mills Ltd."
                       value={customSupplierName}
                       onChange={(e) => setCustomSupplierName(e.target.value)}
                       className="text-xs h-9"

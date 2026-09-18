@@ -95,7 +95,7 @@ describe('Consolidated Billing & Simple Due Collection Engine (Integration & Fin
     const invoice = await BillingRepository.createInvoice({
       company_id: companyId,
       customer_id: 'cust-abc-03',
-      customer_name: 'Meghna Signage Ltd.',
+      customer_name: 'Premier Signage Ltd.',
       customer_phone: '+8801911223344',
       due_date: '2026-10-25',
       subtotal: 20000,
@@ -110,7 +110,7 @@ describe('Consolidated Billing & Simple Due Collection Engine (Integration & Fin
     await BillingRepository.recordMultiInvoicePayment({
       companyId,
       customerId: 'cust-abc-03',
-      customerName: 'Meghna Signage Ltd.',
+      customerName: 'Premier Signage Ltd.',
       amount: 5000,
       paymentMethod: 'cash',
       receivedByName: 'Cashier',
@@ -127,7 +127,7 @@ describe('Consolidated Billing & Simple Due Collection Engine (Integration & Fin
     await BillingRepository.recordMultiInvoicePayment({
       companyId,
       customerId: 'cust-abc-03',
-      customerName: 'Meghna Signage Ltd.',
+      customerName: 'Premier Signage Ltd.',
       amount: 5000,
       paymentMethod: 'nagad',
       mfsTransactionId: 'NG839103K',
@@ -145,7 +145,7 @@ describe('Consolidated Billing & Simple Due Collection Engine (Integration & Fin
     await BillingRepository.recordMultiInvoicePayment({
       companyId,
       customerId: 'cust-abc-03',
-      customerName: 'Meghna Signage Ltd.',
+      customerName: 'Premier Signage Ltd.',
       amount: 10000,
       paymentMethod: 'bank',
       bankName: 'City Bank Ltd',

@@ -14,10 +14,10 @@ describe('Purchasing to Physical Roll Inventory Integration', () => {
     // Seed supplier
     await SupplierRepository.createSupplier({
       company_id: companyId,
-      supplier_name: 'Meghna Vinyl Supplies Ltd',
+      supplier_name: 'Globe Vinyl Supplies Ltd',
       mobile: '+8801711223344',
       category: 'raw_materials',
-      email: 'sales@meghnavinyl.com',
+      email: 'sales@globevinyl.com',
       address: 'Nawabpur Road, Dhaka',
     })
 

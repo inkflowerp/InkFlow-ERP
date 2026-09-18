@@ -489,7 +489,7 @@ describe('20 Mandatory Acceptance Tests: Business-Owner Quotation, Invoice, Prod
     const grn = await PurchaseRepository.createGoodsReceivedNote({
       company_id: companyIdA,
       purchase_order_id: po.id,
-      supplier_name: 'Meghna Vinyl Supplies',
+      supplier_name: 'Globe Vinyl Supplies',
       received_by_name: 'Store Keeper',
       items_received: [
         {

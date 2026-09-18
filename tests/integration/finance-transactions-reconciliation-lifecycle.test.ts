@@ -77,7 +77,7 @@ describe('Finance Transactions & Reconciliation Lifecycle Integration Test (V6)'
       id: 'supp-v6-01',
       company_id: companyId,
       supplier_code: 'SUPP-001',
-      supplier_name: 'Meghna Vinyl & Board Mills',
+      supplier_name: 'Standard Vinyl & Board Mills',
       mobile: '01711223344',
       category: 'RAW_MATERIAL',
       payment_terms: 'credit_30',

@@ -60,7 +60,7 @@ describe('Finance 360 - Atomic Operations & Transaction Hardening Tests (V9.1)',
     // Create supplier
     const supplier = await SupplierRepository.createSupplier({
       company_id: compId,
-      supplier_name: 'Meghna Paper & PVC Mills',
+      supplier_name: 'Prime Paper & PVC Mills',
       mobile: '01711223344',
       category: 'paper',
     })

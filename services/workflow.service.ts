@@ -266,7 +266,7 @@ let memoryExecutionLogs: WorkflowExecutionLog[] = [
     status: 'success',
     actions_taken: [
       { action_type: 'send_notification', status: 'completed', detail: 'Alerted Warehouse Manager: Magenta Ink stock at 3L (Min: 5L)' },
-      { action_type: 'create_task', status: 'completed', detail: 'Created RFQ task to Meghna Printing Media' },
+      { action_type: 'create_task', status: 'completed', detail: 'Created RFQ task to National Printing Media' },
     ],
     executed_at: '2026-09-03T15:40:00Z',
   },

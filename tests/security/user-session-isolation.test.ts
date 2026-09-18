@@ -228,7 +228,7 @@ describe('Master User Login & Session Isolation Tests', () => {
   })
 
   test('7. Cross-Tenant Boundary Enforcement', () => {
-    // Tenant Alpha Digital (c-01) vs Tenant Meghna Offset (c-02)
+    // Tenant Alpha Digital (c-01) vs Tenant Beta Offset (c-02)
     function verifyTenantAccess(userCompanyId: string, requestedCompanyId: string) {
       if (userCompanyId !== requestedCompanyId) {
         throw new Error('403 Forbidden: Cross-tenant access denied')
@@ -237,14 +237,14 @@ describe('Master User Login & Session Isolation Tests', () => {
     }
 
     const alphaCompanyId = 'a0000000-0000-0000-0000-000000000001'
-    const meghnaCompanyId = 'a0000000-0000-0000-0000-000000000002'
+    const betaCompanyId = 'a0000000-0000-0000-0000-000000000002'
 
     // Alpha user accessing Alpha tenant -> OK
     assert.strictEqual(verifyTenantAccess(alphaCompanyId, alphaCompanyId), true)
 
-    // Alpha user attempting to access Meghna tenant -> Throws 403
+    // Alpha user attempting to access Beta tenant -> Throws 403
     assert.throws(
-      () => verifyTenantAccess(alphaCompanyId, meghnaCompanyId),
+      () => verifyTenantAccess(alphaCompanyId, betaCompanyId),
       /403 Forbidden: Cross-tenant access denied/
     )
   })

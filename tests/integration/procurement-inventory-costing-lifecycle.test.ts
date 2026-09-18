@@ -31,12 +31,12 @@ describe('V5 Integration: End-to-End Procurement, Physical Stock Receipt & Costi
       {
         company_id: companyId,
         supplier_code: 'SUP-DHAKA-01',
-        supplier_name: 'Meghna Media Supplies Ltd',
-        name_bn: 'মেঘনা মিডিয়া সাপ্লাইস লিঃ',
-        company: 'Meghna Group of Industries',
+        supplier_name: 'Bengal Media Supplies Ltd',
+        name_bn: 'বেঙ্গল মিডিয়া সাপ্লাইস লিঃ',
+        company: 'Bengal Group of Industries',
         contact_person: 'Md. Rafiqul Islam',
         mobile: '+8801711223344',
-        email: 'procurement@meghnamedia.com',
+        email: 'procurement@bengalmedia.com',
         address: 'Nawabpur Road, Old Dhaka',
         division: 'Dhaka',
         district: 'Dhaka',
@@ -49,7 +49,7 @@ describe('V5 Integration: End-to-End Procurement, Physical Stock Receipt & Costi
       'admin@inkflow.com'
     )
     assert.ok(supplier.id)
-    assert.strictEqual(supplier.supplier_name, 'Meghna Media Supplies Ltd')
+    assert.strictEqual(supplier.supplier_name, 'Bengal Media Supplies Ltd')
 
     // 3. Map Supplier Item Catalog
     const supplierItem = await SupplierService.createSupplierItem({

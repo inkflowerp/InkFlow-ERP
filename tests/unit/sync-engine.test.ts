@@ -46,7 +46,7 @@ describe('Sync Engine & Outbox Unit Tests (V8)', () => {
         action_type: 'quotation.draft',
         entity_type: 'quotation',
         payload: {
-          customer_name: 'Jamuna Graphics',
+          customer_name: 'Apex Graphics',
           subtotal: 12000,
           total_amount: 12000,
         },

@@ -3,16 +3,16 @@ import assert from 'node:assert'
 
 // ==============================================================================
 // PrintERP SaaS - Acceptance Test Suite: Complete 23-Step Business Lifecycle
-// Company: "ABC Sign & Print"
+// Company: "Apex Sign & Print"
 // Roles: Owner, Sales Manager, Designer, Production Manager, Operator, Staff
 // ==============================================================================
 
-describe('PrintERP SaaS — Final Acceptance Test: "ABC Sign & Print" Lifecycle', () => {
+describe('PrintERP SaaS — Final Acceptance Test: "Apex Sign & Print" Lifecycle', () => {
   // Shared Test Context
   const company = {
-    id: 'comp-abc-001',
-    name: 'ABC Sign & Print Ltd.',
-    slug: 'abc-sign-print',
+    id: 'comp-apex-001',
+    name: 'Apex Sign & Print Ltd.',
+    slug: 'apex-sign-print',
     currency: 'BDT',
     locale: 'bn',
     vatEnabled: true,
@@ -21,12 +21,12 @@ describe('PrintERP SaaS — Final Acceptance Test: "ABC Sign & Print" Lifecycle'
 
   // 6 Role Personas
   const team = {
-    owner: { id: 'usr-01', name: 'Rahim Chowdhury', role: 'business_owner', email: 'owner@abcsign.com.bd' },
-    sales: { id: 'usr-02', name: 'Kamrul Hasan', role: 'sales_manager', email: 'sales@abcsign.com.bd' },
-    designer: { id: 'usr-03', name: 'Sultana Razia', role: 'graphic_designer', email: 'designer@abcsign.com.bd' },
-    production: { id: 'usr-04', name: 'Rafiqul Islam', role: 'production_manager', email: 'production@abcsign.com.bd' },
-    operator: { id: 'usr-05', name: 'Nurul Amin', role: 'machine_operator', email: 'operator@abcsign.com.bd' },
-    staff: { id: 'usr-06', name: 'Karim Ullah', role: 'general_staff', email: 'staff@abcsign.com.bd' },
+    owner: { id: 'usr-01', name: 'Rahim Chowdhury', role: 'business_owner', email: 'owner@apexsign.com.bd' },
+    sales: { id: 'usr-02', name: 'Kamrul Hasan', role: 'sales_manager', email: 'sales@apexsign.com.bd' },
+    designer: { id: 'usr-03', name: 'Sultana Razia', role: 'graphic_designer', email: 'designer@apexsign.com.bd' },
+    production: { id: 'usr-04', name: 'Rafiqul Islam', role: 'production_manager', email: 'production@apexsign.com.bd' },
+    operator: { id: 'usr-05', name: 'Nurul Amin', role: 'machine_operator', email: 'operator@apexsign.com.bd' },
+    staff: { id: 'usr-06', name: 'Karim Ullah', role: 'general_staff', email: 'staff@apexsign.com.bd' },
   }
 
   // Persistent Test Entities
@@ -539,7 +539,7 @@ describe('PrintERP SaaS — Final Acceptance Test: "ABC Sign & Print" Lifecycle'
     assert.ok(actions.includes('payment.record'))
     assert.ok(actions.includes('delivery.complete'))
 
-    // All logs must be tied to ABC Sign & Print tenant quarantine
+    // All logs must be tied to Apex Sign & Print tenant quarantine
     auditLogs.forEach((log) => {
       assert.strictEqual(log.companyId, company.id)
       assert.ok(log.timestamp)

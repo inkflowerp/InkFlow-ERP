@@ -24,10 +24,10 @@ const TEST_COMPANIES = {
     slug: 'alpha-digital',
     name: 'Alpha Digital & Signage Ltd.',
   },
-  meghna: {
+  beta: {
     id: 'a0000000-0000-0000-0000-000000000002',
-    slug: 'meghna-offset',
-    name: 'Meghna Color Press & Packaging',
+    slug: 'beta-offset',
+    name: 'Beta Color Press & Packaging',
   },
 }
 
@@ -262,10 +262,10 @@ describe('Master User Account & Session Isolation Tests', () => {
     )
   })
 
-  test('4. Tenant Boundary Enforcement: Alpha Digital users cannot access Meghna Offset data', () => {
+  test('4. Tenant Boundary Enforcement: Alpha Digital users cannot access Beta Offset data', () => {
     const alphaUser = TEST_USERS.manager
-    const requestedMeghnaSlug = TEST_COMPANIES.meghna.slug
-    const requestedMeghnaId = TEST_COMPANIES.meghna.id
+    const requestedBetaSlug = TEST_COMPANIES.beta.slug
+    const requestedBetaId = TEST_COMPANIES.beta.id
 
     // Check if user belongs to requested tenant
     const isTenantAuthorized = (user: UserProfile, targetSlugOrId: string) => {
@@ -275,8 +275,8 @@ describe('Master User Account & Session Isolation Tests', () => {
       )
     }
 
-    assert.strictEqual(isTenantAuthorized(alphaUser, requestedMeghnaSlug), false)
-    assert.strictEqual(isTenantAuthorized(alphaUser, requestedMeghnaId), false)
+    assert.strictEqual(isTenantAuthorized(alphaUser, requestedBetaSlug), false)
+    assert.strictEqual(isTenantAuthorized(alphaUser, requestedBetaId), false)
     assert.strictEqual(isTenantAuthorized(alphaUser, TEST_COMPANIES.alpha.slug), true)
   })
 

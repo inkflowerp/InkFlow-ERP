@@ -80,9 +80,9 @@ const TENANT_DIRECTORY: MockCompanyRecord[] = [
     isActive: true,
   },
   {
-    id: 'cmp-meghna-002',
-    slug: 'meghna-press',
-    name: 'Meghna Color Press & Packaging',
+    id: 'cmp-gamma-002',
+    slug: 'gamma-press',
+    name: 'Gamma Color Press & Packaging',
     isActive: true,
   },
   {
@@ -136,26 +136,26 @@ const TENANT_USER_DIRECTORY: MockTenantUserRecord[] = [
     branchId: 'br-alpha-factory',
   },
 
-  // Tenant Meghna Users
+  // Tenant Gamma Users
   {
-    id: 'cu-meghna-owner',
-    userId: 'u-meghna-owner-uuid',
-    companyId: 'cmp-meghna-002',
-    email: 'owner@meghnapress.com.bd',
-    fullName: 'Kamal Hossain (Meghna Owner)',
+    id: 'cu-gamma-owner',
+    userId: 'u-gamma-owner-uuid',
+    companyId: 'cmp-gamma-002',
+    email: 'owner@gammapress.com.bd',
+    fullName: 'Kamal Hossain (Gamma Owner)',
     role: 'business_owner',
     status: 'active',
-    branchId: 'br-meghna-main',
+    branchId: 'br-gamma-main',
   },
   {
-    id: 'cu-meghna-manager',
-    userId: 'u-meghna-manager-uuid',
-    companyId: 'cmp-meghna-002',
-    email: 'manager@meghnapress.com.bd',
-    fullName: 'Faruk Ahmed (Meghna Manager)',
+    id: 'cu-gamma-manager',
+    userId: 'u-gamma-manager-uuid',
+    companyId: 'cmp-gamma-002',
+    email: 'manager@gammapress.com.bd',
+    fullName: 'Faruk Ahmed (Gamma Manager)',
     role: 'sales_manager',
     status: 'active',
-    branchId: 'br-meghna-main',
+    branchId: 'br-gamma-main',
   },
 ]
 
@@ -314,10 +314,10 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
       assert.strictEqual(alphaAccess.authorized, false)
       assert.strictEqual(alphaAccess.error, 'REDIRECT_403_TENANT')
 
-      // Platform Owner attempting to access Meghna Color Press
-      const meghnaAccess = simulateRequireTenantGuard('u-auth-owner-001', 'meghna-press')
-      assert.strictEqual(meghnaAccess.authorized, false)
-      assert.strictEqual(meghnaAccess.error, 'REDIRECT_403_TENANT')
+      // Platform Owner attempting to access Gamma Color Press
+      const gammaAccess = simulateRequireTenantGuard('u-auth-owner-001', 'gamma-press')
+      assert.strictEqual(gammaAccess.authorized, false)
+      assert.strictEqual(gammaAccess.error, 'REDIRECT_403_TENANT')
     })
 
     test('2.4 Platform User supplying tenant UUID to Tenant API is DENIED', () => {
@@ -328,7 +328,7 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
       }
 
       assert.strictEqual(isApiAuthorized('u-auth-owner-001', 'cmp-alpha-001'), false)
-      assert.strictEqual(isApiAuthorized('u-auth-admin-002', 'cmp-meghna-002'), false)
+      assert.strictEqual(isApiAuthorized('u-auth-admin-002', 'cmp-gamma-002'), false)
     })
   })
 
@@ -349,8 +349,8 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
       assert.strictEqual(res.authorized, true)
     })
 
-    test('3.3 Meghna Manager can pass requireTenantGuard for Meghna Press', () => {
-      const res = simulateRequireTenantGuard('u-meghna-manager-uuid', 'meghna-press')
+    test('3.3 Gamma Manager can pass requireTenantGuard for Gamma Press', () => {
+      const res = simulateRequireTenantGuard('u-gamma-manager-uuid', 'gamma-press')
       assert.strictEqual(res.authorized, true)
     })
   })
@@ -390,7 +390,7 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
 
       assert.strictEqual(isPlatformActionAuthorized('u-alpha-owner-uuid'), false)
       assert.strictEqual(isPlatformActionAuthorized('u-alpha-designer-uuid'), false)
-      assert.strictEqual(isPlatformActionAuthorized('u-meghna-manager-uuid'), false)
+      assert.strictEqual(isPlatformActionAuthorized('u-gamma-manager-uuid'), false)
       assert.strictEqual(isPlatformActionAuthorized('u-auth-owner-001'), true)
     })
   })
@@ -399,14 +399,14 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
   // Matrix Cell 5: Cross-Tenant Isolation (Tenant A -> Tenant B DENIED)
   // --------------------------------------------------------------------------
   describe('5. Cross-Tenant Isolation (Zero Cross-Tenant Leakage)', () => {
-    test('5.1 Tenant Alpha Owner cannot access Tenant Meghna workspace', () => {
-      const res = simulateRequireTenantGuard('u-alpha-owner-uuid', 'meghna-press')
+    test('5.1 Tenant Alpha Owner cannot access Tenant Gamma workspace', () => {
+      const res = simulateRequireTenantGuard('u-alpha-owner-uuid', 'gamma-press')
       assert.strictEqual(res.authorized, false)
       assert.strictEqual(res.error, 'REDIRECT_403_TENANT')
     })
 
-    test('5.2 Tenant Meghna Manager cannot access Tenant Alpha workspace', () => {
-      const res = simulateRequireTenantGuard('u-meghna-manager-uuid', 'alpha-digital')
+    test('5.2 Tenant Gamma Manager cannot access Tenant Alpha workspace', () => {
+      const res = simulateRequireTenantGuard('u-gamma-manager-uuid', 'alpha-digital')
       assert.strictEqual(res.authorized, false)
       assert.strictEqual(res.error, 'REDIRECT_403_TENANT')
     })
@@ -419,7 +419,7 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
       }
       const invoices: MockInvoice[] = [
         { id: 'inv-alpha-001', companyId: 'cmp-alpha-001', amount: 50000 },
-        { id: 'inv-meghna-002', companyId: 'cmp-meghna-002', amount: 120000 },
+        { id: 'inv-gamma-002', companyId: 'cmp-gamma-002', amount: 120000 },
       ]
 
       const queryInvoices = (authUserId: string, requestedInvoiceId: string) => {
@@ -429,8 +429,8 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
         return invoices.filter((inv) => inv.companyId === user.companyId && inv.id === requestedInvoiceId)
       }
 
-      // Alpha owner trying to read Meghna's invoice
-      const result = queryInvoices('u-alpha-owner-uuid', 'inv-meghna-002')
+      // Alpha owner trying to read Gamma's invoice
+      const result = queryInvoices('u-alpha-owner-uuid', 'inv-gamma-002')
       assert.strictEqual(result.length, 0, 'Cross-tenant query must return zero rows')
 
       // Alpha owner reading own invoice
@@ -484,7 +484,7 @@ describe('InkFlow SaaS: Complete Platform vs Tenant Authentication Isolation Mat
 
     test('7.2 Client-provided tenant_id parameter does NOT bypass verified user membership', () => {
       const attackerUserId = 'u-alpha-designer-uuid'
-      const suppliedVictimTenantId = 'cmp-meghna-002'
+      const suppliedVictimTenantId = 'cmp-gamma-002'
 
       const isAuthorized = TENANT_USER_DIRECTORY.some(
         (t) => t.userId === attackerUserId && t.companyId === suppliedVictimTenantId && t.status === 'active'

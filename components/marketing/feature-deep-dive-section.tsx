@@ -102,17 +102,17 @@ const INVOICE_DUE_PRESETS = [
   },
   {
     id: 'INV-00181',
-    client: 'Meghna Trade International',
-    clientBn: 'মেঘনা ট্রেড ইন্টারন্যাশনাল',
+    client: 'Summit Trade International',
+    clientBn: 'সামিট ট্রেড ইন্টারন্যাশনাল',
     phone: '+880 1819-123456',
     total: 95000,
     advance: 50000,
     due: 45000,
     daysOverdue: 34,
     msgBn:
-      'প্রিয় মেঘনা ট্রেড, আপনার মেলা স্টল ব্র্যান্ডিং বিল INV-00181-এর বকেয়া ৳ ৪৫,০০০ টাকা ৩৪ দিন ধরে বাকি রয়েছে। অনুগ্রহ করে আজকের মধ্যে পরিশোধের ব্যবস্থা করুন। ধন্যবাদ!',
+      'প্রিয় সামিট ট্রেড, আপনার মেলা স্টল ব্র্যান্ডিং বিল INV-00181-এর বকেয়া ৳ ৪৫,০০০ টাকা ৩৪ দিন ধরে বাকি রয়েছে। অনুগ্রহ করে আজকের মধ্যে পরিশোধের ব্যবস্থা করুন। ধন্যবাদ!',
     msgEn:
-      'Dear Meghna Trade, reminder regarding fair booth branding invoice INV-00181. Outstanding balance: ৳45,000 (34 days overdue). Please arrange payment today. Thank you!',
+      'Dear Summit Trade, reminder regarding fair booth branding invoice INV-00181. Outstanding balance: ৳45,000 (34 days overdue). Please arrange payment today. Thank you!',
   },
   {
     id: 'INV-00182',

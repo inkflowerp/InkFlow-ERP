@@ -193,7 +193,7 @@ describe('Bangladesh Localization + VAT Lifecycle Integration Test (V7)', () => 
     // --------------------------------------------------------------------------
     const supplier = await SupplierRepository.createSupplier({
       company_id: companyId,
-      supplier_name: 'Meghna Media & Substrates Ltd',
+      supplier_name: 'Prime Media & Substrates Ltd',
       contact_person: 'Md. Karim',
       mobile: '+8801911998877',
       bin: '1122334455667', // Supplier 13-digit BIN
@@ -262,7 +262,7 @@ describe('Bangladesh Localization + VAT Lifecycle Integration Test (V7)', () => 
       supplierName: supplier.supplier_name,
       paymentAccountId: bankAcc.id,
       amount: purchaseVatBreakdown.grand_total, // ৳17,250
-      referenceNumber: 'PO-PAY-MEGHNA-01',
+      referenceNumber: 'PO-PAY-SUPP-01',
       actorName: 'Accountant',
     })
     assert.ok(billPayment.id)

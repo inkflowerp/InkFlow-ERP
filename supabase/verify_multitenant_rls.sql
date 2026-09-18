@@ -4,7 +4,7 @@
 
 -- TEST SCENARIO 1: Create Two Separate Companies (Company A & Company B)
 -- Company A: Alpha Digital Ltd.
--- Company B: Meghna Color Press
+-- Company B: Beta Color Press
 
 do $$
 declare
@@ -23,7 +23,7 @@ begin
     values (company_a_id, 'alpha-test-a', 'Alpha Test A', 'printing_signage');
 
     insert into public.companies (id, slug, name, business_type)
-    values (company_b_id, 'meghna-test-b', 'Meghna Test B', 'offset_print');
+    values (company_b_id, 'beta-test-b', 'Beta Test B', 'offset_print');
 
     -- 2. Insert Branches
     insert into public.branches (company_id, name, code, is_main)
@@ -31,7 +31,7 @@ begin
     returning id into branch_a_id;
 
     insert into public.branches (company_id, name, code, is_main)
-    values (company_b_id, 'Meghna Main Branch', 'BR-B-01', true)
+    values (company_b_id, 'Beta Main Branch', 'BR-B-01', true)
     returning id into branch_b_id;
 
     -- 3. Membership for User A in Company A

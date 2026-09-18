@@ -290,7 +290,7 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
       company_id: companyId,
       po_number: 'PO-2026-001',
       supplier_id: 'sup-123',
-      supplier_name: 'Meghna Vinyl Supplies',
+      supplier_name: 'Globe Vinyl Supplies',
       supplier_phone: '+8801711111111',
       items: [
         {
@@ -322,7 +322,7 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
       company_id: companyId,
       grn_number: 'GRN-2026-001',
       purchase_order_id: poRes.id,
-      supplier_name: 'Meghna Vinyl Supplies',
+      supplier_name: 'Globe Vinyl Supplies',
       received_by_name: 'Store Keeper',
       items_received: [
         {
@@ -367,7 +367,7 @@ describe('Comprehensive Rebuild Acceptance Test Suite (Scenarios A through N)', 
       company_id: companyId,
       grn_number: 'GRN-2026-002',
       purchase_order_id: poRes.id,
-      supplier_name: 'Meghna Vinyl Supplies',
+      supplier_name: 'Globe Vinyl Supplies',
       received_by_name: 'Store Keeper',
       items_received: [
         {
