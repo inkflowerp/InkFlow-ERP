@@ -49,7 +49,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type { BranchRow } from '@/types/tenant.types'
-import { listBranchesAction } from '@/actions/company-users.actions'
+import { listBranchesAction } from '@/actions/branch.actions'
 import type {
   EmployeeRecord,
   EmploymentType,
@@ -115,7 +115,7 @@ export default function EmployeeListPage() {
     bank_name: '',
     account_number: '',
     branch_name: '',
-    mfs_provider: 'bkash' as 'bkash' | 'nagad' | 'rocket',
+    mfs_provider: 'bkash' as 'bkash' | 'nagad' | 'rocket' | 'other',
     mfs_number: '',
     status: 'active' as EmployeeRecord['status'],
   }
@@ -136,7 +136,7 @@ export default function EmployeeListPage() {
       ])
 
       if (empRes.success && empRes.data) setEmployees(empRes.data)
-      if (branchRes.success && branchRes.data) setBranches(branchRes.data)
+      if (branchRes.success && branchRes.data) setBranches(branchRes.data as any)
     } catch (err: any) {
       console.error('Failed to load employees', err)
     } finally {
@@ -722,11 +722,14 @@ export default function EmployeeListPage() {
       {/* Add / Edit Employee Modal */}
       {(isAddModalOpen || isEditModalOpen) && (
         <ModalDialog
-          isOpen={isAddModalOpen || isEditModalOpen}
-          onClose={() => {
-            setIsAddModalOpen(false)
-            setIsEditModalOpen(false)
+          open={isAddModalOpen || isEditModalOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setIsAddModalOpen(false)
+              setIsEditModalOpen(false)
+            }
           }}
+          hideFooter={true}
           title={isEditModalOpen ? tBilingual('Edit Employee Profile', 'কর্মী তথ্য পরিবর্তন') : tBilingual('Enroll New Employee', 'নতুন কর্মী অন্তর্ভুক্তি')}
           description={tBilingual(
             'Configure employee personal info, salary structure, bank accounts & emergency contact',
@@ -1019,8 +1022,9 @@ export default function EmployeeListPage() {
       {/* Employee 360° Profile Drawer / Modal */}
       {is360DrawerOpen && selectedEmployee && (
         <ModalDialog
-          isOpen={is360DrawerOpen}
-          onClose={() => setIs360DrawerOpen(false)}
+          open={is360DrawerOpen}
+          onOpenChange={(open) => setIs360DrawerOpen(open)}
+          hideFooter={true}
           title={`Employee 360°: ${selectedEmployee.name}`}
           description={`ID: ${selectedEmployee.employee_id_number} • ${selectedEmployee.role} (${selectedEmployee.department})`}
           size="lg"
@@ -1147,8 +1151,9 @@ export default function EmployeeListPage() {
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && selectedEmployee && (
         <ModalDialog
-          isOpen={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
+          open={isDeleteModalOpen}
+          onOpenChange={(open) => setIsDeleteModalOpen(open)}
+          hideFooter={true}
           title={tBilingual('Delete Employee', 'কর্মী ডিলিট নিশ্চিতকরণ')}
           description={tBilingual(
             'Are you sure you want to permanently delete this employee? This action cannot be undone.',

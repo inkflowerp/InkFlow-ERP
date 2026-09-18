@@ -580,10 +580,10 @@ export default function PayrollPage() {
                           </td>
 
                           <td className="p-3.5">
-                            <div>{item.present_days_count} / {selectedPeriod.working_days_count || 26} d</div>
-                            {Number(item.absent_deduction || 0) > 0 && (
+                            <div>{item.days_present} / {selectedPeriod.working_days_count || 26} d</div>
+                            {Number(item.absence_deduction || 0) > 0 && (
                               <div className="text-rose-600 dark:text-rose-400 text-[10px]">
-                                -{formatBDT(item.absent_deduction || 0)}
+                                -{formatBDT(item.absence_deduction || 0)}
                               </div>
                             )}
                           </td>
@@ -599,8 +599,8 @@ export default function PayrollPage() {
                           </td>
 
                           <td className="p-3.5 font-mono text-amber-600 dark:text-amber-400">
-                            {Number(item.advance_deduction || 0) > 0 ? (
-                              <span>-{formatBDT(item.advance_deduction || 0)}</span>
+                            {Number(item.advance_salary_deducted || 0) > 0 ? (
+                              <span>-{formatBDT(item.advance_salary_deducted || 0)}</span>
                             ) : (
                               <span className="text-muted-foreground">৳ 0</span>
                             )}
@@ -710,7 +710,7 @@ export default function PayrollPage() {
                           {adv.employee_name}
                         </td>
                         <td className="p-3.5 text-muted-foreground">
-                          {formatDate(adv.disbursement_date)}
+                          {formatDate(adv.disbursed_date)}
                         </td>
                         <td className="p-3.5 font-mono font-bold text-amber-600 dark:text-amber-400">
                           {formatBDT(adv.amount || 0)}
@@ -719,7 +719,7 @@ export default function PayrollPage() {
                           {adv.payment_method}
                         </td>
                         <td className="p-3.5 text-muted-foreground italic">
-                          "{adv.reason || 'Personal advance'}"
+                          &ldquo;{adv.reason || 'Personal advance'}&rdquo;
                         </td>
                         <td className="p-3.5 pr-4 text-right">
                           <Badge
@@ -746,8 +746,9 @@ export default function PayrollPage() {
       {/* Generate Payroll Draft Modal */}
       {isGenPayrollModalOpen && (
         <ModalDialog
-          isOpen={isGenPayrollModalOpen}
-          onClose={() => setIsGenPayrollModalOpen(false)}
+          open={isGenPayrollModalOpen}
+          onOpenChange={(open) => setIsGenPayrollModalOpen(open)}
+          hideFooter={true}
           title={tBilingual('Generate Monthly Payroll Draft', 'নতুন মাসিক বেতন শিট তৈরি')}
           description={tBilingual(
             'Automatically calculates salaries, attendance days, overtime hours & advance deductions',
@@ -825,8 +826,9 @@ export default function PayrollPage() {
       {/* Disburse Salary Payment Modal */}
       {isSalaryPaymentModalOpen && selectedPayrollItem && (
         <ModalDialog
-          isOpen={isSalaryPaymentModalOpen}
-          onClose={() => setIsSalaryPaymentModalOpen(false)}
+          open={isSalaryPaymentModalOpen}
+          onOpenChange={(open) => setIsSalaryPaymentModalOpen(open)}
+          hideFooter={true}
           title={`Disburse Salary: ${selectedPayrollItem.item.employee_name}`}
           description={`Net Payable: ${formatBDT(selectedPayrollItem.item.net_salary || 0)} • Outstanding Due: ${formatBDT(selectedPayrollItem.item.due_amount || 0)}`}
           size="md"
@@ -904,8 +906,9 @@ export default function PayrollPage() {
       {/* Disburse Advance Modal */}
       {isAdvanceModalOpen && (
         <ModalDialog
-          isOpen={isAdvanceModalOpen}
-          onClose={() => setIsAdvanceModalOpen(false)}
+          open={isAdvanceModalOpen}
+          onOpenChange={(open) => setIsAdvanceModalOpen(open)}
+          hideFooter={true}
           title={tBilingual('Disburse Salary Advance', 'অগ্রিম বেতন প্রদান')}
           description={tBilingual(
             'Records salary advance payment and links to automated month-end payroll recovery',

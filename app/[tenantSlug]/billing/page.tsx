@@ -196,7 +196,7 @@ export default function BillingPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [company?.id, selectedPeriod, customStartDate, customEndDate])
+  }, [company, selectedPeriod, customStartDate, customEndDate])
 
   useEffect(() => {
     loadBillingData()

@@ -624,8 +624,8 @@ export default function AttendancePage() {
                       </td>
 
                       <td className="p-3.5 font-mono">
-                        {att?.working_minutes ? (
-                          <span>{Math.round((att.working_minutes / 60) * 10) / 10} hrs</span>
+                        {att?.worked_minutes ? (
+                          <span>{Math.round((att.worked_minutes / 60) * 10) / 10} hrs</span>
                         ) : (
                           <span className="text-muted-foreground">0 hrs</span>
                         )}
@@ -752,7 +752,7 @@ export default function AttendancePage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{tBilingual('Multiplier:', 'গুণক:')}</span>
-                      <span className="font-mono font-medium">{ot.rate_multiplier}x</span>
+                      <span className="font-mono font-medium">{ot.multiplier}x</span>
                     </div>
                     <div className="flex justify-between border-t border-border/40 pt-1">
                       <span className="text-muted-foreground font-medium">{tBilingual('Calculated Payout:', 'প্রদেয় অর্থ:')}</span>
@@ -762,7 +762,7 @@ export default function AttendancePage() {
 
                   {ot.reason && (
                     <p className="text-xs text-muted-foreground italic bg-muted/30 p-2 rounded">
-                      "{ot.reason}"
+                      &ldquo;{ot.reason}&rdquo;
                     </p>
                   )}
 
@@ -843,8 +843,9 @@ export default function AttendancePage() {
       {/* Mark Manual Attendance Modal */}
       {isManualModalOpen && (
         <ModalDialog
-          isOpen={isManualModalOpen}
-          onClose={() => setIsManualModalOpen(false)}
+          open={isManualModalOpen}
+          onOpenChange={(open) => setIsManualModalOpen(open)}
+          hideFooter={true}
           title={tBilingual('Record Manual Attendance', 'ম্যানুয়াল হাজিরা সংরক্ষণ')}
           description={tBilingual('Mark or adjust check-in / check-out times and status for floor operators', 'কর্মীদের প্রবেশ ও প্রস্থান সময় এবং স্ট্যাটাস নির্ধারণ করুন')}
           size="md"
@@ -951,8 +952,9 @@ export default function AttendancePage() {
       {/* Submit Overtime Modal */}
       {isOtModalOpen && (
         <ModalDialog
-          isOpen={isOtModalOpen}
-          onClose={() => setIsOtModalOpen(false)}
+          open={isOtModalOpen}
+          onOpenChange={(open) => setIsOtModalOpen(open)}
+          hideFooter={true}
           title={tBilingual('Submit Overtime Request', 'ওভারটাইম আবেদন জমা')}
           description={tBilingual('Record extra working hours performed by operators for rush jobs', 'জরুরি কাজের জন্য অতিরিক্ত সময়ের হিসাব জমা দিন')}
           size="md"
@@ -1033,8 +1035,9 @@ export default function AttendancePage() {
       {/* Create Shift Modal */}
       {isNewShiftModalOpen && (
         <ModalDialog
-          isOpen={isNewShiftModalOpen}
-          onClose={() => setIsNewShiftModalOpen(false)}
+          open={isNewShiftModalOpen}
+          onOpenChange={(open) => setIsNewShiftModalOpen(open)}
+          hideFooter={true}
           title={tBilingual('Create Shift Schedule', 'নতুন শিফট তৈরি')}
           description={tBilingual('Define start, end time and grace periods for factory shifts', 'শিফটের সময় ও শিডিউল কনফিগার করুন')}
           size="md"
@@ -1109,25 +1112,42 @@ export default function AttendancePage() {
       {/* QR Camera Punch Modal */}
       {isPunchModalOpen && (
         <AttendancePunchModal
-          isOpen={isPunchModalOpen}
+          open={isPunchModalOpen}
           onClose={() => {
             setIsPunchModalOpen(false)
             loadData()
           }}
-          punchType="CHECK_IN"
+          defaultType="CHECK_IN"
         />
       )}
 
       {/* Printable QR Poster Modal */}
       {isQrPosterOpen && (
         <ModalDialog
-          isOpen={isQrPosterOpen}
-          onClose={() => setIsQrPosterOpen(false)}
+          open={isQrPosterOpen}
+          onOpenChange={(open) => setIsQrPosterOpen(open)}
+          hideFooter={true}
           title={tBilingual('Print Attendance QR Poster', 'হাজিরা কিউআর কোড পোস্টার')}
           description={tBilingual('Print and display this poster at the shop floor entrance', 'কারখানার প্রবেশদ্বারে টানানোর জন্য প্রিন্ট করুন')}
           size="lg"
         >
-          <PrintableQrPoster />
+          <PrintableQrPoster
+            location={{
+              id: 'loc-main',
+              company_id: company?.id || '',
+              name: company?.name || 'Main Factory Floor',
+              latitude: 23.8103,
+              longitude: 90.4125,
+              radius_meters: 500,
+              max_accuracy_meters: 100,
+              is_active: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }}
+            companyName={company?.name || 'InkFlow ERP'}
+            companyNameBn={company?.name_bn || null}
+            onClose={() => setIsQrPosterOpen(false)}
+          />
         </ModalDialog>
       )}
     </div>

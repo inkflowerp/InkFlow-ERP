@@ -32,6 +32,7 @@ import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
@@ -102,7 +103,7 @@ export default function SalaryReportPage() {
       const matchSearch =
         !searchTerm.trim() ||
         item.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.employee_id_number.toLowerCase().includes(searchTerm.toLowerCase())
+        (item.employee_id_number && item.employee_id_number.toLowerCase().includes(searchTerm.toLowerCase()))
 
       const matchDept = deptFilter === 'ALL' || item.department === deptFilter
 
@@ -124,7 +125,7 @@ export default function SalaryReportPage() {
   const totalPaid = Number(selectedPeriod?.total_paid_amount || 0)
   const totalDue = Number(selectedPeriod?.total_due_amount || (totalNet - totalPaid))
   const totalOtPaid = selectedPeriod?.items?.reduce((sum, item) => sum + Number(item.overtime_amount || 0), 0) || 0
-  const totalAdvancesDeducted = selectedPeriod?.items?.reduce((sum, item) => sum + Number(item.advance_deduction || 0), 0) || 0
+  const totalAdvancesDeducted = selectedPeriod?.items?.reduce((sum, item) => sum + Number(item.advance_salary_deducted || 0), 0) || 0
 
   // Department Distribution Aggregates
   const departmentAggregates = React.useMemo(() => {
@@ -167,15 +168,15 @@ export default function SalaryReportPage() {
     const rows = filteredItems.map((item) => {
       const emp = employees.find((e) => e.id === item.employee_id)
       return [
-        `"${item.employee_id_number}"`,
+        `"${item.employee_id_number || ''}"`,
         `"${item.employee_name}"`,
         `"${item.department}"`,
         `"${emp?.role || 'Staff'}"`,
         item.base_salary,
-        item.present_days_count,
+        item.days_present,
         item.overtime_amount,
-        item.absent_deduction,
-        item.advance_deduction,
+        item.absence_deduction,
+        item.advance_salary_deducted,
         item.net_salary,
         item.paid_amount,
         item.due_amount,
@@ -422,7 +423,7 @@ export default function SalaryReportPage() {
                 const emp = employees.find((e) => e.id === item.employee_id)
                 const hasBank = Boolean(emp?.bank_payment_info?.account_number)
                 const hasMfs = Boolean(emp?.mfs_payment_info?.wallet_number)
-                const totalDeduction = Number(item.absent_deduction || 0) + Number(item.advance_deduction || 0)
+                const totalDeduction = Number(item.absence_deduction || 0) + Number(item.advance_salary_deducted || 0)
 
                 return (
                   <tr key={item.id} className="hover:bg-muted/30 transition-colors">

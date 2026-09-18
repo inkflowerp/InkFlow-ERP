@@ -150,9 +150,12 @@ export default function QuotationDetailPage() {
   }
 
   const localQuotationsRef = React.useRef(localQuotations)
-  localQuotationsRef.current = localQuotations
   const localActivitiesRef = React.useRef(localActivities)
-  localActivitiesRef.current = localActivities
+
+  useEffect(() => {
+    localQuotationsRef.current = localQuotations
+    localActivitiesRef.current = localActivities
+  }, [localQuotations, localActivities])
 
   // Helper to find quotation across local storage keys
   const findQuoteLocally = useCallback(() => {
@@ -242,7 +245,7 @@ export default function QuotationDetailPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [quoteId, company?.id, slug, isTenantLoading, quote, findQuoteLocally])
+  }, [quoteId, company, slug, isTenantLoading, quote, findQuoteLocally])
 
   useEffect(() => {
     fetchQuotationDetail()

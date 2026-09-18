@@ -126,7 +126,7 @@ export function RecordPaymentModal({
     } finally {
       setIsLoadingInvoices(false)
     }
-  }, [company?.id])
+  }, [company])
 
   useEffect(() => {
     if (open) {

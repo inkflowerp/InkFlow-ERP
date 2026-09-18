@@ -2697,7 +2697,7 @@ export default function ProductsCatalogPage() {
                               <div className="flex flex-wrap gap-1 max-w-[140px]">
                                 {presets.slice(0, 2).map((p, idx) => (
                                   <span key={idx} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-mono rounded">
-                                    {p.width}'×{p.length}'
+                                    {p.width}&apos;×{p.length}&apos;
                                   </span>
                                 ))}
                                 {presets.length > 2 && (
@@ -3095,11 +3095,11 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3">
                             {item.roll_width_ft && item.roll_length_ft ? (
                               <Badge variant="outline" className="text-[11px] font-mono bg-blue-50/50">
-                                Roll: {item.roll_width_ft}' × {item.roll_length_ft}'
+                                Roll: {item.roll_width_ft}&apos; × {item.roll_length_ft}&apos;
                               </Badge>
                             ) : item.sheet_width_ft && item.sheet_length_ft ? (
                               <Badge variant="outline" className="text-[11px] font-mono bg-emerald-50/50">
-                                Sheet: {item.sheet_width_ft}' × {item.sheet_length_ft}'
+                                Sheet: {item.sheet_width_ft}&apos; × {item.sheet_length_ft}&apos;
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="text-[11px] font-mono">

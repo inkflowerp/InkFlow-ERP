@@ -499,7 +499,7 @@ export default function HrmDashboardPage() {
 
                       {ot.reason && (
                         <p className="text-[11px] text-muted-foreground italic bg-muted/40 p-1.5 rounded">
-                          "{ot.reason}"
+                          &ldquo;{ot.reason}&rdquo;
                         </p>
                       )}
 
