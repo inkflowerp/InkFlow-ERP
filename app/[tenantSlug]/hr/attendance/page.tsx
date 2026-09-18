@@ -349,10 +349,10 @@ export default function AttendancePage() {
   }
 
   useEffect(() => {
-    if (activeTab === 'reports') {
+    if (activeTab === 'reports' || isViewLogModalOpen) {
       loadReportsData()
     }
-  }, [activeTab, reportStartDate, reportEndDate])
+  }, [activeTab, reportStartDate, reportEndDate, isViewLogModalOpen])
 
   // Date Preset Switcher for Reports
   const handleSelectReportPreset = (preset: 'this_month' | 'last_month' | 'last_7_days' | 'last_30_days' | 'custom') => {
