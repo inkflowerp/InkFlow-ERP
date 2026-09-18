@@ -54,6 +54,8 @@ export type PermissionModule =
   | 'branches'
   | 'products'
   | 'pricing'
+  | 'users'
+  | 'hr'
 
 export type DataScope =
   | 'own'
@@ -63,6 +65,46 @@ export type DataScope =
   | 'selected_branches'
   | 'all_branches'
   | 'company'
+
+export interface CustomRoleInput {
+  name: string
+  nameBn?: string
+  description?: string
+  slug?: string
+  permissions: string[]
+}
+
+export interface RoleWithPermissions {
+  id: string
+  company_id?: string | null
+  name: string
+  name_bn?: string | null
+  slug: string
+  description?: string | null
+  is_system: boolean
+  is_active: boolean
+  permissions: string[]
+  assigned_users_count?: number
+  created_at?: string
+}
+
+export interface UserAccessSummary {
+  userId: string
+  companyUserId: string
+  fullName: string
+  fullNameBn?: string | null
+  email: string
+  phone?: string | null
+  status: 'active' | 'invited' | 'disabled'
+  department: string
+  primaryBranchName?: string | null
+  authorizedBranchesCount: number
+  responsibilities: string[]
+  isOwner: boolean
+  specialPowersCount: number
+  deniedOverridesCount: number
+  dataScopes: Record<string, DataScope>
+}
 
 export interface ModuleActionSpec {
   module: PermissionModule
@@ -216,6 +258,22 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
     labelBn: 'ব্রাঞ্চ ও শাখা ব্যবস্থাপনা',
     description: 'Multi-branch operations, factory outlets, and cross-branch logistics',
     actions: ['view', 'create', 'edit', 'delete', 'manage'],
+    defaultScope: 'company',
+  },
+  users: {
+    module: 'users',
+    label: 'Users & Permissions',
+    labelBn: 'ইউজার ও অনুমতি ব্যবস্থাপনা',
+    description: 'Staff directory, access credentials, responsibilities, overrides, and security audit',
+    actions: ['view', 'create', 'edit', 'delete', 'manage'],
+    defaultScope: 'company',
+  },
+  hr: {
+    module: 'hr',
+    label: 'Workforce & Payroll',
+    labelBn: 'কর্মী ও পেরোল ব্যবস্থাপনা',
+    description: 'Attendance, shifts, overtime, salary advances, payroll sheets, and payment disbursement',
+    actions: ['view', 'create', 'edit', 'approve', 'manage'],
     defaultScope: 'company',
   },
 }

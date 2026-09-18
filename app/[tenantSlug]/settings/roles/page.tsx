@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useTransition } from 'react'
+import { useParams } from 'next/navigation'
 import {
   ShieldCheck,
   Check,
@@ -8,496 +9,587 @@ import {
   Save,
   CheckCircle2,
   Lock,
-  UserCheck,
+  Plus,
+  Trash2,
+  Copy,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  Search,
+  Sparkles,
 } from 'lucide-react'
+import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import {
-  PrimaryRole,
   PermissionAction,
-  RolePermissionMatrix,
-  MATRIX_RESOURCES,
-  PERMISSION_ACTIONS,
+  MODULE_ACTION_SPECS,
+  ACTION_LABELS,
+  PermissionModule,
 } from '@/types/rbac.types'
-import { DEFAULT_ROLE_MATRICES } from '@/lib/auth/rbac.client'
+import {
+  listRolesWithPermissionsAction,
+  createCustomRoleAction,
+  updateRolePermissionsAction,
+  deleteCustomRoleAction,
+} from '@/actions/company-users.actions'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useDataStore } from '@/hooks/use-data-store'
-import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { FeatureGate } from '@/components/shared/feature-gate'
 import { cn } from '@/lib/utils'
-import { updateUserAccessAndPermissionsAction } from '@/actions/company-users.actions'
-import { CompanyUserWithProfile } from '@/types/tenant.types'
+
+interface RoleItem {
+  id: string
+  name: string
+  name_bn?: string | null
+  slug: string
+  description?: string | null
+  is_system: boolean
+  permissions: string[]
+}
+
+const HIGH_RISK_PERMISSIONS = new Set([
+  'invoices.cancel',
+  'invoices.delete',
+  'payments.delete',
+  'salary.edit',
+  'salary.approve',
+  'payroll.approve',
+  'payroll.pay',
+  'inventory.adjust',
+  'users.permission_manage',
+])
 
 export default function RolesMatrixPage() {
+  const params = useParams()
+  const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const [selectedRole, setSelectedRole] = useState<PrimaryRole>('sales_manager')
-  const [matrices, setMatrices] = useDataStore<Record<PrimaryRole, RolePermissionMatrix>>(
-    STORAGE_KEYS.ROLE_MATRICES,
-    DEFAULT_ROLE_MATRICES
-  )
-  const [companyUsers] = useDataStore<CompanyUserWithProfile[]>(
-    STORAGE_KEYS.COMPANY_USERS,
-    []
-  )
-  const [activeTab, setActiveTab] = useState<'matrix' | 'overrides'>('matrix')
-  const [isSaved, setIsSaved] = useState(false)
-  const [selectedEmployee, setSelectedEmployee] = useState<string>('')
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'app'
+  const companyId = company?.id || ''
 
-  React.useEffect(() => {
-    if (!selectedEmployee && companyUsers.length > 0) {
-      setSelectedEmployee(companyUsers[0].id)
-    }
-  }, [companyUsers, selectedEmployee])
+  const [roles, setRoles] = useState<RoleItem[]>([])
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('')
+  const [currentPermissions, setCurrentPermissions] = useState<Set<string>>(new Set())
+  const [isLoading, setIsLoading] = useState(true)
+  const [isPending, startTransition] = useTransition()
+  const [searchQuery, setSearchQuery] = useState('')
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
-  const targetUser = companyUsers.find(
-    (u) => u.id === selectedEmployee || u.user_id === selectedEmployee
-  ) || companyUsers[0]
+  // Modals
+  const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false)
+  const [newRoleName, setNewRoleName] = useState('')
+  const [newRoleNameBn, setNewRoleNameBn] = useState('')
+  const [newRoleDesc, setNewRoleDesc] = useState('')
+  const [newRoleBaseSlug, setNewRoleBaseSlug] = useState('sales_manager')
 
-  const [userOverrides, setUserOverrides] = useState<Record<string, boolean>>(
-    targetUser?.overrides || {}
-  )
-
-  React.useEffect(() => {
-    if (targetUser?.overrides) {
-      setUserOverrides(targetUser.overrides)
-    } else {
-      setUserOverrides({})
-    }
-  }, [selectedEmployee, targetUser])
-
-
-  const currentMatrix = matrices[selectedRole]
-  const isOwnerRole = selectedRole === 'business_owner' || selectedRole === 'platform_owner'
-
-  // Toggle specific action for a resource
-  const toggleCell = (resource: string, action: PermissionAction) => {
-    if (isOwnerRole) return // Owner always has full permissions
-
-    setMatrices((prev) => {
-      const currentRoleMatrix = { ...prev[selectedRole] }
-      const resPerms = { ...currentRoleMatrix[resource] }
-
-      if (action === 'full_control') {
-        const nextVal = !resPerms.full_control
-        PERMISSION_ACTIONS.forEach((a) => {
-          resPerms[a.action] = nextVal
-        })
-      } else {
-        resPerms[action] = !resPerms[action]
-        if (!resPerms[action]) {
-          resPerms.full_control = false
-        }
+  // Load roles on mount
+  const loadRoles = async () => {
+    setIsLoading(true)
+    try {
+      const data = await listRolesWithPermissionsAction(companyId)
+      setRoles(data || [])
+      if (data && data.length > 0 && !selectedRoleId) {
+        setSelectedRoleId(data[0].id)
+        setCurrentPermissions(new Set(data[0].permissions || []))
       }
-
-      currentRoleMatrix[resource] = resPerms
-      return { ...prev, [selectedRole]: currentRoleMatrix }
-    })
-  }
-
-  // Toggle entire resource row
-  const toggleRow = (resource: string) => {
-    if (isOwnerRole) return
-    const isAllChecked = PERMISSION_ACTIONS.every((a) => currentMatrix[resource]?.[a.action])
-    setMatrices((prev) => {
-      const currentRoleMatrix = { ...prev[selectedRole] }
-      const nextVal = !isAllChecked
-      const nextActions = {} as Record<PermissionAction, boolean>
-      PERMISSION_ACTIONS.forEach((a) => {
-        nextActions[a.action] = nextVal
-      })
-      currentRoleMatrix[resource] = nextActions
-      return { ...prev, [selectedRole]: currentRoleMatrix }
-    })
-  }
-
-  const handleResetToDefault = () => {
-    setMatrices((prev) => ({
-      ...prev,
-      [selectedRole]: { ...DEFAULT_ROLE_MATRICES[selectedRole] },
-    }))
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3000)
-  }
-
-  const handleSave = () => {
-    setMatrices(matrices)
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3500)
-  }
-
-  const handleSaveUserOverrides = async () => {
-    if (targetUser) {
-      await updateUserAccessAndPermissionsAction({
-        companyUserId: targetUser.id,
-        overrides: userOverrides,
-        actorName: 'Business Owner',
-      })
+    } catch {
+      setFeedback({ type: 'error', message: 'Failed to load roles and permission matrix.' })
+    } finally {
+      setIsLoading(false)
     }
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3500)
   }
 
+  useEffect(() => {
+    loadRoles()
+  }, [companyId])
 
-  const rolesList: { role: PrimaryRole; title: string; titleBn: string; desc: string }[] = [
-    { role: 'business_owner', title: 'Business Owner', titleBn: 'প্রতিষ্ঠানের মালিক', desc: 'Full organization access' },
-    { role: 'sales_manager', title: 'Sales Manager', titleBn: 'সেলস ম্যানেজার', desc: 'Quotations, orders & customers' },
-    { role: 'designer', title: 'Graphic Designer', titleBn: 'গ্রাফিক ডিজাইনার', desc: 'Pre-press, proofs & revisions' },
-    { role: 'production_manager', title: 'Production Manager', titleBn: 'প্রোডাকশন ম্যানেজার', desc: 'Floor scheduling & inventory' },
-    { role: 'operator', title: 'Print Operator', titleBn: 'মেশিন অপারেটর', desc: 'Assigned jobs & consumption' },
-    { role: 'general_staff', title: 'General Staff', titleBn: 'সাধারণ কর্মী', desc: 'Strictly assigned features' },
-  ]
+  // When selected role changes, update local permission set
+  useEffect(() => {
+    const role = roles.find((r) => r.id === selectedRoleId)
+    if (role) {
+      setCurrentPermissions(new Set(role.permissions || []))
+      setFeedback(null)
+    }
+  }, [selectedRoleId, roles])
+
+  const selectedRole = roles.find((r) => r.id === selectedRoleId)
+  const isOwnerRole = selectedRole?.slug === 'business_owner' || selectedRole?.slug === 'platform_owner'
+
+  // Toggle single action permission
+  const togglePermission = (mod: string, act: string) => {
+    if (isOwnerRole) return // Business owner always has all permissions
+
+    const permCode = `${mod}.${act}`
+    const next = new Set(currentPermissions)
+    if (next.has(permCode)) {
+      next.delete(permCode)
+    } else {
+      next.add(permCode)
+    }
+    setCurrentPermissions(next)
+  }
+
+  // Toggle all actions in a module
+  const toggleModuleAll = (mod: PermissionModule) => {
+    if (isOwnerRole) return
+    const spec = MODULE_ACTION_SPECS[mod]
+    if (!spec) return
+
+    const modulePerms = spec.actions.map((act) => `${mod}.${act}`)
+    const allSelected = modulePerms.every((p) => currentPermissions.has(p))
+
+    const next = new Set(currentPermissions)
+    if (allSelected) {
+      modulePerms.forEach((p) => next.delete(p))
+    } else {
+      modulePerms.forEach((p) => next.add(p))
+    }
+    setCurrentPermissions(next)
+  }
+
+  // Save changes to database
+  const handleSaveRolePermissions = () => {
+    if (!selectedRoleId || !companyId) return
+
+    startTransition(async () => {
+      try {
+        const permsArray = Array.from(currentPermissions)
+        const res = await updateRolePermissionsAction({
+          companyId,
+          tenantSlug,
+          roleId: selectedRoleId,
+          permissions: permsArray,
+        })
+
+        if (res.success) {
+          setFeedback({ type: 'success', message: 'Permissions saved and enforced successfully in database.' })
+          // Update local state
+          setRoles((prev) =>
+            prev.map((r) => (r.id === selectedRoleId ? { ...r, permissions: permsArray } : r))
+          )
+          setTimeout(() => setFeedback(null), 4000)
+        } else {
+          setFeedback({ type: 'error', message: res.message || 'Failed to save role permissions.' })
+        }
+      } catch (err: any) {
+        setFeedback({ type: 'error', message: err?.message || 'Database error occurred.' })
+      }
+    })
+  }
+
+  // Create custom role
+  const handleCreateRole = () => {
+    if (!newRoleName.trim() || !companyId) return
+
+    startTransition(async () => {
+      try {
+        const baseRole = roles.find((r) => r.slug === newRoleBaseSlug)
+        const basePerms = baseRole ? baseRole.permissions : []
+
+        const res = await createCustomRoleAction({
+          companyId,
+          tenantSlug,
+          name: newRoleName.trim(),
+          nameBn: newRoleNameBn.trim() || undefined,
+          description: newRoleDesc.trim() || undefined,
+          permissions: basePerms,
+        })
+
+        if (res.success) {
+          setIsCreateRoleOpen(false)
+          setNewRoleName('')
+          setNewRoleNameBn('')
+          setNewRoleDesc('')
+          await loadRoles()
+          setFeedback({ type: 'success', message: res.message || 'Custom role created successfully.' })
+          setTimeout(() => setFeedback(null), 4000)
+        } else {
+          setFeedback({ type: 'error', message: res.message || 'Failed to create role.' })
+        }
+      } catch (err: any) {
+        setFeedback({ type: 'error', message: err?.message || 'Error creating custom role.' })
+      }
+    })
+  }
+
+  // Delete custom role
+  const handleDeleteRole = (role: RoleItem) => {
+    if (role.is_system) return
+    if (!confirm(`Are you sure you want to delete custom role "${role.name}"?`)) return
+
+    startTransition(async () => {
+      try {
+        const res = await deleteCustomRoleAction({
+          companyId,
+          tenantSlug,
+          roleId: role.id,
+        })
+
+        if (res.success) {
+          await loadRoles()
+          setFeedback({ type: 'success', message: res.message || 'Role deleted successfully.' })
+          setTimeout(() => setFeedback(null), 4000)
+        } else {
+          setFeedback({ type: 'error', message: res.message || 'Failed to delete role.' })
+        }
+      } catch (err: any) {
+        setFeedback({ type: 'error', message: err?.message || 'Error deleting role.' })
+      }
+    })
+  }
+
+  // Filter modules
+  const filteredModules = Object.entries(MODULE_ACTION_SPECS).filter(([modKey, spec]) => {
+    const q = searchQuery.toLowerCase().trim()
+    if (!q) return true
+    return (
+      modKey.toLowerCase().includes(q) ||
+      spec.label.toLowerCase().includes(q) ||
+      spec.labelBn.toLowerCase().includes(q) ||
+      spec.description.toLowerCase().includes(q)
+    )
+  })
 
   return (
     <FeatureGate feature="advanced_permissions">
-      <div className="space-y-6 max-w-7xl">
+      <div className="space-y-6 max-w-7xl pb-12">
         {/* Header */}
-      <PageHeader
-        titleEn="Roles & Permission Matrix"
-        titleBn="অনুমতি ও ভূমিকা ম্যাট্রিক্স"
-        descriptionEn="Configure granular Module / Resource / Action permissions for each operational role."
-        descriptionBn="প্রতিটি অপারেশনাল ভূমিকার জন্য মডিউল, রিসোর্স এবং অ্যাকশন অনুমতি কনফিগার করুন।"
-        icon={ShieldCheck}
-        iconColor="text-blue-600"
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            {isSaved && (
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 bangla-text">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                {tBilingual('Permissions applied!', 'অনুমতি সংরক্ষিত হয়েছে!')}
-              </span>
-            )}
-
-            <Button variant="outline" size="sm" onClick={handleResetToDefault} disabled={isOwnerRole} className="bangla-text h-9 text-xs">
-              <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('Reset to Default', 'ডিফল্টে ফিরুন')}
+        <PageHeader
+          titleEn="Roles & Permission Matrix"
+          titleBn="অনুমতি ও ভূমিকা ম্যাট্রিক্স"
+          descriptionEn="Manage server-authoritative operational roles and granular permission templates."
+          descriptionBn="সার্ভার-অথরিটেটিভ ভূমিকা এবং প্রতিটি মডিউলের জন্য নির্দিষ্ট অ্যাকশন অনুমতি কনফিগার করুন।"
+          actions={
+            <Button
+              onClick={() => setIsCreateRoleOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold cursor-pointer shadow-xs gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              <span>{tBilingual('New Custom Role', 'নতুন কাস্টম রোল')}</span>
             </Button>
+          }
+        />
 
-            <Button size="sm" onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 bangla-text h-9 text-xs">
-              <Save className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('Save Changes', 'সংরক্ষণ করুন')}
-            </Button>
-          </div>
-        }
-      />
-
-      {/* Main Tabs (Matrix vs User Overrides) */}
-      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 gap-2 overflow-x-auto touch-scroll">
-        <button
-          onClick={() => setActiveTab('matrix')}
-          className={cn(
-            'px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors flex items-center gap-2 whitespace-nowrap h-10 sm:h-9 shrink-0',
-            activeTab === 'matrix'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-bold'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-          )}
-        >
-          <ShieldCheck className="h-4 w-4" />
-          Role Permission Matrix
-        </button>
-
-        <button
-          onClick={() => setActiveTab('overrides')}
-          className={cn(
-            'px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors flex items-center gap-2 whitespace-nowrap h-10 sm:h-9 shrink-0',
-            activeTab === 'overrides'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-bold'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-          )}
-        >
-          <UserCheck className="h-4 w-4" />
-          Individual User Overrides
-        </button>
-      </div>
-
-      {activeTab === 'matrix' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column: Role Selector */}
-          <div className="lg:col-span-1 space-y-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-              Select Primary Role
-            </h3>
-
-            {rolesList.map((r) => {
-              const isSelected = selectedRole === r.role
-              return (
-                <div
-                  key={r.role}
-                  onClick={() => setSelectedRole(r.role)}
-                  className={cn(
-                    'cursor-pointer rounded-xl border p-3 transition-all text-left',
-                    isSelected
-                      ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-600/20 dark:border-blue-500 dark:bg-blue-950/40'
-                      : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900'
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white">
-                      {r.title}
-                    </span>
-                    {isSelected && <Badge variant="default" className="text-[10px] h-5">Active</Badge>}
-                  </div>
-                  <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium mt-0.5">
-                    {r.titleBn}
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-1">{r.desc}</p>
-                </div>
-              )
-            })}
-
-            {isOwnerRole && (
-              <div className="p-3 rounded-lg border border-amber-200 bg-amber-50/70 dark:border-amber-900/50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2 mt-4">
-                <Lock className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>
-                  Business Owner has permanent full control over all modules to ensure operational continuity.
-                </span>
-              </div>
+        {/* Feedback Alert */}
+        {feedback && (
+          <div
+            className={cn(
+              'p-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-semibold animate-in fade-in-0 duration-200',
+              feedback.type === 'success'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
             )}
+          >
+            {feedback.type === 'success' ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+            )}
+            <span>{feedback.message}</span>
           </div>
+        )}
 
-          {/* Right Column: Permission Matrix Table */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      Permissions for: <span className="text-blue-600">{rolesList.find((r) => r.role === selectedRole)?.title}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+          {/* Left Sidebar: Roles Selector */}
+          <Card className="lg:col-span-1 shadow-xs border-slate-200/80 dark:border-slate-800">
+            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+              <CardTitle className="text-sm font-bold flex items-center justify-between">
+                <span>{tBilingual('Roles & Templates', 'ভূমিকা ও টেমপ্লেট')}</span>
+                <Badge variant="secondary" className="text-2xs font-bold px-1.5 py-0">
+                  {roles.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {tBilingual('Select a role to view or customize permissions.', 'অনুমতি পরিবর্তন করতে রোল সিলেক্ট করুন।')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-2 space-y-1">
+              {roles.map((r) => {
+                const isSelected = r.id === selectedRoleId
+                const isOwner = r.slug === 'business_owner' || r.slug === 'platform_owner'
+
+                return (
+                  <div
+                    key={r.id}
+                    onClick={() => setSelectedRoleId(r.id)}
+                    className={cn(
+                      'p-2.5 rounded-xl border text-xs transition-all cursor-pointer flex items-center justify-between group',
+                      isSelected
+                        ? 'bg-blue-50/90 border-blue-300 dark:bg-blue-950/40 dark:border-blue-800 shadow-xs'
+                        : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                    )}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className={cn('font-bold truncate', isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100')}>
+                          {r.name}
+                        </span>
+                        {isOwner && (
+                          <Badge className="bg-amber-500 text-white text-2xs px-1 py-0 h-4">
+                            Full
+                          </Badge>
+                        )}
+                        {!r.is_system && (
+                          <Badge variant="outline" className="text-2xs px-1 py-0 h-4 border-indigo-300 text-indigo-700">
+                            Custom
+                          </Badge>
+                        )}
+                      </div>
+                      {r.name_bn && (
+                        <p className="text-[11px] text-slate-400 truncate mt-0.5">{r.name_bn}</p>
+                      )}
+                    </div>
+
+                    {!r.is_system && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteRole(r)
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-600 transition-opacity cursor-pointer"
+                        title="Delete custom role"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+            </CardContent>
+          </Card>
+
+          {/* Right Main Area: Module Permission Matrix */}
+          <div className="lg:col-span-3 space-y-4">
+            <Card className="shadow-xs border-slate-200/80 dark:border-slate-800">
+              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
+                      {selectedRole?.name}
                     </CardTitle>
-                    <CardDescription className="text-xs">
-                      Rows represent resources. Columns represent allowed operations.
-                    </CardDescription>
+                    {selectedRole?.name_bn && (
+                      <span className="text-xs text-slate-400 font-normal">({selectedRole.name_bn})</span>
+                    )}
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {Object.values(currentMatrix || {}).reduce(
-                      (acc, r) => acc + Object.values(r).filter(Boolean).length,
-                      0
-                    )}{' '}
-                    Grants Active
-                  </Badge>
+                  <CardDescription className="text-xs mt-0.5">
+                    {selectedRole?.description || 'Standard operational role template.'}
+                  </CardDescription>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    onClick={handleSaveRolePermissions}
+                    disabled={isPending || isOwnerRole}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-8 shadow-xs cursor-pointer gap-1.5"
+                  >
+                    <Save className="h-3.5 w-3.5" />
+                    <span>{isPending ? 'Saving...' : tBilingual('Save Permissions', 'অনুমতি সংরক্ষণ')}</span>
+                  </Button>
                 </div>
               </CardHeader>
 
-              <CardContent className="p-0 overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                      <th className="py-3 px-4 min-w-[200px]">Resource / Module</th>
-                      {PERMISSION_ACTIONS.map((action) => (
-                        <th key={action.action} className="py-3 px-3 text-center min-w-[90px]">
-                          <div>{action.label}</div>
-                          <div className="text-[10px] font-normal text-slate-400">{action.labelBn}</div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {MATRIX_RESOURCES.map((res) => {
-                      const resPerms = currentMatrix?.[res.resource] || {
-                        view: false,
-                        create: false,
-                        edit: false,
-                        delete: false,
-                        approve: false,
-                        full_control: false,
-                      }
+              {isOwnerRole && (
+                <div className="m-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-amber-600 shrink-0" />
+                  <span>
+                    <strong>Business Owner Access:</strong> Has full, unconditional control across all organizational modules by design.
+                  </span>
+                </div>
+              )}
 
-                      return (
-                        <tr
-                          key={res.resource}
-                          className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors"
-                        >
-                          {/* Row Header */}
-                          <td className="py-3 px-4">
-                            <div
-                              onClick={() => toggleRow(res.resource)}
-                              className="cursor-pointer group flex items-start flex-col"
-                              title="Click to toggle entire resource row"
+              <div className="p-4 space-y-3">
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={tBilingual('Filter modules by name or action...', 'মডিউল বা অ্যাকশন ফিল্টার করুন...')}
+                    className="h-8.5 pl-9 text-xs"
+                  />
+                </div>
+
+                {/* Modules List */}
+                <div className="space-y-3">
+                  {filteredModules.map(([modKey, spec]) => {
+                    const modName = modKey as PermissionModule
+                    const modulePerms = spec.actions.map((act) => `${modKey}.${act}`)
+                    const grantedCount = modulePerms.filter((p) => currentPermissions.has(p)).length
+                    const isAllSelected = isOwnerRole || grantedCount === spec.actions.length
+
+                    return (
+                      <div
+                        key={modKey}
+                        className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/60 overflow-hidden shadow-2xs"
+                      >
+                        {/* Module Header */}
+                        <div className="p-3 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                          <div>
+                            <span className="font-bold text-xs text-slate-900 dark:text-white">
+                              {spec.label}
+                            </span>
+                            <span className="text-2xs text-slate-400 ml-1.5">({spec.labelBn})</span>
+                            <p className="text-2xs text-slate-500 mt-0.5">{spec.description}</p>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                'text-2xs font-bold px-2 py-0.5',
+                                isAllSelected
+                                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                                  : grantedCount > 0
+                                  ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+                                  : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
+                              )}
                             >
-                              <div className="font-semibold text-xs text-slate-900 dark:text-white group-hover:text-blue-600 flex items-center gap-1.5">
-                                {res.label}
-                                <span className="text-[10px] text-slate-400 font-normal">
-                                  ({res.labelBn})
-                                </span>
-                              </div>
-                              <span className="text-[10px] text-slate-400 line-clamp-1">
-                                {res.description}
-                              </span>
-                            </div>
-                          </td>
+                              {isOwnerRole ? `${spec.actions.length}/${spec.actions.length}` : `${grantedCount}/${spec.actions.length}`}
+                            </Badge>
 
-                          {/* Action Checkboxes */}
-                          {PERMISSION_ACTIONS.map((action) => {
-                            const isChecked = resPerms[action.action]
+                            {!isOwnerRole && (
+                              <button
+                                type="button"
+                                onClick={() => toggleModuleAll(modName)}
+                                className="text-2xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
+                              >
+                                {isAllSelected ? 'Clear All' : 'Select All'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions Checkboxes Grid */}
+                        <div className="p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                          {spec.actions.map((act) => {
+                            const code = `${modKey}.${act}`
+                            const isGranted = isOwnerRole || currentPermissions.has(code)
+                            const isHighRisk = HIGH_RISK_PERMISSIONS.has(code)
+
                             return (
-                              <td key={action.action} className="py-3 px-3 text-center">
-                                <button
-                                  type="button"
-                                  onClick={() => toggleCell(res.resource, action.action)}
+                              <div
+                                key={act}
+                                onClick={() => togglePermission(modKey, act)}
+                                className={cn(
+                                  'p-2 rounded-lg border transition-all cursor-pointer flex items-center gap-2 select-none',
+                                  isGranted
+                                    ? 'border-blue-300 bg-blue-50/40 dark:border-blue-800 dark:bg-blue-950/30'
+                                    : 'border-slate-200/70 dark:border-slate-800/80 bg-slate-50/20 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                                )}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isGranted}
                                   disabled={isOwnerRole}
-                                  className={cn(
-                                    'h-7 w-7 sm:h-6 sm:w-6 rounded-md inline-flex items-center justify-center transition-all cursor-pointer border',
-                                    isOwnerRole
-                                      ? 'bg-blue-100 border-blue-200 text-blue-700 cursor-not-allowed dark:bg-blue-950 dark:border-blue-900'
-                                      : isChecked
-                                      ? action.action === 'full_control'
-                                        ? 'bg-purple-600 border-purple-600 text-white shadow-xs'
-                                        : 'bg-blue-600 border-blue-600 text-white shadow-xs'
-                                      : 'border-slate-300 bg-white hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900'
-                                  )}
-                                  title={`${res.label} - ${action.label}`}
-                                >
-                                  {isChecked && <Check className="h-3.5 w-3.5" />}
-                                </button>
-                              </td>
+                                  onChange={() => {}} // Handled by parent onClick
+                                  className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                      {ACTION_LABELS[act]?.label || act}
+                                    </span>
+                                    {isHighRisk && (
+                                      <span title="High-Risk Action" className="text-amber-500 shrink-0">
+                                        ⚠️
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-2xs text-slate-400 truncate block">
+                                    {ACTION_LABELS[act]?.labelBn || ''}
+                                  </span>
+                                </div>
+                              </div>
                             )
                           })}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </CardContent>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </Card>
           </div>
         </div>
-      ) : (
-        /* USER OVERRIDES TAB */
-        <Card className="max-w-4xl">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-blue-600" />
-              Individual User-Level Overrides
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Grant exceptional privileges or restrict specific actions for individual employees without altering base role matrices.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-64 space-y-1">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Select Team Member:
-                </label>
-                <select
-                  className="w-full h-9 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs px-2.5"
-                  value={selectedEmployee}
-                  onChange={(e) => setSelectedEmployee(e.target.value)}
-                >
-                  {companyUsers.length === 0 ? (
-                    <option value="">No team members found</option>
-                  ) : (
-                    companyUsers.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.profile?.full_name || u.profile?.email || 'Unnamed User'} ({u.roles?.[0]?.name || (u as any).role || 'Member'})
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
 
-              <div className="pt-5">
-                <Badge variant="outline" className="text-xs border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                  Base Role: {targetUser?.roles?.[0]?.name || (targetUser as any)?.role || 'None'}
-                </Badge>
-              </div>
+        {/* Modal: Create Custom Role */}
+        <ModalDialog
+          open={isCreateRoleOpen}
+          onOpenChange={setIsCreateRoleOpen}
+          title={tBilingual('Create Custom Role Template', 'নতুন কাস্টম ভূমিকা তৈরি করুন')}
+          description={tBilingual('Define a reusable permission matrix for your team members.', 'আপনার দলের সদস্যদের জন্য একটি পুনঃব্যবহারযোগ্য অনুমতি ম্যাট্রিক্স নির্ধারণ করুন।')}
+        >
+          <div className="space-y-4 py-1">
+            <div>
+              <Label className="text-xs font-semibold">{tBilingual('Role Name (English)', 'রোল নাম (ইংরেজি)')} *</Label>
+              <Input
+                value={newRoleName}
+                onChange={(e) => setNewRoleName(e.target.value)}
+                placeholder="e.g. Senior Press Operator"
+                className="mt-1 text-xs"
+              />
             </div>
 
-            {/* Overrides Table */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-semibold text-slate-600 dark:text-slate-300">
-                  <tr>
-                    <th className="py-3 px-4">Permission / Resource Capability</th>
-                    <th className="py-3 px-4">Base Role Default</th>
-                    <th className="py-3 px-4 text-right">User Override</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {[
-                    { code: 'invoice.delete', label: 'Delete Invoices (ইনভয়েস ডিলিট)', base: 'Denied' },
-                    { code: 'reports.view', label: 'View P&L Profit Reports (মুনাফা রিপোর্ট)', base: 'Denied' },
-                    { code: 'quotation.approve', label: 'Approve High-Discount Quotes', base: 'Allowed' },
-                    { code: 'settings.edit', label: 'Modify Company Tax/BIN', base: 'Denied' },
-                  ].map((item) => {
-                    const override = userOverrides[item.code]
-                    return (
-                      <tr key={item.code} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                        <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
-                          {item.label}
-                          <div className="text-[10px] text-slate-400 font-mono">{item.code}</div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={cn(
-                              'px-2 py-0.5 rounded text-[10px] font-semibold',
-                              item.base === 'Allowed'
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                            )}
-                          >
-                            {item.base}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="inline-flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setUserOverrides((prev) => ({ ...prev, [item.code]: true }))}
-                              className={cn(
-                                'px-2.5 py-1 rounded text-[11px] font-bold border transition-colors',
-                                override === true
-                                  ? 'bg-emerald-600 text-white border-emerald-600'
-                                  : 'border-slate-300 text-slate-500 hover:bg-slate-100 dark:border-slate-700'
-                              )}
-                            >
-                              Grant Override
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setUserOverrides((prev) => ({ ...prev, [item.code]: false }))}
-                              className={cn(
-                                'px-2.5 py-1 rounded text-[11px] font-bold border transition-colors',
-                                override === false
-                                  ? 'bg-red-600 text-white border-red-600'
-                                  : 'border-slate-300 text-slate-500 hover:bg-slate-100 dark:border-slate-700'
-                              )}
-                            >
-                              Deny Explicitly
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setUserOverrides((prev) => {
-                                  const copy = { ...prev }
-                                  delete copy[item.code]
-                                  return copy
-                                })
-                              }
-                              className="px-2 py-1 text-[11px] text-slate-400 hover:text-slate-600"
-                              title="Revert to Role Default"
-                            >
-                              Default
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+            <div>
+              <Label className="text-xs font-semibold">{tBilingual('Role Name (বাংলা)', 'রোল নাম (বাংলা)')}</Label>
+              <Input
+                value={newRoleNameBn}
+                onChange={(e) => setNewRoleNameBn(e.target.value)}
+                placeholder="যেমনঃ সিনিয়র প্রেস অপারেটর"
+                className="mt-1 text-xs bangla-text"
+              />
             </div>
 
-            <div className="flex justify-end pt-2">
-              <Button onClick={handleSaveUserOverrides} className="bg-blue-600 hover:bg-blue-700 text-xs">
-                <Save className="mr-1.5 h-3.5 w-3.5" />
-                Save User Overrides
+            <div>
+              <Label className="text-xs font-semibold">{tBilingual('Base Permission Template', 'বেস পারমিশন টেমপ্লেট')}</Label>
+              <select
+                value={newRoleBaseSlug}
+                onChange={(e) => setNewRoleBaseSlug(e.target.value)}
+                className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 mt-1"
+              >
+                {roles.filter((r) => r.slug !== 'business_owner').map((r) => (
+                  <option key={r.id} value={r.slug}>
+                    {r.name} ({r.name_bn || r.slug})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold">{tBilingual('Description', 'বিবরণ')}</Label>
+              <Input
+                value={newRoleDesc}
+                onChange={(e) => setNewRoleDesc(e.target.value)}
+                placeholder="e.g. Special access for large format printing and finishing"
+                className="mt-1 text-xs"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCreateRoleOpen(false)}
+                className="text-xs"
+              >
+                {tBilingual('Cancel', 'বাতিল')}
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleCreateRole}
+                disabled={!newRoleName.trim() || isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs"
+              >
+                {isPending ? 'Creating...' : tBilingual('Create Role', 'রোল তৈরি করুন')}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </ModalDialog>
       </div>
     </FeatureGate>
   )

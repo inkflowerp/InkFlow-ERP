@@ -13,6 +13,9 @@ import {
   KeyRound,
   Search,
   Crown,
+  Sparkles,
+  Copy,
+  Briefcase,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -73,9 +76,9 @@ export default function UsersManagementPage() {
       openLimitExceededModal('max_users')
       return
     }
+    generateNewPassword()
     setIsAddUserOpen(true)
   }
-
 
   // Dialog states
   const [isInviteOpen, setIsInviteOpen] = useState(false)
@@ -93,11 +96,28 @@ export default function UsersManagementPage() {
   const [inviteBranchId, setInviteBranchId] = useState('')
 
   const [addFullName, setAddFullName] = useState('')
+  const [addFullNameBn, setAddFullNameBn] = useState('')
   const [addEmail, setAddEmail] = useState('')
   const [addPhone, setAddPhone] = useState('')
   const [addPassword, setAddPassword] = useState('')
   const [addRoleId, setAddRoleId] = useState('')
   const [addBranchId, setAddBranchId] = useState('')
+  const [copiedPassword, setCopiedPassword] = useState(false)
+
+  const generateNewPassword = () => {
+    const randomChars = Math.random().toString(36).slice(-6)
+    const randomPin = Math.floor(100 + Math.random() * 900)
+    const generated = `InkFlow!${randomChars}@${randomPin}`
+    setAddPassword(generated)
+    setCopiedPassword(false)
+  }
+
+  const handleCopyPassword = () => {
+    if (!addPassword) return
+    navigator.clipboard.writeText(addPassword)
+    setCopiedPassword(true)
+    setTimeout(() => setCopiedPassword(false), 2000)
+  }
 
   const [targetRoleId, setTargetRoleId] = useState('')
   const [targetBranchId, setTargetBranchId] = useState('')
@@ -226,6 +246,7 @@ export default function UsersManagementPage() {
       companyId: company.id,
       tenantSlug: company.slug,
       fullName: addFullName,
+      fullNameBn: addFullNameBn || undefined,
       email: addEmail,
       phone: addPhone,
       password: addPassword,
@@ -239,6 +260,7 @@ export default function UsersManagementPage() {
       refreshUsage()
       setIsAddUserOpen(false)
       setAddFullName('')
+      setAddFullNameBn('')
       setAddEmail('')
       setAddPhone('')
       setAddPassword('')
@@ -490,16 +512,33 @@ export default function UsersManagementPage() {
                             </div>
                           </td>
 
-                          {/* Role Badge */}
+                          {/* Role & Responsibilities Badge */}
                           <td className="py-3.5 px-4">
-                            <Badge
-                              variant="outline"
-                              className="font-medium text-xs border-blue-200 bg-blue-50/50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300"
-                            >
-                              <Shield className="mr-1 h-3 w-3" />
-                              {primaryRole?.name || 'Team Member'}
-                              {primaryRole?.name_bn && ` (${primaryRole.name_bn})`}
-                            </Badge>
+                            {isOwner ? (
+                              <Badge
+                                variant="outline"
+                                className="font-semibold text-xs border-amber-300 bg-amber-50/80 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                              >
+                                <Crown className="mr-1 h-3.5 w-3.5 text-amber-500" />
+                                <span>Owner (Protected)</span>
+                              </Badge>
+                            ) : (
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <Badge
+                                  variant="outline"
+                                  className="font-medium text-xs border-blue-200 bg-blue-50/50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300"
+                                >
+                                  <Shield className="mr-1 h-3 w-3" />
+                                  {primaryRole?.name || 'Team Member'}
+                                  {primaryRole?.name_bn && ` (${primaryRole.name_bn})`}
+                                </Badge>
+                                {user.responsibilities && user.responsibilities.length > 1 && (
+                                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                    +{user.responsibilities.length - 1} more
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
                           </td>
 
                           {/* Branch */}
@@ -683,14 +722,31 @@ export default function UsersManagementPage() {
 
                       {/* Meta Tags: Role & Branch */}
                       <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                        <Badge
-                          variant="outline"
-                          className="text-[11px] py-0.5 px-2 bg-blue-50/70 border-blue-200 text-blue-700 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 font-semibold"
-                        >
-                          <Shield className="mr-1 h-3 w-3" />
-                          <span>{primaryRole?.name || 'Member'}</span>
-                          {primaryRole?.name_bn && <span className="ml-1 opacity-80">({primaryRole.name_bn})</span>}
-                        </Badge>
+                        {isOwner ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[11px] py-0.5 px-2 bg-amber-50/80 border-amber-300 text-amber-800 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 font-semibold"
+                          >
+                            <Crown className="mr-1 h-3 w-3 text-amber-500" />
+                            <span>Owner (Protected)</span>
+                          </Badge>
+                        ) : (
+                          <div className="flex flex-wrap items-center gap-1">
+                            <Badge
+                              variant="outline"
+                              className="text-[11px] py-0.5 px-2 bg-blue-50/70 border-blue-200 text-blue-700 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 font-semibold"
+                            >
+                              <Shield className="mr-1 h-3 w-3" />
+                              <span>{primaryRole?.name || 'Member'}</span>
+                              {primaryRole?.name_bn && <span className="ml-1 opacity-80">({primaryRole.name_bn})</span>}
+                            </Badge>
+                            {user.responsibilities && user.responsibilities.length > 1 && (
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                +{user.responsibilities.length - 1} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
 
                         <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md">
                           <Building className="h-3 w-3 shrink-0" />
@@ -872,17 +928,31 @@ export default function UsersManagementPage() {
         hideFooter
       >
         <form onSubmit={handleAddUser} className="space-y-3.5 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="addFullName" required>
-              Full Name
-            </Label>
-            <Input
-              id="addFullName"
-              placeholder="e.g. Tariqul Islam"
-              value={addFullName}
-              onChange={(e) => setAddFullName(e.target.value)}
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="addFullName" required>
+                Full Name (English)
+              </Label>
+              <Input
+                id="addFullName"
+                placeholder="e.g. Tariqul Islam"
+                value={addFullName}
+                onChange={(e) => setAddFullName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="addFullNameBn">
+                নাম (বাংলায়)
+              </Label>
+              <Input
+                id="addFullNameBn"
+                placeholder="উদাঃ তরিকুল ইসলাম"
+                value={addFullNameBn}
+                onChange={(e) => setAddFullNameBn(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -915,17 +985,43 @@ export default function UsersManagementPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="addPassword" required>
-              Initial Password
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="addPassword" required>
+                Initial Password
+              </Label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={generateNewPassword}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Generate Strong
+                </button>
+                {addPassword && (
+                  <button
+                    type="button"
+                    onClick={handleCopyPassword}
+                    className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 cursor-pointer"
+                  >
+                    <Copy className="h-3 w-3" />
+                    {copiedPassword ? 'Copied!' : 'Copy'}
+                  </button>
+                )}
+              </div>
+            </div>
             <Input
               id="addPassword"
-              type="password"
-              placeholder="••••••••"
+              type="text"
+              placeholder="InkFlow!xxxx@123"
               value={addPassword}
               onChange={(e) => setAddPassword(e.target.value)}
               required
+              className="font-mono text-xs"
             />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              A secure temporary password is generated. Please provide this to the employee or they can reset it via email.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

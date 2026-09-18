@@ -86,7 +86,7 @@ export function UserPermissionsDrawer({
   const [isSaving, setIsSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'permissions' | 'responsibilities'>('permissions')
+  const [activeTab, setActiveTab] = useState<'summary' | 'permissions' | 'responsibilities'>('summary')
 
   // Initial load when user opens
   useEffect(() => {
@@ -350,12 +350,25 @@ export function UserPermissionsDrawer({
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex items-center gap-2 mt-4">
+            <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab('summary')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
+                  activeTab === 'summary'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
+                )}
+              >
+                <Shield className="h-3.5 w-3.5" />
+                <span>Owner Access Summary</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('permissions')}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer',
+                  'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap',
                   activeTab === 'permissions'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
@@ -367,13 +380,13 @@ export function UserPermissionsDrawer({
                 type="button"
                 onClick={() => setActiveTab('responsibilities')}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5',
+                  'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
                   activeTab === 'responsibilities'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
                 )}
               >
-                <span>Assigned Responsibilities</span>
+                <span>Responsibilities</span>
                 <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px]">
                   {selectedResponsibilities.length}
                 </span>
@@ -398,7 +411,162 @@ export function UserPermissionsDrawer({
               </div>
             )}
 
-            {activeTab === 'responsibilities' ? (
+            {activeTab === 'summary' ? (
+              /* TAB 0: OWNER ACCESS SUMMARY */
+              <div className="space-y-4">
+                {/* 1. Responsibilities & Branch Card */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                      Assigned Responsibilities
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('responsibilities')}
+                      className="text-xs text-blue-600 hover:underline font-semibold"
+                    >
+                      Change
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedResponsibilities.map((slug) => {
+                      const r = ALL_RESPONSIBILITIES.find((item) => item.slug === slug)
+                      return (
+                        <Badge
+                          key={slug}
+                          variant="outline"
+                          className="bg-blue-50/80 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 py-1 px-2.5 text-xs font-semibold"
+                        >
+                          <Briefcase className="h-3 w-3 mr-1.5" />
+                          {r?.name || slug} {r?.nameBn ? `(${r.nameBn})` : ''}
+                        </Badge>
+                      )
+                    })}
+                  </div>
+                  <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-1.5">
+                      <Building className="h-3.5 w-3.5 text-slate-400" />
+                      Branch Scope:
+                    </span>
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {branchId ? allBranches.find((b) => b.id === branchId)?.name || 'Branch' : 'All Branches (Company-Wide)'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 2. Data Scope Matrix Breakdown */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                      Data Scope per Module
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('permissions')}
+                      className="text-xs text-blue-600 hover:underline font-semibold"
+                    >
+                      Configure Scopes
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {[
+                      { mod: 'customers', label: 'Customers' },
+                      { mod: 'quotations', label: 'Quotations' },
+                      { mod: 'orders', label: 'Orders / Jobs' },
+                      { mod: 'invoices', label: 'Invoices' },
+                      { mod: 'payments', label: 'Payments' },
+                      { mod: 'production', label: 'Production' },
+                      { mod: 'inventory', label: 'Inventory' },
+                      { mod: 'reports', label: 'Reports' },
+                    ].map(({ mod, label }) => {
+                      const scope = dataScopes[mod] || MODULE_ACTION_SPECS[mod as PermissionModule]?.defaultScope || 'own'
+                      const scopeColor =
+                        scope === 'company'
+                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300'
+                          : scope === 'branch'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                          : scope === 'department'
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                          : scope === 'assigned'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+
+                      return (
+                        <div
+                          key={mod}
+                          className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800"
+                        >
+                          <span className="text-slate-700 dark:text-slate-300 font-medium">{label}</span>
+                          <span className={cn('text-[11px] font-bold px-2 py-0.5 rounded capitalize', scopeColor)}>
+                            {scope}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. High-Risk Security & Dangerous Actions */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                    Security & Sensitive Action Capabilities
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {[
+                      { code: 'invoices.delete', label: 'Delete Invoices', risk: 'high' },
+                      { code: 'invoices.cancel', label: 'Cancel Invoices', risk: 'medium' },
+                      { code: 'payments.create', label: 'Record Payments', risk: 'medium' },
+                      { code: 'payments.delete', label: 'Delete Payments', risk: 'high' },
+                      { code: 'inventory.adjust', label: 'Adjust Inventory', risk: 'high' },
+                      { code: 'inventory.issue', label: 'Issue Raw Materials', risk: 'low' },
+                      { code: 'salary.edit', label: 'Edit Salaries', risk: 'high' },
+                      { code: 'payroll.approve', label: 'Approve Payroll', risk: 'high' },
+                      { code: 'users.create', label: 'Create Team Users', risk: 'medium' },
+                      { code: 'users.permission_manage', label: 'Manage Roles/Access', risk: 'high' },
+                    ].map(({ code, label, risk }) => {
+                      const [mod, act] = code.split('.')
+                      const detail = getPermissionDetail(
+                        simulatedUserCtx,
+                        mod as PermissionModule,
+                        act as PermissionAction
+                      )
+                      const isGranted = detail.isGranted
+
+                      return (
+                        <div
+                          key={code}
+                          className={cn(
+                            'flex items-center justify-between p-2.5 rounded-lg border text-xs',
+                            isGranted
+                              ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/50'
+                              : 'bg-slate-50/30 border-slate-200/70 dark:bg-slate-900 dark:border-slate-800 opacity-80'
+                          )}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            {isGranted ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                            ) : (
+                              <X className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                            )}
+                            <span className="font-medium text-slate-800 dark:text-slate-200">{label}</span>
+                          </div>
+                          <span
+                            className={cn(
+                              'text-[10px] font-bold px-1.5 py-0.5 rounded',
+                              isGranted
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
+                                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                            )}
+                          >
+                            {isGranted ? 'Allowed' : 'Denied'}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : activeTab === 'responsibilities' ? (
               /* TAB 1: RESPONSIBILITIES ASSIGNMENT */
               <div className="space-y-3">
                 <div className="bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl p-3 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2.5">

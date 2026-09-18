@@ -9,6 +9,7 @@ export async function createCompanyUserAction(params: {
   companyId: string
   tenantSlug: string
   fullName: string
+  fullNameBn?: string
   email: string
   phone: string
   password?: string
@@ -19,11 +20,11 @@ export async function createCompanyUserAction(params: {
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('settings.edit') &&
-      !tenant.permissions.includes('employees.manage') &&
-      !tenant.permissions.includes('users.manage'))
+      !tenant.permissions.includes('users.create') &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
   ) {
-    return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
+    return { success: false, message: 'Unauthorized: Insufficient permissions to create team users.' }
   }
 
   try {
@@ -55,11 +56,11 @@ export async function inviteUserAction(
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('settings.edit') &&
-      !tenant.permissions.includes('employees.manage') &&
-      !tenant.permissions.includes('users.manage'))
+      !tenant.permissions.includes('users.create') &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
   ) {
-    return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
+    return { success: false, message: 'Unauthorized: Insufficient permissions to invite team users.' }
   }
 
   try {
@@ -74,7 +75,8 @@ export async function inviteUserAction(
     roleId,
     branchId,
     fullName,
-    phone
+    phone,
+    tenant.fullName || 'Admin'
   )
   revalidatePath(`/${tenantSlug}/settings/users`)
   return result
@@ -89,11 +91,16 @@ export async function toggleUserStatusAction(
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('settings.edit') &&
-      !tenant.permissions.includes('employees.manage') &&
-      !tenant.permissions.includes('users.manage'))
+      !tenant.permissions.includes('users.disable') &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
   ) {
-    return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
+    return { success: false, message: 'Unauthorized: Insufficient permissions to change user status.' }
+  }
+
+  // Anti-self-disable check
+  if (tenant.userId && companyUserId === tenant.userId) {
+    return { success: false, message: 'You cannot disable your own active user account.' }
   }
 
   const result =
@@ -115,11 +122,16 @@ export async function changeUserRoleAction(
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('settings.edit') &&
-      !tenant.permissions.includes('employees.manage') &&
-      !tenant.permissions.includes('users.manage'))
+      !tenant.permissions.includes('users.role_change') &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
   ) {
-    return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
+    return { success: false, message: 'Unauthorized: Insufficient permissions to modify user roles.' }
+  }
+
+  // Anti-self-escalation check
+  if (tenant.companyRole !== 'business_owner' && tenant.userId === companyUserId) {
+    return { success: false, message: 'Self-escalation denied: You cannot change your own role.' }
   }
 
   const result = await CompanyUsersService.changeUserRole(
@@ -140,9 +152,9 @@ export async function assignUserBranchAction(
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('settings.edit') &&
-      !tenant.permissions.includes('employees.manage') &&
-      !tenant.permissions.includes('users.manage'))
+      !tenant.permissions.includes('users.branch_assign') &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient branch assignment permissions.' }
   }
@@ -160,6 +172,10 @@ export async function listRolesAction(companyId?: string) {
   return await CompanyUsersService.listRoles(companyId)
 }
 
+export async function listRolesWithPermissionsAction(companyId?: string) {
+  return await CompanyUsersService.listRolesWithPermissions(companyId)
+}
+
 export async function listBranchesAction(companyId: string) {
   return await CompanyUsersService.listBranches(companyId)
 }
@@ -170,6 +186,7 @@ export async function updateUserAccessAndPermissionsAction(params: {
   responsibilities?: string[]
   overrides?: Record<string, boolean>
   dataScopes?: any
+  authorizedBranchIds?: string[]
   department?: string | null
   branchId?: string | null
   actorName?: string
@@ -179,11 +196,16 @@ export async function updateUserAccessAndPermissionsAction(params: {
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('settings.edit') &&
-      !tenant.permissions.includes('employees.manage') &&
-      !tenant.permissions.includes('users.manage'))
+      !tenant.permissions.includes('users.permission_manage') &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient permissions to modify user access.' }
+  }
+
+  // Anti-self-escalation check
+  if (tenant.companyRole !== 'business_owner' && tenant.userId === params.companyUserId) {
+    return { success: false, message: 'Self-escalation denied: You cannot modify your own access privileges.' }
   }
 
   return await CompanyUsersService.updateUserAccessAndPermissions({
@@ -199,12 +221,90 @@ export async function resetUserAccessAction(email: string) {
   if (
     !tenant ||
     (tenant.companyRole !== 'business_owner' &&
-      !tenant.permissions.includes('settings.edit') &&
-      !tenant.permissions.includes('employees.manage') &&
-      !tenant.permissions.includes('users.manage'))
+      !tenant.permissions.includes('users.reset_password') &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
   ) {
     return { success: false, message: 'Unauthorized: Insufficient user management permissions.' }
   }
 
   return await CompanyUsersService.resetAccess(email)
+}
+
+export async function createCustomRoleAction(params: {
+  companyId: string
+  tenantSlug: string
+  name: string
+  nameBn?: string
+  slug?: string
+  description?: string
+  permissions: string[]
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('users.permission_manage') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Only Business Owner can create custom roles.' }
+  }
+
+  const result = await CompanyUsersService.createCustomRole({
+    ...params,
+    companyId: tenant.companyId,
+    actorName: tenant.fullName || 'Owner',
+  })
+  revalidatePath(`/${params.tenantSlug}/settings/roles`)
+  return result
+}
+
+export async function updateRolePermissionsAction(params: {
+  companyId: string
+  tenantSlug: string
+  roleId: string
+  permissions: string[]
+  details?: { name?: string; nameBn?: string; description?: string }
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('users.permission_manage') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Only Business Owner can update role matrices.' }
+  }
+
+  const result = await CompanyUsersService.updateRolePermissions({
+    ...params,
+    companyId: tenant.companyId,
+    actorName: tenant.fullName || 'Owner',
+  })
+  revalidatePath(`/${params.tenantSlug}/settings/roles`)
+  return result
+}
+
+export async function deleteCustomRoleAction(params: {
+  companyId: string
+  tenantSlug: string
+  roleId: string
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('users.permission_manage') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Only Business Owner can delete custom roles.' }
+  }
+
+  const result = await CompanyUsersService.deleteCustomRole(
+    params.roleId,
+    tenant.companyId,
+    tenant.fullName || 'Owner'
+  )
+  revalidatePath(`/${params.tenantSlug}/settings/roles`)
+  return result
 }

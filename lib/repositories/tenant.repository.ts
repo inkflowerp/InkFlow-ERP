@@ -343,11 +343,45 @@ export class TenantRepository {
       } catch {}
     }
 
+    // Fetch user branch access for each user
+    const branchAccessMap = new Map<string, string[]>()
+    if (userIds.length > 0) {
+      try {
+        const { data: uba } = await (admin as any)
+          .from('user_branch_access')
+          .select('user_id, branch_id')
+          .eq('company_id', companyId)
+          .in('user_id', userIds)
+        ;(uba || []).forEach((item: any) => {
+          if (!branchAccessMap.has(item.user_id)) {
+            branchAccessMap.set(item.user_id, [])
+          }
+          branchAccessMap.get(item.user_id)!.push(item.branch_id)
+        })
+      } catch {}
+    }
+
     return cuList.map((cu: any) => {
       const roles = (cu.user_roles || []).map((ur: any) => ur.role).filter(Boolean)
       const overrides = overrideMap.get(cu.id) || {}
-      const responsibilities = roles.map((r: any) => r.slug || r.name)
+      const roleResponsibilities = roles.map((r: any) => r.slug || r.name)
+      const rawResponsibilities = Array.isArray(cu.responsibilities) && cu.responsibilities.length > 0
+        ? cu.responsibilities
+        : roleResponsibilities
+      const responsibilities = rawResponsibilities.length > 0 ? rawResponsibilities : ['general_staff']
       const prof = profileMap.get(cu.user_id)
+      const authorizedBranches = branchAccessMap.get(cu.user_id) || (cu.branch_id ? [cu.branch_id] : [])
+
+      const dataScopes: Record<string, DataScope> = cu.data_scopes && typeof cu.data_scopes === 'object' && Object.keys(cu.data_scopes).length > 0
+        ? cu.data_scopes
+        : {
+            customers: 'company',
+            orders: 'company',
+            invoices: 'company',
+            reports: 'company',
+            production: 'company',
+            inventory: 'company',
+          }
 
       return {
         id: cu.id,
@@ -358,14 +392,8 @@ export class TenantRepository {
         department: cu.department || 'General',
         responsibilities,
         overrides,
-        data_scopes: {
-          customers: 'company',
-          orders: 'company',
-          invoices: 'company',
-          reports: 'company',
-          production: 'company',
-          inventory: 'company',
-        },
+        data_scopes: dataScopes,
+        authorized_branch_ids: authorizedBranches,
         invited_email: cu.invited_email,
         created_at: cu.created_at,
         updated_at: cu.updated_at,
@@ -461,31 +489,69 @@ export class TenantRepository {
     }
   }
 
+  /**
+   * Updates user responsibilities, role assignments, overrides, data scopes, and branch access
+   */
   static async updateUserResponsibilitiesAndOverrides(params: {
     companyUserId: string
     department?: string | null
     branchId?: string | null
     responsibilities?: string[]
     overrides?: Record<string, boolean>
+    dataScopes?: Record<string, DataScope>
+    authorizedBranchIds?: string[]
   }): Promise<void> {
     const admin = createAdminClient()
     const updates: any = { updated_at: new Date().toISOString() }
     if (params.department !== undefined) updates.department = params.department
     if (params.branchId !== undefined) updates.branch_id = params.branchId
+    if (params.responsibilities !== undefined) updates.responsibilities = params.responsibilities
+    if (params.dataScopes !== undefined) updates.data_scopes = params.dataScopes
 
-    const { error: userError } = await admin
+    const { data: targetCU, error: userError } = await admin
       .from('company_users')
       .update(updates)
       .eq('id', params.companyUserId)
+      .select('id, company_id, user_id')
+      .single()
 
-    if (userError) {
-      throw new Error(`Failed to update company user record: ${userError.message}`)
+    if (userError || !targetCU) {
+      throw new Error(`Failed to update company user record: ${userError?.message || 'User not found'}`)
     }
 
-    if (params.overrides) {
-      // Upsert user_permission_overrides
+    const companyId = targetCU.company_id
+    const userId = targetCU.user_id
+
+    // 1. Sync User Roles if responsibilities provided
+    if (params.responsibilities && Array.isArray(params.responsibilities)) {
+      const allRoles = await TenantRepository.getRoles(companyId)
+      const roleIdSet = new Set<string>()
+
+      for (const resp of params.responsibilities) {
+        const matchedRole = allRoles.find(
+          (r) => r.slug === resp || r.name.toLowerCase() === resp.toLowerCase()
+        )
+        if (matchedRole) {
+          roleIdSet.add(matchedRole.id)
+        }
+      }
+
+      // Reassign user_roles
+      await (admin as any).from('user_roles').delete().eq('company_user_id', params.companyUserId)
+      for (const rId of Array.from(roleIdSet)) {
+        await (admin as any).from('user_roles').insert({
+          company_user_id: params.companyUserId,
+          role_id: rId,
+          company_id: companyId,
+        })
+      }
+    }
+
+    // 2. Sync User Permission Overrides
+    if (params.overrides !== undefined) {
+      await (admin as any).from('user_permission_overrides').delete().eq('company_user_id', params.companyUserId)
+
       for (const [permCode, isGranted] of Object.entries(params.overrides)) {
-        // Resolve permission ID by code
         const { data: perm } = await admin
           .from('permissions')
           .select('id')
@@ -493,19 +559,168 @@ export class TenantRepository {
           .maybeSingle()
 
         if (perm?.id) {
-          await (admin as any)
-            .from('user_permission_overrides')
-            .upsert(
-              {
-                company_user_id: params.companyUserId,
-                permission_id: perm.id,
-                is_granted: isGranted,
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: 'company_user_id,permission_id' }
-            )
+          await (admin as any).from('user_permission_overrides').insert({
+            company_id: companyId,
+            company_user_id: params.companyUserId,
+            permission_id: perm.id,
+            is_granted: isGranted,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
         }
       }
+    }
+
+    // 3. Sync User Branch Access
+    if (params.authorizedBranchIds !== undefined && userId) {
+      await (admin as any).from('user_branch_access').delete().eq('company_id', companyId).eq('user_id', userId)
+
+      for (const bId of params.authorizedBranchIds) {
+        await (admin as any).from('user_branch_access').insert({
+          company_id: companyId,
+          user_id: userId,
+          branch_id: bId,
+          created_at: new Date().toISOString(),
+        })
+      }
+    }
+  }
+
+  /**
+   * Custom Role Management Methods
+   */
+  static async getRolesWithPermissions(companyId?: string) {
+    const admin = createAdminClient()
+    const roles = await TenantRepository.getRoles(companyId)
+    const roleIds = roles.map((r) => r.id)
+
+    const permMap = new Map<string, string[]>()
+    if (roleIds.length > 0) {
+      try {
+        const { data: rps } = await (admin as any)
+          .from('role_permissions')
+          .select('role_id, permission:permissions(code)')
+          .in('role_id', roleIds)
+        ;(rps || []).forEach((rp: any) => {
+          if (!permMap.has(rp.role_id)) {
+            permMap.set(rp.role_id, [])
+          }
+          if (rp.permission?.code) {
+            permMap.get(rp.role_id)!.push(rp.permission.code)
+          }
+        })
+      } catch {}
+    }
+
+    return roles.map((r) => ({
+      ...r,
+      permissions: permMap.get(r.id) || [],
+    }))
+  }
+
+  static async createCustomRole(params: {
+    companyId: string
+    name: string
+    nameBn?: string
+    slug?: string
+    description?: string
+    permissions: string[]
+  }) {
+    const admin = createAdminClient()
+    const slug = params.slug || params.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+
+    const { data: newRole, error } = await (admin as any)
+      .from('roles')
+      .insert({
+        company_id: params.companyId,
+        name: params.name.trim(),
+        name_bn: params.nameBn?.trim() || null,
+        slug,
+        description: params.description || null,
+        is_system: false,
+        is_active: true,
+        permissions_count: params.permissions.length,
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (error || !newRole) {
+      throw new Error(`Failed to create custom role: ${error?.message || 'Database error'}`)
+    }
+
+    // Insert permissions into role_permissions
+    if (params.permissions.length > 0) {
+      for (const code of params.permissions) {
+        const { data: perm } = await (admin as any).from('permissions').select('id').eq('code', code).maybeSingle()
+        if (perm?.id) {
+          await (admin as any).from('role_permissions').insert({
+            role_id: newRole.id,
+            permission_id: perm.id,
+          })
+        }
+      }
+    }
+
+    return newRole
+  }
+
+  static async updateRolePermissions(
+    roleId: string,
+    permissions: string[],
+    details?: { name?: string; nameBn?: string; description?: string }
+  ) {
+    const admin = createAdminClient()
+
+    if (details) {
+      await (admin as any)
+        .from('roles')
+        .update({
+          ...(details.name ? { name: details.name } : {}),
+          ...(details.nameBn !== undefined ? { name_bn: details.nameBn } : {}),
+          ...(details.description !== undefined ? { description: details.description } : {}),
+          permissions_count: permissions.length,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', roleId)
+    }
+
+    // Replace role_permissions
+    await (admin as any).from('role_permissions').delete().eq('role_id', roleId)
+
+    for (const code of permissions) {
+      const { data: perm } = await (admin as any).from('permissions').select('id').eq('code', code).maybeSingle()
+      if (perm?.id) {
+        await (admin as any).from('role_permissions').insert({
+          role_id: roleId,
+          permission_id: perm.id,
+        })
+      }
+    }
+  }
+
+  static async deleteCustomRole(roleId: string, companyId: string) {
+    const admin = createAdminClient()
+
+    // Check if any company users are currently assigned to this role
+    const { count } = await (admin as any)
+      .from('user_roles')
+      .select('id', { count: 'exact', head: true })
+      .eq('role_id', roleId)
+
+    if (count && count > 0) {
+      throw new Error(`Cannot delete role: ${count} users are currently assigned. Reassign them first.`)
+    }
+
+    const { error } = await (admin as any)
+      .from('roles')
+      .delete()
+      .eq('id', roleId)
+      .eq('company_id', companyId)
+      .eq('is_system', false)
+
+    if (error) {
+      throw new Error(`Failed to delete role: ${error.message}`)
     }
   }
 

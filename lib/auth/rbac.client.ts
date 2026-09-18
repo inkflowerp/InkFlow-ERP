@@ -43,6 +43,17 @@ export function normalizeModuleKey(raw: string): PermissionModule {
     tasks: 'tasks',
     notification: 'notifications',
     notifications: 'notifications',
+    user: 'users',
+    users: 'users',
+    staff: 'users',
+    employee: 'hr',
+    employees: 'hr',
+    hr: 'hr',
+    payroll: 'hr',
+    overtime: 'hr',
+    attendance: 'hr',
+    branch: 'branches',
+    branches: 'branches',
   }
   return map[raw.toLowerCase()] || (raw as PermissionModule)
 }
@@ -72,6 +83,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     support: { view: true, create: true, send: true },
     products: { view: true, create: true, edit: true, export: true },
     pricing: { view: true, create: true, edit: true, manage: true },
+    users: { view: true },
+    hr: {},
   },
 
   designer: {
@@ -93,6 +106,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     support: { view: true, create: true, send: true },
     products: { view: true },
     pricing: { view: true },
+    users: {},
+    hr: {},
   },
 
   production_manager: {
@@ -114,6 +129,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     support: { view: true, create: true, send: true },
     products: { view: true, create: true, edit: true },
     pricing: { view: true },
+    users: { view: true },
+    hr: { view: true },
   },
 
   operator: {
@@ -135,6 +152,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     support: { view: true, create: true, send: true },
     products: { view: true },
     pricing: {},
+    users: {},
+    hr: {},
   },
 
   store_manager: {
@@ -156,6 +175,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     support: { view: true, create: true, send: true },
     products: { view: true, create: true, edit: true },
     pricing: { view: true },
+    users: {},
+    hr: {},
   },
 
   accountant: {
@@ -177,6 +198,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     support: { view: true, create: true, send: true },
     products: { view: true },
     pricing: { view: true },
+    users: {},
+    hr: { view: true, create: true, edit: true, approve: true },
   },
 
   delivery_coordinator: {
@@ -198,6 +221,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     support: { view: true, create: true, send: true },
     products: { view: true },
     pricing: {},
+    users: {},
+    hr: {},
   },
 
   general_staff: {
@@ -219,6 +244,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     support: { view: true, create: true, send: true },
     products: { view: true },
     pricing: {},
+    users: {},
+    hr: {},
   },
 }
 
@@ -318,7 +345,7 @@ export interface UserPermissionContext {
   primaryRole?: string
   responsibilities?: string[]
   overrides?: Record<string, boolean>
-  data_scopes?: Record<string, DataScope>
+  data_scopes?: Record<string, DataScope | string>
   isOwner?: boolean
 }
 
@@ -470,24 +497,43 @@ export function getPermissionDetail(
  */
 export function checkPermission(
   roleOrUser: PrimaryRole | UserPermissionContext | string,
-  permissionCode: string,
+  permissionCodeOrModule: string,
+  actionOrOverrides?: PermissionAction | string | Record<string, boolean>,
   userOverrides: Record<string, boolean> = {},
   _customMatrix?: RolePermissionMatrix
 ): boolean {
-  if (!permissionCode) return false
-  const [rawMod, act] = permissionCode.split('.') as [string, PermissionAction]
+  if (!permissionCodeOrModule) return false
+
+  let rawMod: string
+  let act: PermissionAction
+  let activeOverrides = userOverrides
+
+  if (typeof actionOrOverrides === 'string') {
+    rawMod = permissionCodeOrModule
+    act = actionOrOverrides as PermissionAction
+  } else if (typeof actionOrOverrides === 'object' && actionOrOverrides !== null) {
+    const parts = permissionCodeOrModule.split('.')
+    rawMod = parts[0]
+    act = parts[1] as PermissionAction
+    activeOverrides = { ...actionOrOverrides, ...userOverrides }
+  } else {
+    const parts = permissionCodeOrModule.split('.')
+    rawMod = parts[0]
+    act = parts[1] as PermissionAction
+  }
+
   if (!rawMod || !act) return false
 
   let ctx: UserPermissionContext
   if (typeof roleOrUser === 'string') {
     ctx = {
       primaryRole: roleOrUser,
-      overrides: userOverrides,
+      overrides: activeOverrides,
     }
   } else {
     ctx = {
       ...roleOrUser,
-      overrides: { ...(roleOrUser.overrides || {}), ...userOverrides },
+      overrides: { ...(roleOrUser.overrides || {}), ...activeOverrides },
     }
   }
 
@@ -506,7 +552,7 @@ export function getEffectiveDataScope(
 
   // 1. User specific scope override
   if (user.data_scopes && user.data_scopes[permModule]) {
-    return user.data_scopes[permModule]
+    return user.data_scopes[permModule] as DataScope
   }
 
   // 2. Owner has company scope
@@ -541,10 +587,7 @@ export interface ScopeCheckContext {
   isOwnerOrAdmin?: boolean
 }
 
-/**
- * Server- and client-safe data scope access evaluator
- */
-export function checkDataScopeAccess(
+function evaluateDataScopeInternal(
   userScope: DataScope,
   ctx: ScopeCheckContext
 ): boolean {
@@ -605,6 +648,44 @@ export function checkDataScopeAccess(
     default:
       return false
   }
+}
+
+/**
+ * Server- and client-safe data scope access evaluator supporting both context and record signatures
+ */
+export function checkDataScopeAccess(
+  scopeOrUser: DataScope | any,
+  ctxOrResource: ScopeCheckContext | any,
+  explicitScope?: DataScope,
+  fallbackUserId?: string
+): boolean {
+  if (typeof scopeOrUser === 'string') {
+    return evaluateDataScopeInternal(scopeOrUser as DataScope, ctxOrResource as ScopeCheckContext)
+  }
+
+  // Object-based checkDataScopeAccess(user, resource, scope, fallbackUserId)
+  const user = scopeOrUser || {}
+  const resource = ctxOrResource || {}
+  const scope: DataScope = explicitScope || 'assigned'
+  const userId = user.userId || user.user_id || fallbackUserId || ''
+
+  const ctx: ScopeCheckContext = {
+    userId,
+    userDepartment: user.department,
+    userBranchId: user.branchId || user.branch_id,
+    userAuthorizedBranchIds: user.authorizedBranchIds,
+    recordOwnerId: resource.created_by || resource.user_id || resource.recordOwnerId,
+    recordAssigneeId: resource.assigned_to || resource.assignee_id || resource.recordAssigneeId,
+    recordDepartment: resource.department || resource.recordDepartment,
+    recordBranchId: resource.branch_id || resource.branchId || resource.recordBranchId,
+    isOwnerOrAdmin:
+      user.isOwner ||
+      user.role === 'business_owner' ||
+      user.primaryRole === 'business_owner' ||
+      user.responsibilities?.includes('business_owner'),
+  }
+
+  return evaluateDataScopeInternal(scope, ctx)
 }
 
 

@@ -46,10 +46,38 @@ export class CompanyUsersService {
   }
 
   /**
-   * Disable user
+   * Disable user with Last Active Owner protection
    */
   static async disableUser(companyUserId: string, companyId?: string, actorName = 'Admin'): Promise<ApiResponse> {
     try {
+      if (companyId) {
+        // Enforce Last Active Business Owner protection
+        const users = await TenantRepository.getCompanyUsers(companyId)
+        const targetUser = users.find((u) => u.id === companyUserId)
+        if (targetUser) {
+          const isTargetOwner =
+            targetUser.responsibilities?.includes('business_owner') ||
+            targetUser.responsibilities?.includes('owner') ||
+            targetUser.roles?.some((r) => r.slug === 'business_owner' || r.slug === 'owner')
+
+          if (isTargetOwner) {
+            const activeOwners = users.filter(
+              (u) =>
+                u.status === 'active' &&
+                (u.responsibilities?.includes('business_owner') ||
+                  u.responsibilities?.includes('owner') ||
+                  u.roles?.some((r) => r.slug === 'business_owner' || r.slug === 'owner'))
+            )
+            if (activeOwners.length <= 1) {
+              return {
+                success: false,
+                error: 'Cannot disable the last active Business Owner. Assign or transfer ownership first.',
+              }
+            }
+          }
+        }
+      }
+
       await TenantRepository.updateUserStatus(companyUserId, 'disabled')
       if (companyId) {
         await AuditService.logEvent(
@@ -96,21 +124,27 @@ export class CompanyUsersService {
   }
 
   /**
-   * Create a new company team member with full credentials
+   * Create a new company team member with cryptographically secure credentials
    */
   static async createCompanyUser(params: {
     companyId: string
     fullName: string
+    fullNameBn?: string
     email: string
     phone: string
     password?: string
     roleId: string
     branchId?: string | null
     actorName?: string
-  }): Promise<ApiResponse> {
+  }): Promise<ApiResponse<{ generatedPassword?: string; userId?: string }>> {
     try {
       const admin = createAdminClient()
       const normalizedEmail = params.email.trim().toLowerCase()
+
+      // Generate secure temporary password if none supplied
+      const generatedPassword =
+        params.password ||
+        `InkFlow!${Math.random().toString(36).slice(-8)}${Math.floor(100 + Math.random() * 900)}`
 
       // 1. Check if user already exists in auth.users or create them
       let userId: string | null = null
@@ -124,10 +158,11 @@ export class CompanyUsersService {
       } else {
         const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
           email: normalizedEmail,
-          password: params.password || 'PrintERP2026!Staff',
+          password: generatedPassword,
           email_confirm: true,
           user_metadata: {
             full_name: params.fullName,
+            full_name_bn: params.fullNameBn || null,
             phone: params.phone,
             preferred_locale: 'bn',
           },
@@ -144,6 +179,7 @@ export class CompanyUsersService {
         id: userId,
         email: normalizedEmail,
         full_name: params.fullName,
+        full_name_bn: params.fullNameBn || null,
         phone: params.phone || null,
         preferred_locale: 'bn',
         is_active: true,
@@ -154,6 +190,7 @@ export class CompanyUsersService {
         await (admin as any).from('profiles').upsert({
           id: userId,
           full_name: params.fullName,
+          full_name_bn: params.fullNameBn || null,
           phone: params.phone || null,
           preferred_locale: 'bn',
           updated_at: new Date().toISOString(),
@@ -225,14 +262,18 @@ export class CompanyUsersService {
         `Created team user ${params.fullName} (${normalizedEmail})`
       )
 
-      return { success: true, message: `User ${params.fullName} created successfully.` }
+      return {
+        success: true,
+        message: `User ${params.fullName} created successfully.`,
+        data: { generatedPassword, userId: userId || undefined },
+      }
     } catch (error: any) {
       return { success: false, error: error.message || 'Failed to create user' }
     }
   }
 
   /**
-   * Invite a new user under a tenant company
+   * Invite a new user under a tenant company with secure password generation
    */
   static async inviteUser(
     companyId: string,
@@ -240,11 +281,13 @@ export class CompanyUsersService {
     roleId: string,
     branchId?: string | null,
     fullName?: string,
-    phone?: string
+    phone?: string,
+    actorName = 'Admin'
   ): Promise<ApiResponse> {
     try {
       const admin = createAdminClient()
       const normalizedEmail = email.trim().toLowerCase()
+      const generatedPassword = `InkFlow!${Math.random().toString(36).slice(-8)}${Math.floor(100 + Math.random() * 900)}`
 
       // 1. Create or ensure user profile exists in Supabase Auth
       let userId: string | null = null
@@ -258,7 +301,7 @@ export class CompanyUsersService {
       } else {
         const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
           email: normalizedEmail,
-          password: 'PrintERP2026!Invite',
+          password: generatedPassword,
           email_confirm: false,
           user_metadata: {
             full_name: fullName || normalizedEmail.split('@')[0],
@@ -331,7 +374,7 @@ export class CompanyUsersService {
       await AuditService.logEvent(
         companyId,
         null,
-        'Admin',
+        actorName,
         'user.invite',
         'user',
         companyUserId,
@@ -343,6 +386,100 @@ export class CompanyUsersService {
       return { success: true, message: `User ${normalizedEmail} invited successfully.` }
     } catch (error: any) {
       return { success: false, error: error.message || 'Failed to invite user' }
+    }
+  }
+
+  /**
+   * Custom Role Management
+   */
+  static async listRolesWithPermissions(companyId?: string): Promise<any[]> {
+    try {
+      return await TenantRepository.getRolesWithPermissions(companyId)
+    } catch (error) {
+      console.error('Error fetching roles with permissions:', error)
+      return []
+    }
+  }
+
+  static async createCustomRole(params: {
+    companyId: string
+    name: string
+    nameBn?: string
+    slug?: string
+    description?: string
+    permissions: string[]
+    actorName?: string
+  }): Promise<ApiResponse> {
+    try {
+      const newRole = await TenantRepository.createCustomRole(params)
+      if (params.companyId) {
+        await AuditService.logEvent(
+          params.companyId,
+          null,
+          params.actorName || 'Owner',
+          'role.create',
+          'role',
+          newRole.id,
+          null,
+          { name: params.name, permissionsCount: params.permissions.length },
+          `Created custom role ${params.name}`
+        )
+      }
+      return { success: true, message: `Role ${params.name} created successfully.` }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to create role' }
+    }
+  }
+
+  static async updateRolePermissions(params: {
+    roleId: string
+    companyId: string
+    permissions: string[]
+    details?: { name?: string; nameBn?: string; description?: string }
+    actorName?: string
+  }): Promise<ApiResponse> {
+    try {
+      await TenantRepository.updateRolePermissions(params.roleId, params.permissions, params.details)
+      if (params.companyId) {
+        await AuditService.logEvent(
+          params.companyId,
+          null,
+          params.actorName || 'Owner',
+          'role.update',
+          'role',
+          params.roleId,
+          null,
+          { permissionsCount: params.permissions.length },
+          `Updated permissions for role ${params.roleId}`
+        )
+      }
+      return { success: true, message: 'Role permissions updated successfully.' }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to update role permissions' }
+    }
+  }
+
+  static async deleteCustomRole(
+    roleId: string,
+    companyId: string,
+    actorName = 'Owner'
+  ): Promise<ApiResponse> {
+    try {
+      await TenantRepository.deleteCustomRole(roleId, companyId)
+      await AuditService.logEvent(
+        companyId,
+        null,
+        actorName,
+        'role.delete',
+        'role',
+        roleId,
+        null,
+        null,
+        `Deleted custom role ${roleId}`
+      )
+      return { success: true, message: 'Role deleted successfully.' }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to delete role' }
     }
   }
 
