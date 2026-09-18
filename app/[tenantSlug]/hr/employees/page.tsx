@@ -529,8 +529,95 @@ export default function EmployeeListPage() {
     notify(`Applied preset: ${preset.title}`)
   }
 
+  const calculateDutyFromShift = (startTime: string, endTime: string) => {
+    if (!startTime || !endTime) {
+      return { netHours: 8, grossHours: 8, breakMins: 0, summary: '8h Standard Shift' }
+    }
+
+    const [sH, sM] = startTime.split(':').map(Number)
+    const [eH, eM] = endTime.split(':').map(Number)
+
+    if (isNaN(sH) || isNaN(eH)) {
+      return { netHours: 8, grossHours: 8, breakMins: 0, summary: '8h Standard Shift' }
+    }
+
+    let startTotalMins = sH * 60 + (sM || 0)
+    let endTotalMins = eH * 60 + (eM || 0)
+
+    if (endTotalMins <= startTotalMins) {
+      endTotalMins += 24 * 60 // Overnight shift support (e.g. 22:00 -> 06:00)
+    }
+
+    const grossMins = endTotalMins - startTotalMins
+    const grossHours = Math.round((grossMins / 60) * 10) / 10
+
+    // Standard Bangladesh Industrial Shift Rule:
+    // If shift span is 9 hours or more (540 mins), standard 1 hour meal/rest interval is excluded -> net 8h duty (e.g. 09:00 to 18:00 = 8h).
+    // If shift span is < 9 hours (e.g. 4h, 6h, 8h), net duty equals gross span.
+    const breakMins = grossMins >= 540 ? 60 : 0
+    const netMins = Math.max(0, grossMins - breakMins)
+    const netHours = Math.round((netMins / 60) * 10) / 10
+
+    const summary = breakMins > 0
+      ? `${netHours}h net (${grossHours}h span − 1h break)`
+      : `${netHours}h span`
+
+    return { netHours: netHours > 0 ? netHours : 8, grossHours, breakMins, summary }
+  }
+
+  const handleShiftTimeChange = (newStart: string, newEnd: string) => {
+    const { netHours } = calculateDutyFromShift(newStart, newEnd)
+    const baseSalary = Number(empForm.base_salary || 0)
+    const monthlyHours = Math.max(50, Math.round(netHours * 26))
+    const newHourlyRate = baseSalary > 0 ? Math.round(baseSalary / monthlyHours) : empForm.hourly_rate
+    
+    let newOtRate = empForm.overtime_hourly_rate
+    if (empForm.ot_calc_type === '1.5x_standard') {
+      newOtRate = Math.round(newHourlyRate * 1.5)
+    } else if (empForm.ot_calc_type === '2.0x_holiday') {
+      newOtRate = Math.round(newHourlyRate * 2.0)
+    } else if (empForm.ot_calc_type === 'none') {
+      newOtRate = 0
+    }
+
+    setEmpForm((prev) => ({
+      ...prev,
+      office_start_time: newStart,
+      office_end_time: newEnd,
+      daily_duty_hours: netHours,
+      hourly_rate: newHourlyRate,
+      overtime_hourly_rate: newOtRate,
+      overtime_rate_value: prev.ot_calc_type === 'fixed_rate' ? prev.overtime_rate_value : newOtRate,
+    }))
+  }
+
+  const handleDutyHoursChange = (newDuty: number) => {
+    const baseSalary = Number(empForm.base_salary || 0)
+    const monthlyHours = Math.max(50, Math.round(newDuty * 26))
+    const newHourlyRate = baseSalary > 0 ? Math.round(baseSalary / monthlyHours) : empForm.hourly_rate
+    
+    let newOtRate = empForm.overtime_hourly_rate
+    if (empForm.ot_calc_type === '1.5x_standard') {
+      newOtRate = Math.round(newHourlyRate * 1.5)
+    } else if (empForm.ot_calc_type === '2.0x_holiday') {
+      newOtRate = Math.round(newHourlyRate * 2.0)
+    } else if (empForm.ot_calc_type === 'none') {
+      newOtRate = 0
+    }
+
+    setEmpForm((prev) => ({
+      ...prev,
+      daily_duty_hours: newDuty,
+      hourly_rate: newHourlyRate,
+      overtime_hourly_rate: newOtRate,
+      overtime_rate_value: prev.ot_calc_type === 'fixed_rate' ? prev.overtime_rate_value : newOtRate,
+    }))
+  }
+
   const handleBaseSalaryChange = (val: number) => {
-    const hrRate = val > 0 ? Math.round(val / 208) : 0
+    const dutyHours = Number(empForm.daily_duty_hours || 8)
+    const monthlyHours = Math.max(50, Math.round(dutyHours * 26))
+    const hrRate = val > 0 ? Math.round(val / monthlyHours) : 0
     const otRate = Math.round(hrRate * 1.5)
     const basic = Math.round(val * 0.6)
     const house = Math.round(val * 0.2)
@@ -1889,7 +1976,7 @@ export default function EmployeeListPage() {
                       {tBilingual('Office Timing & Daily Duty Hours', 'অফিস সময়সূচি ও দৈনিক কাজের ঘণ্টা')}
                     </h5>
                     <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 font-mono">
-                      {empForm.daily_duty_hours} Hours Shift
+                      {empForm.daily_duty_hours}h Net Duty • {calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).summary}
                     </Badge>
                   </div>
 
@@ -1901,7 +1988,7 @@ export default function EmployeeListPage() {
                       <Input
                         type="time"
                         value={empForm.office_start_time}
-                        onChange={(e) => setEmpForm({ ...empForm, office_start_time: e.target.value })}
+                        onChange={(e) => handleShiftTimeChange(e.target.value, empForm.office_end_time)}
                         className="text-xs h-9 font-mono"
                       />
                     </div>
@@ -1913,22 +2000,58 @@ export default function EmployeeListPage() {
                       <Input
                         type="time"
                         value={empForm.office_end_time}
-                        onChange={(e) => setEmpForm({ ...empForm, office_end_time: e.target.value })}
+                        onChange={(e) => handleShiftTimeChange(empForm.office_start_time, e.target.value)}
                         className="text-xs h-9 font-mono"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Daily Duty Hours *', 'দৈনিক ডিউটি ঘণ্টা *')}
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {tBilingual('Daily Duty Hours *', 'দৈনিক ডিউটি ঘণ্টা *')}
+                        </Label>
+                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
+                          Auto-calculated
+                        </span>
+                      </div>
                       <Input
                         type="number"
                         step="0.5"
                         value={empForm.daily_duty_hours}
-                        onChange={(e) => setEmpForm({ ...empForm, daily_duty_hours: Number(e.target.value || 8) })}
+                        onChange={(e) => handleDutyHoursChange(Number(e.target.value || 8))}
                         className="text-xs h-9 font-mono font-bold"
                       />
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                        <span className="truncate">
+                          {calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).summary}
+                        </span>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleDutyHoursChange(calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).netHours)}
+                            className="text-blue-600 hover:underline px-1 py-0.5 rounded-sm bg-blue-50 dark:bg-blue-950/40 text-[9px] font-bold"
+                            title="Set to Net Working Hours"
+                          >
+                            Net ({calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).netHours}h)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDutyHoursChange(calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).grossHours)}
+                            className="text-slate-600 dark:text-slate-300 hover:underline px-1 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-[9px]"
+                            title="Set to Total Gross Span without Break"
+                          >
+                            Gross ({calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).grossHours}h)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDutyHoursChange(8)}
+                            className="text-slate-600 dark:text-slate-300 hover:underline px-1 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-[9px]"
+                            title="Reset to 8 Hours Standard Shift"
+                          >
+                            8h Std
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="space-y-1.5">
