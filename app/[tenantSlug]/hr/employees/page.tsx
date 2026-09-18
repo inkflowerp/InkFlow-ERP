@@ -60,23 +60,6 @@ import {
   GraduationCap,
   HeartPulse,
   Building2,
-  Lock,
-  Unlock,
-  Key,
-  KeyRound,
-  Award,
-  Target,
-  ToggleLeft,
-  ToggleRight,
-  CheckSquare,
-  Paperclip,
-  Camera,
-  Image as ImageIcon,
-  ShieldAlert,
-  CalendarDays,
-  User,
-  Layers,
-  FileUp,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -135,8 +118,8 @@ const ROLE_PRESETS = [
   },
   {
     title: 'Finishing & Die-Cut Specialist',
-    title_bn: 'ফিনিশিং ও ডাই-কাট কারিগর',
-    role: 'Finishing & Auto Die-Cut Operator',
+    title_bn: 'ফিনিশিং ও ডাই-কাটিং ইনচার্জ',
+    role: 'Finishing & Die-Cutting Specialist',
     department: 'finishing',
     employee_type: 'permanent' as EmploymentType,
     salary_basis: 'monthly' as SalaryBasis,
@@ -148,58 +131,72 @@ const ROLE_PRESETS = [
     color: 'border-amber-500/30 bg-amber-500/5 hover:border-amber-500/60 text-amber-600 dark:text-amber-400',
   },
   {
-    title: 'Pre-Press Graphic Designer',
-    title_bn: 'প্রি-প্রেস গ্রাফিক ডিজাইনার',
-    role: 'Commercial Pre-Press Graphic Designer',
-    department: 'design',
+    title: 'Signage & Acrylic Fabricator',
+    title_bn: 'সাইনেজ ও এক্রিলিক কারিগর',
+    role: 'Signage & Acrylic CNC Fabricator',
+    department: 'fabrication',
     employee_type: 'permanent' as EmploymentType,
     salary_basis: 'monthly' as SalaryBasis,
     base_salary: 28000,
     hourly_rate: 135,
     overtime_hourly_rate: 200,
-    daily_rate: 1000,
-    icon: '🎨',
+    daily_rate: 950,
+    icon: '⚡',
     color: 'border-purple-500/30 bg-purple-500/5 hover:border-purple-500/60 text-purple-600 dark:text-purple-400',
   },
   {
-    title: 'CNC & Acrylic Fabricator',
-    title_bn: 'সিএনসি ও এক্রিলিক সাইনেজ মিস্ত্রি',
-    role: 'CNC Router & 3D Letter Fabricator',
-    department: 'fabrication',
-    employee_type: 'permanent' as EmploymentType,
-    salary_basis: 'monthly' as SalaryBasis,
-    base_salary: 25000,
-    hourly_rate: 120,
-    overtime_hourly_rate: 180,
-    daily_rate: 850,
-    icon: '⚡',
-    color: 'border-orange-500/30 bg-orange-500/5 hover:border-orange-500/60 text-orange-600 dark:text-orange-400',
-  },
-  {
-    title: 'Senior Corporate Sales Exec',
-    title_bn: 'সিনিয়র কর্পোরেট সেলস এক্সিকিউটিভ',
-    role: 'Senior Corporate Print Sales Executive',
-    department: 'sales',
+    title: 'Graphic Designer & Prepress',
+    title_bn: 'গ্রাফিক ডিজাইনার ও প্রি-প্রেস',
+    role: 'Senior Graphic Designer & Prepress',
+    department: 'design',
     employee_type: 'permanent' as EmploymentType,
     salary_basis: 'monthly' as SalaryBasis,
     base_salary: 30000,
     hourly_rate: 144,
-    overtime_hourly_rate: 215,
-    daily_rate: 1100,
-    icon: '💼',
+    overtime_hourly_rate: 220,
+    daily_rate: 1000,
+    icon: '🎨',
+    color: 'border-pink-500/30 bg-pink-500/5 hover:border-pink-500/60 text-pink-600 dark:text-pink-400',
+  },
+  {
+    title: 'On-Site Installation Tech',
+    title_bn: 'অন-সাইট ইনস্টলেশন টেকনিশিয়ান',
+    role: 'Installation & Field Technician',
+    department: 'installation',
+    employee_type: 'permanent' as EmploymentType,
+    salary_basis: 'monthly' as SalaryBasis,
+    base_salary: 24000,
+    hourly_rate: 115,
+    overtime_hourly_rate: 175,
+    daily_rate: 850,
+    icon: '🛠️',
     color: 'border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/60 text-emerald-600 dark:text-emerald-400',
   },
   {
-    title: 'Daily Laborer / Helper',
-    title_bn: 'দৈনিক লেবার / হেল্পার',
-    role: 'Shop-Floor General Helper',
-    department: 'finishing',
+    title: 'Accounts & Billing Officer',
+    title_bn: 'অ্যাকাউন্টিং ও বিলিং অফিসার',
+    role: 'Accounts & Billing Officer',
+    department: 'accounts',
+    employee_type: 'permanent' as EmploymentType,
+    salary_basis: 'monthly' as SalaryBasis,
+    base_salary: 28000,
+    hourly_rate: 135,
+    overtime_hourly_rate: 200,
+    daily_rate: 950,
+    icon: '📊',
+    color: 'border-indigo-500/30 bg-indigo-500/5 hover:border-indigo-500/60 text-indigo-600 dark:text-indigo-400',
+  },
+  {
+    title: 'Daily Production Laborer',
+    title_bn: 'দৈনিক সাধারণ শ্রমিক',
+    role: 'Daily Production Laborer',
+    department: 'printing',
     employee_type: 'daily_worker' as EmploymentType,
     salary_basis: 'daily_rate' as SalaryBasis,
-    base_salary: 18000,
-    hourly_rate: 80,
-    overtime_hourly_rate: 120,
-    daily_rate: 700,
+    base_salary: 0,
+    hourly_rate: 100,
+    overtime_hourly_rate: 150,
+    daily_rate: 800,
     icon: '👷',
     color: 'border-slate-500/30 bg-slate-500/5 hover:border-slate-500/60 text-slate-600 dark:text-slate-400',
   },
@@ -246,10 +243,9 @@ export default function EmployeeListPage() {
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRecord | null>(null)
 
   // Upgraded Modal Tab Navigation & State
-  const [modalTab, setModalTab] = useState<'personal' | 'employment' | 'duty' | 'commission' | 'credentials'>('personal')
-  const [drawerTab, setDrawerTab] = useState<'overview' | 'compensation' | 'duty' | 'commission' | 'payment' | 'idcard' | 'notes'>('overview')
+  const [modalTab, setModalTab] = useState<'personal' | 'role' | 'salary' | 'banking' | 'emergency'>('personal')
+  const [drawerTab, setDrawerTab] = useState<'overview' | 'compensation' | 'payment' | 'idcard' | 'notes'>('overview')
   const [showAdvancedAllowances, setShowAdvancedAllowances] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
   const triggerCopy = (key: string) => {
@@ -284,21 +280,16 @@ export default function EmployeeListPage() {
     email: '',
     nid_number: '',
     address: '',
-    educational_qualification: 'Diploma in Printing Technology',
-    profile_picture_url: '',
     role: 'Master Offset Machine Operator',
     department: 'printing',
     branch_id: '',
-    joining_date: new Date().toISOString().split('T')[0],
-    contract_end_date: '',
     employee_type: 'permanent' as EmploymentType,
     salary_basis: 'monthly' as SalaryBasis,
+    joining_date: new Date().toISOString().split('T')[0],
     base_salary: 25000,
     daily_rate: 800,
     hourly_rate: 120,
     overtime_hourly_rate: 180,
-    allowed_monthly_leaves: 2,
-    payment_method: 'bank' as PaymentMethod,
     salary_structure: {
       basic: 15000,
       house_allowance: 5000,
@@ -307,29 +298,9 @@ export default function EmployeeListPage() {
       food_allowance: 0,
       other_allowances: 0,
     },
-    // Duty, Attendance & Overtime Settings
-    office_start_time: '09:00',
-    office_end_time: '18:00',
-    daily_duty_hours: 8,
-    late_grace_minutes: 15,
-    weekly_off_day: 'Friday',
-    ot_calc_type: '1.5x_standard' as '1.5x_standard' | '2.0x_holiday' | 'fixed_rate' | 'none',
-    overtime_rate_value: 180,
-    absent_deduction_allowed: true,
-    late_fine_enabled: true,
-    late_fine_policy: '3_late_1_day_salary' as '3_late_1_day_salary' | 'fixed_amount' | 'warning_only',
-    late_fine_amount: 100,
-    // Commission & Target Settings
-    enable_commission: false,
-    commission_type: 'percentage' as 'percentage' | 'fixed_unit',
-    commission_rate: 2.5,
-    monthly_target: 150000,
-    commission_notes: '',
-    // Emergency Contact Details
     emergency_contact_name: '',
     emergency_contact_phone: '',
     emergency_contact_relation: 'Spouse',
-    // Banking & Mobile Wallets
     bank_name: '',
     account_name: '',
     account_number: '',
@@ -338,16 +309,6 @@ export default function EmployeeListPage() {
     mfs_provider: 'bkash' as 'bkash' | 'nagad' | 'rocket' | 'other',
     mfs_account_type: 'personal' as 'personal' | 'merchant' | 'agent',
     mfs_number: '',
-    // Login Account Credentials
-    create_portal_login: false,
-    login_username: '',
-    login_password: '',
-    login_role: 'operator',
-    // Documents
-    document_attachments: [
-      { id: 'doc-1', name: 'NID_Card_Scan_Front.pdf', type: 'NID Front', size: '1.2 MB' },
-      { id: 'doc-2', name: 'Appointment_Letter_Signed.pdf', type: 'Appointment Letter', size: '850 KB' },
-    ] as Array<{ id: string; name: string; type: string; size?: string; url?: string }>,
     status: 'active' as EmployeeRecord['status'],
     notes: '',
   }
@@ -395,7 +356,6 @@ export default function EmployeeListPage() {
     })
     setModalTab('personal')
     setShowAdvancedAllowances(false)
-    setShowPassword(false)
     setIsAddModalOpen(true)
   }
 
@@ -422,23 +382,18 @@ export default function EmployeeListPage() {
       email: emp.email || '',
       nid_number: nid,
       address: emp.address || '',
-      educational_qualification: emp.educational_qualification || 'Diploma in Printing Technology',
-      profile_picture_url: emp.profile_picture_url || '',
       role: emp.role || 'Staff',
       department: emp.department || 'printing',
       branch_id: emp.branch_id || '',
-      joining_date: emp.joining_date || new Date().toISOString().split('T')[0],
-      contract_end_date: emp.contract_end_date || '',
       employee_type: emp.employee_type || 'permanent',
       salary_basis: emp.salary_basis || 'monthly',
+      joining_date: emp.joining_date || new Date().toISOString().split('T')[0],
       base_salary: baseSalary,
       daily_rate: Number(emp.daily_rate || 0),
       hourly_rate: Number(emp.hourly_rate || (baseSalary > 0 ? Math.round(baseSalary / 208) : 0)),
       overtime_hourly_rate: Number(
         emp.overtime_hourly_rate || (baseSalary > 0 ? Math.round((baseSalary / 208) * 1.5) : 0)
       ),
-      allowed_monthly_leaves: emp.allowed_monthly_leaves !== undefined && emp.allowed_monthly_leaves !== null ? emp.allowed_monthly_leaves : 2,
-      payment_method: (emp.payment_method as any) || (emp.bank_payment_info?.account_number ? 'bank' : emp.mfs_payment_info?.wallet_number ? (emp.mfs_payment_info?.provider || 'bkash') : 'cash'),
       salary_structure: emp.salary_structure || {
         basic: Math.round(baseSalary * 0.6),
         house_allowance: Math.round(baseSalary * 0.2),
@@ -447,22 +402,6 @@ export default function EmployeeListPage() {
         food_allowance: 0,
         other_allowances: 0,
       },
-      office_start_time: emp.duty_settings?.office_start_time || '09:00',
-      office_end_time: emp.duty_settings?.office_end_time || '18:00',
-      daily_duty_hours: emp.duty_settings?.daily_duty_hours || 8,
-      late_grace_minutes: emp.duty_settings?.late_grace_minutes || 15,
-      weekly_off_day: emp.duty_settings?.weekly_off_day || 'Friday',
-      ot_calc_type: (emp.duty_settings?.ot_calc_type as any) || '1.5x_standard',
-      overtime_rate_value: emp.duty_settings?.overtime_rate_value || emp.overtime_hourly_rate || 180,
-      absent_deduction_allowed: emp.duty_settings?.absent_deduction_allowed !== undefined ? emp.duty_settings.absent_deduction_allowed : true,
-      late_fine_enabled: emp.duty_settings?.late_fine_enabled !== undefined ? emp.duty_settings.late_fine_enabled : true,
-      late_fine_policy: (emp.duty_settings?.late_fine_policy as any) || '3_late_1_day_salary',
-      late_fine_amount: emp.duty_settings?.late_fine_amount || 100,
-      enable_commission: emp.commission_settings?.enabled || false,
-      commission_type: (emp.commission_settings?.type as any) || 'percentage',
-      commission_rate: emp.commission_settings?.rate_pct || 2.5,
-      monthly_target: emp.commission_settings?.monthly_target || 150000,
-      commission_notes: emp.commission_settings?.notes || '',
       emergency_contact_name: emp.emergency_contact_name || '',
       emergency_contact_phone: emp.emergency_contact_phone || '',
       emergency_contact_relation: emp.emergency_contact_relation || 'Spouse',
@@ -474,20 +413,11 @@ export default function EmployeeListPage() {
       mfs_provider: (emp.mfs_payment_info?.provider as any) || 'bkash',
       mfs_account_type: (emp.mfs_payment_info?.account_type as any) || 'personal',
       mfs_number: emp.mfs_payment_info?.wallet_number || '',
-      create_portal_login: emp.portal_credentials?.create_login || false,
-      login_username: emp.portal_credentials?.username || emp.email || emp.mobile || '',
-      login_password: emp.portal_credentials?.password || '',
-      login_role: emp.portal_credentials?.role || 'operator',
-      document_attachments: (emp.document_attachments as any) || [
-        { id: 'doc-1', name: 'NID_Card_Scan_Front.pdf', type: 'NID Front', size: '1.2 MB' },
-        { id: 'doc-2', name: 'Appointment_Letter_Signed.pdf', type: 'Appointment Letter', size: '850 KB' },
-      ],
       status: emp.status || 'active',
       notes: notesClean,
     })
     setModalTab('personal')
     setShowAdvancedAllowances(false)
-    setShowPassword(false)
     setIsEditModalOpen(true)
   }
 
@@ -516,7 +446,6 @@ export default function EmployeeListPage() {
       daily_rate: preset.daily_rate,
       hourly_rate: hrRate,
       overtime_hourly_rate: otRate,
-      overtime_rate_value: otRate,
       salary_structure: {
         basic,
         house_allowance: house,
@@ -529,95 +458,8 @@ export default function EmployeeListPage() {
     notify(`Applied preset: ${preset.title}`)
   }
 
-  const calculateDutyFromShift = (startTime: string, endTime: string) => {
-    if (!startTime || !endTime) {
-      return { netHours: 8, grossHours: 8, breakMins: 0, summary: '8h Standard Shift' }
-    }
-
-    const [sH, sM] = startTime.split(':').map(Number)
-    const [eH, eM] = endTime.split(':').map(Number)
-
-    if (isNaN(sH) || isNaN(eH)) {
-      return { netHours: 8, grossHours: 8, breakMins: 0, summary: '8h Standard Shift' }
-    }
-
-    let startTotalMins = sH * 60 + (sM || 0)
-    let endTotalMins = eH * 60 + (eM || 0)
-
-    if (endTotalMins <= startTotalMins) {
-      endTotalMins += 24 * 60 // Overnight shift support (e.g. 22:00 -> 06:00)
-    }
-
-    const grossMins = endTotalMins - startTotalMins
-    const grossHours = Math.round((grossMins / 60) * 10) / 10
-
-    // Standard Bangladesh Industrial Shift Rule:
-    // If shift span is 9 hours or more (540 mins), standard 1 hour meal/rest interval is excluded -> net 8h duty (e.g. 09:00 to 18:00 = 8h).
-    // If shift span is < 9 hours (e.g. 4h, 6h, 8h), net duty equals gross span.
-    const breakMins = grossMins >= 540 ? 60 : 0
-    const netMins = Math.max(0, grossMins - breakMins)
-    const netHours = Math.round((netMins / 60) * 10) / 10
-
-    const summary = breakMins > 0
-      ? `${netHours}h net (${grossHours}h span − 1h break)`
-      : `${netHours}h span`
-
-    return { netHours: netHours > 0 ? netHours : 8, grossHours, breakMins, summary }
-  }
-
-  const handleShiftTimeChange = (newStart: string, newEnd: string) => {
-    const { netHours } = calculateDutyFromShift(newStart, newEnd)
-    const baseSalary = Number(empForm.base_salary || 0)
-    const monthlyHours = Math.max(50, Math.round(netHours * 26))
-    const newHourlyRate = baseSalary > 0 ? Math.round(baseSalary / monthlyHours) : empForm.hourly_rate
-    
-    let newOtRate = empForm.overtime_hourly_rate
-    if (empForm.ot_calc_type === '1.5x_standard') {
-      newOtRate = Math.round(newHourlyRate * 1.5)
-    } else if (empForm.ot_calc_type === '2.0x_holiday') {
-      newOtRate = Math.round(newHourlyRate * 2.0)
-    } else if (empForm.ot_calc_type === 'none') {
-      newOtRate = 0
-    }
-
-    setEmpForm((prev) => ({
-      ...prev,
-      office_start_time: newStart,
-      office_end_time: newEnd,
-      daily_duty_hours: netHours,
-      hourly_rate: newHourlyRate,
-      overtime_hourly_rate: newOtRate,
-      overtime_rate_value: prev.ot_calc_type === 'fixed_rate' ? prev.overtime_rate_value : newOtRate,
-    }))
-  }
-
-  const handleDutyHoursChange = (newDuty: number) => {
-    const baseSalary = Number(empForm.base_salary || 0)
-    const monthlyHours = Math.max(50, Math.round(newDuty * 26))
-    const newHourlyRate = baseSalary > 0 ? Math.round(baseSalary / monthlyHours) : empForm.hourly_rate
-    
-    let newOtRate = empForm.overtime_hourly_rate
-    if (empForm.ot_calc_type === '1.5x_standard') {
-      newOtRate = Math.round(newHourlyRate * 1.5)
-    } else if (empForm.ot_calc_type === '2.0x_holiday') {
-      newOtRate = Math.round(newHourlyRate * 2.0)
-    } else if (empForm.ot_calc_type === 'none') {
-      newOtRate = 0
-    }
-
-    setEmpForm((prev) => ({
-      ...prev,
-      daily_duty_hours: newDuty,
-      hourly_rate: newHourlyRate,
-      overtime_hourly_rate: newOtRate,
-      overtime_rate_value: prev.ot_calc_type === 'fixed_rate' ? prev.overtime_rate_value : newOtRate,
-    }))
-  }
-
   const handleBaseSalaryChange = (val: number) => {
-    const dutyHours = Number(empForm.daily_duty_hours || 8)
-    const monthlyHours = Math.max(50, Math.round(dutyHours * 26))
-    const hrRate = val > 0 ? Math.round(val / monthlyHours) : 0
+    const hrRate = val > 0 ? Math.round(val / 208) : 0
     const otRate = Math.round(hrRate * 1.5)
     const basic = Math.round(val * 0.6)
     const house = Math.round(val * 0.2)
@@ -629,7 +471,6 @@ export default function EmployeeListPage() {
       base_salary: val,
       hourly_rate: hrRate,
       overtime_hourly_rate: otRate,
-      overtime_rate_value: otRate,
       salary_structure: {
         ...prev.salary_structure,
         basic,
@@ -661,25 +502,19 @@ export default function EmployeeListPage() {
         .filter(Boolean)
         .join('\n')
 
-      const payload: Partial<EmployeeRecord> & { name: string } = {
+      const payload: any = {
         name: empForm.name.trim(),
         name_bn: empForm.name_bn?.trim() || null,
         mobile: empForm.mobile.trim(),
         phone: empForm.phone?.trim() || null,
         email: empForm.email?.trim() || null,
         address: empForm.address?.trim() || null,
-        educational_qualification: empForm.educational_qualification || null,
-        profile_picture_url: empForm.profile_picture_url?.trim() || null,
         role: empForm.role.trim() || 'Staff',
-        designation: empForm.role.trim() || 'Staff',
         department: empForm.department,
         branch_id: empForm.branch_id || null,
         employee_type: empForm.employee_type,
         salary_basis: empForm.salary_basis,
         joining_date: empForm.joining_date || new Date().toISOString().split('T')[0],
-        contract_end_date: empForm.contract_end_date?.trim() || null,
-        allowed_monthly_leaves: Number(empForm.allowed_monthly_leaves || 0),
-        payment_method: empForm.payment_method,
         base_salary: Number(empForm.base_salary || 0),
         daily_rate: Number(empForm.daily_rate || 0),
         hourly_rate: Number(empForm.hourly_rate || 0),
@@ -703,33 +538,6 @@ export default function EmployeeListPage() {
           food_allowance: Number(empForm.salary_structure?.food_allowance || 0),
           other_allowances: Number(empForm.salary_structure?.other_allowances || 0),
         },
-        duty_settings: {
-          office_start_time: empForm.office_start_time,
-          office_end_time: empForm.office_end_time,
-          daily_duty_hours: Number(empForm.daily_duty_hours || 8),
-          late_grace_minutes: Number(empForm.late_grace_minutes || 15),
-          weekly_off_day: empForm.weekly_off_day,
-          ot_calc_type: empForm.ot_calc_type,
-          overtime_rate_value: Number(empForm.overtime_rate_value || empForm.overtime_hourly_rate || 0),
-          absent_deduction_allowed: empForm.absent_deduction_allowed,
-          late_fine_enabled: empForm.late_fine_enabled,
-          late_fine_policy: empForm.late_fine_policy,
-          late_fine_amount: Number(empForm.late_fine_amount || 0),
-        },
-        commission_settings: {
-          enabled: empForm.enable_commission,
-          type: empForm.commission_type,
-          rate_pct: Number(empForm.commission_rate || 0),
-          monthly_target: Number(empForm.monthly_target || 0),
-          notes: empForm.commission_notes?.trim() || undefined,
-        },
-        portal_credentials: {
-          create_login: empForm.create_portal_login,
-          username: empForm.login_username?.trim() || empForm.email?.trim() || empForm.mobile?.trim(),
-          email: empForm.email?.trim() || undefined,
-          password: empForm.login_password || undefined,
-          role: empForm.login_role,
-        },
         bank_payment_info: empForm.account_number?.trim()
           ? {
               bank_name: empForm.bank_name.trim(),
@@ -746,7 +554,6 @@ export default function EmployeeListPage() {
               account_type: empForm.mfs_account_type || 'personal',
             }
           : null,
-        document_attachments: empForm.document_attachments,
       }
 
       if (isEdit && selectedEmployee) {
@@ -1310,11 +1117,11 @@ export default function EmployeeListPage() {
             {/* Step Progress & Tab Navigation Bar */}
             <div className="bg-slate-50/80 dark:bg-slate-900/60 p-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
               {[
-                { id: 'personal', num: 1, title: 'Basic Info & Education', title_bn: 'ব্যক্তিগত ও শিক্ষা', icon: UserCheck },
-                { id: 'employment', num: 2, title: 'Employment & Salary', title_bn: 'কর্মসংস্থান ও বেতন', icon: Briefcase },
-                { id: 'duty', num: 3, title: 'Duty, Attendance & OT', title_bn: 'ডিউটি ও ওভারটাইম', icon: Clock },
-                { id: 'commission', num: 4, title: 'Commission & Target', title_bn: 'কমিশন ও টার্গেট', icon: Percent },
-                { id: 'credentials', num: 5, title: 'Emergency, Login & Docs', title_bn: 'জরুরি, লগইন ও ফাইল', icon: ShieldCheck },
+                { id: 'personal', num: 1, title: 'Personal Info', title_bn: 'ব্যক্তিগত তথ্য', icon: UserCheck },
+                { id: 'role', num: 2, title: 'Role & Contract', title_bn: 'পদবি ও চুক্তি', icon: Briefcase },
+                { id: 'salary', num: 3, title: 'Compensation', title_bn: 'বেতন কাঠামো', icon: Calculator },
+                { id: 'banking', num: 4, title: 'Bank & MFS', title_bn: 'ব্যাংক ও ওয়ালেট', icon: CreditCard },
+                { id: 'emergency', num: 5, title: 'Emergency & Notes', title_bn: 'জরুরি ও অন্যান্য', icon: ShieldCheck },
               ].map((step) => {
                 const isActive = modalTab === step.id
                 const Icon = step.icon
@@ -1345,24 +1152,14 @@ export default function EmployeeListPage() {
               })}
             </div>
 
-            {/* TAB 1: BASIC INFO & EDUCATION */}
+            {/* TAB 1: PERSONAL & CONTACT DETAILS */}
             {modalTab === 'personal' && (
               <div className="space-y-4 pt-1">
                 {/* Profile Avatar & Preview Banner */}
-                <div className="p-3.5 rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="p-3.5 rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="relative group">
-                      {empForm.profile_picture_url ? (
-                        <img
-                          src={empForm.profile_picture_url}
-                          alt={empForm.name}
-                          className="w-12 h-12 rounded-full object-cover ring-2 ring-blue-500/30 shadow-xs"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs ring-2 ring-blue-500/30">
-                          {empForm.name ? empForm.name.slice(0, 2).toUpperCase() : 'EMP'}
-                        </div>
-                      )}
+                    <div className="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                      {empForm.name ? empForm.name.slice(0, 2).toUpperCase() : 'EMP'}
                     </div>
                     <div>
                       <h4 className="font-bold text-sm text-slate-900 dark:text-white">
@@ -1374,17 +1171,15 @@ export default function EmployeeListPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-white dark:bg-slate-900 text-xs px-2.5 py-1 text-slate-700 dark:text-slate-300">
-                      {tBilingual('Step 1 of 5', 'ধাপ ১ / ৫')}
-                    </Badge>
-                  </div>
+                  <Badge variant="outline" className="bg-white dark:bg-slate-900 text-xs px-2.5 py-1 text-slate-700 dark:text-slate-300">
+                    {tBilingual('Step 1 of 5', 'ধাপ ১ / ৫')}
+                  </Badge>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Employee Name *', 'কর্মীর নাম (English) *')}
+                      {tBilingual('Full Name (English) *', 'পূর্ণ নাম (ইংরেজি) *')}
                     </Label>
                     <Input
                       placeholder="e.g. Mohammad Rahim Uddin"
@@ -1396,7 +1191,7 @@ export default function EmployeeListPage() {
 
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Name in Bengali', 'কর্মীর নাম (বাংলা)')}
+                      {tBilingual('Full Name (Bangla)', 'নাম (বাংলা)')}
                     </Label>
                     <Input
                       placeholder="যেমন: মোহাম্মদ রহিম উদ্দিন"
@@ -1408,7 +1203,7 @@ export default function EmployeeListPage() {
 
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Mobile Number *', 'মোবাইল নম্বর *')}
+                      {tBilingual('Primary Mobile Number *', 'প্রধান মোবাইল নম্বর *')}
                     </Label>
                     <div className="relative">
                       <Phone className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
@@ -1416,6 +1211,21 @@ export default function EmployeeListPage() {
                         placeholder="017XXXXXXXX / +88017XXXXXXXX"
                         value={empForm.mobile}
                         onChange={(e) => setEmpForm({ ...empForm, mobile: e.target.value })}
+                        className="text-xs h-9 pl-9 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {tBilingual('Secondary Phone / WhatsApp', 'বিকল্প ফোন / হোয়াটসঅ্যাপ')}
+                    </Label>
+                    <div className="relative">
+                      <Phone className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                      <Input
+                        placeholder="018XXXXXXXX (Optional)"
+                        value={empForm.phone}
+                        onChange={(e) => setEmpForm({ ...empForm, phone: e.target.value })}
                         className="text-xs h-9 pl-9 font-mono"
                       />
                     </div>
@@ -1438,29 +1248,6 @@ export default function EmployeeListPage() {
 
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Educational Qualification', 'শিক্ষাগত যোগ্যতা')}
-                    </Label>
-                    <div className="relative">
-                      <GraduationCap className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                      <select
-                        value={empForm.educational_qualification}
-                        onChange={(e) => setEmpForm({ ...empForm, educational_qualification: e.target.value })}
-                        className="w-full h-9 text-xs pl-9 pr-3 rounded-md border border-input bg-background text-foreground"
-                      >
-                        <option value="Diploma in Printing Technology">{tBilingual('Diploma in Printing Technology (ডিপ্লোমা ইন প্রিন্টিং টেকনোলজি)', 'ডিপ্লোমা ইন প্রিন্টিং টেকনোলজি')}</option>
-                        <option value="Graduate / B.Sc / BBA / BA">{tBilingual('Graduate / B.Sc / BBA / BA (স্নাতক / ডিগ্রি)', 'স্নাতক / ডিগ্রি')}</option>
-                        <option value="Higher Secondary (HSC / Alim)">{tBilingual('Higher Secondary (HSC / আলিম)', 'উচ্চ মাধ্যমিক (এইচএসসি/আলিম)')}</option>
-                        <option value="Secondary School (SSC / Dakhil)">{tBilingual('Secondary School (SSC / দাখিল)', 'মাধ্যমিক (এসএসসি/দাখিল)')}</option>
-                        <option value="Vocational / Technical Certificate">{tBilingual('Vocational / Technical Certificate (কারিগরি ও ভোকেশনাল)', 'কারিগরি ও ভোকেশনাল')}</option>
-                        <option value="Junior School / Primary">{tBilingual('Junior School / Primary (অষ্টম শ্রেণি / প্রাথমিক)', 'অষ্টম শ্রেণি / প্রাথমিক')}</option>
-                        <option value="Self-Taught / Experienced Operator">{tBilingual('Self-Taught / Experienced Operator (স্বশিক্ষিত / অভিজ্ঞ কারিগর)', 'স্বশিক্ষিত / অভিজ্ঞ কারিগর')}</option>
-                        <option value="Other Qualification">{tBilingual('Other Qualification (অন্যান্য)', 'অন্যান্য')}</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                       {tBilingual('National ID / Smart Card (NID)', 'জাতীয় পরিচয়পত্র / স্মার্ট কার্ড নম্বর')}
                     </Label>
                     <div className="relative">
@@ -1473,11 +1260,41 @@ export default function EmployeeListPage() {
                       />
                     </div>
                   </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {tBilingual('Joining Date', 'যোগদানের তারিখ')}
+                    </Label>
+                    <div className="relative">
+                      <Calendar className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                      <Input
+                        type="date"
+                        value={empForm.joining_date}
+                        onChange={(e) => setEmpForm({ ...empForm, joining_date: e.target.value })}
+                        className="text-xs h-9 pl-9"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {tBilingual('Employee Status', 'বর্তমান স্ট্যাটাস')}
+                    </Label>
+                    <select
+                      value={empForm.status}
+                      onChange={(e) => setEmpForm({ ...empForm, status: e.target.value as any })}
+                      className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
+                    >
+                      <option value="active">{tBilingual('Active (কর্মরত)', 'কর্মরত')}</option>
+                      <option value="on_leave">{tBilingual('On Leave (ছুটিতে)', 'ছুটিতে')}</option>
+                      <option value="terminated">{tBilingual('Terminated / Inactive (অব্যাহতিপ্রাপ্ত)', 'অব্যাহতিপ্রাপ্ত')}</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    {tBilingual('Present Address', 'বর্তমান ঠিকানা')}
+                    {tBilingual('Residential & Present Address', 'বর্তমান ও স্থায়ী ঠিকানা')}
                   </Label>
                   <div className="relative">
                     <MapPin className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
@@ -1492,8 +1309,8 @@ export default function EmployeeListPage() {
               </div>
             )}
 
-            {/* TAB 2: EMPLOYMENT & SALARY */}
-            {modalTab === 'employment' && (
+            {/* TAB 2: ROLE, DEPARTMENT & CONTRACT */}
+            {modalTab === 'role' && (
               <div className="space-y-4 pt-1">
                 {/* Quick Role Preset Selector Bar */}
                 <div className="space-y-2">
@@ -1532,29 +1349,11 @@ export default function EmployeeListPage() {
                   </div>
                 </div>
 
-                {/* Primary Employment Attributes */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200/80 dark:border-slate-800">
+                {/* Custom Role Form Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 border-t border-slate-200/80 dark:border-slate-800">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Warehouse (Branch) *', 'কারখানা / শাখা *')}
-                    </Label>
-                    <select
-                      value={empForm.branch_id}
-                      onChange={(e) => setEmpForm({ ...empForm, branch_id: e.target.value })}
-                      className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
-                    >
-                      <option value="">{tBilingual('Main Factory / Head Office', 'প্রধান কারখানা / হেড অফিস')}</option>
-                      {branches.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name}{b.code ? ` (${b.code})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Designation', 'পদবি / দায়িত্ব *')}
+                      {tBilingual('Designation / Job Title *', 'পদবি / দায়িত্ব *')}
                     </Label>
                     <Input
                       placeholder="e.g. Master Offset Machine Operator"
@@ -1587,36 +1386,6 @@ export default function EmployeeListPage() {
 
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Joining Date *', 'যোগদানের তারিখ *')}
-                    </Label>
-                    <div className="relative">
-                      <Calendar className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                      <Input
-                        type="date"
-                        value={empForm.joining_date}
-                        onChange={(e) => setEmpForm({ ...empForm, joining_date: e.target.value })}
-                        className="text-xs h-9 pl-9"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('End Date (Contract)', 'চুক্তির মেয়াদ শেষ')}
-                    </Label>
-                    <div className="relative">
-                      <CalendarDays className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                      <Input
-                        type="date"
-                        value={empForm.contract_end_date}
-                        onChange={(e) => setEmpForm({ ...empForm, contract_end_date: e.target.value })}
-                        className="text-xs h-9 pl-9"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                       {tBilingual('Employment Type *', 'চুক্তির ধরন *')}
                     </Label>
                     <select
@@ -1639,13 +1408,65 @@ export default function EmployeeListPage() {
                       <option value="part_time">{tBilingual('Part-Time Worker (খণ্ডকালীন কর্মী)', 'খণ্ডকালীন কর্মী')}</option>
                     </select>
                   </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {tBilingual('Assigned Branch / Production Unit', 'কারখানা / শাখা')}
+                    </Label>
+                    <select
+                      value={empForm.branch_id}
+                      onChange={(e) => setEmpForm({ ...empForm, branch_id: e.target.value })}
+                      className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
+                    >
+                      <option value="">{tBilingual('Main Factory / Head Office', 'প্রধান কারখানা / হেড অফিস')}</option>
+                      {branches.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name}{b.code ? ` (${b.code})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: COMPENSATION & OVERTIME CALCULATOR */}
+            {modalTab === 'salary' && (
+              <div className="space-y-4 pt-1">
+                {/* Salary Basis Selector Pills */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    {tBilingual('Salary Basis / Payout Mode', 'বেতনের ধরন')}
+                  </Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'monthly', label: 'Monthly Fixed (মাসিক)', desc: 'Full-time salaried staff' },
+                      { id: 'daily_rate', label: 'Daily Wage (দৈনিক)', desc: 'Shop-floor labor rate' },
+                      { id: 'hourly_rate', label: 'Hourly Rate (ঘণ্টাপ্রতি)', desc: 'Field & part-time tech' },
+                      { id: 'contract', label: 'Contractual (চুক্তি)', desc: 'Job-wise or fixed term' },
+                    ].map((mode) => (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        onClick={() => setEmpForm({ ...empForm, salary_basis: mode.id as SalaryBasis })}
+                        className={`p-2.5 rounded-xl border text-left transition-all ${
+                          empForm.salary_basis === mode.id
+                            ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-700 dark:text-blue-300 font-semibold shadow-xs'
+                            : 'bg-card border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="text-xs font-bold">{mode.label}</div>
+                        <div className="text-[10px] opacity-75">{mode.desc}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Salary Numbers Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+                {/* Primary Numbers Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div className="space-y-1.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                      <span>{tBilingual('Monthly Basic Salary (৳)', 'মূল মাসিক বেতন (৳)')}</span>
+                      <span>{tBilingual('Base Salary (Monthly)', 'মূল মাসিক বেতন')}</span>
                       <span className="text-[10px] text-blue-600 font-mono">৳ BDT</span>
                     </Label>
                     <Input
@@ -1675,20 +1496,39 @@ export default function EmployeeListPage() {
                     </p>
                   </div>
 
-                  <div className="space-y-1.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                      <span>{tBilingual('Allowed Monthly Paid Leaves', 'মাসিক ছুটি অনুমোদন')}</span>
-                      <span className="text-[10px] text-emerald-600 font-bold">Days / mo</span>
+                  <div className="space-y-1.5 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20">
+                    <Label className="text-xs font-semibold text-amber-700 dark:text-amber-300 flex items-center justify-between">
+                      <span>{tBilingual('OT Hourly Rate (৳)', 'ওভারটাইম রেট')}</span>
+                      <span className="text-[10px] text-amber-600 font-mono">৳/hour</span>
                     </Label>
                     <Input
                       type="number"
-                      value={empForm.allowed_monthly_leaves}
-                      onChange={(e) => setEmpForm({ ...empForm, allowed_monthly_leaves: Number(e.target.value || 0) })}
-                      className="text-sm h-9 font-bold font-mono text-emerald-600 dark:text-emerald-400"
+                      value={empForm.overtime_hourly_rate}
+                      onChange={(e) => setEmpForm({ ...empForm, overtime_hourly_rate: Number(e.target.value || 0) })}
+                      className="text-sm h-9 font-bold font-mono text-amber-600 dark:text-amber-400"
                     />
-                    <p className="text-[10px] text-slate-400">
-                      {tBilingual('Paid leaves quota (default 2 days/mo)', 'বেতনসহ অনুমোদিত ছুটি')}
-                    </p>
+                    <div className="flex items-center gap-1.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const hr = empForm.hourly_rate || Math.round((empForm.base_salary || 0) / 208)
+                          setEmpForm({ ...empForm, overtime_hourly_rate: Math.round(hr * 1.5) })
+                        }}
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 font-bold"
+                      >
+                        1.5x Standard
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const hr = empForm.hourly_rate || Math.round((empForm.base_salary || 0) / 208)
+                          setEmpForm({ ...empForm, overtime_hourly_rate: Math.round(hr * 2.0) })
+                        }}
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 font-bold"
+                      >
+                        2.0x Holiday
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1800,552 +1640,201 @@ export default function EmployeeListPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
 
-                {/* Payment Method & Bank / Mobile Wallet Number */}
+            {/* TAB 4: BANKING & MOBILE FINANCIAL SERVICES (MFS) */}
+            {modalTab === 'banking' && (
+              <div className="space-y-4 pt-1">
+                {/* Bank Transfer Section */}
                 <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                     <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <CreditCard className="w-3.5 h-3.5 text-blue-600" />
-                      {tBilingual('Payment Method & Bank / Mobile Wallet Number', 'বেতন প্রদানের মাধ্যম ও অ্যাকাউন্ট নম্বর')}
+                      <Landmark className="w-3.5 h-3.5 text-blue-600" />
+                      {tBilingual('Bank Account Details (BEFTN / NPSB / RTGS)', 'ব্যাংক অ্যাকাউন্ট বিবরণ')}
                     </h5>
-                    <Badge variant="outline" className="text-[10px] uppercase font-mono">
-                      {empForm.payment_method}
-                    </Badge>
+                    <span className="text-[11px] text-slate-400">Optional for direct bank disbursement</span>
                   </div>
 
-                  {/* Payment Method Selector Cards */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                    {[
-                      { id: 'bank', label: 'Bank Transfer (ব্যাংক)', icon: Landmark, color: 'text-blue-600' },
-                      { id: 'bkash', label: 'bKash (বিকাশ)', icon: Smartphone, color: 'text-pink-600' },
-                      { id: 'nagad', label: 'Nagad (নগদ)', icon: Smartphone, color: 'text-orange-600' },
-                      { id: 'rocket', label: 'Rocket (রকেট)', icon: Smartphone, color: 'text-purple-600' },
-                      { id: 'cash', label: 'Cash (নগদ টাকা)', icon: Wallet, color: 'text-emerald-600' },
-                    ].map((pm) => {
-                      const Icon = pm.icon
-                      const isSelected = empForm.payment_method === pm.id
-                      return (
+                  {/* Popular Bank Selector Chips */}
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] text-slate-500 font-medium">Quick Bank Presets:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {POPULAR_BANKS.map((bName) => (
                         <button
-                          key={pm.id}
+                          key={bName}
                           type="button"
-                          onClick={() => {
-                            setEmpForm({
-                              ...empForm,
-                              payment_method: pm.id as PaymentMethod,
-                              mfs_provider: (pm.id === 'nagad' || pm.id === 'rocket' ? pm.id : 'bkash') as any,
-                            })
-                          }}
-                          className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 ${
-                            isSelected
-                              ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-700 dark:text-blue-300 font-bold ring-1 ring-blue-500'
-                              : 'bg-card border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                          onClick={() => setEmpForm({ ...empForm, bank_name: bName })}
+                          className={`text-[10px] px-2 py-1 rounded-md border transition-all ${
+                            empForm.bank_name === bName
+                              ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 border-blue-400 font-bold'
+                              : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'
                           }`}
                         >
-                          <Icon className={`w-4 h-4 ${pm.color}`} />
-                          <span className="text-[11px] font-medium">{pm.label}</span>
+                          {bName}
                         </button>
-                      )
-                    })}
+                      ))}
+                    </div>
                   </div>
 
-                  {/* If Bank Selected */}
-                  {empForm.payment_method === 'bank' && (
-                    <div className="space-y-3 pt-2">
-                      <div className="flex flex-wrap gap-1.5">
-                        {POPULAR_BANKS.map((bName) => (
-                          <button
-                            key={bName}
-                            type="button"
-                            onClick={() => setEmpForm({ ...empForm, bank_name: bName })}
-                            className={`text-[10px] px-2 py-1 rounded-md border transition-all ${
-                              empForm.bank_name === bName
-                                ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 border-blue-400 font-bold'
-                                : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'
-                            }`}
-                          >
-                            {bName}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs font-medium">{tBilingual('Bank Name', 'ব্যাংকের নাম')}</Label>
-                          <Input
-                            placeholder="e.g. Dutch-Bangla Bank (DBBL)"
-                            value={empForm.bank_name}
-                            onChange={(e) => setEmpForm({ ...empForm, bank_name: e.target.value })}
-                            className="text-xs h-9"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <Label className="text-xs font-medium">{tBilingual('Account Holder Name', 'হিসাবধারীর নাম')}</Label>
-                          <Input
-                            placeholder="e.g. Mohammad Rahim"
-                            value={empForm.account_name}
-                            onChange={(e) => setEmpForm({ ...empForm, account_name: e.target.value })}
-                            className="text-xs h-9"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <Label className="text-xs font-medium">{tBilingual('Bank Account Number *', 'অ্যাকাউন্ট নম্বর *')}</Label>
-                          <Input
-                            placeholder="e.g. 115.120.45892"
-                            value={empForm.account_number}
-                            onChange={(e) => setEmpForm({ ...empForm, account_number: e.target.value })}
-                            className="text-xs h-9 font-mono"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <Label className="text-xs font-medium">{tBilingual('Branch Name', 'শাখার নাম')}</Label>
-                          <Input
-                            placeholder="e.g. Motijheel Branch, Dhaka"
-                            value={empForm.branch_name}
-                            onChange={(e) => setEmpForm({ ...empForm, branch_name: e.target.value })}
-                            className="text-xs h-9"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* If MFS Selected */}
-                  {(empForm.payment_method === 'bkash' || empForm.payment_method === 'nagad' || empForm.payment_method === 'rocket' || empForm.payment_method === 'other') && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-xs font-medium">{tBilingual('Mobile Wallet Number *', 'মোবাইল ওয়ালেট নম্বর *')}</Label>
-                          {empForm.mobile && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEmpForm({ ...empForm, mfs_number: empForm.mobile })
-                                triggerCopy('mfs_mobile')
-                              }}
-                              className="text-[10px] text-blue-600 hover:underline flex items-center gap-1"
-                            >
-                              {copiedField === 'mfs_mobile' ? <Check className="w-2.5 h-2.5 text-emerald-500" /> : <Copy className="w-2.5 h-2.5" />}
-                              Same as Mobile
-                            </button>
-                          )}
-                        </div>
-                        <Input
-                          placeholder="017XXXXXXXX"
-                          value={empForm.mfs_number}
-                          onChange={(e) => setEmpForm({ ...empForm, mfs_number: e.target.value })}
-                          className="text-xs h-9 font-mono"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium">{tBilingual('Account Type', 'অ্যাকাউন্টের ধরন')}</Label>
-                        <select
-                          value={empForm.mfs_account_type}
-                          onChange={(e) => setEmpForm({ ...empForm, mfs_account_type: e.target.value as any })}
-                          className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
-                        >
-                          <option value="personal">{tBilingual('Personal (ব্যক্তিগত)', 'ব্যক্তিগত')}</option>
-                          <option value="merchant">{tBilingual('Merchant (মার্চেন্ট)', 'মার্চেন্ট')}</option>
-                          <option value="agent">{tBilingual('Agent (এজেন্ট)', 'এজেন্ট')}</option>
-                        </select>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* If Cash Selected */}
-                  {empForm.payment_method === 'cash' && (
-                    <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-700 dark:text-emerald-300">
-                      {tBilingual('Cash disbursement mode selected. Salary vouchers will be printed for direct floor disbursement.', 'নগদ বেতন পরিশোধ সিলেক্ট করা হয়েছে। পেরোলের পর ক্যাশ ভাউচার প্রিন্ট করা যাবে।')}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: DUTY, ATTENDANCE & OVERTIME SETTINGS */}
-            {modalTab === 'duty' && (
-              <div className="space-y-4 pt-1">
-                {/* Working Shift Timing Card */}
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                    <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-blue-600" />
-                      {tBilingual('Office Timing & Daily Duty Hours', 'অফিস সময়সূচি ও দৈনিক কাজের ঘণ্টা')}
-                    </h5>
-                    <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 font-mono">
-                      {empForm.daily_duty_hours}h Net Duty • {calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).summary}
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Office Start Time *', 'অফিস শুরুর সময় *')}
-                      </Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium">{tBilingual('Bank Name', 'ব্যাংকের নাম')}</Label>
                       <Input
-                        type="time"
-                        value={empForm.office_start_time}
-                        onChange={(e) => handleShiftTimeChange(e.target.value, empForm.office_end_time)}
-                        className="text-xs h-9 font-mono"
+                        placeholder="e.g. Dutch-Bangla Bank (DBBL)"
+                        value={empForm.bank_name}
+                        onChange={(e) => setEmpForm({ ...empForm, bank_name: e.target.value })}
+                        className="text-xs h-9"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Office End Time *', 'অফিস শেষ সময় *')}
-                      </Label>
-                      <Input
-                        type="time"
-                        value={empForm.office_end_time}
-                        onChange={(e) => handleShiftTimeChange(empForm.office_start_time, e.target.value)}
-                        className="text-xs h-9 font-mono"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {tBilingual('Daily Duty Hours *', 'দৈনিক ডিউটি ঘণ্টা *')}
-                        </Label>
-                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
-                          Auto-calculated
-                        </span>
+                        <Label className="text-xs font-medium">{tBilingual('Account Holder Name', 'হিসাবধারীর নাম')}</Label>
+                        {empForm.name && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEmpForm({ ...empForm, account_name: empForm.name })
+                              triggerCopy('acc_name')
+                            }}
+                            className="text-[10px] text-blue-600 hover:underline flex items-center gap-1"
+                          >
+                            {copiedField === 'acc_name' ? <Check className="w-2.5 h-2.5 text-emerald-500" /> : <Copy className="w-2.5 h-2.5" />}
+                            Copy Name
+                          </button>
+                        )}
                       </div>
                       <Input
-                        type="number"
-                        step="0.5"
-                        value={empForm.daily_duty_hours}
-                        onChange={(e) => handleDutyHoursChange(Number(e.target.value || 8))}
-                        className="text-xs h-9 font-mono font-bold"
-                      />
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
-                        <span className="truncate">
-                          {calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).summary}
-                        </span>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleDutyHoursChange(calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).netHours)}
-                            className="text-blue-600 hover:underline px-1 py-0.5 rounded-sm bg-blue-50 dark:bg-blue-950/40 text-[9px] font-bold"
-                            title="Set to Net Working Hours"
-                          >
-                            Net ({calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).netHours}h)
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDutyHoursChange(calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).grossHours)}
-                            className="text-slate-600 dark:text-slate-300 hover:underline px-1 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-[9px]"
-                            title="Set to Total Gross Span without Break"
-                          >
-                            Gross ({calculateDutyFromShift(empForm.office_start_time, empForm.office_end_time).grossHours}h)
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDutyHoursChange(8)}
-                            className="text-slate-600 dark:text-slate-300 hover:underline px-1 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-[9px]"
-                            title="Reset to 8 Hours Standard Shift"
-                          >
-                            8h Std
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Late Grace (Mins) *', 'গ্রেস টাইম (মিনিট) *')}
-                      </Label>
-                      <Input
-                        type="number"
-                        value={empForm.late_grace_minutes}
-                        onChange={(e) => setEmpForm({ ...empForm, late_grace_minutes: Number(e.target.value || 0) })}
-                        className="text-xs h-9 font-mono font-bold text-amber-600 dark:text-amber-400"
+                        placeholder="e.g. Mohammad Rahim"
+                        value={empForm.account_name}
+                        onChange={(e) => setEmpForm({ ...empForm, account_name: e.target.value })}
+                        className="text-xs h-9"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Weekly Off Day *', 'সাপ্তাহিক ছুটির দিন *')}
-                      </Label>
-                      <select
-                        value={empForm.weekly_off_day}
-                        onChange={(e) => setEmpForm({ ...empForm, weekly_off_day: e.target.value })}
-                        className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
-                      >
-                        <option value="Friday">{tBilingual('Friday (শুক্রবার)', 'শুক্রবার')}</option>
-                        <option value="Saturday">{tBilingual('Saturday (শনিবার)', 'শনিবার')}</option>
-                        <option value="Sunday">{tBilingual('Sunday (রবিবার)', 'রবিবার')}</option>
-                        <option value="Thursday">{tBilingual('Thursday (বৃহস্পতিবার)', 'বৃহস্পতিবার')}</option>
-                        <option value="None">{tBilingual('No Fixed Off Day (রোস্টার ভিত্তিক)', 'রোস্টার ভিত্তিক')}</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Absent Deduction Allowed? *', 'অনুপস্থিতিতে বেতন কর্তন? *')}
-                      </Label>
-                      <select
-                        value={empForm.absent_deduction_allowed ? 'yes' : 'no'}
-                        onChange={(e) => setEmpForm({ ...empForm, absent_deduction_allowed: e.target.value === 'yes' })}
-                        className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
-                      >
-                        <option value="yes">{tBilingual('Yes - Deduct Daily Salary for Unapproved Absence', 'হ্যাঁ - অননুমোদিত অনুপস্থিতিতে বেতন কর্তন হবে')}</option>
-                        <option value="no">{tBilingual('No - Do Not Deduct Automatically', 'না - স্বয়ংক্রিয় কর্তন হবে না')}</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Overtime & Calculation Policy Card */}
-                <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20 space-y-3">
-                  <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
-                    <h5 className="text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-amber-600" />
-                      {tBilingual('Overtime Calculation Policy', 'ওভারটাইম হিসাব পদ্ধতি ও রেট')}
-                    </h5>
-                    <Badge variant="outline" className="text-[10px] bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300 font-mono">
-                      ৳ {empForm.overtime_rate_value || empForm.overtime_hourly_rate} / hr
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Overtime Calculation Type *', 'ওভারটাইম রেট ফর্মুলা *')}
-                      </Label>
-                      <select
-                        value={empForm.ot_calc_type}
-                        onChange={(e) => {
-                          const type = e.target.value as any
-                          const hr = empForm.hourly_rate || Math.round((empForm.base_salary || 0) / 208)
-                          let rate = empForm.overtime_hourly_rate
-                          if (type === '1.5x_standard') rate = Math.round(hr * 1.5)
-                          else if (type === '2.0x_holiday') rate = Math.round(hr * 2.0)
-                          else if (type === 'none') rate = 0
-                          setEmpForm({
-                            ...empForm,
-                            ot_calc_type: type,
-                            overtime_rate_value: rate,
-                            overtime_hourly_rate: rate,
-                          })
-                        }}
-                        className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
-                      >
-                        <option value="1.5x_standard">{tBilingual('1.5x Standard Regular Day (সাধারণ দিন ১.৫ গুণ রেট)', 'সাধারণ দিন ১.৫ গুণ রেট')}</option>
-                        <option value="2.0x_holiday">{tBilingual('2.0x Festival Holiday / Night Shift (ছুটির দিন ২.০ গুণ)', 'ছুটির দিন ২.০ গুণ')}</option>
-                        <option value="fixed_rate">{tBilingual('Fixed Custom Hourly Rate (নির্দিষ্ট ঘণ্টা রেট)', 'নির্দিষ্ট ঘণ্টা রেট')}</option>
-                        <option value="none">{tBilingual('No Overtime Allowed (ওভারটাইম প্রযোজ্য নয়)', 'ওভারটাইম প্রযোজ্য নয়')}</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Overtime Rate / Value (৳/Hour)', 'ওভারটাইম রেট (টাকা/ঘণ্টা)')}
-                      </Label>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium">{tBilingual('Account Number', 'অ্যাকাউন্ট নম্বর')}</Label>
                       <Input
-                        type="number"
-                        value={empForm.overtime_rate_value || empForm.overtime_hourly_rate}
-                        onChange={(e) => {
-                          const r = Number(e.target.value || 0)
-                          setEmpForm({ ...empForm, overtime_rate_value: r, overtime_hourly_rate: r })
-                        }}
-                        disabled={empForm.ot_calc_type === 'none'}
-                        className="text-xs h-9 font-mono font-bold text-amber-600 dark:text-amber-400"
+                        placeholder="e.g. 115.120.45892"
+                        value={empForm.account_number}
+                        onChange={(e) => setEmpForm({ ...empForm, account_number: e.target.value })}
+                        className="text-xs h-9 font-mono"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium">{tBilingual('Branch Name', 'শাখার নাম')}</Label>
+                      <Input
+                        placeholder="e.g. Motijheel Branch, Dhaka"
+                        value={empForm.branch_name}
+                        onChange={(e) => setEmpForm({ ...empForm, branch_name: e.target.value })}
+                        className="text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1 sm:col-span-2">
+                      <Label className="text-xs font-medium">{tBilingual('Routing Number (9 Digits)', 'রাউটিং নম্বর (৯ ডিজিট)')}</Label>
+                      <Input
+                        placeholder="e.g. 090271234 (For BEFTN/NPSB)"
+                        value={empForm.routing_number}
+                        onChange={(e) => setEmpForm({ ...empForm, routing_number: e.target.value })}
+                        className="text-xs h-9 font-mono"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Late Fine & Salary Deduction Policy Card */}
+                {/* MFS Wallet Section */}
                 <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                     <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                      {tBilingual('Late Fine & Salary Deduction Policy', 'দেরি জরিমানা ও বেতন কর্তন নীতি')}
+                      <Smartphone className="w-3.5 h-3.5 text-pink-600" />
+                      {tBilingual('Mobile Financial Services (bKash / Nagad / Rocket / Upay)', 'মোবাইল ফিনান্সিয়াল সার্ভিস (বিকাশ / নগদ / রকেট)')}
                     </h5>
-                    <button
-                      type="button"
-                      onClick={() => setEmpForm({ ...empForm, late_fine_enabled: !empForm.late_fine_enabled })}
-                      className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400"
-                    >
-                      {empForm.late_fine_enabled ? (
-                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                          <ToggleRight className="w-5 h-5" /> Enabled
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-slate-400">
-                          <ToggleLeft className="w-5 h-5" /> Disabled
-                        </span>
-                      )}
-                    </button>
+                    <span className="text-[11px] text-slate-400">1-click wage payout</span>
                   </div>
 
-                  {empForm.late_fine_enabled ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {tBilingual('Late Deduction Rule *', 'দেরির কর্তন নিয়ম *')}
-                        </Label>
-                        <select
-                          value={empForm.late_fine_policy}
-                          onChange={(e) => setEmpForm({ ...empForm, late_fine_policy: e.target.value as any })}
-                          className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
-                        >
-                          <option value="3_late_1_day_salary">{tBilingual('3 Late Days = 1 Day Basic Salary Deduction (প্রতি ৩ দিন দেরিতে ১ দিনের বেতন কর্তন)', 'প্রতি ৩ দিন দেরিতে ১ দিনের বেতন কর্তন')}</option>
-                          <option value="fixed_amount">{tBilingual('Fixed Fine Amount per Late Day (প্রতি দেরিতে নির্দিষ্ট টাকা জরিমানা)', 'প্রতি দেরিতে নির্দিষ্ট টাকা জরিমানা')}</option>
-                          <option value="warning_only">{tBilingual('Warning Letter & Grace Period Only (সতর্কবার্তা শুধুমাত্র)', 'সতর্কবার্তা শুধুমাত্র')}</option>
-                        </select>
-                      </div>
-
-                      {empForm.late_fine_policy === 'fixed_amount' && (
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {tBilingual('Fine Amount per Late (৳)', 'দেরি জরিমানা ফি (টাকা)')}
-                          </Label>
-                          <Input
-                            type="number"
-                            value={empForm.late_fine_amount}
-                            onChange={(e) => setEmpForm({ ...empForm, late_fine_amount: Number(e.target.value || 0) })}
-                            className="text-xs h-9 font-mono font-bold text-rose-600"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400">
-                      {tBilingual('Late fine deduction is currently disabled for this employee.', 'এই কর্মীর জন্য দেরি জরিমানা নিষ্ক্রিয় রয়েছে।')}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: COMMISSION & TARGET SETTINGS */}
-            {modalTab === 'commission' && (
-              <div className="space-y-4 pt-1">
-                {/* Commission Enable Card */}
-                <div className="p-4 rounded-xl border border-indigo-500/20 bg-indigo-500/5 dark:bg-indigo-950/20 space-y-3">
-                  <div className="flex items-center justify-between border-b border-indigo-500/20 pb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 rounded-lg">
-                        <Award className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold text-slate-900 dark:text-white">
-                          {tBilingual('Commission & Target Settings', 'কমিশন ও মাসিক টার্গেট')}
-                        </h5>
-                        <p className="text-[11px] text-slate-500">
-                          {tBilingual('Enable sales incentives or production unit commissions', 'সেলস ও প্রোডাকশন অর্ডারের উপর কমিশন সুবিধা')}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setEmpForm({ ...empForm, enable_commission: !empForm.enable_commission })}
-                      className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400"
-                    >
-                      {empForm.enable_commission ? (
-                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                          <ToggleRight className="w-6 h-6" />
-                          {tBilingual('Commission Enabled', 'কমিশন সক্রিয়')}
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-slate-400">
-                          <ToggleLeft className="w-6 h-6" />
-                          {tBilingual('Enable Commission?', 'কমিশন চালু করুন?')}
-                        </span>
-                      )}
-                    </button>
+                  {/* MFS Provider Selection */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'bkash', label: 'bKash (বিকাশ)', color: 'border-pink-500/30 bg-pink-500/5 text-pink-700 dark:text-pink-400' },
+                      { id: 'nagad', label: 'Nagad (নগদ)', color: 'border-orange-500/30 bg-orange-500/5 text-orange-700 dark:text-orange-400' },
+                      { id: 'rocket', label: 'Rocket (রকেট)', color: 'border-purple-500/30 bg-purple-500/5 text-purple-700 dark:text-purple-400' },
+                      { id: 'other', label: 'Upay / Other (উপায়)', color: 'border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400' },
+                    ].map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setEmpForm({ ...empForm, mfs_provider: p.id as any })}
+                        className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all ${p.color} ${
+                          empForm.mfs_provider === p.id ? 'ring-2 ring-blue-500 shadow-xs' : 'opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
                   </div>
 
-                  {empForm.enable_commission ? (
-                    <div className="space-y-3 pt-2">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {tBilingual('Commission Calculation Type', 'কমিশন পদ্ধতি')}
-                          </Label>
-                          <select
-                            value={empForm.commission_type}
-                            onChange={(e) => setEmpForm({ ...empForm, commission_type: e.target.value as any })}
-                            className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium">{tBilingual('MFS Mobile Wallet Number', 'মোবাইল ওয়ালেট নম্বর')}</Label>
+                        {empForm.mobile && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEmpForm({ ...empForm, mfs_number: empForm.mobile })
+                              triggerCopy('mfs_mobile')
+                            }}
+                            className="text-[10px] text-blue-600 hover:underline flex items-center gap-1"
                           >
-                            <option value="percentage">{tBilingual('Percentage on Sales Volume (%)', 'বিক্রয়ের উপর শতকরা (%)')}</option>
-                            <option value="fixed_unit">{tBilingual('Fixed per Unit / Sq.Ft (৳)', 'প্রতি পণ্যে নির্দিষ্ট টাকা (৳)')}</option>
-                          </select>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {empForm.commission_type === 'percentage'
-                              ? tBilingual('Commission Rate (%)', 'কমিশনের হার (%)')
-                              : tBilingual('Commission Value (৳)', 'কমিশন রেট (৳)')}
-                          </Label>
-                          <Input
-                            type="number"
-                            step="0.1"
-                            value={empForm.commission_rate}
-                            onChange={(e) => setEmpForm({ ...empForm, commission_rate: Number(e.target.value || 0) })}
-                            className="text-xs h-9 font-mono font-bold text-indigo-600 dark:text-indigo-400"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {tBilingual('Monthly Sales Target (৳)', 'মাসিক সেলস টার্গেট (৳)')}
-                          </Label>
-                          <Input
-                            type="number"
-                            value={empForm.monthly_target}
-                            onChange={(e) => setEmpForm({ ...empForm, monthly_target: Number(e.target.value || 0) })}
-                            className="text-xs h-9 font-mono font-bold"
-                          />
-                        </div>
+                            {copiedField === 'mfs_mobile' ? <Check className="w-2.5 h-2.5 text-emerald-500" /> : <Copy className="w-2.5 h-2.5" />}
+                            Same as Mobile
+                          </button>
+                        )}
                       </div>
+                      <Input
+                        placeholder="017XXXXXXXX"
+                        value={empForm.mfs_number}
+                        onChange={(e) => setEmpForm({ ...empForm, mfs_number: e.target.value })}
+                        className="text-xs h-9 font-mono"
+                      />
+                    </div>
 
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {tBilingual('Commission Policy Notes', 'কমিশন নীতিমালা ও শর্ত')}
-                        </Label>
-                        <Input
-                          placeholder="e.g. 2.5% commission on commercial print orders after reaching ৳ 1,50,000 monthly target."
-                          value={empForm.commission_notes}
-                          onChange={(e) => setEmpForm({ ...empForm, commission_notes: e.target.value })}
-                          className="text-xs h-9"
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium">{tBilingual('Account Type', 'অ্যাকাউন্টের ধরন')}</Label>
+                      <select
+                        value={empForm.mfs_account_type}
+                        onChange={(e) => setEmpForm({ ...empForm, mfs_account_type: e.target.value as any })}
+                        className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
+                      >
+                        <option value="personal">{tBilingual('Personal (ব্যক্তিগত)', 'ব্যক্তিগত')}</option>
+                        <option value="merchant">{tBilingual('Merchant (মার্চেন্ট)', 'মার্চেন্ট')}</option>
+                        <option value="agent">{tBilingual('Agent (এজেন্ট)', 'এজেন্ট')}</option>
+                      </select>
                     </div>
-                  ) : (
-                    <div className="p-3 text-xs text-slate-500 italic">
-                      {tBilingual('Commission module is disabled for this profile. Toggle switch to configure sales target and incentives.', 'এই কর্মীর জন্য কোন কমিশন নির্ধারিত নেই।')}
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 5: EMERGENCY CONTACT, LOGIN CREDENTIALS & DOCUMENTS */}
-            {modalTab === 'credentials' && (
+            {/* TAB 5: EMERGENCY CONTACT & HR NOTES */}
+            {modalTab === 'emergency' && (
               <div className="space-y-4 pt-1">
-                {/* Emergency Contact Details */}
+                {/* Emergency Contact */}
                 <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                     <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      {tBilingual('Emergency Contact Details', 'জরুরি যোগাযোগ ও আত্মীয়ের বিবরণ')}
+                      {tBilingual('Emergency Kin / Contact Person Details', 'জরুরি যোগাযোগ ও আত্মীয়ের বিবরণ')}
                     </h5>
-                    <span className="text-[11px] text-slate-400">Required for shop-floor safety</span>
+                    <span className="text-[11px] text-slate-400">Required for shop-floor safety protocol</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs font-medium">{tBilingual('Emergency Contact Person Name', 'যোগাযোগের ব্যক্তির নাম')}</Label>
+                      <Label className="text-xs font-medium">{tBilingual('Contact Person Name', 'যোগাযোগের ব্যক্তির নাম')}</Label>
                       <Input
                         placeholder="e.g. Nasima Begum"
                         value={empForm.emergency_contact_name}
@@ -2372,7 +1861,7 @@ export default function EmployeeListPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-xs font-medium">{tBilingual('Emergency Phone Number', 'জরুরি মোবাইল নম্বর')}</Label>
+                      <Label className="text-xs font-medium">{tBilingual('Emergency Phone', 'জরুরি ফোন নম্বর')}</Label>
                       <Input
                         placeholder="+88018XXXXXXXX"
                         value={empForm.emergency_contact_phone}
@@ -2381,204 +1870,6 @@ export default function EmployeeListPage() {
                       />
                     </div>
                   </div>
-                </div>
-
-                {/* Login Account Credentials */}
-                <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 space-y-3">
-                  <div className="flex items-center justify-between border-b border-blue-500/20 pb-2">
-                    <div className="flex items-center gap-2">
-                      <KeyRound className="w-4 h-4 text-blue-600" />
-                      <div>
-                        <h5 className="text-xs font-bold text-slate-900 dark:text-white">
-                          {tBilingual('Login Account Credentials', 'পোর্টাল লগইন অ্যাকাউন্ট')}
-                        </h5>
-                        <p className="text-[11px] text-slate-500">
-                          {tBilingual('Grant employee access to ERP operator terminal or mobile app', 'ইআরপিতে প্রবেশের ইউজার আইডি ও পাসওয়ার্ড')}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setEmpForm({ ...empForm, create_portal_login: !empForm.create_portal_login })}
-                      className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400"
-                    >
-                      {empForm.create_portal_login ? (
-                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                          <ToggleRight className="w-6 h-6" />
-                          {tBilingual('Create Portal Login? (Yes)', 'লগইন সক্রিয়')}
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-slate-400">
-                          <ToggleLeft className="w-6 h-6" />
-                          {tBilingual('Create Portal Login? *', 'লগইন তৈরি করবেন?')}
-                        </span>
-                      )}
-                    </button>
-                  </div>
-
-                  {empForm.create_portal_login ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {tBilingual('Login Email / Username *', 'ইউজারনেম / ইমেইল *')}
-                          </Label>
-                          {empForm.email && (
-                            <button
-                              type="button"
-                              onClick={() => setEmpForm({ ...empForm, login_username: empForm.email })}
-                              className="text-[10px] text-blue-600 hover:underline"
-                            >
-                              Use Email
-                            </button>
-                          )}
-                        </div>
-                        <Input
-                          placeholder="rahim@visionprint.com"
-                          value={empForm.login_username || empForm.email || empForm.mobile}
-                          onChange={(e) => setEmpForm({ ...empForm, login_username: e.target.value })}
-                          className="text-xs h-9"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {tBilingual('Secure Login Password *', 'লগইন পাসওয়ার্ড *')}
-                          </Label>
-                          <span className="text-[10px] text-slate-400">Minimum 6 characters</span>
-                        </div>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="••••••••"
-                            value={empForm.login_password}
-                            onChange={(e) => setEmpForm({ ...empForm, login_password: e.target.value })}
-                            className="text-xs h-9 pr-8 font-mono"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
-                          >
-                            {showPassword ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {tBilingual('Assigned Portal Role', 'সিস্টেম রোল')}
-                        </Label>
-                        <select
-                          value={empForm.login_role}
-                          onChange={(e) => setEmpForm({ ...empForm, login_role: e.target.value })}
-                          className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
-                        >
-                          <option value="operator">{tBilingual('Machine Operator (মেশিন অপারেটর)', 'মেশিন অপারেটর')}</option>
-                          <option value="designer">{tBilingual('Graphic Designer (ডিজাইনার)', 'গ্রাফিক ডিজাইনার')}</option>
-                          <option value="sales">{tBilingual('Sales Executive (সেলস এক্সিকিউটিভ)', 'সেলস')}</option>
-                          <option value="supervisor">{tBilingual('Floor Supervisor (ফ্লোর সুপারভাইজার)', 'সুপারভাইজার')}</option>
-                          <option value="staff">{tBilingual('General Staff (সাধারণ কর্মী)', 'স্টাফ')}</option>
-                        </select>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400">
-                      {tBilingual('Portal login creation is optional. Toggle above to issue credentials.', 'লগইন অ্যাকাউন্ট তৈরির প্রয়োজন না থাকলে বন্ধ রাখতে পারেন।')}
-                    </p>
-                  )}
-                </div>
-
-                {/* Media & Identity Documents */}
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                    <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <Paperclip className="w-3.5 h-3.5 text-blue-600" />
-                      {tBilingual('Media & Identity Documents', 'ছবি ও পরিচয়পত্র স্ক্যান')}
-                    </h5>
-                    <Badge variant="outline" className="text-[10px]">
-                      {empForm.document_attachments?.length || 0} Files Attached
-                    </Badge>
-                  </div>
-
-                  {/* Profile Picture URL / Upload */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium">{tBilingual('Profile Picture (Image URL / File)', 'প্রোফাইল ছবি')}</Label>
-                      <div className="relative">
-                        <Camera className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                        <Input
-                          placeholder="https://... or photo.jpg"
-                          value={empForm.profile_picture_url}
-                          onChange={(e) => setEmpForm({ ...empForm, profile_picture_url: e.target.value })}
-                          className="text-xs h-9 pl-9"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium">{tBilingual('NID / Document Scan (Multiple)', 'এনআইডি ও সনদপত্র স্ক্যান')}</Label>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const newDoc = {
-                              id: `doc-${Date.now()}`,
-                              name: `Scanned_Document_${empForm.document_attachments.length + 1}.pdf`,
-                              type: 'NID / Certificate',
-                              size: '1.5 MB',
-                            }
-                            setEmpForm({
-                              ...empForm,
-                              document_attachments: [...empForm.document_attachments, newDoc],
-                            })
-                            notify('Attached document scan.')
-                          }}
-                          className="text-xs h-9 gap-1.5 flex-1 border-dashed border-slate-300 dark:border-slate-700"
-                        >
-                          <FileUp className="w-3.5 h-3.5 text-blue-600" />
-                          <span>{tBilingual('Attach New Document Scan', 'নতুন ডকুমেন্ট যোগ করুন')}</span>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Attached Documents List */}
-                  {empForm.document_attachments && empForm.document_attachments.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                      {empForm.document_attachments.map((doc) => (
-                        <div
-                          key={doc.id}
-                          className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between text-xs"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <FileText className="w-4 h-4 text-blue-600 shrink-0" />
-                            <div className="truncate">
-                              <span className="font-semibold text-slate-800 dark:text-slate-200 block truncate">{doc.name}</span>
-                              <span className="text-[10px] text-slate-400">{doc.type} • {doc.size || '1 MB'}</span>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEmpForm({
-                                ...empForm,
-                                document_attachments: empForm.document_attachments.filter((d) => d.id !== doc.id),
-                              })
-                            }}
-                            className="text-slate-400 hover:text-rose-600 p-1"
-                            title="Remove file"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Internal HR Notes & Qualifications */}
@@ -2619,12 +1910,12 @@ export default function EmployeeListPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      const tabs: ('personal' | 'employment' | 'duty' | 'commission' | 'credentials')[] = [
+                      const tabs: ('personal' | 'role' | 'salary' | 'banking' | 'emergency')[] = [
                         'personal',
-                        'employment',
-                        'duty',
-                        'commission',
-                        'credentials',
+                        'role',
+                        'salary',
+                        'banking',
+                        'emergency',
                       ]
                       const currentIndex = tabs.indexOf(modalTab)
                       if (currentIndex > 0) setModalTab(tabs[currentIndex - 1])
@@ -2638,7 +1929,7 @@ export default function EmployeeListPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                {modalTab !== 'credentials' && (
+                {modalTab !== 'emergency' && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -2647,12 +1938,12 @@ export default function EmployeeListPage() {
                         notify('Please enter employee name and mobile number.')
                         return
                       }
-                      const tabs: ('personal' | 'employment' | 'duty' | 'commission' | 'credentials')[] = [
+                      const tabs: ('personal' | 'role' | 'salary' | 'banking' | 'emergency')[] = [
                         'personal',
-                        'employment',
-                        'duty',
-                        'commission',
-                        'credentials',
+                        'role',
+                        'salary',
+                        'banking',
+                        'emergency',
                       ]
                       const currentIndex = tabs.indexOf(modalTab)
                       if (currentIndex < tabs.length - 1) setModalTab(tabs[currentIndex + 1])
@@ -3012,112 +2303,6 @@ export default function EmployeeListPage() {
                         'Verified for shop-floor incident escalation & medical notification protocol.',
                         'কারখানা দুর্ঘটনা ও জরুরি সহায়তার জন্য তথ্য সংরক্ষিত আছে।'
                       )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Education, Contract & Duty Shift Card */}
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
-                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                    <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
-                    {tBilingual('Education, Contract & Duty Schedule', 'শিক্ষা, চুক্তি ও ডিউটি সময়সূচি')}
-                  </h4>
-                  <div className="space-y-2 text-slate-600 dark:text-slate-400">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">{tBilingual('Educational Qualification:', 'শিক্ষাগত যোগ্যতা:')}</span>
-                      <span className="font-semibold text-slate-900 dark:text-white text-right">
-                        {selectedEmployee.educational_qualification || 'Diploma in Printing Technology'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">{tBilingual('Contract End Date:', 'চুক্তির মেয়াদ:')}</span>
-                      <span className="font-mono text-slate-900 dark:text-white">
-                        {selectedEmployee.contract_end_date ? formatDate(selectedEmployee.contract_end_date) : tBilingual('Permanent / Open-Ended', 'স্থায়ী / উন্মুক্ত চুক্তি')}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">{tBilingual('Daily Shift Timings:', 'ডিউটি শিফট:')}</span>
-                      <span className="font-mono font-medium text-slate-900 dark:text-white">
-                        {selectedEmployee.duty_settings?.office_start_time || '09:00'} - {selectedEmployee.duty_settings?.office_end_time || '18:00'} ({selectedEmployee.duty_settings?.daily_duty_hours || 8}h Shift)
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">{tBilingual('Weekly Off Day:', 'সাপ্তাহিক ছুটি:')}</span>
-                      <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
-                        {selectedEmployee.duty_settings?.weekly_off_day || 'Friday'}
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">{tBilingual('Late Grace & Fine Policy:', 'দেরি নীতি:')}</span>
-                      <span className="text-slate-900 dark:text-white text-right">
-                        {selectedEmployee.duty_settings?.late_grace_minutes || 15} Mins Grace • {selectedEmployee.duty_settings?.late_fine_enabled ? tBilingual('Fine Enabled', 'জরিমানা সক্রিয়') : tBilingual('Exempt', 'মুক্ত')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Commission, Portal Login & Attached Scans Card */}
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
-                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                    <KeyRound className="w-3.5 h-3.5 text-indigo-600" />
-                    {tBilingual('Commission, Portal Access & Documents', 'কমিশন, লগইন ও সংযুক্ত ফাইল')}
-                  </h4>
-                  <div className="space-y-2 text-slate-600 dark:text-slate-400">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">{tBilingual('Commission Settings:', 'কমিশন সুবিধা:')}</span>
-                      <span className="font-semibold text-slate-900 dark:text-white text-right">
-                        {selectedEmployee.commission_settings?.enabled
-                          ? `${selectedEmployee.commission_settings.rate_pct}% (${selectedEmployee.commission_settings.type}) • Target: ${formatBDT(selectedEmployee.commission_settings.monthly_target || 0)}`
-                          : tBilingual('No Commission Configured', 'কমিশন প্রযোজ্য নয়')}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">{tBilingual('Portal Login Access:', 'পোর্টাল লগইন:')}</span>
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] ${
-                          selectedEmployee.portal_credentials?.create_login
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
-                            : 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400'
-                        }`}
-                      >
-                        {selectedEmployee.portal_credentials?.create_login
-                          ? `Active (${selectedEmployee.portal_credentials.role || 'operator'})`
-                          : 'Not Provisioned'}
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">{tBilingual('Paid Leave Quota:', 'মাসিক ছুটি:')}</span>
-                      <span className="font-semibold text-slate-900 dark:text-white">
-                        {selectedEmployee.allowed_monthly_leaves !== undefined ? selectedEmployee.allowed_monthly_leaves : 2} Days / Month
-                      </span>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <span className="text-slate-500 block mb-1.5">{tBilingual('Attached Document Scans (Multiple):', 'সংযুক্ত ডকুমেন্ট স্ক্যান:')}</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(selectedEmployee.document_attachments && selectedEmployee.document_attachments.length > 0
-                          ? selectedEmployee.document_attachments
-                          : [
-                              { id: 'd1', name: 'NID_Card_Scan.pdf', type: 'NID' },
-                              { id: 'd2', name: 'Appointment_Letter.pdf', type: 'Letter' },
-                            ]
-                        ).map((doc: any) => (
-                          <span
-                            key={doc.id || doc.name}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                          >
-                            <Paperclip className="w-3 h-3 text-blue-600" />
-                            {doc.name}
-                          </span>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 </div>

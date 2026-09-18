@@ -1104,24 +1104,6 @@ export default function AttendancePage() {
               </div>
             </div>
 
-            {/* Auto-calculated Shift Duration */}
-            <div className="p-2 rounded-lg bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-[11px] text-blue-700 dark:text-blue-300 flex items-center justify-between">
-              <span>{tBilingual('Planned Working Shift Duration:', 'নির্ধারিত শিফট কাজের সময়:')}</span>
-              <span className="font-mono font-bold">
-                {(() => {
-                  const [sH, sM] = (shiftForm.start_time || '09:00').split(':').map(Number)
-                  const [eH, eM] = (shiftForm.end_time || '18:00').split(':').map(Number)
-                  let startMins = sH * 60 + (sM || 0)
-                  let endMins = eH * 60 + (eM || 0)
-                  if (endMins <= startMins) endMins += 24 * 60
-                  const diff = endMins - startMins
-                  const gross = Math.round((diff / 60) * 10) / 10
-                  const net = diff >= 540 ? Math.round(((diff - 60) / 60) * 10) / 10 : gross
-                  return `${net}h Net Duty (${gross}h Span)`
-                })()}
-              </span>
-            </div>
-
             <div className="space-y-1">
               <Label className="text-xs font-medium">{tBilingual('Grace Period (Minutes)', 'বিলম্ব ছাড় (মিনিট)')}</Label>
               <Input
