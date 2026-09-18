@@ -268,6 +268,42 @@ export default function EmployeeListPage() {
     setTimeout(() => setCopiedField(null), 2000)
   }
 
+  const calculateDutyHours = (start?: string, end?: string): number => {
+    if (!start || !end) return 9
+    try {
+      const parseTime = (timeStr: string) => {
+        let trimmed = timeStr.trim().toUpperCase()
+        const isPM = trimmed.includes('PM')
+        const isAM = trimmed.includes('AM')
+        trimmed = trimmed.replace(/[^\d:]/g, '')
+        const parts = trimmed.split(':')
+        let h = parseInt(parts[0] || '0', 10)
+        const m = parseInt(parts[1] || '0', 10)
+        if (isPM && h < 12) h += 12
+        if (isAM && h === 12) h = 0
+        return { h, m }
+      }
+
+      const s = parseTime(start)
+      const e = parseTime(end)
+      if (isNaN(s.h) || isNaN(e.h)) return 9
+
+      let startTotalMins = s.h * 60 + s.m
+      let endTotalMins = e.h * 60 + e.m
+
+      // Handle overnight shifts (e.g. 22:00 to 06:00)
+      if (endTotalMins <= startTotalMins) {
+        endTotalMins += 24 * 60
+      }
+
+      const diffMins = endTotalMins - startTotalMins
+      const hours = Math.round((diffMins / 60) * 10) / 10
+      return hours > 0 ? hours : 9
+    } catch {
+      return 9
+    }
+  }
+
   const calculateTenure = (joiningDateStr?: string) => {
     if (!joiningDateStr) return 'N/A'
     try {
@@ -480,7 +516,13 @@ export default function EmployeeListPage() {
         ? {
             office_start_time: emp.duty_settings.office_start_time || '09:00',
             office_end_time: emp.duty_settings.office_end_time || '18:00',
-            daily_duty_hours: emp.duty_settings.daily_duty_hours ?? 9,
+            daily_duty_hours:
+              emp.duty_settings.daily_duty_hours && emp.duty_settings.daily_duty_hours > 0
+                ? emp.duty_settings.daily_duty_hours
+                : calculateDutyHours(
+                    emp.duty_settings.office_start_time || '09:00',
+                    emp.duty_settings.office_end_time || '18:00'
+                  ),
             late_grace_minutes: emp.duty_settings.late_grace_minutes ?? 15,
             weekly_off_day: emp.duty_settings.weekly_off_day || 'Friday',
             ot_calc_type: emp.duty_settings.ot_calc_type || '1.5x_standard',
@@ -1680,12 +1722,18 @@ export default function EmployeeListPage() {
                       <Input
                         type="time"
                         value={empForm.duty_settings.office_start_time}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const newStart = e.target.value
+                          const newHours = calculateDutyHours(newStart, empForm.duty_settings.office_end_time)
                           setEmpForm({
                             ...empForm,
-                            duty_settings: { ...empForm.duty_settings, office_start_time: e.target.value },
+                            duty_settings: {
+                              ...empForm.duty_settings,
+                              office_start_time: newStart,
+                              daily_duty_hours: newHours,
+                            },
                           })
-                        }
+                        }}
                         className="text-xs h-9 font-mono"
                       />
                     </div>
@@ -1697,24 +1745,54 @@ export default function EmployeeListPage() {
                       <Input
                         type="time"
                         value={empForm.duty_settings.office_end_time}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const newEnd = e.target.value
+                          const newHours = calculateDutyHours(empForm.duty_settings.office_start_time, newEnd)
                           setEmpForm({
                             ...empForm,
-                            duty_settings: { ...empForm.duty_settings, office_end_time: e.target.value },
+                            duty_settings: {
+                              ...empForm.duty_settings,
+                              office_end_time: newEnd,
+                              daily_duty_hours: newHours,
+                            },
                           })
-                        }
+                        }}
                         className="text-xs h-9 font-mono"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Daily Duty Hours *', 'দৈনিক ডিউটি ঘণ্টা *')}
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {tBilingual('Daily Duty Hours *', 'দৈনিক ডিউটি ঘণ্টা *')}
+                        </Label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newHours = calculateDutyHours(
+                              empForm.duty_settings.office_start_time,
+                              empForm.duty_settings.office_end_time
+                            )
+                            setEmpForm({
+                              ...empForm,
+                              duty_settings: {
+                                ...empForm.duty_settings,
+                                daily_duty_hours: newHours,
+                              },
+                            })
+                          }}
+                          className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
+                          title="Auto calculate from start/end time"
+                        >
+                          <Sparkles className="w-2.5 h-2.5 text-blue-500" />
+                          {tBilingual('Auto Calc', 'অটো হিসাব')}
+                        </button>
+                      </div>
                       <Input
                         type="number"
                         min="1"
                         max="24"
+                        step="0.5"
                         value={empForm.duty_settings.daily_duty_hours}
                         onChange={(e) =>
                           setEmpForm({
@@ -1722,7 +1800,7 @@ export default function EmployeeListPage() {
                             duty_settings: { ...empForm.duty_settings, daily_duty_hours: Number(e.target.value || 0) },
                           })
                         }
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 font-mono font-bold text-slate-900 dark:text-white"
                       />
                     </div>
 
