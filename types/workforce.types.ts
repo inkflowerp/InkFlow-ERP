@@ -81,6 +81,7 @@ export interface EmployeeRecord {
   name: string
   name_bn?: string | null
   mobile: string
+  phone?: string | null
   email?: string | null
   address?: string | null
   emergency_contact_name?: string | null
