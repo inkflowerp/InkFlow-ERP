@@ -70,6 +70,45 @@ export interface MfsPaymentInfo {
   account_type?: 'personal' | 'merchant' | 'agent'
 }
 
+export interface CommissionSettings {
+  enabled: boolean
+  type?: 'percentage' | 'fixed_unit'
+  rate_pct?: number
+  monthly_target?: number
+  notes?: string
+}
+
+export interface DutySettings {
+  office_start_time?: string
+  office_end_time?: string
+  daily_duty_hours?: number
+  late_grace_minutes?: number
+  weekly_off_day?: string
+  ot_calc_type?: '1.5x_standard' | '2.0x_holiday' | 'fixed_rate' | 'none'
+  overtime_rate_value?: number
+  absent_deduction_allowed?: boolean
+  late_fine_enabled?: boolean
+  late_fine_policy?: '3_late_1_day_salary' | 'fixed_amount' | 'warning_only'
+  late_fine_amount?: number
+}
+
+export interface PortalCredentials {
+  create_login: boolean
+  username?: string
+  email?: string
+  password?: string
+  role?: string
+}
+
+export interface DocumentAttachment {
+  id: string
+  name: string
+  type: string
+  size?: string
+  url?: string
+  uploaded_at?: string
+}
+
 export interface EmployeeRecord {
   id: string
   company_id: string
@@ -84,6 +123,7 @@ export interface EmployeeRecord {
   phone?: string | null
   email?: string | null
   address?: string | null
+  educational_qualification?: string | null
   emergency_contact_name?: string | null
   emergency_contact_phone?: string | null
   emergency_contact_relation?: string | null
@@ -105,6 +145,9 @@ export interface EmployeeRecord {
   salary_basis: SalaryBasis
   salary_type?: string | null
   joining_date: string
+  contract_end_date?: string | null
+  allowed_monthly_leaves?: number | null
+  payment_method?: PaymentMethod | null
   base_salary: number
   daily_rate: number
   hourly_rate: number
@@ -112,8 +155,13 @@ export interface EmployeeRecord {
   current_advance_balance: number
   is_daily_worker?: boolean
   salary_structure?: SalaryStructure | null
+  commission_settings?: CommissionSettings | null
+  duty_settings?: DutySettings | null
+  portal_credentials?: PortalCredentials | null
   bank_payment_info?: BankPaymentInfo | null
   mfs_payment_info?: MfsPaymentInfo | null
+  profile_picture_url?: string | null
+  document_attachments?: DocumentAttachment[] | null
   status: 'active' | 'on_leave' | 'terminated'
   notes?: string | null
   created_at: string
