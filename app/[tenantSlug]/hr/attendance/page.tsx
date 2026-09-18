@@ -95,6 +95,20 @@ const MONTHS_LIST = [
 
 const YEARS_LIST = [2024, 2025, 2026, 2027, 2028, 2029, 2030]
 
+function toLocalDateString(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function getMonthDateRange(year: number, month: number) {
+  const lastDay = new Date(year, month, 0).getDate()
+  const startStr = `${year}-${String(month).padStart(2, '0')}-01`
+  const endStr = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+  return { startStr, endStr, lastDay }
+}
+
 function timeStringToMinutes(timeStr?: string | null): number | null {
   if (!timeStr) return null
   const parts = timeStr.trim().split(':')
@@ -132,7 +146,7 @@ export default function AttendancePage() {
   const [isPending, startTransition] = useTransition()
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'roster' | 'duty_log' | 'reports' | 'overtime' | 'shifts'>('roster')
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState<string>(() => toLocalDateString(new Date()))
 
   // Data States
   const [employees, setEmployees] = useState<EmployeeRecord[]>([])
@@ -153,9 +167,9 @@ export default function AttendancePage() {
   const [logStartDate, setLogStartDate] = useState<string>(() => {
     const d = new Date()
     d.setDate(d.getDate() - 30)
-    return d.toISOString().split('T')[0]
+    return toLocalDateString(d)
   })
-  const [logEndDate, setLogEndDate] = useState<string>(() => new Date().toISOString().split('T')[0])
+  const [logEndDate, setLogEndDate] = useState<string>(() => toLocalDateString(new Date()))
   const [logStatusFilter, setLogStatusFilter] = useState<string>('ALL')
   const [logSourceFilter, setLogSourceFilter] = useState<string>('ALL')
   const [logSearchTerm, setLogSearchTerm] = useState<string>('')
@@ -172,12 +186,10 @@ export default function AttendancePage() {
   const [reportMonth, setReportMonth] = useState<string>(currentMonthStr)
   const [reportPreset, setReportPreset] = useState<'this_month' | 'last_month' | 'last_7_days' | 'last_30_days' | 'custom'>('this_month')
   const [reportStartDate, setReportStartDate] = useState<string>(() => {
-    const d = new Date(now.getFullYear(), now.getMonth(), 1)
-    return d.toISOString().split('T')[0]
+    return getMonthDateRange(now.getFullYear(), now.getMonth() + 1).startStr
   })
   const [reportEndDate, setReportEndDate] = useState<string>(() => {
-    const d = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    return d.toISOString().split('T')[0]
+    return getMonthDateRange(now.getFullYear(), now.getMonth() + 1).endStr
   })
   const [reportDeptFilter, setReportDeptFilter] = useState<string>('ALL')
   const [reportSearchTerm, setReportSearchTerm] = useState<string>('')
@@ -236,7 +248,7 @@ export default function AttendancePage() {
     notes: string
   }>({
     employeeId: '',
-    attendanceDate: new Date().toISOString().split('T')[0],
+    attendanceDate: toLocalDateString(new Date()),
     status: 'present',
     checkInTime: '09:00',
     checkOutTime: '18:00',
@@ -253,7 +265,7 @@ export default function AttendancePage() {
     reason: string
   }>({
     employeeId: '',
-    otDate: new Date().toISOString().split('T')[0],
+    otDate: toLocalDateString(new Date()),
     durationMinutes: 120,
     otType: 'regular_day',
     reason: 'Urgent production delivery overtime',
@@ -359,31 +371,32 @@ export default function AttendancePage() {
     setReportPreset(preset)
     const today = new Date()
     if (preset === 'this_month') {
-      const start = new Date(today.getFullYear(), today.getMonth(), 1)
-      const end = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-      setReportStartDate(start.toISOString().split('T')[0])
-      setReportEndDate(end.toISOString().split('T')[0])
-      setReportSelectedYear(today.getFullYear())
-      setReportSelectedMonth(today.getMonth() + 1)
-      setReportMonth(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`)
+      const y = today.getFullYear()
+      const m = today.getMonth() + 1
+      const { startStr, endStr } = getMonthDateRange(y, m)
+      setReportStartDate(startStr)
+      setReportEndDate(endStr)
+      setReportSelectedYear(y)
+      setReportSelectedMonth(m)
+      setReportMonth(`${y}-${String(m).padStart(2, '0')}`)
     } else if (preset === 'last_month') {
-      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-      const end = new Date(today.getFullYear(), today.getMonth(), 0)
-      setReportStartDate(start.toISOString().split('T')[0])
-      setReportEndDate(end.toISOString().split('T')[0])
-      setReportSelectedYear(start.getFullYear())
-      setReportSelectedMonth(start.getMonth() + 1)
-      setReportMonth(`${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`)
+      const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+      const y = prev.getFullYear()
+      const m = prev.getMonth() + 1
+      const { startStr, endStr } = getMonthDateRange(y, m)
+      setReportStartDate(startStr)
+      setReportEndDate(endStr)
+      setReportSelectedYear(y)
+      setReportSelectedMonth(m)
+      setReportMonth(`${y}-${String(m).padStart(2, '0')}`)
     } else if (preset === 'last_7_days') {
-      const start = new Date()
-      start.setDate(today.getDate() - 6)
-      setReportStartDate(start.toISOString().split('T')[0])
-      setReportEndDate(today.toISOString().split('T')[0])
+      const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6)
+      setReportStartDate(toLocalDateString(start))
+      setReportEndDate(toLocalDateString(today))
     } else if (preset === 'last_30_days') {
-      const start = new Date()
-      start.setDate(today.getDate() - 29)
-      setReportStartDate(start.toISOString().split('T')[0])
-      setReportEndDate(today.toISOString().split('T')[0])
+      const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29)
+      setReportStartDate(toLocalDateString(start))
+      setReportEndDate(toLocalDateString(today))
     }
   }
 
@@ -391,10 +404,7 @@ export default function AttendancePage() {
     setReportSelectedYear(year)
     setReportSelectedMonth(month)
     setReportPreset('custom')
-    const start = new Date(year, month - 1, 1)
-    const end = new Date(year, month, 0)
-    const startStr = `${year}-${String(month).padStart(2, '0')}-01`
-    const endStr = `${year}-${String(month).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`
+    const { startStr, endStr } = getMonthDateRange(year, month)
     setReportStartDate(startStr)
     setReportEndDate(endStr)
     setReportMonth(`${year}-${String(month).padStart(2, '0')}`)
@@ -407,10 +417,9 @@ export default function AttendancePage() {
     if (y && m) {
       setReportSelectedYear(y)
       setReportSelectedMonth(m)
-      const start = new Date(y, m - 1, 1)
-      const end = new Date(y, m, 0)
-      setReportStartDate(start.toISOString().split('T')[0])
-      setReportEndDate(end.toISOString().split('T')[0])
+      const { startStr, endStr } = getMonthDateRange(y, m)
+      setReportStartDate(startStr)
+      setReportEndDate(endStr)
     }
   }
 
@@ -423,35 +432,48 @@ export default function AttendancePage() {
   const reportDays = React.useMemo(() => {
     const days: { dayNum: number; dateStr: string; dayOfWeek: string; isFriday: boolean }[] = []
     if (!reportStartDate || !reportEndDate) return days
-    const start = new Date(reportStartDate)
-    const end = new Date(reportEndDate)
-    const cur = new Date(start)
+
+    const [sY, sM, sD] = reportStartDate.split('-').map(Number)
+    const [eY, eM, eD] = reportEndDate.split('-').map(Number)
+    if (!sY || !sM || !sD || !eY || !eM || !eD) return days
+
+    // Use local noon (12:00:00) to prevent daylight savings / UTC midnight shifting
+    const cur = new Date(sY, sM - 1, sD, 12, 0, 0)
+    const end = new Date(eY, eM - 1, eD, 12, 0, 0)
+
     while (cur <= end) {
-      const dStr = cur.toISOString().split('T')[0]
+      const year = cur.getFullYear()
+      const month = String(cur.getMonth() + 1).padStart(2, '0')
+      const day = String(cur.getDate()).padStart(2, '0')
+      const dateStr = `${year}-${month}-${day}`
       const dayNum = cur.getDate()
       const dayOfWeek = cur.toLocaleDateString('en-US', { weekday: 'short' })
       const isFriday = cur.getDay() === 5 // Friday = 5 in JS Date
-      days.push({ dayNum, dateStr: dStr, dayOfWeek, isFriday })
+
+      days.push({ dayNum, dateStr, dayOfWeek, isFriday })
       cur.setDate(cur.getDate() + 1)
     }
+
     return days
   }, [reportStartDate, reportEndDate])
 
   // Date Navigator Helpers for Daily Roster
   const handlePrevDay = () => {
-    const d = new Date(selectedDate)
-    d.setDate(d.getDate() - 1)
-    setSelectedDate(d.toISOString().split('T')[0])
+    const [y, m, d] = selectedDate.split('-').map(Number)
+    const date = new Date(y, m - 1, d, 12, 0, 0)
+    date.setDate(date.getDate() - 1)
+    setSelectedDate(toLocalDateString(date))
   }
 
   const handleNextDay = () => {
-    const d = new Date(selectedDate)
-    d.setDate(d.getDate() + 1)
-    setSelectedDate(d.toISOString().split('T')[0])
+    const [y, m, d] = selectedDate.split('-').map(Number)
+    const date = new Date(y, m - 1, d, 12, 0, 0)
+    date.setDate(date.getDate() + 1)
+    setSelectedDate(toLocalDateString(date))
   }
 
   const handleToday = () => {
-    setSelectedDate(new Date().toISOString().split('T')[0])
+    setSelectedDate(toLocalDateString(new Date()))
   }
 
   const handleOpenManualModal = (emp?: EmployeeRecord, existing?: AttendanceDailySummaryRecord) => {
