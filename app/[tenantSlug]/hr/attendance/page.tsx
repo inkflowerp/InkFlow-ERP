@@ -78,6 +78,49 @@ import {
   reviewOvertimeAction,
 } from '@/actions/workforce.actions'
 
+const MONTHS_LIST = [
+  { value: 1, nameEn: 'January', nameBn: 'জানুয়ারি' },
+  { value: 2, nameEn: 'February', nameBn: 'ফেব্রুয়ারি' },
+  { value: 3, nameEn: 'March', nameBn: 'মার্চ' },
+  { value: 4, nameEn: 'April', nameBn: 'এপ্রিল' },
+  { value: 5, nameEn: 'May', nameBn: 'মে' },
+  { value: 6, nameEn: 'June', nameBn: 'জুন' },
+  { value: 7, nameEn: 'July', nameBn: 'জুলাই' },
+  { value: 8, nameEn: 'August', nameBn: 'আগস্ট' },
+  { value: 9, nameEn: 'September', nameBn: 'সেপ্টেম্বর' },
+  { value: 10, nameEn: 'October', nameBn: 'অক্টোবর' },
+  { value: 11, nameEn: 'November', nameBn: 'নভেম্বর' },
+  { value: 12, nameEn: 'December', nameBn: 'ডিসেম্বর' },
+]
+
+const YEARS_LIST = [2024, 2025, 2026, 2027, 2028, 2029, 2030]
+
+function timeStringToMinutes(timeStr?: string | null): number | null {
+  if (!timeStr) return null
+  const parts = timeStr.trim().split(':')
+  if (parts.length < 2) return null
+  const h = parseInt(parts[0], 10)
+  const m = parseInt(parts[1], 10)
+  if (isNaN(h) || isNaN(m)) return null
+  return h * 60 + m
+}
+
+function minutesToTimeString(minutes: number | null): string {
+  if (minutes === null || isNaN(minutes)) return '--:--'
+  const totalMins = Math.round(minutes) % 1440
+  const h24 = Math.floor(totalMins / 60)
+  const m = totalMins % 60
+  const period = h24 >= 12 ? 'PM' : 'AM'
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12
+  return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`
+}
+
+function format12Hour(timeStr?: string | null): string {
+  if (!timeStr) return '--:--'
+  const mins = timeStringToMinutes(timeStr)
+  return minutesToTimeString(mins)
+}
+
 export default function AttendancePage() {
   const params = useParams()
   const router = useRouter()
@@ -123,6 +166,8 @@ export default function AttendancePage() {
   // ATTENDANCE REPORTS STATE
   // ==========================================
   const now = new Date()
+  const [reportSelectedYear, setReportSelectedYear] = useState<number>(now.getFullYear())
+  const [reportSelectedMonth, setReportSelectedMonth] = useState<number>(now.getMonth() + 1)
   const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const [reportMonth, setReportMonth] = useState<string>(currentMonthStr)
   const [reportPreset, setReportPreset] = useState<'this_month' | 'last_month' | 'last_7_days' | 'last_30_days' | 'custom'>('this_month')
@@ -136,9 +181,13 @@ export default function AttendancePage() {
   })
   const [reportDeptFilter, setReportDeptFilter] = useState<string>('ALL')
   const [reportSearchTerm, setReportSearchTerm] = useState<string>('')
-  const [reportViewMode, setReportViewMode] = useState<'matrix' | 'summary' | 'departments'>('matrix')
+  const [reportViewMode, setReportViewMode] = useState<'matrix' | 'summary' | 'departments'>('summary')
   const [reportRecords, setReportRecords] = useState<AttendanceDailySummaryRecord[]>([])
   const [isReportLoading, setIsReportLoading] = useState<boolean>(false)
+
+  // View Log Modal State
+  const [isViewLogModalOpen, setIsViewLogModalOpen] = useState<boolean>(false)
+  const [viewLogEmployee, setViewLogEmployee] = useState<EmployeeRecord | null>(null)
 
   // ==========================================
   // MODALS & DIALOGS
@@ -314,12 +363,16 @@ export default function AttendancePage() {
       const end = new Date(today.getFullYear(), today.getMonth() + 1, 0)
       setReportStartDate(start.toISOString().split('T')[0])
       setReportEndDate(end.toISOString().split('T')[0])
+      setReportSelectedYear(today.getFullYear())
+      setReportSelectedMonth(today.getMonth() + 1)
       setReportMonth(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`)
     } else if (preset === 'last_month') {
       const start = new Date(today.getFullYear(), today.getMonth() - 1, 1)
       const end = new Date(today.getFullYear(), today.getMonth(), 0)
       setReportStartDate(start.toISOString().split('T')[0])
       setReportEndDate(end.toISOString().split('T')[0])
+      setReportSelectedYear(start.getFullYear())
+      setReportSelectedMonth(start.getMonth() + 1)
       setReportMonth(`${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`)
     } else if (preset === 'last_7_days') {
       const start = new Date()
@@ -334,14 +387,36 @@ export default function AttendancePage() {
     }
   }
 
+  const handlePeriodChange = (year: number, month: number) => {
+    setReportSelectedYear(year)
+    setReportSelectedMonth(month)
+    setReportPreset('custom')
+    const start = new Date(year, month - 1, 1)
+    const end = new Date(year, month, 0)
+    const startStr = `${year}-${String(month).padStart(2, '0')}-01`
+    const endStr = `${year}-${String(month).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`
+    setReportStartDate(startStr)
+    setReportEndDate(endStr)
+    setReportMonth(`${year}-${String(month).padStart(2, '0')}`)
+  }
+
   const handleMonthChange = (monthStr: string) => {
     setReportMonth(monthStr)
     setReportPreset('custom')
     const [y, m] = monthStr.split('-').map(Number)
-    const start = new Date(y, m - 1, 1)
-    const end = new Date(y, m, 0)
-    setReportStartDate(start.toISOString().split('T')[0])
-    setReportEndDate(end.toISOString().split('T')[0])
+    if (y && m) {
+      setReportSelectedYear(y)
+      setReportSelectedMonth(m)
+      const start = new Date(y, m - 1, 1)
+      const end = new Date(y, m, 0)
+      setReportStartDate(start.toISOString().split('T')[0])
+      setReportEndDate(end.toISOString().split('T')[0])
+    }
+  }
+
+  const handleOpenViewLogModal = (emp: EmployeeRecord) => {
+    setViewLogEmployee(emp)
+    setIsViewLogModalOpen(true)
   }
 
   // Generate Array of Calendar Days for the active report range
@@ -1574,7 +1649,7 @@ export default function AttendancePage() {
       {/* ======================================================== */}
       {activeTab === 'reports' && (
         <div className="space-y-4">
-          {/* Preset Buttons & Filters Toolbar */}
+          {/* Period Selector & Toolbar */}
           <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2.5">
               {/* Range Presets */}
@@ -1617,6 +1692,19 @@ export default function AttendancePage() {
               <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
+                  onClick={() => setReportViewMode('summary')}
+                  className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    reportViewMode === 'summary'
+                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span>{tBilingual('Attendance Report', 'হাজিরা রিপোর্ট')}</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setReportViewMode('matrix')}
                   className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                     reportViewMode === 'matrix'
@@ -1626,19 +1714,6 @@ export default function AttendancePage() {
                 >
                   <Layers className="w-3.5 h-3.5" />
                   <span>{tBilingual('Monthly Matrix', 'মাসিক ম্যাট্রিক্স')}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setReportViewMode('summary')}
-                  className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                    reportViewMode === 'summary'
-                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-                  }`}
-                >
-                  <FileSpreadsheet className="w-3.5 h-3.5" />
-                  <span>{tBilingual('Aggregate Table', 'সারসংক্ষেপ তালিকা')}</span>
                 </button>
 
                 <button
@@ -1656,41 +1731,47 @@ export default function AttendancePage() {
               </div>
             </div>
 
-            {/* Sub-toolbar: Date Inputs & Search */}
+            {/* Sub-toolbar: Select Period (Month, Year), Department & Search */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              {/* Select Period: Month */}
               <div className="flex items-center gap-1.5">
-                <Label className="text-xs text-slate-500 shrink-0 font-medium">{tBilingual('Month:', 'মাস:')}</Label>
-                <Input
-                  type="month"
-                  value={reportMonth}
-                  onChange={(e) => handleMonthChange(e.target.value)}
-                  className="h-8 text-xs font-medium border-slate-200 dark:border-slate-800"
-                />
+                <Label className="text-xs text-slate-500 shrink-0 font-medium">
+                  {tBilingual('Month:', 'মাস:')}
+                </Label>
+                <select
+                  aria-label="Select Report Month"
+                  value={reportSelectedMonth}
+                  onChange={(e) => handlePeriodChange(reportSelectedYear, Number(e.target.value))}
+                  className="w-full h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-medium"
+                >
+                  {MONTHS_LIST.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {locale === 'bn' ? `${m.value} - ${m.nameBn}` : `${m.nameEn}`}
+                    </option>
+                  ))}
+                </select>
               </div>
 
+              {/* Select Period: Year */}
               <div className="flex items-center gap-1.5">
-                <Label className="text-xs text-slate-500 shrink-0 font-medium">{tBilingual('Range:', 'তারিখ:')}</Label>
-                <Input
-                  type="date"
-                  value={reportStartDate}
-                  onChange={(e) => {
-                    setReportStartDate(e.target.value)
-                    setReportPreset('custom')
-                  }}
-                  className="h-8 text-xs font-medium border-slate-200 dark:border-slate-800"
-                />
-                <span className="text-xs text-slate-400">→</span>
-                <Input
-                  type="date"
-                  value={reportEndDate}
-                  onChange={(e) => {
-                    setReportEndDate(e.target.value)
-                    setReportPreset('custom')
-                  }}
-                  className="h-8 text-xs font-medium border-slate-200 dark:border-slate-800"
-                />
+                <Label className="text-xs text-slate-500 shrink-0 font-medium">
+                  {tBilingual('Year:', 'বছর:')}
+                </Label>
+                <select
+                  aria-label="Select Report Year"
+                  value={reportSelectedYear}
+                  onChange={(e) => handlePeriodChange(Number(e.target.value), reportSelectedMonth)}
+                  className="w-full h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-medium"
+                >
+                  {YEARS_LIST.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
               </div>
 
+              {/* Department Filter */}
               <div>
                 <select
                   aria-label="Filter report by department"
@@ -1708,6 +1789,7 @@ export default function AttendancePage() {
                 </select>
               </div>
 
+              {/* Search Employee */}
               <div className="relative">
                 <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
                 <Input
@@ -1795,7 +1877,192 @@ export default function AttendancePage() {
             </Card>
           </div>
 
-          {/* VIEW MODE 1: MONTHLY 31-DAY ATTENDANCE HEATMAP MATRIX */}
+          {/* VIEW MODE 1: EXACT REQUESTED ATTENDANCE REPORT TABLE */}
+          {reportViewMode === 'summary' && (
+            <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
+              <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                    {tBilingual('Employee Attendance & Overtime Summary', 'কর্মীভিত্তিক হাজিরা ও ওভারটাইম রিপোর্ট')}
+                  </CardTitle>
+                  <Badge variant="outline" className="text-xs font-mono">
+                    {reportFilteredEmps.length} employees
+                  </Badge>
+                </div>
+
+                <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
+                  <span>{tBilingual('Period:', 'সময়কাল:')}</span>
+                  <Badge variant="secondary" className="font-semibold text-xs">
+                    {MONTHS_LIST.find((m) => m.value === reportSelectedMonth)?.nameEn} {reportSelectedYear}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
+                      <th className="p-3.5 pl-4">{tBilingual('Employee Name, ID', 'কর্মী ও আইডি')}</th>
+                      <th className="p-3.5">{tBilingual('Average Check In', 'গড় প্রবেশ')}</th>
+                      <th className="p-3.5">{tBilingual('Average Check Out', 'গড় প্রস্থান')}</th>
+                      <th className="p-3.5">{tBilingual('Day Present', 'উপস্থিত দিন')}</th>
+                      <th className="p-3.5">{tBilingual('Day Absent', 'অনুপস্থিত দিন')}</th>
+                      <th className="p-3.5">{tBilingual('Overtime', 'ওভারটাইম')}</th>
+                      <th className="p-3.5 pr-4 text-right">{tBilingual('Action', 'পদক্ষেপ')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {reportFilteredEmps.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-slate-400">
+                          <UserCheck className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                          <p className="text-xs font-medium">{tBilingual('No employee attendance records found for this period', 'এই সময়ের জন্য কোনো হাজিরার তথ্য পাওয়া যায়নি')}</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      reportFilteredEmps.map((emp) => {
+                        const empAtts = reportRecords.filter((r) => r.employee_id === emp.id)
+
+                        // Average Check In
+                        const checkIns = empAtts
+                          .filter((r) => r.check_in_time)
+                          .map((r) => timeStringToMinutes(r.check_in_time))
+                          .filter((m): m is number => m !== null)
+                        const avgInMinutes = checkIns.length > 0
+                          ? Math.round(checkIns.reduce((a, b) => a + b, 0) / checkIns.length)
+                          : null
+                        const avgCheckIn = minutesToTimeString(avgInMinutes)
+
+                        // Average Check Out
+                        const checkOuts = empAtts
+                          .filter((r) => r.check_out_time)
+                          .map((r) => timeStringToMinutes(r.check_out_time))
+                          .filter((m): m is number => m !== null)
+                        const avgOutMinutes = checkOuts.length > 0
+                          ? Math.round(checkOuts.reduce((a, b) => a + b, 0) / checkOuts.length)
+                          : null
+                        const avgCheckOut = minutesToTimeString(avgOutMinutes)
+
+                        // Day Present & Absent
+                        const dayPresent = empAtts.filter((r) =>
+                          r.status === 'present' || r.status === 'late' || r.status === 'half_day' || r.status === 'field_work'
+                        ).length
+                        const dayAbsent = empAtts.filter((r) => r.status === 'absent').length
+
+                        // Overtime
+                        const otMins = empAtts.reduce(
+                          (sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0),
+                          0
+                        )
+                        const otHrs = Math.round((otMins / 60) * 10) / 10
+
+                        return (
+                          <tr key={emp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
+                            <td className="p-3.5 pl-4">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
+                                  {emp.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <span>{emp.name}</span>
+                                    {emp.name_bn && (
+                                      <span className="text-[11px] text-slate-400 font-normal bangla-text">
+                                        ({emp.name_bn})
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                    <span className="font-mono font-medium text-slate-700 dark:text-slate-300">
+                                      {emp.employee_id_number}
+                                    </span>
+                                    <span>•</span>
+                                    <span className="capitalize">{emp.department}</span>
+                                    <span>•</span>
+                                    <span className="capitalize text-slate-400">{emp.role}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="p-3.5 font-mono">
+                              {avgInMinutes !== null ? (
+                                <span className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                  <Clock className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                  {avgCheckIn}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">--:--</span>
+                              )}
+                            </td>
+
+                            <td className="p-3.5 font-mono">
+                              {avgOutMinutes !== null ? (
+                                <span className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                  <Clock className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                  {avgCheckOut}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">--:--</span>
+                              )}
+                            </td>
+
+                            <td className="p-3.5">
+                              <Badge
+                                variant="outline"
+                                className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 font-bold text-xs px-2.5 py-0.5"
+                              >
+                                {dayPresent} Days
+                              </Badge>
+                            </td>
+
+                            <td className="p-3.5">
+                              {dayAbsent > 0 ? (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 font-bold text-xs px-2.5 py-0.5"
+                                >
+                                  {dayAbsent} Days
+                                </Badge>
+                              ) : (
+                                <span className="text-slate-400 font-mono text-xs">0 Days</span>
+                              )}
+                            </td>
+
+                            <td className="p-3.5">
+                              {otHrs > 0 ? (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800 font-bold font-mono text-xs px-2.5 py-0.5"
+                                >
+                                  +{otHrs} hrs
+                                </Badge>
+                              ) : (
+                                <span className="text-slate-400 font-mono text-xs">0 hrs</span>
+                              )}
+                            </td>
+
+                            <td className="p-3.5 pr-4 text-right">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-xs font-semibold gap-1.5 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/50 shadow-xs"
+                                onClick={() => handleOpenViewLogModal(emp)}
+                              >
+                                <Eye className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                <span>{tBilingual('View Log', 'লগ দেখুন')}</span>
+                              </Button>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+
+          {/* VIEW MODE 2: MONTHLY 31-DAY ATTENDANCE HEATMAP MATRIX */}
           {reportViewMode === 'matrix' && (
             <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
               <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
@@ -1927,117 +2194,6 @@ export default function AttendancePage() {
                             <span className={score >= 90 ? 'text-emerald-600' : score >= 75 ? 'text-amber-600' : 'text-rose-600'}>
                               {score}%
                             </span>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          )}
-
-          {/* VIEW MODE 2: AGGREGATE METRICS TABLE */}
-          {reportViewMode === 'summary' && (
-            <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
-              <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
-                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
-                  {tBilingual('Employee Aggregate Attendance & Overtime Summary', 'কর্মীভিত্তিক সামগ্রিক হাজিরা ও ওভারটাইম বিবরণ')}
-                </CardTitle>
-                <Badge variant="outline" className="text-xs font-mono">
-                  {reportFilteredEmps.length} employees
-                </Badge>
-              </CardHeader>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
-                      <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
-                      <th className="p-3.5">{tBilingual('Work Days', 'কর্মদিবস')}</th>
-                      <th className="p-3.5">{tBilingual('Present', 'উপস্থিত')}</th>
-                      <th className="p-3.5">{tBilingual('Late (Mins)', 'দেরি (মিনিট)')}</th>
-                      <th className="p-3.5">{tBilingual('Absent', 'অনুপস্থিত')}</th>
-                      <th className="p-3.5">{tBilingual('Leaves', 'ছুটি')}</th>
-                      <th className="p-3.5">{tBilingual('Worked Hours', 'কাজের ঘণ্টা')}</th>
-                      <th className="p-3.5">{tBilingual('OT Hours', 'ওভারটাইম')}</th>
-                      <th className="p-3.5">{tBilingual('Est. OT Pay', 'সম্ভাব্য ওটি')}</th>
-                      <th className="p-3.5 pr-4 text-right">{tBilingual('Attendance Score', 'স্কোর')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                    {reportFilteredEmps.map((emp) => {
-                      const empAtts = reportRecords.filter((r) => r.employee_id === emp.id)
-                      const pCount = empAtts.filter((r) => r.status === 'present' || r.status === 'half_day' || r.status === 'late').length
-                      const lCount = empAtts.filter((r) => r.status === 'late' || (r.late_minutes && r.late_minutes > 0)).length
-                      const lMins = empAtts.reduce((sum, r) => sum + (r.late_minutes || 0), 0)
-                      const aCount = empAtts.filter((r) => r.status === 'absent').length
-                      const lvCount = empAtts.filter((r) => r.status === 'leave').length
-                      const workedHrs = Math.round((empAtts.reduce((sum, r) => sum + (r.worked_minutes || 0), 0) / 60) * 10) / 10
-                      const otHrs = Math.round((empAtts.reduce((sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0), 0) / 60) * 10) / 10
-                      const rate = emp.overtime_hourly_rate || (emp.base_salary ? Math.round(emp.base_salary / 208 * 1.5) : 0)
-                      const otPay = Math.round(otHrs * rate)
-                      const workDays = reportDays.filter((d) => !d.isFriday).length || 26
-                      const score = workDays > 0 ? Math.min(100, Math.round((pCount / workDays) * 100)) : 100
-
-                      return (
-                        <tr key={emp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
-                          <td className="p-3.5 pl-4">
-                            <div className="font-semibold text-slate-900 dark:text-white">{emp.name}</div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                              {emp.employee_id_number} • <span className="capitalize">{emp.department}</span>
-                            </div>
-                          </td>
-
-                          <td className="p-3.5 font-mono text-slate-700 dark:text-slate-300">
-                            {workDays} days
-                          </td>
-
-                          <td className="p-3.5 font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                            {pCount}
-                          </td>
-
-                          <td className="p-3.5">
-                            {lCount > 0 ? (
-                              <div className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
-                                {lCount} ({lMins}m)
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 font-mono">-</span>
-                            )}
-                          </td>
-
-                          <td className="p-3.5 font-mono text-rose-600 dark:text-rose-400 font-semibold">
-                            {aCount > 0 ? aCount : <span className="text-slate-400">-</span>}
-                          </td>
-
-                          <td className="p-3.5 font-mono text-purple-600 dark:text-purple-400 font-semibold">
-                            {lvCount > 0 ? lvCount : <span className="text-slate-400">-</span>}
-                          </td>
-
-                          <td className="p-3.5 font-mono font-semibold text-slate-900 dark:text-white">
-                            {workedHrs}h
-                          </td>
-
-                          <td className="p-3.5 font-mono text-purple-600 dark:text-purple-400 font-bold">
-                            {otHrs > 0 ? `+${otHrs}h` : <span className="text-slate-400">-</span>}
-                          </td>
-
-                          <td className="p-3.5 font-mono font-bold text-amber-600 dark:text-amber-400">
-                            {otPay > 0 ? formatBDT(otPay) : <span className="text-slate-400 font-normal">৳0</span>}
-                          </td>
-
-                          <td className="p-3.5 pr-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <div className="w-16 bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div
-                                  className={`h-full ${score >= 90 ? 'bg-emerald-500' : score >= 75 ? 'bg-amber-500' : 'bg-rose-500'}`}
-                                  style={{ width: `${score}%` }}
-                                ></div>
-                              </div>
-                              <span className={`font-mono font-black text-xs ${score >= 90 ? 'text-emerald-600' : score >= 75 ? 'text-amber-600' : 'text-rose-600'}`}>
-                                {score}%
-                              </span>
-                            </div>
                           </td>
                         </tr>
                       )
@@ -2343,6 +2499,302 @@ export default function AttendancePage() {
               >
                 {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 {tBilingual('Save & Recalculate', 'সংরক্ষণ ও পুনর্গণনা')}
+              </Button>
+            </div>
+          </div>
+        </ModalDialog>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: VIEW LOG MODAL (EMPLOYEE ATTENDANCE & DUTY AUDIT) */}
+      {/* ======================================================== */}
+      {isViewLogModalOpen && viewLogEmployee && (
+        <ModalDialog
+          open={isViewLogModalOpen}
+          onOpenChange={(open) => setIsViewLogModalOpen(open)}
+          hideFooter={true}
+          title={tBilingual('Employee Attendance & Duty Log', 'কর্মীর হাজিরা ও ডিউটি লগ')}
+          description={tBilingual(
+            `Detailed daily check-in, check-out and overtime audit trail for ${viewLogEmployee.name}`,
+            `${viewLogEmployee.name}-এর দৈনিক পাঞ্চ লগ, প্রবেশ-প্রস্থান ও ওভারটাইম বিবরণ`
+          )}
+          size="xl"
+        >
+          <div className="space-y-4 pt-2">
+            {/* Employee Info Header Box */}
+            <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-900/60 dark:to-slate-900/30 border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-bold text-lg flex items-center justify-center shadow-xs">
+                    {viewLogEmployee.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                        {viewLogEmployee.name}
+                      </h3>
+                      {viewLogEmployee.name_bn && (
+                        <span className="text-xs text-slate-500 bangla-text font-medium">
+                          ({viewLogEmployee.name_bn})
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-0.5">
+                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
+                        {viewLogEmployee.employee_id_number}
+                      </span>
+                      <span>•</span>
+                      <span className="capitalize font-medium text-slate-700 dark:text-slate-300">
+                        {viewLogEmployee.department}
+                      </span>
+                      <span>•</span>
+                      <span className="capitalize text-slate-600 dark:text-slate-400">
+                        {viewLogEmployee.role}
+                      </span>
+                      <span>•</span>
+                      <Badge variant="outline" className="text-[10px] capitalize">
+                        {viewLogEmployee.employee_type}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Selected Period Badge */}
+                <div className="text-left sm:text-right">
+                  <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                    {tBilingual('Selected Period', 'নির্বাচিত সময়কাল')}
+                  </span>
+                  <Badge variant="secondary" className="font-semibold text-xs mt-0.5">
+                    <Calendar className="w-3.5 h-3.5 mr-1" />
+                    {MONTHS_LIST.find((m) => m.value === reportSelectedMonth)?.nameEn} {reportSelectedYear}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Summary KPI Badges */}
+              {(() => {
+                const empAtts = reportRecords.filter((r) => r.employee_id === viewLogEmployee.id)
+                const checkIns = empAtts
+                  .filter((r) => r.check_in_time)
+                  .map((r) => timeStringToMinutes(r.check_in_time))
+                  .filter((m): m is number => m !== null)
+                const avgInMinutes = checkIns.length > 0
+                  ? Math.round(checkIns.reduce((a, b) => a + b, 0) / checkIns.length)
+                  : null
+                const avgCheckIn = minutesToTimeString(avgInMinutes)
+
+                const checkOuts = empAtts
+                  .filter((r) => r.check_out_time)
+                  .map((r) => timeStringToMinutes(r.check_out_time))
+                  .filter((m): m is number => m !== null)
+                const avgOutMinutes = checkOuts.length > 0
+                  ? Math.round(checkOuts.reduce((a, b) => a + b, 0) / checkOuts.length)
+                  : null
+                const avgCheckOut = minutesToTimeString(avgOutMinutes)
+
+                const presentDays = empAtts.filter((r) =>
+                  r.status === 'present' || r.status === 'late' || r.status === 'half_day' || r.status === 'field_work'
+                ).length
+                const absentDays = empAtts.filter((r) => r.status === 'absent').length
+                const otMins = empAtts.reduce(
+                  (sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0),
+                  0
+                )
+                const totalOtHrs = Math.round((otMins / 60) * 10) / 10
+
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-800/80">
+                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60">
+                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Day Present', 'উপস্থিত দিন')}</span>
+                      <strong className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{presentDays} Days</strong>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60">
+                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Day Absent', 'অনুপস্থিত দিন')}</span>
+                      <strong className="text-sm font-bold text-rose-600 dark:text-rose-400">{absentDays} Days</strong>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60">
+                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check In', 'গড় প্রবেশ')}</span>
+                      <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckIn}</strong>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60">
+                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check Out', 'গড় প্রস্থান')}</span>
+                      <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckOut}</strong>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 col-span-2 sm:col-span-1">
+                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Total OT', 'মোট ওটি')}</span>
+                      <strong className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono">+{totalOtHrs} hrs</strong>
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+
+            {/* Detailed Daily Log Table */}
+            <div className="max-h-96 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50/90 dark:bg-slate-900/90 text-slate-600 dark:text-slate-400 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 font-bold text-[11px] uppercase">
+                  <tr>
+                    <th className="p-3 pl-4">{tBilingual('Date', 'তারিখ')}</th>
+                    <th className="p-3">{tBilingual('Day', 'বার')}</th>
+                    <th className="p-3">{tBilingual('Check In', 'প্রবেশ')}</th>
+                    <th className="p-3">{tBilingual('Check Out', 'প্রস্থান')}</th>
+                    <th className="p-3">{tBilingual('OT In/Out', 'ওটি ইন/আউট')}</th>
+                    <th className="p-3 pr-4">{tBilingual('Status', 'স্ট্যাটাস')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
+                  {reportDays.map((d) => {
+                    const rec = reportRecords.find(
+                      (r) => r.employee_id === viewLogEmployee.id && r.attendance_date === d.dateStr
+                    )
+                    const isFri = d.isFriday
+                    const otMinutes = rec?.potential_ot_minutes || rec?.approved_ot_minutes || 0
+                    const otHrs = Math.round((otMinutes / 60) * 10) / 10
+
+                    return (
+                      <tr
+                        key={d.dateStr}
+                        className={`hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors ${
+                          isFri ? 'bg-rose-50/20 dark:bg-rose-950/10' : ''
+                        }`}
+                      >
+                        <td className="p-3 pl-4 font-sans font-medium text-slate-900 dark:text-white">
+                          {d.dateStr}
+                        </td>
+
+                        <td className="p-3 font-sans">
+                          <span
+                            className={`font-medium ${
+                              isFri ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-400'
+                            }`}
+                          >
+                            {d.dayOfWeek} {isFri && `(${tBilingual('Off-Day', 'ছুটি')})`}
+                          </span>
+                        </td>
+
+                        <td className="p-3">
+                          {rec?.check_in_time ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-slate-900 dark:text-white">
+                                {format12Hour(rec.check_in_time)}
+                              </span>
+                              {rec.late_minutes && rec.late_minutes > 0 ? (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 font-sans"
+                                >
+                                  +{rec.late_minutes}m Late
+                                </Badge>
+                              ) : null}
+                            </div>
+                          ) : isFri ? (
+                            <span className="text-slate-400 font-sans text-xs">{tBilingual('Off-Day', 'সাপ্তাহিক ছুটি')}</span>
+                          ) : (
+                            <span className="text-slate-400">--:--</span>
+                          )}
+                        </td>
+
+                        <td className="p-3">
+                          {rec?.check_out_time ? (
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {format12Hour(rec.check_out_time)}
+                            </span>
+                          ) : rec?.check_in_time ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans"
+                            >
+                              {tBilingual('On Floor', 'ফ্লোরে আছেন')}
+                            </Badge>
+                          ) : (
+                            <span className="text-slate-400">--:--</span>
+                          )}
+                        </td>
+
+                        <td className="p-3">
+                          {otMinutes > 0 ? (
+                            <div className="flex items-center gap-1">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 font-bold"
+                              >
+                                +{otHrs} hrs
+                              </Badge>
+                              {rec?.check_out_time && (
+                                <span className="text-[11px] text-slate-400 font-normal">
+                                  (18:00 - {rec.check_out_time})
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </td>
+
+                        <td className="p-3 pr-4 font-sans">
+                          {rec ? (
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] px-2 py-0.5 capitalize ${
+                                rec.status === 'present'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                                  : rec.status === 'late'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                                  : rec.status === 'absent'
+                                  ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+                                  : rec.status === 'leave'
+                                  ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
+                                  : rec.status === 'field_work'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
+                                  : 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800'
+                              }`}
+                            >
+                              {rec.status}
+                            </Badge>
+                          ) : isFri ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400"
+                            >
+                              {tBilingual('Off-Day', 'সাপ্তাহিক ছুটি')}
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] text-slate-400 border-dashed border-slate-300 dark:border-slate-700"
+                            >
+                              {tBilingual('Unmarked', 'অনুপস্থিত')}
+                            </Badge>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsViewLogModalOpen(false)
+                  handleOpenPrintTimesheet(viewLogEmployee)
+                }}
+                className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800"
+              >
+                <Printer className="w-3.5 h-3.5 text-slate-500" />
+                {tBilingual('Print Official Timesheet', 'অফিসিয়াল টাইমশিট প্রিন্ট')}
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={() => setIsViewLogModalOpen(false)}
+                className="text-xs h-9 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 font-semibold px-4"
+              >
+                {tBilingual('Close', 'বন্ধ করুন')}
               </Button>
             </div>
           </div>
