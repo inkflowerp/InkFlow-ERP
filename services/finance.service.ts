@@ -10,6 +10,7 @@ import { BillingRepository } from '../lib/repositories/billing.repository.ts'
 import { SupplierRepository } from '../lib/repositories/supplier.repository.ts'
 import { CostingRepository } from '../lib/repositories/costing.repository.ts'
 import { BranchAnalyticsRepository } from '../lib/repositories/branch-analytics.repository.ts'
+import { WorkforceRepository } from '../lib/repositories/workforce.repository.ts'
 import type { ExpenseCategory } from '../types/accounting.types.ts'
 import type {
   AccountRecord,
@@ -31,7 +32,40 @@ import type {
   BankReconciliationSummary,
   JobProfitabilityMetric,
   BranchProfitabilityMetric,
+  ExpenseItemRecord,
+  ExpenseSummaryReport,
 } from '../types/finance.types.ts'
+
+export const EXPENSE_CATEGORY_DEFINITIONS: Record<
+  string,
+  { labelEn: string; labelBn: string; defaultCode: string; icon: string; accountSubtype?: string }
+> = {
+  staff_salary: { labelEn: 'Staff Salary', labelBn: 'মাসিক স্টাফ বেতন', defaultCode: '6030', accountSubtype: 'OPEX_SALARY', icon: '👨‍💼' },
+  salary_advance: { labelEn: 'Salary Advance', labelBn: 'স্টাফ বেতন অগ্রিম', defaultCode: '6030', accountSubtype: 'OPEX_SALARY', icon: '💸' },
+  daily_labor: { labelEn: 'Daily Labor & Wages', labelBn: 'দৈনিক মজুরি ও ওভারটাইম', defaultCode: '5020', accountSubtype: 'COGS_LABOR', icon: '👷' },
+  factory_rent: { labelEn: 'Factory & Shop Rent', labelBn: 'কারখানা ও দোকান ভাড়া', defaultCode: '6010', accountSubtype: 'OPEX_RENT', icon: '🏢' },
+  electricity_utility: { labelEn: 'Electricity & Utilities', labelBn: 'বিদ্যুৎ ও ইউটিলিটি বিল', defaultCode: '6020', accountSubtype: 'OPEX_UTILITIES', icon: '⚡' },
+  machine_maintenance: { labelEn: 'Machine Repair & Parts', labelBn: 'মেশিন মেরামত ও পার্টস', defaultCode: '6050', accountSubtype: 'OPEX_MAINTENANCE', icon: '🔧' },
+  raw_materials: { labelEn: 'Raw Materials & Ink', labelBn: 'খুচরা কাঁচামাল ও কালি', defaultCode: '5010', accountSubtype: 'COGS_MATERIAL', icon: '📦' },
+  transport_fuel: { labelEn: 'Transport, Courier & Fuel', labelBn: 'পরিবহন ও জ্বালানি', defaultCode: '6040', accountSubtype: 'OPEX_TRANSPORT', icon: '🚚' },
+  tea_snacks: { labelEn: 'Tea, Snacks & Entertainment', labelBn: 'চা, নাস্তা ও আপ্যায়ন', defaultCode: '6070', accountSubtype: 'OPEX_GENERAL', icon: '☕' },
+  office_stationery: { labelEn: 'Office Stationery & Paper', labelBn: 'স্টেশনারি ও কাগজ', defaultCode: '6070', accountSubtype: 'OPEX_GENERAL', icon: '📝' },
+  marketing_promo: { labelEn: 'Marketing & Promotion', labelBn: 'মার্কেটিং ও বিজ্ঞাপন', defaultCode: '6060', accountSubtype: 'OPEX_MARKETING', icon: '📢' },
+  govt_tax_fees: { labelEn: 'Govt Tax & Trade License', labelBn: 'ট্যাক্স ও লাইসেন্স ফি', defaultCode: '6070', accountSubtype: 'OPEX_GENERAL', icon: '🏛️' },
+  miscellaneous: { labelEn: 'General / Miscellaneous', labelBn: 'অন্যান্য বিবিধ খরচ', defaultCode: '6070', accountSubtype: 'OPEX_GENERAL', icon: '📂' },
+  // Legacy aliases
+  salary: { labelEn: 'Staff Salary', labelBn: 'স্টাফ বেতন', defaultCode: '6030', accountSubtype: 'OPEX_SALARY', icon: '👨‍💼' },
+  labor: { labelEn: 'Daily Labor', labelBn: 'শ্রমিক মজুরি', defaultCode: '5020', accountSubtype: 'COGS_LABOR', icon: '👷' },
+  rent: { labelEn: 'Factory Rent', labelBn: 'কারখানা ভাড়া', defaultCode: '6010', accountSubtype: 'OPEX_RENT', icon: '🏢' },
+  electricity: { labelEn: 'Electricity Bill', labelBn: 'বিদ্যুৎ বিল', defaultCode: '6020', accountSubtype: 'OPEX_UTILITIES', icon: '⚡' },
+  fuel: { labelEn: 'Fuel / Diesel', labelBn: 'জ্বালানি / ডিজেল', defaultCode: '6040', accountSubtype: 'OPEX_TRANSPORT', icon: '⛽' },
+  transport: { labelEn: 'Transport / Fare', labelBn: 'ভাড়া ও যাতায়াত', defaultCode: '6040', accountSubtype: 'OPEX_TRANSPORT', icon: '🚗' },
+  maintenance: { labelEn: 'Machine Repair', labelBn: 'মেরামত ও পার্টস', defaultCode: '6050', accountSubtype: 'OPEX_MAINTENANCE', icon: '🔧' },
+  office: { labelEn: 'Office Stationary', labelBn: 'স্টেশনারি ও কাগজ', defaultCode: '6070', accountSubtype: 'OPEX_GENERAL', icon: '📝' },
+  marketing: { labelEn: 'Marketing & Ads', labelBn: 'মার্কেটিং', defaultCode: '6060', accountSubtype: 'OPEX_MARKETING', icon: '📢' },
+  materials: { labelEn: 'Raw Materials', labelBn: 'কাঁচামাল', defaultCode: '5010', accountSubtype: 'COGS_MATERIAL', icon: '📦' },
+  other: { labelEn: 'Other Expense', labelBn: 'বিবিধ খরচ', defaultCode: '6070', accountSubtype: 'OPEX_GENERAL', icon: '📂' },
+}
 
 export class FinanceService {
   // ============================================================================
@@ -285,7 +319,7 @@ export class FinanceService {
   }
 
   // ============================================================================
-  // 4. EXPENSE POSTING
+  // 4. EXPENSE POSTING & STAFF SALARY INTEGRATION
   // ============================================================================
 
   static async recordExpense(params: {
@@ -296,6 +330,9 @@ export class FinanceService {
     amount: number
     expenseAccountId?: string | null
     paymentAccountId: string
+    employeeId?: string | null
+    employeeName?: string | null
+    paymentMethod?: string
     vendorName?: string | null
     description: string
     expenseDate?: string
@@ -312,17 +349,35 @@ export class FinanceService {
       throw new Error(`Payment account (${params.paymentAccountId}) not found.`)
     }
 
+    const catKey = String(params.category).toLowerCase()
+    const catDef = EXPENSE_CATEGORY_DEFINITIONS[catKey] || {
+      labelEn: params.category,
+      labelBn: params.category,
+      defaultCode: '6070',
+      accountSubtype: 'OPEX_GENERAL',
+    }
+
     let expenseAccount = params.expenseAccountId
       ? accounts.find((a) => a.id === params.expenseAccountId)
       : null
 
     if (!expenseAccount) {
-      const catUpper = String(params.category).toUpperCase()
-      expenseAccount = accounts.find(
-        (a) =>
-          a.account_type === 'EXPENSE' &&
-          (a.account_subtype.includes(catUpper) || a.code.startsWith('60'))
-      )
+      if (catDef.defaultCode) {
+        expenseAccount = accounts.find((a) => a.code === catDef.defaultCode)
+      }
+      if (!expenseAccount && catDef.accountSubtype) {
+        expenseAccount = accounts.find(
+          (a) => a.account_type === 'EXPENSE' && a.account_subtype === catDef.accountSubtype
+        )
+      }
+      if (!expenseAccount) {
+        const catUpper = catKey.toUpperCase()
+        expenseAccount = accounts.find(
+          (a) =>
+            a.account_type === 'EXPENSE' &&
+            (a.account_subtype.includes(catUpper) || a.code.startsWith('60') || a.code.startsWith('50'))
+        )
+      }
     }
 
     if (!expenseAccount) {
@@ -333,6 +388,11 @@ export class FinanceService {
     const txnId = `txn-${Date.now()}-${txnNumber}`
     const now = new Date().toISOString()
     const eDate = params.expenseDate || now.split('T')[0]
+
+    const payeeName = params.employeeName || params.vendorName || 'General Payee'
+    const narrationPrefix = params.employeeName
+      ? `Staff Payout (${catDef.labelEn}): ${params.employeeName}`
+      : `Expense: ${params.description} (${catDef.labelEn})`
 
     const header: FinancialTransactionRecord = {
       id: txnId,
@@ -345,10 +405,19 @@ export class FinanceService {
       total_amount: params.amount,
       reference_type: 'EXPENSE',
       reference_id: txnNumber,
-      narration: `Expense: ${params.description} (${params.category}) via ${paymentAccount.name}`,
+      narration: `${narrationPrefix} via ${paymentAccount.name}`,
       posted_by_name: params.actorName || 'Accounts Officer',
       posted_at: now,
-      metadata: { category: params.category, vendor: params.vendorName, attachment_url: params.attachmentUrl },
+      metadata: {
+        category: params.category,
+        category_label_en: catDef.labelEn,
+        category_label_bn: catDef.labelBn,
+        vendor: params.vendorName || undefined,
+        employee_id: params.employeeId || undefined,
+        employee_name: params.employeeName || undefined,
+        payment_method: params.paymentMethod || undefined,
+        attachment_url: params.attachmentUrl || undefined,
+      },
       created_at: now,
       updated_at: now,
     }
@@ -363,7 +432,7 @@ export class FinanceService {
         account_name: expenseAccount.name,
         debit: params.amount,
         credit: 0,
-        memo: `Operating expense: ${params.description}`,
+        memo: `${catDef.labelEn}: ${params.description} (${payeeName})`,
         created_at: now,
       },
       {
@@ -375,12 +444,222 @@ export class FinanceService {
         account_name: paymentAccount.name,
         debit: 0,
         credit: params.amount,
-        memo: `Payment for expense ${txnNumber}`,
+        memo: `Payment for expense voucher ${txnNumber}`,
         created_at: now,
       },
     ]
 
-    return FinanceRepository.recordTransaction(header, lines)
+    const transaction = await FinanceRepository.recordTransaction(header, lines)
+
+    // Atomically sync salary advance with employee record if applicable
+    if (params.employeeId && (catKey === 'salary_advance' || catKey === 'advance')) {
+      try {
+        const emp = await WorkforceRepository.getEmployeeById(params.employeeId, params.companyId)
+        if (emp) {
+          const newBal = Number(emp.current_advance_balance || 0) + params.amount
+          await WorkforceRepository.updateEmployee(emp.id, params.companyId, {
+            current_advance_balance: newBal,
+          })
+        }
+      } catch (empErr) {
+        console.warn('[FinanceService.recordExpense] Non-blocking employee advance balance update:', empErr)
+      }
+    }
+
+    return transaction
+  }
+
+  static async getExpenses(
+    companyId: string,
+    options?: {
+      startDate?: string
+      endDate?: string
+      category?: string
+      employeeId?: string
+      branchId?: string
+    }
+  ): Promise<ExpenseSummaryReport> {
+    const allTxns = await FinanceRepository.getTransactions(companyId, {
+      startDate: options?.startDate,
+      endDate: options?.endDate,
+      branchId: options?.branchId,
+    })
+
+    const accounts = await FinanceRepository.getAccounts(companyId, options?.branchId)
+    const accountMap = new Map<string, AccountRecord>(accounts.map((a) => [a.id, a]))
+
+    // Filter transactions that are EXPENSE or SALARY_PAYMENT
+    const expenseTxns = allTxns.filter((t) => {
+      if (t.transaction_type !== 'EXPENSE' && t.transaction_type !== 'SALARY_PAYMENT') {
+        return false
+      }
+      if (options?.category && options.category !== 'all') {
+        const cat = t.metadata?.category || (t.transaction_type === 'SALARY_PAYMENT' ? 'staff_salary' : 'miscellaneous')
+        if (cat !== options.category) return false
+      }
+      if (options?.employeeId) {
+        const empId = t.metadata?.employee_id || t.metadata?.employeeId
+        if (empId !== options.employeeId) return false
+      }
+      return true
+    })
+
+    let totalExpenses = 0
+    let totalStaffSalary = 0
+    let totalSalaryAdvance = 0
+    let totalDailyLabor = 0
+    let totalOperationalOverhead = 0
+
+    const categorySummaryMap = new Map<string, { count: number; total: number }>()
+    const paymentAccountMap = new Map<string, { name: string; code: string; count: number; total: number }>()
+    const employeeSummaryMap = new Map<
+      string,
+      { employee_id: string; employee_name: string; salary_total: number; advance_total: number; labor_total: number; total_paid: number; transaction_count: number }
+    >()
+
+    const items: ExpenseItemRecord[] = []
+
+    for (const txn of expenseTxns) {
+      const amount = Number(txn.total_amount || 0)
+      totalExpenses += amount
+
+      const catRaw = txn.metadata?.category || (txn.transaction_type === 'SALARY_PAYMENT' ? 'staff_salary' : 'miscellaneous')
+      const catKey = String(catRaw).toLowerCase()
+      const catDef = EXPENSE_CATEGORY_DEFINITIONS[catKey] || {
+        labelEn: catRaw,
+        labelBn: catRaw,
+        defaultCode: '6070',
+        icon: '📂',
+      }
+
+      // Group totals
+      if (catKey === 'staff_salary' || catKey === 'salary' || txn.transaction_type === 'SALARY_PAYMENT') {
+        totalStaffSalary += amount
+      } else if (catKey === 'salary_advance' || catKey === 'advance') {
+        totalSalaryAdvance += amount
+      } else if (catKey === 'daily_labor' || catKey === 'labor') {
+        totalDailyLabor += amount
+      } else {
+        totalOperationalOverhead += amount
+      }
+
+      // Category breakdown
+      const existingCat = categorySummaryMap.get(catKey) || { count: 0, total: 0 }
+      categorySummaryMap.set(catKey, {
+        count: existingCat.count + 1,
+        total: existingCat.total + amount,
+      })
+
+      // Payment Account Resolution (from credit line or metadata)
+      const creditLine = (txn.lines || []).find((l) => Number(l.credit || 0) > 0)
+      const payAccId = creditLine?.account_id || accounts.find((a) => a.account_type === 'ASSET')?.id || 'acc-cash'
+      const payAcc = accountMap.get(payAccId)
+      const payAccName = payAcc?.name || creditLine?.account_name || 'Cash in Hand'
+      const payAccCode = payAcc?.code || creditLine?.account_code || '1010'
+
+      const existingAcc = paymentAccountMap.get(payAccId) || { name: payAccName, code: payAccCode, count: 0, total: 0 }
+      paymentAccountMap.set(payAccId, {
+        name: payAccName,
+        code: payAccCode,
+        count: existingAcc.count + 1,
+        total: existingAcc.total + amount,
+      })
+
+      // Employee Tracking
+      const empId = txn.metadata?.employee_id || txn.metadata?.employeeId || null
+      const empName = txn.metadata?.employee_name || txn.metadata?.employeeName || (empId ? txn.metadata?.vendor : null)
+
+      if (empId || (empName && (catKey === 'staff_salary' || catKey === 'salary_advance' || catKey === 'daily_labor' || txn.transaction_type === 'SALARY_PAYMENT'))) {
+        const key = empId || empName!
+        const existingEmp = employeeSummaryMap.get(key) || {
+          employee_id: empId || key,
+          employee_name: empName || 'Employee',
+          salary_total: 0,
+          advance_total: 0,
+          labor_total: 0,
+          total_paid: 0,
+          transaction_count: 0,
+        }
+
+        if (catKey === 'staff_salary' || catKey === 'salary' || txn.transaction_type === 'SALARY_PAYMENT') {
+          existingEmp.salary_total += amount
+        } else if (catKey === 'salary_advance' || catKey === 'advance') {
+          existingEmp.advance_total += amount
+        } else if (catKey === 'daily_labor' || catKey === 'labor') {
+          existingEmp.labor_total += amount
+        }
+        existingEmp.total_paid += amount
+        existingEmp.transaction_count += 1
+        employeeSummaryMap.set(key, existingEmp)
+      }
+
+      items.push({
+        id: txn.id,
+        transaction_number: txn.transaction_number,
+        transaction_date: txn.transaction_date,
+        category: catKey,
+        category_label: catDef.labelEn,
+        category_label_bn: catDef.labelBn,
+        amount,
+        payment_account_id: payAccId,
+        payment_account_name: payAccName,
+        payment_account_code: payAccCode,
+        payment_method: txn.metadata?.payment_method,
+        employee_id: empId,
+        employee_name: empName,
+        vendor_name: txn.metadata?.vendor,
+        description: txn.narration || txn.metadata?.description || catDef.labelEn,
+        attachment_url: txn.metadata?.attachment_url,
+        posted_by_name: txn.posted_by_name || 'Accounts Officer',
+        created_at: txn.created_at,
+      })
+    }
+
+    const byCategory = Array.from(categorySummaryMap.entries()).map(([cat, val]) => {
+      const def = EXPENSE_CATEGORY_DEFINITIONS[cat] || { labelEn: cat, labelBn: cat }
+      return {
+        category: cat,
+        labelEn: def.labelEn,
+        labelBn: def.labelBn,
+        count: val.count,
+        total: Math.round(val.total * 100) / 100,
+      }
+    })
+
+    const byPaymentAccount = Array.from(paymentAccountMap.entries()).map(([accId, val]) => ({
+      account_id: accId,
+      account_name: val.name,
+      account_code: val.code,
+      count: val.count,
+      total: Math.round(val.total * 100) / 100,
+    }))
+
+    const byEmployee = Array.from(employeeSummaryMap.values()).map((emp) => ({
+      ...emp,
+      salary_total: Math.round(emp.salary_total * 100) / 100,
+      advance_total: Math.round(emp.advance_total * 100) / 100,
+      labor_total: Math.round(emp.labor_total * 100) / 100,
+      total_paid: Math.round(emp.total_paid * 100) / 100,
+    }))
+
+    const now = new Date()
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+
+    return {
+      company_id: companyId,
+      start_date: options?.startDate || currentMonthStart,
+      end_date: options?.endDate || currentMonthEnd,
+      total_expenses: Math.round(totalExpenses * 100) / 100,
+      total_staff_salary: Math.round(totalStaffSalary * 100) / 100,
+      total_salary_advance: Math.round(totalSalaryAdvance * 100) / 100,
+      total_daily_labor: Math.round(totalDailyLabor * 100) / 100,
+      total_operational_overhead: Math.round(totalOperationalOverhead * 100) / 100,
+      by_category: byCategory,
+      by_payment_account: byPaymentAccount,
+      by_employee: byEmployee,
+      items,
+    }
   }
 
   // ============================================================================

@@ -93,6 +93,9 @@ export async function recordExpenseAction(params: {
   amount: number
   expenseAccountId?: string | null
   paymentAccountId: string
+  employeeId?: string | null
+  employeeName?: string | null
+  paymentMethod?: string
   vendorName?: string | null
   description: string
   expenseDate?: string
@@ -305,3 +308,20 @@ export async function getFinancialDashboardAction() {
     return { success: false, error: err.message || 'Failed to fetch financial dashboard.' }
   }
 }
+
+export async function getExpensesAction(options?: {
+  startDate?: string
+  endDate?: string
+  category?: string
+  employeeId?: string
+  branchId?: string
+}) {
+  try {
+    const companyId = await getTenantCompanyId()
+    const report = await FinanceService.getExpenses(companyId, options)
+    return { success: true, data: report }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch expenses report.' }
+  }
+}
+

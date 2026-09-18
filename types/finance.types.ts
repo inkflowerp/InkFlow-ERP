@@ -406,3 +406,93 @@ export interface FinancialDashboardMetrics {
   monthly_gross_profit: number
   monthly_net_profit: number
 }
+
+// ============================================================================
+// EXPENSE MANAGEMENT & STAFF SALARY TYPES
+// ============================================================================
+
+export type ExpenseCategory =
+  | 'staff_salary'
+  | 'salary_advance'
+  | 'daily_labor'
+  | 'factory_rent'
+  | 'electricity_utility'
+  | 'machine_maintenance'
+  | 'raw_materials'
+  | 'transport_fuel'
+  | 'tea_snacks'
+  | 'office_stationery'
+  | 'marketing_promo'
+  | 'govt_tax_fees'
+  | 'miscellaneous'
+  // Legacy aliases
+  | 'rent'
+  | 'salary'
+  | 'labor'
+  | 'electricity'
+  | 'internet'
+  | 'transport'
+  | 'fuel'
+  | 'marketing'
+  | 'maintenance'
+  | 'materials'
+  | 'office'
+  | 'other'
+  | string
+
+export interface ExpenseItemRecord {
+  id: string
+  transaction_number: string
+  transaction_date: string
+  category: string
+  category_label: string
+  category_label_bn: string
+  amount: number
+  payment_account_id: string
+  payment_account_name: string
+  payment_account_code: string
+  payment_method?: string
+  employee_id?: string | null
+  employee_name?: string | null
+  vendor_name?: string | null
+  description: string
+  attachment_url?: string | null
+  posted_by_name: string
+  created_at: string
+}
+
+export interface ExpenseSummaryReport {
+  company_id: string
+  start_date: string
+  end_date: string
+  total_expenses: number
+  total_staff_salary: number
+  total_salary_advance: number
+  total_daily_labor: number
+  total_operational_overhead: number
+  by_category: {
+    category: string
+    labelEn: string
+    labelBn: string
+    count: number
+    total: number
+  }[]
+  by_payment_account: {
+    account_id: string
+    account_name: string
+    account_code: string
+    count: number
+    total: number
+  }[]
+  by_employee: {
+    employee_id: string
+    employee_name: string
+    salary_total: number
+    advance_total: number
+    labor_total: number
+    total_paid: number
+    transaction_count: number
+  }[]
+  items: ExpenseItemRecord[]
+}
+

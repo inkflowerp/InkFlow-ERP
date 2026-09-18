@@ -77,6 +77,7 @@ export interface EmployeeRecord {
   branch_name?: string | null
   user_id?: string | null
   employee_id_number: string
+  employee_code?: string | null
   name: string
   name_bn?: string | null
   mobile: string
@@ -86,6 +87,7 @@ export interface EmployeeRecord {
   emergency_contact_phone?: string | null
   emergency_contact_relation?: string | null
   role: string
+  designation?: string | null
   responsibilities?: string[]
   department:
     | 'printing'
@@ -100,6 +102,7 @@ export interface EmployeeRecord {
     | string
   employee_type: EmploymentType
   salary_basis: SalaryBasis
+  salary_type?: string | null
   joining_date: string
   base_salary: number
   daily_rate: number
@@ -115,6 +118,7 @@ export interface EmployeeRecord {
   created_at: string
   updated_at: string
 }
+
 
 export interface ShiftRecord {
   id: string

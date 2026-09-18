@@ -72,6 +72,8 @@ import { CashFlowView } from '@/components/finance/statements/cash-flow-view'
 import { TrialBalanceView } from '@/components/finance/statements/trial-balance-view'
 import { GeneralLedgerView } from '@/components/finance/statements/general-ledger-view'
 import { JobProfitabilityView } from '@/components/finance/statements/job-profitability-view'
+import { ExpensesView } from '@/components/finance/statements/expenses-view'
+import type { ExpenseSummaryReport } from '@/types/finance.types'
 
 import {
   getAccountsAction,
@@ -84,6 +86,7 @@ import {
   getReceivablesAgingAction,
   getPayablesAgingAction,
   getJobProfitabilityAction,
+  getExpensesAction,
   recordExpenseAction,
   recordTransferAction,
   recordSupplierPaymentAction,
@@ -108,6 +111,7 @@ export default function AccountingPage() {
   const [receivables, setReceivables] = useState<ReceivablesAgingSummary | null>(null)
   const [payables, setPayables] = useState<PayablesAgingSummary | null>(null)
   const [jobProfitability, setJobProfitability] = useState<JobProfitabilityMetric[]>([])
+  const [expensesReport, setExpensesReport] = useState<ExpenseSummaryReport | null>(null)
   const [customers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
   const [suppliers] = useDataStore<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS, [])
   const [cashClosings] = useDataStore<CashClosingRecord[]>(STORAGE_KEYS.CASH_CLOSINGS, [])
@@ -138,7 +142,7 @@ export default function AccountingPage() {
   const loadAllData = async () => {
     try {
       setIsLoading(true)
-      const [accRes, dashRes, pnlRes, bsRes, cfRes, tbRes, glRes, arRes, apRes, jpRes] = await Promise.all([
+      const [accRes, dashRes, pnlRes, bsRes, cfRes, tbRes, glRes, arRes, apRes, jpRes, expRes] = await Promise.all([
         getAccountsAction(),
         getFinancialDashboardAction(),
         getProfitAndLossAction(),
@@ -149,6 +153,7 @@ export default function AccountingPage() {
         getReceivablesAgingAction(),
         getPayablesAgingAction(),
         getJobProfitabilityAction(),
+        getExpensesAction(),
       ])
 
       if (accRes.success && accRes.data) setAccounts(accRes.data)
@@ -161,6 +166,7 @@ export default function AccountingPage() {
       if (arRes.success && arRes.data) setReceivables(arRes.data)
       if (apRes.success && apRes.data) setPayables(apRes.data)
       if (jpRes.success && jpRes.data) setJobProfitability(jpRes.data)
+      if (expRes.success && expRes.data) setExpensesReport(expRes.data)
     } catch (err: any) {
       console.error('Failed to load finance data:', err)
     } finally {
@@ -416,6 +422,19 @@ export default function AccountingPage() {
           className="rounded-xl text-xs"
         >
           {tBilingual('Dashboard', 'ড্যাশবোর্ড')}
+        </Button>
+        <Button
+          variant={activeTab === 'expenses' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('expenses')}
+          className={`rounded-xl text-xs flex items-center gap-1.5 font-semibold ${
+            activeTab === 'expenses'
+              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
+              : 'text-rose-700 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100'
+          }`}
+        >
+          <TrendingDown className="w-3.5 h-3.5" />
+          <span>{tBilingual('Expenses & Salary', 'খরচ ও স্টাফ বেতন')}</span>
         </Button>
         <Button
           variant={activeTab === 'receivables' ? 'default' : 'ghost'}
@@ -847,6 +866,15 @@ export default function AccountingPage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {activeTab === 'expenses' && (
+        <ExpensesView
+          report={expensesReport}
+          isLoading={isLoading}
+          onOpenSpendModal={() => setIsSpendModalOpen(true)}
+          onRefresh={loadAllData}
+        />
       )}
 
       {/* Modals */}
