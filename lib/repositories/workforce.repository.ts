@@ -20,6 +20,7 @@ import type {
   SalaryBasis,
   PaymentMethod,
   SalaryStructure,
+  OvertimeType,
 } from '../../types/workforce.types.ts'
 
 function isMatchingCompany(recordCompanyId?: string | null, targetCompanyId?: string | null): boolean {
@@ -702,9 +703,13 @@ export class WorkforceRepository {
     }
 
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
     PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, companyId)
     if (cleanSlug !== companyId) {
       PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, cleanSlug)
+    }
+    if (compSlug !== companyId) {
+      PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, compSlug)
     }
     PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id)
     return true
@@ -713,6 +718,66 @@ export class WorkforceRepository {
   // ============================================================================
   // 2. SHIFTS
   // ============================================================================
+
+  static async seedDefaultShifts(companyId: string): Promise<ShiftRecord[]> {
+    const now = new Date().toISOString()
+    const cleanId = companyId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 8) || 'default'
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    const defaultShifts: ShiftRecord[] = [
+      {
+        id: `shf-day-${cleanId}`,
+        company_id: companyId,
+        branch_id: null,
+        shift_code: 'SHF-DAY-01',
+        shift_name: 'Regular Day Shift (০৯:০০ - ১৮:০০)',
+        start_time: '09:00',
+        end_time: '18:00',
+        is_overnight: false,
+        grace_period_minutes: 15,
+        break_duration_minutes: 60,
+        working_days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday'],
+        overtime_rules: { enabled: true, multiplier: 1.5, min_minutes: 30 },
+        is_active: true,
+        created_at: now,
+        updated_at: now,
+      },
+      {
+        id: `shf-night-${cleanId}`,
+        company_id: companyId,
+        branch_id: null,
+        shift_code: 'SHF-NIGHT-02',
+        shift_name: 'Night Press Shift (২০:০০ - ০৬:০০)',
+        start_time: '20:00',
+        end_time: '06:00',
+        is_overnight: true,
+        grace_period_minutes: 15,
+        break_duration_minutes: 60,
+        working_days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday'],
+        overtime_rules: { enabled: true, multiplier: 1.5, min_minutes: 30 },
+        is_active: true,
+        created_at: now,
+        updated_at: now,
+      },
+    ]
+
+    for (const shift of defaultShifts) {
+      PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, companyId)
+      if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, cleanSlug)
+      if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, compSlug)
+      PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift)
+    }
+
+    try {
+      const admin = createAdminClient()
+      for (const shift of defaultShifts) {
+        await (admin as any).from('shifts').insert(shift)
+      }
+    } catch {}
+
+    return defaultShifts
+  }
 
   static async getShifts(companyId: string, branchId?: string): Promise<ShiftRecord[]> {
     try {
@@ -735,12 +800,32 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getShifts] DB fallback:', e)
     }
 
-    const shifts = PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS) || []
-    return shifts.filter((s) => {
-      if (s.company_id && s.company_id !== companyId) return false
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    const storeScoped1 = PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS, compSlug) || []) : []
+    const storeGlobal = PrintERPDataStore.get<ShiftRecord[]>(STORAGE_KEYS.SHIFTS) || []
+
+    const allShifts = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
+    const filtered = allShifts.filter((s) => {
+      if (s.company_id && !isMatchingCompany(s.company_id, companyId)) return false
       if (branchId && s.branch_id !== branchId) return false
       return true
     })
+
+    const shiftMap = new Map<string, ShiftRecord>()
+    for (const s of filtered) {
+      if (s.id && !shiftMap.has(s.id)) shiftMap.set(s.id, s)
+    }
+
+    const uniqueShifts = Array.from(shiftMap.values())
+    if (uniqueShifts.length > 0) {
+      return uniqueShifts
+    }
+
+    return await this.seedDefaultShifts(companyId)
   }
 
   static async getShiftById(id: string, companyId: string): Promise<ShiftRecord | null> {
@@ -765,6 +850,10 @@ export class WorkforceRepository {
   }
 
   static async createShift(shift: ShiftRecord): Promise<ShiftRecord> {
+    const companyId = shift.company_id
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
     try {
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
@@ -774,6 +863,9 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord, compSlug)
         PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, data as ShiftRecord)
         return data as ShiftRecord
       }
@@ -781,6 +873,9 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.createShift] DB fallback:', e)
     }
 
+    PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift, compSlug)
     PrintERPDataStore.addItem(STORAGE_KEYS.SHIFTS, shift)
     return shift
   }
@@ -791,6 +886,8 @@ export class WorkforceRepository {
     updates: Partial<ShiftRecord>
   ): Promise<ShiftRecord | null> {
     const payload = { ...updates, updated_at: new Date().toISOString() }
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
 
     try {
       const admin = createAdminClient()
@@ -803,6 +900,9 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data, compSlug)
         PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, data)
         return data as ShiftRecord
       }
@@ -810,6 +910,9 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.updateShift] DB fallback:', e)
     }
 
+    PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload, compSlug)
     return PrintERPDataStore.updateItem<ShiftRecord>(STORAGE_KEYS.SHIFTS, id, payload)
   }
 
@@ -868,19 +971,154 @@ export class WorkforceRepository {
 
     const assignments = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEE_SHIFTS) || []
     const match = assignments.find(
-      (a) => a.company_id === companyId && a.employee_id === employeeId && a.is_active
+      (a) => isMatchingCompany(a.company_id, companyId) && a.employee_id === employeeId && a.is_active
     )
     if (match) {
       return this.getShiftById(match.shift_id, companyId)
     }
 
     const allShifts = await this.getShifts(companyId)
-    return allShifts.find((s) => s.is_active) || null
+    return allShifts.find((s) => s.is_active) || allShifts[0] || null
   }
 
   // ============================================================================
   // 3. DAILY ATTENDANCE SUMMARIES
   // ============================================================================
+
+  static async seedDefaultAttendanceSummaries(companyId: string): Promise<AttendanceDailySummaryRecord[]> {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+    const currentDay = now.getDate()
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+    const cleanId = companyId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 8) || 'default'
+
+    let employees = await this.getEmployees(companyId, { status: 'active' })
+    if (employees.length === 0) {
+      employees = await this.seedDefaultEmployees(companyId)
+    }
+
+    const shifts = await this.getShifts(companyId)
+    const defaultShift = shifts[0] || {
+      id: `shf-day-${cleanId}`,
+      shift_name: 'Regular Day Shift',
+      start_time: '09:00',
+      end_time: '18:00',
+    }
+
+    const seeded: AttendanceDailySummaryRecord[] = []
+    const daysToSeed = Math.max(currentDay, 26)
+
+    for (let day = 1; day <= daysToSeed; day++) {
+      const dateObj = new Date(year, month - 1, day)
+      const dayOfWeek = dateObj.getDay() // 5 = Friday
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+      for (let i = 0; i < employees.length; i++) {
+        const emp = employees[i]
+        const idSuffix = `${day}-${i + 1}-${cleanId}`
+
+        if (dayOfWeek === 5) {
+          seeded.push({
+            id: `att-off-${idSuffix}`,
+            company_id: companyId,
+            branch_id: emp.branch_id || null,
+            employee_id: emp.id,
+            employee_name: emp.name,
+            employee_role: emp.role,
+            employee_department: emp.department,
+            shift_id: defaultShift.id,
+            shift_name: defaultShift.shift_name,
+            attendance_date: dateStr,
+            status: 'off_day',
+            check_in_time: null,
+            check_out_time: null,
+            late_minutes: 0,
+            early_leave_minutes: 0,
+            worked_minutes: 0,
+            potential_ot_minutes: 0,
+            approved_ot_minutes: 0,
+            attendance_source: 'system',
+            notes: 'Weekly Friday Off',
+            created_at: new Date(year, month - 1, day, 8, 0, 0).toISOString(),
+            updated_at: new Date(year, month - 1, day, 8, 0, 0).toISOString(),
+          })
+          continue
+        }
+
+        const isLate = (day + i) % 9 === 0
+        const isFieldWork = emp.role.toLowerCase().includes('installation') && (day % 3 === 0)
+        const isOt = (emp.role.toLowerCase().includes('operator') || emp.role.toLowerCase().includes('fabricator') || emp.is_daily_worker) && (day % 2 === 0)
+
+        const checkIn = isLate ? '09:25:00' : '08:55:00'
+        const checkOut = isOt ? '20:30:00' : '18:05:00'
+        const lateMins = isLate ? 25 : 0
+        const workedMins = isOt ? 690 : 540
+        const otMins = isOt ? 120 : 0
+        const status = isFieldWork ? 'field_work' : isLate ? 'late' : 'present'
+
+        seeded.push({
+          id: `att-day-${idSuffix}`,
+          company_id: companyId,
+          branch_id: emp.branch_id || null,
+          employee_id: emp.id,
+          employee_name: emp.name,
+          employee_role: emp.role,
+          employee_department: emp.department,
+          shift_id: defaultShift.id,
+          shift_name: defaultShift.shift_name,
+          attendance_date: dateStr,
+          status,
+          check_in_time: checkIn,
+          check_out_time: day === currentDay && dateObj.getHours() < 18 ? null : checkOut,
+          late_minutes: lateMins,
+          early_leave_minutes: 0,
+          worked_minutes: workedMins,
+          potential_ot_minutes: otMins,
+          approved_ot_minutes: otMins,
+          attendance_source: 'qr_geo',
+          notes: isFieldWork ? 'On-site Client Installation' : isOt ? 'Night press run shift' : 'Standard Floor Shift',
+          created_at: new Date(year, month - 1, day, 9, 0, 0).toISOString(),
+          updated_at: new Date(year, month - 1, day, 18, 0, 0).toISOString(),
+        })
+      }
+    }
+
+    for (const record of seeded) {
+      PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, companyId)
+      if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, cleanSlug)
+      if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record, compSlug)
+      PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, record)
+    }
+
+    try {
+      const admin = createAdminClient()
+      const dbRows = seeded.map((s) => ({
+        id: s.id,
+        company_id: s.company_id,
+        branch_id: s.branch_id,
+        employee_id: s.employee_id,
+        shift_id: s.shift_id,
+        attendance_date: s.attendance_date,
+        status: s.status,
+        check_in_time: s.check_in_time,
+        check_out_time: s.check_out_time,
+        late_minutes: s.late_minutes,
+        early_leave_minutes: s.early_leave_minutes,
+        worked_minutes: s.worked_minutes,
+        potential_ot_minutes: s.potential_ot_minutes,
+        approved_ot_minutes: s.approved_ot_minutes,
+        attendance_source: s.attendance_source,
+        notes: s.notes,
+        created_at: s.created_at,
+        updated_at: s.updated_at,
+      }))
+      await (admin as any).from('attendance_daily_summaries').upsert(dbRows, { onConflict: 'company_id,employee_id,attendance_date' })
+    } catch {}
+
+    return seeded
+  }
 
   static async getDailyAttendanceSummaries(
     companyId: string,
@@ -894,11 +1132,12 @@ export class WorkforceRepository {
       branchId?: string
     }
   ): Promise<AttendanceDailySummaryRecord[]> {
+    let dbSummaries: AttendanceDailySummaryRecord[] = []
     try {
       const admin = createAdminClient()
       let query = (admin as any)
         .from('attendance_daily_summaries')
-        .select('*, employees(name, role, department), shifts(shift_name), attendance_locations(name), job_orders(job_order_number)')
+        .select('*, employees(name, name_bn, role, department, employee_id_number), shifts(shift_name), attendance_locations(name), job_orders(job_order_number)')
         .eq('company_id', companyId)
         .order('attendance_date', { ascending: false })
 
@@ -923,9 +1162,11 @@ export class WorkforceRepository {
 
       const { data, error } = await query
       if (!error && data && data.length > 0) {
-        return data.map((d: any) => ({
+        dbSummaries = data.map((d: any) => ({
           ...d,
           employee_name: d.employees?.name || 'Staff',
+          employee_name_bn: d.employees?.name_bn || null,
+          employee_id_number: d.employees?.employee_id_number || 'EMP',
           employee_role: d.employees?.role || 'Operator',
           employee_department: d.employees?.department || 'printing',
           shift_name: d.shifts?.shift_name || null,
@@ -937,15 +1178,53 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getDailyAttendanceSummaries] DB fallback:', e)
     }
 
-    const summaries = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES) || []
-    return summaries.filter((s) => {
-      if (s.company_id && s.company_id !== companyId) return false
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    const storeScoped1 = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, compSlug) || []) : []
+    const storeGlobal = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES) || []
+
+    const allStore = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
+
+    const filteredStore = allStore.filter((s) => {
+      if (s.company_id && !isMatchingCompany(s.company_id, companyId)) return false
       if (options?.date && s.attendance_date !== options.date) return false
       if (options?.startDate && s.attendance_date < options.startDate) return false
       if (options?.endDate && s.attendance_date > options.endDate) return false
       if (options?.employeeId && s.employee_id !== options.employeeId) return false
       if (options?.status && s.status !== options.status) return false
       if (options?.branchId && s.branch_id !== options.branchId) return false
+      if (options?.department && s.employee_department && s.employee_department !== options.department) return false
+      return true
+    })
+
+    const attMap = new Map<string, AttendanceDailySummaryRecord>()
+    for (const s of filteredStore) {
+      const key = `${s.employee_id}_${s.attendance_date}`
+      attMap.set(key, s)
+    }
+    for (const d of dbSummaries) {
+      const key = `${d.employee_id}_${d.attendance_date}`
+      const existing = attMap.get(key) || (d.id ? attMap.get(d.id) : null)
+      attMap.set(key, existing ? { ...existing, ...d } : d)
+    }
+
+    const uniqueSummaries = Array.from(attMap.values())
+    if (uniqueSummaries.length > 0) {
+      uniqueSummaries.sort((a, b) => b.attendance_date.localeCompare(a.attendance_date))
+      return uniqueSummaries
+    }
+
+    // Auto-seed default attendance summaries
+    const seeded = await this.seedDefaultAttendanceSummaries(companyId)
+    return seeded.filter((s) => {
+      if (options?.date && s.attendance_date !== options.date) return false
+      if (options?.startDate && s.attendance_date < options.startDate) return false
+      if (options?.endDate && s.attendance_date > options.endDate) return false
+      if (options?.employeeId && s.employee_id !== options.employeeId) return false
+      if (options?.status && s.status !== options.status) return false
       return true
     })
   }
@@ -953,44 +1232,133 @@ export class WorkforceRepository {
   static async upsertDailyAttendanceSummary(
     summary: AttendanceDailySummaryRecord
   ): Promise<AttendanceDailySummaryRecord> {
+    const companyId = summary.company_id
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+    const payload = { ...summary, updated_at: new Date().toISOString() }
+
     try {
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
         .from('attendance_daily_summaries')
-        .upsert(summary, { onConflict: 'company_id,employee_id,attendance_date' })
+        .upsert(payload, { onConflict: 'company_id,employee_id,attendance_date' })
         .select()
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<AttendanceDailySummaryRecord>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, data.id, data)
-        return data as AttendanceDailySummaryRecord
+        const merged = { ...payload, ...data }
+        PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged, compSlug)
+        PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, merged)
+        return merged as AttendanceDailySummaryRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.upsertDailyAttendanceSummary] DB fallback:', e)
     }
 
-    const existing = PrintERPDataStore.get<AttendanceDailySummaryRecord[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES) || []
-    const idx = existing.findIndex(
-      (s) => s.company_id === summary.company_id && s.employee_id === summary.employee_id && s.attendance_date === summary.attendance_date
-    )
-    if (idx >= 0) {
-      existing[idx] = { ...existing[idx], ...summary, updated_at: new Date().toISOString() }
-      PrintERPDataStore.set(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, existing)
-      return existing[idx]
-    } else {
-      PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, summary)
-      return summary
-    }
+    PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload, compSlug)
+    PrintERPDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, payload)
+    return payload
   }
 
   // ============================================================================
   // 4. OVERTIME RECORDS
   // ============================================================================
 
+  static async seedDefaultOvertimeRecords(companyId: string): Promise<OvertimeRecord[]> {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+    const cleanId = companyId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 8) || 'default'
+
+    let employees = await this.getEmployees(companyId, { status: 'active' })
+    if (employees.length === 0) {
+      employees = await this.seedDefaultEmployees(companyId)
+    }
+
+    const seeded: OvertimeRecord[] = []
+    const sampleOtProfiles: Array<{
+      empIdx: number
+      dayOffset: number
+      duration: number
+      type: OvertimeType
+      status: 'approved' | 'pending_approval'
+      reason: string
+    }> = [
+      { empIdx: 0, dayOffset: 1, duration: 120, type: 'regular_day', status: 'approved', reason: 'Evening rush offset print catalog run' },
+      { empIdx: 1, dayOffset: 2, duration: 90, type: 'regular_day', status: 'approved', reason: 'Large format UV printing client urgent order' },
+      { empIdx: 3, dayOffset: 3, duration: 150, type: 'regular_day', status: 'approved', reason: '3D acrylic signage laser cutting & polishing' },
+      { empIdx: 6, dayOffset: 4, duration: 180, type: 'holiday', status: 'approved', reason: 'Night rush shop-floor loading and packing' },
+      { empIdx: 2, dayOffset: 0, duration: 60, type: 'regular_day', status: 'pending_approval', reason: 'Late die-cutting setup for pharmaceutical packaging' },
+    ]
+
+    for (let idx = 0; idx < sampleOtProfiles.length; idx++) {
+      const p = sampleOtProfiles[idx]
+      const emp = employees[p.empIdx] || employees[0]
+      const targetDay = Math.max(1, now.getDate() - p.dayOffset)
+      const otDate = `${year}-${String(month).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`
+      const baseOtRate = Number(emp.overtime_hourly_rate || (emp.base_salary ? Math.round((emp.base_salary / 208) * 1.5) : 150))
+      const hours = Math.round((p.duration / 60) * 10) / 10
+      const amount = Math.round(hours * baseOtRate)
+
+      seeded.push({
+        id: `ot-seed-${idx + 1}-${cleanId}`,
+        company_id: companyId,
+        branch_id: emp.branch_id || null,
+        employee_id: emp.id,
+        employee_name: emp.name,
+        employee_role: emp.role,
+        employee_department: emp.department,
+        attendance_id: null,
+        ot_date: otDate,
+        start_time: '18:00',
+        end_time: `${18 + Math.floor(p.duration / 60)}:${String(p.duration % 60).padStart(2, '0')}`,
+        duration_minutes: p.duration,
+        duration_hours: hours,
+        ot_type: p.type,
+        base_hourly_rate: baseOtRate,
+        multiplier: 1.0,
+        effective_ot_rate: baseOtRate,
+        calculated_amount: amount,
+        status: p.status,
+        reason: p.reason,
+        requested_by_id: emp.id,
+        requested_by_name: emp.name,
+        approved_by_id: p.status === 'approved' ? 'admin' : null,
+        approved_by_name: p.status === 'approved' ? 'Shop-Floor Manager' : null,
+        approved_at: p.status === 'approved' ? now.toISOString() : null,
+        created_at: new Date(year, month - 1, targetDay, 18, 0, 0).toISOString(),
+        updated_at: new Date(year, month - 1, targetDay, 18, 0, 0).toISOString(),
+      })
+    }
+
+    for (const record of seeded) {
+      PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, companyId)
+      if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, cleanSlug)
+      if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, compSlug)
+      PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record)
+    }
+
+    try {
+      const admin = createAdminClient()
+      for (const record of seeded) {
+        await (admin as any).from('overtime_records').insert(record)
+      }
+    } catch {}
+
+    return seeded
+  }
+
   static async getOvertimeRecords(
     companyId: string,
     options?: { employeeId?: string; status?: string; otDate?: string; payrollPeriodId?: string }
   ): Promise<OvertimeRecord[]> {
+    let dbRecords: OvertimeRecord[] = []
     try {
       const admin = createAdminClient()
       let query = (admin as any)
@@ -1014,7 +1382,7 @@ export class WorkforceRepository {
 
       const { data, error } = await query
       if (!error && data && data.length > 0) {
-        return data.map((d: any) => ({
+        dbRecords = data.map((d: any) => ({
           ...d,
           employee_name: d.employees?.name || 'Staff',
           employee_role: d.employees?.role || 'Staff',
@@ -1025,18 +1393,48 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getOvertimeRecords] DB fallback:', e)
     }
 
-    const records = PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS) || []
-    return records.filter((r) => {
-      if (r.company_id && r.company_id !== companyId) return false
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    const storeScoped1 = PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS, compSlug) || []) : []
+    const storeGlobal = PrintERPDataStore.get<OvertimeRecord[]>(STORAGE_KEYS.WF_OVERTIME_RECORDS) || []
+
+    const allRecords = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
+
+    const filtered = allRecords.filter((r) => {
+      if (r.company_id && !isMatchingCompany(r.company_id, companyId)) return false
       if (options?.employeeId && r.employee_id !== options.employeeId) return false
       if (options?.status && r.status !== options.status) return false
       if (options?.otDate && r.ot_date !== options.otDate) return false
       if (options?.payrollPeriodId && r.payroll_period_id !== options.payrollPeriodId) return false
       return true
     })
+
+    const otMap = new Map<string, OvertimeRecord>()
+    for (const s of filtered) {
+      if (s.id) otMap.set(s.id, s)
+    }
+    for (const d of dbRecords) {
+      const existing = otMap.get(d.id)
+      otMap.set(d.id, existing ? { ...existing, ...d } : d)
+    }
+
+    const uniqueRecords = Array.from(otMap.values())
+    if (uniqueRecords.length > 0) {
+      uniqueRecords.sort((a, b) => b.ot_date.localeCompare(a.ot_date))
+      return uniqueRecords
+    }
+
+    return await this.seedDefaultOvertimeRecords(companyId)
   }
 
   static async createOvertimeRecord(record: OvertimeRecord): Promise<OvertimeRecord> {
+    const companyId = record.company_id
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
     try {
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
@@ -1046,6 +1444,9 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord, compSlug)
         PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, data as OvertimeRecord)
         return data as OvertimeRecord
       }
@@ -1053,6 +1454,9 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.createOvertimeRecord] DB fallback:', e)
     }
 
+    PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record, compSlug)
     PrintERPDataStore.addItem(STORAGE_KEYS.WF_OVERTIME_RECORDS, record)
     return record
   }
@@ -1063,6 +1467,8 @@ export class WorkforceRepository {
     updates: Partial<OvertimeRecord>
   ): Promise<OvertimeRecord | null> {
     const payload = { ...updates, updated_at: new Date().toISOString() }
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
 
     try {
       const admin = createAdminClient()
@@ -1075,6 +1481,9 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data, compSlug)
         PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, data)
         return data as OvertimeRecord
       }
@@ -1082,6 +1491,9 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.updateOvertimeRecord] DB fallback:', e)
     }
 
+    PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload, compSlug)
     return PrintERPDataStore.updateItem<OvertimeRecord>(STORAGE_KEYS.WF_OVERTIME_RECORDS, id, payload)
   }
 
@@ -1618,6 +2030,27 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.updatePayrollItem] DB fallback:', e)
     }
 
+    // Update inside local store payroll periods
+    const periods = await this.getPayrollPeriods(companyId)
+    for (const period of periods) {
+      const itemIdx = (period.items || []).findIndex((it) => it.id === id)
+      if (itemIdx >= 0) {
+        const updatedItem = { ...period.items[itemIdx], ...payload }
+        period.items[itemIdx] = updatedItem
+
+        // Recalculate period totals
+        period.total_paid_amount = period.items.reduce((sum, it) => sum + Number(it.paid_amount || 0), 0)
+        period.total_due_amount = period.items.reduce((sum, it) => sum + Number(it.due_amount || 0), 0)
+
+        await this.updatePayrollPeriod(period.id, companyId, {
+          total_paid_amount: period.total_paid_amount,
+          total_due_amount: period.total_due_amount,
+          items: period.items,
+        })
+        return updatedItem
+      }
+    }
+
     return null
   }
 
@@ -1629,6 +2062,7 @@ export class WorkforceRepository {
     companyId: string,
     options?: { payrollPeriodId?: string; employeeId?: string }
   ): Promise<SalaryPaymentRecord[]> {
+    let dbPayments: SalaryPaymentRecord[] = []
     try {
       const admin = createAdminClient()
       let query = (admin as any)
@@ -1646,7 +2080,7 @@ export class WorkforceRepository {
 
       const { data, error } = await query
       if (!error && data && data.length > 0) {
-        return data.map((d: any) => ({
+        dbPayments = data.map((d: any) => ({
           ...d,
           employee_name: d.employees?.name || 'Staff',
         })) as SalaryPaymentRecord[]
@@ -1655,16 +2089,39 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getSalaryPayments] DB fallback:', e)
     }
 
-    const payments = PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS) || []
-    return payments.filter((p) => {
-      if (p.company_id && p.company_id !== companyId) return false
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    const storeScoped1 = PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS, compSlug) || []) : []
+    const storeGlobal = PrintERPDataStore.get<SalaryPaymentRecord[]>(STORAGE_KEYS.WF_SALARY_PAYMENTS) || []
+
+    const allPayments = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
+
+    const filtered = allPayments.filter((p) => {
+      if (p.company_id && !isMatchingCompany(p.company_id, companyId)) return false
       if (options?.payrollPeriodId && p.payroll_period_id !== options.payrollPeriodId) return false
       if (options?.employeeId && p.employee_id !== options.employeeId) return false
       return true
     })
+
+    const payMap = new Map<string, SalaryPaymentRecord>()
+    for (const p of filtered) {
+      if (p.id) payMap.set(p.id, p)
+    }
+    for (const d of dbPayments) {
+      payMap.set(d.id, d)
+    }
+
+    return Array.from(payMap.values())
   }
 
   static async recordSalaryPayment(payment: SalaryPaymentRecord): Promise<SalaryPaymentRecord> {
+    const companyId = payment.company_id
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
     try {
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
@@ -1674,6 +2131,9 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord, compSlug)
         PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, data as SalaryPaymentRecord)
         return data as SalaryPaymentRecord
       }
@@ -1681,6 +2141,9 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.recordSalaryPayment] DB fallback:', e)
     }
 
+    PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment, compSlug)
     PrintERPDataStore.addItem(STORAGE_KEYS.WF_SALARY_PAYMENTS, payment)
     return payment
   }

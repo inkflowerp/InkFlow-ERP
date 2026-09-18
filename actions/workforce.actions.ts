@@ -268,7 +268,10 @@ export async function recordAttendanceSummaryAction(
     })
 
     revalidatePath(`/${tenant.companySlug}/hr`)
-    revalidatePath(`/${tenant.companySlug}/attendance`)
+    revalidatePath(`/${tenant.companySlug}/hr/attendance`)
+    revalidatePath(`/${tenant.companySlug}/hr/employees`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
+    revalidatePath(`/${tenant.companySlug}/hr/salary-report`)
     return { success: true, data: record }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to record attendance.' }
@@ -312,6 +315,8 @@ export async function createOvertimeRequestAction(
     })
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/attendance`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
     return { success: true, data: record }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to submit overtime request.' }
@@ -341,6 +346,8 @@ export async function reviewOvertimeAction(
     })
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/attendance`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
     return { success: true, data: reviewed }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to review overtime record.' }
@@ -387,6 +394,9 @@ export async function disburseSalaryAdvanceAction(
     })
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/employees`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
+    revalidatePath(`/${tenant.companySlug}/hr/salary-report`)
     return { success: true, data: advance }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to disburse salary advance.' }
@@ -454,6 +464,8 @@ export async function generatePayrollDraftAction(
     })
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
+    revalidatePath(`/${tenant.companySlug}/hr/salary-report`)
     return { success: true, data: period }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to generate payroll sheet.' }
@@ -478,6 +490,8 @@ export async function approvePayrollAction(
     )
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
+    revalidatePath(`/${tenant.companySlug}/hr/salary-report`)
     return { success: true, data: approved }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to approve payroll period.' }
@@ -502,6 +516,8 @@ export async function lockPayrollAction(
     )
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
+    revalidatePath(`/${tenant.companySlug}/hr/salary-report`)
     return { success: true, data: locked }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to lock payroll period.' }
@@ -534,6 +550,8 @@ export async function recordSalaryPaymentAction(
     })
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
+    revalidatePath(`/${tenant.companySlug}/hr/salary-report`)
     return { success: true, data: payment }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to record salary payment.' }
