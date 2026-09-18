@@ -51,6 +51,15 @@ import {
   Hash,
   Sparkle,
   ArrowRight,
+  Printer,
+  QrCode,
+  ExternalLink,
+  Share2,
+  CheckCheck,
+  Wrench,
+  GraduationCap,
+  HeartPulse,
+  Building2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -235,12 +244,30 @@ export default function EmployeeListPage() {
 
   // Upgraded Modal Tab Navigation & State
   const [modalTab, setModalTab] = useState<'personal' | 'role' | 'salary' | 'banking' | 'emergency'>('personal')
+  const [drawerTab, setDrawerTab] = useState<'overview' | 'compensation' | 'payment' | 'idcard' | 'notes'>('overview')
   const [showAdvancedAllowances, setShowAdvancedAllowances] = useState(false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
   const triggerCopy = (key: string) => {
     setCopiedField(key)
     setTimeout(() => setCopiedField(null), 2000)
+  }
+
+  const calculateTenure = (joiningDateStr?: string) => {
+    if (!joiningDateStr) return 'N/A'
+    try {
+      const start = new Date(joiningDateStr)
+      const now = new Date()
+      const diffMonths = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth())
+      if (diffMonths < 1) return 'New Joiner (< 1 mo)'
+      const years = Math.floor(diffMonths / 12)
+      const months = diffMonths % 12
+      if (years === 0) return `${months} ${months === 1 ? 'Month' : 'Months'}`
+      if (months === 0) return `${years} ${years === 1 ? 'Year' : 'Years'}`
+      return `${years} ${years === 1 ? 'Yr' : 'Yrs'} ${months} ${months === 1 ? 'Mo' : 'Mos'}`
+    } catch {
+      return 'N/A'
+    }
   }
 
   // Form State
@@ -396,6 +423,7 @@ export default function EmployeeListPage() {
 
   const handleOpen360 = (emp: EmployeeRecord) => {
     setSelectedEmployee(emp)
+    setDrawerTab('overview')
     setIs360DrawerOpen(true)
   }
 
@@ -1954,124 +1982,674 @@ export default function EmployeeListPage() {
           open={is360DrawerOpen}
           onOpenChange={(open) => setIs360DrawerOpen(open)}
           hideFooter={true}
-          title={`Employee 360°: ${selectedEmployee.name}`}
-          description={`ID: ${selectedEmployee.employee_id_number} • ${selectedEmployee.role} (${selectedEmployee.department})`}
-          size="lg"
-        >
-          <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-2">
-            {/* Top Profile Banner */}
-            <div className="p-4 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-base shrink-0 ring-1 ring-primary/20">
-                  {selectedEmployee.name.slice(0, 2).toUpperCase()}
+          title={
+            <div className="flex items-center justify-between w-full pr-6">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm ring-1 ring-blue-500/20">
+                  <Eye className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                    <span>{selectedEmployee.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-bold text-slate-900 dark:text-white">
+                      {selectedEmployee.name}
+                    </span>
                     {selectedEmployee.name_bn && (
-                      <span className="text-xs text-muted-foreground font-normal">({selectedEmployee.name_bn})</span>
+                      <span className="text-xs text-slate-500 font-normal font-bengali">
+                        ({selectedEmployee.name_bn})
+                      </span>
                     )}
-                  </h3>
-                  <p className="text-xs text-muted-foreground capitalize">
-                    {selectedEmployee.role} • {selectedEmployee.department} Department
+                  </div>
+                  <p className="text-xs text-slate-500 font-normal">
+                    {tBilingual('Employee 360° Workforce Dossier & Service Record', 'কর্মীর পূর্ণাঙ্গ প্রোফাইল ও সার্ভিস রেকর্ড')}
                   </p>
                 </div>
               </div>
-              <Badge
-                variant="outline"
-                className={`text-xs px-2.5 py-1 capitalize ${
-                  selectedEmployee.status === 'active'
-                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
-                    : 'bg-zinc-500/10 text-zinc-600 border-zinc-500/30'
-                }`}
-              >
-                {selectedEmployee.status}
-              </Badge>
+
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className="font-mono text-[11px] px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
+                >
+                  {selectedEmployee.employee_id_number}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={`text-[11px] px-2.5 py-0.5 capitalize font-semibold ${
+                    selectedEmployee.status === 'active'
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300'
+                      : selectedEmployee.status === 'on_leave'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300'
+                      : 'bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400'
+                  }`}
+                >
+                  {selectedEmployee.status}
+                </Badge>
+              </div>
+            </div>
+          }
+          size="5xl"
+        >
+          <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-1">
+            {/* Hero Profile Banner */}
+            <div className="p-4 sm:p-5 rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-500/10 via-indigo-500/5 to-slate-50 dark:from-blue-950/40 dark:via-indigo-950/20 dark:to-slate-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md ring-2 ring-blue-500/30 shrink-0">
+                  {selectedEmployee.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                      {selectedEmployee.name}
+                    </h3>
+                    <Badge variant="outline" className="bg-white/80 dark:bg-slate-900/80 text-xs px-2 py-0.5 capitalize text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700">
+                      {selectedEmployee.role}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
+                    <span className="flex items-center gap-1 capitalize font-medium text-slate-700 dark:text-slate-300">
+                      <Briefcase className="w-3.5 h-3.5 text-blue-600" />
+                      {selectedEmployee.department} Dept
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                      {branches.find((b) => b.id === selectedEmployee.branch_id)?.name || 'Main Factory / Head Office'}
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      {formatDate(selectedEmployee.joining_date)} ({calculateTenure(selectedEmployee.joining_date)})
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Header Quick Actions */}
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                {selectedEmployee.mobile && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs gap-1.5 bg-white dark:bg-slate-900"
+                    asChild
+                  >
+                    <a href={`tel:${selectedEmployee.mobile}`}>
+                      <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{tBilingual('Call', 'কল')}</span>
+                    </a>
+                  </Button>
+                )}
+
+                {selectedEmployee.email && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs gap-1.5 bg-white dark:bg-slate-900"
+                    asChild
+                  >
+                    <a href={`mailto:${selectedEmployee.email}`}>
+                      <Mail className="w-3.5 h-3.5 text-blue-600" />
+                      <span>{tBilingual('Email', 'ইমেইল')}</span>
+                    </a>
+                  </Button>
+                )}
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs gap-1.5 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
+                  onClick={() => {
+                    setIs360DrawerOpen(false)
+                    handleOpenEdit(selectedEmployee)
+                  }}
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  <span>{tBilingual('Edit Profile', 'সম্পাদনা')}</span>
+                </Button>
+              </div>
             </div>
 
-            {/* Compensation & Advance Summary Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl border border-border/60 bg-card">
-                <span className="text-[11px] text-muted-foreground uppercase font-medium">
-                  {tBilingual('Base Salary / Rate', 'মূল বেতন')}
+            {/* 4 KPI Metric Highlights Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs">
+                <span className="text-[11px] text-slate-500 uppercase font-medium block">
+                  {tBilingual('Base Pay / Rate', 'মূল বেতন')}
                 </span>
-                <div className="text-lg font-bold text-foreground mt-1">
+                <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5 font-mono">
                   {selectedEmployee.salary_basis === 'daily_rate'
                     ? `${formatBDT(selectedEmployee.daily_rate || 0)} / day`
-                    : `${formatBDT(selectedEmployee.base_salary || 0)} / month`}
+                    : selectedEmployee.salary_basis === 'hourly_rate'
+                    ? `${formatBDT(selectedEmployee.hourly_rate || 0)} / hr`
+                    : `${formatBDT(selectedEmployee.base_salary || 0)} / mo`}
                 </div>
+                <span className="text-[10px] text-slate-400 block mt-0.5">
+                  {selectedEmployee.salary_basis === 'daily_rate'
+                    ? `~${formatBDT((selectedEmployee.daily_rate || 0) * 26)} est. monthly`
+                    : `Gross Annual: ${formatBDT((selectedEmployee.base_salary || 0) * 12)}`}
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-border/60 bg-card">
-                <span className="text-[11px] text-muted-foreground uppercase font-medium">
-                  {tBilingual('OT Hourly Rate', 'ওভারটাইম রেট')}
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs">
+                <span className="text-[11px] text-slate-500 uppercase font-medium block">
+                  {tBilingual('Hourly Regular Rate', 'ঘণ্টাপ্রতি সাধারণ রেট')}
                 </span>
-                <div className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-1">
-                  {formatBDT(selectedEmployee.overtime_hourly_rate || 0)} / hr
+                <div className="text-base sm:text-lg font-bold text-blue-600 dark:text-blue-400 mt-0.5 font-mono">
+                  {formatBDT(selectedEmployee.hourly_rate || (selectedEmployee.base_salary ? Math.round(selectedEmployee.base_salary / 208) : 0))} / hr
                 </div>
+                <span className="text-[10px] text-slate-400 block mt-0.5">
+                  208 standard monthly work hours
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-border/60 bg-card">
-                <span className="text-[11px] text-muted-foreground uppercase font-medium">
-                  {tBilingual('Outstanding Advance', 'বকেয়া অগ্রিম')}
+              <div className="p-3.5 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20 shadow-xs">
+                <span className="text-[11px] text-amber-700 dark:text-amber-400 uppercase font-medium block">
+                  {tBilingual('Overtime Hourly Rate', 'ওভারটাইম ঘণ্টার রেট')}
                 </span>
-                <div className="text-lg font-bold text-rose-600 dark:text-rose-400 mt-1">
+                <div className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5 font-mono">
+                  {formatBDT(selectedEmployee.overtime_hourly_rate || (selectedEmployee.hourly_rate ? Math.round(selectedEmployee.hourly_rate * 1.5) : 0))} / hr
+                </div>
+                <span className="text-[10px] text-amber-600/80 block mt-0.5">
+                  1.5x Regular Day Standard
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs">
+                <span className="text-[11px] text-slate-500 uppercase font-medium block">
+                  {tBilingual('Advance Balance', 'বকেয়া অগ্রিম')}
+                </span>
+                <div
+                  className={`text-base sm:text-lg font-bold mt-0.5 font-mono ${
+                    Number(selectedEmployee.current_advance_balance || 0) > 0
+                      ? 'text-rose-600 dark:text-rose-400'
+                      : 'text-emerald-600 dark:text-emerald-400'
+                  }`}
+                >
                   {formatBDT(selectedEmployee.current_advance_balance || 0)}
                 </div>
+                <span className="text-[10px] text-slate-400 block mt-0.5">
+                  {Number(selectedEmployee.current_advance_balance || 0) > 0
+                    ? 'Pending payroll deduction'
+                    : 'All advances cleared'}
+                </span>
               </div>
             </div>
 
-            {/* Contact & Banking Information */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 rounded-xl border border-border/60 bg-card space-y-2">
-                <h4 className="font-bold text-foreground flex items-center gap-1.5 border-b border-border/40 pb-1.5">
-                  <Phone className="w-3.5 h-3.5 text-primary" />
-                  {tBilingual('Contact Information', 'যোগাযোগ তথ্য')}
-                </h4>
-                <div className="space-y-1 text-muted-foreground">
-                  <div><strong>Mobile:</strong> {selectedEmployee.mobile}</div>
-                  <div><strong>Email:</strong> {selectedEmployee.email || 'N/A'}</div>
-                  <div><strong>Address:</strong> {selectedEmployee.address || 'N/A'}</div>
-                  <div><strong>Emergency Contact:</strong> {selectedEmployee.emergency_contact_name} ({selectedEmployee.emergency_contact_relation}) - {selectedEmployee.emergency_contact_phone}</div>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl border border-border/60 bg-card space-y-2">
-                <h4 className="font-bold text-foreground flex items-center gap-1.5 border-b border-border/40 pb-1.5">
-                  <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
-                  {tBilingual('Banking & Payment Methods', 'ব্যাংক ও পেমেন্ট মাধ্যম')}
-                </h4>
-                <div className="space-y-1 text-muted-foreground">
-                  <div><strong>Bank Name:</strong> {selectedEmployee.bank_payment_info?.bank_name || 'N/A'}</div>
-                  <div><strong>Account Number:</strong> {selectedEmployee.bank_payment_info?.account_number || 'N/A'}</div>
-                  <div><strong>MFS Wallet:</strong> {selectedEmployee.mfs_payment_info?.provider?.toUpperCase() || 'bKash'}: {selectedEmployee.mfs_payment_info?.wallet_number || 'N/A'}</div>
-                </div>
-              </div>
+            {/* Dossier Tabs Navigation */}
+            <div className="bg-slate-50/80 dark:bg-slate-900/60 p-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+              {[
+                { id: 'overview', title: '1. Overview & Snapshot', title_bn: 'একনজরে বিবরণ', icon: UserCheck },
+                { id: 'compensation', title: '2. Salary Breakdown', title_bn: 'বেতন কাঠামো', icon: Calculator },
+                { id: 'payment', title: '3. Bank & MFS Payout', title_bn: 'ব্যাংক ও ওয়ালেট', icon: CreditCard },
+                { id: 'idcard', title: '4. Digital ID Pass', title_bn: 'ডিজিটাল আইডি কার্ড', icon: Sparkles },
+                { id: 'notes', title: '5. HR Notes & Skills', title_bn: 'দক্ষতা ও মন্তব্য', icon: FileText },
+              ].map((tab) => {
+                const isActive = drawerTab === tab.id
+                const Icon = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setDrawerTab(tab.id as any)}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex-1 justify-center ${
+                      isActive
+                        ? 'bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400 shadow-xs border border-slate-200/90 dark:border-slate-800 font-semibold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{tBilingual(tab.title, tab.title_bn)}</span>
+                  </button>
+                )
+              })}
             </div>
+
+            {/* TAB 1: OVERVIEW & SNAPSHOT */}
+            {drawerTab === 'overview' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Personal & Contact Details */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                    {tBilingual('Personal & Contact Information', 'ব্যক্তিগত ও যোগাযোগ বিবরণ')}
+                  </h4>
+                  <div className="space-y-2 text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Primary Mobile:', 'প্রধান মোবাইল:')}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-semibold text-slate-900 dark:text-white">{selectedEmployee.mobile}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(selectedEmployee.mobile)
+                            triggerCopy('mobile_main')
+                          }}
+                          className="text-slate-400 hover:text-blue-600"
+                          title="Copy Mobile"
+                        >
+                          {copiedField === 'mobile_main' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {selectedEmployee.phone && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500">{tBilingual('Secondary / WhatsApp:', 'বিকল্প / হোয়াটসঅ্যাপ:')}</span>
+                        <span className="font-mono font-medium text-slate-900 dark:text-white">{selectedEmployee.phone}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Email Address:', 'ইমেইল:')}</span>
+                      <span className="text-slate-900 dark:text-white">{selectedEmployee.email || 'N/A'}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('National ID (NID):', 'জাতীয় পরিচয়পত্র:')}</span>
+                      <span className="font-mono font-medium text-slate-900 dark:text-white">
+                        {selectedEmployee.notes?.match(/NID:\s*([^\n]+)/)?.[1] || 'Verified on file'}
+                      </span>
+                    </div>
+
+                    <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-500 block mb-0.5">{tBilingual('Residential Address:', 'ঠিকানা:')}</span>
+                      <span className="text-slate-800 dark:text-slate-200">
+                        {selectedEmployee.address || tBilingual('Arambagh / Motijheel Production Zone, Dhaka', 'আরামবাগ / মতিঝিল কারখানা এলাকা, ঢাকা')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Emergency Kin & Family Contact */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    {tBilingual('Emergency Kin & Safety Protocol', 'জরুরি যোগাযোগ ও নিকটাত্মীয়')}
+                  </h4>
+                  <div className="space-y-2 text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Contact Person:', 'যোগাযোগের নাম:')}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        {selectedEmployee.emergency_contact_name || 'N/A'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Relationship:', 'সম্পর্ক:')}</span>
+                      <Badge variant="outline" className="bg-slate-50 dark:bg-slate-900 text-[10px] px-2 py-0.5">
+                        {selectedEmployee.emergency_contact_relation || 'Spouse / Family'}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Emergency Phone:', 'জরুরি ফোন:')}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                          {selectedEmployee.emergency_contact_phone || 'N/A'}
+                        </span>
+                        {selectedEmployee.emergency_contact_phone && (
+                          <a
+                            href={`tel:${selectedEmployee.emergency_contact_phone}`}
+                            className="text-emerald-600 hover:text-emerald-700 p-0.5"
+                            title="Call Emergency Contact"
+                          >
+                            <Phone className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-400 mt-2">
+                      {tBilingual(
+                        'Verified for shop-floor incident escalation & medical notification protocol.',
+                        'কারখানা দুর্ঘটনা ও জরুরি সহায়তার জন্য তথ্য সংরক্ষিত আছে।'
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: COMPENSATION & STATUTORY STRUCTURE */}
+            {drawerTab === 'compensation' && (
+              <div className="space-y-4 text-xs">
+                {/* Statutory Breakdown Cards */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Coins className="w-3.5 h-3.5 text-blue-600" />
+                      {tBilingual('Bangladesh Labor Law Statutory Structure (60-20-10-10)', 'বাংলাদেশ শ্রম আইন অনুযায়ী বেতন বিশ্লেষণ')}
+                    </h5>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 text-[10px]">
+                      {selectedEmployee.salary_basis.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Basic Salary (60%)', 'মূল বেতন (৬০%)')}</span>
+                      <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                        {formatBDT(selectedEmployee.salary_structure?.basic || Math.round((selectedEmployee.base_salary || 0) * 0.6))}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('House Rent (20%)', 'বাড়ি ভাড়া (২০%)')}</span>
+                      <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                        {formatBDT(selectedEmployee.salary_structure?.house_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.2))}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Medical Allowance (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
+                      <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                        {formatBDT(selectedEmployee.salary_structure?.medical_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.1))}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Conveyance Allowance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
+                      <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                        {formatBDT(selectedEmployee.salary_structure?.transport_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.1))}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Overtime Policy Rules */}
+                  <div className="p-3 rounded-lg bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 space-y-1 mt-2">
+                    <span className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-amber-600" />
+                      {tBilingual('Overtime Calculation Rules & Policy', 'ওভারটাইম নিয়মাবলী')}
+                    </span>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                      Standard working shift OT is paid at <strong>1.5x regular hourly rate ({formatBDT(selectedEmployee.overtime_hourly_rate || 0)}/hr)</strong>. Festival holiday / night shifts receive <strong>2.0x multiplier</strong>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: BANK & MFS CHANNELS */}
+            {drawerTab === 'payment' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Bank Account */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <Landmark className="w-3.5 h-3.5 text-blue-600" />
+                    {tBilingual('Bank Account (BEFTN / NPSB / RTGS)', 'ব্যাংক অ্যাকাউন্ট বিবরণ')}
+                  </h4>
+                  <div className="space-y-2 text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Bank Name:', 'ব্যাংক:')}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        {selectedEmployee.bank_payment_info?.bank_name || 'Not Configured'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Account Holder:', 'হিসাবধারীর নাম:')}</span>
+                      <span className="text-slate-900 dark:text-white">
+                        {selectedEmployee.bank_payment_info?.account_name || selectedEmployee.name}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Account Number:', 'অ্যাকাউন্ট নম্বর:')}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                          {selectedEmployee.bank_payment_info?.account_number || 'N/A'}
+                        </span>
+                        {selectedEmployee.bank_payment_info?.account_number && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard?.writeText(selectedEmployee.bank_payment_info?.account_number || '')
+                              triggerCopy('acc_num_360')
+                            }}
+                            className="text-slate-400 hover:text-blue-600"
+                            title="Copy Account Number"
+                          >
+                            {copiedField === 'acc_num_360' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Branch Name:', 'শাখা:')}</span>
+                      <span className="text-slate-900 dark:text-white">
+                        {selectedEmployee.bank_payment_info?.branch_name || 'N/A'}
+                      </span>
+                    </div>
+
+                    {selectedEmployee.bank_payment_info?.routing_number && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500">{tBilingual('Routing Number:', 'রাউটিং নম্বর:')}</span>
+                        <span className="font-mono text-slate-900 dark:text-white">
+                          {selectedEmployee.bank_payment_info?.routing_number}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* MFS Mobile Wallet */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <Smartphone className="w-3.5 h-3.5 text-pink-600" />
+                    {tBilingual('Mobile Financial Services (MFS)', 'মোবাইল ওয়ালেট')}
+                  </h4>
+                  <div className="space-y-2 text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('MFS Provider:', 'মাধ্যম:')}</span>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs px-2.5 py-0.5 font-bold capitalize ${
+                          selectedEmployee.mfs_payment_info?.provider === 'bkash'
+                            ? 'bg-pink-50 text-pink-700 border-pink-300 dark:bg-pink-950/40 dark:text-pink-300'
+                            : selectedEmployee.mfs_payment_info?.provider === 'nagad'
+                            ? 'bg-orange-50 text-orange-700 border-orange-300 dark:bg-orange-950/40 dark:text-orange-300'
+                            : 'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300'
+                        }`}
+                      >
+                        {selectedEmployee.mfs_payment_info?.provider || 'bKash'}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Wallet Number:', 'ওয়ালেট নম্বর:')}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                          {selectedEmployee.mfs_payment_info?.wallet_number || selectedEmployee.mobile}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(
+                              selectedEmployee.mfs_payment_info?.wallet_number || selectedEmployee.mobile
+                            )
+                            triggerCopy('mfs_num_360')
+                          }}
+                          className="text-slate-400 hover:text-blue-600"
+                          title="Copy MFS Wallet Number"
+                        >
+                          {copiedField === 'mfs_num_360' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">{tBilingual('Account Type:', 'অ্যাকাউন্ট টাইপ:')}</span>
+                      <span className="capitalize text-slate-900 dark:text-white font-medium">
+                        {selectedEmployee.mfs_payment_info?.account_type || 'personal'}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-blue-500/5 dark:bg-blue-950/20 border border-blue-500/20 text-[11px] text-blue-700 dark:text-blue-400 mt-2">
+                      {tBilingual(
+                        '1-click wage and advance disbursement enabled for this MFS number.',
+                        'এই মোবাইল ওয়ালেটে সরাসরি বেতন ও অগ্রিম পাঠানো সম্ভব।'
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: DIGITAL SECURITY ID PASS */}
+            {drawerTab === 'idcard' && (
+              <div className="space-y-4 pt-1 flex flex-col items-center">
+                {/* Physical ID Card Mockup Frame */}
+                <div className="w-full max-w-md p-5 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-xl space-y-4 text-center relative overflow-hidden">
+                  {/* Card Security Header Stripe */}
+                  <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 -mx-5 -mt-5 p-3 text-white flex items-center justify-between px-4">
+                    <div className="text-left">
+                      <span className="text-[10px] uppercase font-bold tracking-wider opacity-90 block">InkFlow ERP Security Pass</span>
+                      <span className="text-xs font-black tracking-wide">PRODUCTION FLOOR PASS</span>
+                    </div>
+                    <ShieldCheck className="w-5 h-5 text-white/90" />
+                  </div>
+
+                  {/* Avatar & Monogram */}
+                  <div className="pt-2 flex justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-lg ring-4 ring-blue-500/20">
+                      {selectedEmployee.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">
+                      {selectedEmployee.name}
+                    </h3>
+                    {selectedEmployee.name_bn && (
+                      <p className="text-xs text-slate-500 font-bengali mt-0.5">{selectedEmployee.name_bn}</p>
+                    )}
+                    <Badge variant="outline" className="mt-2 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300 text-xs font-bold px-3 py-0.5">
+                      {selectedEmployee.role}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] text-left border-y border-slate-100 dark:border-slate-800 py-3">
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">EMPLOYEE ID</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">{selectedEmployee.employee_id_number}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">DEPARTMENT</span>
+                      <span className="font-semibold text-slate-900 dark:text-white capitalize">{selectedEmployee.department}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">JOINED DATE</span>
+                      <span className="font-mono text-slate-900 dark:text-white">{formatDate(selectedEmployee.joining_date)}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">EMERGENCY HELPLINE</span>
+                      <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                        {selectedEmployee.emergency_contact_phone || selectedEmployee.mobile}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Simulated Security Barcode Strip */}
+                  <div className="pt-1 flex flex-col items-center gap-1">
+                    <div className="w-48 h-8 bg-slate-900 dark:bg-slate-100 flex items-center justify-around px-2 rounded-xs">
+                      {Array.from({ length: 32 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-6 ${i % 3 === 0 ? 'w-1 bg-white dark:bg-slate-900' : 'w-0.5 bg-white dark:bg-slate-900'}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[9px] font-mono text-slate-400 tracking-widest uppercase">
+                      *{selectedEmployee.employee_id_number}*
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-8 gap-1.5"
+                    onClick={() => window.print()}
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    {tBilingual('Print Physical ID Card', 'প্রিন্ট আইডি কার্ড')}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 5: HR NOTES & SKILLS */}
+            {drawerTab === 'notes' && (
+              <div className="space-y-4 text-xs">
+                {/* Machine Skills */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <Wrench className="w-3.5 h-3.5 text-blue-600" />
+                    {tBilingual('Machine Operating Capabilities & Shop-Floor Skills', 'মেশিন পরিচালনা ও কারখানা দক্ষতা')}
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      'Heidelberg 4-Color Press',
+                      'Roland UV Flatbed',
+                      'CNC Acrylic Router',
+                      'Laser Cutting & Engraving',
+                      'Die-Cutting & Letterpress',
+                      'Pre-Press CTP & Separation',
+                    ].map((skill) => (
+                      <Badge
+                        key={skill}
+                        variant="outline"
+                        className="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs px-2.5 py-1"
+                      >
+                        ✓ {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Internal Remarks */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-2">
+                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <FileText className="w-3.5 h-3.5 text-slate-600" />
+                    {tBilingual('Internal Administrative Remarks & Audit Notes', 'অভ্যন্তরীণ মন্তব্য ও রেকর্ড')}
+                  </h4>
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                    {selectedEmployee.notes || tBilingual('No special administrative remarks recorded for this employee.', 'কোনো বিশেষ প্রশাসনিক মন্তব্য নেই।')}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Actions Bar */}
-            <div className="flex items-center justify-between pt-4 border-t border-border">
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs h-9 gap-1.5"
-                onClick={() => {
-                  setIs360DrawerOpen(false)
-                  handleOpenEdit(selectedEmployee)
-                }}
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-                {tBilingual('Edit Full Profile', 'প্রোফাইল সম্পাদন')}
-              </Button>
+            <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
+              <div className="text-[11px] text-slate-400">
+                Created: {formatDate(selectedEmployee.created_at)} • Updated: {formatDate(selectedEmployee.updated_at)}
+              </div>
 
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIs360DrawerOpen(false)}
-                className="text-xs h-9"
-              >
-                {tBilingual('Close', 'বন্ধ করুন')}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs h-9 gap-1.5 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
+                  onClick={() => {
+                    setIs360DrawerOpen(false)
+                    handleOpenEdit(selectedEmployee)
+                  }}
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  {tBilingual('Edit Full Profile', 'প্রোফাইল সম্পাদন')}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIs360DrawerOpen(false)}
+                  className="text-xs h-9"
+                >
+                  {tBilingual('Close', 'বন্ধ করুন')}
+                </Button>
+              </div>
             </div>
           </div>
         </ModalDialog>
