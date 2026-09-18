@@ -14,10 +14,22 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
   const sampleSlug = 'inkflow-demo'
   const navSections = getNavigationConfig(sampleSlug)
 
-  it('1. Navigation configuration has exactly 5 business hierarchy sections', () => {
-    assert.equal(navSections.length, 5, 'Must have exactly 5 sections: TODAY, WORK, MATERIALS, MANAGEMENT, SETTINGS')
+  it('1. Navigation configuration has exactly 4 streamlined business hierarchy sections', () => {
+    assert.equal(navSections.length, 4, 'Must have exactly 4 sections: TODAY, WORK, MANAGEMENT, SETTINGS')
     const sectionIds = navSections.map((s) => s.id)
-    assert.deepEqual(sectionIds, ['today', 'work', 'materials', 'management', 'settings'])
+    assert.deepEqual(sectionIds, ['today', 'work', 'management', 'settings'])
+
+    // Verify inventory, suppliers, and pricing are positioned immediately below products in today section
+    const todayItems = navSections.find((s) => s.id === 'today')!.items.map((i) => i.key)
+    const productsIndex = todayItems.indexOf('products')
+    const inventoryIndex = todayItems.indexOf('inventory')
+    const suppliersIndex = todayItems.indexOf('suppliers')
+    const pricingIndex = todayItems.indexOf('pricing')
+
+    assert.ok(productsIndex !== -1, 'products must exist in today section')
+    assert.equal(inventoryIndex, productsIndex + 1, 'inventory must immediately follow products')
+    assert.equal(suppliersIndex, productsIndex + 2, 'suppliers must immediately follow inventory')
+    assert.equal(pricingIndex, productsIndex + 3, 'pricing must immediately follow suppliers')
   })
 
   it('2. Every navigation section and item has complete English and Bengali titles', () => {
