@@ -12,12 +12,14 @@ import {
   LayoutDashboard,
   Users,
   UserCheck,
+  UserX,
   Wallet,
   FileSpreadsheet,
   Plus,
   Clock,
   CheckCircle2,
   AlertTriangle,
+  AlertCircle,
   ArrowRight,
   TrendingUp,
   CreditCard,
@@ -27,7 +29,6 @@ import {
   Sparkles,
   QrCode,
   Calendar,
-  AlertCircle,
   Briefcase,
   Layers,
   ChevronRight,
@@ -35,6 +36,10 @@ import {
   Phone,
   Check,
   X,
+  Receipt,
+  Coins,
+  Award,
+  PieChart,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -137,11 +142,33 @@ export default function HrmDashboardPage() {
     return counts
   }, [employees])
 
+  // Computed metrics for KPIs & Overview Widgets
   const totalEmployeesCount = employees.length || summary?.todayAttendance.totalEmployees || 0
   const presentTodayCount = summary?.todayAttendance.present || todayAttendance.filter((a) => a.status === 'present' || a.status === 'half_day').length || 0
   const lateTodayCount = summary?.todayAttendance.late || todayAttendance.filter((a) => a.status === 'late' || (a.late_minutes && a.late_minutes > 0)).length || 0
-  const absentTodayCount = summary?.todayAttendance.absent || (totalEmployeesCount > 0 ? Math.max(0, totalEmployeesCount - presentTodayCount) : 0)
-  const attendanceRate = totalEmployeesCount > 0 ? Math.round((presentTodayCount / totalEmployeesCount) * 100) : 0
+  const approvedLeavesCount = summary?.todayAttendance.onLeave || todayAttendance.filter((a) => a.status === 'leave').length || 0
+  const absentTodayCount = summary?.todayAttendance.absent || (totalEmployeesCount > 0 ? Math.max(0, totalEmployeesCount - presentTodayCount - approvedLeavesCount) : 0)
+
+  // Attendance Overview Rates
+  const presentRate = totalEmployeesCount > 0 ? Math.round((presentTodayCount / totalEmployeesCount) * 100) : 0
+  const leaveRate = totalEmployeesCount > 0 ? Math.round((approvedLeavesCount / totalEmployeesCount) * 100) : 0
+  const absentRate = totalEmployeesCount > 0 ? Math.max(0, 100 - presentRate - leaveRate) : 0
+
+  // Financial & Payroll calculations
+  const latestPayroll = payrollPeriods[0] || null
+  const monthPayroll = summary?.monthFinancials.grossPayroll || latestPayroll?.total_gross_salary || employees.reduce((sum, e) => sum + Number(e.base_salary || 0), 0)
+  const arrearsDue = summary?.monthFinancials.unpaidSalaryDue || latestPayroll?.total_due_amount || 0
+  const totalCommission = employees.reduce((sum, e) => {
+    const comm = (e.salary_structure as any)?.commission || 0
+    return sum + Number(comm)
+  }, 0)
+  const advanceGiven = summary?.monthFinancials.advancesDisbursedThisMonth || recentAdvances.reduce((sum, a) => sum + Number(a.amount || 0), 0) || summary?.monthFinancials.advancesOutstanding || 0
+
+  // Payroll Disbursal Status calculations
+  const totalNetSalary = latestPayroll?.total_net_salary || monthPayroll || 0
+  const totalPaidSalary = latestPayroll?.total_paid_amount || 0
+  const salaryDisbursedPct = totalNetSalary > 0 ? Math.min(100, Math.round((totalPaidSalary / totalNetSalary) * 100)) : 0
+  const salaryPendingPct = 100 - salaryDisbursedPct
 
   return (
     <div className="space-y-5 max-w-7xl pb-16">
@@ -201,102 +228,366 @@ export default function HrmDashboardPage() {
         }
       />
 
-      {/* 4 Top Executive KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Card 1: Total Workforce */}
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+      {/* 8 Top Executive KPI Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+        {/* KPI 1: Total Employees */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-blue-300 dark:hover:border-blue-700 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              {tBilingual('Total Workforce', 'মোট কর্মী')}
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              {tBilingual('Total Employees', 'মোট কর্মী')}
             </span>
-            <div className="p-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 rounded-lg">
-              <Users className="w-4 h-4" />
+            <div className="p-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 rounded-md">
+              <Users className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">{totalEmployeesCount}</span>
-            <span className="text-xs text-slate-500">{tBilingual('active staff', 'সক্রিয় কর্মী')}</span>
+          <div className="mt-2">
+            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">{totalEmployeesCount}</span>
           </div>
-          <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2">
-            <span>{employees.filter((e) => e.employee_type === 'permanent').length} {tBilingual('Permanent', 'স্থায়ী')}</span>
-            <span>•</span>
-            <Link href={`/${tenantSlug}/hr/employees`} className="text-blue-600 hover:underline flex items-center gap-0.5 font-medium">
-              {tBilingual('Directory', 'তালিকা')} <ArrowRight className="w-3 h-3" />
+          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+            <span className="truncate">{employees.filter((e) => e.employee_type === 'permanent').length} {tBilingual('Perm', 'স্থায়ী')}</span>
+            <Link href={`/${tenantSlug}/hr/employees`} className="text-blue-600 hover:underline font-semibold shrink-0">
+              {tBilingual('List', 'তালিকা')}
             </Link>
           </div>
         </Card>
 
-        {/* Card 2: Today Attendance */}
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        {/* KPI 2: Present Today */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              {tBilingual('Today Attendance', 'আজকের উপস্থিতি')}
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+              {tBilingual('Present Today', 'আজ উপস্থিত')}
             </span>
-            <div className="p-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-lg">
-              <UserCheck className="w-4 h-4" />
+            <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-md">
+              <UserCheck className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400">{attendanceRate}%</span>
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              ({presentTodayCount}/{totalEmployeesCount})
-            </span>
+          <div className="mt-2 flex items-baseline gap-1.5">
+            <span className="text-xl font-black tracking-tight text-emerald-600 dark:text-emerald-400">{presentTodayCount}</span>
+            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">({presentRate}%)</span>
           </div>
-          <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2">
-            <span className="text-amber-600 font-medium">{lateTodayCount} {tBilingual('Late', 'দেরি')}</span>
-            <span>•</span>
-            <span className="text-rose-600 font-medium">{absentTodayCount} {tBilingual('Absent', 'অনুপস্থিত')}</span>
-            <span>•</span>
-            <Link href={`/${tenantSlug}/hr/attendance`} className="text-emerald-600 hover:underline flex items-center gap-0.5 font-medium">
-              {tBilingual('Floor', 'ফ্লোর')} <ArrowRight className="w-3 h-3" />
+          <div className="mt-2 text-[10px] text-emerald-600/90 dark:text-emerald-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+            <span>{tBilingual('On Floor', 'ফ্লোরে আছেন')}</span>
+            <Link href={`/${tenantSlug}/hr/attendance`} className="text-emerald-600 hover:underline font-semibold shrink-0">
+              {tBilingual('Live', 'লাইভ')}
             </Link>
           </div>
         </Card>
 
-        {/* Card 3: Overtime Radar */}
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        {/* KPI 3: Absent Today */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-rose-300 dark:hover:border-rose-700 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              {tBilingual('Overtime Approvals', 'ওভারটাইম অনুমোদন')}
+            <span className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
+              {tBilingual('Absent Today', 'আজ অনুপস্থিত')}
             </span>
-            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-lg">
-              <Clock className="w-4 h-4" />
+            <div className="p-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-md">
+              <UserX className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400">{pendingOvertime.length}</span>
-            <span className="text-xs text-amber-600 font-medium">{tBilingual('pending review', 'অনুমোদন বাকি')}</span>
+          <div className="mt-2 flex items-baseline gap-1.5">
+            <span className="text-xl font-black tracking-tight text-rose-600 dark:text-rose-400">{absentTodayCount}</span>
+            <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">({absentRate}%)</span>
           </div>
-          <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2">
-            <span>
-              {tBilingual('This Mo:', 'চলতি মাস:')}{' '}
-              <strong className="text-slate-900 dark:text-slate-100">{formatBDT(summary?.monthFinancials.approvedOtAmount || 0)}</strong>
-            </span>
+          <div className="mt-2 text-[10px] text-rose-600/90 dark:text-rose-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+            <span>{approvedLeavesCount} {tBilingual('Leave', 'ছুটি')}</span>
+            <span className="text-slate-400">•</span>
+            <span className="truncate">{absentTodayCount} {tBilingual('Unauth', 'অনুপস্থিত')}</span>
           </div>
         </Card>
 
-        {/* Card 4: Monthly Gross Payroll & Dues */}
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+        {/* KPI 4: Late Arrivals */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-amber-300 dark:hover:border-amber-700 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              {tBilingual('Monthly Payroll Est.', 'চলতি মাসের বেতন প্রাক্কলন')}
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+              {tBilingual('Late Arrivals', 'দেরিতে আগমন')}
             </span>
-            <div className="p-1.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-lg">
-              <Wallet className="w-4 h-4" />
+            <div className="p-1 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-md">
+              <Clock className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-              {formatBDT(summary?.monthFinancials.grossPayroll || 0)}
-            </span>
+          <div className="mt-2">
+            <span className="text-xl font-black tracking-tight text-amber-600 dark:text-amber-400">{lateTodayCount}</span>
           </div>
-          <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2">
-            <span>{tBilingual('Advances:', 'অগ্রিম:')} {formatBDT(summary?.monthFinancials.advancesOutstanding || 0)}</span>
-            <span>•</span>
-            <Link href={`/${tenantSlug}/hr/salary-report`} className="text-purple-600 hover:underline flex items-center gap-0.5 font-medium">
-              {tBilingual('Report', 'রিপোর্ট')} <ArrowRight className="w-3 h-3" />
+          <div className="mt-2 text-[10px] text-amber-600/90 dark:text-amber-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+            <span>{tBilingual('Check Grace', 'গ্রেস টাইম')}</span>
+            <Link href={`/${tenantSlug}/hr/attendance`} className="text-amber-600 hover:underline font-semibold shrink-0">
+              {tBilingual('Logs', 'লগ')}
             </Link>
           </div>
+        </Card>
+
+        {/* KPI 5: Arrears Due */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-rose-300 dark:hover:border-rose-700 transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              {tBilingual('Arrears Due', 'বকেয়া পাওনা')}
+            </span>
+            <div className="p-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-md">
+              <Receipt className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <span className="text-lg font-black tracking-tight text-rose-600 dark:text-rose-400">
+              {formatBDT(arrearsDue)}
+            </span>
+          </div>
+          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+            <span>{tBilingual('Unpaid Due', 'বকেয়া বেতন')}</span>
+            <Link href={`/${tenantSlug}/hr/payroll`} className="text-rose-600 hover:underline font-semibold shrink-0">
+              {tBilingual('Clear', 'পরিশোধ')}
+            </Link>
+          </div>
+        </Card>
+
+        {/* KPI 6: Month Payroll */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-purple-300 dark:hover:border-purple-700 transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              {tBilingual('Month Payroll', 'চলতি মাসের বেতন')}
+            </span>
+            <div className="p-1 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-md">
+              <Wallet className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
+              {formatBDT(monthPayroll)}
+            </span>
+          </div>
+          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+            <span>{tBilingual('Gross Est.', 'মোট হিসাব')}</span>
+            <Link href={`/${tenantSlug}/hr/payroll`} className="text-purple-600 hover:underline font-semibold shrink-0">
+              {tBilingual('Sheet', 'শিট')}
+            </Link>
+          </div>
+        </Card>
+
+        {/* KPI 7: Total Commission */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              {tBilingual('Total Commission', 'মোট কমিশন')}
+            </span>
+            <div className="p-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 rounded-md">
+              <Award className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <span className="text-lg font-black tracking-tight text-indigo-600 dark:text-indigo-400">
+              {formatBDT(totalCommission)}
+            </span>
+          </div>
+          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+            <span>{tBilingual('Sales Incentives', 'বিক্রয় ইনসেন্টিভ')}</span>
+            <Link href={`/${tenantSlug}/hr/salary-report`} className="text-indigo-600 hover:underline font-semibold shrink-0">
+              {tBilingual('Audit', 'অডিট')}
+            </Link>
+          </div>
+        </Card>
+
+        {/* KPI 8: Advance Given */}
+        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-teal-300 dark:hover:border-teal-700 transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              {tBilingual('Advance Given', 'প্রদত্ত অগ্রিম')}
+            </span>
+            <div className="p-1 bg-teal-50 dark:bg-teal-950/40 text-teal-600 rounded-md">
+              <Coins className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <span className="text-lg font-black tracking-tight text-teal-600 dark:text-teal-400">
+              {formatBDT(advanceGiven)}
+            </span>
+          </div>
+          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+            <span>{recentAdvances.length} {tBilingual('Pending Settl.', 'অনিষ্পন্ন')}</span>
+            <Link href={`/${tenantSlug}/hr/payroll`} className="text-teal-600 hover:underline font-semibold shrink-0">
+              {tBilingual('Deduct', 'কাটতি')}
+            </Link>
+          </div>
+        </Card>
+      </div>
+
+      {/* Overview Row: Payroll Disbursal Status & Attendance Overview (Today) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Widget 1: Payroll Disbursal Status */}
+        <Card className="shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-600 rounded-lg">
+                <Wallet className="w-4 h-4" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                  {tBilingual('Payroll Disbursal Status', 'বেতন পরিশোধের অবস্থা')}
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500">
+                  {tBilingual('Monthly salary disbursement & outstanding clearance progress', 'চলতি মাসের বেতন পরিশোধ ও অবশিষ্ট বকেয়ার হার')}
+                </CardDescription>
+              </div>
+            </div>
+            <Link href={`/${tenantSlug}/hr/payroll`}>
+              <Button variant="ghost" size="sm" className="text-xs text-blue-600 dark:text-blue-400 font-semibold gap-1 h-8">
+                {tBilingual('Payroll Sheet', 'পেরোল শিট')}
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-5 space-y-4">
+            {/* Status Statistics */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/40 dark:bg-emerald-950/20">
+                <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                  {tBilingual('Salary Disbursed (পরিশোধিত)', 'Salary Disbursed (পরিশোধিত)')}
+                </div>
+                <div className="mt-1.5 flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                    {salaryDisbursedPct}%
+                  </span>
+                  <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
+                    {formatBDT(totalPaidSalary)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl border border-rose-100 dark:border-rose-950 bg-rose-50/40 dark:bg-rose-950/20">
+                <div className="text-[11px] font-bold text-rose-800 dark:text-rose-300">
+                  {tBilingual('Salary Pending (বাকি আছে)', 'Salary Pending (বাকি আছে)')}
+                </div>
+                <div className="mt-1.5 flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-rose-600 dark:text-rose-400">
+                    {salaryPendingPct}%
+                  </span>
+                  <span className="text-xs text-rose-700 dark:text-rose-300 font-medium">
+                    {formatBDT(Math.max(0, totalNetSalary - totalPaidSalary))}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Multi-Segment Progress Bar */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span>{tBilingual('Disbursal Progress', 'পরিশোধের অগ্রগতি')}</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {formatBDT(totalPaidSalary)} / {formatBDT(totalNetSalary)}
+                </span>
+              </div>
+              <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                <div
+                  className="bg-emerald-500 h-full transition-all duration-500"
+                  style={{ width: `${salaryDisbursedPct}%` }}
+                  title={`Disbursed: ${salaryDisbursedPct}%`}
+                />
+                <div
+                  className="bg-rose-400 h-full transition-all duration-500"
+                  style={{ width: `${salaryPendingPct}%` }}
+                  title={`Pending: ${salaryPendingPct}%`}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Widget 2: Attendance Overview (Today) */}
+        <Card className="shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 rounded-lg">
+                <UserCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                  {tBilingual('Attendance Overview (Today)', 'হাজিরার সার্বিক চিত্র (আজ)')}
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500">
+                  {tBilingual('Floor presence, approved leaves and punctuality metrics', 'উপস্থিতির হার, অনুমোদিত ছুটি ও দেরিতে আগমনের তথ্য')}
+                </CardDescription>
+              </div>
+            </div>
+            <Link href={`/${tenantSlug}/hr/attendance`}>
+              <Button variant="ghost" size="sm" className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold gap-1 h-8">
+                {tBilingual('Floor Radar', 'ফ্লোর হাজিরা')}
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-5 space-y-4">
+            {/* Status Statistics */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/40 dark:bg-emerald-950/20">
+                <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                  {tBilingual('Present Rate (উপস্থিতি)', 'Present Rate (উপস্থিতি)')}
+                </div>
+                <div className="mt-1.5 flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                    {presentRate}%
+                  </span>
+                  <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
+                    ({presentTodayCount}/{totalEmployeesCount})
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl border border-blue-100 dark:border-blue-950 bg-blue-50/40 dark:bg-blue-950/20">
+                <div className="text-[11px] font-bold text-blue-800 dark:text-blue-300">
+                  {tBilingual('Approved Leaves (ছুটি)', 'Approved Leaves (ছুটি)')}
+                </div>
+                <div className="mt-1.5 flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
+                    {leaveRate}%
+                  </span>
+                  <span className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                    ({approvedLeavesCount}/{totalEmployeesCount})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Multi-Segment Progress Bar */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    {presentTodayCount} {tBilingual('Present', 'উপস্থিত')}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    {lateTodayCount} {tBilingual('Late', 'দেরি')}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    {approvedLeavesCount} {tBilingual('Leave', 'ছুটি')}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    {absentTodayCount} {tBilingual('Absent', 'অনুপস্থিত')}
+                  </span>
+                </div>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {totalEmployeesCount} {tBilingual('Staff', 'কর্মী')}
+                </span>
+              </div>
+              <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                <div
+                  className="bg-emerald-500 h-full transition-all duration-500"
+                  style={{ width: `${presentRate}%` }}
+                  title={`Present: ${presentRate}%`}
+                />
+                <div
+                  className="bg-blue-500 h-full transition-all duration-500"
+                  style={{ width: `${leaveRate}%` }}
+                  title={`Leave: ${leaveRate}%`}
+                />
+                <div
+                  className="bg-rose-500 h-full transition-all duration-500"
+                  style={{ width: `${absentRate}%` }}
+                  title={`Absent: ${absentRate}%`}
+                />
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
