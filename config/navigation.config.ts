@@ -104,6 +104,14 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
       titleBn: 'কাজ',
       items: [
         {
+          key: 'orders',
+          title: 'Work Orders',
+          titleBn: 'জব অর্ডার',
+          href: `/${tenantSlug}/orders`,
+          icon: 'ShoppingBag',
+          permission: { action: 'view', resource: 'orders' },
+        },
+        {
           key: 'sales',
           title: 'Sales & Quotes',
           titleBn: 'বিক্রি ও কোটেশন',
@@ -174,12 +182,22 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
       titleBn: 'ম্যানেজমেন্ট',
       items: [
         {
-          key: 'reports',
-          title: 'Reports',
-          titleBn: 'রিপোর্ট',
-          href: `/${tenantSlug}/reports`,
-          icon: 'BarChart3',
-          permission: { action: 'view', resource: 'reports' },
+          key: 'hr',
+          title: 'Workforce & Payroll',
+          titleBn: 'কর্মী ও পেরোল',
+          href: `/${tenantSlug}/hr`,
+          icon: 'Users2',
+          permission: { action: 'view', resource: 'settings' },
+          badge: 'HR',
+          badgeVariant: 'pro',
+        },
+        {
+          key: 'attendance',
+          title: 'Attendance Punch',
+          titleBn: 'উপস্থিতি পাঞ্চ',
+          href: `/${tenantSlug}/attendance`,
+          icon: 'UserCheck',
+          permission: { action: 'view', resource: 'settings' },
         },
         {
           key: 'costing',
@@ -198,12 +216,12 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           permission: { action: 'view', resource: 'payments' },
         },
         {
-          key: 'attendance',
-          title: 'Staff & Attendance',
-          titleBn: 'কর্মী ও উপস্থিতি',
-          href: `/${tenantSlug}/attendance`,
-          icon: 'UserCheck',
-          permission: { action: 'view', resource: 'settings' },
+          key: 'reports',
+          title: 'Reports',
+          titleBn: 'রিপোর্ট',
+          href: `/${tenantSlug}/reports`,
+          icon: 'BarChart3',
+          permission: { action: 'view', resource: 'reports' },
         },
         {
           key: 'machineries',
