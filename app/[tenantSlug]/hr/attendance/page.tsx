@@ -2560,18 +2560,18 @@ export default function AttendancePage() {
                 </div>
 
                 {/* Changeable Period Controls */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 rounded-xl bg-white/80 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold px-1">
+                <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-2xs shrink-0 self-start lg:self-center whitespace-nowrap">
+                  <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-medium px-1.5">
                     <Calendar className="w-3.5 h-3.5 text-blue-500" />
                     <span>{tBilingual('Period:', 'সময়কাল:')}</span>
-                    {isReportLoading && <RefreshCw className="w-3 h-3 animate-spin text-blue-500 ml-1" />}
+                    {isReportLoading && <RefreshCw className="w-3 h-3 animate-spin text-blue-500 ml-0.5" />}
                   </div>
 
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {/* Previous Month */}
+                  {/* Month/Year Grouped Navigation Pill */}
+                  <div className="flex items-center bg-slate-50 dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-800/80">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => {
                         let newM = reportSelectedMonth - 1
@@ -2582,44 +2582,43 @@ export default function AttendancePage() {
                         }
                         handlePeriodChange(newY, newM)
                       }}
-                      className="h-8 w-8 p-0 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="h-7 w-7 p-0 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md"
                       title={tBilingual('Previous Month', 'আগের মাস')}
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="w-3.5 h-3.5" />
                     </Button>
 
-                    {/* Month Select */}
                     <select
                       aria-label="Change Log Month"
                       value={reportSelectedMonth}
                       onChange={(e) => handlePeriodChange(reportSelectedYear, Number(e.target.value))}
-                      className="h-8 text-xs font-semibold px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      className="h-7 text-xs font-semibold px-2 bg-transparent text-slate-900 dark:text-white border-0 focus:ring-0 cursor-pointer outline-none"
                     >
                       {MONTHS_LIST.map((m) => (
-                        <option key={m.value} value={m.value}>
+                        <option key={m.value} value={m.value} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                           {locale === 'bn' ? `${m.value} - ${m.nameBn}` : `${m.nameEn}`}
                         </option>
                       ))}
                     </select>
 
-                    {/* Year Select */}
+                    <span className="text-slate-300 dark:text-slate-700">/</span>
+
                     <select
                       aria-label="Change Log Year"
                       value={reportSelectedYear}
                       onChange={(e) => handlePeriodChange(Number(e.target.value), reportSelectedMonth)}
-                      className="h-8 text-xs font-semibold px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      className="h-7 text-xs font-semibold px-2 bg-transparent text-slate-900 dark:text-white border-0 focus:ring-0 cursor-pointer outline-none"
                     >
                       {YEARS_LIST.map((y) => (
-                        <option key={y} value={y}>
+                        <option key={y} value={y} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                           {y}
                         </option>
                       ))}
                     </select>
 
-                    {/* Next Month */}
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => {
                         let newM = reportSelectedMonth + 1
@@ -2630,23 +2629,23 @@ export default function AttendancePage() {
                         }
                         handlePeriodChange(newY, newM)
                       }}
-                      className="h-8 w-8 p-0 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="h-7 w-7 p-0 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md"
                       title={tBilingual('Next Month', 'পরের মাস')}
                     >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-
-                    {/* Quick This Month Preset */}
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleSelectReportPreset('this_month')}
-                      className="h-8 text-xs px-2.5 font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:hover:bg-blue-900/50 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/50"
-                    >
-                      {tBilingual('This Month', 'বর্তমান মাস')}
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </Button>
                   </div>
+
+                  {/* Quick This Month Preset */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSelectReportPreset('this_month')}
+                    className="h-8 text-xs px-2.5 font-medium bg-blue-50/70 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 dark:text-blue-300 border-blue-200/60 dark:border-blue-800/60 shrink-0"
+                  >
+                    {tBilingual('This Month', 'চলতি মাস')}
+                  </Button>
                 </div>
               </div>
 
