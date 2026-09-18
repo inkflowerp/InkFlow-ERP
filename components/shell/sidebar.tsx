@@ -360,6 +360,16 @@ export function Sidebar() {
                             </div>
                           </div>
                         )}
+
+                        {/* Optional Visual Separator Below Item */}
+                        {item.hasDividerBelow && (
+                          <div
+                            className={cn(
+                              'h-px bg-slate-200/80 dark:bg-slate-800/80 my-2',
+                              collapsed ? 'mx-2' : 'mx-1.5'
+                            )}
+                          />
+                        )}
                       </div>
                     )
                   })}

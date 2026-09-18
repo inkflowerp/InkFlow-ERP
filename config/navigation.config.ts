@@ -16,6 +16,7 @@ export interface NavItem {
   featureGate?: FeatureCode
   isPrimaryAction?: boolean
   ownerOnly?: boolean
+  hasDividerBelow?: boolean
 }
 
 export interface NavSection {
@@ -94,6 +95,7 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
           href: `/${tenantSlug}/pricing`,
           icon: 'Tag',
           permission: { action: 'view', resource: 'pricing' },
+          hasDividerBelow: true,
         },
         {
           key: 'operator',

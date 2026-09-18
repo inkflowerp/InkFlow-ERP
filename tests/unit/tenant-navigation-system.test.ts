@@ -30,6 +30,9 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     assert.equal(inventoryIndex, productsIndex + 1, 'inventory must immediately follow products')
     assert.equal(suppliersIndex, productsIndex + 2, 'suppliers must immediately follow inventory')
     assert.equal(pricingIndex, productsIndex + 3, 'pricing must immediately follow suppliers')
+
+    const pricingItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'pricing')
+    assert.equal(pricingItem?.hasDividerBelow, true, 'pricing item must have hasDividerBelow flag set to true')
   })
 
   it('2. Every navigation section and item has complete English and Bengali titles', () => {
