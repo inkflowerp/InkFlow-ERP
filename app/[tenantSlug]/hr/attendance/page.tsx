@@ -141,7 +141,7 @@ export default function AttendancePage() {
   const searchParams = useSearchParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'vision-sign'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
   const [isPending, startTransition] = useTransition()
   const [isLoading, setIsLoading] = useState(true)

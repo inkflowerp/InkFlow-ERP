@@ -359,7 +359,7 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
           iconColor="text-blue-600"
           actions={
             <div className="flex items-center gap-2.5 flex-wrap">
-              <Link href={`/${company?.slug || 'vision-sign'}/hr`}>
+              <Link href={`/${company?.slug || ''}/hr`}>
                 <Button
                   variant="outline"
                   className="text-xs border-blue-300 text-blue-800 bg-blue-50/70 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/40 font-semibold bangla-text"

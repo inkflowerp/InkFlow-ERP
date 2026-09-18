@@ -62,7 +62,7 @@ export default function AttendanceSettingsPage() {
   const params = useParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'vision-sign'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
   const [activeTab, setActiveTab] = useState<'locations' | 'qr_management' | 'corrections' | 'audit'>('locations')
   const [locations, setLocations] = useState<AttendanceLocationRecord[]>([])
@@ -125,7 +125,7 @@ export default function AttendanceSettingsPage() {
   const loadAllData = async () => {
     setIsLoading(true)
     try {
-      const targetCompany = company?.id || (params?.tenantSlug as string) || 'vision-sign'
+      const targetCompany = company?.id || (params?.tenantSlug as string) || company?.slug || ''
       const locRes = await getAttendanceLocationsAction(targetCompany)
       if (locRes.success && locRes.data) {
         setLocations(locRes.data)
@@ -187,7 +187,7 @@ export default function AttendanceSettingsPage() {
   // Handle Create Location
   const handleCreateLocation = async (e: React.FormEvent) => {
     e.preventDefault()
-    const targetCompany = company?.id || (params?.tenantSlug as string) || 'vision-sign'
+    const targetCompany = company?.id || (params?.tenantSlug as string) || company?.slug || ''
     if (!locName.trim() || !targetCompany) return
 
     if (!locLat || !locLng || isNaN(locLat) || isNaN(locLng) || locLat === 0 || locLng === 0) {
@@ -232,7 +232,7 @@ export default function AttendanceSettingsPage() {
   // Handle Update Location
   const handleUpdateLocation = async (e: React.FormEvent) => {
     e.preventDefault()
-    const targetCompany = company?.id || (params?.tenantSlug as string) || 'vision-sign'
+    const targetCompany = company?.id || (params?.tenantSlug as string) || company?.slug || ''
     if (!selectedLocation || !targetCompany) return
 
     setIsSubmitting(true)
@@ -273,7 +273,7 @@ export default function AttendanceSettingsPage() {
   }
 
   const handleConfirmDeleteLocation = async () => {
-    const targetCompany = company?.id || (params?.tenantSlug as string) || 'vision-sign'
+    const targetCompany = company?.id || (params?.tenantSlug as string) || company?.slug || ''
     if (!locationToDelete || !targetCompany) return
 
     setIsSubmitting(true)
@@ -297,7 +297,7 @@ export default function AttendanceSettingsPage() {
 
   // Handle QR Regeneration
   const handleRegenerateQr = async () => {
-    const targetCompany = company?.id || (params?.tenantSlug as string) || 'vision-sign'
+    const targetCompany = company?.id || (params?.tenantSlug as string) || company?.slug || ''
     if (!selectedLocation || !targetCompany) return
 
     setIsSubmitting(true)
@@ -320,7 +320,7 @@ export default function AttendanceSettingsPage() {
 
   // Handle QR Revocation
   const handleRevokeQr = async () => {
-    const targetCompany = company?.id || (params?.tenantSlug as string) || 'vision-sign'
+    const targetCompany = company?.id || (params?.tenantSlug as string) || company?.slug || ''
     if (!selectedLocation || !targetCompany) return
 
     setIsSubmitting(true)
@@ -372,7 +372,7 @@ export default function AttendanceSettingsPage() {
 
   // Handle Review Correction
   const handleReviewCorrection = async (status: 'approved' | 'rejected') => {
-    const targetCompany = company?.id || (params?.tenantSlug as string) || 'vision-sign'
+    const targetCompany = company?.id || (params?.tenantSlug as string) || company?.slug || ''
     if (!selectedCorrection || !targetCompany) return
 
     setIsSubmitting(true)

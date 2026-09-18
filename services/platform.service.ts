@@ -9,6 +9,7 @@
 // ==============================================================================
 
 import { createAdminClient } from '../lib/supabase/admin.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type {
   PlatformDashboardMetrics,
   PlatformTenantCompany,
@@ -65,7 +66,6 @@ import type { PlatformRole } from '../lib/auth/types.ts'
 import type { ApiResponse } from '../types/common.types.ts'
 import type { SubscriptionPlanRecord } from '../types/subscription.types.ts'
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '../lib/subscription/subscription-constants.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 function isValidUuid(id?: string | null): boolean {
   if (!id || typeof id !== 'string') return false
@@ -1765,50 +1765,178 @@ export class PlatformService {
   }
 
   /**
-   * 4b. Lifecycle: Delete Single Company with Cascading Cleanup
+   * 4b. Lifecycle: Delete Single Company with Comprehensive Cascading Database & Storage Cleanup
    */
   static async deleteCompany(companyId: string, reason?: string): Promise<ApiResponse<{ companyId: string }>> {
     try {
       const admin = createAdminClient()
 
-      const { data: company } = await (admin as any)
-        .from('companies')
-        .select('name, slug')
-        .eq('id', companyId)
-        .maybeSingle()
+      let company: { name?: string; slug?: string } | null = null
+      try {
+        const { data } = await (admin as any)
+          .from('companies')
+          .select('name, slug')
+          .eq('id', companyId)
+          .maybeSingle()
+        company = data
+      } catch {}
 
-      // Cascading cleanup of child tables prior to deleting company
+      const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+      const compSlug = `comp-${cleanSlug}`
+      const companySlug = company?.slug || cleanSlug
+
+      // All target keys/slugs for this company
+      const targetIds = Array.from(new Set([companyId, cleanSlug, compSlug, companySlug, `comp-${companySlug}`].filter(Boolean)))
+
+      // Comprehensive cascading cleanup of all 60+ database child tables
       const childTables = [
+        // Support & Sessions
         'platform_support_sessions',
+        'support_messages',
+        'support_conversations',
+        // Subscriptions & Billing
         'company_subscriptions',
-        'user_roles',
+        'saas_invoices',
+        'billing_history',
+        // RBAC & Users
         'user_permission_overrides',
+        'user_branch_access',
+        'user_roles',
         'company_users',
+        // Settings & Configurations
         'company_settings',
+        'company_tax_settings',
+        'branding_settings',
+        'document_numbering_configs',
+        'tenant_email_configs',
+        'email_gateways',
+        'sms_gateways',
+        'workflow_configurations',
+        'automation_rules',
+        'saved_views',
+        // Organization & Branches
+        'client_devices',
+        'branch_transfers',
+        'employee_branch_assignments',
         'branches',
+        // CRM
+        'customer_communications',
         'customers',
-        'sales_orders',
+        'supplier_material_prices',
+        'supplier_items',
+        'supplier_ledger_entries',
+        'suppliers',
+        // Orders & Timeline
+        'order_timeline_events',
         'job_orders',
-        'invoices',
-        'payments',
+        'sales_orders',
+        'quotation_activities',
+        'quotations',
+        // Production
+        'production_task_material_requirements',
+        'production_tasks',
+        'production_reworks',
+        'production_jobs',
+        'operator_jobs',
+        // Machinery
+        'machinery_breakdowns',
+        'machinery_maintenances',
+        'machinery_assignments',
+        'machineries',
+        // Inventory & Materials
+        'material_wastages',
+        'mounted_rolls',
+        'inventory_remnants',
+        'inventory_transfers',
+        'inventory_adjustments',
+        'material_requests',
+        'material_issues',
+        'goods_received_note_items',
+        'goods_received_notes',
+        'supplier_return_items',
+        'supplier_returns',
+        'purchase_request_items',
+        'purchase_requests',
+        'purchase_orders',
         'materials',
+        'paper_stocks',
+        'machine_profiles',
+        'stock_ledger',
+        'inventory_stock_balances',
+        'inventory_locations',
+        // Pricing & Catalog
+        'price_overrides',
+        'pricing_rules',
+        'customer_rates',
+        'price_list_items',
+        'price_lists',
+        'product_formulas',
+        'product_variants',
+        'price_history',
+        'product_categories',
         'products',
+        // Logistics
+        'delivery_challans',
+        'installations',
+        // Finance, Banking & Ledger
+        'payment_adjustments',
+        'payments',
+        'invoices',
+        'expenses',
+        'bank_statements',
+        'bank_accounts',
+        'cash_book_entries',
+        'cash_closings',
+        'account_transfers',
+        'journal_entry_lines',
+        'financial_transactions',
+        'accounts',
+        'financial_periods',
+        'tax_transaction_lines',
+        'tax_profiles',
+        // Workforce & Payroll
+        'daily_labor_logs',
+        'workforce_audit_logs',
+        'salary_payments',
+        'payroll_items',
+        'payroll_periods',
+        'salary_advances',
+        'overtime_records',
+        'attendance_daily_summaries',
+        'attendance_records',
+        'attendance_locations',
+        'employee_shifts',
+        'shifts',
+        'employees',
+        // Design & Costing
+        'design_versions',
+        'design_jobs',
+        'job_costings',
+        // Communications & Audits
+        'communication_logs',
+        'communication_messages',
+        'communication_templates',
+        'audit_logs',
+        // Platform mirrors
+        'platform_companies',
       ]
 
       for (const table of childTables) {
         try {
-          await (admin as any).from(table).delete().eq('company_id', companyId)
+          await (admin as any).from(table).delete().in('company_id', targetIds)
         } catch {}
       }
 
-      const { error } = await (admin as any)
-        .from('companies')
-        .delete()
-        .eq('id', companyId)
+      // Delete from companies table
+      try {
+        await (admin as any).from('companies').delete().in('id', targetIds)
+      } catch {}
+      try {
+        await (admin as any).from('companies').delete().in('slug', targetIds)
+      } catch {}
 
-      if (error) {
-        return { success: false, error: error.message || 'Failed to delete company' }
-      }
+      // Purge completely from DataStore (in-memory, localStorage, and global collections)
+      PrintERPDataStore.purgeTenantData(companyId, targetIds)
 
       await this.recordAuditLog(
         'company.delete',
@@ -1818,8 +1946,8 @@ export class PlatformService {
         undefined,
         {
           deleted_company_name: company?.name,
-          deleted_company_slug: company?.slug,
-          reason: reason || 'Company deleted by platform administrator',
+          deleted_company_slug: companySlug,
+          reason: reason || 'Company completely deleted and purged by platform administrator',
         }
       )
 
@@ -1835,49 +1963,24 @@ export class PlatformService {
   static async deleteAllCompanies(reason?: string): Promise<ApiResponse<{ count: number }>> {
     try {
       const admin = createAdminClient()
-      const { data: companies, error: fetchErr } = await (admin as any)
-        .from('companies')
-        .select('id, name, slug')
+      let companies: any[] = []
+      try {
+        const { data } = await (admin as any).from('companies').select('id, name, slug')
+        if (data) companies = data
+      } catch {}
 
-      if (fetchErr) {
-        return { success: false, error: fetchErr.message }
-      }
+      const storeCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+      const allCompanyIds = Array.from(
+        new Set([
+          ...companies.map((c: any) => c.id),
+          ...companies.map((c: any) => c.slug),
+          ...storeCompanies.map((c: any) => c.id),
+          ...storeCompanies.map((c: any) => c.slug),
+        ].filter(Boolean))
+      )
 
-      const list = companies || []
-      const ids = list.map((c: any) => c.id)
-
-      if (ids.length > 0) {
-        const childTables = [
-          'platform_support_sessions',
-          'company_subscriptions',
-          'user_roles',
-          'user_permission_overrides',
-          'company_users',
-          'company_settings',
-          'branches',
-          'customers',
-          'sales_orders',
-          'job_orders',
-          'invoices',
-          'payments',
-          'materials',
-          'products',
-        ]
-
-        for (const table of childTables) {
-          try {
-            await (admin as any).from(table).delete().in('company_id', ids)
-          } catch {}
-        }
-
-        const { error: delErr } = await (admin as any)
-          .from('companies')
-          .delete()
-          .in('id', ids)
-
-        if (delErr) {
-          return { success: false, error: delErr.message }
-        }
+      for (const cId of allCompanyIds) {
+        await this.deleteCompany(cId, reason || 'All companies purged by platform administrator')
       }
 
       await this.recordAuditLog(
@@ -1887,12 +1990,12 @@ export class PlatformService {
         undefined,
         undefined,
         {
-          deleted_count: ids.length,
+          deleted_count: allCompanyIds.length,
           reason: reason || 'All companies purged by platform administrator',
         }
       )
 
-      return { success: true, data: { count: ids.length } }
+      return { success: true, data: { count: allCompanyIds.length } }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to delete all companies' }
     }

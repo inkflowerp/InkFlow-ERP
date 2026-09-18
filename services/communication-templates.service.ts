@@ -25,11 +25,11 @@ export const SUPPORTED_TEMPLATE_VARIABLES: {
   user: TemplateVariableDefinition[]
 } = {
   company: [
-    { tag: '{{company_name}}', name: 'Company Name', description: 'Your business / tenant trade name', category: 'company', example: 'Vision Sign BD' },
+    { tag: '{{company_name}}', name: 'Company Name', description: 'Your business / tenant trade name', category: 'company', example: 'Print & Signage Enterprise' },
     { tag: '{{company_phone}}', name: 'Company Phone', description: 'Official company phone / hotline', category: 'company', example: '+880 1711-000000' },
-    { tag: '{{company_email}}', name: 'Company Email', description: 'Official business email', category: 'company', example: 'billing@visionsign.com' },
+    { tag: '{{company_email}}', name: 'Company Email', description: 'Official business email', category: 'company', example: 'billing@example.com' },
     { tag: '{{company_address}}', name: 'Company Address', description: 'Registered business address', category: 'company', example: '12/A Motijheel C/A, Dhaka' },
-    { tag: '{{company_website}}', name: 'Company Website', description: 'Public website or portal URL', category: 'company', example: 'https://visionsign.printerp.app' },
+    { tag: '{{company_website}}', name: 'Company Website', description: 'Public website or portal URL', category: 'company', example: 'https://demo.printerp.app' },
   ],
   customer: [
     { tag: '{{customer_name}}', name: 'Customer Name', description: 'Client contact person or name', category: 'customer', example: 'Ashiqur Rahman' },
@@ -277,9 +277,9 @@ export class CommunicationTemplateService {
    * Builds Quotation Variables for live interpolation
    */
   static buildQuotationVariables(quote: QuotationRecord, company?: any, baseUrl = ''): Record<string, string> {
-    const compName = company?.name || company?.company_name || 'Vision Sign BD'
+    const compName = company?.name || company?.company_name || 'Print & Signage Enterprise'
     const compPhone = company?.phone || company?.contact_phone || '+880 1711-000000'
-    const compEmail = company?.email || company?.contact_email || 'info@visionsign.com'
+    const compEmail = company?.email || company?.contact_email || 'info@example.com'
     const compAddress = company?.address || 'Dhaka, Bangladesh'
     const tenantSlug = company?.slug || 'my-company'
     const compWebsite = company?.website || `https://${tenantSlug}.printerp.app`
@@ -364,9 +364,9 @@ export class CommunicationTemplateService {
    * Builds Invoice Variables for live interpolation
    */
   static buildInvoiceVariables(invoice: InvoiceRecord, company?: any, baseUrl = ''): Record<string, string> {
-    const compName = company?.name || company?.company_name || 'Vision Sign BD'
+    const compName = company?.name || company?.company_name || 'Print & Signage Enterprise'
     const compPhone = company?.phone || company?.contact_phone || '+880 1711-000000'
-    const compEmail = company?.email || company?.contact_email || 'billing@visionsign.com'
+    const compEmail = company?.email || company?.contact_email || 'billing@example.com'
     const compAddress = company?.address || 'Dhaka, Bangladesh'
     const tenantSlug = company?.slug || 'my-company'
     const compWebsite = company?.website || `https://${tenantSlug}.printerp.app`

@@ -41,21 +41,21 @@ describe('Email Template Engine & Pre-Seeded Templates Unit Tests', () => {
     const template = 'Order #{{order_number}} for {{customer_name}} - Note: {{missing_note}}'
     const vars = {
       order_number: 'ORD-101',
-      customer_name: 'Vision Sign',
+      customer_name: 'Print Hub',
     }
 
     const output = interpolateVariables(template, vars)
-    assert.strictEqual(output, 'Order #ORD-101 for Vision Sign - Note: ')
+    assert.strictEqual(output, 'Order #ORD-101 for Print Hub - Note: ')
   })
 
   it('4. Renders responsive HTML layout with custom branding', () => {
     const bodyContent = '<p>Your quotation is ready.</p>'
     const html = wrapHtmlEmail(bodyContent, {
-      companyName: 'Vision Sign BD Ltd',
+      companyName: 'Print Hub BD Ltd',
       accentColor: '#2563eb',
     })
 
-    assert.ok(html.includes('Vision Sign BD Ltd'))
+    assert.ok(html.includes('Print Hub BD Ltd'))
     assert.ok(html.includes('<p>Your quotation is ready.</p>'))
     assert.ok(html.includes('<!DOCTYPE html>'))
     assert.ok(html.includes('#2563eb'))

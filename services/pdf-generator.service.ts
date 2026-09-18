@@ -158,10 +158,10 @@ export class PdfGeneratorService {
    */
   static generateQuotationPdf(quote: QuotationRecord, company?: any): Buffer {
     const doc = new SimplePdfBuilder()
-    const compName = company?.name || 'Vision Sign BD'
-    const compAddress = company?.address || '42/1 Motijheel C/A, Dhaka-1000'
+    const compName = company?.name || 'Printing Enterprise'
+    const compAddress = company?.address || 'Dhaka, Bangladesh'
     const compPhone = company?.phone || '+880 1700-000000'
-    const compEmail = company?.email || 'billing@visionsignbd.com'
+    const compEmail = company?.email || 'billing@example.com'
     const compBin = company?.bin || company?.bin_no || '18291004821'
 
     // Header Background Accent Bar
@@ -285,10 +285,10 @@ export class PdfGeneratorService {
    */
   static generateInvoicePdf(invoice: InvoiceRecord, company?: any): Buffer {
     const doc = new SimplePdfBuilder()
-    const compName = company?.name || 'Vision Sign BD'
-    const compAddress = company?.address || '42/1 Motijheel C/A, Dhaka-1000'
+    const compName = company?.name || 'Printing Enterprise'
+    const compAddress = company?.address || 'Dhaka, Bangladesh'
     const compPhone = company?.phone || '+880 1700-000000'
-    const compEmail = company?.email || 'billing@visionsignbd.com'
+    const compEmail = company?.email || 'billing@example.com'
     const compBin = company?.bin || company?.bin_no || '18291004821'
 
     // Header Accent Bar (Emerald)

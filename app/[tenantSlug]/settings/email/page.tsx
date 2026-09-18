@@ -88,9 +88,9 @@ export default function TenantEmailSettingsPage() {
   const [encryptionType, setEncryptionType] = useState<'ssl' | 'tls' | 'starttls' | 'none'>('tls')
   const [smtpUsername, setSmtpUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [senderName, setSenderName] = useState(company?.name || 'Vision Sign BD')
-  const [senderEmail, setSenderEmail] = useState(company?.email || 'billing@visionsignbd.com')
-  const [replyToEmail, setReplyToEmail] = useState(company?.email || 'billing@visionsignbd.com')
+  const [senderName, setSenderName] = useState(company?.name || 'Printing Enterprise')
+  const [senderEmail, setSenderEmail] = useState(company?.email || 'billing@example.com')
+  const [replyToEmail, setReplyToEmail] = useState(company?.email || 'billing@example.com')
 
   // Toast & Modal State
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -753,7 +753,7 @@ export default function TenantEmailSettingsPage() {
                       <Input
                         value={senderName}
                         onChange={(e) => setSenderName(e.target.value)}
-                        placeholder="Vision Sign BD"
+                        placeholder="Printing Enterprise"
                         className="h-9 text-xs min-h-[38px]"
                       />
                     </div>
@@ -764,7 +764,7 @@ export default function TenantEmailSettingsPage() {
                         type="email"
                         value={senderEmail}
                         onChange={(e) => setSenderEmail(e.target.value)}
-                        placeholder="billing@visionsignbd.com"
+                        placeholder="billing@example.com"
                         className="h-9 text-xs font-mono min-h-[38px]"
                       />
                     </div>
@@ -775,7 +775,7 @@ export default function TenantEmailSettingsPage() {
                         type="email"
                         value={replyToEmail}
                         onChange={(e) => setReplyToEmail(e.target.value)}
-                        placeholder="support@visionsignbd.com"
+                        placeholder="support@example.com"
                         className="h-9 text-xs font-mono min-h-[38px]"
                       />
                     </div>
@@ -928,7 +928,7 @@ export default function TenantEmailSettingsPage() {
                         : selectedTemplate.body_template_bn || selectedTemplate.body_template,
                       {
                         customer_name: 'Akash Ahmed (City Corporation)',
-                        company_name: company?.name || 'Vision Sign BD',
+                        company_name: company?.name || 'Printing Enterprise',
                         invoice_number: 'INV-0042',
                         amount: '12,500',
                         due_amount: '4,500',

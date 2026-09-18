@@ -65,7 +65,7 @@ InkFlow supports standard authenticated SMTP for cPanel, Google Workspace, Offic
 * **Username**: `billing@yourdomain.com`
 * **Password**: Application Password or SMTP Secret (encrypted with AES-256-GCM at rest)
 * **From Email**: `billing@yourdomain.com`
-* **From Name**: `Vision Sign BD`
+* **From Name**: `Your Print Enterprise`
 
 ---
 

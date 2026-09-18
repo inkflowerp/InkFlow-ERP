@@ -28,11 +28,7 @@ function isMatchingCompany(recordCompanyId?: string | null, targetCompanyId?: st
   if (recordCompanyId === targetCompanyId) return true
   const norm1 = recordCompanyId.toLowerCase().replace(/^comp-/, '').replace(/^co-/, '')
   const norm2 = targetCompanyId.toLowerCase().replace(/^comp-/, '').replace(/^co-/, '')
-  if (norm1 === norm2) return true
-  const isVision1 = norm1 === 'vision-sign' || norm1 === 'c0000000-0000-0000-0000-000000000001'
-  const isVision2 = norm2 === 'vision-sign' || norm2 === 'c0000000-0000-0000-0000-000000000001'
-  if (isVision1 && isVision2) return true
-  return false
+  return norm1 === norm2
 }
 
 export class WorkforceRepository {

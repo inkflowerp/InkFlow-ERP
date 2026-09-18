@@ -48,7 +48,7 @@ export default function EmployeeAttendancePage() {
   const router = useRouter()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'vision-sign'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
   const [isPending, startTransition] = useTransition()
   const [currentTime, setCurrentTime] = useState<string>('')

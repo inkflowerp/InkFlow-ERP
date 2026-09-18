@@ -53,7 +53,7 @@ export default function SalaryReportPage() {
   const router = useRouter()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'vision-sign'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
   const [isLoading, setIsLoading] = useState(true)
   const [employees, setEmployees] = useState<EmployeeRecord[]>([])

@@ -23,9 +23,9 @@ describe('Trial Account Auth & Persistence Verification', () => {
   it('1. Trial Registration saves user credentials into registered_users store', () => {
     const regRecord = {
       id: 'usr-trial-001',
-      email: 'visionsign247@gmail.com',
+      email: 'owner@demopress.com',
       password: 'password123',
-      fullName: 'Vision Sign Admin',
+      fullName: 'Demo Press Admin',
       phone: '+8801711223344',
       userId: 'usr-trial-001',
       registeredAt: new Date().toISOString(),
@@ -36,17 +36,17 @@ describe('Trial Account Auth & Persistence Verification', () => {
     const list = storeGet<any[]>('printerp_registered_users')
     assert.ok(list)
     assert.strictEqual(list.length, 1)
-    assert.strictEqual(list[0].email, 'visionsign247@gmail.com')
+    assert.strictEqual(list[0].email, 'owner@demopress.com')
   })
 
   it('2. Onboarding creates 14-day trial platform company & owner user with business_owner role', () => {
-    const companyId = 'c-trial-visionsign'
+    const companyId = 'c-trial-demopress'
     const trialCompany = {
       id: companyId,
-      name: 'Vision Sign Ltd',
-      slug: 'vision-sign',
-      owner_name: 'Vision Sign Admin',
-      owner_email: 'visionsign247@gmail.com',
+      name: 'Demo Press Ltd',
+      slug: 'demo-press',
+      owner_name: 'Demo Press Admin',
+      owner_email: 'owner@demopress.com',
       owner_phone: '+8801711223344',
       plan: 'starter',
       status: 'trial',
@@ -66,8 +66,8 @@ describe('Trial Account Auth & Persistence Verification', () => {
       responsibilities: ['business_owner'],
       profile: {
         id: 'usr-trial-001',
-        email: 'visionsign247@gmail.com',
-        full_name: 'Vision Sign Admin',
+        email: 'owner@demopress.com',
+        full_name: 'Demo Press Admin',
         phone: '+8801711223344',
         preferred_locale: 'bn',
         is_active: true,
@@ -78,7 +78,7 @@ describe('Trial Account Auth & Persistence Verification', () => {
     storeAddItem('printerp_tenant_company_users', ownerUser)
 
     const users = storeGet<any[]>('printerp_tenant_company_users')
-    const match = users?.find((u) => u.profile?.email === 'visionsign247@gmail.com')
+    const match = users?.find((u) => u.profile?.email === 'owner@demopress.com')
     assert.ok(match)
     assert.strictEqual(match.company_id, companyId)
     assert.strictEqual(match.status, 'active')
@@ -86,7 +86,7 @@ describe('Trial Account Auth & Persistence Verification', () => {
   })
 
   it('3. Login authentication resolves trial user without network exceptions', () => {
-    const email = 'visionsign247@gmail.com'
+    const email = 'owner@demopress.com'
     const inputPassword: string = 'password123'
 
     const users = storeGet<any[]>('printerp_tenant_company_users') || []
@@ -116,7 +116,7 @@ describe('Trial Account Auth & Persistence Verification', () => {
       permissions: ['*'],
     }
 
-    assert.strictEqual(sessionData.companySlug, 'vision-sign')
+    assert.strictEqual(sessionData.companySlug, 'demo-press')
     assert.strictEqual(sessionData.role, 'business_owner')
     assert.deepStrictEqual(sessionData.permissions, ['*'])
   })

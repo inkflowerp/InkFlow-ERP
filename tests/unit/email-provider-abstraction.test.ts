@@ -17,8 +17,8 @@ describe('Email Provider Abstraction & Factory Unit Tests', () => {
   it('1. Factory instantiates GmailProviderAdapter for "gmail" provider', () => {
     const provider = createEmailProvider({
       provider: 'gmail',
-      sender_name: 'Vision Sign Press',
-      sender_email: 'billing@visionsign.com',
+      sender_name: 'Apex Print Press',
+      sender_email: 'billing@apexprint.com',
       decrypted_secret: JSON.stringify({
         access_token: 'mock-access-token',
         refresh_token: 'mock-refresh-token',
@@ -36,8 +36,8 @@ describe('Email Provider Abstraction & Factory Unit Tests', () => {
       smtp_port: 587,
       smtp_username: 'user@gmail.com',
       decrypted_secret: 'app-password',
-      sender_name: 'Vision Sign Press',
-      sender_email: 'billing@visionsign.com',
+      sender_name: 'Apex Print Press',
+      sender_email: 'billing@apexprint.com',
     })
 
     assert.ok(provider instanceof SmtpProviderAdapter)
@@ -47,8 +47,8 @@ describe('Email Provider Abstraction & Factory Unit Tests', () => {
   it('3. Gmail Adapter correctly generates and sends MIME message', async () => {
     const provider = new GmailProviderAdapter({
       provider: 'gmail',
-      sender_name: 'Vision Sign BD',
-      sender_email: 'billing@visionsignbd.com',
+      sender_name: 'Apex Print BD',
+      sender_email: 'billing@apexprintbd.com',
       decrypted_secret: JSON.stringify({
         access_token: 'mock-test-access-token',
         refresh_token: 'mock-test-refresh-token',
@@ -56,7 +56,7 @@ describe('Email Provider Abstraction & Factory Unit Tests', () => {
     })
 
     const result = await provider.sendEmail({
-      from: { name: 'Vision Sign BD', address: 'billing@visionsignbd.com' },
+      from: { name: 'Apex Print BD', address: 'billing@apexprintbd.com' },
       to: 'customer@buyer.com',
       subject: 'Quotation #QUO-2026-0042',
       html: '<h1>Your Quotation is Ready</h1><p>Amount: ৳ 45,000</p>',
@@ -78,9 +78,9 @@ describe('Email Provider Abstraction & Factory Unit Tests', () => {
   it('4. Gmail Adapter verifies live connection', async () => {
     const provider = new GmailProviderAdapter({
       provider: 'gmail',
-      gmail_account_email: 'info@visionsignbd.com',
-      sender_name: 'Vision Sign Press',
-      sender_email: 'info@visionsignbd.com',
+      gmail_account_email: 'info@apexprintbd.com',
+      sender_name: 'Apex Print Press',
+      sender_email: 'info@apexprintbd.com',
       decrypted_secret: JSON.stringify({
         access_token: 'mock-token',
       }),
@@ -97,23 +97,23 @@ describe('Email Provider Abstraction & Factory Unit Tests', () => {
     const templateBn = 'প্রিয় {{customer_name}}, {{company_name}} থেকে আপনার ইনভয়েস #{{invoice_number}} তৈরি হয়েছে। মোট: ৳ {{amount}}।'
     const rendered = interpolateVariables(templateBn, {
       customer_name: 'আহমেদ হাসান',
-      company_name: 'ভিশন সাইন লিমিটেড',
+      company_name: 'এপেক্স প্রিন্ট লিমিটেড',
       invoice_number: 'INV-0881',
       amount: '35,000',
     })
 
     assert.strictEqual(
       rendered,
-      'প্রিয় আহমেদ হাসান, ভিশন সাইন লিমিটেড থেকে আপনার ইনভয়েস #INV-0881 তৈরি হয়েছে। মোট: ৳ 35,000।'
+      'প্রিয় আহমেদ হাসান, এপেক্স প্রিন্ট লিমিটেড থেকে আপনার ইনভয়েস #INV-0881 তৈরি হয়েছে। মোট: ৳ 35,000।'
     )
   })
 
   it('6. HTML Wrapper wraps email content safely with branding', () => {
     const wrapped = wrapHtmlEmail('<p>Thank you for your order.</p>', {
-      companyName: 'Vision Sign BD',
+      companyName: 'Apex Print BD',
     })
 
-    assert.ok(wrapped.includes('Vision Sign BD'))
+    assert.ok(wrapped.includes('Apex Print BD'))
     assert.ok(wrapped.includes('Thank you for your order.'))
     assert.ok(wrapped.includes('<!DOCTYPE html>'))
   })

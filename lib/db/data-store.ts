@@ -699,6 +699,116 @@ export class PrintERPDataStore {
   }
 
   /**
+   * Completely purges all data, records, partitions, and user associations for a deleted tenant
+   */
+  static purgeTenantData(companyIdOrSlug: string, additionalAliases: string[] = []): void {
+    if (!companyIdOrSlug) return
+
+    const norm = companyIdOrSlug.toLowerCase()
+    const cleanSlug = norm.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+    const coSlug = `co-${cleanSlug}`
+
+    const targets = new Set<string>([
+      norm,
+      cleanSlug,
+      compSlug,
+      coSlug,
+      companyIdOrSlug,
+      ...additionalAliases.map((a) => a.toLowerCase()),
+      ...additionalAliases.map((a) => a.replace(/^comp-/, '').replace(/^co-/, '')),
+    ])
+
+    // 1. Purge all partitioned keys from inMemoryStore
+    for (const inMemKey of Object.keys(inMemoryStore)) {
+      for (const t of targets) {
+        if (inMemKey.endsWith(`__${t}`)) {
+          delete inMemoryStore[inMemKey]
+        }
+      }
+    }
+
+    // 2. Purge from localStorage in browser environment
+    if (typeof window !== 'undefined') {
+      try {
+        const keysToRemove: string[] = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const lsKey = localStorage.key(i)
+          if (lsKey) {
+            for (const t of targets) {
+              if (lsKey.endsWith(`__${t}`)) {
+                keysToRemove.push(lsKey)
+                break
+              }
+            }
+          }
+        }
+        for (const k of keysToRemove) {
+          localStorage.removeItem(k)
+        }
+      } catch {}
+    }
+
+    // 3. Purge matching items from all global collection arrays
+    for (const key of Object.values(STORAGE_KEYS)) {
+      const list = inMemoryStore[key]
+      if (Array.isArray(list)) {
+        inMemoryStore[key] = list.filter((item: any) => {
+          if (!item || typeof item !== 'object') return true
+          const cId = String(item.company_id || item.companyId || item.id || '').toLowerCase()
+          const cSlug = String(item.company_slug || item.companySlug || item.slug || '').toLowerCase()
+          for (const t of targets) {
+            if (cId === t || cSlug === t) return false
+            const cleanCId = cId.replace(/^comp-/, '').replace(/^co-/, '')
+            const cleanCSlug = cSlug.replace(/^comp-/, '').replace(/^co-/, '')
+            if (cleanCId === t || cleanCSlug === t) return false
+          }
+          return true
+        })
+
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(key, JSON.stringify(inMemoryStore[key]))
+          } catch {}
+        }
+      }
+    }
+
+    // 4. Remove from registered_users and company_users
+    const regUsers = inMemoryStore[STORAGE_KEYS.REGISTERED_USERS]
+    if (Array.isArray(regUsers)) {
+      inMemoryStore[STORAGE_KEYS.REGISTERED_USERS] = regUsers.filter((u: any) => {
+        const userCompId = String(u.company_id || u.companyId || '').toLowerCase()
+        const userCompSlug = String(u.company_slug || u.companySlug || '').toLowerCase()
+        for (const t of targets) {
+          if (userCompId === t || userCompSlug === t) return false
+        }
+        return true
+      })
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(inMemoryStore[STORAGE_KEYS.REGISTERED_USERS]))
+        } catch {}
+      }
+    }
+
+    // 5. Broadcast cross-tab purge notification
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const channel = new BroadcastChannel('printerp_realtime_bus')
+        channel.postMessage({
+          type: 'LOCAL_STORE_MUTATION',
+          mutationType: 'PURGE',
+          tenantSlug: companyIdOrSlug,
+          senderId: CLIENT_TAB_ID,
+          timestamp: Date.now(),
+        })
+        channel.close()
+      } catch {}
+    }
+  }
+
+  /**
    * Appends an item to an array collection or creates it if not present
    */
   static addItem<T extends { id?: string }>(

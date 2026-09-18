@@ -125,9 +125,9 @@ export default function DocumentDesignerPage() {
   // Sample variables for live rendering preview covering all supported backend tags
   const sampleVariables: Record<string, string> = {
     // Company
-    company_name: company?.name || 'Vision Sign BD',
+    company_name: company?.name || 'Printing Enterprise',
     company_phone: company?.phone || '+880 1711-000000',
-    company_email: company?.email || 'billing@visionsign.com',
+    company_email: company?.email || 'billing@example.com',
     company_address: company?.address || '12/A Motijheel C/A, Dhaka',
     company_website: company?.website || `https://${slug}.printerp.app`,
 
