@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
   Users,
+  Users2,
   UserPlus,
   Mail,
   Shield,
@@ -32,6 +34,8 @@ import {
   assignUserBranchAction,
   resetUserAccessAction,
 } from '@/actions/company-users.actions'
+import { getEmployeesAction } from '@/actions/workforce.actions'
+import type { EmployeeRecord } from '@/types/workforce.types'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -55,6 +59,7 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
   const { locale, tBilingual } = useI18n()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, isTrial, refreshUsage, usage } = useSubscription()
   const [users, setUsers] = useState<CompanyUserWithProfile[]>([])
+  const [employees, setEmployees] = useState<EmployeeRecord[]>([])
   const [roles, setRoles] = useState<RoleRow[]>([])
   const [branches, setBranches] = useState<BranchRow[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -132,14 +137,27 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
     setTimeout(() => setNotification(null), 3500)
   }
 
-  // Load users, roles, branches with realtime update support
+  // Helper: Match system user to employee workforce identity
+  const getLinkedEmployee = (user: CompanyUserWithProfile): EmployeeRecord | undefined => {
+    const email = (user.profile?.email || user.invited_email || '').toLowerCase()
+    const phone = user.profile?.phone || (user as any).invited_phone || (user as any).phone
+    return employees.find(
+      (e) =>
+        (user.user_id && (e.user_id === user.user_id || e.id === user.user_id)) ||
+        (email && e.email?.toLowerCase() === email) ||
+        (phone && e.mobile === phone)
+    )
+  }
+
+  // Load users, roles, branches, and workforce roster with realtime update support
   useEffect(() => {
     async function loadData() {
       if (!company) return
-      const [uRes, rRes, bRes] = await Promise.all([
+      const [uRes, rRes, bRes, empRes] = await Promise.all([
         listCompanyUsersAction(company.id),
         listRolesAction(company.id),
         listBranchesAction(company.id),
+        getEmployeesAction(undefined, company.id),
       ])
 
       if (uRes.data) {
@@ -149,6 +167,9 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
             PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, uRes.data)
           } catch {}
         }
+      }
+      if (empRes.success && empRes.data) {
+        setEmployees(empRes.data)
       }
       if (rRes && rRes.length > 0) {
         setRoles(rRes)
@@ -337,22 +358,31 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
           icon={Users}
           iconColor="text-blue-600"
           actions={
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <Link href={`/${company?.slug || 'vision-sign'}/hr`}>
+                <Button
+                  variant="outline"
+                  className="text-xs border-blue-300 text-blue-800 bg-blue-50/70 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/40 font-semibold bangla-text"
+                >
+                  <Users2 className="mr-1.5 h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                  {tBilingual('Workforce & Payroll Roster', 'কর্মী ও পেরোল তালিকা')} →
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 onClick={handleOpenInvite}
                 title={!userCheck.allowed ? userCheck.reason : undefined}
-                className="bangla-text"
+                className="bangla-text text-xs"
               >
-                <Mail className="mr-1.5 h-4 w-4" />
+                <Mail className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('Invite Member', 'সদস্য আমন্ত্রণ')}
               </Button>
               <Button
                 onClick={handleOpenAddUser}
                 title={!userCheck.allowed ? userCheck.reason : undefined}
-                className="bg-blue-600 hover:bg-blue-700 bangla-text"
+                className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-semibold bangla-text"
               >
-                <UserPlus className="mr-1.5 h-4 w-4" />
+                <UserPlus className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('Add User', 'নতুন ব্যবহারকারী')}
               </Button>
             </div>
@@ -504,6 +534,7 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
                       const isUserActive = user.status === 'active'
                       const isUserDisabled = user.status === 'disabled'
                       const isUserInvited = user.status === 'invited'
+                      const linkedEmp = getLinkedEmployee(user)
 
                       return (
                         <tr
@@ -537,6 +568,14 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
                                   <span>{profile?.email || user.invited_email}</span>
                                   {profile?.phone && <span>• {profile.phone}</span>}
                                 </div>
+                                {linkedEmp && (
+                                  <div className="mt-1 flex items-center gap-1.5 text-[10px]">
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 font-medium">
+                                      <Briefcase className="h-2.5 w-2.5 mr-1 text-blue-600 dark:text-blue-400" />
+                                      Workforce: {linkedEmp.employee_id_number} • {linkedEmp.department}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -694,6 +733,7 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
                   const isUserActive = user.status === 'active'
                   const isUserDisabled = user.status === 'disabled'
                   const isUserInvited = user.status === 'invited'
+                  const linkedEmp = getLinkedEmployee(user)
 
                   return (
                     <div
@@ -726,6 +766,14 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
                             <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                               {profile?.email || user.invited_email}
                             </div>
+                            {linkedEmp && (
+                              <div className="mt-1 flex items-center gap-1.5 text-[10px]">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 font-medium">
+                                  <Briefcase className="h-2.5 w-2.5 mr-1 text-blue-600 dark:text-blue-400" />
+                                  Workforce: {linkedEmp.employee_id_number} • {linkedEmp.department}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
 

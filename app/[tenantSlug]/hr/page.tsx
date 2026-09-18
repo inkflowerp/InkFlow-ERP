@@ -881,7 +881,7 @@ export default function WorkforcePage() {
                 />
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
                 <select
                   value={deptFilter}
                   onChange={(e) => setDeptFilter(e.target.value)}
@@ -911,6 +911,16 @@ export default function WorkforcePage() {
                   <option value="hourly_worker">Hourly Worker (ঘণ্টা ভিত্তিক)</option>
                   <option value="contract">Contract (চুক্তিভিত্তিক)</option>
                 </select>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab('users')}
+                  className="h-9 px-3 text-xs border-blue-200 text-blue-700 bg-blue-50/60 hover:bg-blue-100 dark:border-blue-900 dark:text-blue-300 dark:bg-blue-950/40 font-semibold gap-1.5 shrink-0"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                  {tBilingual('User Management & Roles', 'ইউজার ও রোলস')} →
+                </Button>
               </div>
             </div>
 
@@ -1058,6 +1068,36 @@ export default function WorkforcePage() {
            ========================================================================= */}
         {activeTab === 'users' && (
           <div className="space-y-4">
+            {/* Workforce & System User Bridge Banner */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-purple-50/40 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/20 border border-blue-100 dark:border-blue-900/60 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-blue-600 text-white shadow-xs">
+                  <ShieldCheck className="h-4 w-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                    {tBilingual('Unified Workforce & User System', 'একীভূত কর্মী ও ইউজার সিস্টেম')}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {tBilingual(
+                      'Every system user is synced with an Employee profile for attendance, overtime & payroll runs.',
+                      'প্রতিটি সিস্টেম ইউজার হাজিরা, ওভারটাইম এবং পেরোলের জন্য কর্মী প্রোফাইলের সাথে স্বয়ংক্রিয়ভাবে সংযুক্ত।'
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setActiveTab('employees')}
+                className="text-xs h-8 rounded-xl border-blue-300 text-blue-800 bg-white/80 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:bg-slate-900/80 font-bold shrink-0 shadow-xs"
+              >
+                <Users2 className="h-3.5 w-3.5 mr-1 text-blue-600 dark:text-blue-400" />
+                {tBilingual('View Employees Directory', 'কর্মী তালিকা দেখুন')} →
+              </Button>
+            </div>
+
             <UsersManagementView hideHeader={true} />
           </div>
         )}
