@@ -146,12 +146,21 @@ export default function PayrollPage() {
         getSalaryAdvancesAction(),
       ])
 
-      if (empRes.success && empRes.data) setEmployees(empRes.data)
-      if (payRes.success && payRes.data) {
-        setPayrollPeriods(payRes.data)
-        if (payRes.data.length > 0 && !selectedPeriod) {
-          setSelectedPeriod(payRes.data[0])
+      if (empRes.success && empRes.data) {
+        const empList = empRes.data
+        setEmployees(empList)
+        if (empList.length > 0 && !advForm.employeeId) {
+          setAdvForm((prev) => ({ ...prev, employeeId: empList[0].id }))
         }
+      }
+      if (payRes.success && payRes.data && payRes.data.length > 0) {
+        const periodList = payRes.data
+        setPayrollPeriods(periodList)
+        setSelectedPeriod((prev) => {
+          if (!prev) return periodList[0]
+          const found = periodList.find((p) => p.id === prev.id)
+          return found || periodList[0]
+        })
       }
       if (advRes.success && advRes.data) setAdvances(advRes.data)
     } catch (err: any) {

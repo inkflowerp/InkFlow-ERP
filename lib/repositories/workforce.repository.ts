@@ -19,6 +19,7 @@ import type {
   EmploymentType,
   SalaryBasis,
   PaymentMethod,
+  SalaryStructure,
 } from '../../types/workforce.types.ts'
 
 function isMatchingCompany(recordCompanyId?: string | null, targetCompanyId?: string | null): boolean {
@@ -1114,24 +1115,46 @@ export class WorkforceRepository {
       if (!error && data && data.length > 0) {
         return data.map((d: any) => ({
           ...d,
-          employee_name: d.employees?.name || 'Staff',
+          employee_name: d.employees?.name || d.employee_name || 'Staff',
         })) as SalaryAdvanceRecord[]
       }
     } catch (e) {
       console.warn('[WorkforceRepository.getSalaryAdvances] DB fallback:', e)
     }
 
-    const advances = PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES) || []
-    return advances.filter((a) => {
-      if (a.company_id && a.company_id !== companyId) return false
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    const storeScoped1 = PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES, compSlug) || []) : []
+    const storeGlobal = PrintERPDataStore.get<SalaryAdvanceRecord[]>(STORAGE_KEYS.SALARY_ADVANCES) || []
+
+    const allAdvances = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
+
+    const filtered = allAdvances.filter((a) => {
+      if (a.company_id && !isMatchingCompany(a.company_id, companyId)) return false
       if (options?.employeeId && a.employee_id !== options.employeeId) return false
       if (options?.status && a.status !== options.status) return false
       if (options?.isSettled !== undefined && a.is_settled !== options.isSettled) return false
       return true
     })
+
+    const advMap = new Map<string, SalaryAdvanceRecord>()
+    for (const a of filtered) {
+      if (a.id && !advMap.has(a.id)) {
+        advMap.set(a.id, a)
+      }
+    }
+
+    return Array.from(advMap.values())
   }
 
   static async createSalaryAdvance(advance: SalaryAdvanceRecord): Promise<SalaryAdvanceRecord> {
+    const companyId = advance.company_id
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
     try {
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
@@ -1141,6 +1164,9 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord, compSlug)
         PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, data as SalaryAdvanceRecord)
         return data as SalaryAdvanceRecord
       }
@@ -1148,6 +1174,9 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.createSalaryAdvance] DB fallback:', e)
     }
 
+    PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance, compSlug)
     PrintERPDataStore.addItem(STORAGE_KEYS.SALARY_ADVANCES, advance)
     return advance
   }
@@ -1158,6 +1187,8 @@ export class WorkforceRepository {
     updates: Partial<SalaryAdvanceRecord>
   ): Promise<SalaryAdvanceRecord | null> {
     const payload = { ...updates, updated_at: new Date().toISOString() }
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
 
     try {
       const admin = createAdminClient()
@@ -1170,6 +1201,9 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data, compSlug)
         PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, data)
         return data as SalaryAdvanceRecord
       }
@@ -1177,6 +1211,9 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.updateSalaryAdvance] DB fallback:', e)
     }
 
+    PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload, compSlug)
     return PrintERPDataStore.updateItem<SalaryAdvanceRecord>(STORAGE_KEYS.SALARY_ADVANCES, id, payload)
   }
 
@@ -1184,7 +1221,188 @@ export class WorkforceRepository {
   // 6. PAYROLL PERIODS & ITEMS
   // ============================================================================
 
+  static async seedDefaultPayrollPeriod(companyId: string): Promise<PayrollPeriodRecord[]> {
+    const now = new Date().toISOString()
+    const cleanId = companyId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 8) || 'default'
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    // 1. Ensure active employees exist
+    let employees = await this.getEmployees(companyId, { status: 'active' })
+    if (employees.length === 0) {
+      employees = await this.seedDefaultEmployees(companyId)
+    }
+
+    const nowDate = new Date()
+    const year = nowDate.getFullYear()
+    const month = nowDate.getMonth() + 1
+    const monthStr = String(month).padStart(2, '0')
+    const lastDay = new Date(year, month, 0).getDate()
+    const monthName = nowDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    const periodName = `${monthName} Payroll`
+    const periodId = `pp-seed-${year}-${monthStr}-${cleanId}`
+
+    const items: PayrollItemRecord[] = []
+    let totalGross = 0
+    let totalOt = 0
+    let totalAdvances = 0
+    let totalDeductions = 0
+    let totalNet = 0
+
+    const otHoursMap: Record<string, number> = {
+      'EMP-2024-1001': 14,
+      'EMP-2024-1002': 10,
+      'EMP-2024-1003': 8,
+      'EMP-2024-1004': 12,
+      'EMP-2024-1005': 6,
+      'EMP-2024-1006': 0,
+      'EMP-2024-1007': 16,
+    }
+
+    for (let i = 0; i < employees.length; i++) {
+      const emp = employees[i]
+      const otHours = otHoursMap[emp.employee_id_number] || (emp.is_daily_worker ? 10 : 4)
+      const otRate = Number(emp.overtime_hourly_rate || (emp.hourly_rate ? emp.hourly_rate * 1.5 : 150))
+      const otAmount = Math.round(otHours * otRate)
+
+      let baseSalary = Number(emp.base_salary || 0)
+      if (emp.salary_basis === 'daily_rate' || emp.is_daily_worker) {
+        baseSalary = Number(emp.daily_rate || 800) * 26
+      }
+
+      const grossSalary = baseSalary + otAmount
+      const advanceDeduction = 0
+      const absenceDeduction = 0
+      const lateFine = 0
+      const otherDeductions = 0
+      const netSalary = grossSalary - advanceDeduction - absenceDeduction - lateFine - otherDeductions
+
+      const allowances: SalaryStructure = emp.salary_structure || {
+        basic: Math.round(baseSalary * 0.6),
+        house_allowance: Math.round(baseSalary * 0.2),
+        transport_allowance: Math.round(baseSalary * 0.1),
+        food_allowance: 0,
+        medical_allowance: Math.round(baseSalary * 0.1),
+        other_allowances: 0,
+      }
+
+      const item: PayrollItemRecord = {
+        id: `pi-seed-${i + 1}-${cleanId}`,
+        company_id: companyId,
+        payroll_period_id: periodId,
+        employee_id: emp.id,
+        employee_name: emp.name,
+        employee_name_bn: emp.name_bn || null,
+        employee_id_number: emp.employee_id_number,
+        role: emp.role,
+        department: emp.department,
+        employee_type: emp.employee_type || 'permanent',
+        salary_basis: emp.salary_basis || (emp.is_daily_worker ? 'daily_rate' : 'monthly'),
+        base_salary: baseSalary,
+        daily_rate: Number(emp.daily_rate || 0),
+        hourly_rate: Number(emp.hourly_rate || (baseSalary > 0 ? Math.round(baseSalary / 208) : 0)),
+        days_present: 26,
+        hours_worked: 208,
+        overtime_hours: otHours,
+        overtime_amount: otAmount,
+        allowances_breakdown: allowances,
+        bonuses: 0,
+        gross_salary: grossSalary,
+        advance_salary_deducted: 0,
+        advance_remaining_balance: Number(emp.current_advance_balance || 0),
+        absence_deduction: 0,
+        late_fine: 0,
+        loan_deduction: 0,
+        other_deductions: 0,
+        net_salary: netSalary,
+        paid_amount: 0,
+        due_amount: netSalary,
+        payment_status: 'unpaid',
+        created_at: now,
+        updated_at: now,
+      }
+
+      items.push(item)
+      totalGross += grossSalary
+      totalOt += otAmount
+      totalAdvances += advanceDeduction
+      totalDeductions += (absenceDeduction + lateFine + otherDeductions)
+      totalNet += netSalary
+    }
+
+    const periodRecord: PayrollPeriodRecord = {
+      id: periodId,
+      company_id: companyId,
+      branch_id: null,
+      period_name: periodName,
+      start_date: `${year}-${monthStr}-01`,
+      end_date: `${year}-${monthStr}-${String(lastDay).padStart(2, '0')}`,
+      working_days_count: 26,
+      status: 'approved',
+      total_gross_salary: totalGross,
+      total_ot_amount: totalOt,
+      total_advances_deducted: totalAdvances,
+      total_other_deductions: totalDeductions,
+      total_net_salary: totalNet,
+      total_paid_amount: 0,
+      total_due_amount: totalNet,
+      notes: `Automated monthly payroll sheet for ${employees.length} print & signage employees`,
+      items,
+      created_at: now,
+      updated_at: now,
+    }
+
+    // Persist to store in all scopes
+    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, companyId)
+    if (cleanSlug !== companyId) {
+      PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, cleanSlug)
+    }
+    if (compSlug !== companyId) {
+      PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord, compSlug)
+    }
+    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, periodRecord)
+
+    // Best-effort DB insert
+    try {
+      const admin = createAdminClient()
+      const { data: savedPeriod, error: pErr } = await (admin as any)
+        .from('payroll_periods')
+        .insert({
+          id: periodRecord.id,
+          company_id: periodRecord.company_id,
+          branch_id: null,
+          period_name: periodRecord.period_name,
+          start_date: periodRecord.start_date,
+          end_date: periodRecord.end_date,
+          working_days_count: periodRecord.working_days_count,
+          status: periodRecord.status,
+          total_gross_salary: periodRecord.total_gross_salary,
+          total_ot_amount: periodRecord.total_ot_amount,
+          total_advances_deducted: periodRecord.total_advances_deducted,
+          total_other_deductions: periodRecord.total_other_deductions,
+          total_net_salary: periodRecord.total_net_salary,
+          total_paid_amount: periodRecord.total_paid_amount,
+          total_due_amount: periodRecord.total_due_amount,
+          notes: periodRecord.notes,
+        })
+        .select()
+        .single()
+
+      if (!pErr && savedPeriod && items.length > 0) {
+        await (admin as any).from('payroll_items').insert(
+          items.map((it) => ({
+            ...it,
+            payroll_period_id: savedPeriod.id,
+          }))
+        )
+      }
+    } catch {}
+
+    return [periodRecord]
+  }
+
   static async getPayrollPeriods(companyId: string, options?: { status?: string }): Promise<PayrollPeriodRecord[]> {
+    let dbPeriods: PayrollPeriodRecord[] = []
     try {
       const admin = createAdminClient()
       let query = (admin as any)
@@ -1199,13 +1417,13 @@ export class WorkforceRepository {
 
       const { data, error } = await query
       if (!error && data && data.length > 0) {
-        return data.map((p: any) => ({
+        dbPeriods = data.map((p: any) => ({
           ...p,
           items: (p.payroll_items || []).map((i: any) => ({
             ...i,
-            employee_name: i.employees?.name || 'Staff',
-            employee_name_bn: i.employees?.name_bn || null,
-            employee_id_number: i.employees?.employee_id_number || 'EMP',
+            employee_name: i.employees?.name || i.employee_name || 'Staff',
+            employee_name_bn: i.employees?.name_bn || i.employee_name_bn || null,
+            employee_id_number: i.employees?.employee_id_number || i.employee_id_number || 'EMP',
             role: i.employees?.role || i.role || 'Staff',
             department: i.employees?.department || i.department || 'printing',
           })),
@@ -1215,12 +1433,42 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getPayrollPeriods] DB fallback:', e)
     }
 
-    const periods = PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS) || []
-    return periods.filter((p) => {
-      if (p.company_id && p.company_id !== companyId) return false
+    if (dbPeriods.length > 0) {
+      return dbPeriods
+    }
+
+    // Retrieve from local store across tenant partitions
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
+    const storeScoped1 = PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, companyId) || []
+    const storeScoped2 = cleanSlug !== companyId ? (PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, cleanSlug) || []) : []
+    const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, compSlug) || []) : []
+    const storeGlobal = PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS) || []
+
+    const allPeriods = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
+
+    const filtered = allPeriods.filter((p) => {
+      if (p.company_id && !isMatchingCompany(p.company_id, companyId)) return false
       if (options?.status && p.status !== options.status) return false
       return true
     })
+
+    // Deduplicate by id
+    const periodMap = new Map<string, PayrollPeriodRecord>()
+    for (const p of filtered) {
+      if (p.id && !periodMap.has(p.id)) {
+        periodMap.set(p.id, p)
+      }
+    }
+
+    const uniquePeriods = Array.from(periodMap.values())
+    if (uniquePeriods.length > 0) {
+      return uniquePeriods
+    }
+
+    // Auto-seed default payroll period for this company
+    return await this.seedDefaultPayrollPeriod(companyId)
   }
 
   static async getPayrollPeriodById(id: string, companyId: string): Promise<PayrollPeriodRecord | null> {
@@ -1238,9 +1486,9 @@ export class WorkforceRepository {
           ...data,
           items: (data.payroll_items || []).map((i: any) => ({
             ...i,
-            employee_name: i.employees?.name || 'Staff',
-            employee_name_bn: i.employees?.name_bn || null,
-            employee_id_number: i.employees?.employee_id_number || 'EMP',
+            employee_name: i.employees?.name || i.employee_name || 'Staff',
+            employee_name_bn: i.employees?.name_bn || i.employee_name_bn || null,
+            employee_id_number: i.employees?.employee_id_number || i.employee_id_number || 'EMP',
             role: i.employees?.role || i.role || 'Staff',
             department: i.employees?.department || i.department || 'printing',
           })),
@@ -1251,13 +1499,17 @@ export class WorkforceRepository {
     }
 
     const periods = await this.getPayrollPeriods(companyId)
-    return periods.find((p) => p.id === id || p.period_name.toLowerCase().includes(id.toLowerCase())) || null
+    return periods.find((p) => p.id === id || p.period_name.toLowerCase().includes(id.toLowerCase())) || periods[0] || null
   }
 
   static async createPayrollPeriod(
     period: PayrollPeriodRecord,
     items: PayrollItemRecord[]
   ): Promise<PayrollPeriodRecord> {
+    const companyId = period.company_id
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+
     try {
       const admin = createAdminClient()
       const { data: savedPeriod, error: pErr } = await (admin as any)
@@ -1299,6 +1551,9 @@ export class WorkforceRepository {
       ...period,
       items,
     }
+    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, compSlug)
     PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod)
     return completePeriod
   }
@@ -1309,6 +1564,8 @@ export class WorkforceRepository {
     updates: Partial<PayrollPeriodRecord>
   ): Promise<PayrollPeriodRecord | null> {
     const payload = { ...updates, updated_at: new Date().toISOString() }
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
 
     try {
       const admin = createAdminClient()
@@ -1321,6 +1578,9 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, data, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, data, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, data, compSlug)
         PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, data)
         return data as PayrollPeriodRecord
       }
@@ -1328,6 +1588,9 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.updatePayrollPeriod] DB update fallback:', e)
     }
 
+    PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, compSlug)
     return PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload)
   }
 

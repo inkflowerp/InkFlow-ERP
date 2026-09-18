@@ -76,11 +76,14 @@ export default function SalaryReportPage() {
       ])
 
       if (empRes.success && empRes.data) setEmployees(empRes.data)
-      if (payRes.success && payRes.data) {
-        setPayrollPeriods(payRes.data)
-        if (payRes.data.length > 0 && !selectedPeriodId) {
-          setSelectedPeriodId(payRes.data[0].id)
-        }
+      if (payRes.success && payRes.data && payRes.data.length > 0) {
+        const periodList = payRes.data
+        setPayrollPeriods(periodList)
+        setSelectedPeriodId((prev) => {
+          if (!prev) return periodList[0].id
+          const found = periodList.find((p) => p.id === prev)
+          return found ? found.id : periodList[0].id
+        })
       }
       if (advRes.success && advRes.data) setAdvances(advRes.data)
     } catch (err: any) {
@@ -569,6 +572,13 @@ export default function SalaryReportPage() {
                   </tr>
                 )
               })}
+              {filteredItems.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400 font-sans text-xs">
+                    {tBilingual('No employee salary records found matching current filters.', 'ফিল্টারের সাথে মিল রেখে কোন কর্মীর বেতন তথ্য পাওয়া যায়নি।')}
+                  </td>
+                </tr>
+              )}
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-slate-200 dark:border-slate-800 print:border-black bg-slate-50/80 dark:bg-slate-900/50 font-bold font-mono">

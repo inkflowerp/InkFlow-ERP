@@ -403,7 +403,10 @@ export async function getPayrollPeriodsAction(
 ): Promise<ServerActionResult<PayrollPeriodRecord[]>> {
   try {
     const tenant = await requireTenantUser(companyIdParam)
-    const periods = await WorkforceService.getPayrollPeriods(tenant.companyId, options)
+    let periods = await WorkforceService.getPayrollPeriods(tenant.companyId, options)
+    if (periods.length === 0) {
+      periods = await WorkforceRepository.seedDefaultPayrollPeriod(tenant.companyId)
+    }
     return { success: true, data: periods }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch payroll periods.' }
@@ -416,7 +419,11 @@ export async function getPayrollPeriodDetailAction(
 ): Promise<ServerActionResult<PayrollPeriodRecord | null>> {
   try {
     const tenant = await requireTenantUser(companyIdParam)
-    const period = await WorkforceService.getPayrollPeriodById(id, tenant.companyId)
+    let period = await WorkforceService.getPayrollPeriodById(id, tenant.companyId)
+    if (!period) {
+      const periods = await WorkforceRepository.getPayrollPeriods(tenant.companyId)
+      period = periods.find((p) => p.id === id || p.period_name.toLowerCase().includes(id.toLowerCase())) || periods[0] || null
+    }
     return { success: true, data: period }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch payroll period.' }
