@@ -2534,356 +2534,16 @@ export default function AttendancePage() {
         <ModalDialog
           open={isViewLogModalOpen}
           onOpenChange={(open) => setIsViewLogModalOpen(open)}
-          hideFooter={true}
           title={tBilingual('Employee Attendance & Duty Log', 'কর্মীর হাজিরা ও ডিউটি লগ')}
           description={tBilingual(
             `Detailed daily check-in, check-out and overtime audit trail for ${viewLogEmployee.name}`,
             `${viewLogEmployee.name}-এর দৈনিক পাঞ্চ লগ, প্রবেশ-প্রস্থান ও ওভারটাইম বিবরণ`
           )}
           size="5xl"
-        >
-          <div className="space-y-4 pt-2">
-            {/* Employee Info & Period Selector Header Box */}
-            <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-900/60 dark:to-slate-900/30 border border-slate-200 dark:border-slate-800 space-y-3">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-bold text-lg flex items-center justify-center shadow-xs shrink-0">
-                    {viewLogEmployee.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                        {viewLogEmployee.name}
-                      </h3>
-                      {viewLogEmployee.name_bn && (
-                        <span className="text-xs text-slate-500 bangla-text font-medium">
-                          ({viewLogEmployee.name_bn})
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-0.5">
-                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
-                        {viewLogEmployee.employee_id_number}
-                      </span>
-                      <span>•</span>
-                      <span className="capitalize font-medium text-slate-700 dark:text-slate-300">
-                        {viewLogEmployee.department}
-                      </span>
-                      <span>•</span>
-                      <span className="capitalize text-slate-600 dark:text-slate-400">
-                        {viewLogEmployee.role}
-                      </span>
-                      <span>•</span>
-                      <Badge variant="outline" className="text-[10px] capitalize">
-                        {viewLogEmployee.employee_type}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Changeable Period Controls */}
-                <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-2xs shrink-0 self-start lg:self-center whitespace-nowrap">
-                  <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-medium px-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                    <span>{tBilingual('Period:', 'সময়কাল:')}</span>
-                    {isReportLoading && <RefreshCw className="w-3 h-3 animate-spin text-blue-500 ml-0.5" />}
-                  </div>
-
-                  {/* Month/Year Grouped Navigation Pill */}
-                  <div className="flex items-center bg-slate-50 dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-800/80">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        let newM = reportSelectedMonth - 1
-                        let newY = reportSelectedYear
-                        if (newM < 1) {
-                          newM = 12
-                          newY -= 1
-                        }
-                        handlePeriodChange(newY, newM)
-                      }}
-                      className="h-7 w-7 p-0 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md"
-                      title={tBilingual('Previous Month', 'আগের মাস')}
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </Button>
-
-                    <select
-                      aria-label="Change Log Month"
-                      value={reportSelectedMonth}
-                      onChange={(e) => handlePeriodChange(reportSelectedYear, Number(e.target.value))}
-                      className="h-7 text-xs font-semibold px-2 bg-transparent text-slate-900 dark:text-white border-0 focus:ring-0 cursor-pointer outline-none"
-                    >
-                      {MONTHS_LIST.map((m) => (
-                        <option key={m.value} value={m.value} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                          {locale === 'bn' ? `${m.value} - ${m.nameBn}` : `${m.nameEn}`}
-                        </option>
-                      ))}
-                    </select>
-
-                    <span className="text-slate-300 dark:text-slate-700">/</span>
-
-                    <select
-                      aria-label="Change Log Year"
-                      value={reportSelectedYear}
-                      onChange={(e) => handlePeriodChange(Number(e.target.value), reportSelectedMonth)}
-                      className="h-7 text-xs font-semibold px-2 bg-transparent text-slate-900 dark:text-white border-0 focus:ring-0 cursor-pointer outline-none"
-                    >
-                      {YEARS_LIST.map((y) => (
-                        <option key={y} value={y} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        let newM = reportSelectedMonth + 1
-                        let newY = reportSelectedYear
-                        if (newM > 12) {
-                          newM = 1
-                          newY += 1
-                        }
-                        handlePeriodChange(newY, newM)
-                      }}
-                      className="h-7 w-7 p-0 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md"
-                      title={tBilingual('Next Month', 'পরের মাস')}
-                    >
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-
-                  {/* Quick This Month Preset */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSelectReportPreset('this_month')}
-                    className="h-8 text-xs px-2.5 font-medium bg-blue-50/70 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 dark:text-blue-300 border-blue-200/60 dark:border-blue-800/60 shrink-0"
-                  >
-                    {tBilingual('This Month', 'চলতি মাস')}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Summary KPI Badges */}
-              {(() => {
-                const empAtts = reportRecords.filter((r) => r.employee_id === viewLogEmployee.id)
-                const checkIns = empAtts
-                  .filter((r) => r.check_in_time)
-                  .map((r) => timeStringToMinutes(r.check_in_time))
-                  .filter((m): m is number => m !== null)
-                const avgInMinutes = checkIns.length > 0
-                  ? Math.round(checkIns.reduce((a, b) => a + b, 0) / checkIns.length)
-                  : null
-                const avgCheckIn = minutesToTimeString(avgInMinutes)
-
-                const checkOuts = empAtts
-                  .filter((r) => r.check_out_time)
-                  .map((r) => timeStringToMinutes(r.check_out_time))
-                  .filter((m): m is number => m !== null)
-                const avgOutMinutes = checkOuts.length > 0
-                  ? Math.round(checkOuts.reduce((a, b) => a + b, 0) / checkOuts.length)
-                  : null
-                const avgCheckOut = minutesToTimeString(avgOutMinutes)
-
-                const presentDays = empAtts.filter((r) =>
-                  r.status === 'present' || r.status === 'late' || r.status === 'half_day' || r.status === 'field_work'
-                ).length
-                const absentDays = empAtts.filter((r) => r.status === 'absent').length
-                const otMins = empAtts.reduce(
-                  (sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0),
-                  0
-                )
-                const totalOtHrs = Math.round((otMins / 60) * 10) / 10
-
-                return (
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-800/80">
-                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
-                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Day Present', 'উপস্থিত দিন')}</span>
-                      <strong className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{presentDays} Days</strong>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
-                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Day Absent', 'অনুপস্থিত দিন')}</span>
-                      <strong className="text-sm font-bold text-rose-600 dark:text-rose-400">{absentDays} Days</strong>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
-                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check In', 'গড় প্রবেশ')}</span>
-                      <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckIn}</strong>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
-                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check Out', 'গড় প্রস্থান')}</span>
-                      <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckOut}</strong>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs col-span-2 sm:col-span-1">
-                      <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Total OT', 'মোট ওটি')}</span>
-                      <strong className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono">+{totalOtHrs} hrs</strong>
-                    </div>
-                  </div>
-                )
-              })()}
-            </div>
-
-            {/* Detailed Daily Log Table */}
-            <div className="relative max-h-[480px] overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
-              {isReportLoading && (
-                <div className="absolute inset-0 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-20">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-md">
-                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-                    <span>{tBilingual('Loading attendance logs...', 'হাজিরা লগ লোড হচ্ছে...')}</span>
-                  </div>
-                </div>
-              )}
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-50/95 dark:bg-slate-900/95 text-slate-600 dark:text-slate-400 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 font-bold text-[11px] uppercase">
-                  <tr>
-                    <th className="p-3 pl-4">{tBilingual('Date', 'তারিখ')}</th>
-                    <th className="p-3">{tBilingual('Day', 'বার')}</th>
-                    <th className="p-3">{tBilingual('Check In', 'প্রবেশ')}</th>
-                    <th className="p-3">{tBilingual('Check Out', 'প্রস্থান')}</th>
-                    <th className="p-3">{tBilingual('OT In/Out', 'ওটি ইন/আউট')}</th>
-                    <th className="p-3 pr-4">{tBilingual('Status', 'স্ট্যাটাস')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
-                  {reportDays.map((d) => {
-                    const rec = reportRecords.find(
-                      (r) => r.employee_id === viewLogEmployee.id && r.attendance_date === d.dateStr
-                    )
-                    const isFri = d.isFriday
-                    const otMinutes = rec?.potential_ot_minutes || rec?.approved_ot_minutes || 0
-                    const otHrs = Math.round((otMinutes / 60) * 10) / 10
-
-                    return (
-                      <tr
-                        key={d.dateStr}
-                        className={`hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors ${
-                          isFri ? 'bg-rose-50/20 dark:bg-rose-950/10' : ''
-                        }`}
-                      >
-                        <td className="p-3 pl-4 font-sans font-medium text-slate-900 dark:text-white">
-                          {d.dateStr}
-                        </td>
-
-                        <td className="p-3 font-sans">
-                          <span
-                            className={`font-medium ${
-                              isFri ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-400'
-                            }`}
-                          >
-                            {d.dayOfWeek} {isFri && `(${tBilingual('Off-Day', 'ছুটি')})`}
-                          </span>
-                        </td>
-
-                        <td className="p-3">
-                          {rec?.check_in_time ? (
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-slate-900 dark:text-white">
-                                {format12Hour(rec.check_in_time)}
-                              </span>
-                              {rec.late_minutes && rec.late_minutes > 0 ? (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 font-sans font-medium"
-                                >
-                                  +{rec.late_minutes}m Late
-                                </Badge>
-                              ) : null}
-                            </div>
-                          ) : isFri ? (
-                            <span className="text-slate-400 font-sans text-xs">{tBilingual('Off-Day', 'সাপ্তাহিক ছুটি')}</span>
-                          ) : (
-                            <span className="text-slate-400">--:--</span>
-                          )}
-                        </td>
-
-                        <td className="p-3">
-                          {rec?.check_out_time ? (
-                            <span className="font-semibold text-slate-900 dark:text-white">
-                              {format12Hour(rec.check_out_time)}
-                            </span>
-                          ) : rec?.check_in_time ? (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans font-medium"
-                            >
-                              {tBilingual('On Floor', 'ফ্লোরে আছেন')}
-                            </Badge>
-                          ) : (
-                            <span className="text-slate-400">--:--</span>
-                          )}
-                        </td>
-
-                        <td className="p-3">
-                          {otMinutes > 0 ? (
-                            <div className="flex items-center gap-1">
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 font-bold"
-                              >
-                                +{otHrs} hrs
-                              </Badge>
-                              {rec?.check_out_time && (
-                                <span className="text-[11px] text-slate-400 font-normal">
-                                  (18:00 - {rec.check_out_time})
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </td>
-
-                        <td className="p-3 pr-4 font-sans">
-                          {rec ? (
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] px-2 py-0.5 capitalize ${
-                                rec.status === 'present'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-                                  : rec.status === 'late'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
-                                  : rec.status === 'absent'
-                                  ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
-                                  : rec.status === 'leave'
-                                  ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
-                                  : rec.status === 'field_work'
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
-                                  : 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800'
-                              }`}
-                            >
-                              {rec.status}
-                            </Badge>
-                          ) : isFri ? (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400"
-                            >
-                              {tBilingual('Off-Day', 'সাপ্তাহিক ছুটি')}
-                            </Badge>
-                          ) : (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] text-slate-400 border-dashed border-slate-300 dark:border-slate-700"
-                            >
-                              {tBilingual('Unmarked', 'অনুপস্থিত')}
-                            </Badge>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+          className="h-[88vh] max-h-[820px] flex flex-col overflow-hidden"
+          bodyClassName="flex-1 min-h-0 flex flex-col overflow-hidden p-4 sm:p-5 gap-3"
+          footer={
+            <div className="flex items-center justify-between w-full">
               <Button
                 variant="outline"
                 size="sm"
@@ -2891,7 +2551,7 @@ export default function AttendancePage() {
                   setIsViewLogModalOpen(false)
                   handleOpenPrintTimesheet(viewLogEmployee)
                 }}
-                className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800"
+                className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5 text-slate-500" />
                 {tBilingual('Print Official Timesheet', 'অফিসিয়াল টাইমশিট প্রিন্ট')}
@@ -2900,11 +2560,350 @@ export default function AttendancePage() {
               <Button
                 size="sm"
                 onClick={() => setIsViewLogModalOpen(false)}
-                className="text-xs h-9 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 font-semibold px-4"
+                className="text-xs h-9 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 font-semibold px-5 cursor-pointer shadow-xs"
               >
                 {tBilingual('Close', 'বন্ধ করুন')}
               </Button>
             </div>
+          }
+        >
+          {/* Employee Info & Period Selector Header Box (Fixed at top of body) */}
+          <div className="shrink-0 p-3.5 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-900/60 dark:to-slate-900/30 border border-slate-200 dark:border-slate-800 space-y-2.5">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-blue-600 text-white font-bold text-base flex items-center justify-center shadow-xs shrink-0">
+                  {viewLogEmployee.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
+                      {viewLogEmployee.name}
+                    </h3>
+                    {viewLogEmployee.name_bn && (
+                      <span className="text-xs text-slate-500 bangla-text font-medium">
+                        ({viewLogEmployee.name_bn})
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-0.5">
+                    <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
+                      {viewLogEmployee.employee_id_number}
+                    </span>
+                    <span>•</span>
+                    <span className="capitalize font-medium text-slate-700 dark:text-slate-300">
+                      {viewLogEmployee.department}
+                    </span>
+                    <span>•</span>
+                    <span className="capitalize text-slate-600 dark:text-slate-400">
+                      {viewLogEmployee.role}
+                    </span>
+                    <span>•</span>
+                    <Badge variant="outline" className="text-[10px] capitalize">
+                      {viewLogEmployee.employee_type}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Changeable Period Controls */}
+              <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-2xs shrink-0 self-start lg:self-center whitespace-nowrap">
+                <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-medium px-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                  <span>{tBilingual('Period:', 'সময়কাল:')}</span>
+                  {isReportLoading && <RefreshCw className="w-3 h-3 animate-spin text-blue-500 ml-0.5" />}
+                </div>
+
+                {/* Month/Year Grouped Navigation Pill */}
+                <div className="flex items-center bg-slate-50 dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-800/80">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      let newM = reportSelectedMonth - 1
+                      let newY = reportSelectedYear
+                      if (newM < 1) {
+                        newM = 12
+                        newY -= 1
+                      }
+                      handlePeriodChange(newY, newM)
+                    }}
+                    className="h-7 w-7 p-0 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md"
+                    title={tBilingual('Previous Month', 'আগের মাস')}
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </Button>
+
+                  <select
+                    aria-label="Change Log Month"
+                    value={reportSelectedMonth}
+                    onChange={(e) => handlePeriodChange(reportSelectedYear, Number(e.target.value))}
+                    className="h-7 text-xs font-semibold px-2 bg-transparent text-slate-900 dark:text-white border-0 focus:ring-0 cursor-pointer outline-none"
+                  >
+                    {MONTHS_LIST.map((m) => (
+                      <option key={m.value} value={m.value} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                        {locale === 'bn' ? `${m.value} - ${m.nameBn}` : `${m.nameEn}`}
+                      </option>
+                    ))}
+                  </select>
+
+                  <span className="text-slate-300 dark:text-slate-700">/</span>
+
+                  <select
+                    aria-label="Change Log Year"
+                    value={reportSelectedYear}
+                    onChange={(e) => handlePeriodChange(Number(e.target.value), reportSelectedMonth)}
+                    className="h-7 text-xs font-semibold px-2 bg-transparent text-slate-900 dark:text-white border-0 focus:ring-0 cursor-pointer outline-none"
+                  >
+                    {YEARS_LIST.map((y) => (
+                      <option key={y} value={y} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      let newM = reportSelectedMonth + 1
+                      let newY = reportSelectedYear
+                      if (newM > 12) {
+                        newM = 1
+                        newY += 1
+                      }
+                      handlePeriodChange(newY, newM)
+                    }}
+                    className="h-7 w-7 p-0 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md"
+                    title={tBilingual('Next Month', 'পরের মাস')}
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+
+                {/* Quick This Month Preset */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSelectReportPreset('this_month')}
+                  className="h-8 text-xs px-2.5 font-medium bg-blue-50/70 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 dark:text-blue-300 border-blue-200/60 dark:border-blue-800/60 shrink-0"
+                >
+                  {tBilingual('This Month', 'চলতি মাস')}
+                </Button>
+              </div>
+            </div>
+
+            {/* Summary KPI Badges */}
+            {(() => {
+              const empAtts = reportRecords.filter((r) => r.employee_id === viewLogEmployee.id)
+              const checkIns = empAtts
+                .filter((r) => r.check_in_time)
+                .map((r) => timeStringToMinutes(r.check_in_time))
+                .filter((m): m is number => m !== null)
+              const avgInMinutes = checkIns.length > 0
+                ? Math.round(checkIns.reduce((a, b) => a + b, 0) / checkIns.length)
+                : null
+              const avgCheckIn = minutesToTimeString(avgInMinutes)
+
+              const checkOuts = empAtts
+                .filter((r) => r.check_out_time)
+                .map((r) => timeStringToMinutes(r.check_out_time))
+                .filter((m): m is number => m !== null)
+              const avgOutMinutes = checkOuts.length > 0
+                ? Math.round(checkOuts.reduce((a, b) => a + b, 0) / checkOuts.length)
+                : null
+              const avgCheckOut = minutesToTimeString(avgOutMinutes)
+
+              const presentDays = empAtts.filter((r) =>
+                r.status === 'present' || r.status === 'late' || r.status === 'half_day' || r.status === 'field_work'
+              ).length
+              const absentDays = empAtts.filter((r) => r.status === 'absent').length
+              const otMins = empAtts.reduce(
+                (sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0),
+                0
+              )
+              const totalOtHrs = Math.round((otMins / 60) * 10) / 10
+
+              return (
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-800/80">
+                  <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Day Present', 'উপস্থিত দিন')}</span>
+                    <strong className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{presentDays} Days</strong>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Day Absent', 'অনুপস্থিত দিন')}</span>
+                    <strong className="text-sm font-bold text-rose-600 dark:text-rose-400">{absentDays} Days</strong>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check In', 'গড় প্রবেশ')}</span>
+                    <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckIn}</strong>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check Out', 'গড় প্রস্থান')}</span>
+                    <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckOut}</strong>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs col-span-2 sm:col-span-1">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Total OT', 'মোট ওটি')}</span>
+                    <strong className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono">+{totalOtHrs} hrs</strong>
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+
+          {/* Detailed Daily Log Table (Scrollable Body) */}
+          <div className="flex-1 min-h-0 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl relative shadow-2xs">
+            {isReportLoading && (
+              <div className="absolute inset-0 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-20">
+                <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-md">
+                  <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                  <span>{tBilingual('Loading attendance logs...', 'হাজিরা লগ লোড হচ্ছে...')}</span>
+                </div>
+              </div>
+            )}
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur-xs text-slate-700 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 font-bold text-[11px] uppercase tracking-wider shadow-2xs">
+                <tr>
+                  <th className="p-3 pl-4">{tBilingual('Date', 'তারিখ')}</th>
+                  <th className="p-3">{tBilingual('Day', 'বার')}</th>
+                  <th className="p-3">{tBilingual('Check In', 'প্রবেশ')}</th>
+                  <th className="p-3">{tBilingual('Check Out', 'প্রস্থান')}</th>
+                  <th className="p-3">{tBilingual('OT In/Out', 'ওটি ইন/আউট')}</th>
+                  <th className="p-3 pr-4">{tBilingual('Status', 'স্ট্যাটাস')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
+                {reportDays.map((d) => {
+                  const rec = reportRecords.find(
+                    (r) => r.employee_id === viewLogEmployee.id && r.attendance_date === d.dateStr
+                  )
+                  const isFri = d.isFriday
+                  const otMinutes = rec?.potential_ot_minutes || rec?.approved_ot_minutes || 0
+                  const otHrs = Math.round((otMinutes / 60) * 10) / 10
+
+                  return (
+                    <tr
+                      key={d.dateStr}
+                      className={`hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors ${
+                        isFri ? 'bg-rose-50/20 dark:bg-rose-950/10' : ''
+                      }`}
+                    >
+                      <td className="p-3 pl-4 font-sans font-medium text-slate-900 dark:text-white">
+                        {d.dateStr}
+                      </td>
+
+                      <td className="p-3 font-sans">
+                        <span
+                          className={`font-medium ${
+                            isFri ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-400'
+                          }`}
+                        >
+                          {d.dayOfWeek} {isFri && `(${tBilingual('Off-Day', 'ছুটি')})`}
+                        </span>
+                      </td>
+
+                      <td className="p-3">
+                        {rec?.check_in_time ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {format12Hour(rec.check_in_time)}
+                            </span>
+                            {rec.late_minutes && rec.late_minutes > 0 ? (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 font-sans font-medium"
+                              >
+                                +{rec.late_minutes}m Late
+                              </Badge>
+                            ) : null}
+                          </div>
+                        ) : isFri ? (
+                          <span className="text-slate-400 font-sans text-xs">{tBilingual('Off-Day', 'সাপ্তাহিক ছুটি')}</span>
+                        ) : (
+                          <span className="text-slate-400">--:--</span>
+                        )}
+                      </td>
+
+                      <td className="p-3">
+                        {rec?.check_out_time ? (
+                          <span className="font-semibold text-slate-900 dark:text-white">
+                            {format12Hour(rec.check_out_time)}
+                          </span>
+                        ) : rec?.check_in_time ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans font-medium"
+                          >
+                            {tBilingual('On Floor', 'ফ্লোরে আছেন')}
+                          </Badge>
+                        ) : (
+                          <span className="text-slate-400">--:--</span>
+                        )}
+                      </td>
+
+                      <td className="p-3">
+                        {otMinutes > 0 ? (
+                          <div className="flex items-center gap-1">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 font-bold"
+                            >
+                              +{otHrs} hrs
+                            </Badge>
+                            {rec?.check_out_time && (
+                              <span className="text-[11px] text-slate-400 font-normal">
+                                (18:00 - {rec.check_out_time})
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
+
+                      <td className="p-3 pr-4 font-sans">
+                        {rec ? (
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] px-2 py-0.5 capitalize ${
+                              rec.status === 'present'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                                : rec.status === 'late'
+                                ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                                : rec.status === 'absent'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+                                : rec.status === 'leave'
+                                ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
+                                : rec.status === 'field_work'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
+                                : 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800'
+                            }`}
+                          >
+                            {rec.status}
+                          </Badge>
+                        ) : isFri ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400"
+                          >
+                            {tBilingual('Off-Day', 'সাপ্তাহিক ছুটি')}
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] text-slate-400 border-dashed border-slate-300 dark:border-slate-700"
+                          >
+                            {tBilingual('Unmarked', 'অনুপস্থিত')}
+                          </Badge>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         </ModalDialog>
       )}
