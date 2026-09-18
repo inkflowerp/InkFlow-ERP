@@ -99,8 +99,8 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
         },
         {
           key: 'hr',
-          title: 'Workforce, Attendance & Payroll',
-          titleBn: 'কর্মী, হাজিরা ও পেরোল',
+          title: 'Workforce, Users & Payroll',
+          titleBn: 'কর্মী, ইউজার ও পেরোল',
           href: `/${tenantSlug}/hr`,
           icon: 'Users2',
           permission: { action: 'view', resource: 'settings' },

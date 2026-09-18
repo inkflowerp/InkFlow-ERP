@@ -19,7 +19,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     const sectionIds = navSections.map((s) => s.id)
     assert.deepEqual(sectionIds, ['today', 'work', 'management', 'settings'])
 
-    // Verify inventory, suppliers, pricing, and hr (Workforce, Attendance & Payroll) are positioned in today section
+    // Verify inventory, suppliers, pricing, and hr (Workforce, Users & Payroll) are positioned in today section
     const todayItems = navSections.find((s) => s.id === 'today')!.items.map((i) => i.key)
     const productsIndex = todayItems.indexOf('products')
     const inventoryIndex = todayItems.indexOf('inventory')
@@ -34,8 +34,8 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     assert.equal(hrIndex, productsIndex + 4, 'hr must immediately follow pricing')
 
     const hrItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'hr')
-    assert.equal(hrItem?.title, 'Workforce, Attendance & Payroll', 'hr item must be titled Workforce, Attendance & Payroll')
-    assert.equal(hrItem?.titleBn, 'কর্মী, হাজিরা ও পেরোল', 'hr item must have correct Bengali title')
+    assert.equal(hrItem?.title, 'Workforce, Users & Payroll', 'hr item must be titled Workforce, Users & Payroll')
+    assert.equal(hrItem?.titleBn, 'কর্মী, ইউজার ও পেরোল', 'hr item must have correct Bengali title')
     assert.equal(hrItem?.hasDividerBelow, true, 'hr item must have hasDividerBelow flag set to true')
 
     const pricingItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'pricing')

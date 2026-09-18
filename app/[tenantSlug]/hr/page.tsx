@@ -56,6 +56,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
+import { UsersManagementView } from '@/components/users/users-management-view'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
   EmployeeRecord,
@@ -102,7 +103,7 @@ export default function WorkforcePage() {
   const searchParams = useSearchParams()
 
   const [isPending, startTransition] = useTransition()
-  const [activeTab, setActiveTab] = useState<'employees' | 'attendance' | 'overtime' | 'advances' | 'payroll'>('employees')
+  const [activeTab, setActiveTab] = useState<'employees' | 'users' | 'attendance' | 'overtime' | 'advances' | 'payroll'>('employees')
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
@@ -110,7 +111,7 @@ export default function WorkforcePage() {
   // Handle URL tab & punch query parameters
   useEffect(() => {
     const tabParam = searchParams?.get('tab')
-    if (tabParam && ['employees', 'attendance', 'overtime', 'advances', 'payroll'].includes(tabParam)) {
+    if (tabParam && ['employees', 'users', 'attendance', 'overtime', 'advances', 'payroll'].includes(tabParam)) {
       setActiveTab(tabParam as any)
     }
     if (searchParams?.get('punch') === 'true') {
@@ -512,10 +513,10 @@ export default function WorkforcePage() {
       <div className="space-y-6 max-w-7xl">
         {/* Header */}
         <PageHeader
-          titleEn="Workforce, Attendance & Payroll"
-          titleBn="এইচআর, হাজিরা ও বেতন ব্যবস্থাপনা"
-          descriptionEn="Permanent technical operators, daily shop-floor labor, geo-attendance, overtime approval queue, and immutable payroll runs."
-          descriptionBn="প্রিন্ট শপ কর্মী, দৈনিক শ্রমিক, হাজিরা, ওভারটাইম অনুমোদন এবং বেতন হিসাব পরিচালনা করুন।"
+          titleEn="Workforce, Users & Payroll"
+          titleBn="কর্মী, ইউজার ও পেরোল ব্যবস্থাপনা"
+          descriptionEn="Permanent technical operators, daily labor, system users & roles, attendance punch, and payroll runs."
+          descriptionBn="প্রিন্ট শপ কর্মী, সিস্টেম ইউজার, হাজিরা, ওভারটাইম অনুমোদন এবং বেতন হিসাব পরিচালনা করুন।"
           icon={Users2}
           iconColor="text-blue-600"
           actions={
@@ -672,6 +673,18 @@ export default function WorkforcePage() {
             >
               <Users2 className="h-3.5 w-3.5 mr-1.5" />
               {tBilingual('Employees', 'কর্মী তালিকা')} ({employees.length})
+            </Button>
+
+            <Button
+              size="sm"
+              variant={activeTab === 'users' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('users')}
+              className={`text-xs h-8 px-3 rounded-xl font-semibold ${
+                activeTab === 'users' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+              {tBilingual('System Users & Access', 'ইউজার ও অনুমতি')}
             </Button>
 
             <Button
@@ -873,6 +886,15 @@ export default function WorkforcePage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB: SYSTEM USERS & ACCESS (User Management)
+           ========================================================================= */}
+        {activeTab === 'users' && (
+          <div className="space-y-4">
+            <UsersManagementView hideHeader={true} />
           </div>
         )}
 
