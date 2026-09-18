@@ -262,6 +262,8 @@ export default function EmployeeListPage() {
   const [drawerTab, setDrawerTab] = useState<'overview' | 'duty' | 'compensation' | 'payment' | 'idcard' | 'notes'>('overview')
   const [showAdvancedAllowances, setShowAdvancedAllowances] = useState(false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [previewDoc, setPreviewDoc] = useState<{ id?: string; name: string; type: string; url?: string; size?: string } | null>(null)
+  const [isDragOverDocs, setIsDragOverDocs] = useState(false)
 
   const triggerCopy = (key: string) => {
     setCopiedField(key)
@@ -318,6 +320,80 @@ export default function EmployeeListPage() {
       return `${years} ${years === 1 ? 'Yr' : 'Yrs'} ${months} ${months === 1 ? 'Mo' : 'Mos'}`
     } catch {
       return 'N/A'
+    }
+  }
+
+  const handleDocumentFiles = (files: FileList | File[]) => {
+    const fileArray = Array.from(files)
+    if (fileArray.length === 0) return
+
+    let processedCount = 0
+    fileArray.forEach((file) => {
+      if (file.size > 10 * 1024 * 1024) {
+        notify(`File "${file.name}" exceeds the 10MB limit.`)
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = reader.result as string
+        const sizeStr =
+          file.size >= 1024 * 1024
+            ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+            : `${Math.round(file.size / 1024)} KB`
+
+        let docType = 'National ID / Smart Card'
+        const lower = file.name.toLowerCase()
+        if (lower.includes('nid') || lower.includes('national') || lower.includes('smart') || lower.includes('voter')) {
+          docType = 'National ID / Smart Card'
+        } else if (lower.includes('passport')) {
+          docType = 'International Passport'
+        } else if (
+          lower.includes('contract') ||
+          lower.includes('agreement') ||
+          lower.includes('joining') ||
+          lower.includes('offer') ||
+          lower.includes('appointment')
+        ) {
+          docType = 'Employment Contract'
+        } else if (
+          lower.includes('cert') ||
+          lower.includes('diploma') ||
+          lower.includes('degree') ||
+          lower.includes('ssc') ||
+          lower.includes('hsc') ||
+          lower.includes('grad') ||
+          lower.includes('transcript')
+        ) {
+          docType = 'Educational Certificate'
+        } else if (lower.includes('license') || lower.includes('driving') || lower.includes('trade')) {
+          docType = 'Driving / Trade License'
+        } else if (lower.includes('police') || lower.includes('clearance') || lower.includes('character')) {
+          docType = 'Police Clearance / Reference'
+        } else if (lower.includes('cv') || lower.includes('resume') || lower.includes('bio')) {
+          docType = 'Resume / CV'
+        }
+
+        const newAttachment = {
+          id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          name: file.name,
+          type: docType,
+          size: sizeStr,
+          url: dataUrl,
+          uploaded_at: new Date().toISOString(),
+        }
+
+        setEmpForm((prev) => ({
+          ...prev,
+          document_attachments: [...prev.document_attachments, newAttachment],
+        }))
+      }
+      reader.readAsDataURL(file)
+      processedCount++
+    })
+
+    if (processedCount > 0) {
+      notify(`Attached ${processedCount} document(s) successfully.`)
     }
   }
 
@@ -382,7 +458,14 @@ export default function EmployeeListPage() {
       password: '',
       role: 'operator',
     },
-    document_attachments: [] as { id: string; name: string; type: string; url?: string }[],
+    document_attachments: [] as {
+      id: string
+      name: string
+      type: string
+      size?: string
+      url?: string
+      uploaded_at?: string
+    }[],
     emergency_contact_name: '',
     emergency_contact_phone: '',
     emergency_contact_relation: 'Spouse',
@@ -1283,11 +1366,11 @@ export default function EmployeeListPage() {
               </div>
             </div>
           }
-          size="4xl"
+          size="6xl"
         >
           <div className="space-y-4 max-h-[78vh] overflow-y-auto pr-1">
-            {/* Step Progress & Tab Navigation Bar */}
-            <div className="bg-slate-50/80 dark:bg-slate-900/60 p-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            {/* Step Progress & Tab Navigation Bar - 100% visible grid on all screens */}
+            <div className="bg-slate-100/90 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200/90 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 w-full">
               {[
                 { id: 'personal', num: 1, title: 'Personal Info', title_bn: 'ব্যক্তিগত তথ্য', icon: UserCheck },
                 { id: 'role', num: 2, title: 'Role & Contract', title_bn: 'পদবি ও চুক্তি', icon: Briefcase },
@@ -1303,58 +1386,131 @@ export default function EmployeeListPage() {
                     key={step.id}
                     type="button"
                     onClick={() => setModalTab(step.id as any)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex-1 justify-center ${
+                    className={`flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg text-xs font-semibold transition-all w-full text-center min-w-0 ${
                       isActive
-                        ? 'bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400 shadow-xs border border-slate-200/90 dark:border-slate-800 font-semibold'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
+                        ? 'bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-500/30 ring-1 ring-blue-500/20 font-bold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
                     }`}
                   >
                     <span
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold shrink-0 ${
                         isActive
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       {step.num}
                     </span>
-                    <Icon className="w-3.5 h-3.5" />
-                    <span>{tBilingual(step.title, step.title_bn)}</span>
+                    <Icon className="w-3.5 h-3.5 shrink-0 hidden sm:inline-block" />
+                    <span className="truncate">{step.title}</span>
                   </button>
                 )
               })}
             </div>
 
+            {/* Active Step Indicator Banner */}
+            <div className="flex items-center justify-between px-1 py-1 text-xs text-slate-500 border-b border-slate-100 dark:border-slate-800/60">
+              <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse shrink-0" />
+                {modalTab === 'personal' && tBilingual('Step 1 of 6: Personal Identity & Contact Details', 'ধাপ ১/৬: ব্যক্তিগত পরিচয় ও যোগাযোগের বিবরণ')}
+                {modalTab === 'role' && tBilingual('Step 2 of 6: Role, Designation & Contract Period', 'ধাপ ২/৬: পদবি, বিভাগ ও চাকরির মেয়াদ')}
+                {modalTab === 'duty' && tBilingual('Step 3 of 6: Shift Hours, Overtime & Attendance Rules', 'ধাপ ৩/৬: ডিউটি শিফট, ওভারটাইম ও হাজিরা পলিসি')}
+                {modalTab === 'salary' && tBilingual('Step 4 of 6: Base Salary, Allowances & Sales Commission', 'ধাপ ৪/৬: মূল বেতন, ভাতা ও সেলস কমিশন')}
+                {modalTab === 'banking' && tBilingual('Step 5 of 6: Bank Account & MFS Mobile Wallets', 'ধাপ ৫/৬: ব্যাংক অ্যাকাউন্ট ও মোবাইল ওয়ালেট')}
+                {modalTab === 'access_docs' && tBilingual('Step 6 of 6: Portal Login & Media Document Uploads', 'ধাপ ৬/৬: পোর্টাল অ্যাকাউন্ট ও ডকুমেন্ট ফাইল আপলোড')}
+              </span>
+              <span className="text-[11px] font-mono text-slate-400 font-medium">
+                {modalTab === 'personal' && '1 / 6'}
+                {modalTab === 'role' && '2 / 6'}
+                {modalTab === 'duty' && '3 / 6'}
+                {modalTab === 'salary' && '4 / 6'}
+                {modalTab === 'banking' && '5 / 6'}
+                {modalTab === 'access_docs' && '6 / 6'}
+              </span>
+            </div>
+
             {/* TAB 1: PERSONAL & CONTACT DETAILS */}
             {modalTab === 'personal' && (
               <div className="space-y-4 pt-1">
-                {/* Profile Avatar & Preview Banner */}
-                <div className="p-3.5 rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                {/* Hidden File Input for Avatar Photo Upload */}
+                <input
+                  id="profile-picture-upload"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      if (file.size > 5 * 1024 * 1024) {
+                        notify('Image size must be less than 5MB.')
+                        return
+                      }
+                      const reader = new FileReader()
+                      reader.onload = () => {
+                        setEmpForm({ ...empForm, profile_picture_url: reader.result as string })
+                        notify('Profile photo uploaded successfully!')
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                  }}
+                />
+
+                {/* Profile Avatar & Interactive Media Upload Banner */}
+                <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                  <div className="flex items-center gap-3.5">
                     {empForm.profile_picture_url ? (
                       <img
                         src={empForm.profile_picture_url}
                         alt="Profile Preview"
-                        className="w-12 h-12 rounded-full object-cover ring-2 ring-blue-500/30 shadow-xs"
+                        className="w-16 h-16 rounded-2xl object-cover ring-2 ring-blue-500/40 shadow-sm shrink-0"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0 ring-2 ring-blue-500/20">
                         {empForm.name ? empForm.name.slice(0, 2).toUpperCase() : 'EMP'}
                       </div>
                     )}
                     <div>
-                      <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                         {empForm.name || tBilingual('New Employee', 'নতুন কর্মী')}
+                        {empForm.profile_picture_url && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border-emerald-300">
+                            Photo Attached
+                          </Badge>
+                        )}
                       </h4>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-500 mt-0.5">
                         {empForm.name_bn ? `${empForm.name_bn} • ` : ''}
                         {empForm.mobile || tBilingual('No mobile specified', 'মোবাইল নম্বর দেওয়া হয়নি')}
                       </p>
+                      <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-0.5 font-medium">
+                        {empForm.profile_picture_url ? '✓ Ready to save with employee profile' : 'PNG, JPG, WEBP (Max 5MB)'}
+                      </p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="bg-white dark:bg-slate-900 text-xs px-2.5 py-1 text-slate-700 dark:text-slate-300">
-                    {tBilingual('Step 1 of 6', 'ধাপ ১ / ৬')}
-                  </Badge>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <label
+                      htmlFor="profile-picture-upload"
+                      className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shadow-xs hover:bg-blue-50 dark:hover:bg-blue-950/50"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{empForm.profile_picture_url ? tBilingual('Replace Photo', 'ছবি পরিবর্তন') : tBilingual('Upload Photo', 'ছবি আপলোড')}</span>
+                    </label>
+
+                    {empForm.profile_picture_url && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEmpForm({ ...empForm, profile_picture_url: '' })}
+                        className="h-8 px-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 text-xs gap-1"
+                        title="Remove uploaded photo"
+                      >
+                        <Trash className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Remove</span>
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -1459,12 +1615,12 @@ export default function EmployeeListPage() {
 
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Profile Picture URL / Avatar', 'প্রোফাইল ছবি URL')}
+                      {tBilingual('Profile Picture URL / Link', 'প্রোফাইল ছবি URL (বিকল্প)')}
                     </Label>
                     <div className="relative">
                       <Camera className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                       <Input
-                        placeholder="https://.../photo.jpg (Optional)"
+                        placeholder="https://.../photo.jpg or Upload above"
                         value={empForm.profile_picture_url}
                         onChange={(e) => setEmpForm({ ...empForm, profile_picture_url: e.target.value })}
                         className="text-xs h-9 pl-9"
@@ -2609,88 +2765,227 @@ export default function EmployeeListPage() {
                   )}
                 </div>
 
-                {/* Media & Identity Document Scans (Multiple) */}
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                    <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <Paperclip className="w-3.5 h-3.5 text-blue-600" />
-                      {tBilingual('Media & Identity Documents (Multiple Scans)', 'জাতীয় পরিচয়পত্র ও ডকুমেন্ট স্ক্যান')}
-                    </h5>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        const newDoc = {
-                          id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-                          name: `Document_${empForm.document_attachments.length + 1}.pdf`,
-                          type: 'National ID',
-                        }
-                        setEmpForm({
-                          ...empForm,
-                          document_attachments: [...empForm.document_attachments, newDoc],
-                        })
-                      }}
-                      className="text-xs h-7 gap-1"
-                    >
-                      <Plus className="w-3 h-3" />
-                      {tBilingual('Add Document Scan', 'ডকুমেন্ট যোগ করুন')}
-                    </Button>
+                {/* Media & Identity Document Scans (Multiple) Dropzone & File Suite */}
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                    <div>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Paperclip className="w-3.5 h-3.5 text-blue-600" />
+                        {tBilingual('Media & Identity Documents (Multiple Scans)', 'জাতীয় পরিচয়পত্র ও ডকুমেন্ট স্ক্যান')}
+                      </h5>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {tBilingual(
+                          'Attach NID card scans, passport, joining contract, educational certificates or CV',
+                          'ভোটার আইডি, পাসপোর্ট, নিয়োগ চুক্তি ও শিক্ষাগত সনদপত্র যুক্ত করুন'
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label
+                        htmlFor="multi-doc-upload"
+                        className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shadow-xs hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{tBilingual('Upload Files', 'ফাইল আপলোড')}</span>
+                      </label>
+                      <input
+                        id="multi-doc-upload"
+                        type="file"
+                        multiple
+                        accept=".pdf,image/png,image/jpeg,image/webp,image/jpg,.doc,.docx,.xls,.xlsx"
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            handleDocumentFiles(e.target.files)
+                            e.target.value = ''
+                          }
+                        }}
+                      />
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const newDoc = {
+                            id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+                            name: `Document_${empForm.document_attachments.length + 1}.pdf`,
+                            type: 'National ID / Smart Card',
+                            size: 'Manual Entry',
+                            uploaded_at: new Date().toISOString(),
+                          }
+                          setEmpForm({
+                            ...empForm,
+                            document_attachments: [...empForm.document_attachments, newDoc],
+                          })
+                        }}
+                        className="text-xs h-7 gap-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span className="hidden sm:inline">{tBilingual('Add Row', 'সারি')}</span>
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
+                  {/* Interactive Drag & Drop Area */}
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      setIsDragOverDocs(true)
+                    }}
+                    onDragLeave={() => setIsDragOverDocs(false)}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setIsDragOverDocs(false)
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        handleDocumentFiles(e.dataTransfer.files)
+                      }
+                    }}
+                    className={`border-2 border-dashed rounded-xl p-4 text-center transition-all flex flex-col items-center justify-center gap-2 ${
+                      isDragOverDocs
+                        ? 'border-blue-500 bg-blue-500/10 dark:bg-blue-950/40 scale-[0.99]'
+                        : 'border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 hover:border-blue-400 hover:bg-blue-50/30'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-xs">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        {tBilingual('Drag & drop document scans here, or', 'ডকুমেন্ট ফাইল টেনে এখানে ফেলুন, অথবা')}{' '}
+                        <label
+                          htmlFor="multi-doc-upload"
+                          className="text-blue-600 dark:text-blue-400 underline cursor-pointer hover:text-blue-700 font-bold"
+                        >
+                          {tBilingual('click to browse', 'ক্লিক করুন')}
+                        </label>
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        PDF, JPG, PNG, WEBP, DOCX (Up to 10MB per file • Multi-file upload supported)
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Document List */}
+                  <div className="space-y-2 pt-1">
                     {empForm.document_attachments.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic py-2 text-center">
-                        {tBilingual('No document scans attached yet. Click Add Document Scan to attach NID or contracts.', 'কোনো ডকুমেন্ট স্ক্যান সংযুক্ত নেই।')}
+                      <p className="text-xs text-slate-400 italic py-3 text-center bg-slate-50/50 dark:bg-slate-900/30 rounded-lg border border-slate-100 dark:border-slate-800">
+                        {tBilingual(
+                          'No document scans attached yet. Use the upload area above to attach NID or contract scans.',
+                          'কোনো ডকুমেন্ট স্ক্যান সংযুক্ত নেই। উপরে ফাইল আপলোড করুন।'
+                        )}
                       </p>
                     ) : (
-                      empForm.document_attachments.map((doc, idx) => (
-                        <div
-                          key={doc.id || idx}
-                          className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 text-xs"
-                        >
-                          <FileCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                          <Input
-                            placeholder="Document name"
-                            value={doc.name}
-                            onChange={(e) => {
-                              const updated = [...empForm.document_attachments]
-                              updated[idx] = { ...updated[idx], name: e.target.value }
-                              setEmpForm({ ...empForm, document_attachments: updated })
-                            }}
-                            className="h-8 text-xs flex-1"
-                          />
-                          <select
-                            value={doc.type}
-                            onChange={(e) => {
-                              const updated = [...empForm.document_attachments]
-                              updated[idx] = { ...updated[idx], type: e.target.value }
-                              setEmpForm({ ...empForm, document_attachments: updated })
-                            }}
-                            className="h-8 text-xs px-2 rounded-md border border-input bg-background text-foreground"
+                      empForm.document_attachments.map((doc, idx) => {
+                        const isImage =
+                          doc.url?.startsWith('data:image') ||
+                          Boolean(doc.name && doc.name.match(/\.(jpg|jpeg|png|webp|gif)$/i))
+                        const isPdf =
+                          doc.url?.startsWith('data:application/pdf') ||
+                          Boolean(doc.name && doc.name.match(/\.pdf$/i))
+
+                        return (
+                          <div
+                            key={doc.id || idx}
+                            className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs transition-all hover:border-slate-300 dark:hover:border-slate-700"
                           >
-                            <option value="National ID">NID / Smart Card</option>
-                            <option value="Employment Contract">Appointment Contract</option>
-                            <option value="Educational Certificate">Educational Certificate</option>
-                            <option value="Driving / Trade License">Trade License</option>
-                            <option value="Other">Other Document</option>
-                          </select>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEmpForm({
-                                ...empForm,
-                                document_attachments: empForm.document_attachments.filter((_, i) => i !== idx),
-                              })
-                            }}
-                            className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                          >
-                            <Trash className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      ))
+                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                              {/* Thumbnail / Icon */}
+                              {isImage && doc.url ? (
+                                <img
+                                  src={doc.url}
+                                  alt={doc.name}
+                                  className="w-10 h-10 rounded-lg object-cover ring-1 ring-blue-500/30 shrink-0 cursor-pointer shadow-xs"
+                                  onClick={() => setPreviewDoc(doc)}
+                                />
+                              ) : (
+                                <div
+                                  className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 shadow-xs ${
+                                    isPdf
+                                      ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-900'
+                                      : 'bg-blue-100 dark:bg-blue-950/60 text-blue-600 border border-blue-200 dark:border-blue-900'
+                                  }`}
+                                >
+                                  {isPdf ? 'PDF' : <FileCheck className="w-5 h-5" />}
+                                </div>
+                              )}
+
+                              <div className="flex-1 min-w-0 space-y-1">
+                                <Input
+                                  placeholder="Document name"
+                                  value={doc.name}
+                                  onChange={(e) => {
+                                    const updated = [...empForm.document_attachments]
+                                    updated[idx] = { ...updated[idx], name: e.target.value }
+                                    setEmpForm({ ...empForm, document_attachments: updated })
+                                  }}
+                                  className="h-7 text-xs px-2 font-medium"
+                                />
+                                <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                                  {doc.size && (
+                                    <span className="font-mono bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 font-semibold">
+                                      {doc.size}
+                                    </span>
+                                  )}
+                                  <span>{doc.url ? '✓ Media file attached' : 'Record only'}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <select
+                                value={doc.type}
+                                onChange={(e) => {
+                                  const updated = [...empForm.document_attachments]
+                                  updated[idx] = { ...updated[idx], type: e.target.value }
+                                  setEmpForm({ ...empForm, document_attachments: updated })
+                                }}
+                                className="h-7 text-xs px-2 rounded-md border border-input bg-background text-foreground"
+                              >
+                                <option value="National ID / Smart Card">NID / Smart Card (জাতীয় পরিচয়পত্র)</option>
+                                <option value="International Passport">Passport (পাসপোর্ট)</option>
+                                <option value="Employment Contract">Appointment Contract (নিয়োগ চুক্তি)</option>
+                                <option value="Educational Certificate">Educational Certificate (সনদপত্র)</option>
+                                <option value="Driving / Trade License">Driving / Trade License (লাইসেন্স)</option>
+                                <option value="Police Clearance / Reference">Police Clearance (চারিত্রিক সনদ)</option>
+                                <option value="Resume / CV">Resume / CV (জীবনবৃত্তান্ত)</option>
+                                <option value="Other">Other Document (অন্যান্য)</option>
+                              </select>
+
+                              {doc.url && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setPreviewDoc(doc)}
+                                  className="h-7 px-2 text-xs gap-1 text-blue-600 dark:text-blue-400"
+                                  title="Preview Document"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span className="hidden sm:inline">Preview</span>
+                                </Button>
+                              )}
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEmpForm({
+                                    ...empForm,
+                                    document_attachments: empForm.document_attachments.filter((_, i) => i !== idx),
+                                  })
+                                }}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Remove Document"
+                              >
+                                <Trash className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        )
+                      })
                     )}
                   </div>
                 </div>
@@ -3649,25 +3944,78 @@ export default function EmployeeListPage() {
                   </h4>
                   {selectedEmployee.document_attachments && selectedEmployee.document_attachments.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {selectedEmployee.document_attachments.map((doc, idx) => (
-                        <div
-                          key={doc.id || idx}
-                          className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 flex items-center justify-between"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <FileCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                            <div className="min-w-0">
-                              <p className="font-semibold text-slate-900 dark:text-white truncate text-xs">{doc.name}</p>
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
-                                {doc.type}
-                              </Badge>
+                      {selectedEmployee.document_attachments.map((doc, idx) => {
+                        const isImage =
+                          doc.url?.startsWith('data:image') ||
+                          Boolean(doc.name && doc.name.match(/\.(jpg|jpeg|png|webp|gif)$/i))
+                        const isPdf =
+                          doc.url?.startsWith('data:application/pdf') ||
+                          Boolean(doc.name && doc.name.match(/\.pdf$/i))
+
+                        return (
+                          <div
+                            key={doc.id || idx}
+                            className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 flex items-center justify-between gap-2.5"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {isImage && doc.url ? (
+                                <img
+                                  src={doc.url}
+                                  alt={doc.name}
+                                  className="w-9 h-9 rounded-lg object-cover ring-1 ring-blue-500/30 shrink-0 cursor-pointer"
+                                  onClick={() => setPreviewDoc(doc)}
+                                />
+                              ) : (
+                                <div
+                                  className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                                    isPdf
+                                      ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-900'
+                                      : 'bg-blue-100 dark:bg-blue-950/60 text-blue-600 border border-blue-200 dark:border-blue-900'
+                                  }`}
+                                >
+                                  {isPdf ? 'PDF' : <FileCheck className="w-4 h-4 text-blue-600" />}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-900 dark:text-white truncate text-xs">{doc.name}</p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+                                    {doc.type}
+                                  </Badge>
+                                  {doc.size && <span className="text-[10px] text-slate-400 font-mono">{doc.size}</span>}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              {doc.url && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-xs px-2 gap-1 text-blue-600 dark:text-blue-400"
+                                  onClick={() => setPreviewDoc(doc)}
+                                  title="View Document"
+                                >
+                                  <Eye className="w-3 h-3" />
+                                  <span>View</span>
+                                </Button>
+                              )}
+                              {doc.url && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                                  asChild
+                                >
+                                  <a href={doc.url} download={doc.name} target="_blank" rel="noreferrer" title="Download Document">
+                                    <Download className="w-3.5 h-3.5" />
+                                  </a>
+                                </Button>
+                              )}
                             </div>
                           </div>
-                          <Badge variant="outline" className="bg-white dark:bg-slate-950 text-[10px] text-slate-500">
-                            Verified Scan
-                          </Badge>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   ) : (
                     <p className="text-slate-500 italic py-1">
@@ -3782,6 +4130,84 @@ export default function EmployeeListPage() {
                   className="text-xs h-9"
                 >
                   {tBilingual('Close', 'বন্ধ করুন')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </ModalDialog>
+      )}
+
+      {/* Document Preview Lightbox Modal */}
+      {previewDoc && (
+        <ModalDialog
+          open={!!previewDoc}
+          onOpenChange={(open) => {
+            if (!open) setPreviewDoc(null)
+          }}
+          hideFooter={true}
+          title={
+            <div className="flex items-center justify-between w-full pr-6">
+              <div className="flex items-center gap-2">
+                <FileCheck className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-md">
+                  {previewDoc.name}
+                </span>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200">
+                  {previewDoc.type}
+                </Badge>
+              </div>
+            </div>
+          }
+          size="4xl"
+        >
+          <div className="space-y-3">
+            <div className="p-2 rounded-xl bg-slate-950 flex items-center justify-center min-h-[360px] max-h-[70vh] overflow-auto">
+              {previewDoc.url?.startsWith('data:image') || (previewDoc.name && previewDoc.name.match(/\.(jpg|jpeg|png|webp|gif)$/i)) ? (
+                <img
+                  src={previewDoc.url}
+                  alt={previewDoc.name}
+                  className="max-h-[65vh] max-w-full object-contain rounded-lg shadow-lg"
+                />
+              ) : previewDoc.url?.startsWith('data:application/pdf') || (previewDoc.name && previewDoc.name.match(/\.pdf$/i)) ? (
+                <iframe
+                  src={previewDoc.url}
+                  title={previewDoc.name}
+                  className="w-full h-[65vh] rounded-lg bg-white"
+                />
+              ) : (
+                <div className="text-center py-12 text-slate-400 space-y-2">
+                  <FileText className="w-12 h-12 mx-auto text-slate-500" />
+                  <p className="text-sm">Preview not supported directly in browser for this file type.</p>
+                  <p className="text-xs text-slate-500">Click Download below to open this document on your device.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-slate-500">
+                {previewDoc.size ? `File Size: ${previewDoc.size}` : 'Document Attachment'}
+              </span>
+              <div className="flex items-center gap-2">
+                {previewDoc.url && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-8 gap-1.5 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
+                    asChild
+                  >
+                    <a href={previewDoc.url} download={previewDoc.name} target="_blank" rel="noreferrer">
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download</span>
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPreviewDoc(null)}
+                  className="text-xs h-8"
+                >
+                  Close Preview
                 </Button>
               </div>
             </div>
