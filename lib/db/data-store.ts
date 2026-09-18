@@ -222,6 +222,10 @@ export const STORAGE_KEYS = {
   GATEWAY_TRANSACTIONS: 'printerp_gateway_transactions',
   SAAS_INVOICES: 'printerp_saas_invoices',
   PRODUCT_CATEGORIES: 'printerp_tenant_product_categories',
+  WF_ATTENDANCE_SUMMARIES: 'printerp_tenant_wf_att_summaries',
+  WF_OVERTIME_RECORDS: 'printerp_tenant_wf_ot_records',
+  WF_SALARY_PAYMENTS: 'printerp_tenant_wf_salary_payments',
+  WF_AUDIT_LOGS: 'printerp_tenant_wf_audit_logs',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
