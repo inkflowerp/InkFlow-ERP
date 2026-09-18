@@ -392,147 +392,163 @@ export default function AttendancePage() {
       />
 
       {/* Date Navigator Bar & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/20 border border-border/60 rounded-xl p-3">
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5">
-          <Button
-            size="sm"
-            variant={activeTab === 'roster' ? 'secondary' : 'ghost'}
-            onClick={() => setActiveTab('roster')}
-            className="text-xs h-8 gap-1.5"
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            {tBilingual('Floor Roster', 'দৈনিক হাজিরা তালিকা')}
-          </Button>
+      <Card className="p-3 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          {/* Navigation Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            <button
+              type="button"
+              onClick={() => setActiveTab('roster')}
+              className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeTab === 'roster'
+                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>{tBilingual('Floor Roster', 'দৈনিক হাজিরা তালিকা')}</span>
+            </button>
 
-          <Button
-            size="sm"
-            variant={activeTab === 'overtime' ? 'secondary' : 'ghost'}
-            onClick={() => setActiveTab('overtime')}
-            className="text-xs h-8 gap-1.5"
-          >
-            <Clock className="w-3.5 h-3.5" />
-            {tBilingual('Overtime Approvals', 'ওভারটাইম অনুমোদন')}
-            {overtimeRecords.filter((o) => o.status === 'pending_approval').length > 0 && (
-              <Badge variant="outline" className="text-[10px] px-1 bg-amber-500/20 text-amber-600 border-amber-500/40">
-                {overtimeRecords.filter((o) => o.status === 'pending_approval').length}
-              </Badge>
-            )}
-          </Button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('overtime')}
+              className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeTab === 'overtime'
+                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>{tBilingual('Overtime Approvals', 'ওভারটাইম অনুমোদন')}</span>
+              {overtimeRecords.filter((o) => o.status === 'pending_approval').length > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                  activeTab === 'overtime'
+                    ? 'bg-amber-400 text-slate-900 font-bold'
+                    : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 font-bold'
+                }`}>
+                  {overtimeRecords.filter((o) => o.status === 'pending_approval').length}
+                </span>
+              )}
+            </button>
 
-          <Button
-            size="sm"
-            variant={activeTab === 'shifts' ? 'secondary' : 'ghost'}
-            onClick={() => setActiveTab('shifts')}
-            className="text-xs h-8 gap-1.5"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            {tBilingual('Shift Config', 'শিফট কনফিগ')}
-          </Button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('shifts')}
+              className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeTab === 'shifts'
+                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>{tBilingual('Shift Config', 'শিফট কনফিগ')}</span>
+            </button>
+          </div>
+
+          {/* Date Controls */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-slate-200 dark:border-slate-800" onClick={handlePrevDay} title="Previous Day">
+              <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+            </Button>
+
+            <Input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="text-xs h-8 w-36 font-medium border-slate-200 dark:border-slate-800"
+            />
+
+            <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-slate-200 dark:border-slate-800" onClick={handleNextDay} title="Next Day">
+              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+            </Button>
+
+            <Button size="sm" variant="secondary" className="text-xs h-8 px-2.5 font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" onClick={handleToday}>
+              {tBilingual('Today', 'আজ')}
+            </Button>
+          </div>
         </div>
-
-        {/* Date Controls */}
-        <div className="flex items-center gap-1.5">
-          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={handlePrevDay} title="Previous Day">
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-
-          <Input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="text-xs h-8 w-36"
-          />
-
-          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={handleNextDay} title="Next Day">
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-
-          <Button size="sm" variant="secondary" className="text-xs h-8 px-2.5" onClick={handleToday}>
-            {tBilingual('Today', 'আজ')}
-          </Button>
-        </div>
-      </div>
+      </Card>
 
       {/* Tab 1: Floor Attendance Daily Roster */}
       {activeTab === 'roster' && (
         <div className="space-y-4">
           {/* Top KPI Metrics Row for Selected Date */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm">
-              <span className="text-[11px] text-muted-foreground uppercase font-medium">
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
                 {tBilingual('Present', 'উপস্থিত')}
               </span>
-              <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+              <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
                 {presentCount}
               </div>
-            </div>
+            </Card>
 
-            <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm">
-              <span className="text-[11px] text-muted-foreground uppercase font-medium">
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
                 {tBilingual('Late Check-ins', 'দেরিতে প্রবেশ')}
               </span>
-              <div className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+              <div className="text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5">
                 {lateCount}
               </div>
-            </div>
+            </Card>
 
-            <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm">
-              <span className="text-[11px] text-muted-foreground uppercase font-medium">
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
                 {tBilingual('Absent', 'অনুপস্থিত')}
               </span>
-              <div className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+              <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-0.5">
                 {absentCount}
               </div>
-            </div>
+            </Card>
 
-            <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm">
-              <span className="text-[11px] text-muted-foreground uppercase font-medium">
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
                 {tBilingual('On Leave', 'ছুটিতে')}
               </span>
-              <div className="text-xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">
+              <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-0.5">
                 {leaveCount}
               </div>
-            </div>
+            </Card>
 
-            <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm">
-              <span className="text-[11px] text-muted-foreground uppercase font-medium">
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
                 {tBilingual('Field Work', 'বাইরের কাজ')}
               </span>
-              <div className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-0.5">
+              <div className="text-xl font-black text-blue-600 dark:text-blue-400 mt-0.5">
                 {fieldCount}
               </div>
-            </div>
+            </Card>
 
-            <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm">
-              <span className="text-[11px] text-muted-foreground uppercase font-medium">
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
                 {tBilingual('Potential OT', 'সম্ভাব্য ওভারটাইম')}
               </span>
-              <div className="text-xl font-bold text-foreground mt-0.5">
+              <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
                 {Math.round(totalPotentialOtMins / 60 * 10) / 10}h
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* Search & Filter Bar */}
-          <Card className="border-border/60 shadow-sm">
-            <CardContent className="p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex flex-1 flex-wrap items-center gap-2.5 w-full">
-                <div className="relative flex-1 min-w-[180px]">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                   <Input
                     placeholder={tBilingual('Search employee...', 'কর্মী খুঁজুন...')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 text-xs h-8"
+                    className="pl-9 text-xs h-8 font-medium"
                   />
                 </div>
 
+                {/* Status Filter */}
                 <select
                   aria-label="Filter roster by status"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="h-8 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+                  className="h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-medium"
                 >
                   <option value="ALL">{tBilingual('All Statuses', 'সব স্ট্যাটাস')}</option>
                   <option value="present">{tBilingual('Present', 'উপস্থিত')}</option>
@@ -544,11 +560,12 @@ export default function AttendancePage() {
                   <option value="unmarked">{tBilingual('Unmarked', 'হাজিরা দেওয়া হয়নি')}</option>
                 </select>
 
+                {/* Department Filter */}
                 <select
                   aria-label="Filter roster by department"
                   value={deptFilter}
                   onChange={(e) => setDeptFilter(e.target.value)}
-                  className="h-8 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+                  className="h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-medium"
                 >
                   <option value="ALL">{tBilingual('All Departments', 'সব বিভাগ')}</option>
                   <option value="printing">{tBilingual('Printing', 'প্রিন্টিং')}</option>
@@ -560,18 +577,28 @@ export default function AttendancePage() {
                 </select>
               </div>
 
-              <div className="text-xs text-muted-foreground font-mono">
-                Date: {formatDate(selectedDate)}
+              <div className="text-xs text-slate-500 font-mono">
+                Date: <strong>{formatDate(selectedDate)}</strong>
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           {/* Roster Table */}
-          <Card className="border-border/60 shadow-sm overflow-hidden">
+          <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
+            <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                  {tBilingual('Daily Floor Attendance Roster', 'দৈনিক ফ্লোর হাজিরা তালিকা')}
+                </CardTitle>
+                <Badge variant="outline" className="text-xs font-mono">
+                  {combinedRoster.length} employees
+                </Badge>
+              </div>
+            </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-border bg-muted/40 font-medium text-muted-foreground">
+                  <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
                     <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
                     <th className="p-3.5">{tBilingual('Shift', 'শিফট')}</th>
                     <th className="p-3.5">{tBilingual('Check In', 'প্রবেশ')}</th>
@@ -583,45 +610,45 @@ export default function AttendancePage() {
                     <th className="p-3.5 pr-4 text-right">{tBilingual('Actions', 'পদক্ষেপ')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/40">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                   {combinedRoster.map(({ emp, att }) => (
-                    <tr key={emp.id} className="hover:bg-muted/30 transition-colors">
+                    <tr key={emp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
                       <td className="p-3.5 pl-4">
-                        <div className="font-semibold text-foreground">{emp.name}</div>
-                        <div className="text-[11px] text-muted-foreground">
+                        <div className="font-semibold text-slate-900 dark:text-white">{emp.name}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
                           {emp.employee_id_number} • <span className="capitalize">{emp.department}</span>
                         </div>
                       </td>
 
-                      <td className="p-3.5 text-muted-foreground">
+                      <td className="p-3.5 text-slate-500 dark:text-slate-400">
                         {att?.shift_name || 'Regular Shift (09:00 - 18:00)'}
                       </td>
 
                       <td className="p-3.5 font-mono">
                         {att?.check_in_time ? (
-                          <span className="font-semibold text-foreground">{att.check_in_time}</span>
+                          <span className="font-semibold text-slate-900 dark:text-white">{att.check_in_time}</span>
                         ) : (
-                          <span className="text-muted-foreground">--:--</span>
+                          <span className="text-slate-400">--:--</span>
                         )}
                       </td>
 
                       <td className="p-3.5 font-mono">
                         {att?.check_out_time ? (
-                          <span className="font-semibold text-foreground">{att.check_out_time}</span>
+                          <span className="font-semibold text-slate-900 dark:text-white">{att.check_out_time}</span>
                         ) : att?.check_in_time ? (
-                          <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                          <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                             On Floor
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground">--:--</span>
+                          <span className="text-slate-400">--:--</span>
                         )}
                       </td>
 
-                      <td className="p-3.5 font-mono">
+                      <td className="p-3.5 font-mono text-slate-700 dark:text-slate-300">
                         {att?.worked_minutes ? (
                           <span>{Math.round((att.worked_minutes / 60) * 10) / 10} hrs</span>
                         ) : (
-                          <span className="text-muted-foreground">0 hrs</span>
+                          <span className="text-slate-400">0 hrs</span>
                         )}
                       </td>
 
@@ -638,13 +665,13 @@ export default function AttendancePage() {
                             </div>
                           ) : null}
                           {!att?.late_minutes && !att?.potential_ot_minutes && (
-                            <span className="text-muted-foreground text-[11px]">-</span>
+                            <span className="text-slate-400 text-[11px]">-</span>
                           )}
                         </div>
                       </td>
 
                       <td className="p-3.5">
-                        <Badge variant="secondary" className="text-[10px] uppercase font-mono px-1.5 py-0">
+                        <Badge variant="secondary" className="text-[10px] uppercase font-mono px-1.5 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                           {att?.attendance_source || 'manual'}
                         </Badge>
                       </td>
@@ -655,18 +682,20 @@ export default function AttendancePage() {
                             variant="outline"
                             className={`text-[10px] px-2 py-0.5 capitalize ${
                               att.status === 'present'
-                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                                 : att.status === 'late'
-                                ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
                                 : att.status === 'absent'
-                                ? 'bg-rose-500/10 text-rose-600 border-rose-500/30'
-                                : 'bg-blue-500/10 text-blue-600 border-blue-500/30'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+                                : att.status === 'leave'
+                                ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
+                                : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
                             }`}
                           >
                             {att.status}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[10px] text-muted-foreground border-dashed">
+                          <Badge variant="outline" className="text-[10px] text-slate-400 border-dashed border-slate-300 dark:border-slate-700">
                             Unmarked
                           </Badge>
                         )}
@@ -676,7 +705,7 @@ export default function AttendancePage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 text-xs text-primary hover:underline px-2"
+                          className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30 px-2 font-medium"
                           onClick={() => handleOpenManualModal(emp, att || undefined)}
                         >
                           {att ? tBilingual('Edit', 'সম্পাদন') : tBilingual('Mark', 'হাজিরা দিন')}
@@ -696,77 +725,77 @@ export default function AttendancePage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-foreground">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                 {tBilingual('Overtime Requests & Approvals Queue', 'ওভারটাইম অনুমোদন ও নিয়ন্ত্রণ')}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {tBilingual('Review, adjust multiplier and approve floor overtime hours before payroll closing', 'পেরোল ক্লোজিংয়ের আগে ওভারটাইম ঘণ্টা ও গুণক অনুমোদন করুন')}
               </p>
             </div>
 
-            <Button size="sm" onClick={() => setIsOtModalOpen(true)} className="gap-1.5 text-xs h-9">
+            <Button size="sm" onClick={() => setIsOtModalOpen(true)} className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-xs font-semibold">
               <Plus className="w-3.5 h-3.5" />
               {tBilingual('Submit Overtime Request', 'ওভারটাইম আবেদন')}
             </Button>
           </div>
 
           {overtimeRecords.length === 0 ? (
-            <Card className="p-12 text-center border-dashed">
-              <Clock className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <h4 className="text-base font-bold text-foreground">{tBilingual('No overtime records found', 'কোন ওভারটাইম তথ্য পাওয়া যায়নি')}</h4>
-              <p className="text-xs text-muted-foreground mt-1">{tBilingual('Submit an overtime request for floor staff when completing rush orders.', 'জরুরি অর্ডারের ক্ষেত্রে কর্মীদের ওভারটাইম আবেদন জমা দিন।')}</p>
+            <Card className="p-12 text-center border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <Clock className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">{tBilingual('No overtime records found', 'কোন ওভারটাইম তথ্য পাওয়া যায়নি')}</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{tBilingual('Submit an overtime request for floor staff when completing rush orders.', 'জরুরি অর্ডারের ক্ষেত্রে কর্মীদের ওভারটাইম আবেদন জমা দিন।')}</p>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {overtimeRecords.map((ot) => (
-                <Card key={ot.id} className="border-border/60 shadow-sm space-y-3 p-4">
+                <Card key={ot.id} className="border-slate-200 dark:border-slate-800 shadow-xs bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all space-y-3 p-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="font-bold text-sm text-foreground">{ot.employee_name}</h4>
-                      <p className="text-xs text-muted-foreground">{formatDate(ot.ot_date)}</p>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white">{ot.employee_name}</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(ot.ot_date)}</p>
                     </div>
                     <Badge
                       variant="outline"
                       className={`text-[10px] px-2 py-0.5 capitalize ${
                         ot.status === 'approved'
-                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                           : ot.status === 'pending_approval'
-                          ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                          : 'bg-rose-500/10 text-rose-600 border-rose-500/30'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                          : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
                       }`}
                     >
                       {ot.status.replace('_', ' ')}
                     </Badge>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs space-y-1.5">
+                  <div className="p-3 rounded-lg bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">{tBilingual('Duration:', 'সময়কাল:')}</span>
-                      <span className="font-semibold text-foreground">{Math.round((ot.duration_minutes / 60) * 10) / 10} hrs ({ot.duration_minutes}m)</span>
+                      <span className="text-slate-500 dark:text-slate-400">{tBilingual('Duration:', 'সময়কাল:')}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">{Math.round((ot.duration_minutes / 60) * 10) / 10} hrs ({ot.duration_minutes}m)</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">{tBilingual('Multiplier:', 'গুণক:')}</span>
-                      <span className="font-mono font-medium">{ot.multiplier}x</span>
+                      <span className="text-slate-500 dark:text-slate-400">{tBilingual('Multiplier:', 'গুণক:')}</span>
+                      <span className="font-mono font-medium text-slate-800 dark:text-slate-200">{ot.multiplier}x</span>
                     </div>
-                    <div className="flex justify-between border-t border-border/40 pt-1">
-                      <span className="text-muted-foreground font-medium">{tBilingual('Calculated Payout:', 'প্রদেয় অর্থ:')}</span>
+                    <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1.5">
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">{tBilingual('Calculated Payout:', 'প্রদেয় অর্থ:')}</span>
                       <span className="font-bold text-amber-600 dark:text-amber-400">{formatBDT(ot.calculated_amount || 0)}</span>
                     </div>
                   </div>
 
                   {ot.reason && (
-                    <p className="text-xs text-muted-foreground italic bg-muted/30 p-2 rounded">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-900/60 p-2 rounded-md border border-slate-100 dark:border-slate-800">
                       &ldquo;{ot.reason}&rdquo;
                     </p>
                   )}
 
                   {ot.status === 'pending_approval' && (
-                    <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                       <Button
                         size="sm"
                         onClick={() => handleReviewOt(ot.id, 'approved', 1.5)}
                         disabled={isPending}
-                        className="h-8 text-xs flex-1 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                        className="h-8 text-xs flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-1 shadow-xs"
                       >
                         <Check className="w-3.5 h-3.5" />
                         {tBilingual('Approve 1.5x', 'অনুমোদন')}
@@ -776,7 +805,7 @@ export default function AttendancePage() {
                         variant="outline"
                         onClick={() => handleReviewOt(ot.id, 'rejected')}
                         disabled={isPending}
-                        className="h-8 text-xs text-rose-600 hover:bg-rose-500/10 border-rose-500/30 gap-1"
+                        className="h-8 text-xs text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30 border-rose-200 dark:border-rose-800 gap-1 font-semibold"
                       >
                         <X className="w-3.5 h-3.5" />
                         {tBilingual('Reject', 'বাতিল')}
@@ -795,15 +824,15 @@ export default function AttendancePage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-foreground">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                 {tBilingual('Shop Floor Work Shifts', 'কারখানার কাজের শিফট')}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {tBilingual('Define factory operating hours, grace period and overnight schedules', 'কারখানার কাজের সময়, শিফট শুরু-শেষ ও গ্রেস পিরিয়ড নির্ধারণ')}
               </p>
             </div>
 
-            <Button size="sm" onClick={() => setIsNewShiftModalOpen(true)} className="gap-1.5 text-xs h-9">
+            <Button size="sm" onClick={() => setIsNewShiftModalOpen(true)} className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-xs font-semibold">
               <Plus className="w-3.5 h-3.5" />
               {tBilingual('Create New Shift', 'নতুন শিফট')}
             </Button>
@@ -811,22 +840,28 @@ export default function AttendancePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {shifts.map((shift) => (
-              <Card key={shift.id} className="border-border/60 shadow-sm p-4 space-y-3">
+              <Card key={shift.id} className="border-slate-200 dark:border-slate-800 shadow-xs bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h4 className="font-bold text-sm text-foreground">{shift.shift_name}</h4>
-                    <p className="text-xs text-muted-foreground font-mono">
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">{shift.shift_name}</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                       {shift.start_time} → {shift.end_time}
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+                  <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                     Active
                   </Badge>
                 </div>
 
-                <div className="text-xs text-muted-foreground space-y-1 bg-muted/20 p-2.5 rounded border border-border/40">
-                  <div>Grace Period: <strong>{shift.grace_period_minutes || 15} mins</strong></div>
-                  <div>Overnight Shift: <strong>{shift.is_overnight ? 'Yes' : 'No'}</strong></div>
+                <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 bg-slate-50/50 dark:bg-slate-900/30 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Grace Period:</span>
+                    <strong className="text-slate-800 dark:text-slate-200">{shift.grace_period_minutes || 15} mins</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Overnight Shift:</span>
+                    <strong className="text-slate-800 dark:text-slate-200">{shift.is_overnight ? 'Yes' : 'No'}</strong>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -850,7 +885,7 @@ export default function AttendancePage() {
               <select
                 value={manualForm.employeeId}
                 onChange={(e) => setManualForm({ ...manualForm, employeeId: e.target.value })}
-                className="w-full h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+                className="w-full h-9 text-xs px-2.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="">{tBilingual('-- Select Employee --', '-- কর্মী নির্বাচন করুন --')}</option>
                 {employees.map((emp) => (
@@ -868,7 +903,7 @@ export default function AttendancePage() {
                   type="date"
                   value={manualForm.attendanceDate}
                   onChange={(e) => setManualForm({ ...manualForm, attendanceDate: e.target.value })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
 
@@ -877,7 +912,7 @@ export default function AttendancePage() {
                 <select
                   value={manualForm.status}
                   onChange={(e) => setManualForm({ ...manualForm, status: e.target.value as any })}
-                  className="w-full h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+                  className="w-full h-9 text-xs px-2.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 >
                   <option value="present">{tBilingual('Present', 'উপস্থিত')}</option>
                   <option value="late">{tBilingual('Late', 'দেরি')}</option>
@@ -894,7 +929,7 @@ export default function AttendancePage() {
                   type="time"
                   value={manualForm.checkInTime}
                   onChange={(e) => setManualForm({ ...manualForm, checkInTime: e.target.value })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
 
@@ -904,7 +939,7 @@ export default function AttendancePage() {
                   type="time"
                   value={manualForm.checkOutTime}
                   onChange={(e) => setManualForm({ ...manualForm, checkOutTime: e.target.value })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
             </div>
@@ -915,17 +950,17 @@ export default function AttendancePage() {
                 placeholder="e.g. Floor manual entry after late evening delivery"
                 value={manualForm.notes}
                 onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsManualModalOpen(false)}
                 disabled={isPending}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               >
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
@@ -933,7 +968,7 @@ export default function AttendancePage() {
                 size="sm"
                 onClick={handleSaveManualAttendance}
                 disabled={isPending}
-                className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+                className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5 shadow-xs"
               >
                 {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 {tBilingual('Save Record', 'সংরক্ষণ')}
@@ -959,7 +994,7 @@ export default function AttendancePage() {
               <select
                 value={otForm.employeeId}
                 onChange={(e) => setOtForm({ ...otForm, employeeId: e.target.value })}
-                className="w-full h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+                className="w-full h-9 text-xs px-2.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="">{tBilingual('-- Select Employee --', '-- কর্মী নির্বাচন করুন --')}</option>
                 {employees.map((emp) => (
@@ -977,7 +1012,7 @@ export default function AttendancePage() {
                   type="date"
                   value={otForm.otDate}
                   onChange={(e) => setOtForm({ ...otForm, otDate: e.target.value })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
 
@@ -987,7 +1022,7 @@ export default function AttendancePage() {
                   type="number"
                   value={otForm.durationMinutes}
                   onChange={(e) => setOtForm({ ...otForm, durationMinutes: Number(e.target.value) })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
             </div>
@@ -998,17 +1033,17 @@ export default function AttendancePage() {
                 placeholder="e.g. Urgent billboard print & finishing run"
                 value={otForm.reason}
                 onChange={(e) => setOtForm({ ...otForm, reason: e.target.value })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsOtModalOpen(false)}
                 disabled={isPending}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               >
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
@@ -1016,7 +1051,7 @@ export default function AttendancePage() {
                 size="sm"
                 onClick={handleSaveOtRequest}
                 disabled={isPending}
-                className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+                className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5 shadow-xs"
               >
                 {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 {tBilingual('Submit Request', 'আবেদন করুন')}
@@ -1043,7 +1078,7 @@ export default function AttendancePage() {
                 placeholder="e.g. Morning Production Shift"
                 value={shiftForm.shift_name}
                 onChange={(e) => setShiftForm({ ...shiftForm, shift_name: e.target.value })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
@@ -1054,7 +1089,7 @@ export default function AttendancePage() {
                   type="time"
                   value={shiftForm.start_time}
                   onChange={(e) => setShiftForm({ ...shiftForm, start_time: e.target.value })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
 
@@ -1064,7 +1099,7 @@ export default function AttendancePage() {
                   type="time"
                   value={shiftForm.end_time}
                   onChange={(e) => setShiftForm({ ...shiftForm, end_time: e.target.value })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
             </div>
@@ -1075,17 +1110,17 @@ export default function AttendancePage() {
                 type="number"
                 value={shiftForm.grace_period_minutes}
                 onChange={(e) => setShiftForm({ ...shiftForm, grace_period_minutes: Number(e.target.value) })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsNewShiftModalOpen(false)}
                 disabled={isPending}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               >
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
@@ -1093,7 +1128,7 @@ export default function AttendancePage() {
                 size="sm"
                 onClick={handleCreateShift}
                 disabled={isPending}
-                className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+                className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5 shadow-xs"
               >
                 {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 {tBilingual('Save Shift', 'সংরক্ষণ')}

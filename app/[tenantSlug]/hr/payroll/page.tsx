@@ -85,6 +85,7 @@ export default function PayrollPage() {
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PAID' | 'PARTIAL' | 'UNPAID'>('ALL')
 
   // Modals
   const [isGenPayrollModalOpen, setIsGenPayrollModalOpen] = useState(false)
@@ -297,8 +298,35 @@ export default function PayrollPage() {
   const totalDue = Number(currentPeriod?.total_due_amount || (totalNet - totalPaid))
   const totalAdvanceOutstanding = employees.reduce((sum, e) => sum + Number(e.current_advance_balance || 0), 0)
 
+  // Filtered Payroll Items
+  const filteredPayrollItems = React.useMemo(() => {
+    if (!selectedPeriod?.items) return []
+    return selectedPeriod.items.filter((item) => {
+      const isFullyPaid = Number(item.due_amount || 0) <= 0 && Number(item.paid_amount || 0) > 0
+      const isPartial = Number(item.paid_amount || 0) > 0 && Number(item.due_amount || 0) > 0
+      const isUnpaid = Number(item.paid_amount || 0) === 0
+
+      const matchesSearch =
+        !searchTerm.trim() ||
+        item.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        Boolean(item.employee_id_number && item.employee_id_number.toLowerCase().includes(searchTerm.toLowerCase()))
+
+      let matchesStatus = true
+      if (statusFilter === 'PAID') matchesStatus = isFullyPaid
+      else if (statusFilter === 'PARTIAL') matchesStatus = isPartial
+      else if (statusFilter === 'UNPAID') matchesStatus = isUnpaid
+
+      return matchesSearch && matchesStatus
+    })
+  }, [selectedPeriod, searchTerm, statusFilter])
+
+  // Count tallies for status filters
+  const paidCount = selectedPeriod?.items?.filter((i) => Number(i.due_amount || 0) <= 0 && Number(i.paid_amount || 0) > 0).length || 0
+  const partialCount = selectedPeriod?.items?.filter((i) => Number(i.paid_amount || 0) > 0 && Number(i.due_amount || 0) > 0).length || 0
+  const unpaidCount = selectedPeriod?.items?.filter((i) => Number(i.paid_amount || 0) === 0).length || 0
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <div className="space-y-5 max-w-7xl mx-auto pb-16">
       {/* Toast Notification */}
       {notification && (
         <div className="fixed bottom-5 right-5 z-50 bg-emerald-950/90 text-emerald-200 border border-emerald-500/40 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 backdrop-blur text-sm font-medium animate-in fade-in slide-in-from-bottom-5">
@@ -326,7 +354,7 @@ export default function PayrollPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsAdvanceModalOpen(true)}
-              className="gap-1.5 text-xs h-9 bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20"
+              className="gap-1.5 text-xs h-9 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
             >
               <DollarSign className="w-3.5 h-3.5" />
               {tBilingual('Disburse Advance', 'অগ্রিম বেতন')}
@@ -335,7 +363,7 @@ export default function PayrollPage() {
             <Button
               size="sm"
               onClick={() => setIsGenPayrollModalOpen(true)}
-              className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-xs bangla-text"
+              className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xs bangla-text"
             >
               <Plus className="w-3.5 h-3.5" />
               {tBilingual('Generate Payroll Draft', 'নতুন বেতন শিট তৈরি')}
@@ -346,205 +374,295 @@ export default function PayrollPage() {
 
       {/* Top 4 KPI Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-border/60 bg-card shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {tBilingual('Gross Payroll', 'মোট বেতন প্রাক্কলন')}
-              </span>
-              <div className="p-2 bg-blue-500/10 text-blue-600 rounded-lg">
-                <Wallet className="w-4 h-4" />
-              </div>
+        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-500 uppercase font-semibold">
+              {tBilingual('Gross Payroll', 'মোট বেতন প্রাক্কলন')}
+            </span>
+            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+              <Wallet className="w-4 h-4" />
             </div>
-            <div className="mt-3">
-              <span className="text-2xl font-bold text-foreground">{formatBDT(totalGross)}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Period: {currentPeriod?.period_name || 'No Active Sheet'}
-            </p>
-          </CardContent>
+          </div>
+          <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+            {formatBDT(totalGross)}
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            Period: {currentPeriod?.period_name || 'No Active Sheet'}
+          </p>
         </Card>
 
-        <Card className="border-border/60 bg-card shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {tBilingual('Net Payable', 'প্রদেয় নিট বেতন')}
-              </span>
-              <div className="p-2 bg-purple-500/10 text-purple-600 rounded-lg">
-                <DollarSign className="w-4 h-4" />
-              </div>
+        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-500 uppercase font-semibold">
+              {tBilingual('Net Payable', 'প্রদেয় নিট বেতন')}
+            </span>
+            <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400">
+              <DollarSign className="w-4 h-4" />
             </div>
-            <div className="mt-3">
-              <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">{formatBDT(totalNet)}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              After Overtime & Advance Deductions
-            </p>
-          </CardContent>
+          </div>
+          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
+            {formatBDT(totalNet)}
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            After Overtime & Advance Deductions
+          </p>
         </Card>
 
-        <Card className="border-border/60 bg-card shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {tBilingual('Paid Disbursed', 'পরিশোধিত বেতন')}
-              </span>
-              <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
+        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-500 uppercase font-semibold">
+              {tBilingual('Paid Disbursed', 'পরিশোধিত বেতন')}
+            </span>
+            <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
-            <div className="mt-3">
-              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatBDT(totalPaid)}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Remaining Due: <strong className="text-rose-600 dark:text-rose-400">{formatBDT(totalDue)}</strong>
-            </p>
-          </CardContent>
+          </div>
+          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+            {formatBDT(totalPaid)}
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            Remaining Due: <strong className="text-rose-600 dark:text-rose-400">{formatBDT(totalDue)}</strong>
+          </p>
         </Card>
 
-        <Card className="border-border/60 bg-card shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {tBilingual('Advances Outstanding', 'বকেয়া অগ্রিম স্থিতি')}
-              </span>
-              <div className="p-2 bg-amber-500/10 text-amber-600 rounded-lg">
-                <Clock className="w-4 h-4" />
-              </div>
+        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-500 uppercase font-semibold">
+              {tBilingual('Advances Outstanding', 'বকেয়া অগ্রিম স্থিতি')}
+            </span>
+            <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+              <Clock className="w-4 h-4" />
             </div>
-            <div className="mt-3">
-              <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">{formatBDT(totalAdvanceOutstanding)}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Active staff advance balances
-            </p>
-          </CardContent>
+          </div>
+          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
+            {formatBDT(totalAdvanceOutstanding)}
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            Active staff advance balances
+          </p>
         </Card>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-border pb-3">
-        <Button
-          size="sm"
-          variant={activeTab === 'periods' ? 'secondary' : 'ghost'}
-          onClick={() => setActiveTab('periods')}
-          className="text-xs h-8 gap-1.5"
-        >
-          <Receipt className="w-3.5 h-3.5" />
-          {tBilingual('Monthly Payroll Sheets', 'মাসিক বেতন শিট')}
-        </Button>
+      {/* Navigation Tabs Bar */}
+      <Card className="p-3 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+          <button
+            type="button"
+            onClick={() => setActiveTab('periods')}
+            className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+              activeTab === 'periods'
+                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            <Receipt className="w-3.5 h-3.5" />
+            <span>{tBilingual('Monthly Payroll Sheets', 'মাসিক বেতন শিট')}</span>
+          </button>
 
-        <Button
-          size="sm"
-          variant={activeTab === 'advances' ? 'secondary' : 'ghost'}
-          onClick={() => setActiveTab('advances')}
-          className="text-xs h-8 gap-1.5"
-        >
-          <DollarSign className="w-3.5 h-3.5" />
-          {tBilingual('Salary Advances Ledger', 'বেতন অগ্রিম লেজার')}
-        </Button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('advances')}
+            className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+              activeTab === 'advances'
+                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            <span>{tBilingual('Salary Advances Ledger', 'বেতন অগ্রিম লেজার')}</span>
+            {advances.filter((a) => !a.is_settled).length > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                activeTab === 'advances'
+                  ? 'bg-amber-400 text-slate-900 font-bold'
+                  : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 font-bold'
+              }`}>
+                {advances.filter((a) => !a.is_settled).length}
+              </span>
+            )}
+          </button>
+        </div>
+      </Card>
 
       {/* Tab 1: Monthly Payroll Sheets Studio */}
       {activeTab === 'periods' && (
-        <div className="space-y-6">
-          {/* Period Selector & Sheet Overview */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-muted/20 border border-border/60 rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-500/10 text-purple-600 rounded-lg">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <div>
-                <select
-                  aria-label="Select Payroll Period"
-                  value={selectedPeriod?.id || ''}
-                  onChange={(e) => handleSelectPeriod(e.target.value)}
-                  className="font-bold text-sm bg-transparent border-b border-border pb-0.5 focus:outline-none text-foreground"
-                >
-                  {payrollPeriods.map((p) => (
-                    <option key={p.id} value={p.id} className="bg-background text-foreground">
-                      {p.period_name} ({formatDate(p.start_date)} - {formatDate(p.end_date)}) [{p.status.toUpperCase()}]
-                    </option>
-                  ))}
-                </select>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  {selectedPeriod?.items?.length || 0} {tBilingual('Employees Enrolled', 'জন কর্মী')} • {selectedPeriod?.working_days_count || 26} Working Days
+        <div className="space-y-4">
+          {/* Period Selector & Sheet Status Banner */}
+          <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 rounded-lg">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <select
+                    aria-label="Select Payroll Period"
+                    value={selectedPeriod?.id || ''}
+                    onChange={(e) => handleSelectPeriod(e.target.value)}
+                    className="font-bold text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1 text-slate-900 dark:text-white focus:outline-none"
+                  >
+                    {payrollPeriods.map((p) => (
+                      <option key={p.id} value={p.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                        {p.period_name} ({formatDate(p.start_date)} - {formatDate(p.end_date)}) [{p.status.toUpperCase()}]
+                      </option>
+                    ))}
+                  </select>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {selectedPeriod?.items?.length || 0} {tBilingual('Employees Enrolled', 'জন কর্মী')} • {selectedPeriod?.working_days_count || 26} Working Days
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {selectedPeriod && (
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={`text-xs px-2.5 py-1 capitalize font-semibold ${
-                    selectedPeriod.status === 'locked'
-                      ? 'bg-zinc-500/10 text-zinc-600 border-zinc-500/30'
-                      : selectedPeriod.status === 'approved'
-                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
-                      : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+              {selectedPeriod && (
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className={`text-xs px-2.5 py-1 capitalize font-semibold ${
+                      selectedPeriod.status === 'locked'
+                        ? 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                        : selectedPeriod.status === 'approved'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                        : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                    }`}
+                  >
+                    {selectedPeriod.status}
+                  </Badge>
+
+                  {selectedPeriod.status === 'draft' && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleApprovePeriod(selectedPeriod.id)}
+                      disabled={isPending}
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-1 shadow-xs"
+                    >
+                      <Check className="w-3 h-3" />
+                      {tBilingual('Approve Sheet', 'শিট অনুমোদন')}
+                    </Button>
+                  )}
+
+                  {selectedPeriod.status === 'approved' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleLockPeriod(selectedPeriod.id)}
+                      disabled={isPending}
+                      className="h-8 text-xs border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 gap-1 font-semibold"
+                    >
+                      <Lock className="w-3 h-3" />
+                      {tBilingual('Lock Period', 'লক করুন')}
+                    </Button>
+                  )}
+
+                  <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1 border-slate-200 dark:border-slate-800">
+                    <Link href={`/${tenantSlug}/hr/salary-report`}>
+                      <Printer className="w-3 h-3" />
+                      {tBilingual('Print Sheet', 'প্রিন্ট শিট')}
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Search & Status Filter Bar */}
+          <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('ALL')}
+                  className={`h-7 px-3 rounded-md text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+                    statusFilter === 'ALL'
+                      ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                   }`}
                 >
-                  {selectedPeriod.status}
-                </Badge>
+                  <span>{tBilingual('All Staff', 'সকল কর্মী')}</span>
+                  <span className="text-[10px] opacity-75 font-mono">({selectedPeriod?.items?.length || 0})</span>
+                </button>
 
-                {selectedPeriod.status === 'draft' && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleApprovePeriod(selectedPeriod.id)}
-                    disabled={isPending}
-                    className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
-                  >
-                    <Check className="w-3 h-3" />
-                    {tBilingual('Approve Sheet', 'শিট অনুমোদন')}
-                  </Button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('PAID')}
+                  className={`h-7 px-3 rounded-md text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+                    statusFilter === 'PAID'
+                      ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-white'
+                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
+                  }`}
+                >
+                  <span>{tBilingual('Fully Paid', 'সম্পূর্ণ পরিশোধিত')}</span>
+                  <span className="text-[10px] opacity-75 font-mono">({paidCount})</span>
+                </button>
 
-                {selectedPeriod.status === 'approved' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleLockPeriod(selectedPeriod.id)}
-                    disabled={isPending}
-                    className="h-8 text-xs text-zinc-600 border-zinc-400 gap-1"
-                  >
-                    <Lock className="w-3 h-3" />
-                    {tBilingual('Lock Period', 'লক করুন')}
-                  </Button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('PARTIAL')}
+                  className={`h-7 px-3 rounded-md text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+                    statusFilter === 'PARTIAL'
+                      ? 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white'
+                      : 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/50'
+                  }`}
+                >
+                  <span>{tBilingual('Partially Paid', 'আংশিক পরিশোধিত')}</span>
+                  <span className="text-[10px] opacity-75 font-mono">({partialCount})</span>
+                </button>
 
-                <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1">
-                  <Link href={`/${tenantSlug}/hr/salary-report`}>
-                    <Printer className="w-3 h-3" />
-                    {tBilingual('Print Sheet', 'প্রিন্ট শিট')}
-                  </Link>
-                </Button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('UNPAID')}
+                  className={`h-7 px-3 rounded-md text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+                    statusFilter === 'UNPAID'
+                      ? 'bg-rose-600 text-white dark:bg-rose-500 dark:text-white'
+                      : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/50'
+                  }`}
+                >
+                  <span>{tBilingual('Unpaid Due', 'বকেয়া')}</span>
+                  <span className="text-[10px] opacity-75 font-mono">({unpaidCount})</span>
+                </button>
               </div>
-            )}
-          </div>
+
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder={tBilingual('Search employee in sheet...', 'বেতন শিটে খুঁজুন...')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 text-xs h-8 font-medium border-slate-200 dark:border-slate-800"
+                />
+              </div>
+            </div>
+          </Card>
 
           {/* Line Items Table */}
           {!selectedPeriod || !selectedPeriod.items || selectedPeriod.items.length === 0 ? (
-            <Card className="p-12 text-center border-dashed">
-              <Receipt className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <h4 className="text-base font-bold text-foreground">
+            <Card className="p-12 text-center border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <Receipt className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                 {tBilingual('No Payroll Items in this Period', 'এই মেয়াদে কোন বেতন তথ্য নেই')}
               </h4>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {tBilingual('Generate a new payroll draft to calculate salary for all active employees.', 'সকল সক্রিয় কর্মীর বেতন হিসাব করতে নতুন ড্রাফট তৈরি করুন।')}
               </p>
-              <Button size="sm" onClick={() => setIsGenPayrollModalOpen(true)} className="mt-4 text-xs gap-1.5">
+              <Button size="sm" onClick={() => setIsGenPayrollModalOpen(true)} className="mt-4 text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold">
                 <Plus className="w-3.5 h-3.5" />
                 {tBilingual('Generate Payroll Draft', 'নতুন বেতন শিট তৈরি')}
               </Button>
             </Card>
           ) : (
-            <Card className="border-border/60 shadow-sm overflow-hidden">
+            <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
+              <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                    {tBilingual('Payroll Period Line Items', 'বেতন শিটের আইটেম তালিকা')}
+                  </CardTitle>
+                  <Badge variant="outline" className="text-xs font-mono">
+                    {filteredPayrollItems.length} records
+                  </Badge>
+                </div>
+              </CardHeader>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-muted/40 font-medium text-muted-foreground">
+                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
                       <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
                       <th className="p-3.5">{tBilingual('Base / Rate', 'মূল বেতন')}</th>
                       <th className="p-3.5">{tBilingual('Attendance / Abs', 'উপস্থিতি / অনুপস্থিত')}</th>
@@ -556,27 +674,27 @@ export default function PayrollPage() {
                       <th className="p-3.5 pr-4 text-right">{tBilingual('Actions', 'পদক্ষেপ')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/40">
-                    {selectedPeriod.items.map((item) => {
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {filteredPayrollItems.map((item) => {
                       const isFullyPaid = Number(item.due_amount || 0) <= 0 && Number(item.paid_amount || 0) > 0
                       const isPartial = Number(item.paid_amount || 0) > 0 && Number(item.due_amount || 0) > 0
                       return (
-                        <tr key={item.id} className="hover:bg-muted/30 transition-colors">
+                        <tr key={item.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
                           <td className="p-3.5 pl-4">
-                            <div className="font-semibold text-foreground">{item.employee_name}</div>
-                            <div className="text-[11px] text-muted-foreground">
+                            <div className="font-semibold text-slate-900 dark:text-white">{item.employee_name}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
                               {item.employee_id_number} • <span className="capitalize">{item.department}</span>
                             </div>
                           </td>
 
-                          <td className="p-3.5 font-mono">
+                          <td className="p-3.5 font-mono text-slate-700 dark:text-slate-300">
                             {formatBDT(item.base_salary || 0)}
                           </td>
 
-                          <td className="p-3.5">
+                          <td className="p-3.5 text-slate-600 dark:text-slate-400">
                             <div>{item.days_present} / {selectedPeriod.working_days_count || 26} d</div>
                             {Number(item.absence_deduction || 0) > 0 && (
-                              <div className="text-rose-600 dark:text-rose-400 text-[10px]">
+                              <div className="text-rose-600 dark:text-rose-400 text-[10px] font-medium">
                                 -{formatBDT(item.absence_deduction || 0)}
                               </div>
                             )}
@@ -588,19 +706,19 @@ export default function PayrollPage() {
                                 +{formatBDT(item.overtime_amount || 0)} ({item.overtime_hours}h)
                               </span>
                             ) : (
-                              <span className="text-muted-foreground">৳ 0</span>
+                              <span className="text-slate-400">৳ 0</span>
                             )}
                           </td>
 
-                          <td className="p-3.5 font-mono text-amber-600 dark:text-amber-400">
+                          <td className="p-3.5 font-mono text-amber-600 dark:text-amber-400 font-medium">
                             {Number(item.advance_salary_deducted || 0) > 0 ? (
                               <span>-{formatBDT(item.advance_salary_deducted || 0)}</span>
                             ) : (
-                              <span className="text-muted-foreground">৳ 0</span>
+                              <span className="text-slate-400">৳ 0</span>
                             )}
                           </td>
 
-                          <td className="p-3.5 font-mono font-bold text-foreground">
+                          <td className="p-3.5 font-mono font-bold text-slate-900 dark:text-white">
                             {formatBDT(item.net_salary || 0)}
                           </td>
 
@@ -618,10 +736,10 @@ export default function PayrollPage() {
                               variant="outline"
                               className={`text-[10px] px-2 py-0.5 capitalize ${
                                 isFullyPaid
-                                  ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                                   : isPartial
-                                  ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                                  : 'bg-rose-500/10 text-rose-600 border-rose-500/30'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                                  : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
                               }`}
                             >
                               {isFullyPaid ? 'Paid' : isPartial ? 'Partial' : 'Unpaid'}
@@ -634,13 +752,13 @@ export default function PayrollPage() {
                                 <Button
                                   size="sm"
                                   onClick={() => handleOpenPaymentModal(item)}
-                                  className="h-7 text-xs px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground gap-1"
+                                  className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1 shadow-xs"
                                 >
                                   <CreditCard className="w-3 h-3" />
                                   {tBilingual('Disburse Pay', 'বেতন প্রদান')}
                                 </Button>
                               )}
-                              <Button asChild size="sm" variant="outline" className="h-7 text-xs px-2">
+                              <Button asChild size="sm" variant="outline" className="h-7 text-xs px-2 border-slate-200 dark:border-slate-800">
                                 <Link href={`/${tenantSlug}/hr/payroll/${selectedPeriod.id}`}>
                                   <FileText className="w-3 h-3" />
                                 </Link>
@@ -663,32 +781,42 @@ export default function PayrollPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-foreground">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                 {tBilingual('Salary Advances & Emergency Loans', 'বেতন অগ্রিম ও জরুরি ঋণ হিসাব')}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {tBilingual('Track disbursed salary advances, repayments and automated monthly payroll deductions', 'অগ্রিম প্রদান, কর্তন ও চলমান বকেয়ার বিস্তারিত হিসাব')}
               </p>
             </div>
 
-            <Button size="sm" onClick={() => setIsAdvanceModalOpen(true)} className="gap-1.5 text-xs h-9">
+            <Button size="sm" onClick={() => setIsAdvanceModalOpen(true)} className="gap-1.5 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xs">
               <Plus className="w-3.5 h-3.5" />
               {tBilingual('Disburse Advance', 'অগ্রিম প্রদান')}
             </Button>
           </div>
 
           {advances.length === 0 ? (
-            <Card className="p-12 text-center border-dashed">
-              <DollarSign className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <h4 className="text-base font-bold text-foreground">{tBilingual('No salary advance records', 'কোন অগ্রিমের তথ্য নেই')}</h4>
-              <p className="text-xs text-muted-foreground mt-1">{tBilingual('Disburse salary advances when staff request emergency assistance.', 'জরুরি প্রয়োজনে কর্মীদের অগ্রিম বেতন প্রদান করুন।')}</p>
+            <Card className="p-12 text-center border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <DollarSign className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">{tBilingual('No salary advance records', 'কোন অগ্রিমের তথ্য নেই')}</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{tBilingual('Disburse salary advances when staff request emergency assistance.', 'জরুরি প্রয়োজনে কর্মীদের অগ্রিম বেতন প্রদান করুন।')}</p>
             </Card>
           ) : (
-            <Card className="border-border/60 shadow-sm overflow-hidden">
+            <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
+              <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                    {tBilingual('Advances & Emergency Disbursements', 'অগ্রিম প্রদান ও সমন্বয় তালিকা')}
+                  </CardTitle>
+                  <Badge variant="outline" className="text-xs font-mono">
+                    {advances.length} records
+                  </Badge>
+                </div>
+              </CardHeader>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-muted/40 font-medium text-muted-foreground">
+                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
                       <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
                       <th className="p-3.5">{tBilingual('Disbursement Date', 'প্রদানের তারিখ')}</th>
                       <th className="p-3.5">{tBilingual('Amount (BDT)', 'টাকার পরিমাণ')}</th>
@@ -697,22 +825,22 @@ export default function PayrollPage() {
                       <th className="p-3.5 pr-4 text-right">{tBilingual('Status', 'স্ট্যাটাস')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/40">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                     {advances.map((adv) => (
-                      <tr key={adv.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="p-3.5 pl-4 font-semibold text-foreground">
+                      <tr key={adv.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
+                        <td className="p-3.5 pl-4 font-semibold text-slate-900 dark:text-white">
                           {adv.employee_name}
                         </td>
-                        <td className="p-3.5 text-muted-foreground">
+                        <td className="p-3.5 text-slate-500 dark:text-slate-400">
                           {formatDate(adv.disbursed_date)}
                         </td>
                         <td className="p-3.5 font-mono font-bold text-amber-600 dark:text-amber-400">
                           {formatBDT(adv.amount || 0)}
                         </td>
-                        <td className="p-3.5 capitalize font-mono text-muted-foreground">
+                        <td className="p-3.5 capitalize font-mono text-slate-600 dark:text-slate-300">
                           {adv.payment_method}
                         </td>
-                        <td className="p-3.5 text-muted-foreground italic">
+                        <td className="p-3.5 text-slate-500 dark:text-slate-400 italic">
                           &ldquo;{adv.reason || 'Personal advance'}&rdquo;
                         </td>
                         <td className="p-3.5 pr-4 text-right">
@@ -720,8 +848,8 @@ export default function PayrollPage() {
                             variant="outline"
                             className={`text-[10px] px-2 py-0.5 capitalize ${
                               adv.is_settled
-                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
-                                : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                                : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
                             }`}
                           >
                             {adv.is_settled ? 'Settled' : 'Active (Unsettled)'}
@@ -757,7 +885,7 @@ export default function PayrollPage() {
                 placeholder="e.g. October 2026 Payroll"
                 value={genForm.periodName}
                 onChange={(e) => setGenForm({ ...genForm, periodName: e.target.value })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
@@ -768,7 +896,7 @@ export default function PayrollPage() {
                   type="date"
                   value={genForm.startDate}
                   onChange={(e) => setGenForm({ ...genForm, startDate: e.target.value })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
 
@@ -778,7 +906,7 @@ export default function PayrollPage() {
                   type="date"
                   value={genForm.endDate}
                   onChange={(e) => setGenForm({ ...genForm, endDate: e.target.value })}
-                  className="text-xs h-9"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800"
                 />
               </div>
             </div>
@@ -789,17 +917,17 @@ export default function PayrollPage() {
                 type="number"
                 value={genForm.workingDaysCount}
                 onChange={(e) => setGenForm({ ...genForm, workingDaysCount: Number(e.target.value || 26) })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsGenPayrollModalOpen(false)}
                 disabled={isPending}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               >
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
@@ -807,7 +935,7 @@ export default function PayrollPage() {
                 size="sm"
                 onClick={handleGeneratePayroll}
                 disabled={isPending}
-                className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+                className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5 shadow-xs"
               >
                 {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 {tBilingual('Generate Sheet', 'তৈরি করুন')}
@@ -834,7 +962,7 @@ export default function PayrollPage() {
                 type="number"
                 value={paymentForm.amount}
                 onChange={(e) => setPaymentForm({ ...paymentForm, amount: Number(e.target.value) })}
-                className="text-xs h-9 font-bold"
+                className="text-xs h-9 font-bold border-slate-200 dark:border-slate-800"
               />
             </div>
 
@@ -843,7 +971,7 @@ export default function PayrollPage() {
               <select
                 value={paymentForm.paymentMethod}
                 onChange={(e) => setPaymentForm({ ...paymentForm, paymentMethod: e.target.value as PaymentMethod })}
-                className="w-full h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+                className="w-full h-9 text-xs px-2.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="bkash">bKash (বিকাশ)</option>
                 <option value="nagad">Nagad (নগদ)</option>
@@ -859,7 +987,7 @@ export default function PayrollPage() {
                 placeholder="e.g. BKASH-8975421"
                 value={paymentForm.referenceNumber}
                 onChange={(e) => setPaymentForm({ ...paymentForm, referenceNumber: e.target.value })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
@@ -869,17 +997,17 @@ export default function PayrollPage() {
                 placeholder="e.g. October monthly salary full disbursement"
                 value={paymentForm.notes}
                 onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsSalaryPaymentModalOpen(false)}
                 disabled={isPending}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               >
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
@@ -887,7 +1015,7 @@ export default function PayrollPage() {
                 size="sm"
                 onClick={handleRecordSalaryPayment}
                 disabled={isPending}
-                className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+                className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5 shadow-xs"
               >
                 {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 {tBilingual('Confirm Payout', 'পেমেন্ট সম্পন্ন করুন')}
@@ -916,7 +1044,7 @@ export default function PayrollPage() {
               <select
                 value={advForm.employeeId}
                 onChange={(e) => setAdvForm({ ...advForm, employeeId: e.target.value })}
-                className="w-full h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+                className="w-full h-9 text-xs px-2.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="">{tBilingual('-- Select Employee --', '-- কর্মী নির্বাচন করুন --')}</option>
                 {employees.map((emp) => (
@@ -933,7 +1061,7 @@ export default function PayrollPage() {
                 type="number"
                 value={advForm.amount}
                 onChange={(e) => setAdvForm({ ...advForm, amount: Number(e.target.value) })}
-                className="text-xs h-9 font-bold"
+                className="text-xs h-9 font-bold border-slate-200 dark:border-slate-800"
               />
             </div>
 
@@ -942,7 +1070,7 @@ export default function PayrollPage() {
               <select
                 value={advForm.paymentMethod}
                 onChange={(e) => setAdvForm({ ...advForm, paymentMethod: e.target.value as PaymentMethod })}
-                className="w-full h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+                className="w-full h-9 text-xs px-2.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="cash">Cash (নগদ)</option>
                 <option value="bkash">bKash (বিকাশ)</option>
@@ -957,17 +1085,17 @@ export default function PayrollPage() {
                 placeholder="e.g. Medical emergency advance"
                 value={advForm.reason}
                 onChange={(e) => setAdvForm({ ...advForm, reason: e.target.value })}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsAdvanceModalOpen(false)}
                 disabled={isPending}
-                className="text-xs h-9"
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
               >
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
@@ -975,7 +1103,7 @@ export default function PayrollPage() {
                 size="sm"
                 onClick={handleDisburseAdvance}
                 disabled={isPending}
-                className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+                className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5 shadow-xs"
               >
                 {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 {tBilingual('Disburse Advance', 'অগ্রিম প্রদান')}

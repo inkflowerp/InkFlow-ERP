@@ -353,60 +353,118 @@ export default function EmployeeListPage() {
       />
 
       {/* Top Stat Summary Pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-[11px] text-muted-foreground uppercase font-medium">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">
               {tBilingual('Total Enrolled', 'মোট নিবন্ধিত')}
+            </span>
+            <div className="p-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 rounded-lg">
+              <Users className="w-4 h-4" />
             </div>
-            <div className="text-xl font-bold text-foreground mt-0.5">{employees.length}</div>
           </div>
-          <Users className="w-5 h-5 text-blue-500/60" />
-        </div>
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{employees.length}</div>
+          <p className="text-[11px] text-slate-400 mt-1 truncate">
+            {tBilingual('Registered workforce profiles', 'নিবন্ধিত জনবল প্রোফাইল')}
+          </p>
+        </Card>
 
-        <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-[11px] text-muted-foreground uppercase font-medium">
+        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">
               {tBilingual('Permanent Staff', 'স্থায়ী কর্মী')}
+            </span>
+            <div className="p-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-lg">
+              <ShieldCheck className="w-4 h-4" />
             </div>
-            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{permanentCount}</div>
           </div>
-          <ShieldCheck className="w-5 h-5 text-emerald-500/60" />
-        </div>
+          <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">{permanentCount}</div>
+          <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 truncate">
+            {tBilingual('Full-time payroll members', 'স্থায়ী চুক্তিবদ্ধ কর্মী')}
+          </p>
+        </Card>
 
-        <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-[11px] text-muted-foreground uppercase font-medium">
+        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">
               {tBilingual('Daily / Hourly', 'দৈনিক / ঘণ্টাপ্রতি')}
+            </span>
+            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-lg">
+              <Clock className="w-4 h-4" />
             </div>
-            <div className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-0.5">{dailyCount + hourlyCount}</div>
           </div>
-          <Clock className="w-5 h-5 text-amber-500/60" />
-        </div>
+          <div className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400">{dailyCount + hourlyCount}</div>
+          <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80 mt-1 truncate">
+            {tBilingual('Flexible floor & shift labor', 'চুক্তিভিত্তিক শিফট শ্রমিক')}
+          </p>
+        </Card>
 
-        <div className="p-3.5 rounded-xl border border-border/60 bg-card shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-[11px] text-muted-foreground uppercase font-medium">
+        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">
               {tBilingual('On Leave', 'ছুটিতে')}
+            </span>
+            <div className="p-1.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-lg">
+              <Calendar className="w-4 h-4" />
             </div>
-            <div className="text-xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">{onLeaveCount}</div>
           </div>
-          <Calendar className="w-5 h-5 text-purple-500/60" />
-        </div>
+          <div className="mt-2 text-2xl font-black text-purple-600 dark:text-purple-400">{onLeaveCount}</div>
+          <p className="text-[11px] text-purple-600/80 dark:text-purple-400/80 mt-1 truncate">
+            {tBilingual('Approved leave leaves', 'অনুমোদিত ছুটিতে রয়েছেন')}
+          </p>
+        </Card>
       </div>
 
       {/* Filter and Search Bar */}
-      <Card className="border-border/60 shadow-sm">
-        <CardContent className="p-4 flex flex-col md:flex-row gap-3 items-center justify-between">
+      <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-2.5 w-full">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            {/* Search Box */}
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <Input
-                placeholder={tBilingual('Search by name, ID, phone...', 'নাম, আইডি, মোবাইল দিয়ে খুঁজুন...')}
+                placeholder={tBilingual('Search by name, ID, phone, role...', 'নাম, আইডি, মোবাইল, পদবি দিয়ে খুঁজুন...')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 text-xs h-9"
+                className="pl-9 text-xs h-9 font-medium"
               />
+            </div>
+
+            {/* Filter Tabs Horizontal Scroll */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+              {[
+                { id: 'ALL', label: tBilingual('All Staff', 'সকল কর্মী'), count: employees.length },
+                { id: 'permanent', label: tBilingual('Permanent', 'স্থায়ী'), count: permanentCount },
+                { id: 'daily_worker', label: tBilingual('Daily Labor', 'দৈনিক'), count: dailyCount },
+                { id: 'hourly_worker', label: tBilingual('Hourly', 'ঘণ্টাপ্রতি'), count: hourlyCount },
+              ].map((tab) => {
+                const isSelected = typeFilter === tab.id
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setTypeFilter(tab.id as any)}
+                    className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                      isSelected
+                        ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    {tab.count > 0 && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          isSelected
+                            ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
+                            : 'bg-slate-200/80 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
 
             {/* Department Filter */}
@@ -414,7 +472,7 @@ export default function EmployeeListPage() {
               aria-label="Filter by department"
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value)}
-              className="h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
+              className="h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-medium"
             >
               <option value="ALL">{tBilingual('All Departments', 'সব বিভাগ')}</option>
               <option value="printing">{tBilingual('Printing', 'প্রিন্টিং')}</option>
@@ -425,81 +483,79 @@ export default function EmployeeListPage() {
               <option value="accounts">{tBilingual('Accounts', 'হিসাব')}</option>
               <option value="sales">{tBilingual('Sales', 'বিক্রি')}</option>
             </select>
-
-            {/* Employment Type Filter */}
-            <select
-              aria-label="Filter by employment type"
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
-            >
-              <option value="ALL">{tBilingual('All Types', 'সব ধরন')}</option>
-              <option value="permanent">{tBilingual('Permanent', 'স্থায়ী')}</option>
-              <option value="daily_worker">{tBilingual('Daily Worker', 'দৈনিক শ্রমিক')}</option>
-              <option value="hourly_worker">{tBilingual('Hourly Worker', 'ঘণ্টাপ্রতি')}</option>
-              <option value="contract">{tBilingual('Contract', 'চুক্তিভিত্তিক')}</option>
-            </select>
-
-            {/* Status Filter */}
-            <select
-              aria-label="Filter by status"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 text-xs px-2.5 rounded-md border border-input bg-background text-foreground"
-            >
-              <option value="ALL">{tBilingual('All Statuses', 'সব স্ট্যাটাস')}</option>
-              <option value="active">{tBilingual('Active', 'সক্রিয়')}</option>
-              <option value="on_leave">{tBilingual('On Leave', 'ছুটিতে')}</option>
-              <option value="inactive">{tBilingual('Inactive', 'নিষ্ক্রিয়')}</option>
-            </select>
           </div>
 
           {/* View Toggle Table / Grid */}
-          <div className="flex items-center gap-1 border border-border rounded-lg p-0.5 bg-muted/30 shrink-0">
+          <div className="flex items-center gap-1 border border-slate-200 dark:border-slate-800 rounded-lg p-0.5 bg-slate-100 dark:bg-slate-900 shrink-0">
             <Button
               size="sm"
               variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-              className="h-7 w-7 p-0"
+              className={`h-7 w-7 p-0 ${viewMode === 'table' ? 'bg-white dark:bg-slate-800 shadow-xs' : ''}`}
               onClick={() => setViewMode('table')}
               title="Table View"
             >
-              <List className="w-3.5 h-3.5" />
+              <List className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
             </Button>
             <Button
               size="sm"
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-              className="h-7 w-7 p-0"
+              className={`h-7 w-7 p-0 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-800 shadow-xs' : ''}`}
               onClick={() => setViewMode('grid')}
               title="Grid View"
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <LayoutGrid className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
             </Button>
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       {/* Main Employee Roster List */}
       {filteredEmployees.length === 0 ? (
-        <Card className="p-12 text-center border-dashed">
-          <Users className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-foreground">
+        <Card className="p-12 text-center border-dashed shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3">
+            <Users className="h-6 w-6" />
+          </div>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
             {tBilingual('No employees match your search criteria', 'কোন কর্মী পাওয়া যায়নি')}
           </h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             {tBilingual('Try clearing your filters or enroll a new employee to your organization.', 'ফিল্টার পরিবর্তন করুন অথবা নতুন কর্মী যোগ করুন।')}
           </p>
-          <Button size="sm" onClick={handleOpenAdd} className="mt-4 text-xs gap-1.5">
+          <Button size="sm" onClick={handleOpenAdd} className="mt-4 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white gap-1.5 shadow-sm">
             <Plus className="w-3.5 h-3.5" />
             {tBilingual('Add New Employee', 'নতুন কর্মী যোগ করুন')}
           </Button>
         </Card>
       ) : viewMode === 'table' ? (
         /* Table View */
-        <Card className="border-border/60 shadow-sm overflow-hidden">
+        <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
+          <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                {tBilingual('Employee Directory', 'কর্মীদের তালিকা')}
+              </CardTitle>
+              <Badge variant="outline" className="text-xs font-mono">
+                {filteredEmployees.length} records
+              </Badge>
+            </div>
+            {(searchTerm || typeFilter !== 'ALL' || deptFilter !== 'ALL') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm('')
+                  setTypeFilter('ALL')
+                  setDeptFilter('ALL')
+                }}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+              >
+                Clear Filter
+              </button>
+            )}
+          </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-muted/40 font-medium text-muted-foreground">
+                <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
                   <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
                   <th className="p-3.5">{tBilingual('ID / Code', 'আইডি কোড')}</th>
                   <th className="p-3.5">{tBilingual('Department & Role', 'বিভাগ ও পদবি')}</th>
@@ -510,45 +566,45 @@ export default function EmployeeListPage() {
                   <th className="p-3.5 pr-4 text-right">{tBilingual('Actions', 'পদক্ষেপ')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/40">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {filteredEmployees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-muted/30 transition-colors group">
+                  <tr key={emp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors group">
                     <td className="p-3.5 pl-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 ring-1 ring-primary/20">
+                        <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0 ring-1 ring-blue-500/20">
                           {emp.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-semibold text-foreground flex items-center gap-1.5">
+                          <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                             <span>{emp.name}</span>
                             {emp.name_bn && (
-                              <span className="text-[11px] text-muted-foreground font-normal">({emp.name_bn})</span>
+                              <span className="text-[11px] text-slate-400 font-normal">({emp.name_bn})</span>
                             )}
                           </div>
-                          <div className="text-[11px] text-muted-foreground capitalize">
+                          <div className="text-[11px] text-slate-500 capitalize">
                             {emp.employee_type.replace('_', ' ')}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="p-3.5 font-mono text-[11px] text-muted-foreground">
+                    <td className="p-3.5 font-mono text-[11px] text-slate-500">
                       {emp.employee_id_number}
                     </td>
 
                     <td className="p-3.5">
-                      <div className="font-medium text-foreground">{emp.role}</div>
-                      <div className="text-[11px] text-muted-foreground capitalize">{emp.department}</div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{emp.role}</div>
+                      <div className="text-[11px] text-slate-500 capitalize">{emp.department}</div>
                     </td>
 
                     <td className="p-3.5 text-[11px]">
-                      <div className="flex items-center gap-1 text-foreground">
-                        <Phone className="w-3 h-3 text-muted-foreground" />
+                      <div className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
+                        <Phone className="w-3 h-3 text-slate-400" />
                         <span>{emp.mobile || 'N/A'}</span>
                       </div>
                       {emp.email && (
-                        <div className="flex items-center gap-1 text-muted-foreground mt-0.5">
-                          <Mail className="w-3 h-3 text-muted-foreground" />
+                        <div className="flex items-center gap-1 text-slate-400 mt-0.5">
+                          <Mail className="w-3 h-3 text-slate-400" />
                           <span className="truncate max-w-[140px]">{emp.email}</span>
                         </div>
                       )}
@@ -557,41 +613,41 @@ export default function EmployeeListPage() {
                     <td className="p-3.5">
                       {emp.salary_basis === 'daily_rate' || emp.is_daily_worker ? (
                         <div>
-                          <span className="font-semibold text-foreground">{formatBDT(emp.daily_rate || 0)}</span>
-                          <span className="text-[10px] text-muted-foreground"> /day</span>
+                          <span className="font-bold text-slate-900 dark:text-white">{formatBDT(emp.daily_rate || 0)}</span>
+                          <span className="text-[10px] text-slate-400"> /day</span>
                         </div>
                       ) : emp.salary_basis === 'hourly_rate' ? (
                         <div>
-                          <span className="font-semibold text-foreground">{formatBDT(emp.hourly_rate || 0)}</span>
-                          <span className="text-[10px] text-muted-foreground"> /hr</span>
+                          <span className="font-bold text-slate-900 dark:text-white">{formatBDT(emp.hourly_rate || 0)}</span>
+                          <span className="text-[10px] text-slate-400"> /hr</span>
                         </div>
                       ) : (
                         <div>
-                          <span className="font-semibold text-foreground">{formatBDT(emp.base_salary || 0)}</span>
-                          <span className="text-[10px] text-muted-foreground"> /mo</span>
+                          <span className="font-bold text-slate-900 dark:text-white">{formatBDT(emp.base_salary || 0)}</span>
+                          <span className="text-[10px] text-slate-400"> /mo</span>
                         </div>
                       )}
                     </td>
 
                     <td className="p-3.5">
                       {Number(emp.current_advance_balance || 0) > 0 ? (
-                        <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[11px] font-mono">
+                        <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[11px] font-mono font-bold">
                           {formatBDT(emp.current_advance_balance || 0)}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground text-[11px]">৳ 0</span>
+                        <span className="text-slate-400 text-[11px]">৳ 0</span>
                       )}
                     </td>
 
                     <td className="p-3.5">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] px-2 py-0.5 capitalize ${
+                        className={`text-[10px] px-2 py-0.5 capitalize font-semibold ${
                           emp.status === 'active'
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300'
                             : emp.status === 'on_leave'
-                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
-                            : 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/30'
+                            ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300'
+                            : 'bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400'
                         }`}
                       >
                         {emp.status}
@@ -603,7 +659,7 @@ export default function EmployeeListPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                          className="h-7 w-7 p-0 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40"
                           onClick={() => handleOpen360(emp)}
                           title="View 360° Profile"
                         >
@@ -612,7 +668,7 @@ export default function EmployeeListPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-500"
+                          className="h-7 w-7 p-0 text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40"
                           onClick={() => handleOpenEdit(emp)}
                           title="Edit Employee"
                         >
@@ -621,7 +677,7 @@ export default function EmployeeListPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-500"
+                          className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                           onClick={() => {
                             setSelectedEmployee(emp)
                             setIsDeleteModalOpen(true)
@@ -642,38 +698,40 @@ export default function EmployeeListPage() {
         /* Grid Cards View */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredEmployees.map((emp) => (
-            <Card key={emp.id} className="border-border/60 hover:border-primary/40 transition-colors shadow-sm">
+            <Card key={emp.id} className="shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 ring-1 ring-primary/20">
+                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm shrink-0 ring-1 ring-blue-500/20">
                       {emp.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-sm text-foreground">{emp.name}</h4>
-                      <p className="text-xs text-muted-foreground font-mono">{emp.employee_id_number}</p>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white">{emp.name}</h4>
+                      <p className="text-xs text-slate-500 font-mono">{emp.employee_id_number}</p>
                     </div>
                   </div>
                   <Badge
                     variant="outline"
-                    className={`text-[10px] px-2 py-0.5 capitalize ${
+                    className={`text-[10px] px-2 py-0.5 capitalize font-semibold ${
                       emp.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
-                        : 'bg-zinc-500/10 text-zinc-600 border-zinc-500/30'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300'
+                        : emp.status === 'on_leave'
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300'
+                        : 'bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400'
                     }`}
                   >
                     {emp.status}
                   </Badge>
                 </div>
 
-                <div className="space-y-1.5 text-xs text-muted-foreground border-y border-border/40 py-3">
+                <div className="space-y-1.5 text-xs text-slate-500 border-y border-slate-100 dark:border-slate-800/80 py-3">
                   <div className="flex items-center justify-between">
                     <span>{tBilingual('Role & Dept:', 'পদবি ও বিভাগ:')}</span>
-                    <span className="font-medium text-foreground capitalize">{emp.role} ({emp.department})</span>
+                    <span className="font-semibold text-slate-900 dark:text-white capitalize">{emp.role} ({emp.department})</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>{tBilingual('Salary / Pay:', 'বেতন কাঠামো:')}</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-bold text-slate-900 dark:text-white">
                       {emp.salary_basis === 'daily_rate'
                         ? `${formatBDT(emp.daily_rate || 0)}/day`
                         : `${formatBDT(emp.base_salary || 0)}/mo`}
