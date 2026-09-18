@@ -2518,14 +2518,14 @@ export default function AttendancePage() {
             `Detailed daily check-in, check-out and overtime audit trail for ${viewLogEmployee.name}`,
             `${viewLogEmployee.name}-এর দৈনিক পাঞ্চ লগ, প্রবেশ-প্রস্থান ও ওভারটাইম বিবরণ`
           )}
-          size="xl"
+          size="5xl"
         >
           <div className="space-y-4 pt-2">
-            {/* Employee Info Header Box */}
+            {/* Employee Info & Period Selector Header Box */}
             <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-900/60 dark:to-slate-900/30 border border-slate-200 dark:border-slate-800 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-bold text-lg flex items-center justify-center shadow-xs">
+                  <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-bold text-lg flex items-center justify-center shadow-xs shrink-0">
                     {viewLogEmployee.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -2559,15 +2559,94 @@ export default function AttendancePage() {
                   </div>
                 </div>
 
-                {/* Selected Period Badge */}
-                <div className="text-left sm:text-right">
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold block">
-                    {tBilingual('Selected Period', 'নির্বাচিত সময়কাল')}
-                  </span>
-                  <Badge variant="secondary" className="font-semibold text-xs mt-0.5">
-                    <Calendar className="w-3.5 h-3.5 mr-1" />
-                    {MONTHS_LIST.find((m) => m.value === reportSelectedMonth)?.nameEn} {reportSelectedYear}
-                  </Badge>
+                {/* Changeable Period Controls */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 rounded-xl bg-white/80 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold px-1">
+                    <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                    <span>{tBilingual('Period:', 'সময়কাল:')}</span>
+                    {isReportLoading && <RefreshCw className="w-3 h-3 animate-spin text-blue-500 ml-1" />}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Previous Month */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        let newM = reportSelectedMonth - 1
+                        let newY = reportSelectedYear
+                        if (newM < 1) {
+                          newM = 12
+                          newY -= 1
+                        }
+                        handlePeriodChange(newY, newM)
+                      }}
+                      className="h-8 w-8 p-0 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      title={tBilingual('Previous Month', 'আগের মাস')}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+
+                    {/* Month Select */}
+                    <select
+                      aria-label="Change Log Month"
+                      value={reportSelectedMonth}
+                      onChange={(e) => handlePeriodChange(reportSelectedYear, Number(e.target.value))}
+                      className="h-8 text-xs font-semibold px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      {MONTHS_LIST.map((m) => (
+                        <option key={m.value} value={m.value}>
+                          {locale === 'bn' ? `${m.value} - ${m.nameBn}` : `${m.nameEn}`}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Year Select */}
+                    <select
+                      aria-label="Change Log Year"
+                      value={reportSelectedYear}
+                      onChange={(e) => handlePeriodChange(Number(e.target.value), reportSelectedMonth)}
+                      className="h-8 text-xs font-semibold px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      {YEARS_LIST.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Next Month */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        let newM = reportSelectedMonth + 1
+                        let newY = reportSelectedYear
+                        if (newM > 12) {
+                          newM = 1
+                          newY += 1
+                        }
+                        handlePeriodChange(newY, newM)
+                      }}
+                      className="h-8 w-8 p-0 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      title={tBilingual('Next Month', 'পরের মাস')}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+
+                    {/* Quick This Month Preset */}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleSelectReportPreset('this_month')}
+                      className="h-8 text-xs px-2.5 font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:hover:bg-blue-900/50 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/50"
+                    >
+                      {tBilingual('This Month', 'বর্তমান মাস')}
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -2604,23 +2683,23 @@ export default function AttendancePage() {
 
                 return (
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-800/80">
-                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
                       <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Day Present', 'উপস্থিত দিন')}</span>
                       <strong className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{presentDays} Days</strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
                       <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Day Absent', 'অনুপস্থিত দিন')}</span>
                       <strong className="text-sm font-bold text-rose-600 dark:text-rose-400">{absentDays} Days</strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
                       <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check In', 'গড় প্রবেশ')}</span>
                       <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckIn}</strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
                       <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check Out', 'গড় প্রস্থান')}</span>
                       <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckOut}</strong>
                     </div>
-                    <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 col-span-2 sm:col-span-1">
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs col-span-2 sm:col-span-1">
                       <span className="text-[10px] text-slate-500 uppercase font-semibold block">{tBilingual('Total OT', 'মোট ওটি')}</span>
                       <strong className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono">+{totalOtHrs} hrs</strong>
                     </div>
@@ -2630,9 +2709,17 @@ export default function AttendancePage() {
             </div>
 
             {/* Detailed Daily Log Table */}
-            <div className="max-h-96 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
+            <div className="relative max-h-[480px] overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
+              {isReportLoading && (
+                <div className="absolute inset-0 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-20">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-md">
+                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                    <span>{tBilingual('Loading attendance logs...', 'হাজিরা লগ লোড হচ্ছে...')}</span>
+                  </div>
+                </div>
+              )}
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-50/90 dark:bg-slate-900/90 text-slate-600 dark:text-slate-400 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 font-bold text-[11px] uppercase">
+                <thead className="bg-slate-50/95 dark:bg-slate-900/95 text-slate-600 dark:text-slate-400 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 font-bold text-[11px] uppercase">
                   <tr>
                     <th className="p-3 pl-4">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="p-3">{tBilingual('Day', 'বার')}</th>
@@ -2681,7 +2768,7 @@ export default function AttendancePage() {
                               {rec.late_minutes && rec.late_minutes > 0 ? (
                                 <Badge
                                   variant="outline"
-                                  className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 font-sans"
+                                  className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 font-sans font-medium"
                                 >
                                   +{rec.late_minutes}m Late
                                 </Badge>
@@ -2702,7 +2789,7 @@ export default function AttendancePage() {
                           ) : rec?.check_in_time ? (
                             <Badge
                               variant="outline"
-                              className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans"
+                              className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans font-medium"
                             >
                               {tBilingual('On Floor', 'ফ্লোরে আছেন')}
                             </Badge>
