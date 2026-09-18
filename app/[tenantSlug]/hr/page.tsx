@@ -43,6 +43,9 @@ import {
   Wallet,
   Receipt,
   UserPlus,
+  Shield,
+  KeyRound,
+  ShieldAlert,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
@@ -57,7 +60,15 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
 import { UsersManagementView } from '@/components/users/users-management-view'
+import { UserPermissionsDrawer } from '@/components/users/user-permissions-drawer'
 import { formatBDT, formatDate } from '@/lib/formatters'
+import type { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
+import {
+  listCompanyUsersAction,
+  listRolesAction,
+  listBranchesAction,
+  createCompanyUserAction,
+} from '@/actions/company-users.actions'
 import type {
   EmployeeRecord,
   ShiftRecord,
@@ -122,11 +133,18 @@ export default function WorkforcePage() {
   // Data States
   const [summary, setSummary] = useState<WorkforceSummaryKPIs | null>(null)
   const [employees, setEmployees] = useState<EmployeeRecord[]>([])
+  const [companyUsers, setCompanyUsers] = useState<CompanyUserWithProfile[]>([])
+  const [roles, setRoles] = useState<RoleRow[]>([])
+  const [branches, setBranches] = useState<BranchRow[]>([])
   const [shifts, setShifts] = useState<ShiftRecord[]>([])
   const [dailyAttendance, setDailyAttendance] = useState<AttendanceDailySummaryRecord[]>([])
   const [overtimeRecords, setOvertimeRecords] = useState<OvertimeRecord[]>([])
   const [advances, setAdvances] = useState<SalaryAdvanceRecord[]>([])
   const [payrollPeriods, setPayrollPeriods] = useState<PayrollPeriodRecord[]>([])
+
+  // RBAC Permissions Drawer State
+  const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<CompanyUserWithProfile | null>(null)
+  const [isPermissionsDrawerOpen, setIsPermissionsDrawerOpen] = useState(false)
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('')
@@ -148,7 +166,7 @@ export default function WorkforcePage() {
   const [selectedPayrollItem, setSelectedPayrollItem] = useState<{ periodId: string; item: PayrollItemRecord } | null>(null)
   const [isMobilePunchOpen, setIsMobilePunchOpen] = useState(false)
 
-  // Employee Form State
+  // Employee Form State (with integrated system user setup)
   const [empForm, setEmpForm] = useState<{
     id?: string
     name: string
@@ -168,6 +186,10 @@ export default function WorkforcePage() {
     emergency_contact_phone: string
     emergency_contact_relation: string
     notes: string
+    create_system_user: boolean
+    system_role_id: string
+    system_password: string
+    system_branch_id: string
   }>({
     name: '',
     name_bn: '',
@@ -186,6 +208,10 @@ export default function WorkforcePage() {
     emergency_contact_phone: '',
     emergency_contact_relation: 'Spouse',
     notes: '',
+    create_system_user: true,
+    system_role_id: 'operator',
+    system_password: '',
+    system_branch_id: '',
   })
 
   // Salary Advance Form State
@@ -260,20 +286,39 @@ export default function WorkforcePage() {
     setTimeout(() => setNotification(null), 4000)
   }
 
-  // Load All Workforce Data
+  // Helper: Match employee to system user identity
+  const getLinkedUser = (emp: EmployeeRecord): CompanyUserWithProfile | undefined => {
+    return companyUsers.find(
+      (cu) =>
+        (emp.user_id && (cu.user_id === emp.user_id || cu.id === emp.user_id)) ||
+        (emp.email &&
+          (cu.invited_email?.toLowerCase() === emp.email.toLowerCase() ||
+            cu.profile?.email?.toLowerCase() === emp.email.toLowerCase())) ||
+        (emp.mobile &&
+          (cu.profile?.phone === emp.mobile ||
+            (cu as any).invited_phone === emp.mobile ||
+            (cu as any).phone === emp.mobile))
+    )
+  }
+
+  // Load All Workforce & User Data
   const loadAllData = async () => {
     setIsLoading(true)
     setErrorMessage(null)
     try {
-      const [sumRes, empRes, shfRes, attRes, otRes, advRes, payRes] = await Promise.all([
-        getWorkforceSummaryAction(),
-        getEmployeesAction(),
-        getShiftsAction(),
-        getDailyAttendanceAction({ date: attDateFilter }),
-        getOvertimeRecordsAction(),
-        getSalaryAdvancesAction(),
-        getPayrollPeriodsAction(),
-      ])
+      const [sumRes, empRes, shfRes, attRes, otRes, advRes, payRes, cuRes, rolesRes, branchesRes] =
+        await Promise.all([
+          getWorkforceSummaryAction(),
+          getEmployeesAction(),
+          getShiftsAction(),
+          getDailyAttendanceAction({ date: attDateFilter }),
+          getOvertimeRecordsAction(),
+          getSalaryAdvancesAction(),
+          getPayrollPeriodsAction(),
+          company?.id ? listCompanyUsersAction(company.id) : Promise.resolve({ success: false, data: [] }),
+          listRolesAction(company?.id),
+          company?.id ? listBranchesAction(company.id) : Promise.resolve([]),
+        ])
 
       if (sumRes.success && sumRes.data) setSummary(sumRes.data)
       if (empRes.success && empRes.data) {
@@ -286,6 +331,9 @@ export default function WorkforcePage() {
           setOtForm((prev) => ({ ...prev, employeeId: firstEmpId }))
         }
       }
+      if (cuRes.success && cuRes.data) setCompanyUsers(cuRes.data)
+      if (rolesRes && Array.isArray(rolesRes)) setRoles(rolesRes)
+      if (branchesRes && Array.isArray(branchesRes)) setBranches(branchesRes)
       if (shfRes.success && shfRes.data) setShifts(shfRes.data)
       if (attRes.success && attRes.data) setDailyAttendance(attRes.data)
       if (otRes.success && otRes.data) setOvertimeRecords(otRes.data)
@@ -300,13 +348,40 @@ export default function WorkforcePage() {
 
   useEffect(() => {
     loadAllData()
-  }, [attDateFilter])
+  }, [attDateFilter, company?.id])
 
   // ==========================================
   // HANDLERS
   // ==========================================
 
-  // 1. Employee Create / Update
+  // Quick Create System User for an Employee
+  const handleQuickCreateUserForEmployee = async (emp: EmployeeRecord) => {
+    if (!company?.id) return
+    const sanitizedEmail = emp.email?.trim() || `${emp.mobile.replace(/[^0-9]/g, '')}@factory.local`
+    const defaultRoleId = roles[0]?.id || 'operator'
+
+    startTransition(async () => {
+      const res = await createCompanyUserAction({
+        companyId: company.id,
+        tenantSlug,
+        fullName: emp.name,
+        fullNameBn: emp.name_bn || undefined,
+        email: sanitizedEmail,
+        phone: emp.mobile,
+        roleId: defaultRoleId,
+        branchId: emp.branch_id || null,
+      })
+
+      if (res.success) {
+        notify(`System user login account created for ${emp.name}!`)
+        loadAllData()
+      } else {
+        setErrorMessage(res.message || (res as any).error || 'Failed to create system user account.')
+      }
+    })
+  }
+
+  // 1. Employee Create / Update (with atomic system user link)
   const handleSaveEmployee = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!empForm.name.trim()) return
@@ -322,9 +397,42 @@ export default function WorkforcePage() {
           setErrorMessage(res.error || 'Failed to update employee.')
         }
       } else {
-        const res = await createEmployeeAction(empForm)
+        let createdUserId: string | null = null
+
+        // If system user creation is requested and we have company context
+        if (empForm.create_system_user && company?.id) {
+          const userEmail =
+            empForm.email.trim() || `${empForm.mobile.replace(/[^0-9]/g, '')}@factory.local`
+          const userRole = empForm.system_role_id || roles[0]?.id || 'operator'
+
+          const userRes = await createCompanyUserAction({
+            companyId: company.id,
+            tenantSlug,
+            fullName: empForm.name,
+            fullNameBn: empForm.name_bn || undefined,
+            email: userEmail,
+            phone: empForm.mobile,
+            password: empForm.system_password || undefined,
+            roleId: userRole,
+            branchId: empForm.system_branch_id || null,
+          })
+
+          if (userRes.success && (userRes as any).data) {
+            createdUserId = (userRes as any).data.user_id || (userRes as any).data.id || null
+          }
+        }
+
+        const res = await createEmployeeAction({
+          ...empForm,
+          user_id: createdUserId,
+        })
+
         if (res.success) {
-          notify(`New employee ${empForm.name} added to roster!`)
+          notify(
+            empForm.create_system_user
+              ? `New employee & system user ${empForm.name} added to roster and ERP accounts!`
+              : `New employee ${empForm.name} added to roster!`
+          )
           setIsNewEmpModalOpen(false)
           loadAllData()
         } else {
@@ -572,6 +680,10 @@ export default function WorkforcePage() {
                     emergency_contact_phone: '',
                     emergency_contact_relation: 'Spouse',
                     notes: '',
+                    create_system_user: true,
+                    system_role_id: roles[0]?.id || 'operator',
+                    system_password: '',
+                    system_branch_id: '',
                   })
                   setIsNewEmpModalOpen(true)
                 }}
@@ -804,79 +916,131 @@ export default function WorkforcePage() {
 
             {/* Employees Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredEmployees.map((emp) => (
-                <Card
-                  key={emp.id}
-                  className="p-5 hover:shadow-md transition-shadow bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative group cursor-pointer"
-                  onClick={() => {
-                    setSelectedEmp(emp)
-                    setIsEmp360DrawerOpen(true)
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm">
-                        {emp.name.slice(0, 2).toUpperCase()}
+              {filteredEmployees.map((emp) => {
+                const linkedUser = getLinkedUser(emp)
+                return (
+                  <Card
+                    key={emp.id}
+                    className="p-5 hover:shadow-md transition-shadow bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative group cursor-pointer flex flex-col justify-between"
+                    onClick={() => {
+                      setSelectedEmp(emp)
+                      setIsEmp360DrawerOpen(true)
+                    }}
+                  >
+                    <div>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm">
+                            {emp.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                              {emp.name}
+                              {emp.name_bn && <span className="text-xs text-slate-500 font-normal">({emp.name_bn})</span>}
+                            </h4>
+                            <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                              <span className="font-mono font-semibold">{emp.employee_id_number}</span>
+                              <span>•</span>
+                              <span className="capitalize">{emp.role}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] capitalize ${
+                            emp.employee_type === 'permanent'
+                              ? 'border-blue-200 text-blue-700 bg-blue-50'
+                              : emp.employee_type === 'daily_labor'
+                              ? 'border-amber-200 text-amber-700 bg-amber-50'
+                              : 'border-purple-200 text-purple-700 bg-purple-50'
+                          }`}
+                        >
+                          {emp.employee_type.replace('_', ' ')}
+                        </Badge>
                       </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                          {emp.name}
-                          {emp.name_bn && <span className="text-xs text-slate-500 font-normal">({emp.name_bn})</span>}
-                        </h4>
-                        <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                          <span className="font-mono font-semibold">{emp.employee_id_number}</span>
-                          <span>•</span>
-                          <span className="capitalize">{emp.role}</span>
+
+                      {/* System User & RBAC Identity HUD */}
+                      {linkedUser ? (
+                        <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 flex items-center justify-between gap-2 text-[11px]">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <ShieldCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                            <div className="truncate">
+                              <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                {linkedUser.roles?.[0]?.name || linkedUser.responsibilities?.[0]?.replace('_', ' ') || 'System User'}
+                              </span>
+                              <span className="text-[10px] text-emerald-600 font-bold ml-1.5">
+                                ● {linkedUser.status === 'active' ? 'Active User' : linkedUser.status}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedUserForPermissions(linkedUser)
+                              setIsPermissionsDrawerOpen(true)
+                            }}
+                            className="h-6 px-2 text-[10px] font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-md shrink-0"
+                          >
+                            Permissions →
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/50 flex items-center justify-between gap-2 text-[11px]">
+                          <span className="text-amber-800 dark:text-amber-300 text-[10px] font-medium">
+                            Offline Staff (No system login)
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleQuickCreateUserForEmployee(emp)
+                            }}
+                            className="h-6 px-2 text-[10px] font-bold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 rounded-md shrink-0"
+                          >
+                            <UserPlus className="h-3 w-3 mr-1" />
+                            Grant Access
+                          </Button>
+                        </div>
+                      )}
+
+                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase">Salary Basis</span>
+                          <div className="font-bold text-slate-800 dark:text-slate-200">
+                            {emp.salary_basis === 'daily_rate' ? (
+                              <>৳ {formatBDT(emp.daily_rate)} / day</>
+                            ) : emp.salary_basis === 'hourly_rate' ? (
+                              <>৳ {formatBDT(emp.hourly_rate)} / hr</>
+                            ) : (
+                              <>৳ {formatBDT(emp.base_salary)} / mo</>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-[10px] text-slate-400 uppercase">Advance Balance</span>
+                          <div className="font-bold text-amber-600">
+                            <CurrencyDisplay amount={emp.current_advance_balance || 0} />
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <Badge
-                      variant="outline"
-                      className={`text-[10px] capitalize ${
-                        emp.employee_type === 'permanent'
-                          ? 'border-blue-200 text-blue-700 bg-blue-50'
-                          : emp.employee_type === 'daily_labor'
-                          ? 'border-amber-200 text-amber-700 bg-amber-50'
-                          : 'border-purple-200 text-purple-700 bg-purple-50'
-                      }`}
-                    >
-                      {emp.employee_type.replace('_', ' ')}
-                    </Badge>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-[10px] text-slate-400 uppercase">Salary Basis</span>
-                      <div className="font-bold text-slate-800 dark:text-slate-200">
-                        {emp.salary_basis === 'daily_rate' ? (
-                          <>৳ {formatBDT(emp.daily_rate)} / day</>
-                        ) : emp.salary_basis === 'hourly_rate' ? (
-                          <>৳ {formatBDT(emp.hourly_rate)} / hr</>
-                        ) : (
-                          <>৳ {formatBDT(emp.base_salary)} / mo</>
-                        )}
-                      </div>
+                    <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+                      <span className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" /> {emp.mobile}
+                      </span>
+                      <span className="text-blue-600 font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                        View Profile <ChevronRight className="h-3 w-3" />
+                      </span>
                     </div>
-
-                    <div className="text-right">
-                      <span className="text-[10px] text-slate-400 uppercase">Advance Balance</span>
-                      <div className="font-bold text-amber-600">
-                        <CurrencyDisplay amount={emp.current_advance_balance || 0} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <Phone className="h-3 w-3" /> {emp.mobile}
-                    </span>
-                    <span className="text-blue-600 font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-                      View Profile <ChevronRight className="h-3 w-3" />
-                    </span>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                )
+              })}
 
               {filteredEmployees.length === 0 && (
                 <div className="col-span-full text-center p-12 border-2 border-dashed rounded-2xl border-slate-200 dark:border-slate-800">
@@ -1651,6 +1815,97 @@ export default function WorkforcePage() {
               </div>
             </div>
 
+            {/* System User Login & RBAC Access Control */}
+            <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/60 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <div>
+                    <h5 className="font-bold text-slate-900 dark:text-white text-xs">
+                      System Login & RBAC Role (সিস্টেম ইউজার একাউন্ট)
+                    </h5>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                      Every employee is an ERP user with role-based permissions and shop floor access.
+                    </p>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={empForm.create_system_user}
+                    onChange={(e) => setEmpForm({ ...empForm, create_system_user: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              {empForm.create_system_user && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2.5 border-t border-blue-100 dark:border-blue-900/50">
+                  <div>
+                    <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                      System Role (সিস্টেম রোল) *
+                    </Label>
+                    <select
+                      value={empForm.system_role_id}
+                      onChange={(e) => setEmpForm({ ...empForm, system_role_id: e.target.value })}
+                      className="w-full h-8 px-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md mt-1 font-medium"
+                    >
+                      {roles.length > 0 ? (
+                        roles.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name} {r.name_bn ? `(${r.name_bn})` : ''}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="operator">Machine Operator (অপারেটর)</option>
+                          <option value="designer">Graphic Designer (ডিজাইনার)</option>
+                          <option value="sales_manager">Sales Manager (বিক্রয়)</option>
+                          <option value="accountant">Accountant (হিসাবরক্ষক)</option>
+                          <option value="production_manager">Production Manager (প্রোডাকশন)</option>
+                          <option value="store_manager">Store Manager (স্টোর)</option>
+                          <option value="general_staff">General Staff (সাধারণ কর্মী)</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                      Branch Scope (শাখা)
+                    </Label>
+                    <select
+                      value={empForm.system_branch_id}
+                      onChange={(e) => setEmpForm({ ...empForm, system_branch_id: e.target.value })}
+                      className="w-full h-8 px-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md mt-1 font-medium"
+                    >
+                      <option value="">All Branches / Main (প্রধান শাখা)</option>
+                      {branches.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                      Login Password / PIN
+                    </Label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. 123456 or auto-generate"
+                      value={empForm.system_password}
+                      onChange={(e) => setEmpForm({ ...empForm, system_password: e.target.value })}
+                      className="text-xs h-8 mt-1 font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="flex items-center justify-end gap-2 pt-3 border-t">
               <Button
                 type="button"
@@ -1663,8 +1918,8 @@ export default function WorkforcePage() {
                 Cancel
               </Button>
 
-              <Button type="submit" disabled={isPending} className="bg-blue-600 hover:bg-blue-700 text-white">
-                {isPending ? 'Saving...' : isEditEmpModalOpen ? 'Update Profile' : 'Save Employee'}
+              <Button type="submit" disabled={isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+                {isPending ? 'Saving...' : isEditEmpModalOpen ? 'Update Profile' : 'Save Employee & System User'}
               </Button>
             </div>
           </form>
@@ -2152,6 +2407,70 @@ export default function WorkforcePage() {
                 )}
               </div>
 
+              {/* Linked System User & Permissions */}
+              {(() => {
+                const linkedUser = getLinkedUser(selectedEmp)
+                return (
+                  <div className="p-3 bg-blue-50/60 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/60 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <span className="font-bold text-slate-900 dark:text-white text-xs">
+                          System User & RBAC Permissions
+                        </span>
+                      </div>
+                      {linkedUser ? (
+                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] uppercase font-bold">
+                          ● {linkedUser.status}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] text-amber-700 border-amber-300">
+                          Offline Staff (No login)
+                        </Badge>
+                      )}
+                    </div>
+
+                    {linkedUser ? (
+                      <div className="space-y-2 pt-1">
+                        <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">Assigned Roles: </span>
+                          {linkedUser.roles?.map((r) => r.name).join(', ') || linkedUser.responsibilities?.join(', ') || 'Staff'}
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setIsEmp360DrawerOpen(false)
+                            setSelectedUserForPermissions(linkedUser)
+                            setIsPermissionsDrawerOpen(true)
+                          }}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold h-8 rounded-lg gap-1.5"
+                        >
+                          <Shield className="h-3.5 w-3.5" />
+                          Manage Granular Permissions & Branch Scopes →
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 pt-1">
+                        <p className="text-[11px] text-slate-500">
+                          This employee does not have a system login account yet. Create one to grant shop floor, design, or accounting access.
+                        </p>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setIsEmp360DrawerOpen(false)
+                            handleQuickCreateUserForEmployee(selectedEmp)
+                          }}
+                          className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold h-8 rounded-lg gap-1.5"
+                        >
+                          <UserPlus className="h-3.5 w-3.5" />
+                          Create System User Account
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
               {/* Actions */}
               <div className="flex items-center justify-end gap-2 pt-3 border-t">
                 <Button
@@ -2178,6 +2497,10 @@ export default function WorkforcePage() {
                       emergency_contact_phone: selectedEmp.emergency_contact_phone || '',
                       emergency_contact_relation: selectedEmp.emergency_contact_relation || 'Spouse',
                       notes: selectedEmp.notes || '',
+                      create_system_user: true,
+                      system_role_id: 'operator',
+                      system_password: '',
+                      system_branch_id: selectedEmp.branch_id || '',
                     })
                     setIsEditEmpModalOpen(true)
                   }}
@@ -2193,6 +2516,27 @@ export default function WorkforcePage() {
             </div>
           </ModalDialog>
         )}
+
+        {/* =========================================================================
+            DRAWER: RBAC USER PERMISSIONS & DATA SCOPES
+           ========================================================================= */}
+        <UserPermissionsDrawer
+          user={selectedUserForPermissions}
+          isOpen={isPermissionsDrawerOpen}
+          onClose={() => {
+            setIsPermissionsDrawerOpen(false)
+            setSelectedUserForPermissions(null)
+          }}
+          onSaved={() => {
+            setIsPermissionsDrawerOpen(false)
+            setSelectedUserForPermissions(null)
+            loadAllData()
+            notify('User permissions and data access scopes updated successfully!')
+          }}
+          companyId={company?.id || ''}
+          allBranches={branches}
+          allRoles={roles}
+        />
 
         {/* =========================================================================
             MODAL: LIVE ATTENDANCE SHIFT PUNCH TERMINAL
