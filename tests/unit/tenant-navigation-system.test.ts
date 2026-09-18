@@ -19,24 +19,34 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     const sectionIds = navSections.map((s) => s.id)
     assert.deepEqual(sectionIds, ['today', 'work', 'management', 'settings'])
 
-    // Verify inventory, suppliers, pricing, and hr (Workforce, Users & Payroll) are positioned in today section
+    // Verify inventory, suppliers, pricing, and HRM suite items are positioned in today section
     const todayItems = navSections.find((s) => s.id === 'today')!.items.map((i) => i.key)
     const productsIndex = todayItems.indexOf('products')
     const inventoryIndex = todayItems.indexOf('inventory')
     const suppliersIndex = todayItems.indexOf('suppliers')
     const pricingIndex = todayItems.indexOf('pricing')
-    const hrIndex = todayItems.indexOf('hr')
+    const hrmDashboardIndex = todayItems.indexOf('hrm_dashboard')
+    const hrmEmployeesIndex = todayItems.indexOf('hrm_employees')
+    const hrmAttendanceIndex = todayItems.indexOf('hrm_attendance')
+    const hrmPayrollIndex = todayItems.indexOf('hrm_payroll')
+    const hrmSalaryReportIndex = todayItems.indexOf('hrm_salary_report')
 
     assert.ok(productsIndex !== -1, 'products must exist in today section')
     assert.equal(inventoryIndex, productsIndex + 1, 'inventory must immediately follow products')
     assert.equal(suppliersIndex, productsIndex + 2, 'suppliers must immediately follow inventory')
     assert.equal(pricingIndex, productsIndex + 3, 'pricing must immediately follow suppliers')
-    assert.equal(hrIndex, productsIndex + 4, 'hr must immediately follow pricing')
+    assert.equal(hrmDashboardIndex, productsIndex + 4, 'hrm_dashboard must immediately follow pricing')
+    assert.equal(hrmEmployeesIndex, hrmDashboardIndex + 1, 'hrm_employees must follow hrm_dashboard')
+    assert.equal(hrmAttendanceIndex, hrmEmployeesIndex + 1, 'hrm_attendance must follow hrm_employees')
+    assert.equal(hrmPayrollIndex, hrmAttendanceIndex + 1, 'hrm_payroll must follow hrm_attendance')
+    assert.equal(hrmSalaryReportIndex, hrmPayrollIndex + 1, 'hrm_salary_report must follow hrm_payroll')
 
-    const hrItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'hr')
-    assert.equal(hrItem?.title, 'Workforce, Users & Payroll', 'hr item must be titled Workforce, Users & Payroll')
-    assert.equal(hrItem?.titleBn, 'কর্মী, ইউজার ও পেরোল', 'hr item must have correct Bengali title')
-    assert.equal(hrItem?.hasDividerBelow, true, 'hr item must have hasDividerBelow flag set to true')
+    const hrmDashItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'hrm_dashboard')
+    assert.equal(hrmDashItem?.title, 'HRM Dashboard', 'hrm_dashboard item must be titled HRM Dashboard')
+    assert.equal(hrmDashItem?.titleBn, 'এইচআরএম ড্যাশবোর্ড', 'hrm_dashboard item must have correct Bengali title')
+
+    const salaryReportItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'hrm_salary_report')
+    assert.equal(salaryReportItem?.hasDividerBelow, true, 'hrm_salary_report item must have hasDividerBelow flag set to true')
 
     const pricingItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'pricing')
     assert.equal(pricingItem?.hasDividerBelow, true, 'pricing item must have hasDividerBelow flag set to true')

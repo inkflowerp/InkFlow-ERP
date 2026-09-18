@@ -1,2595 +1,612 @@
 'use client'
 
 // ==============================================================================
-// InkFlow ERP - Authoritative Workforce, Attendance, Overtime & Payroll Control Center
-// Designed for Bangladeshi Print & Signage SaaS Owners, HR & Shop-Floor Managers
+// InkFlow ERP - Authoritative HRM Dashboard & Executive Workforce Center
+// Designed for Bangladeshi Print & Signage Owners, HR & Shop-Floor Managers
 // ==============================================================================
 
-import React, { useState, useEffect, useTransition, Suspense } from 'react'
+import React, { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import {
-  Users2,
-  Plus,
-  Search,
-  CheckCircle2,
-  Clock,
-  Calendar,
-  AlertTriangle,
+  LayoutDashboard,
+  Users,
   UserCheck,
-  UserX,
-  Lock,
-  DollarSign,
-  Briefcase,
-  FileText,
-  Building,
-  ShieldCheck,
-  Phone,
-  Sparkles,
-  QrCode,
-  MapPin,
-  Filter,
-  Check,
-  X,
-  Printer,
-  ChevronRight,
+  Wallet,
+  FileSpreadsheet,
+  Plus,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  ArrowRight,
   TrendingUp,
   CreditCard,
-  Send,
-  AlertCircle,
+  Building,
+  ShieldCheck,
   RefreshCw,
-  Eye,
-  SlidersHorizontal,
-  Wallet,
-  Receipt,
+  Sparkles,
+  QrCode,
+  Calendar,
+  AlertCircle,
+  Briefcase,
+  Layers,
+  ChevronRight,
   UserPlus,
-  Shield,
-  KeyRound,
-  ShieldAlert,
+  Phone,
+  Check,
+  X,
 } from 'lucide-react'
-import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { ModalDialog } from '@/components/shared/modal-dialog'
-import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
-import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
-import { UsersManagementView } from '@/components/users/users-management-view'
-import { UserPermissionsDrawer } from '@/components/users/user-permissions-drawer'
+import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { formatBDT, formatDate } from '@/lib/formatters'
-import type { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
-import {
-  listCompanyUsersAction,
-  listRolesAction,
-  listBranchesAction,
-  createCompanyUserAction,
-} from '@/actions/company-users.actions'
 import type {
+  WorkforceSummaryKPIs,
   EmployeeRecord,
-  ShiftRecord,
   AttendanceDailySummaryRecord,
   OvertimeRecord,
   SalaryAdvanceRecord,
   PayrollPeriodRecord,
-  PayrollItemRecord,
-  WorkforceSummaryKPIs,
-  EmploymentType,
-  SalaryBasis,
-  PaymentMethod,
 } from '@/types/workforce.types'
 import {
   getWorkforceSummaryAction,
   getEmployeesAction,
-  createEmployeeAction,
-  updateEmployeeAction,
-  deleteEmployeeAction,
-  getShiftsAction,
-  createShiftAction,
   getDailyAttendanceAction,
-  recordAttendanceSummaryAction,
   getOvertimeRecordsAction,
-  createOvertimeRequestAction,
-  reviewOvertimeAction,
   getSalaryAdvancesAction,
-  disburseSalaryAdvanceAction,
   getPayrollPeriodsAction,
-  generatePayrollDraftAction,
-  approvePayrollAction,
-  lockPayrollAction,
-  recordSalaryPaymentAction,
+  reviewOvertimeAction,
 } from '@/actions/workforce.actions'
 
-export default function WorkforcePage() {
+export default function HrmDashboardPage() {
   const params = useParams()
   const router = useRouter()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'vision-sign'
 
-  const searchParams = useSearchParams()
-
   const [isPending, startTransition] = useTransition()
-  const [activeTab, setActiveTab] = useState<'employees' | 'users' | 'attendance' | 'overtime' | 'advances' | 'payroll'>('employees')
   const [isLoading, setIsLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [notification, setNotification] = useState<string | null>(null)
-
-  // Handle URL tab & punch query parameters
-  useEffect(() => {
-    const tabParam = searchParams?.get('tab')
-    if (tabParam && ['employees', 'users', 'attendance', 'overtime', 'advances', 'payroll'].includes(tabParam)) {
-      setActiveTab(tabParam as any)
-    }
-    if (searchParams?.get('punch') === 'true') {
-      setIsMobilePunchOpen(true)
-    }
-  }, [searchParams])
-
-  // Data States
   const [summary, setSummary] = useState<WorkforceSummaryKPIs | null>(null)
   const [employees, setEmployees] = useState<EmployeeRecord[]>([])
-  const [companyUsers, setCompanyUsers] = useState<CompanyUserWithProfile[]>([])
-  const [roles, setRoles] = useState<RoleRow[]>([])
-  const [branches, setBranches] = useState<BranchRow[]>([])
-  const [shifts, setShifts] = useState<ShiftRecord[]>([])
-  const [dailyAttendance, setDailyAttendance] = useState<AttendanceDailySummaryRecord[]>([])
-  const [overtimeRecords, setOvertimeRecords] = useState<OvertimeRecord[]>([])
-  const [advances, setAdvances] = useState<SalaryAdvanceRecord[]>([])
+  const [todayAttendance, setTodayAttendance] = useState<AttendanceDailySummaryRecord[]>([])
+  const [pendingOvertime, setPendingOvertime] = useState<OvertimeRecord[]>([])
+  const [recentAdvances, setRecentAdvances] = useState<SalaryAdvanceRecord[]>([])
   const [payrollPeriods, setPayrollPeriods] = useState<PayrollPeriodRecord[]>([])
-
-  // RBAC Permissions Drawer State
-  const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<CompanyUserWithProfile | null>(null)
-  const [isPermissionsDrawerOpen, setIsPermissionsDrawerOpen] = useState(false)
-
-  // Filters
-  const [searchTerm, setSearchTerm] = useState('')
-  const [deptFilter, setDeptFilter] = useState('ALL')
-  const [typeFilter, setTypeFilter] = useState('ALL')
-  const [attDateFilter, setAttDateFilter] = useState(new Date().toISOString().split('T')[0])
-  const [otStatusFilter, setOtStatusFilter] = useState<'ALL' | 'pending_approval' | 'approved' | 'rejected'>('pending_approval')
-
-  // Modals
-  const [isNewEmpModalOpen, setIsNewEmpModalOpen] = useState(false)
-  const [isEditEmpModalOpen, setIsEditEmpModalOpen] = useState(false)
-  const [isEmp360DrawerOpen, setIsEmp360DrawerOpen] = useState(false)
-  const [selectedEmp, setSelectedEmp] = useState<EmployeeRecord | null>(null)
-  const [isAdvanceModalOpen, setIsAdvanceModalOpen] = useState(false)
-  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false)
-  const [isOtRequestModalOpen, setIsOtRequestModalOpen] = useState(false)
-  const [isGenPayrollModalOpen, setIsGenPayrollModalOpen] = useState(false)
-  const [isSalaryPaymentModalOpen, setIsSalaryPaymentModalOpen] = useState(false)
-  const [selectedPayrollItem, setSelectedPayrollItem] = useState<{ periodId: string; item: PayrollItemRecord } | null>(null)
-  const [isMobilePunchOpen, setIsMobilePunchOpen] = useState(false)
-
-  // Employee Form State (with integrated system user setup)
-  const [empForm, setEmpForm] = useState<{
-    id?: string
-    name: string
-    name_bn: string
-    mobile: string
-    email: string
-    address: string
-    role: string
-    department: string
-    employee_type: EmploymentType
-    salary_basis: SalaryBasis
-    base_salary: number
-    daily_rate: number
-    hourly_rate: number
-    overtime_hourly_rate: number
-    emergency_contact_name: string
-    emergency_contact_phone: string
-    emergency_contact_relation: string
-    notes: string
-    create_system_user: boolean
-    system_role_id: string
-    system_password: string
-    system_branch_id: string
-  }>({
-    name: '',
-    name_bn: '',
-    mobile: '',
-    email: '',
-    address: '',
-    role: 'Machine Operator',
-    department: 'printing',
-    employee_type: 'permanent',
-    salary_basis: 'monthly',
-    base_salary: 25000,
-    daily_rate: 800,
-    hourly_rate: 120,
-    overtime_hourly_rate: 180,
-    emergency_contact_name: '',
-    emergency_contact_phone: '',
-    emergency_contact_relation: 'Spouse',
-    notes: '',
-    create_system_user: true,
-    system_role_id: 'operator',
-    system_password: '',
-    system_branch_id: '',
-  })
-
-  // Salary Advance Form State
-  const [advForm, setAdvForm] = useState<{
-    employeeId: string
-    amount: number
-    paymentMethod: PaymentMethod
-    reason: string
-  }>({
-    employeeId: '',
-    amount: 5000,
-    paymentMethod: 'cash',
-    reason: 'Personal / Family emergency',
-  })
-
-  // Attendance Punch Form State
-  const [attForm, setAttForm] = useState<{
-    employeeId: string
-    status: AttendanceDailySummaryRecord['status']
-    checkInTime: string
-    checkOutTime: string
-    notes: string
-  }>({
-    employeeId: '',
-    status: 'present',
-    checkInTime: '09:00',
-    checkOutTime: '18:00',
-    notes: 'Floor manual attendance',
-  })
-
-  // Overtime Form State
-  const [otForm, setOtForm] = useState<{
-    employeeId: string
-    durationMinutes: number
-    otType: OvertimeRecord['ot_type']
-    reason: string
-  }>({
-    employeeId: '',
-    durationMinutes: 120,
-    otType: 'regular_day',
-    reason: 'Urgent billboard printing & finishing deadline',
-  })
-
-  // Payroll Generator Form State
-  const [payrollGenForm, setPayrollGenForm] = useState<{
-    periodName: string
-    startDate: string
-    endDate: string
-    workingDaysCount: number
-  }>({
-    periodName: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + ' Payroll',
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
-    endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0],
-    workingDaysCount: 26,
-  })
-
-  // Salary Payment Form State
-  const [salaryPayForm, setSalaryPayForm] = useState<{
-    amount: number
-    paymentMethod: PaymentMethod
-    referenceNumber: string
-    notes: string
-  }>({
-    amount: 0,
-    paymentMethod: 'bkash',
-    referenceNumber: '',
-    notes: '',
-  })
+  const [notification, setNotification] = useState<string | null>(null)
 
   const notify = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 4000)
   }
 
-  // Helper: Match employee to system user identity
-  const getLinkedUser = (emp: EmployeeRecord): CompanyUserWithProfile | undefined => {
-    return companyUsers.find(
-      (cu) =>
-        (emp.user_id && (cu.user_id === emp.user_id || cu.id === emp.user_id)) ||
-        (emp.email &&
-          (cu.invited_email?.toLowerCase() === emp.email.toLowerCase() ||
-            cu.profile?.email?.toLowerCase() === emp.email.toLowerCase())) ||
-        (emp.mobile &&
-          (cu.profile?.phone === emp.mobile ||
-            (cu as any).invited_phone === emp.mobile ||
-            (cu as any).phone === emp.mobile))
-    )
-  }
-
-  // Load All Workforce & User Data
-  const loadAllData = async () => {
+  const loadData = async () => {
     setIsLoading(true)
-    setErrorMessage(null)
     try {
-      const [sumRes, empRes, shfRes, attRes, otRes, advRes, payRes, cuRes, rolesRes, branchesRes] =
-        await Promise.all([
-          getWorkforceSummaryAction(),
-          getEmployeesAction(),
-          getShiftsAction(),
-          getDailyAttendanceAction({ date: attDateFilter }),
-          getOvertimeRecordsAction(),
-          getSalaryAdvancesAction(),
-          getPayrollPeriodsAction(),
-          company?.id ? listCompanyUsersAction(company.id) : Promise.resolve({ success: false, data: [] }),
-          listRolesAction(company?.id),
-          company?.id ? listBranchesAction(company.id) : Promise.resolve([]),
-        ])
+      const todayStr = new Date().toISOString().split('T')[0]
+      const [sumRes, empRes, attRes, otRes, advRes, payRes] = await Promise.all([
+        getWorkforceSummaryAction(),
+        getEmployeesAction({ status: 'active' }),
+        getDailyAttendanceAction({ date: todayStr }),
+        getOvertimeRecordsAction({ status: 'pending_approval' }),
+        getSalaryAdvancesAction({ isSettled: false }),
+        getPayrollPeriodsAction(),
+      ])
 
       if (sumRes.success && sumRes.data) setSummary(sumRes.data)
-      if (empRes.success && empRes.data) {
-        const empList = empRes.data
-        setEmployees(empList)
-        if (empList.length > 0 && !advForm.employeeId) {
-          const firstEmpId = empList[0].id
-          setAdvForm((prev) => ({ ...prev, employeeId: firstEmpId }))
-          setAttForm((prev) => ({ ...prev, employeeId: firstEmpId }))
-          setOtForm((prev) => ({ ...prev, employeeId: firstEmpId }))
-        }
-      }
-      if (cuRes.success && cuRes.data) setCompanyUsers(cuRes.data)
-      if (rolesRes && Array.isArray(rolesRes)) setRoles(rolesRes)
-      if (branchesRes && Array.isArray(branchesRes)) setBranches(branchesRes)
-      if (shfRes.success && shfRes.data) setShifts(shfRes.data)
-      if (attRes.success && attRes.data) setDailyAttendance(attRes.data)
-      if (otRes.success && otRes.data) setOvertimeRecords(otRes.data)
-      if (advRes.success && advRes.data) setAdvances(advRes.data)
+      if (empRes.success && empRes.data) setEmployees(empRes.data)
+      if (attRes.success && attRes.data) setTodayAttendance(attRes.data)
+      if (otRes.success && otRes.data) setPendingOvertime(otRes.data)
+      if (advRes.success && advRes.data) setRecentAdvances(advRes.data)
       if (payRes.success && payRes.data) setPayrollPeriods(payRes.data)
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to load workforce module data.')
+      console.error('Failed to load HRM Dashboard data', err)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    loadAllData()
-  }, [attDateFilter, company?.id])
+    loadData()
+  }, [])
 
-  // ==========================================
-  // HANDLERS
-  // ==========================================
-
-  // Quick Create System User for an Employee
-  const handleQuickCreateUserForEmployee = async (emp: EmployeeRecord) => {
-    if (!company?.id) return
-    const sanitizedEmail = emp.email?.trim() || `${emp.mobile.replace(/[^0-9]/g, '')}@factory.local`
-    const defaultRoleId = roles[0]?.id || 'operator'
-
+  const handleQuickReviewOt = async (id: string, status: 'approved' | 'rejected') => {
     startTransition(async () => {
-      const res = await createCompanyUserAction({
-        companyId: company.id,
-        tenantSlug,
-        fullName: emp.name,
-        fullNameBn: emp.name_bn || undefined,
-        email: sanitizedEmail,
-        phone: emp.mobile,
-        roleId: defaultRoleId,
-        branchId: emp.branch_id || null,
-      })
-
+      const res = await reviewOvertimeAction({ id, status, multiplier: 1.5 })
       if (res.success) {
-        notify(`System user login account created for ${emp.name}!`)
-        loadAllData()
+        notify(`Overtime request ${status === 'approved' ? 'Approved' : 'Rejected'}.`)
+        setPendingOvertime((prev) => prev.filter((o) => o.id !== id))
+        loadData()
       } else {
-        setErrorMessage(res.message || (res as any).error || 'Failed to create system user account.')
+        notify(res.error || 'Failed to review overtime.')
       }
     })
   }
 
-  // 1. Employee Create / Update (with atomic system user link)
-  const handleSaveEmployee = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!empForm.name.trim()) return
-
-    startTransition(async () => {
-      if (isEditEmpModalOpen && empForm.id) {
-        const res = await updateEmployeeAction(empForm.id, empForm)
-        if (res.success) {
-          notify(`Employee profile for ${empForm.name} updated successfully!`)
-          setIsEditEmpModalOpen(false)
-          loadAllData()
-        } else {
-          setErrorMessage(res.error || 'Failed to update employee.')
-        }
-      } else {
-        let createdUserId: string | null = null
-
-        // If system user creation is requested and we have company context
-        if (empForm.create_system_user && company?.id) {
-          const userEmail =
-            empForm.email.trim() || `${empForm.mobile.replace(/[^0-9]/g, '')}@factory.local`
-          const userRole = empForm.system_role_id || roles[0]?.id || 'operator'
-
-          const userRes = await createCompanyUserAction({
-            companyId: company.id,
-            tenantSlug,
-            fullName: empForm.name,
-            fullNameBn: empForm.name_bn || undefined,
-            email: userEmail,
-            phone: empForm.mobile,
-            password: empForm.system_password || undefined,
-            roleId: userRole,
-            branchId: empForm.system_branch_id || null,
-          })
-
-          if (userRes.success && (userRes as any).data) {
-            createdUserId = (userRes as any).data.user_id || (userRes as any).data.id || null
-          }
-        }
-
-        const res = await createEmployeeAction({
-          ...empForm,
-          user_id: createdUserId,
-        })
-
-        if (res.success) {
-          notify(
-            empForm.create_system_user
-              ? `New employee & system user ${empForm.name} added to roster and ERP accounts!`
-              : `New employee ${empForm.name} added to roster!`
-          )
-          setIsNewEmpModalOpen(false)
-          loadAllData()
-        } else {
-          setErrorMessage(res.error || 'Failed to create employee.')
-        }
-      }
+  // Department counts
+  const departmentCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {}
+    employees.forEach((emp) => {
+      const dept = emp.department || 'General'
+      counts[dept] = (counts[dept] || 0) + 1
     })
-  }
+    return counts
+  }, [employees])
 
-  // 2. Disburse Salary Advance
-  const handleDisburseAdvance = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!advForm.employeeId || advForm.amount <= 0) return
-
-    startTransition(async () => {
-      const res = await disburseSalaryAdvanceAction(advForm)
-      if (res.success && res.data) {
-        notify(`Salary advance of ৳ ${formatBDT(res.data.amount)} disbursed via ${res.data.payment_method.toUpperCase()}!`)
-        setIsAdvanceModalOpen(false)
-        loadAllData()
-      } else {
-        setErrorMessage(res.error || 'Failed to disburse advance.')
-      }
-    })
-  }
-
-  // 3. Mark Attendance
-  const handleSaveAttendance = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!attForm.employeeId) return
-
-    startTransition(async () => {
-      const res = await recordAttendanceSummaryAction({
-        employeeId: attForm.employeeId,
-        attendanceDate: attDateFilter,
-        status: attForm.status,
-        checkInTime: attForm.checkInTime,
-        checkOutTime: attForm.checkOutTime,
-        notes: attForm.notes,
-      })
-
-      if (res.success && res.data) {
-        notify(`Attendance recorded: ${res.data.status.toUpperCase()} (Late: ${res.data.late_minutes}m, OT: ${res.data.potential_ot_minutes}m)`)
-        setIsAttendanceModalOpen(false)
-        loadAllData()
-      } else {
-        setErrorMessage(res.error || 'Failed to record attendance.')
-      }
-    })
-  }
-
-  // 4. Submit Overtime Request
-  const handleCreateOtRequest = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!otForm.employeeId || otForm.durationMinutes <= 0) return
-
-    startTransition(async () => {
-      const res = await createOvertimeRequestAction({
-        employeeId: otForm.employeeId,
-        otDate: attDateFilter,
-        durationMinutes: otForm.durationMinutes,
-        otType: otForm.otType,
-        reason: otForm.reason,
-      })
-
-      if (res.success && res.data) {
-        notify(`Overtime request submitted for ${res.data.duration_hours} hrs (৳ ${res.data.calculated_amount})`)
-        setIsOtRequestModalOpen(false)
-        loadAllData()
-      } else {
-        setErrorMessage(res.error || 'Failed to submit overtime request.')
-      }
-    })
-  }
-
-  // 5. Review Overtime (Approve / Reject)
-  const handleReviewOt = async (id: string, status: 'approved' | 'rejected', multiplier?: number) => {
-    startTransition(async () => {
-      const res = await reviewOvertimeAction({ id, status, multiplier })
-      if (res.success && res.data) {
-        notify(`Overtime ${status === 'approved' ? 'APPROVED' : 'REJECTED'} (৳ ${res.data.calculated_amount})`)
-        loadAllData()
-      } else {
-        setErrorMessage(res.error || 'Failed to review overtime.')
-      }
-    })
-  }
-
-  // 6. Generate Payroll Period
-  const handleGeneratePayroll = async (e: React.FormEvent) => {
-    e.preventDefault()
-    startTransition(async () => {
-      const res = await generatePayrollDraftAction(payrollGenForm)
-      if (res.success && res.data) {
-        notify(`Payroll "${res.data.period_name}" generated with ${res.data.items?.length || 0} employees!`)
-        setIsGenPayrollModalOpen(false)
-        setActiveTab('payroll')
-        loadAllData()
-      } else {
-        setErrorMessage(res.error || 'Failed to generate payroll.')
-      }
-    })
-  }
-
-  // 7. Approve Payroll Period
-  const handleApprovePayroll = async (periodId: string) => {
-    startTransition(async () => {
-      const res = await approvePayrollAction(periodId)
-      if (res.success) {
-        notify('Payroll period APPROVED! Ready for disbursement.')
-        loadAllData()
-      } else {
-        setErrorMessage(res.error || 'Failed to approve payroll.')
-      }
-    })
-  }
-
-  // 8. Lock Payroll Period
-  const handleLockPayroll = async (periodId: string) => {
-    startTransition(async () => {
-      const res = await lockPayrollAction(periodId)
-      if (res.success) {
-        notify('Payroll period PERMANENTLY LOCKED and archived!')
-        loadAllData()
-      } else {
-        setErrorMessage(res.error || 'Failed to lock payroll.')
-      }
-    })
-  }
-
-  // 9. Record Salary Payment
-  const handleRecordPayment = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedPayrollItem || salaryPayForm.amount <= 0) return
-
-    startTransition(async () => {
-      const res = await recordSalaryPaymentAction({
-        payrollPeriodId: selectedPayrollItem.periodId,
-        payrollItemId: selectedPayrollItem.item.id,
-        employeeId: selectedPayrollItem.item.employee_id,
-        amount: salaryPayForm.amount,
-        paymentMethod: salaryPayForm.paymentMethod,
-        referenceNumber: salaryPayForm.referenceNumber,
-        notes: salaryPayForm.notes,
-      })
-
-      if (res.success && res.data) {
-        notify(`Salary payment of ৳ ${formatBDT(res.data.amount)} recorded via ${res.data.payment_method.toUpperCase()}!`)
-        setIsSalaryPaymentModalOpen(false)
-        loadAllData()
-      } else {
-        setErrorMessage(res.error || 'Failed to record salary payment.')
-      }
-    })
-  }
-
-  // Filtered Lists
-  const filteredEmployees = employees.filter((emp) => {
-    const matchSearch =
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (emp.name_bn && emp.name_bn.includes(searchTerm)) ||
-      emp.employee_id_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.mobile.includes(searchTerm)
-    const matchDept = deptFilter === 'ALL' || emp.department === deptFilter
-    const matchType = typeFilter === 'ALL' || emp.employee_type === typeFilter
-    return matchSearch && matchDept && matchType
-  })
-
-  const filteredAttendance = dailyAttendance.filter((att) => {
-    const matchSearch =
-      (att.employee_name && att.employee_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (att.notes && att.notes.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchDept = deptFilter === 'ALL' || att.employee_department === deptFilter
-    return matchSearch && matchDept
-  })
-
-  const filteredOt = overtimeRecords.filter((ot) => {
-    if (otStatusFilter === 'ALL') return true
-    return ot.status === otStatusFilter
-  })
-
-  const activePeriod = payrollPeriods[0]
+  const totalEmployeesCount = employees.length || summary?.todayAttendance.totalEmployees || 0
+  const presentTodayCount = summary?.todayAttendance.present || todayAttendance.filter((a) => a.status === 'present' || a.status === 'half_day').length || 0
+  const lateTodayCount = summary?.todayAttendance.late || todayAttendance.filter((a) => a.status === 'late' || (a.late_minutes && a.late_minutes > 0)).length || 0
+  const absentTodayCount = summary?.todayAttendance.absent || (totalEmployeesCount > 0 ? Math.max(0, totalEmployeesCount - presentTodayCount) : 0)
+  const attendanceRate = totalEmployeesCount > 0 ? Math.round((presentTodayCount / totalEmployeesCount) * 100) : 0
 
   return (
-    <FeatureGate feature="hr">
-      <div className="space-y-6 max-w-7xl">
-        {/* Header */}
-        <PageHeader
-          titleEn="Workforce, Users & Payroll"
-          titleBn="কর্মী, ইউজার ও পেরোল ব্যবস্থাপনা"
-          descriptionEn="Permanent technical operators, daily labor, system users & roles, attendance punch, and payroll runs."
-          descriptionBn="প্রিন্ট শপ কর্মী, সিস্টেম ইউজার, হাজিরা, ওভারটাইম অনুমোদন এবং বেতন হিসাব পরিচালনা করুন।"
-          icon={Users2}
-          iconColor="text-blue-600"
-          actions={
-            <div className="flex items-center gap-2 flex-wrap">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsMobilePunchOpen(true)}
-                className="text-xs border-indigo-300 text-indigo-800 bg-indigo-50/50 hover:bg-indigo-100/80 dark:border-indigo-800 dark:text-indigo-300 dark:bg-indigo-950/40 font-bold bangla-text shadow-xs"
-              >
-                <UserCheck className="mr-1.5 h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                {tBilingual('Employee Shift Punch', 'কর্মচারী শিফট পাঞ্চ')}
-              </Button>
+    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      {/* Toast Notification */}
+      {notification && (
+        <div className="fixed bottom-5 right-5 z-50 bg-emerald-950/90 text-emerald-200 border border-emerald-500/40 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 backdrop-blur text-sm font-medium animate-in fade-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span>{notification}</span>
+        </div>
+      )}
 
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsAttendanceModalOpen(true)}
-                className="text-xs border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 bangla-text"
-              >
-                <Clock className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Mark Attendance', 'হাজিরা এন্ট্রি')}
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsAdvanceModalOpen(true)}
-                className="text-xs border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-300 bangla-text"
-              >
-                <DollarSign className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Salary Advance', 'বেতন অগ্রিম')}
-              </Button>
-
-              <Button
-                size="sm"
-                onClick={() => {
-                  setEmpForm({
-                    name: '',
-                    name_bn: '',
-                    mobile: '+88017',
-                    email: '',
-                    address: 'Dhaka',
-                    role: 'Machine Operator',
-                    department: 'printing',
-                    employee_type: 'permanent',
-                    salary_basis: 'monthly',
-                    base_salary: 25000,
-                    daily_rate: 800,
-                    hourly_rate: 120,
-                    overtime_hourly_rate: 180,
-                    emergency_contact_name: '',
-                    emergency_contact_phone: '',
-                    emergency_contact_relation: 'Spouse',
-                    notes: '',
-                    create_system_user: true,
-                    system_role_id: roles[0]?.id || 'operator',
-                    system_password: '',
-                    system_branch_id: '',
-                  })
-                  setIsNewEmpModalOpen(true)
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text shadow-xs"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Add Employee', 'নতুন কর্মী')}
-              </Button>
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary ring-1 ring-primary/20">
+              <LayoutDashboard className="w-6 h-6" />
             </div>
-          }
-        />
-
-        {/* Alerts & Notifications */}
-        {notification && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center justify-between border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>{notification}</span>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                {tBilingual('HRM Dashboard', 'এইচআরএম ড্যাশবোর্ড')}
+                <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 text-xs">
+                  Live
+                </Badge>
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {tBilingual(
+                  'Workforce command center, realtime attendance radar & payroll intelligence',
+                  'কর্মী ব্যবস্থাপনা, লাইভ হাজিরা পর্যবেক্ষণ ও বেতন নিয়ন্ত্রণ কেন্দ্র'
+                )}
+              </p>
             </div>
-            <Button size="icon" variant="ghost" onClick={() => setNotification(null)} className="h-5 w-5 p-0">
-              <X className="h-3 w-3" />
-            </Button>
           </div>
-        )}
-
-        {errorMessage && (
-          <div className="p-3 bg-rose-50 text-rose-800 rounded-xl text-xs font-semibold flex items-center justify-between border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 animate-in fade-in-0">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
-            <Button size="icon" variant="ghost" onClick={() => setErrorMessage(null)} className="h-5 w-5 p-0">
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
-
-        {/* Live Owner KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-4 border-l-4 border-l-blue-600 bg-white dark:bg-slate-900 shadow-xs">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Today Floor Presence</span>
-            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-              {summary?.todayAttendance.present || 0} / {summary?.todayAttendance.totalEmployees || employees.length}
-            </div>
-            <div className="flex items-center gap-2 mt-1 text-[11px]">
-              <span className="text-emerald-600 font-bold">{summary?.todayAttendance.late || 0} Late</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-amber-600 font-bold">{summary?.todayAttendance.fieldWork || 0} Field</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-rose-600 font-bold">{summary?.todayAttendance.absent || 0} Absent</span>
-            </div>
-          </Card>
-
-          <Card className="p-4 border-l-4 border-l-amber-500 bg-white dark:bg-slate-900 shadow-xs">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overtime Today / Pending</span>
-            <div className="text-2xl font-black text-amber-600 mt-1">
-              {summary?.todayAttendance.potentialOtHours || 0} hrs
-            </div>
-            <div className="flex items-center justify-between mt-1 text-[11px] text-slate-500">
-              <span>Pending Approval:</span>
-              <span className="font-bold text-amber-700 dark:text-amber-400">
-                <CurrencyDisplay amount={summary?.monthFinancials.pendingOtAmount || 0} />
-              </span>
-            </div>
-          </Card>
-
-          <Card className="p-4 border-l-4 border-l-purple-600 bg-white dark:bg-slate-900 shadow-xs">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Advances Outstanding (অগ্রিম)</span>
-            <div className="text-2xl font-black text-purple-600 mt-1">
-              <CurrencyDisplay amount={summary?.monthFinancials.advancesOutstanding || 0} />
-            </div>
-            <span className="text-[11px] text-slate-400">Auto-deducted on month-end payroll</span>
-          </Card>
-
-          <Card className="p-4 border-l-4 border-l-emerald-600 bg-white dark:bg-slate-900 shadow-xs">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Month Payroll / Due</span>
-            <div className="text-2xl font-black text-emerald-600 mt-1">
-              <CurrencyDisplay amount={summary?.monthFinancials.grossPayroll || 0} />
-            </div>
-            <div className="flex items-center justify-between mt-1 text-[11px] text-slate-500">
-              <span>Unpaid Salary Due:</span>
-              <span className="font-bold text-rose-600">
-                <CurrencyDisplay amount={summary?.monthFinancials.unpaidSalaryDue || 0} />
-              </span>
-            </div>
-          </Card>
         </div>
 
-        {/* View Switcher Navigation Tabs */}
-        <div className="flex items-center justify-between gap-3 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto">
-            <Button
-              size="sm"
-              variant={activeTab === 'employees' ? 'default' : 'ghost'}
-              onClick={() => setActiveTab('employees')}
-              className={`text-xs h-8 px-3 rounded-xl font-semibold ${
-                activeTab === 'employees' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              <Users2 className="h-3.5 w-3.5 mr-1.5" />
-              {tBilingual('Employees', 'কর্মী তালিকা')} ({employees.length})
-            </Button>
-
-            <Button
-              size="sm"
-              variant={activeTab === 'users' ? 'default' : 'ghost'}
-              onClick={() => setActiveTab('users')}
-              className={`text-xs h-8 px-3 rounded-xl font-semibold ${
-                activeTab === 'users' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
-              {tBilingual('System Users & Access', 'ইউজার ও অনুমতি')}
-            </Button>
-
-            <Button
-              size="sm"
-              variant={activeTab === 'attendance' ? 'default' : 'ghost'}
-              onClick={() => setActiveTab('attendance')}
-              className={`text-xs h-8 px-3 rounded-xl font-semibold ${
-                activeTab === 'attendance' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              <Clock className="h-3.5 w-3.5 mr-1.5" />
-              {tBilingual('Daily Attendance', 'দৈনিক হাজিরা')}
-            </Button>
-
-            <Button
-              size="sm"
-              variant={activeTab === 'overtime' ? 'default' : 'ghost'}
-              onClick={() => setActiveTab('overtime')}
-              className={`text-xs h-8 px-3 rounded-xl font-semibold relative ${
-                activeTab === 'overtime' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
-              {tBilingual('Overtime Approval', 'ওভারটাইম অনুমোদন')}
-              {overtimeRecords.filter((r) => r.status === 'pending_approval').length > 0 && (
-                <span className="ml-1.5 px-1.5 py-0.2 bg-amber-500 text-white text-[10px] font-black rounded-full">
-                  {overtimeRecords.filter((r) => r.status === 'pending_approval').length}
-                </span>
-              )}
-            </Button>
-
-            <Button
-              size="sm"
-              variant={activeTab === 'advances' ? 'default' : 'ghost'}
-              onClick={() => setActiveTab('advances')}
-              className={`text-xs h-8 px-3 rounded-xl font-semibold ${
-                activeTab === 'advances' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              <DollarSign className="h-3.5 w-3.5 mr-1.5" />
-              {tBilingual('Salary Advances', 'বেতন অগ্রিম')}
-            </Button>
-
-            <Button
-              size="sm"
-              variant={activeTab === 'payroll' ? 'default' : 'ghost'}
-              onClick={() => setActiveTab('payroll')}
-              className={`text-xs h-8 px-3 rounded-xl font-semibold ${
-                activeTab === 'payroll' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              <Receipt className="h-3.5 w-3.5 mr-1.5" />
-              {tBilingual('Payroll & Payouts', 'মাসিক পে-রোল')}
-            </Button>
-          </div>
-
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5">
           <Button
+            variant="outline"
             size="sm"
-            variant="ghost"
-            onClick={loadAllData}
+            onClick={loadData}
             disabled={isLoading}
-            className="h-8 px-2.5 text-xs text-slate-500 hover:text-slate-900"
+            className="gap-1.5 text-xs h-9"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            {tBilingual('Refresh', 'রিফ্রেশ')}
+          </Button>
+
+          <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs h-9">
+            <Link href={`/${tenantSlug}/hr/attendance`}>
+              <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              {tBilingual('Floor Attendance', 'হাজিরা')}
+            </Link>
+          </Button>
+
+          <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs h-9">
+            <Link href={`/${tenantSlug}/hr/payroll`}>
+              <Wallet className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              {tBilingual('Payroll & Salary', 'পেরোল ও বেতন')}
+            </Link>
+          </Button>
+
+          <Button asChild size="sm" className="gap-1.5 text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Link href={`/${tenantSlug}/hr/employees?action=new`}>
+              <UserPlus className="w-3.5 h-3.5" />
+              {tBilingual('Add Employee', 'নতুন কর্মী')}
+            </Link>
           </Button>
         </div>
+      </div>
 
-        {/* =========================================================================
-            TAB 1: EMPLOYEES DIRECTORY
-           ========================================================================= */}
-        {activeTab === 'employees' && (
-          <div className="space-y-4">
-            {/* Search & Filter Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="relative w-full sm:w-80">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder={tBilingual('Search employee by name, Bangla, mobile, ID...', 'নাম বা মোবাইল দিয়ে খুঁজুন...')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 text-xs h-9 bg-white dark:bg-slate-900"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-                <select
-                  value={deptFilter}
-                  onChange={(e) => setDeptFilter(e.target.value)}
-                  aria-label="Filter by department"
-                  className="h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300"
-                >
-                  <option value="ALL">All Departments (সব বিভাগ)</option>
-                  <option value="printing">Printing (প্রিন্টিং)</option>
-                  <option value="finishing">Finishing (ফিনিশিং)</option>
-                  <option value="fabrication">Fabrication (ফেব্রিকেশন)</option>
-                  <option value="design">Design Studio (ডিজাইন)</option>
-                  <option value="installation">Installation & Site (ফিটিং)</option>
-                  <option value="accounts">Accounts (হিসাব)</option>
-                  <option value="sales">Sales & Marketing (বিক্রয়)</option>
-                  <option value="management">Management (ম্যানেজমেন্ট)</option>
-                </select>
-
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  aria-label="Filter by employment type"
-                  className="h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300"
-                >
-                  <option value="ALL">All Staff Types (সব ধরন)</option>
-                  <option value="permanent">Monthly Permanent (স্থায়ী)</option>
-                  <option value="daily_labor">Daily Worker (দৈনিক শ্রমিক)</option>
-                  <option value="hourly_worker">Hourly Worker (ঘণ্টা ভিত্তিক)</option>
-                  <option value="contract">Contract (চুক্তিভিত্তিক)</option>
-                </select>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActiveTab('users')}
-                  className="h-9 px-3 text-xs border-blue-200 text-blue-700 bg-blue-50/60 hover:bg-blue-100 dark:border-blue-900 dark:text-blue-300 dark:bg-blue-950/40 font-semibold gap-1.5 shrink-0"
-                >
-                  <ShieldCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                  {tBilingual('User Management & Roles', 'ইউজার ও রোলস')} →
-                </Button>
+      {/* 4 Top Executive KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Workforce */}
+        <Card className="border-border/60 bg-card hover:border-primary/40 transition-colors shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {tBilingual('Total Workforce', 'মোট কর্মী')}
+              </span>
+              <div className="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg">
+                <Users className="w-4 h-4" />
               </div>
             </div>
-
-            {/* Employees Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredEmployees.map((emp) => {
-                const linkedUser = getLinkedUser(emp)
-                return (
-                  <Card
-                    key={emp.id}
-                    className="p-5 hover:shadow-md transition-shadow bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative group cursor-pointer flex flex-col justify-between"
-                    onClick={() => {
-                      setSelectedEmp(emp)
-                      setIsEmp360DrawerOpen(true)
-                    }}
-                  >
-                    <div>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm">
-                            {emp.name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                              {emp.name}
-                              {emp.name_bn && <span className="text-xs text-slate-500 font-normal">({emp.name_bn})</span>}
-                            </h4>
-                            <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                              <span className="font-mono font-semibold">{emp.employee_id_number}</span>
-                              <span>•</span>
-                              <span className="capitalize">{emp.role}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] capitalize ${
-                            emp.employee_type === 'permanent'
-                              ? 'border-blue-200 text-blue-700 bg-blue-50'
-                              : emp.employee_type === 'daily_labor'
-                              ? 'border-amber-200 text-amber-700 bg-amber-50'
-                              : 'border-purple-200 text-purple-700 bg-purple-50'
-                          }`}
-                        >
-                          {emp.employee_type.replace('_', ' ')}
-                        </Badge>
-                      </div>
-
-                      {/* System User & RBAC Identity HUD */}
-                      {linkedUser ? (
-                        <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 flex items-center justify-between gap-2 text-[11px]">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <ShieldCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                            <div className="truncate">
-                              <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
-                                {linkedUser.roles?.[0]?.name || linkedUser.responsibilities?.[0]?.replace('_', ' ') || 'System User'}
-                              </span>
-                              <span className="text-[10px] text-emerald-600 font-bold ml-1.5">
-                                ● {linkedUser.status === 'active' ? 'Active User' : linkedUser.status}
-                              </span>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSelectedUserForPermissions(linkedUser)
-                              setIsPermissionsDrawerOpen(true)
-                            }}
-                            className="h-6 px-2 text-[10px] font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-md shrink-0"
-                          >
-                            Permissions →
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/50 flex items-center justify-between gap-2 text-[11px]">
-                          <span className="text-amber-800 dark:text-amber-300 text-[10px] font-medium">
-                            Offline Staff (No system login)
-                          </span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleQuickCreateUserForEmployee(emp)
-                            }}
-                            className="h-6 px-2 text-[10px] font-bold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 rounded-md shrink-0"
-                          >
-                            <UserPlus className="h-3 w-3 mr-1" />
-                            Grant Access
-                          </Button>
-                        </div>
-                      )}
-
-                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <span className="text-[10px] text-slate-400 uppercase">Salary Basis</span>
-                          <div className="font-bold text-slate-800 dark:text-slate-200">
-                            {emp.salary_basis === 'daily_rate' ? (
-                              <>৳ {formatBDT(emp.daily_rate)} / day</>
-                            ) : emp.salary_basis === 'hourly_rate' ? (
-                              <>৳ {formatBDT(emp.hourly_rate)} / hr</>
-                            ) : (
-                              <>৳ {formatBDT(emp.base_salary)} / mo</>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="text-right">
-                          <span className="text-[10px] text-slate-400 uppercase">Advance Balance</span>
-                          <div className="font-bold text-amber-600">
-                            <CurrencyDisplay amount={emp.current_advance_balance || 0} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" /> {emp.mobile}
-                      </span>
-                      <span className="text-blue-600 font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-                        View Profile <ChevronRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </Card>
-                )
-              })}
-
-              {filteredEmployees.length === 0 && (
-                <div className="col-span-full text-center p-12 border-2 border-dashed rounded-2xl border-slate-200 dark:border-slate-800">
-                  <Users2 className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                  <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">No employees found</h4>
-                  <p className="text-xs text-slate-500 mt-1">Try changing your search keywords or department filters.</p>
-                </div>
-              )}
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-bold tracking-tight text-foreground">{totalEmployeesCount}</span>
+              <span className="text-xs text-muted-foreground">{tBilingual('active staff', 'সক্রিয় কর্মী')}</span>
             </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB: SYSTEM USERS & ACCESS (User Management)
-           ========================================================================= */}
-        {activeTab === 'users' && (
-          <div className="space-y-4">
-            {/* Workforce & System User Bridge Banner */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-purple-50/40 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/20 border border-blue-100 dark:border-blue-900/60 shadow-xs">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-blue-600 text-white shadow-xs">
-                  <ShieldCheck className="h-4 w-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                    {tBilingual('Unified Workforce & User System', 'একীভূত কর্মী ও ইউজার সিস্টেম')}
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {tBilingual(
-                      'Every system user is synced with an Employee profile for attendance, overtime & payroll runs.',
-                      'প্রতিটি সিস্টেম ইউজার হাজিরা, ওভারটাইম এবং পেরোলের জন্য কর্মী প্রোফাইলের সাথে স্বয়ংক্রিয়ভাবে সংযুক্ত।'
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setActiveTab('employees')}
-                className="text-xs h-8 rounded-xl border-blue-300 text-blue-800 bg-white/80 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:bg-slate-900/80 font-bold shrink-0 shadow-xs"
-              >
-                <Users2 className="h-3.5 w-3.5 mr-1 text-blue-600 dark:text-blue-400" />
-                {tBilingual('View Employees Directory', 'কর্মী তালিকা দেখুন')} →
-              </Button>
+            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-2.5">
+              <span>{employees.filter((e) => e.employee_type === 'permanent').length} {tBilingual('Permanent', 'স্থায়ী')}</span>
+              <span>•</span>
+              <span>{employees.filter((e) => e.is_daily_worker || e.employee_type === 'daily_worker').length} {tBilingual('Daily', 'দৈনিক')}</span>
+              <span>•</span>
+              <Link href={`/${tenantSlug}/hr/employees`} className="text-primary hover:underline flex items-center gap-0.5">
+                {tBilingual('View list', 'তালিকা')} <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
+          </CardContent>
+        </Card>
 
-            <UsersManagementView hideHeader={true} />
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 2: DAILY ATTENDANCE
-           ========================================================================= */}
-        {activeTab === 'attendance' && (
-          <div className="space-y-4">
-            {/* Live Shift Punch Banner & Quick Action */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-emerald-50/40 dark:from-indigo-950/40 dark:via-blue-950/20 dark:to-emerald-950/20 border border-indigo-100 dark:border-indigo-900/60 shadow-xs">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-xs">
-                  <UserCheck className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    {tBilingual('Employee Shift Punch & QR Attendance', 'কর্মচারী শিফট পাঞ্চ ও কিউআর হাজিরা')}
-                  </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {tBilingual('Live camera QR code scan, geofenced GPS verification, and shift punch-in / punch-out.', 'লাইভ কিউআর স্ক্যান এবং জিপিএস সীমানার ভেতর স্বয়ংক্রিয় শিফট হাজিরা ও প্রস্থান।')}
-                  </p>
-                </div>
+        {/* Card 2: Today Attendance */}
+        <Card className="border-border/60 bg-card hover:border-emerald-500/40 transition-colors shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {tBilingual('Today Attendance', 'আজকের উপস্থিতি')}
+              </span>
+              <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                <UserCheck className="w-4 h-4" />
               </div>
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-bold tracking-tight text-foreground">{attendanceRate}%</span>
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                ({presentTodayCount}/{totalEmployeesCount} {tBilingual('present', 'উপস্থিত')})
+              </span>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-2.5">
+              <span className="text-amber-600 dark:text-amber-400 font-medium">{lateTodayCount} {tBilingual('Late', 'দেরি')}</span>
+              <span>•</span>
+              <span className="text-rose-600 dark:text-rose-400 font-medium">{absentTodayCount} {tBilingual('Absent', 'অনুপস্থিত')}</span>
+              <span>•</span>
+              <Link href={`/${tenantSlug}/hr/attendance`} className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-0.5">
+                {tBilingual('Details', 'বিস্তারিত')} <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Button
-                  size="sm"
-                  onClick={() => setIsMobilePunchOpen(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8.5 rounded-xl font-bold gap-1.5 shadow-xs"
-                >
-                  <QrCode className="h-3.5 w-3.5" />
-                  <span>{tBilingual('Open Shift Punch Terminal', 'শিফট পাঞ্চ টার্মিনাল')}</span>
-                </Button>
-                <Link
-                  href={`/${tenantSlug}/attendance`}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 underline underline-offset-2 px-2 py-1"
-                >
-                  {tBilingual('Dedicated Terminal View →', 'ডেডিকেটেড ভিউ →')}
+        {/* Card 3: Overtime Radar */}
+        <Card className="border-border/60 bg-card hover:border-amber-500/40 transition-colors shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {tBilingual('Overtime Approvals', 'ওভারটাইম অনুমোদন')}
+              </span>
+              <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">
+                <Clock className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-bold tracking-tight text-foreground">{pendingOvertime.length}</span>
+              <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">{tBilingual('pending review', 'অনুমোদন বাকি')}</span>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-2.5">
+              <span>
+                {tBilingual('Approved this mo:', 'চলতি মাস:')}{' '}
+                <strong className="text-foreground">{formatBDT(summary?.monthFinancials.approvedOtAmount || 0)}</strong>
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 4: Monthly Gross Payroll & Dues */}
+        <Card className="border-border/60 bg-card hover:border-purple-500/40 transition-colors shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {tBilingual('Monthly Payroll Est.', 'চলতি মাসের বেতন প্রাক্কলন')}
+              </span>
+              <div className="p-2 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg">
+                <Wallet className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-2xl font-bold tracking-tight text-foreground">
+                {formatBDT(summary?.monthFinancials.grossPayroll || 0)}
+              </span>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-2.5">
+              <span>{tBilingual('Advances:', 'অগ্রিম:')} {formatBDT(summary?.monthFinancials.advancesOutstanding || 0)}</span>
+              <span>•</span>
+              <Link href={`/${tenantSlug}/hr/salary-report`} className="text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-0.5">
+                {tBilingual('Report', 'রিপোর্ট')} <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Two-Column Dashboard Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column (2 spans): Today's Floor Attendance Live Stream + Departmental Distribution */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Widget 1: Today Floor Attendance Radar */}
+          <Card className="border-border/60 shadow-sm">
+            <CardHeader className="p-5 pb-3 border-b border-border/50 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-emerald-500" />
+                  {tBilingual("Today's Floor Attendance Radar", 'আজকের কারখানার লাইভ উপস্থিতি')}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {tBilingual('Realtime clock-in/out logs for shop-floor operators and staff', 'কারখানার অপারেটর ও কর্মীদের লাইভ প্রবেশ ও প্রস্থান')}
+                </CardDescription>
+              </div>
+              <Button asChild variant="ghost" size="sm" className="text-xs text-primary gap-1">
+                <Link href={`/${tenantSlug}/hr/attendance`}>
+                  {tBilingual('Manage Attendance', 'হাজিরা পরিচালনা')}
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
-              </div>
-            </div>
-
-            {/* Attendance Filters */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-slate-400" />
-                  <Input
-                    type="date"
-                    value={attDateFilter}
-                    onChange={(e) => setAttDateFilter(e.target.value)}
-                    className="h-8 text-xs w-36 bg-slate-50 dark:bg-slate-800"
-                  />
-                </div>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setAttDateFilter(new Date().toISOString().split('T')[0])}
-                  className="h-8 text-xs"
-                >
-                  Today
-                </Button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => setIsAttendanceModalOpen(true)}
-                  className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                >
-                  <Clock className="mr-1.5 h-3.5 w-3.5" />
-                  Mark Floor Attendance
-                </Button>
-              </div>
-            </div>
-
-            {/* Daily Attendance Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="p-3.5">Employee (কর্মী)</th>
-                    <th className="p-3.5">Shift & Status</th>
-                    <th className="p-3.5">Check-In (প্রবেশ)</th>
-                    <th className="p-3.5">Check-Out (প্রস্থান)</th>
-                    <th className="p-3.5">Worked Duration</th>
-                    <th className="p-3.5">Late / Early Leave</th>
-                    <th className="p-3.5">Potential OT</th>
-                    <th className="p-3.5 text-right">Source</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                  {filteredAttendance.map((att) => (
-                    <tr key={att.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3.5">
-                        <div className="font-bold text-slate-900 dark:text-white">{att.employee_name}</div>
-                        <div className="text-[11px] text-slate-500 capitalize">{att.employee_department}</div>
-                      </td>
-
-                      <td className="p-3.5">
-                        <Badge
-                          className={`text-[10px] capitalize ${
-                            att.status === 'present'
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                              : att.status === 'late'
-                              ? 'bg-amber-100 text-amber-800 border-amber-300'
-                              : att.status === 'field_work'
-                              ? 'bg-blue-100 text-blue-800 border-blue-300'
-                              : att.status === 'absent'
-                              ? 'bg-rose-100 text-rose-800 border-rose-300'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}
-                        >
-                          {att.status.replace('_', ' ')}
-                        </Badge>
-                      </td>
-
-                      <td className="p-3.5 font-mono">
-                        {att.check_in_time || <span className="text-slate-400">—</span>}
-                      </td>
-
-                      <td className="p-3.5 font-mono">
-                        {att.check_out_time || <span className="text-slate-400 font-sans text-[11px]">Working Now</span>}
-                      </td>
-
-                      <td className="p-3.5 font-mono">
-                        {att.worked_minutes > 0 ? (
-                          `${Math.floor(att.worked_minutes / 60)}h ${att.worked_minutes % 60}m`
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-
-                      <td className="p-3.5">
-                        {att.late_minutes > 0 && (
-                          <span className="text-rose-600 font-bold block">Late: {att.late_minutes}m</span>
-                        )}
-                        {att.early_leave_minutes > 0 && (
-                          <span className="text-amber-600 font-bold block">Early Leave: {att.early_leave_minutes}m</span>
-                        )}
-                        {att.late_minutes === 0 && att.early_leave_minutes === 0 && (
-                          <span className="text-emerald-600">On Time</span>
-                        )}
-                      </td>
-
-                      <td className="p-3.5">
-                        {att.potential_ot_minutes > 0 ? (
-                          <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-800 bg-amber-50">
-                            +{Math.floor(att.potential_ot_minutes / 60)}h {att.potential_ot_minutes % 60}m OT
-                          </Badge>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-
-                      <td className="p-3.5 text-right">
-                        <span className="text-[10px] text-slate-400 uppercase tracking-wider">
-                          {att.attendance_source}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-
-                  {filteredAttendance.length === 0 && (
-                    <tr>
-                      <td colSpan={8} className="p-8 text-center text-slate-400">
-                        No attendance records recorded for {attDateFilter}.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 3: OVERTIME APPROVAL QUEUE
-           ========================================================================= */}
-        {activeTab === 'overtime' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant={otStatusFilter === 'pending_approval' ? 'default' : 'outline'}
-                  onClick={() => setOtStatusFilter('pending_approval')}
-                  className="text-xs h-8"
-                >
-                  Pending Approval ({overtimeRecords.filter((r) => r.status === 'pending_approval').length})
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant={otStatusFilter === 'approved' ? 'default' : 'outline'}
-                  onClick={() => setOtStatusFilter('approved')}
-                  className="text-xs h-8"
-                >
-                  Approved Ledger ({overtimeRecords.filter((r) => r.status === 'approved').length})
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant={otStatusFilter === 'ALL' ? 'default' : 'outline'}
-                  onClick={() => setOtStatusFilter('ALL')}
-                  className="text-xs h-8"
-                >
-                  All Records
-                </Button>
-              </div>
-
-              <Button
-                size="sm"
-                onClick={() => setIsOtRequestModalOpen(true)}
-                className="text-xs bg-amber-600 hover:bg-amber-700 text-white"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Record Overtime
               </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredOt.map((ot) => (
-                <Card key={ot.id} className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">{ot.employee_name}</h4>
-                      <div className="text-xs text-slate-500 font-mono">Date: {ot.ot_date}</div>
-                    </div>
-
-                    <Badge
-                      className={`text-[10px] capitalize ${
-                        ot.status === 'approved'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : ot.status === 'pending_approval'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-rose-100 text-rose-800'
-                      }`}
-                    >
-                      {ot.status.replace('_', ' ')}
-                    </Badge>
-                  </div>
-
-                  <div className="my-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 grid grid-cols-3 gap-2 text-xs">
-                    <div>
-                      <span className="text-[10px] text-slate-400 uppercase">Duration</span>
-                      <div className="font-bold text-slate-900 dark:text-white">{ot.duration_hours} Hours</div>
-                    </div>
-
-                    <div>
-                      <span className="text-[10px] text-slate-400 uppercase">Rate Multiplier</span>
-                      <div className="font-bold text-blue-600">{ot.multiplier}x (৳ {ot.effective_ot_rate}/hr)</div>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="text-[10px] text-slate-400 uppercase">Payable Amount</span>
-                      <div className="font-bold text-emerald-600">৳ {formatBDT(ot.calculated_amount)}</div>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-slate-600 dark:text-slate-300 italic">
-                    &ldquo;{ot.reason}&rdquo;
-                  </div>
-
-                  {ot.status === 'pending_approval' && (
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleReviewOt(ot.id, 'rejected')}
-                        className="text-xs text-rose-600 hover:bg-rose-50 border-rose-200"
-                      >
-                        <X className="h-3.5 w-3.5 mr-1" /> Reject
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        onClick={() => handleReviewOt(ot.id, 'approved', 1.5)}
-                        className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                      >
-                        <Check className="h-3.5 w-3.5 mr-1" /> Approve (1.5x)
-                      </Button>
-                    </div>
-                  )}
-                </Card>
-              ))}
-
-              {filteredOt.length === 0 && (
-                <div className="col-span-full text-center p-12 border-2 border-dashed rounded-2xl border-slate-200 dark:border-slate-800">
-                  <TrendingUp className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                  <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">No overtime records in this queue</h4>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 4: SALARY ADVANCES
-           ========================================================================= */}
-        {activeTab === 'advances' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Active Salary Advances (বেতন অগ্রিম লেজার)</h3>
-                <p className="text-xs text-slate-500">Auto-deducted from employee month-end payroll sheets.</p>
-              </div>
-
-              <Button
-                size="sm"
-                onClick={() => setIsAdvanceModalOpen(true)}
-                className="text-xs bg-amber-600 hover:bg-amber-700 text-white"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Disburse Advance
-              </Button>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="p-3.5">Voucher #</th>
-                    <th className="p-3.5">Employee (কর্মী)</th>
-                    <th className="p-3.5">Disbursed Date</th>
-                    <th className="p-3.5">Amount (পরিমাণ)</th>
-                    <th className="p-3.5">Deducted in Payroll</th>
-                    <th className="p-3.5">Remaining Balance</th>
-                    <th className="p-3.5">Payment Method</th>
-                    <th className="p-3.5 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                  {advances.map((adv) => (
-                    <tr key={adv.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                      <td className="p-3.5 font-mono font-bold text-slate-700 dark:text-slate-300">
-                        {adv.advance_voucher_number}
-                      </td>
-
-                      <td className="p-3.5 font-bold text-slate-900 dark:text-white">
-                        {adv.employee_name}
-                      </td>
-
-                      <td className="p-3.5 font-mono text-slate-500">
-                        {adv.disbursed_date}
-                      </td>
-
-                      <td className="p-3.5 font-bold text-slate-900 dark:text-white">
-                        <CurrencyDisplay amount={adv.amount} />
-                      </td>
-
-                      <td className="p-3.5 text-emerald-600 font-bold">
-                        <CurrencyDisplay amount={adv.deducted_amount || 0} />
-                      </td>
-
-                      <td className="p-3.5 text-amber-600 font-bold">
-                        <CurrencyDisplay amount={adv.remaining_amount !== undefined ? adv.remaining_amount : adv.amount} />
-                      </td>
-
-                      <td className="p-3.5 capitalize text-slate-600">
-                        {adv.payment_method}
-                      </td>
-
-                      <td className="p-3.5 text-right">
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] ${
-                            adv.is_settled
-                              ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
-                              : 'border-amber-200 text-amber-700 bg-amber-50'
-                          }`}
-                        >
-                          {adv.is_settled ? 'Settled' : 'Active Balance'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-
-                  {advances.length === 0 && (
-                    <tr>
-                      <td colSpan={8} className="p-8 text-center text-slate-400">
-                        No salary advances on record.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 5: PAYROLL & PAYOUTS
-           ========================================================================= */}
-        {activeTab === 'payroll' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Monthly Payroll Control Center</h3>
-                <p className="text-xs text-slate-500">Authoritative salary calculation, immutable approval lock & payment tracking.</p>
-              </div>
-
-              <Button
-                size="sm"
-                onClick={() => setIsGenPayrollModalOpen(true)}
-                className="text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Generate New Payroll Sheet
-              </Button>
-            </div>
-
-            {/* Active Payroll Period View */}
-            {activePeriod ? (
-              <Card className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
-                {/* Period Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-black text-slate-900 dark:text-white">{activePeriod.period_name}</h2>
-                      <Badge
-                        className={`text-xs uppercase font-bold ${
-                          activePeriod.status === 'locked' || activePeriod.status === 'paid'
-                            ? 'bg-emerald-600 text-white'
-                            : activePeriod.status === 'approved'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-amber-500 text-white'
-                        }`}
-                      >
-                        {activePeriod.status}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-slate-500 font-mono mt-0.5">
-                      {activePeriod.start_date} to {activePeriod.end_date} • {activePeriod.working_days_count} Working Days
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {activePeriod.status === 'draft' && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleApprovePayroll(activePeriod.id)}
-                        className="bg-blue-600 hover:bg-blue-700 text-xs text-white"
-                      >
-                        <Check className="mr-1.5 h-3.5 w-3.5" /> Approve Payroll
-                      </Button>
-                    )}
-
-                    {activePeriod.status === 'approved' && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleLockPayroll(activePeriod.id)}
-                        className="bg-purple-600 hover:bg-purple-700 text-xs text-white"
-                      >
-                        <Lock className="mr-1.5 h-3.5 w-3.5" /> Lock & Freeze Payroll
-                      </Button>
-                    )}
-
-                    <Button size="sm" variant="outline" asChild className="text-xs">
-                      <Link href={`/${tenantSlug}/hr/payroll/${activePeriod.id}`}>
-                        <Printer className="mr-1.5 h-3.5 w-3.5" /> Print Pay Slips
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Payroll Financial Summary Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase">Gross Salary</span>
-                    <div className="font-bold text-sm text-slate-900 dark:text-white">
-                      <CurrencyDisplay amount={activePeriod.total_gross_salary} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase">Overtime Total</span>
-                    <div className="font-bold text-sm text-amber-600">
-                      <CurrencyDisplay amount={activePeriod.total_ot_amount} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase">Advances Deducted</span>
-                    <div className="font-bold text-sm text-purple-600">
-                      <CurrencyDisplay amount={activePeriod.total_advances_deducted} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase">Net Payable</span>
-                    <div className="font-bold text-sm text-emerald-600">
-                      <CurrencyDisplay amount={activePeriod.total_net_salary} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase">Paid / Due</span>
-                    <div className="font-bold text-sm text-slate-800 dark:text-slate-200">
-                      <span className="text-emerald-600">৳ {formatBDT(activePeriod.total_paid_amount || 0)}</span> /{' '}
-                      <span className="text-rose-600">৳ {formatBDT(activePeriod.total_due_amount || activePeriod.total_net_salary)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Items Breakdown Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
-                      <tr>
-                        <th className="p-3">Employee</th>
-                        <th className="p-3">Role / Dept</th>
-                        <th className="p-3">Base Rate</th>
-                        <th className="p-3">Overtime</th>
-                        <th className="p-3">Gross Salary</th>
-                        <th className="p-3">Advance Deduct</th>
-                        <th className="p-3">Net Payable</th>
-                        <th className="p-3">Payment Status</th>
-                        <th className="p-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                      {(activePeriod.items || []).map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                          <td className="p-3">
-                            <div className="font-bold text-slate-900 dark:text-white">{item.employee_name}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">{item.employee_id_number}</div>
-                          </td>
-
-                          <td className="p-3">
-                            <div className="capitalize">{item.role}</div>
-                            <div className="text-[10px] text-slate-400 capitalize">{item.department}</div>
-                          </td>
-
-                          <td className="p-3 font-mono">
-                            ৳ {formatBDT(item.base_salary || item.daily_rate * 26)}
-                          </td>
-
-                          <td className="p-3 font-mono text-amber-600">
-                            ৳ {formatBDT(item.overtime_amount)}
-                            <span className="text-[10px] text-slate-400 block">({item.overtime_hours}h)</span>
-                          </td>
-
-                          <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
-                            ৳ {formatBDT(item.gross_salary)}
-                          </td>
-
-                          <td className="p-3 font-mono text-purple-600">
-                            ৳ {formatBDT(item.advance_salary_deducted)}
-                          </td>
-
-                          <td className="p-3 font-mono font-bold text-emerald-600 text-sm">
-                            ৳ {formatBDT(item.net_salary)}
-                          </td>
-
-                          <td className="p-3">
-                            <Badge
-                              className={`text-[10px] uppercase font-bold ${
-                                item.payment_status === 'paid'
-                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                                  : 'bg-rose-100 text-rose-800 border-rose-300'
-                              }`}
-                            >
-                              {item.payment_status}
-                            </Badge>
-                          </td>
-
-                          <td className="p-3 text-right">
-                            {item.payment_status !== 'paid' && (
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedPayrollItem({ periodId: activePeriod.id, item })
-                                  setSalaryPayForm({
-                                    amount: item.due_amount || item.net_salary,
-                                    paymentMethod: 'bkash',
-                                    referenceNumber: '',
-                                    notes: `Salary payout for ${item.employee_name}`,
-                                  })
-                                  setIsSalaryPaymentModalOpen(true)
-                                }}
-                                className="h-7 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white"
-                              >
-                                Pay Salary
-                              </Button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            ) : (
-              <div className="text-center p-12 border-2 border-dashed rounded-2xl border-slate-200 dark:border-slate-800">
-                <Receipt className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">No payroll periods created yet</h4>
-                <p className="text-xs text-slate-500 mt-1">Click &ldquo;Generate New Payroll Sheet&rdquo; to start this month&apos;s run.</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* =========================================================================
-            MODAL: ADD / EDIT EMPLOYEE
-           ========================================================================= */}
-        <ModalDialog
-          open={isNewEmpModalOpen || isEditEmpModalOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setIsNewEmpModalOpen(false)
-              setIsEditEmpModalOpen(false)
-            }
-          }}
-          title={isEditEmpModalOpen ? 'Edit Employee Profile' : 'Add New Employee to Factory Roster'}
-        >
-          <form onSubmit={handleSaveEmployee} className="space-y-4 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Employee Full Name (English) *</Label>
-                <Input
-                  required
-                  placeholder="e.g. Rahim Uddin"
-                  value={empForm.name}
-                  onChange={(e) => setEmpForm({ ...empForm, name: e.target.value })}
-                  className="text-xs h-9 mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">নাম (বাংলা)</Label>
-                <Input
-                  placeholder="যেমন: রহিম উদ্দিন"
-                  value={empForm.name_bn}
-                  onChange={(e) => setEmpForm({ ...empForm, name_bn: e.target.value })}
-                  className="text-xs h-9 mt-1 bangla-text"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Mobile Number *</Label>
-                <Input
-                  required
-                  placeholder="+88017XXXXXXXX"
-                  value={empForm.mobile}
-                  onChange={(e) => setEmpForm({ ...empForm, mobile: e.target.value })}
-                  className="text-xs h-9 mt-1 font-mono"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Email Address</Label>
-                <Input
-                  type="email"
-                  placeholder="staff@inkflow.com"
-                  value={empForm.email}
-                  onChange={(e) => setEmpForm({ ...empForm, email: e.target.value })}
-                  className="text-xs h-9 mt-1"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Department *</Label>
-                <select
-                  value={empForm.department}
-                  onChange={(e) => setEmpForm({ ...empForm, department: e.target.value })}
-                  className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1"
-                >
-                  <option value="printing">Printing (প্রিন্টিং)</option>
-                  <option value="finishing">Finishing (ফিনিশিং)</option>
-                  <option value="fabrication">Fabrication (ফেব্রিকেশন)</option>
-                  <option value="design">Design Studio (ডিজাইন)</option>
-                  <option value="installation">Installation (ফিটিং)</option>
-                  <option value="accounts">Accounts (হিসাব)</option>
-                  <option value="sales">Sales (বিক্রয়)</option>
-                  <option value="management">Management</option>
-                </select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Role / Designation *</Label>
-                <Input
-                  required
-                  placeholder="e.g. Master Printer"
-                  value={empForm.role}
-                  onChange={(e) => setEmpForm({ ...empForm, role: e.target.value })}
-                  className="text-xs h-9 mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Employment Type *</Label>
-                <select
-                  value={empForm.employee_type}
-                  onChange={(e) => {
-                    const val = e.target.value as EmploymentType
-                    setEmpForm({
-                      ...empForm,
-                      employee_type: val,
-                      salary_basis: val === 'daily_labor' ? 'daily_rate' : val === 'hourly_worker' ? 'hourly_rate' : 'monthly',
-                    })
-                  }}
-                  className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1"
-                >
-                  <option value="permanent">Monthly Permanent (স্থায়ী)</option>
-                  <option value="daily_labor">Daily Worker (দৈনিক শ্রমিক)</option>
-                  <option value="hourly_worker">Hourly Worker (ঘণ্টা ভিত্তিক)</option>
-                  <option value="contract">Contract (চুক্তিভিত্তিক)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-              <div>
-                <Label className="text-xs font-semibold">
-                  {empForm.salary_basis === 'daily_rate' ? 'Daily Wage (৳)' : empForm.salary_basis === 'hourly_rate' ? 'Hourly Wage (৳)' : 'Monthly Basic (৳)'}
-                </Label>
-                <Input
-                  type="number"
-                  value={empForm.salary_basis === 'daily_rate' ? empForm.daily_rate : empForm.salary_basis === 'hourly_rate' ? empForm.hourly_rate : empForm.base_salary}
-                  onChange={(e) => {
-                    const val = Number(e.target.value)
-                    if (empForm.salary_basis === 'daily_rate') setEmpForm({ ...empForm, daily_rate: val })
-                    else if (empForm.salary_basis === 'hourly_rate') setEmpForm({ ...empForm, hourly_rate: val })
-                    else setEmpForm({ ...empForm, base_salary: val })
-                  }}
-                  className="text-xs h-9 mt-1 font-mono font-bold"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Overtime Hourly Rate (৳)</Label>
-                <Input
-                  type="number"
-                  value={empForm.overtime_hourly_rate}
-                  onChange={(e) => setEmpForm({ ...empForm, overtime_hourly_rate: Number(e.target.value) })}
-                  className="text-xs h-9 mt-1 font-mono"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Emergency Contact</Label>
-                <Input
-                  placeholder="Name / Phone"
-                  value={empForm.emergency_contact_phone}
-                  onChange={(e) => setEmpForm({ ...empForm, emergency_contact_phone: e.target.value })}
-                  className="text-xs h-9 mt-1"
-                />
-              </div>
-            </div>
-
-            {/* System User Login & RBAC Access Control */}
-            <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/60 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                  <div>
-                    <h5 className="font-bold text-slate-900 dark:text-white text-xs">
-                      System Login & RBAC Role (সিস্টেম ইউজার একাউন্ট)
-                    </h5>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                      Every employee is an ERP user with role-based permissions and shop floor access.
-                    </p>
-                  </div>
-                </div>
-
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={empForm.create_system_user}
-                    onChange={(e) => setEmpForm({ ...empForm, create_system_user: e.target.checked })}
-                    className="sr-only peer"
-                  />
-                  <div className="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-
-              {empForm.create_system_user && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2.5 border-t border-blue-100 dark:border-blue-900/50">
-                  <div>
-                    <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                      System Role (সিস্টেম রোল) *
-                    </Label>
-                    <select
-                      value={empForm.system_role_id}
-                      onChange={(e) => setEmpForm({ ...empForm, system_role_id: e.target.value })}
-                      className="w-full h-8 px-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md mt-1 font-medium"
-                    >
-                      {roles.length > 0 ? (
-                        roles.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name} {r.name_bn ? `(${r.name_bn})` : ''}
-                          </option>
-                        ))
-                      ) : (
-                        <>
-                          <option value="operator">Machine Operator (অপারেটর)</option>
-                          <option value="designer">Graphic Designer (ডিজাইনার)</option>
-                          <option value="sales_manager">Sales Manager (বিক্রয়)</option>
-                          <option value="accountant">Accountant (হিসাবরক্ষক)</option>
-                          <option value="production_manager">Production Manager (প্রোডাকশন)</option>
-                          <option value="store_manager">Store Manager (স্টোর)</option>
-                          <option value="general_staff">General Staff (সাধারণ কর্মী)</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                      Branch Scope (শাখা)
-                    </Label>
-                    <select
-                      value={empForm.system_branch_id}
-                      onChange={(e) => setEmpForm({ ...empForm, system_branch_id: e.target.value })}
-                      className="w-full h-8 px-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md mt-1 font-medium"
-                    >
-                      <option value="">All Branches / Main (প্রধান শাখা)</option>
-                      {branches.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                      Login Password / PIN
-                    </Label>
-                    <Input
-                      type="text"
-                      placeholder="e.g. 123456 or auto-generate"
-                      value={empForm.system_password}
-                      onChange={(e) => setEmpForm({ ...empForm, system_password: e.target.value })}
-                      className="text-xs h-8 mt-1 font-mono"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-3 border-t">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setIsNewEmpModalOpen(false)
-                  setIsEditEmpModalOpen(false)
-                }}
-              >
-                Cancel
-              </Button>
-
-              <Button type="submit" disabled={isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                {isPending ? 'Saving...' : isEditEmpModalOpen ? 'Update Profile' : 'Save Employee & System User'}
-              </Button>
-            </div>
-          </form>
-        </ModalDialog>
-
-        {/* =========================================================================
-            MODAL: DISBURSE SALARY ADVANCE
-           ========================================================================= */}
-        <ModalDialog
-          open={isAdvanceModalOpen}
-          onOpenChange={(open) => {
-            if (!open) setIsAdvanceModalOpen(false)
-          }}
-          title="Disburse Salary Advance (বেতন অগ্রিম প্রদান)"
-        >
-          <form onSubmit={handleDisburseAdvance} className="space-y-4 text-xs">
-            <div>
-              <Label className="text-xs font-semibold">Select Employee *</Label>
-              <select
-                required
-                value={advForm.employeeId}
-                onChange={(e) => setAdvForm({ ...advForm, employeeId: e.target.value })}
-                className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1 font-medium"
-              >
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.employee_id_number}) — Current Bal: ৳ {formatBDT(emp.current_advance_balance || 0)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Advance Amount (৳) *</Label>
-                <Input
-                  required
-                  type="number"
-                  min="500"
-                  step="500"
-                  value={advForm.amount}
-                  onChange={(e) => setAdvForm({ ...advForm, amount: Number(e.target.value) })}
-                  className="text-xs h-9 mt-1 font-mono font-bold text-amber-600"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Payment Method *</Label>
-                <select
-                  value={advForm.paymentMethod}
-                  onChange={(e) => setAdvForm({ ...advForm, paymentMethod: e.target.value as PaymentMethod })}
-                  className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1 font-medium"
-                >
-                  <option value="cash">Cash (নগদ)</option>
-                  <option value="bkash">bKash (বিকাশ)</option>
-                  <option value="nagad">Nagad (নগদ এমএফএস)</option>
-                  <option value="bank">Bank Transfer</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold">Reason / Note</Label>
-              <Input
-                placeholder="e.g. Medical emergency or festival advance"
-                value={advForm.reason}
-                onChange={(e) => setAdvForm({ ...advForm, reason: e.target.value })}
-                className="text-xs h-9 mt-1"
-              />
-            </div>
-
-            <div className="p-3 rounded-xl bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300 text-[11px] border border-amber-200 dark:border-amber-800">
-              <span className="font-bold">Financial Rule:</span> This advance will be posted to the Double-Entry Cash/Bank ledger and automatically deducted from the employee&apos;s month-end payroll sheet.
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-3 border-t">
-              <Button type="button" variant="ghost" onClick={() => setIsAdvanceModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending} className="bg-amber-600 hover:bg-amber-700 text-white">
-                {isPending ? 'Disbursing...' : 'Confirm & Disburse Advance'}
-              </Button>
-            </div>
-          </form>
-        </ModalDialog>
-
-        {/* =========================================================================
-            MODAL: MARK DAILY ATTENDANCE
-           ========================================================================= */}
-        <ModalDialog
-          open={isAttendanceModalOpen}
-          onOpenChange={(open) => {
-            if (!open) setIsAttendanceModalOpen(false)
-          }}
-          title="Mark Daily Floor Attendance (হাজিরা এন্ট্রি)"
-        >
-          <form onSubmit={handleSaveAttendance} className="space-y-4 text-xs">
-            <div>
-              <Label className="text-xs font-semibold">Employee *</Label>
-              <select
-                required
-                value={attForm.employeeId}
-                onChange={(e) => setAttForm({ ...attForm, employeeId: e.target.value })}
-                className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1 font-medium"
-              >
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.employee_id_number}) • {emp.department}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Status *</Label>
-                <select
-                  value={attForm.status}
-                  onChange={(e) => setAttForm({ ...attForm, status: e.target.value as any })}
-                  className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1 font-medium"
-                >
-                  <option value="present">Present (উপস্থিত)</option>
-                  <option value="late">Late (দেরি)</option>
-                  <option value="absent">Absent (অনুপস্থিত)</option>
-                  <option value="half_day">Half Day (অর্ধ দিবস)</option>
-                  <option value="field_work">Field Work (মাঠের কাজ)</option>
-                  <option value="leave">Leave (ছুটি)</option>
-                </select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Check-In Time</Label>
-                <Input
-                  type="time"
-                  value={attForm.checkInTime}
-                  onChange={(e) => setAttForm({ ...attForm, checkInTime: e.target.value })}
-                  className="text-xs h-9 mt-1 font-mono"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Check-Out Time</Label>
-                <Input
-                  type="time"
-                  value={attForm.checkOutTime}
-                  onChange={(e) => setAttForm({ ...attForm, checkOutTime: e.target.value })}
-                  className="text-xs h-9 mt-1 font-mono"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold">Notes / Reason</Label>
-              <Input
-                placeholder="e.g. Machine setup overtime or approved late entry"
-                value={attForm.notes}
-                onChange={(e) => setAttForm({ ...attForm, notes: e.target.value })}
-                className="text-xs h-9 mt-1"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-3 border-t">
-              <Button type="button" variant="ghost" onClick={() => setIsAttendanceModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                {isPending ? 'Saving...' : 'Save Attendance'}
-              </Button>
-            </div>
-          </form>
-        </ModalDialog>
-
-        {/* =========================================================================
-            MODAL: RECORD OVERTIME REQUEST
-           ========================================================================= */}
-        <ModalDialog
-          open={isOtRequestModalOpen}
-          onOpenChange={(open) => {
-            if (!open) setIsOtRequestModalOpen(false)
-          }}
-          title="Record Overtime Request (ওভারটাইম এন্ট্রি)"
-        >
-          <form onSubmit={handleCreateOtRequest} className="space-y-4 text-xs">
-            <div>
-              <Label className="text-xs font-semibold">Employee *</Label>
-              <select
-                required
-                value={otForm.employeeId}
-                onChange={(e) => setOtForm({ ...otForm, employeeId: e.target.value })}
-                className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1 font-medium"
-              >
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.employee_id_number}) • OT Rate: ৳ {emp.overtime_hourly_rate}/hr
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Overtime Duration (Minutes) *</Label>
-                <Input
-                  required
-                  type="number"
-                  min="30"
-                  step="30"
-                  value={otForm.durationMinutes}
-                  onChange={(e) => setOtForm({ ...otForm, durationMinutes: Number(e.target.value) })}
-                  className="text-xs h-9 mt-1 font-mono font-bold"
-                />
-                <span className="text-[10px] text-slate-400">
-                  = {Math.round((otForm.durationMinutes / 60) * 10) / 10} Hours
-                </span>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Overtime Type *</Label>
-                <select
-                  value={otForm.otType}
-                  onChange={(e) => setOtForm({ ...otForm, otType: e.target.value as any })}
-                  className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1 font-medium"
-                >
-                  <option value="regular_day">Regular Day OT (1.5x)</option>
-                  <option value="weekly_off">Weekly Off Day OT (1.5x)</option>
-                  <option value="holiday">Govt / Festival Holiday OT (2.0x)</option>
-                  <option value="night_shift">Night Shift After Hours</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold">Reason for Overtime *</Label>
-              <Input
-                required
-                placeholder="e.g. Urgent acrylic letter fabrication for client launch"
-                value={otForm.reason}
-                onChange={(e) => setOtForm({ ...otForm, reason: e.target.value })}
-                className="text-xs h-9 mt-1"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-3 border-t">
-              <Button type="button" variant="ghost" onClick={() => setIsOtRequestModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending} className="bg-amber-600 hover:bg-amber-700 text-white">
-                {isPending ? 'Submitting...' : 'Submit Overtime Request'}
-              </Button>
-            </div>
-          </form>
-        </ModalDialog>
-
-        {/* =========================================================================
-            MODAL: GENERATE MONTHLY PAYROLL
-           ========================================================================= */}
-        <ModalDialog
-          open={isGenPayrollModalOpen}
-          onOpenChange={(open) => {
-            if (!open) setIsGenPayrollModalOpen(false)
-          }}
-          title="Generate Monthly Payroll Sheet (মাসিক পে-রোল প্রস্তুত করুন)"
-        >
-          <form onSubmit={handleGeneratePayroll} className="space-y-4 text-xs">
-            <div>
-              <Label className="text-xs font-semibold">Payroll Period Name *</Label>
-              <Input
-                required
-                placeholder="e.g. September 2026 Payroll"
-                value={payrollGenForm.periodName}
-                onChange={(e) => setPayrollGenForm({ ...payrollGenForm, periodName: e.target.value })}
-                className="text-xs h-9 mt-1 font-bold"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Start Date *</Label>
-                <Input
-                  required
-                  type="date"
-                  value={payrollGenForm.startDate}
-                  onChange={(e) => setPayrollGenForm({ ...payrollGenForm, startDate: e.target.value })}
-                  className="text-xs h-9 mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">End Date *</Label>
-                <Input
-                  required
-                  type="date"
-                  value={payrollGenForm.endDate}
-                  onChange={(e) => setPayrollGenForm({ ...payrollGenForm, endDate: e.target.value })}
-                  className="text-xs h-9 mt-1"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold">Working Days in Month *</Label>
-              <Input
-                required
-                type="number"
-                min="20"
-                max="31"
-                value={payrollGenForm.workingDaysCount}
-                onChange={(e) => setPayrollGenForm({ ...payrollGenForm, workingDaysCount: Number(e.target.value) })}
-                className="text-xs h-9 mt-1 font-mono"
-              />
-            </div>
-
-            <div className="p-3 rounded-xl bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-300 text-[11px] border border-blue-200 dark:border-blue-800">
-              <span className="font-bold">Automated Aggregation:</span> The engine will automatically compile approved attendance, verified approved overtime, and deduct active salary advances for all {employees.length} active staff.
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-3 border-t">
-              <Button type="button" variant="ghost" onClick={() => setIsGenPayrollModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending} className="bg-blue-600 hover:bg-blue-700 text-white">
-                {isPending ? 'Generating Sheet...' : 'Generate Payroll Sheet'}
-              </Button>
-            </div>
-          </form>
-        </ModalDialog>
-
-        {/* =========================================================================
-            MODAL: RECORD SALARY PAYMENT
-           ========================================================================= */}
-        <ModalDialog
-          open={isSalaryPaymentModalOpen}
-          onOpenChange={(open) => {
-            if (!open) setIsSalaryPaymentModalOpen(false)
-          }}
-          title={`Pay Salary: ${selectedPayrollItem?.item.employee_name || 'Staff'}`}
-        >
-          <form onSubmit={handleRecordPayment} className="space-y-4 text-xs">
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 grid grid-cols-2 gap-2">
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase">Net Salary Due</span>
-                <div className="font-bold text-sm text-emerald-600">
-                  ৳ {formatBDT(selectedPayrollItem?.item.due_amount || selectedPayrollItem?.item.net_salary || 0)}
-                </div>
-              </div>
-
-              <div className="text-right">
-                <span className="text-[10px] text-slate-400 uppercase">Role / Dept</span>
-                <div className="font-bold text-slate-800 dark:text-slate-200 capitalize">
-                  {selectedPayrollItem?.item.role} ({selectedPayrollItem?.item.department})
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold">Payment Amount (৳) *</Label>
-                <Input
-                  required
-                  type="number"
-                  value={salaryPayForm.amount}
-                  onChange={(e) => setSalaryPayForm({ ...salaryPayForm, amount: Number(e.target.value) })}
-                  className="text-xs h-9 mt-1 font-mono font-bold text-emerald-600"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold">Payment Method *</Label>
-                <select
-                  value={salaryPayForm.paymentMethod}
-                  onChange={(e) => setSalaryPayForm({ ...salaryPayForm, paymentMethod: e.target.value as PaymentMethod })}
-                  className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg mt-1 font-medium"
-                >
-                  <option value="bkash">bKash (বিকাশ)</option>
-                  <option value="nagad">Nagad (নগদ)</option>
-                  <option value="bank">Bank Transfer</option>
-                  <option value="cash">Cash (নগদ টাকা)</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold">Transaction / Voucher Reference</Label>
-              <Input
-                placeholder="e.g. bKash TrxID: 9X87A21 or Bank Cheque #4492"
-                value={salaryPayForm.referenceNumber}
-                onChange={(e) => setSalaryPayForm({ ...salaryPayForm, referenceNumber: e.target.value })}
-                className="text-xs h-9 mt-1 font-mono"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-3 border-t">
-              <Button type="button" variant="ghost" onClick={() => setIsSalaryPaymentModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                {isPending ? 'Processing...' : 'Confirm & Record Payment'}
-              </Button>
-            </div>
-          </form>
-        </ModalDialog>
-
-        {/* =========================================================================
-            DRAWER / MODAL: 360-DEGREE EMPLOYEE PROFILE
-           ========================================================================= */}
-        {selectedEmp && (
-          <ModalDialog
-            open={isEmp360DrawerOpen}
-            onOpenChange={(open) => {
-              if (!open) setIsEmp360DrawerOpen(false)
-            }}
-            title={`360° Employee Profile: ${selectedEmp.name}`}
-          >
-            <div className="space-y-4 text-xs">
-              {/* Header Info */}
-              <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-base">
-                  {selectedEmp.name.slice(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                    {selectedEmp.name} {selectedEmp.name_bn && `(${selectedEmp.name_bn})`}
-                  </h3>
-                  <div className="text-slate-500 flex items-center gap-1.5 font-mono text-[11px]">
-                    <span>{selectedEmp.employee_id_number}</span>
-                    <span>•</span>
-                    <span className="capitalize">{selectedEmp.role}</span>
-                    <span>•</span>
-                    <span className="capitalize">{selectedEmp.department}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Salary & Advance Details */}
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold">Salary Basis</span>
-                  <div className="font-bold text-slate-900 dark:text-white text-sm">
-                    {selectedEmp.salary_basis === 'daily_rate' ? (
-                      <>৳ {formatBDT(selectedEmp.daily_rate)} / day</>
-                    ) : (
-                      <>৳ {formatBDT(selectedEmp.base_salary)} / month</>
-                    )}
-                  </div>
-                  <div className="text-[10px] text-slate-500">OT Rate: ৳ {selectedEmp.overtime_hourly_rate}/hr</div>
-                </div>
-
-                <div className="text-right">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold">Active Advance Balance</span>
-                  <div className="font-bold text-amber-600 text-sm">
-                    <CurrencyDisplay amount={selectedEmp.current_advance_balance || 0} />
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="link"
-                    onClick={() => {
-                      setIsEmp360DrawerOpen(false)
-                      setAdvForm((prev) => ({ ...prev, employeeId: selectedEmp.id }))
-                      setIsAdvanceModalOpen(true)
-                    }}
-                    className="p-0 h-auto text-[11px] text-blue-600"
-                  >
-                    + Disburse Advance
+            </CardHeader>
+            <CardContent className="p-0">
+              {todayAttendance.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-xs">
+                  <Calendar className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
+                  <p>{tBilingual('No punch records logged yet today.', 'আজকের দিনে এখনও কোন হাজিরার তথ্য রেকর্ড হয়নি।')}</p>
+                  <Button asChild size="sm" variant="outline" className="mt-3 text-xs">
+                    <Link href={`/${tenantSlug}/hr/attendance`}>
+                      {tBilingual('Mark Manual Attendance', 'ম্যানুয়াল হাজিরা দিন')}
+                    </Link>
                   </Button>
                 </div>
-              </div>
-
-              {/* Contact Info */}
-              <div className="grid grid-cols-2 gap-2 text-slate-600 dark:text-slate-400">
-                <div>
-                  <span className="font-bold block text-slate-700 dark:text-slate-300">Mobile:</span>
-                  <span className="font-mono">{selectedEmp.mobile}</span>
-                </div>
-
-                <div>
-                  <span className="font-bold block text-slate-700 dark:text-slate-300">Joining Date:</span>
-                  <span className="font-mono">{selectedEmp.joining_date}</span>
-                </div>
-
-                {selectedEmp.emergency_contact_phone && (
-                  <div className="col-span-2">
-                    <span className="font-bold block text-slate-700 dark:text-slate-300">Emergency Contact:</span>
-                    <span>{selectedEmp.emergency_contact_phone} ({selectedEmp.emergency_contact_relation || 'Contact'})</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Linked System User & Permissions */}
-              {(() => {
-                const linkedUser = getLinkedUser(selectedEmp)
-                return (
-                  <div className="p-3 bg-blue-50/60 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/60 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        <span className="font-bold text-slate-900 dark:text-white text-xs">
-                          System User & RBAC Permissions
-                        </span>
-                      </div>
-                      {linkedUser ? (
-                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] uppercase font-bold">
-                          ● {linkedUser.status}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-[10px] text-amber-700 border-amber-300">
-                          Offline Staff (No login)
-                        </Badge>
-                      )}
-                    </div>
-
-                    {linkedUser ? (
-                      <div className="space-y-2 pt-1">
-                        <div className="text-[11px] text-slate-600 dark:text-slate-400">
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">Assigned Roles: </span>
-                          {linkedUser.roles?.map((r) => r.name).join(', ') || linkedUser.responsibilities?.join(', ') || 'Staff'}
+              ) : (
+                <div className="divide-y divide-border/40 max-h-96 overflow-y-auto">
+                  {todayAttendance.slice(0, 8).map((record) => {
+                    const emp = employees.find((e) => e.id === record.employee_id)
+                    const isLate = record.status === 'late' || (record.late_minutes && record.late_minutes > 0)
+                    return (
+                      <div key={record.id || record.employee_id} className="p-4 flex items-center justify-between hover:bg-muted/40 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                            {(record.employee_name || emp?.name || 'E').slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-foreground flex items-center gap-2">
+                              <span>{record.employee_name || emp?.name}</span>
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] px-1.5 py-0 capitalize ${
+                                  record.status === 'present'
+                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                                    : record.status === 'late'
+                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30'
+                                }`}
+                              >
+                                {record.status}
+                              </Badge>
+                            </div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              {emp?.department || record.shift_name || 'General Shift'}
+                            </div>
+                          </div>
                         </div>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setIsEmp360DrawerOpen(false)
-                            setSelectedUserForPermissions(linkedUser)
-                            setIsPermissionsDrawerOpen(true)
-                          }}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold h-8 rounded-lg gap-1.5"
-                        >
-                          <Shield className="h-3.5 w-3.5" />
-                          Manage Granular Permissions & Branch Scopes →
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 pt-1">
-                        <p className="text-[11px] text-slate-500">
-                          This employee does not have a system login account yet. Create one to grant shop floor, design, or accounting access.
-                        </p>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setIsEmp360DrawerOpen(false)
-                            handleQuickCreateUserForEmployee(selectedEmp)
-                          }}
-                          className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold h-8 rounded-lg gap-1.5"
-                        >
-                          <UserPlus className="h-3.5 w-3.5" />
-                          Create System User Account
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )
-              })()}
 
-              {/* Actions */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setIsEmp360DrawerOpen(false)
-                    setEmpForm({
-                      id: selectedEmp.id,
-                      name: selectedEmp.name,
-                      name_bn: selectedEmp.name_bn || '',
-                      mobile: selectedEmp.mobile,
-                      email: selectedEmp.email || '',
-                      address: selectedEmp.address || '',
-                      role: selectedEmp.role,
-                      department: selectedEmp.department,
-                      employee_type: selectedEmp.employee_type,
-                      salary_basis: selectedEmp.salary_basis,
-                      base_salary: selectedEmp.base_salary,
-                      daily_rate: selectedEmp.daily_rate,
-                      hourly_rate: selectedEmp.hourly_rate,
-                      overtime_hourly_rate: selectedEmp.overtime_hourly_rate,
-                      emergency_contact_name: selectedEmp.emergency_contact_name || '',
-                      emergency_contact_phone: selectedEmp.emergency_contact_phone || '',
-                      emergency_contact_relation: selectedEmp.emergency_contact_relation || 'Spouse',
-                      notes: selectedEmp.notes || '',
-                      create_system_user: true,
-                      system_role_id: 'operator',
-                      system_password: '',
-                      system_branch_id: selectedEmp.branch_id || '',
-                    })
-                    setIsEditEmpModalOpen(true)
-                  }}
-                  className="text-xs"
-                >
-                  Edit Profile
-                </Button>
+                        <div className="text-right text-xs">
+                          <div className="font-mono text-muted-foreground">
+                            <span className="text-foreground font-medium">{record.check_in_time || '--:--'}</span>
+                            {' → '}
+                            <span>{record.check_out_time || 'Working'}</span>
+                          </div>
+                          {isLate && (
+                            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                              +{record.late_minutes || 0}m {tBilingual('late', 'দেরি')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-                <Button size="sm" onClick={() => setIsEmp360DrawerOpen(false)} className="text-xs">
-                  Close
-                </Button>
+          {/* Widget 2: Departmental Staff Distribution */}
+          <Card className="border-border/60 shadow-sm">
+            <CardHeader className="p-5 pb-3 border-b border-border/50">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-blue-500" />
+                {tBilingual('Departmental Workforce Distribution', 'বিভাগভিত্তিক কর্মী বণ্টন')}
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {tBilingual('Headcount allocated per production and management unit', 'প্রোডাকশন ও ম্যানেজমেন্ট অনুযায়ী মোট জনবল')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-5">
+              {Object.keys(departmentCounts).length === 0 ? (
+                <div className="text-center py-6 text-xs text-muted-foreground">
+                  {tBilingual('No active departments found.', 'কোন বিভাগ পাওয়া যায়নি।')}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {Object.entries(departmentCounts).map(([dept, count]) => {
+                    const pct = totalEmployeesCount > 0 ? Math.round((count / totalEmployeesCount) * 100) : 0
+                    return (
+                      <div key={dept} className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex flex-col justify-between">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold capitalize text-foreground">{dept}</span>
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-bold">
+                            {count}
+                          </Badge>
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                            <span>{pct}% of team</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                            <div className="bg-primary h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column (1 span): Pending Approvals & Quick Navigation Links */}
+        <div className="space-y-6">
+          {/* Widget 3: Pending Overtime Approvals Queue */}
+          <Card className="border-border/60 shadow-sm">
+            <CardHeader className="p-5 pb-3 border-b border-border/50 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-amber-500" />
+                  {tBilingual('Pending Overtime', 'অনুমোদনযোগ্য ওভারটাইম')}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {tBilingual('Requests awaiting floor manager verification', 'ম্যানেজারের অনুমোদনের অপেক্ষায় থাকা আবেদন')}
+                </CardDescription>
               </div>
-            </div>
-          </ModalDialog>
-        )}
+              <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30">
+                {pendingOvertime.length}
+              </Badge>
+            </CardHeader>
+            <CardContent className="p-0">
+              {pendingOvertime.length === 0 ? (
+                <div className="p-6 text-center text-xs text-muted-foreground">
+                  <CheckCircle2 className="w-6 h-6 mx-auto text-emerald-500/60 mb-2" />
+                  <p>{tBilingual('No pending overtime requests.', 'সব ওভারটাইম অনুমোদন সম্পন্ন হয়েছে।')}</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border/40 max-h-80 overflow-y-auto">
+                  {pendingOvertime.map((ot) => (
+                    <div key={ot.id} className="p-4 space-y-2 hover:bg-muted/30 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="text-xs font-semibold text-foreground">{ot.employee_name}</div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {formatDate(ot.ot_date)} • {Math.round(ot.duration_minutes / 60 * 10) / 10}h ({ot.duration_minutes}m)
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                            {formatBDT(ot.calculated_amount || 0)}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground capitalize">{ot.ot_type.replace('_', ' ')}</span>
+                        </div>
+                      </div>
 
-        {/* =========================================================================
-            DRAWER: RBAC USER PERMISSIONS & DATA SCOPES
-           ========================================================================= */}
-        <UserPermissionsDrawer
-          user={selectedUserForPermissions}
-          isOpen={isPermissionsDrawerOpen}
-          onClose={() => {
-            setIsPermissionsDrawerOpen(false)
-            setSelectedUserForPermissions(null)
-          }}
-          onSaved={() => {
-            setIsPermissionsDrawerOpen(false)
-            setSelectedUserForPermissions(null)
-            loadAllData()
-            notify('User permissions and data access scopes updated successfully!')
-          }}
-          companyId={company?.id || ''}
-          allBranches={branches}
-          allRoles={roles}
-        />
+                      {ot.reason && (
+                        <p className="text-[11px] text-muted-foreground italic bg-muted/40 p-1.5 rounded">
+                          "{ot.reason}"
+                        </p>
+                      )}
 
-        {/* =========================================================================
-            MODAL: LIVE ATTENDANCE SHIFT PUNCH TERMINAL
-           ========================================================================= */}
-        <AttendancePunchModal
-          open={isMobilePunchOpen}
-          onClose={() => {
-            setIsMobilePunchOpen(false)
-            loadAllData()
-          }}
-          tenantSlug={tenantSlug}
-        />
+                      <div className="flex items-center gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          onClick={() => handleQuickReviewOt(ot.id, 'approved')}
+                          disabled={isPending}
+                          className="h-7 text-xs flex-1 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                        >
+                          <Check className="w-3 h-3" />
+                          {tBilingual('Approve 1.5x', 'অনুমোদন')}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleQuickReviewOt(ot.id, 'rejected')}
+                          disabled={isPending}
+                          className="h-7 text-xs text-rose-600 hover:bg-rose-500/10 border-rose-500/30 gap-1"
+                        >
+                          <X className="w-3 h-3" />
+                          {tBilingual('Reject', 'বাতিল')}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Widget 4: Quick Launchpad */}
+          <Card className="border-border/60 shadow-sm">
+            <CardHeader className="p-5 pb-3 border-b border-border/50">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                {tBilingual('HRM Operations Launchpad', 'এইচআরএম দ্রুত লিংক')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-2.5">
+              <Link
+                href={`/${tenantSlug}/hr/employees`}
+                className="p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 hover:border-primary/40 transition-all flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 text-blue-600 rounded-lg group-hover:scale-105 transition-transform">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">{tBilingual('Employee Directory', 'কর্মীদের তালিকা')}</div>
+                    <div className="text-[11px] text-muted-foreground">{tBilingual('View profiles, salaries & contracts', 'প্রোফাইল ও বেতন বিবরণ')}</div>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Link>
+
+              <Link
+                href={`/${tenantSlug}/hr/attendance`}
+                className="p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 hover:border-emerald-500/40 transition-all flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg group-hover:scale-105 transition-transform">
+                    <UserCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">{tBilingual('Floor Attendance & Punch', 'হাজিরা ও পাঞ্চিং')}</div>
+                    <div className="text-[11px] text-muted-foreground">{tBilingual('Daily logs, QR scan & shifts', 'দৈনিক হাজিরা ও শিফট')}</div>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
+              </Link>
+
+              <Link
+                href={`/${tenantSlug}/hr/payroll`}
+                className="p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 hover:border-purple-500/40 transition-all flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 text-purple-600 rounded-lg group-hover:scale-105 transition-transform">
+                    <Wallet className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">{tBilingual('Payroll & Salary Sheets', 'পেরোল ও বেতন শিট')}</div>
+                    <div className="text-[11px] text-muted-foreground">{tBilingual('Generate drafts & disburse pay', 'বেতন শিট তৈরি ও প্রদান')}</div>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-purple-500 transition-colors" />
+              </Link>
+
+              <Link
+                href={`/${tenantSlug}/hr/salary-report`}
+                className="p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 hover:border-amber-500/40 transition-all flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/10 text-amber-600 rounded-lg group-hover:scale-105 transition-transform">
+                    <FileSpreadsheet className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">{tBilingual('Salary & Payout Reports', 'বেতন ও ব্যাংক রিপোর্ট')}</div>
+                    <div className="text-[11px] text-muted-foreground">{tBilingual('Bank advice sheets & CSV export', 'ব্যাংক অ্যাডভাইস শিট ও এক্সপোর্ট')}</div>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-amber-500 transition-colors" />
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </FeatureGate>
+    </div>
   )
 }

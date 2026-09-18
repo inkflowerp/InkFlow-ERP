@@ -71,11 +71,11 @@ export default function PayrollDetailPage() {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
         <Link
-          href={`/${slug}/hr`}
+          href={`/${slug}/hr/payroll`}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to HR & Payroll
+          Back to Payroll & Salary
         </Link>
         <Card className="p-12 text-center border-dashed">
           <FileText className="h-10 w-10 text-slate-400 mx-auto mb-3" />
@@ -84,7 +84,7 @@ export default function PayrollDetailPage() {
             {errorMsg || 'The payroll period record you are looking for does not exist in your organization.'}
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/hr`}>View All Payroll Periods</Link>
+            <Link href={`/${slug}/hr/payroll`}>View All Payroll Periods</Link>
           </Button>
         </Card>
       </div>
@@ -98,11 +98,11 @@ export default function PayrollDetailPage() {
       {/* Non-Print Action & Selector Bar */}
       <div className="print:hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <Link
-          href={`/${slug}/hr`}
+          href={`/${slug}/hr/payroll`}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to HR & Payroll
+          Back to Payroll & Salary
         </Link>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
