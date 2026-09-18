@@ -31,6 +31,23 @@ import {
   Radio,
   FileText,
   SlidersHorizontal,
+  Download,
+  FileSpreadsheet,
+  ArrowUpDown,
+  CalendarRange,
+  Clock3,
+  User,
+  Eye,
+  Edit2,
+  Layers,
+  BarChart3,
+  Activity,
+  History,
+  CheckCheck,
+  ListChecks,
+  HelpCircle,
+  AlertCircle,
+  Share2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -71,7 +88,7 @@ export default function AttendancePage() {
 
   const [isPending, startTransition] = useTransition()
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'roster' | 'overtime' | 'shifts'>('roster')
+  const [activeTab, setActiveTab] = useState<'roster' | 'duty_log' | 'reports' | 'overtime' | 'shifts'>('roster')
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
 
   // Data States
@@ -81,18 +98,83 @@ export default function AttendancePage() {
   const [shifts, setShifts] = useState<ShiftRecord[]>([])
   const [notification, setNotification] = useState<string | null>(null)
 
-  // Filters
+  // Filters for Floor Roster
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [deptFilter, setDeptFilter] = useState('ALL')
 
-  // Modals
+  // ==========================================
+  // EMPLOYEE DUTY LOG STATE
+  // ==========================================
+  const [logEmployeeId, setLogEmployeeId] = useState<string>('ALL')
+  const [logStartDate, setLogStartDate] = useState<string>(() => {
+    const d = new Date()
+    d.setDate(d.getDate() - 30)
+    return d.toISOString().split('T')[0]
+  })
+  const [logEndDate, setLogEndDate] = useState<string>(() => new Date().toISOString().split('T')[0])
+  const [logStatusFilter, setLogStatusFilter] = useState<string>('ALL')
+  const [logSourceFilter, setLogSourceFilter] = useState<string>('ALL')
+  const [logSearchTerm, setLogSearchTerm] = useState<string>('')
+  const [logRecords, setLogRecords] = useState<AttendanceDailySummaryRecord[]>([])
+  const [isLogLoading, setIsLogLoading] = useState<boolean>(false)
+
+  // ==========================================
+  // ATTENDANCE REPORTS STATE
+  // ==========================================
+  const now = new Date()
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const [reportMonth, setReportMonth] = useState<string>(currentMonthStr)
+  const [reportPreset, setReportPreset] = useState<'this_month' | 'last_month' | 'last_7_days' | 'last_30_days' | 'custom'>('this_month')
+  const [reportStartDate, setReportStartDate] = useState<string>(() => {
+    const d = new Date(now.getFullYear(), now.getMonth(), 1)
+    return d.toISOString().split('T')[0]
+  })
+  const [reportEndDate, setReportEndDate] = useState<string>(() => {
+    const d = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    return d.toISOString().split('T')[0]
+  })
+  const [reportDeptFilter, setReportDeptFilter] = useState<string>('ALL')
+  const [reportSearchTerm, setReportSearchTerm] = useState<string>('')
+  const [reportViewMode, setReportViewMode] = useState<'matrix' | 'summary' | 'departments'>('matrix')
+  const [reportRecords, setReportRecords] = useState<AttendanceDailySummaryRecord[]>([])
+  const [isReportLoading, setIsReportLoading] = useState<boolean>(false)
+
+  // ==========================================
+  // MODALS & DIALOGS
+  // ==========================================
   const [isManualModalOpen, setIsManualModalOpen] = useState(false)
   const [isOtModalOpen, setIsOtModalOpen] = useState(false)
   const [isNewShiftModalOpen, setIsNewShiftModalOpen] = useState(false)
   const [isPunchModalOpen, setIsPunchModalOpen] = useState(false)
   const [isQrPosterOpen, setIsQrPosterOpen] = useState(false)
   const [selectedAttendance, setSelectedAttendance] = useState<AttendanceDailySummaryRecord | null>(null)
+
+  // Time Adjustment Modal for Duty Log
+  const [isTimeAdjustModalOpen, setIsTimeAdjustModalOpen] = useState(false)
+  const [timeAdjustForm, setTimeAdjustForm] = useState<{
+    employeeId: string
+    employeeName: string
+    attendanceDate: string
+    status: AttendanceDailySummaryRecord['status']
+    checkInTime: string
+    checkOutTime: string
+    shiftId: string
+    notes: string
+  }>({
+    employeeId: '',
+    employeeName: '',
+    attendanceDate: '',
+    status: 'present',
+    checkInTime: '09:00',
+    checkOutTime: '18:00',
+    shiftId: '',
+    notes: 'Duty time adjusted by supervisor',
+  })
+
+  // Printable Employee Timesheet Modal
+  const [isPrintTimesheetModalOpen, setIsPrintTimesheetModalOpen] = useState(false)
+  const [printTimesheetEmployee, setPrintTimesheetEmployee] = useState<EmployeeRecord | null>(null)
 
   // Manual Attendance Form
   const [manualForm, setManualForm] = useState<{
@@ -148,6 +230,7 @@ export default function AttendancePage() {
     setTimeout(() => setNotification(null), 4000)
   }
 
+  // Initial & Daily Data Loading
   const loadData = async () => {
     setIsLoading(true)
     try {
@@ -173,7 +256,113 @@ export default function AttendancePage() {
     loadData()
   }, [selectedDate])
 
-  // Date Navigator Helpers
+  // Load Duty Log Data when tab or filters change
+  const loadDutyLogData = async () => {
+    setIsLogLoading(true)
+    try {
+      const res = await getDailyAttendanceAction({
+        startDate: logStartDate,
+        endDate: logEndDate,
+        employeeId: logEmployeeId === 'ALL' ? undefined : logEmployeeId,
+      })
+      if (res.success && res.data) {
+        setLogRecords(res.data)
+      }
+    } catch (err) {
+      console.error('Failed to load duty log records', err)
+    } finally {
+      setIsLogLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'duty_log') {
+      loadDutyLogData()
+    }
+  }, [activeTab, logStartDate, logEndDate, logEmployeeId])
+
+  // Load Reports Data when tab or date range changes
+  const loadReportsData = async () => {
+    setIsReportLoading(true)
+    try {
+      const res = await getDailyAttendanceAction({
+        startDate: reportStartDate,
+        endDate: reportEndDate,
+      })
+      if (res.success && res.data) {
+        setReportRecords(res.data)
+      }
+    } catch (err) {
+      console.error('Failed to load report attendance records', err)
+    } finally {
+      setIsReportLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'reports') {
+      loadReportsData()
+    }
+  }, [activeTab, reportStartDate, reportEndDate])
+
+  // Date Preset Switcher for Reports
+  const handleSelectReportPreset = (preset: 'this_month' | 'last_month' | 'last_7_days' | 'last_30_days' | 'custom') => {
+    setReportPreset(preset)
+    const today = new Date()
+    if (preset === 'this_month') {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1)
+      const end = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+      setReportStartDate(start.toISOString().split('T')[0])
+      setReportEndDate(end.toISOString().split('T')[0])
+      setReportMonth(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`)
+    } else if (preset === 'last_month') {
+      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+      const end = new Date(today.getFullYear(), today.getMonth(), 0)
+      setReportStartDate(start.toISOString().split('T')[0])
+      setReportEndDate(end.toISOString().split('T')[0])
+      setReportMonth(`${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`)
+    } else if (preset === 'last_7_days') {
+      const start = new Date()
+      start.setDate(today.getDate() - 6)
+      setReportStartDate(start.toISOString().split('T')[0])
+      setReportEndDate(today.toISOString().split('T')[0])
+    } else if (preset === 'last_30_days') {
+      const start = new Date()
+      start.setDate(today.getDate() - 29)
+      setReportStartDate(start.toISOString().split('T')[0])
+      setReportEndDate(today.toISOString().split('T')[0])
+    }
+  }
+
+  const handleMonthChange = (monthStr: string) => {
+    setReportMonth(monthStr)
+    setReportPreset('custom')
+    const [y, m] = monthStr.split('-').map(Number)
+    const start = new Date(y, m - 1, 1)
+    const end = new Date(y, m, 0)
+    setReportStartDate(start.toISOString().split('T')[0])
+    setReportEndDate(end.toISOString().split('T')[0])
+  }
+
+  // Generate Array of Calendar Days for the active report range
+  const reportDays = React.useMemo(() => {
+    const days: { dayNum: number; dateStr: string; dayOfWeek: string; isFriday: boolean }[] = []
+    if (!reportStartDate || !reportEndDate) return days
+    const start = new Date(reportStartDate)
+    const end = new Date(reportEndDate)
+    const cur = new Date(start)
+    while (cur <= end) {
+      const dStr = cur.toISOString().split('T')[0]
+      const dayNum = cur.getDate()
+      const dayOfWeek = cur.toLocaleDateString('en-US', { weekday: 'short' })
+      const isFriday = cur.getDay() === 5 // Friday = 5 in JS Date
+      days.push({ dayNum, dateStr: dStr, dayOfWeek, isFriday })
+      cur.setDate(cur.getDate() + 1)
+    }
+    return days
+  }, [reportStartDate, reportEndDate])
+
+  // Date Navigator Helpers for Daily Roster
   const handlePrevDay = () => {
     const d = new Date(selectedDate)
     d.setDate(d.getDate() - 1)
@@ -217,6 +406,51 @@ export default function AttendancePage() {
     setIsManualModalOpen(true)
   }
 
+  const handleOpenTimeAdjust = (record: AttendanceDailySummaryRecord) => {
+    const emp = employees.find((e) => e.id === record.employee_id)
+    setTimeAdjustForm({
+      employeeId: record.employee_id,
+      employeeName: emp?.name || record.employee_name || 'Staff',
+      attendanceDate: record.attendance_date,
+      status: record.status,
+      checkInTime: record.check_in_time || '09:00',
+      checkOutTime: record.check_out_time || '18:00',
+      shiftId: record.shift_id || '',
+      notes: record.notes || 'Duty time adjusted by supervisor',
+    })
+    setIsTimeAdjustModalOpen(true)
+  }
+
+  const handleSaveTimeAdjust = async () => {
+    if (!timeAdjustForm.employeeId) return
+    startTransition(async () => {
+      const res = await recordAttendanceSummaryAction({
+        employeeId: timeAdjustForm.employeeId,
+        attendanceDate: timeAdjustForm.attendanceDate,
+        status: timeAdjustForm.status,
+        checkInTime: timeAdjustForm.checkInTime,
+        checkOutTime: timeAdjustForm.checkOutTime,
+        shiftId: timeAdjustForm.shiftId || undefined,
+        attendanceSource: 'manual',
+        notes: timeAdjustForm.notes,
+      })
+
+      if (res.success) {
+        notify('Duty log time adjusted and recalculated successfully.')
+        setIsTimeAdjustModalOpen(false)
+        loadDutyLogData()
+        loadData()
+      } else {
+        notify(res.error || 'Failed to adjust duty time.')
+      }
+    })
+  }
+
+  const handleOpenPrintTimesheet = (emp: EmployeeRecord) => {
+    setPrintTimesheetEmployee(emp)
+    setIsPrintTimesheetModalOpen(true)
+  }
+
   const handleSaveManualAttendance = async () => {
     if (!manualForm.employeeId) {
       notify('Please select an employee.')
@@ -239,6 +473,8 @@ export default function AttendancePage() {
         notify('Attendance record saved successfully.')
         setIsManualModalOpen(false)
         loadData()
+        if (activeTab === 'duty_log') loadDutyLogData()
+        if (activeTab === 'reports') loadReportsData()
       } else {
         notify(res.error || 'Failed to record attendance.')
       }
@@ -276,6 +512,7 @@ export default function AttendancePage() {
       if (res.success) {
         notify(`Overtime request ${status === 'approved' ? 'Approved' : 'Rejected'}.`)
         loadData()
+        if (activeTab === 'duty_log') loadDutyLogData()
       } else {
         notify(res.error || 'Failed to review overtime.')
       }
@@ -307,6 +544,86 @@ export default function AttendancePage() {
     })
   }
 
+  // Export Attendance Report to CSV
+  const handleExportReportCSV = () => {
+    if (employees.length === 0) return
+    const headers = [
+      'Employee ID',
+      'Employee Name',
+      'Department',
+      'Role',
+      'Employment Type',
+      'Salary Basis',
+      'Base Salary (BDT)',
+      'Total Working Days',
+      'Present Days',
+      'Late Arrivals',
+      'Total Late Minutes',
+      'Absent Days',
+      'Approved Leaves',
+      'Field Work Days',
+      'Total Worked Hours',
+      'Total OT Hours',
+      'Estimated OT Pay (BDT)',
+      'Attendance Score %',
+    ]
+
+    const filteredEmps = employees.filter((emp) => {
+      const matchSearch =
+        !reportSearchTerm.trim() ||
+        emp.name.toLowerCase().includes(reportSearchTerm.toLowerCase()) ||
+        emp.employee_id_number.toLowerCase().includes(reportSearchTerm.toLowerCase())
+      const matchDept = reportDeptFilter === 'ALL' || emp.department === reportDeptFilter
+      return matchSearch && matchDept
+    })
+
+    const rows = filteredEmps.map((emp) => {
+      const empAtts = reportRecords.filter((r) => r.employee_id === emp.id)
+      const pCount = empAtts.filter((r) => r.status === 'present' || r.status === 'half_day' || r.status === 'late').length
+      const lCount = empAtts.filter((r) => r.status === 'late' || (r.late_minutes && r.late_minutes > 0)).length
+      const lMins = empAtts.reduce((sum, r) => sum + (r.late_minutes || 0), 0)
+      const aCount = empAtts.filter((r) => r.status === 'absent').length
+      const lvCount = empAtts.filter((r) => r.status === 'leave').length
+      const fCount = empAtts.filter((r) => r.status === 'field_work').length
+      const workedHrs = Math.round((empAtts.reduce((sum, r) => sum + (r.worked_minutes || 0), 0) / 60) * 10) / 10
+      const otHrs = Math.round((empAtts.reduce((sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0), 0) / 60) * 10) / 10
+      const otPay = Math.round(otHrs * (emp.overtime_hourly_rate || (emp.base_salary ? Math.round(emp.base_salary / 208 * 1.5) : 0)))
+      const workDays = reportDays.filter((d) => !d.isFriday).length || 26
+      const score = workDays > 0 ? Math.min(100, Math.round((pCount / workDays) * 100)) : 100
+
+      return [
+        `"${emp.employee_id_number}"`,
+        `"${emp.name.replace(/"/g, '""')}"`,
+        `"${emp.department}"`,
+        `"${emp.role.replace(/"/g, '""')}"`,
+        `"${emp.employee_type}"`,
+        `"${emp.salary_basis}"`,
+        emp.base_salary || 0,
+        workDays,
+        pCount,
+        lCount,
+        lMins,
+        aCount,
+        lvCount,
+        fCount,
+        workedHrs,
+        otHrs,
+        otPay,
+        `${score}%`,
+      ].join(',')
+    })
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `Attendance_Report_${reportStartDate}_to_${reportEndDate}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    notify('Attendance report exported to CSV successfully.')
+  }
+
   // Attendance Calculations for Selected Date
   const presentCount = attendanceRecords.filter((a) => a.status === 'present' || a.status === 'half_day').length
   const lateCount = attendanceRecords.filter((a) => a.status === 'late' || (a.late_minutes && a.late_minutes > 0)).length
@@ -334,6 +651,117 @@ export default function AttendancePage() {
     })
   }, [employees, attendanceRecords, searchTerm, deptFilter, statusFilter])
 
+  // Filtered Duty Log Records
+  const filteredDutyLogs = React.useMemo(() => {
+    return logRecords.filter((r) => {
+      const emp = employees.find((e) => e.id === r.employee_id)
+      const empName = emp?.name || r.employee_name || ''
+      const empIdNum = emp?.employee_id_number || ''
+      const matchSearch =
+        !logSearchTerm.trim() ||
+        empName.toLowerCase().includes(logSearchTerm.toLowerCase()) ||
+        empIdNum.toLowerCase().includes(logSearchTerm.toLowerCase()) ||
+        (r.job_order_id && r.job_order_id.toLowerCase().includes(logSearchTerm.toLowerCase()))
+      const matchStatus = logStatusFilter === 'ALL' || r.status === logStatusFilter
+      const matchSource = logSourceFilter === 'ALL' || r.attendance_source === logSourceFilter
+      return matchSearch && matchStatus && matchSource
+    })
+  }, [logRecords, employees, logSearchTerm, logStatusFilter, logSourceFilter])
+
+  const logTotalHours = React.useMemo(() => {
+    return Math.round((filteredDutyLogs.reduce((sum, r) => sum + (r.worked_minutes || 0), 0) / 60) * 10) / 10
+  }, [filteredDutyLogs])
+
+  const logTotalOtHours = React.useMemo(() => {
+    return Math.round((filteredDutyLogs.reduce((sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0), 0) / 60) * 10) / 10
+  }, [filteredDutyLogs])
+
+  const logOnTimeRate = React.useMemo(() => {
+    if (filteredDutyLogs.length === 0) return 100
+    const onTimeCount = filteredDutyLogs.filter((r) => r.status === 'present' && (!r.late_minutes || r.late_minutes === 0)).length
+    return Math.round((onTimeCount / filteredDutyLogs.length) * 100)
+  }, [filteredDutyLogs])
+
+  // Filtered Employees for Reports
+  const reportFilteredEmps = React.useMemo(() => {
+    return employees.filter((emp) => {
+      const matchSearch =
+        !reportSearchTerm.trim() ||
+        emp.name.toLowerCase().includes(reportSearchTerm.toLowerCase()) ||
+        emp.employee_id_number.toLowerCase().includes(reportSearchTerm.toLowerCase())
+      const matchDept = reportDeptFilter === 'ALL' || emp.department === reportDeptFilter
+      return matchSearch && matchDept
+    })
+  }, [employees, reportSearchTerm, reportDeptFilter])
+
+  // Aggregate stats for Reports
+  const reportSummaryStats = React.useMemo(() => {
+    const totalWorkingDays = reportDays.filter((d) => !d.isFriday).length || 26
+    const empIds = new Set(reportFilteredEmps.map((e) => e.id))
+    const relevantRecords = reportRecords.filter((r) => empIds.has(r.employee_id))
+
+    const presentCount = relevantRecords.filter((r) => r.status === 'present' || r.status === 'half_day' || r.status === 'late').length
+    const lateCount = relevantRecords.filter((r) => r.status === 'late' || (r.late_minutes && r.late_minutes > 0)).length
+    const totalLateMins = relevantRecords.reduce((sum, r) => sum + (r.late_minutes || 0), 0)
+    const absentCount = relevantRecords.filter((r) => r.status === 'absent').length
+    const leaveCount = relevantRecords.filter((r) => r.status === 'leave').length
+    const fieldCount = relevantRecords.filter((r) => r.status === 'field_work').length
+    const workedHrs = Math.round((relevantRecords.reduce((sum, r) => sum + (r.worked_minutes || 0), 0) / 60) * 10) / 10
+    const otHrs = Math.round((relevantRecords.reduce((sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0), 0) / 60) * 10) / 10
+
+    let estimatedOtPay = 0
+    reportFilteredEmps.forEach((emp) => {
+      const empAtts = relevantRecords.filter((r) => r.employee_id === emp.id)
+      const empOtHrs = empAtts.reduce((sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0), 0) / 60
+      const rate = emp.overtime_hourly_rate || (emp.base_salary ? Math.round(emp.base_salary / 208 * 1.5) : 0)
+      estimatedOtPay += Math.round(empOtHrs * rate)
+    })
+
+    const potentialManDays = (reportFilteredEmps.length || 1) * totalWorkingDays
+    const presentRate = potentialManDays > 0 ? Math.min(100, Math.round((presentCount / potentialManDays) * 100)) : 0
+
+    return {
+      totalWorkingDays,
+      presentCount,
+      lateCount,
+      totalLateMins,
+      absentCount,
+      leaveCount,
+      fieldCount,
+      workedHrs,
+      otHrs,
+      estimatedOtPay,
+      presentRate,
+      workforceCount: reportFilteredEmps.length,
+    }
+  }, [reportDays, reportFilteredEmps, reportRecords])
+
+  // Departmental breakdown for Report View Mode 3
+  const departmentBreakdown = React.useMemo(() => {
+    const depts = ['printing', 'finishing', 'fabrication', 'design', 'installation', 'accounts', 'sales', 'management']
+    return depts.map((d) => {
+      const emps = reportFilteredEmps.filter((e) => e.department === d)
+      if (emps.length === 0) return null
+      const empIds = new Set(emps.map((e) => e.id))
+      const atts = reportRecords.filter((r) => empIds.has(r.employee_id))
+      const pCount = atts.filter((r) => r.status === 'present' || r.status === 'half_day' || r.status === 'late').length
+      const totalDays = (reportDays.filter((day) => !day.isFriday).length || 26) * emps.length
+      const pRate = totalDays > 0 ? Math.min(100, Math.round((pCount / totalDays) * 100)) : 0
+      const workedHrs = Math.round((atts.reduce((sum, r) => sum + (r.worked_minutes || 0), 0) / 60) * 10) / 10
+      const otHrs = Math.round((atts.reduce((sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0), 0) / 60) * 10) / 10
+      const lateMins = atts.reduce((sum, r) => sum + (r.late_minutes || 0), 0)
+
+      return {
+        dept: d,
+        headcount: emps.length,
+        presentRate: pRate,
+        workedHrs,
+        otHrs,
+        lateMins,
+      }
+    }).filter(Boolean)
+  }, [reportFilteredEmps, reportRecords, reportDays])
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Toast Notification */}
@@ -348,8 +776,8 @@ export default function AttendancePage() {
       <PageHeader
         titleEn="Floor Attendance & Overtime"
         titleBn="কারখানার হাজিরা ও ওভারটাইম"
-        descriptionEn="Daily check-ins, QR scan station, late monitoring & overtime approvals"
-        descriptionBn="দৈনিক উপস্থিতি, কিউআর কোড স্ক্যান, বিলম্ব পর্যবেক্ষণ ও ওভারটাইম অনুমোদন"
+        descriptionEn="Daily check-ins, employee duty punch logs, monthly attendance matrix & overtime approvals"
+        descriptionBn="দৈনিক উপস্থিতি, কর্মীদের ডিউটি ও পাঞ্চ লগ, মাসিক হাজিরা ম্যাট্রিক্স ও ওভারটাইম অনুমোদন"
         icon={UserCheck}
         iconColor="text-emerald-600 dark:text-emerald-400"
         badge={
@@ -394,7 +822,7 @@ export default function AttendancePage() {
       {/* Date Navigator Bar & Tabs */}
       <Card className="p-3 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          {/* Navigation Tabs */}
+          {/* Navigation Tabs (5 Tabs) */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             <button
               type="button"
@@ -406,7 +834,33 @@ export default function AttendancePage() {
               }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
-              <span>{tBilingual('Floor Roster', 'দৈনিক হাজিরা তালিকা')}</span>
+              <span>{tBilingual('Floor Roster', 'দৈনিক হাজিরা')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('duty_log')}
+              className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeTab === 'duty_log'
+                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              <History className="w-3.5 h-3.5" />
+              <span>{tBilingual('Duty & Punch Log', 'ডিউটি ও পাঞ্চ লগ')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('reports')}
+              className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeTab === 'reports'
+                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>{tBilingual('Attendance Reports', 'হাজিরা রিপোর্ট ও ম্যাট্রিক্স')}</span>
             </button>
 
             <button
@@ -445,31 +899,73 @@ export default function AttendancePage() {
             </button>
           </div>
 
-          {/* Date Controls */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-slate-200 dark:border-slate-800" onClick={handlePrevDay} title="Previous Day">
-              <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-            </Button>
+          {/* Date Controls (For Daily Floor Roster) */}
+          {activeTab === 'roster' && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-slate-200 dark:border-slate-800" onClick={handlePrevDay} title="Previous Day">
+                <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+              </Button>
 
-            <Input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="text-xs h-8 w-36 font-medium border-slate-200 dark:border-slate-800"
-            />
+              <Input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="text-xs h-8 w-36 font-medium border-slate-200 dark:border-slate-800"
+              />
 
-            <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-slate-200 dark:border-slate-800" onClick={handleNextDay} title="Next Day">
-              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-            </Button>
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-slate-200 dark:border-slate-800" onClick={handleNextDay} title="Next Day">
+                <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+              </Button>
 
-            <Button size="sm" variant="secondary" className="text-xs h-8 px-2.5 font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" onClick={handleToday}>
-              {tBilingual('Today', 'আজ')}
-            </Button>
-          </div>
+              <Button size="sm" variant="secondary" className="text-xs h-8 px-2.5 font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" onClick={handleToday}>
+                {tBilingual('Today', 'আজ')}
+              </Button>
+            </div>
+          )}
+
+          {activeTab === 'duty_log' && (
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={loadDutyLogData}
+                disabled={isLogLoading}
+                className="h-8 text-xs gap-1.5 border-slate-200 dark:border-slate-800"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLogLoading ? 'animate-spin' : ''}`} />
+                {tBilingual('Refresh Log', 'রিফ্রেশ')}
+              </Button>
+            </div>
+          )}
+
+          {activeTab === 'reports' && (
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleExportReportCSV}
+                className="h-8 text-xs gap-1.5 border-slate-200 dark:border-slate-800 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {tBilingual('Export CSV', 'সিএসভি ডাউনলোড')}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => window.print()}
+                className="h-8 text-xs gap-1.5 border-slate-200 dark:border-slate-800"
+              >
+                <Printer className="w-3.5 h-3.5 text-slate-500" />
+                {tBilingual('Print Report', 'প্রিন্ট')}
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
 
-      {/* Tab 1: Floor Attendance Daily Roster */}
+      {/* ======================================================== */}
+      {/* TAB 1: DAILY FLOOR ATTENDANCE ROSTER                     */}
+      {/* ======================================================== */}
       {activeTab === 'roster' && (
         <div className="space-y-4">
           {/* Top KPI Metrics Row for Selected Date */}
@@ -720,7 +1216,881 @@ export default function AttendancePage() {
         </div>
       )}
 
-      {/* Tab 2: Overtime Approvals Hub */}
+      {/* ======================================================== */}
+      {/* TAB 2: EMPLOYEE DUTY LOG & PUNCH AUDIT TRAIL             */}
+      {/* ======================================================== */}
+      {activeTab === 'duty_log' && (
+        <div className="space-y-4">
+          {/* Duty Log Top Stats Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                  {tBilingual('Total Duty Logs', 'মোট লগ এন্ট্রি')}
+                </span>
+                <History className="w-4 h-4 text-blue-500" />
+              </div>
+              <div className="text-xl font-black text-slate-900 dark:text-white mt-1">
+                {filteredDutyLogs.length}
+              </div>
+            </Card>
+
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                  {tBilingual('On-Time Check-in Rate', 'সময়মতো আগমন হার')}
+                </span>
+                <CheckCheck className="w-4 h-4 text-emerald-500" />
+              </div>
+              <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {logOnTimeRate}%
+              </div>
+            </Card>
+
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                  {tBilingual('Total Worked Hours', 'মোট কাজের ঘণ্টা')}
+                </span>
+                <Clock3 className="w-4 h-4 text-purple-500" />
+              </div>
+              <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">
+                {logTotalHours} hrs
+              </div>
+            </Card>
+
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                  {tBilingual('Overtime Logged', 'রেকর্ডকৃত ওভারটাইম')}
+                </span>
+                <Activity className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">
+                {logTotalOtHours} hrs
+              </div>
+            </Card>
+          </div>
+
+          {/* Filter Bar */}
+          <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+              {/* Employee Selector */}
+              <div>
+                <Label className="text-[10px] text-slate-500 uppercase font-semibold mb-1 block">
+                  {tBilingual('Employee', 'কর্মী')}
+                </Label>
+                <select
+                  aria-label="Filter duty log by employee"
+                  value={logEmployeeId}
+                  onChange={(e) => setLogEmployeeId(e.target.value)}
+                  className="w-full h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-medium"
+                >
+                  <option value="ALL">{tBilingual('All Floor Workers', 'সব কর্মী')}</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.name} ({emp.employee_id_number})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Start Date */}
+              <div>
+                <Label className="text-[10px] text-slate-500 uppercase font-semibold mb-1 block">
+                  {tBilingual('From Date', 'শুরুর তারিখ')}
+                </Label>
+                <Input
+                  type="date"
+                  value={logStartDate}
+                  onChange={(e) => setLogStartDate(e.target.value)}
+                  className="h-8 text-xs font-medium border-slate-200 dark:border-slate-800"
+                />
+              </div>
+
+              {/* End Date */}
+              <div>
+                <Label className="text-[10px] text-slate-500 uppercase font-semibold mb-1 block">
+                  {tBilingual('To Date', 'শেষের তারিখ')}
+                </Label>
+                <Input
+                  type="date"
+                  value={logEndDate}
+                  onChange={(e) => setLogEndDate(e.target.value)}
+                  className="h-8 text-xs font-medium border-slate-200 dark:border-slate-800"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <Label className="text-[10px] text-slate-500 uppercase font-semibold mb-1 block">
+                  {tBilingual('Duty Status', 'স্ট্যাটাস')}
+                </Label>
+                <select
+                  aria-label="Filter duty log by status"
+                  value={logStatusFilter}
+                  onChange={(e) => setLogStatusFilter(e.target.value)}
+                  className="w-full h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-medium"
+                >
+                  <option value="ALL">{tBilingual('All Statuses', 'সব স্ট্যাটাস')}</option>
+                  <option value="present">{tBilingual('Present / Regular', 'উপস্থিত')}</option>
+                  <option value="late">{tBilingual('Late Check-in', 'দেরি')}</option>
+                  <option value="absent">{tBilingual('Absent', 'অনুপস্থিত')}</option>
+                  <option value="half_day">{tBilingual('Half Day', 'অর্ধ দিবস')}</option>
+                  <option value="leave">{tBilingual('Leave', 'ছুটি')}</option>
+                  <option value="field_work">{tBilingual('Field Work', 'বাইরের কাজ')}</option>
+                </select>
+              </div>
+
+              {/* Punch Source Filter */}
+              <div>
+                <Label className="text-[10px] text-slate-500 uppercase font-semibold mb-1 block">
+                  {tBilingual('Punch Source', 'পাঞ্চের মাধ্যম')}
+                </Label>
+                <select
+                  aria-label="Filter duty log by source"
+                  value={logSourceFilter}
+                  onChange={(e) => setLogSourceFilter(e.target.value)}
+                  className="w-full h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-medium"
+                >
+                  <option value="ALL">{tBilingual('All Sources', 'সব মাধ্যম')}</option>
+                  <option value="qr_scanner">{tBilingual('QR Scanner Station', 'কিউআর স্ক্যানার')}</option>
+                  <option value="mobile_gps">{tBilingual('Mobile GPS Self-Punch', 'মোবাইল জিপিএস')}</option>
+                  <option value="manual">{tBilingual('Manual / Supervisor', 'ম্যানুয়াল এন্ট্রি')}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Quick Search */}
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="relative w-full sm:w-80">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                <Input
+                  placeholder={tBilingual('Search employee, ID or Job Order #...', 'কর্মী, আইডি বা জব অর্ডার দিয়ে খুঁজুন...')}
+                  value={logSearchTerm}
+                  onChange={(e) => setLogSearchTerm(e.target.value)}
+                  className="pl-8 text-xs h-8 font-medium"
+                />
+              </div>
+
+              {logEmployeeId !== 'ALL' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const emp = employees.find((e) => e.id === logEmployeeId)
+                    if (emp) handleOpenPrintTimesheet(emp)
+                  }}
+                  className="text-xs h-8 gap-1.5 border-slate-200 dark:border-slate-800"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-500" />
+                  {tBilingual('Print Employee Timesheet', 'টাইমশিট প্রিন্ট')}
+                </Button>
+              )}
+            </div>
+          </Card>
+
+          {/* Duty Log Audit Table */}
+          <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
+            <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                  {tBilingual('Continuous Duty & Attendance Log', 'ধারাবাহিক ডিউটি ও পাঞ্চ লগ হিস্ট্রি')}
+                </CardTitle>
+                <Badge variant="outline" className="text-xs font-mono">
+                  {filteredDutyLogs.length} logs
+                </Badge>
+              </div>
+            </CardHeader>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
+                    <th className="p-3.5 pl-4">{tBilingual('Date / Day', 'তারিখ / বার')}</th>
+                    <th className="p-3.5">{tBilingual('Employee', 'কর্মী')}</th>
+                    <th className="p-3.5">{tBilingual('Shift / Schedule', 'শিফট')}</th>
+                    <th className="p-3.5">{tBilingual('Punch In', 'প্রবেশ')}</th>
+                    <th className="p-3.5">{tBilingual('Punch Out', 'প্রস্থান')}</th>
+                    <th className="p-3.5">{tBilingual('Worked Hours', 'কাজের সময়')}</th>
+                    <th className="p-3.5">{tBilingual('Late / OT', 'বিলম্ব / ওভারটাইম')}</th>
+                    <th className="p-3.5">{tBilingual('Source & Mode', 'উৎস ও মোড')}</th>
+                    <th className="p-3.5">{tBilingual('Status', 'স্ট্যাটাস')}</th>
+                    <th className="p-3.5 pr-4 text-right">{tBilingual('Actions', 'পদক্ষেপ')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {filteredDutyLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400">
+                        <History className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                        <p className="text-xs font-medium">{tBilingual('No duty logs found for selected criteria', 'নির্বাচিত ফিল্টারে কোনো ডিউটি লগ পাওয়া যায়নি')}</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDutyLogs.map((log) => {
+                      const emp = employees.find((e) => e.id === log.employee_id)
+                      const dayName = new Date(log.attendance_date).toLocaleDateString('en-US', { weekday: 'short' })
+                      const isFri = dayName === 'Fri'
+
+                      return (
+                        <tr key={log.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
+                          <td className="p-3.5 pl-4 font-medium">
+                            <div className="text-slate-900 dark:text-white font-mono">{log.attendance_date}</div>
+                            <div className={`text-[11px] font-semibold ${isFri ? 'text-rose-500 font-bold' : 'text-slate-400'}`}>
+                              {dayName} {isFri && '(Off-Day)'}
+                            </div>
+                          </td>
+
+                          <td className="p-3.5">
+                            <div className="font-semibold text-slate-900 dark:text-white">
+                              {emp?.name || log.employee_name || 'Floor Worker'}
+                            </div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                              {emp?.employee_id_number || log.employee_id} • <span className="capitalize">{emp?.department || 'Production'}</span>
+                            </div>
+                          </td>
+
+                          <td className="p-3.5 text-slate-500 dark:text-slate-400">
+                            {log.shift_name || 'Regular (09:00-18:00)'}
+                          </td>
+
+                          <td className="p-3.5 font-mono">
+                            {log.check_in_time ? (
+                              <span className="font-semibold text-slate-900 dark:text-white">{log.check_in_time}</span>
+                            ) : (
+                              <span className="text-slate-400">--:--</span>
+                            )}
+                          </td>
+
+                          <td className="p-3.5 font-mono">
+                            {log.check_out_time ? (
+                              <span className="font-semibold text-slate-900 dark:text-white">{log.check_out_time}</span>
+                            ) : log.check_in_time ? (
+                              <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                In Duty
+                              </Badge>
+                            ) : (
+                              <span className="text-slate-400">--:--</span>
+                            )}
+                          </td>
+
+                          <td className="p-3.5 font-mono text-slate-700 dark:text-slate-300">
+                            {log.worked_minutes ? (
+                              <span className="font-semibold">{Math.round((log.worked_minutes / 60) * 10) / 10} hrs</span>
+                            ) : (
+                              <span className="text-slate-400">0 hrs</span>
+                            )}
+                          </td>
+
+                          <td className="p-3.5">
+                            <div className="space-y-0.5">
+                              {log.late_minutes && log.late_minutes > 0 ? (
+                                <div className="text-amber-600 dark:text-amber-400 font-medium text-[11px]">
+                                  +{log.late_minutes}m Late
+                                </div>
+                              ) : null}
+                              {log.potential_ot_minutes && log.potential_ot_minutes > 0 ? (
+                                <div className="text-purple-600 dark:text-purple-400 font-medium text-[11px]">
+                                  +{Math.round((log.potential_ot_minutes / 60) * 10) / 10}h OT
+                                </div>
+                              ) : null}
+                              {!log.late_minutes && !log.potential_ot_minutes && (
+                                <span className="text-slate-400 text-[11px]">-</span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="p-3.5">
+                            <div className="flex items-center gap-1.5">
+                              <Badge variant="secondary" className="text-[10px] uppercase font-mono px-1.5 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                {log.attendance_source || 'manual'}
+                              </Badge>
+                              {log.job_order_id && (
+                                <Badge variant="outline" className="text-[10px] font-mono border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300">
+                                  Job #{log.job_order_id.slice(0, 6)}
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="p-3.5">
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] px-2 py-0.5 capitalize ${
+                                log.status === 'present'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                                  : log.status === 'late'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                                  : log.status === 'absent'
+                                  ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+                                  : log.status === 'leave'
+                                  ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
+                              }`}
+                            >
+                              {log.status}
+                            </Badge>
+                          </td>
+
+                          <td className="p-3.5 pr-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30 px-2 font-medium gap-1"
+                                onClick={() => handleOpenTimeAdjust(log)}
+                                title="Adjust punch times and recalculate duration"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                                <span>{tBilingual('Adjust', 'সংশোধন')}</span>
+                              </Button>
+
+                              {emp && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 px-1.5"
+                                  onClick={() => handleOpenPrintTimesheet(emp)}
+                                  title="Print individual employee monthly punch card"
+                                >
+                                  <Printer className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 3: COMPREHENSIVE ATTENDANCE REPORTS & MATRIX         */}
+      {/* ======================================================== */}
+      {activeTab === 'reports' && (
+        <div className="space-y-4">
+          {/* Preset Buttons & Filters Toolbar */}
+          <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              {/* Range Presets */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button
+                  size="sm"
+                  variant={reportPreset === 'this_month' ? 'default' : 'outline'}
+                  onClick={() => handleSelectReportPreset('this_month')}
+                  className="text-xs h-8 px-3 font-semibold"
+                >
+                  {tBilingual('This Month', 'চলতি মাস')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={reportPreset === 'last_month' ? 'default' : 'outline'}
+                  onClick={() => handleSelectReportPreset('last_month')}
+                  className="text-xs h-8 px-3 font-semibold"
+                >
+                  {tBilingual('Last Month', 'গত মাস')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={reportPreset === 'last_7_days' ? 'default' : 'outline'}
+                  onClick={() => handleSelectReportPreset('last_7_days')}
+                  className="text-xs h-8 px-3 font-semibold"
+                >
+                  {tBilingual('Last 7 Days', 'গত ৭ দিন')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={reportPreset === 'last_30_days' ? 'default' : 'outline'}
+                  onClick={() => handleSelectReportPreset('last_30_days')}
+                  className="text-xs h-8 px-3 font-semibold"
+                >
+                  {tBilingual('Last 30 Days', 'গত ৩০ দিন')}
+                </Button>
+              </div>
+
+              {/* View Mode Switcher */}
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setReportViewMode('matrix')}
+                  className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    reportViewMode === 'matrix'
+                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>{tBilingual('Monthly Matrix', 'মাসিক ম্যাট্রিক্স')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setReportViewMode('summary')}
+                  className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    reportViewMode === 'summary'
+                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span>{tBilingual('Aggregate Table', 'সারসংক্ষেপ তালিকা')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setReportViewMode('departments')}
+                  className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    reportViewMode === 'departments'
+                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>{tBilingual('Departments', 'বিভাগভিত্তিক')}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sub-toolbar: Date Inputs & Search */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-1.5">
+                <Label className="text-xs text-slate-500 shrink-0 font-medium">{tBilingual('Month:', 'মাস:')}</Label>
+                <Input
+                  type="month"
+                  value={reportMonth}
+                  onChange={(e) => handleMonthChange(e.target.value)}
+                  className="h-8 text-xs font-medium border-slate-200 dark:border-slate-800"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <Label className="text-xs text-slate-500 shrink-0 font-medium">{tBilingual('Range:', 'তারিখ:')}</Label>
+                <Input
+                  type="date"
+                  value={reportStartDate}
+                  onChange={(e) => {
+                    setReportStartDate(e.target.value)
+                    setReportPreset('custom')
+                  }}
+                  className="h-8 text-xs font-medium border-slate-200 dark:border-slate-800"
+                />
+                <span className="text-xs text-slate-400">→</span>
+                <Input
+                  type="date"
+                  value={reportEndDate}
+                  onChange={(e) => {
+                    setReportEndDate(e.target.value)
+                    setReportPreset('custom')
+                  }}
+                  className="h-8 text-xs font-medium border-slate-200 dark:border-slate-800"
+                />
+              </div>
+
+              <div>
+                <select
+                  aria-label="Filter report by department"
+                  value={reportDeptFilter}
+                  onChange={(e) => setReportDeptFilter(e.target.value)}
+                  className="w-full h-8 text-xs px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-medium"
+                >
+                  <option value="ALL">{tBilingual('All Departments', 'সব বিভাগ')}</option>
+                  <option value="printing">{tBilingual('Printing', 'প্রিন্টিং')}</option>
+                  <option value="finishing">{tBilingual('Finishing', 'ফিনিশিং')}</option>
+                  <option value="fabrication">{tBilingual('Fabrication', 'ফ্যাব্রিকেশন')}</option>
+                  <option value="design">{tBilingual('Design', 'ডিজাইন')}</option>
+                  <option value="installation">{tBilingual('Installation', 'ইনস্টলেশন')}</option>
+                  <option value="accounts">{tBilingual('Accounts', 'হিসাব')}</option>
+                </select>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                <Input
+                  placeholder={tBilingual('Filter worker by name or ID...', 'কর্মী বা আইডি দিয়ে ফিল্টার...')}
+                  value={reportSearchTerm}
+                  onChange={(e) => setReportSearchTerm(e.target.value)}
+                  className="pl-8 text-xs h-8 font-medium"
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Executive KPI Summary Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                {tBilingual('Workforce', 'মোট কর্মী')}
+              </span>
+              <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                {reportSummaryStats.workforceCount}
+              </div>
+              <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                {reportSummaryStats.totalWorkingDays} work days
+              </div>
+            </Card>
+
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                {tBilingual('Present Rate', 'উপস্থিতি হার')}
+              </span>
+              <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+                {reportSummaryStats.presentRate}%
+              </div>
+              <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
+                {reportSummaryStats.presentCount} check-ins
+              </div>
+            </Card>
+
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                {tBilingual('Late Arrivals', 'বিলম্ব আগমন')}
+              </span>
+              <div className="text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5">
+                {reportSummaryStats.lateCount}
+              </div>
+              <div className="text-[11px] text-amber-600 dark:text-amber-400 font-mono mt-0.5">
+                {reportSummaryStats.totalLateMins} mins total
+              </div>
+            </Card>
+
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                {tBilingual('Absent & Leave', 'অনুপস্থিত ও ছুটি')}
+              </span>
+              <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-0.5">
+                {reportSummaryStats.absentCount} / {reportSummaryStats.leaveCount}
+              </div>
+              <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                {reportSummaryStats.absentCount} Abs • {reportSummaryStats.leaveCount} Leaves
+              </div>
+            </Card>
+
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                {tBilingual('Total Worked Hrs', 'মোট কাজের ঘণ্টা')}
+              </span>
+              <div className="text-xl font-black text-blue-600 dark:text-blue-400 mt-0.5">
+                {reportSummaryStats.workedHrs}h
+              </div>
+              <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                {(reportSummaryStats.workforceCount > 0 ? Math.round((reportSummaryStats.workedHrs / reportSummaryStats.workforceCount) * 10) / 10 : 0)}h / employee
+              </div>
+            </Card>
+
+            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <span className="text-[11px] text-slate-500 uppercase font-semibold">
+                {tBilingual('Overtime Pay', 'ওভারটাইম প্রদেয়')}
+              </span>
+              <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-0.5">
+                {formatBDT(reportSummaryStats.estimatedOtPay)}
+              </div>
+              <div className="text-[11px] text-purple-600 dark:text-purple-400 font-mono mt-0.5">
+                {reportSummaryStats.otHrs} hrs OT
+              </div>
+            </Card>
+          </div>
+
+          {/* VIEW MODE 1: MONTHLY 31-DAY ATTENDANCE HEATMAP MATRIX */}
+          {reportViewMode === 'matrix' && (
+            <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
+              <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+                <div>
+                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                    {tBilingual('Monthly Attendance Calendar Matrix', 'মাসিক হাজিরা ক্যালেন্ডার ম্যাট্রিক্স')}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500">
+                    {tBilingual('Daily presence grid with visual status codes: P = Present, L = Late, A = Absent, LV = Leave, W = Off-Day', 'দৈনিক উপস্থিতির ভিজ্যুয়াল গ্রিড ও কোড সংকেত')}
+                  </CardDescription>
+                </div>
+
+                {/* Legend Badges */}
+                <div className="hidden md:flex items-center gap-2 text-[10px] font-semibold">
+                  <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><span className="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> P: Present</span>
+                  <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400"><span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span> L: Late</span>
+                  <span className="flex items-center gap-1 text-rose-700 dark:text-rose-400"><span className="w-2.5 h-2.5 rounded bg-rose-500 inline-block"></span> A: Absent</span>
+                  <span className="flex items-center gap-1 text-purple-700 dark:text-purple-400"><span className="w-2.5 h-2.5 rounded bg-purple-500 inline-block"></span> LV: Leave</span>
+                  <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400"><span className="w-2.5 h-2.5 rounded bg-slate-300 dark:bg-slate-700 inline-block"></span> W: Off-day</span>
+                </div>
+              </CardHeader>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase">
+                      <th className="p-2.5 pl-4 sticky left-0 z-10 bg-slate-100 dark:bg-slate-900 min-w-[180px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                        {tBilingual('Employee', 'কর্মী')}
+                      </th>
+                      {reportDays.map((d) => (
+                        <th
+                          key={d.dateStr}
+                          className={`p-1 text-center min-w-[28px] border-l border-slate-200/60 dark:border-slate-800/60 ${
+                            d.isFriday ? 'bg-rose-50/70 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 font-black' : ''
+                          }`}
+                        >
+                          <div>{d.dayNum}</div>
+                          <div className="text-[9px] font-normal opacity-80">{d.dayOfWeek[0]}</div>
+                        </th>
+                      ))}
+                      {/* Summary Columns */}
+                      <th className="p-2 text-center bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 min-w-[36px] font-bold border-l border-slate-200 dark:border-slate-800">P</th>
+                      <th className="p-2 text-center bg-amber-50/80 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 min-w-[36px] font-bold border-l border-slate-200 dark:border-slate-800">L</th>
+                      <th className="p-2 text-center bg-rose-50/80 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 min-w-[36px] font-bold border-l border-slate-200 dark:border-slate-800">A</th>
+                      <th className="p-2 text-center bg-purple-50/80 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 min-w-[36px] font-bold border-l border-slate-200 dark:border-slate-800">LV</th>
+                      <th className="p-2 pr-4 text-center bg-slate-200/80 dark:bg-slate-800/80 text-slate-900 dark:text-white min-w-[50px] font-bold border-l border-slate-200 dark:border-slate-800">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-[11px]">
+                    {reportFilteredEmps.map((emp) => {
+                      const empAtts = reportRecords.filter((r) => r.employee_id === emp.id)
+                      const pCount = empAtts.filter((r) => r.status === 'present' || r.status === 'half_day' || r.status === 'late').length
+                      const lCount = empAtts.filter((r) => r.status === 'late' || (r.late_minutes && r.late_minutes > 0)).length
+                      const aCount = empAtts.filter((r) => r.status === 'absent').length
+                      const lvCount = empAtts.filter((r) => r.status === 'leave').length
+                      const workDays = reportDays.filter((d) => !d.isFriday).length || 26
+                      const score = workDays > 0 ? Math.min(100, Math.round((pCount / workDays) * 100)) : 100
+
+                      return (
+                        <tr key={emp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
+                          <td className="p-2.5 pl-4 sticky left-0 z-10 bg-white dark:bg-slate-950 font-sans shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                            <div className="font-semibold text-slate-900 dark:text-white text-xs truncate max-w-[170px]">
+                              {emp.name}
+                            </div>
+                            <div className="text-[10px] text-slate-400 truncate max-w-[170px]">
+                              {emp.employee_id_number} • <span className="capitalize">{emp.department}</span>
+                            </div>
+                          </td>
+
+                          {reportDays.map((d) => {
+                            const rec = empAtts.find((r) => r.attendance_date === d.dateStr)
+                            let badgeClass = 'text-slate-300 dark:text-slate-700'
+                            let label = '-'
+
+                            if (rec) {
+                              if (rec.status === 'present') {
+                                badgeClass = 'bg-emerald-500 text-white font-bold'
+                                label = 'P'
+                              } else if (rec.status === 'late') {
+                                badgeClass = 'bg-amber-500 text-white font-bold'
+                                label = 'L'
+                              } else if (rec.status === 'absent') {
+                                badgeClass = 'bg-rose-500 text-white font-bold'
+                                label = 'A'
+                              } else if (rec.status === 'leave') {
+                                badgeClass = 'bg-purple-500 text-white font-bold'
+                                label = 'LV'
+                              } else if (rec.status === 'field_work') {
+                                badgeClass = 'bg-blue-500 text-white font-bold'
+                                label = 'FW'
+                              } else if (rec.status === 'half_day') {
+                                badgeClass = 'bg-sky-500 text-white font-bold'
+                                label = 'HD'
+                              }
+                            } else if (d.isFriday) {
+                              badgeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-semibold'
+                              label = 'W'
+                            }
+
+                            return (
+                              <td
+                                key={d.dateStr}
+                                className={`p-1 text-center border-l border-slate-100 dark:border-slate-800/50 ${
+                                  d.isFriday ? 'bg-rose-50/20 dark:bg-rose-950/20' : ''
+                                }`}
+                                title={`${emp.name} - ${d.dateStr}: ${rec ? `${rec.status} (In: ${rec.check_in_time || '--'}, Out: ${rec.check_out_time || '--'})` : d.isFriday ? 'Weekly Off' : 'Unmarked'}`}
+                              >
+                                <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] ${badgeClass}`}>
+                                  {label}
+                                </span>
+                              </td>
+                            )
+                          })}
+
+                          {/* Summary Row Totals */}
+                          <td className="p-2 text-center bg-emerald-50/40 dark:bg-emerald-950/20 font-bold text-emerald-700 dark:text-emerald-400 border-l border-slate-200 dark:border-slate-800">
+                            {pCount}
+                          </td>
+                          <td className="p-2 text-center bg-amber-50/40 dark:bg-amber-950/20 font-bold text-amber-700 dark:text-amber-400 border-l border-slate-200 dark:border-slate-800">
+                            {lCount}
+                          </td>
+                          <td className="p-2 text-center bg-rose-50/40 dark:bg-rose-950/20 font-bold text-rose-700 dark:text-rose-400 border-l border-slate-200 dark:border-slate-800">
+                            {aCount}
+                          </td>
+                          <td className="p-2 text-center bg-purple-50/40 dark:bg-purple-950/20 font-bold text-purple-700 dark:text-purple-400 border-l border-slate-200 dark:border-slate-800">
+                            {lvCount}
+                          </td>
+                          <td className="p-2 pr-4 text-center bg-slate-100/50 dark:bg-slate-900/50 font-black border-l border-slate-200 dark:border-slate-800">
+                            <span className={score >= 90 ? 'text-emerald-600' : score >= 75 ? 'text-amber-600' : 'text-rose-600'}>
+                              {score}%
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+
+          {/* VIEW MODE 2: AGGREGATE METRICS TABLE */}
+          {reportViewMode === 'summary' && (
+            <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950">
+              <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                  {tBilingual('Employee Aggregate Attendance & Overtime Summary', 'কর্মীভিত্তিক সামগ্রিক হাজিরা ও ওভারটাইম বিবরণ')}
+                </CardTitle>
+                <Badge variant="outline" className="text-xs font-mono">
+                  {reportFilteredEmps.length} employees
+                </Badge>
+              </CardHeader>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
+                      <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
+                      <th className="p-3.5">{tBilingual('Work Days', 'কর্মদিবস')}</th>
+                      <th className="p-3.5">{tBilingual('Present', 'উপস্থিত')}</th>
+                      <th className="p-3.5">{tBilingual('Late (Mins)', 'দেরি (মিনিট)')}</th>
+                      <th className="p-3.5">{tBilingual('Absent', 'অনুপস্থিত')}</th>
+                      <th className="p-3.5">{tBilingual('Leaves', 'ছুটি')}</th>
+                      <th className="p-3.5">{tBilingual('Worked Hours', 'কাজের ঘণ্টা')}</th>
+                      <th className="p-3.5">{tBilingual('OT Hours', 'ওভারটাইম')}</th>
+                      <th className="p-3.5">{tBilingual('Est. OT Pay', 'সম্ভাব্য ওটি')}</th>
+                      <th className="p-3.5 pr-4 text-right">{tBilingual('Attendance Score', 'স্কোর')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {reportFilteredEmps.map((emp) => {
+                      const empAtts = reportRecords.filter((r) => r.employee_id === emp.id)
+                      const pCount = empAtts.filter((r) => r.status === 'present' || r.status === 'half_day' || r.status === 'late').length
+                      const lCount = empAtts.filter((r) => r.status === 'late' || (r.late_minutes && r.late_minutes > 0)).length
+                      const lMins = empAtts.reduce((sum, r) => sum + (r.late_minutes || 0), 0)
+                      const aCount = empAtts.filter((r) => r.status === 'absent').length
+                      const lvCount = empAtts.filter((r) => r.status === 'leave').length
+                      const workedHrs = Math.round((empAtts.reduce((sum, r) => sum + (r.worked_minutes || 0), 0) / 60) * 10) / 10
+                      const otHrs = Math.round((empAtts.reduce((sum, r) => sum + (r.potential_ot_minutes || r.approved_ot_minutes || 0), 0) / 60) * 10) / 10
+                      const rate = emp.overtime_hourly_rate || (emp.base_salary ? Math.round(emp.base_salary / 208 * 1.5) : 0)
+                      const otPay = Math.round(otHrs * rate)
+                      const workDays = reportDays.filter((d) => !d.isFriday).length || 26
+                      const score = workDays > 0 ? Math.min(100, Math.round((pCount / workDays) * 100)) : 100
+
+                      return (
+                        <tr key={emp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
+                          <td className="p-3.5 pl-4">
+                            <div className="font-semibold text-slate-900 dark:text-white">{emp.name}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                              {emp.employee_id_number} • <span className="capitalize">{emp.department}</span>
+                            </div>
+                          </td>
+
+                          <td className="p-3.5 font-mono text-slate-700 dark:text-slate-300">
+                            {workDays} days
+                          </td>
+
+                          <td className="p-3.5 font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                            {pCount}
+                          </td>
+
+                          <td className="p-3.5">
+                            {lCount > 0 ? (
+                              <div className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
+                                {lCount} ({lMins}m)
+                              </div>
+                            ) : (
+                              <span className="text-slate-400 font-mono">-</span>
+                            )}
+                          </td>
+
+                          <td className="p-3.5 font-mono text-rose-600 dark:text-rose-400 font-semibold">
+                            {aCount > 0 ? aCount : <span className="text-slate-400">-</span>}
+                          </td>
+
+                          <td className="p-3.5 font-mono text-purple-600 dark:text-purple-400 font-semibold">
+                            {lvCount > 0 ? lvCount : <span className="text-slate-400">-</span>}
+                          </td>
+
+                          <td className="p-3.5 font-mono font-semibold text-slate-900 dark:text-white">
+                            {workedHrs}h
+                          </td>
+
+                          <td className="p-3.5 font-mono text-purple-600 dark:text-purple-400 font-bold">
+                            {otHrs > 0 ? `+${otHrs}h` : <span className="text-slate-400">-</span>}
+                          </td>
+
+                          <td className="p-3.5 font-mono font-bold text-amber-600 dark:text-amber-400">
+                            {otPay > 0 ? formatBDT(otPay) : <span className="text-slate-400 font-normal">৳0</span>}
+                          </td>
+
+                          <td className="p-3.5 pr-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="w-16 bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div
+                                  className={`h-full ${score >= 90 ? 'bg-emerald-500' : score >= 75 ? 'bg-amber-500' : 'bg-rose-500'}`}
+                                  style={{ width: `${score}%` }}
+                                ></div>
+                              </div>
+                              <span className={`font-mono font-black text-xs ${score >= 90 ? 'text-emerald-600' : score >= 75 ? 'text-amber-600' : 'text-rose-600'}`}>
+                                {score}%
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+
+          {/* VIEW MODE 3: DEPARTMENTAL BREAKDOWN */}
+          {reportViewMode === 'departments' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {departmentBreakdown.map((item) => item && (
+                <Card key={item.dept} className="p-4 border-slate-200 dark:border-slate-800 shadow-xs bg-white dark:bg-slate-950 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white capitalize">
+                        {item.dept}
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {item.headcount} active workforce
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+                      {item.presentRate}% Present
+                    </Badge>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">{tBilingual('Total Worked Hours:', 'মোট কাজের ঘণ্টা:')}</span>
+                      <strong className="text-slate-900 dark:text-white font-mono">{item.workedHrs} hrs</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">{tBilingual('Total Overtime Hours:', 'মোট ওভারটাইম ঘণ্টা:')}</span>
+                      <strong className="text-purple-600 dark:text-purple-400 font-mono">+{item.otHrs} hrs</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">{tBilingual('Total Late Delay:', 'দেরিতে আগমন:')}</span>
+                      <strong className="text-amber-600 dark:text-amber-400 font-mono">{item.lateMins} mins</strong>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 4: OVERTIME APPROVALS HUB                            */}
+      {/* ======================================================== */}
       {activeTab === 'overtime' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -819,7 +2189,9 @@ export default function AttendancePage() {
         </div>
       )}
 
-      {/* Tab 3: Shift Management */}
+      {/* ======================================================== */}
+      {/* TAB 5: SHIFT CONFIGURATION                               */}
+      {/* ======================================================== */}
       {activeTab === 'shifts' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -869,7 +2241,248 @@ export default function AttendancePage() {
         </div>
       )}
 
-      {/* Mark Manual Attendance Modal */}
+      {/* ======================================================== */}
+      {/* MODAL: TIME ADJUSTMENT (FOR DUTY LOG)                    */}
+      {/* ======================================================== */}
+      {isTimeAdjustModalOpen && (
+        <ModalDialog
+          open={isTimeAdjustModalOpen}
+          onOpenChange={(open) => setIsTimeAdjustModalOpen(open)}
+          hideFooter={true}
+          title={tBilingual('Adjust Punch & Duty Time', 'পাঞ্চ ও ডিউটি সময় সংশোধন')}
+          description={tBilingual(`Adjust punch records and recalculate duration & OT for ${timeAdjustForm.employeeName}`, 'সঠিক প্রবেশ ও প্রস্থান সময় নির্ধারণ করে কাজের সময় ও ওভারটাইম পুনর্গণনা করুন')}
+          size="md"
+        >
+          <div className="space-y-3 pt-2">
+            <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 rounded-lg border border-blue-200/60 dark:border-blue-800/60 text-xs">
+              <div className="font-semibold text-blue-900 dark:text-blue-200">{timeAdjustForm.employeeName}</div>
+              <div className="text-blue-700 dark:text-blue-400 font-mono text-[11px] mt-0.5">Date: {timeAdjustForm.attendanceDate}</div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-medium">{tBilingual('Check In Time', 'প্রবেশ সময়')}</Label>
+                <Input
+                  type="time"
+                  value={timeAdjustForm.checkInTime}
+                  onChange={(e) => setTimeAdjustForm({ ...timeAdjustForm, checkInTime: e.target.value })}
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800 font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-medium">{tBilingual('Check Out Time', 'প্রস্থান সময়')}</Label>
+                <Input
+                  type="time"
+                  value={timeAdjustForm.checkOutTime}
+                  onChange={(e) => setTimeAdjustForm({ ...timeAdjustForm, checkOutTime: e.target.value })}
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800 font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-medium">{tBilingual('Duty Status', 'স্ট্যাটাস')}</Label>
+                <select
+                  aria-label="Adjusted duty status"
+                  value={timeAdjustForm.status}
+                  onChange={(e) => setTimeAdjustForm({ ...timeAdjustForm, status: e.target.value as any })}
+                  className="w-full h-9 text-xs px-2.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                >
+                  <option value="present">{tBilingual('Present', 'উপস্থিত')}</option>
+                  <option value="late">{tBilingual('Late', 'দেরি')}</option>
+                  <option value="absent">{tBilingual('Absent', 'অনুপস্থিত')}</option>
+                  <option value="half_day">{tBilingual('Half Day', 'অর্ধ দিবস')}</option>
+                  <option value="leave">{tBilingual('Leave', 'ছুটি')}</option>
+                  <option value="field_work">{tBilingual('Field Work', 'বাইরের কাজ')}</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-medium">{tBilingual('Shift', 'শিফট')}</Label>
+                <select
+                  aria-label="Adjusted shift schedule"
+                  value={timeAdjustForm.shiftId}
+                  onChange={(e) => setTimeAdjustForm({ ...timeAdjustForm, shiftId: e.target.value })}
+                  className="w-full h-9 text-xs px-2.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                >
+                  <option value="">{tBilingual('Default Factory Shift', 'ডিফল্ট শিফট')}</option>
+                  {shifts.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.shift_name} ({s.start_time} - {s.end_time})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-medium">{tBilingual('Supervisor Adjustment Reason *', 'সংশোধনের কারণ *')}</Label>
+              <Input
+                placeholder="e.g. Punch missed due to network offline / supervisor approved"
+                value={timeAdjustForm.notes}
+                onChange={(e) => setTimeAdjustForm({ ...timeAdjustForm, notes: e.target.value })}
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsTimeAdjustModalOpen(false)}
+                disabled={isPending}
+                className="text-xs h-9 border-slate-200 dark:border-slate-800"
+              >
+                {tBilingual('Cancel', 'বাতিল')}
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveTimeAdjust}
+                disabled={isPending}
+                className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5 shadow-xs"
+              >
+                {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                {tBilingual('Save & Recalculate', 'সংরক্ষণ ও পুনর্গণনা')}
+              </Button>
+            </div>
+          </div>
+        </ModalDialog>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: PRINTABLE EMPLOYEE TIMESHEET                      */}
+      {/* ======================================================== */}
+      {isPrintTimesheetModalOpen && printTimesheetEmployee && (
+        <ModalDialog
+          open={isPrintTimesheetModalOpen}
+          onOpenChange={(open) => setIsPrintTimesheetModalOpen(open)}
+          hideFooter={true}
+          title={tBilingual('Employee Monthly Duty Timesheet', 'কর্মীর মাসিক ডিউটি টাইমশিট')}
+          description={tBilingual('Official monthly punch card and duty audit sheet with signature blocks', 'স্বাক্ষরযুক্ত অফিসিয়াল মাসিক পাঞ্চ কার্ড ও ডিউটি শিট')}
+          size="lg"
+        >
+          <div className="space-y-4 pt-2">
+            {/* Action Bar */}
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="text-xs text-slate-500 font-medium">
+                Period: <strong>{reportStartDate}</strong> to <strong>{reportEndDate}</strong>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => window.print()}
+                className="gap-1.5 text-xs h-8 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 font-semibold"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                {tBilingual('Print Timesheet (A4)', 'প্রিন্ট টাইমশিট')}
+              </Button>
+            </div>
+
+            {/* Printable Content Box */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-4 text-xs">
+              {/* Header */}
+              <div className="flex justify-between items-start border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                    {company?.name || 'InkFlow ERP'}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Employee Attendance & Duty Audit Timesheet
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono text-xs text-slate-500">Date: {new Date().toLocaleDateString('en-GB')}</div>
+                  <Badge variant="outline" className="text-[10px] mt-0.5">Authoritative Record</Badge>
+                </div>
+              </div>
+
+              {/* Employee Info Strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase font-semibold block">Employee Name</span>
+                  <strong className="text-slate-900 dark:text-white">{printTimesheetEmployee.name}</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase font-semibold block">Employee ID</span>
+                  <strong className="text-slate-900 dark:text-white font-mono">{printTimesheetEmployee.employee_id_number}</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase font-semibold block">Department & Role</span>
+                  <strong className="text-slate-900 dark:text-white capitalize">{printTimesheetEmployee.department} - {printTimesheetEmployee.role}</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase font-semibold block">Employment Type</span>
+                  <strong className="text-slate-900 dark:text-white capitalize">{printTimesheetEmployee.employee_type} ({printTimesheetEmployee.salary_basis})</strong>
+                </div>
+              </div>
+
+              {/* Timesheet Table */}
+              <div className="max-h-72 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-lg">
+                <table className="w-full text-left text-[11px] border-collapse">
+                  <thead className="bg-slate-100 dark:bg-slate-900 sticky top-0">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 font-bold text-slate-600 dark:text-slate-400">
+                      <th className="p-2">Date / Day</th>
+                      <th className="p-2">Check In</th>
+                      <th className="p-2">Check Out</th>
+                      <th className="p-2">Worked Hrs</th>
+                      <th className="p-2">Late Mins</th>
+                      <th className="p-2">OT Hrs</th>
+                      <th className="p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                    {reportDays.map((d) => {
+                      const rec = reportRecords.find((r) => r.employee_id === printTimesheetEmployee.id && r.attendance_date === d.dateStr)
+                      return (
+                        <tr key={d.dateStr} className="hover:bg-slate-50/50">
+                          <td className="p-2 font-sans font-medium">
+                            {d.dateStr} ({d.dayOfWeek}) {d.isFriday && <span className="text-rose-500 font-bold">*</span>}
+                          </td>
+                          <td className="p-2">{rec?.check_in_time || (d.isFriday ? 'Off-day' : '--:--')}</td>
+                          <td className="p-2">{rec?.check_out_time || '--:--'}</td>
+                          <td className="p-2">{rec?.worked_minutes ? `${Math.round(rec.worked_minutes / 60 * 10) / 10}h` : '-'}</td>
+                          <td className="p-2 text-amber-600">{rec?.late_minutes && rec.late_minutes > 0 ? `${rec.late_minutes}m` : '-'}</td>
+                          <td className="p-2 text-purple-600">{rec?.potential_ot_minutes ? `+${Math.round(rec.potential_ot_minutes / 60 * 10) / 10}h` : '-'}</td>
+                          <td className="p-2 capitalize font-sans">
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                              rec?.status === 'present' ? 'bg-emerald-100 text-emerald-800' :
+                              rec?.status === 'late' ? 'bg-amber-100 text-amber-800' :
+                              rec?.status === 'absent' ? 'bg-rose-100 text-rose-800' :
+                              rec?.status === 'leave' ? 'bg-purple-100 text-purple-800' :
+                              d.isFriday ? 'bg-slate-100 text-slate-600' : 'text-slate-400'
+                            }`}>
+                              {rec?.status || (d.isFriday ? 'Off-day' : 'Unmarked')}
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Signature Blocks */}
+              <div className="grid grid-cols-3 gap-6 pt-8 pb-2 text-center text-[11px] text-slate-600 dark:text-slate-400">
+                <div className="border-t border-slate-300 dark:border-slate-700 pt-1.5">
+                  <div className="font-semibold text-slate-900 dark:text-white">Employee Signature</div>
+                  <div className="text-[10px] text-slate-400">{printTimesheetEmployee.name}</div>
+                </div>
+                <div className="border-t border-slate-300 dark:border-slate-700 pt-1.5">
+                  <div className="font-semibold text-slate-900 dark:text-white">Floor Supervisor</div>
+                  <div className="text-[10px] text-slate-400">Verified & Checked</div>
+                </div>
+                <div className="border-t border-slate-300 dark:border-slate-700 pt-1.5">
+                  <div className="font-semibold text-slate-900 dark:text-white">HR & Accounts</div>
+                  <div className="text-[10px] text-slate-400">Approved for Payroll</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ModalDialog>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: MARK MANUAL ATTENDANCE                            */}
+      {/* ======================================================== */}
       {isManualModalOpen && (
         <ModalDialog
           open={isManualModalOpen}
@@ -978,7 +2591,9 @@ export default function AttendancePage() {
         </ModalDialog>
       )}
 
-      {/* Submit Overtime Modal */}
+      {/* ======================================================== */}
+      {/* MODAL: SUBMIT OVERTIME                                   */}
+      {/* ======================================================== */}
       {isOtModalOpen && (
         <ModalDialog
           open={isOtModalOpen}
@@ -1061,7 +2676,9 @@ export default function AttendancePage() {
         </ModalDialog>
       )}
 
-      {/* Create Shift Modal */}
+      {/* ======================================================== */}
+      {/* MODAL: CREATE SHIFT                                      */}
+      {/* ======================================================== */}
       {isNewShiftModalOpen && (
         <ModalDialog
           open={isNewShiftModalOpen}
