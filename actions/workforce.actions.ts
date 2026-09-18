@@ -104,6 +104,9 @@ export async function createEmployeeAction(
     )
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/employees`)
+    revalidatePath(`/${tenant.companySlug}/hr/attendance`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
     return { success: true, data: employee }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create employee.' }
@@ -130,6 +133,9 @@ export async function updateEmployeeAction(
     )
 
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/employees`)
+    revalidatePath(`/${tenant.companySlug}/hr/attendance`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
     return { success: true, data: employee }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update employee.' }
@@ -148,6 +154,9 @@ export async function deleteEmployeeAction(
 
     const result = await WorkforceService.deleteEmployee(id, tenant.companyId)
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/employees`)
+    revalidatePath(`/${tenant.companySlug}/hr/attendance`)
+    revalidatePath(`/${tenant.companySlug}/hr/payroll`)
     return { success: true, data: result }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete employee.' }

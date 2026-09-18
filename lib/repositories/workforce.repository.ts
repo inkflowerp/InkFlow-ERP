@@ -27,6 +27,7 @@ export class WorkforceRepository {
     companyId: string,
     options?: { branchId?: string; status?: string; department?: string; isDailyWorker?: boolean }
   ): Promise<EmployeeRecord[]> {
+    let dbEmployees: EmployeeRecord[] = []
     try {
       const admin = createAdminClient()
       let query = (admin as any)
@@ -50,7 +51,7 @@ export class WorkforceRepository {
 
       const { data, error } = await query
       if (!error && data && data.length > 0) {
-        return data.map((d: any) => ({
+        dbEmployees = data.map((d: any) => ({
           ...d,
           branch_name: d.branches?.name || null,
         })) as EmployeeRecord[]
@@ -59,8 +60,12 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getEmployees] DB query fallback to store:', e)
     }
 
-    const emps = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []
-    return emps.filter((e) => {
+    // Retrieve from local store (both tenant scoped and default scope)
+    const storeEmpsScoped = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
+    const storeEmpsGlobal = PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []
+    const allStoreEmps = [...storeEmpsScoped, ...storeEmpsGlobal]
+
+    const filteredStoreEmps = allStoreEmps.filter((e) => {
       if (e.company_id && e.company_id !== companyId) return false
       if (options?.branchId && e.branch_id !== options.branchId) return false
       if (options?.status && e.status !== options.status) return false
@@ -68,6 +73,29 @@ export class WorkforceRepository {
       if (options?.isDailyWorker !== undefined && Boolean(e.is_daily_worker) !== options.isDailyWorker) return false
       return true
     })
+
+    // Merge store and DB employees so newly enrolled employees in store or DB are NEVER lost
+    const empMap = new Map<string, EmployeeRecord>()
+
+    // 1. Seed store employees
+    for (const s of filteredStoreEmps) {
+      if (s.id) empMap.set(s.id, s)
+      if (s.employee_id_number) empMap.set(s.employee_id_number, s)
+    }
+
+    // 2. Overlay DB employees (preserving extended rich fields from store if present)
+    for (const d of dbEmployees) {
+      const existing = empMap.get(d.id) || (d.employee_id_number ? empMap.get(d.employee_id_number) : null)
+      if (existing) {
+        empMap.set(d.id, { ...existing, ...d })
+      } else {
+        empMap.set(d.id, d)
+      }
+    }
+
+    const uniqueEmployees = Array.from(new Set(empMap.values()))
+    uniqueEmployees.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+    return uniqueEmployees
   }
 
   static async getEmployeeById(id: string, companyId: string): Promise<EmployeeRecord | null> {
@@ -81,7 +109,12 @@ export class WorkforceRepository {
         .maybeSingle()
 
       if (!error && data) {
+        const storeEmp =
+          (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id || e.employee_id_number === id) ||
+          (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id || e.employee_id_number === id)
+
         return {
+          ...(storeEmp || {}),
           ...data,
           branch_name: data.branches?.name || null,
         } as EmployeeRecord
@@ -95,23 +128,74 @@ export class WorkforceRepository {
   }
 
   static async createEmployee(emp: EmployeeRecord): Promise<EmployeeRecord> {
+    // 1. Always save to DataStore in both tenant scope and general scope to guarantee local persistence
+    PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, emp.company_id)
+    PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
+
+    // 2. Attempt DB insertion with schema sanitization
     try {
       const admin = createAdminClient()
+
+      let dbEmpType = 'permanent'
+      if (emp.employee_type === 'contract') dbEmpType = 'contract'
+      else if (emp.employee_type === 'daily_labor' || emp.employee_type === 'daily_worker' || emp.is_daily_worker) dbEmpType = 'daily_labor'
+
+      let dbSalaryType = 'monthly'
+      if (emp.salary_basis === 'daily_rate' || dbEmpType === 'daily_labor') dbSalaryType = 'daily_rate'
+      else if (emp.salary_basis === 'contract') dbSalaryType = 'contract'
+
+      let dbStatus = 'active'
+      if (emp.status === 'on_leave') dbStatus = 'on_leave'
+      else if ((emp.status as string) === 'terminated' || (emp.status as string) === 'suspended') dbStatus = 'terminated'
+
+      const allowedDepts = ['printing', 'finishing', 'fabrication', 'design', 'installation', 'accounts', 'sales', 'management']
+      const dbDept = allowedDepts.includes(emp.department) ? emp.department : 'printing'
+
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(emp.id)
+
+      const dbPayload: any = {
+        company_id: emp.company_id,
+        employee_id_number: emp.employee_id_number,
+        name: emp.name,
+        name_bn: emp.name_bn || null,
+        mobile: emp.mobile,
+        address: emp.address || null,
+        role: emp.role || 'Staff',
+        department: dbDept,
+        employee_type: dbEmpType,
+        joining_date: emp.joining_date || new Date().toISOString().split('T')[0],
+        salary_type: dbSalaryType,
+        base_salary: Number(emp.base_salary || 0),
+        daily_rate: Number(emp.daily_rate || 0),
+        overtime_hourly_rate: Number(emp.overtime_hourly_rate || 0),
+        current_advance_balance: Number(emp.current_advance_balance || 0),
+        status: dbStatus,
+        created_at: emp.created_at || new Date().toISOString(),
+        updated_at: emp.updated_at || new Date().toISOString(),
+      }
+
+      if (isUuid) {
+        dbPayload.id = emp.id
+      }
+
       const { data, error } = await (admin as any)
         .from('employees')
-        .insert(emp)
+        .insert(dbPayload)
         .select()
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, data as EmployeeRecord)
-        return data as EmployeeRecord
+        const merged = { ...emp, id: data.id || emp.id }
+        PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, emp.id, merged, emp.company_id)
+        PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, emp.id, merged)
+        return merged
+      } else if (error) {
+        console.warn('[WorkforceRepository.createEmployee] DB insert error:', error)
       }
     } catch (e) {
       console.warn('[WorkforceRepository.createEmployee] DB insert fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
     return emp
   }
 
@@ -122,40 +206,74 @@ export class WorkforceRepository {
   ): Promise<EmployeeRecord | null> {
     const payload = { ...updates, updated_at: new Date().toISOString() }
 
+    // 1. Update DataStore in both scopes
+    PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, companyId)
+    PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload)
+
+    // 2. Update DB
     try {
       const admin = createAdminClient()
-      const { data, error } = await (admin as any)
-        .from('employees')
-        .update(payload)
-        .eq('company_id', companyId)
-        .eq('id', id)
-        .select()
-        .single()
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
-      if (!error && data) {
-        PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, data)
-        return data as EmployeeRecord
+      if (isUuid) {
+        const dbUpdates: any = { updated_at: payload.updated_at }
+        if (updates.name !== undefined) dbUpdates.name = updates.name
+        if (updates.name_bn !== undefined) dbUpdates.name_bn = updates.name_bn
+        if (updates.mobile !== undefined) dbUpdates.mobile = updates.mobile
+        if (updates.address !== undefined) dbUpdates.address = updates.address
+        if (updates.role !== undefined) dbUpdates.role = updates.role
+        if (updates.department !== undefined) dbUpdates.department = updates.department
+        if (updates.base_salary !== undefined) dbUpdates.base_salary = updates.base_salary
+        if (updates.daily_rate !== undefined) dbUpdates.daily_rate = updates.daily_rate
+        if (updates.overtime_hourly_rate !== undefined) dbUpdates.overtime_hourly_rate = updates.overtime_hourly_rate
+        if (updates.current_advance_balance !== undefined) dbUpdates.current_advance_balance = updates.current_advance_balance
+        if (updates.status !== undefined) dbUpdates.status = updates.status
+        if (updates.salary_basis !== undefined) dbUpdates.salary_type = updates.salary_basis === 'daily_rate' ? 'daily_rate' : 'monthly'
+
+        const { data, error } = await (admin as any)
+          .from('employees')
+          .update(dbUpdates)
+          .eq('company_id', companyId)
+          .eq('id', id)
+          .select()
+          .single()
+
+        if (!error && data) {
+          const storeEmp =
+            (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id) ||
+            (PrintERPDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id)
+          const merged = { ...(storeEmp || {}), ...data, ...updates }
+          PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, companyId)
+          PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged)
+          return merged
+        }
       }
     } catch (e) {
       console.warn('[WorkforceRepository.updateEmployee] DB update fallback:', e)
     }
 
-    return PrintERPDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload)
+    const emps = await this.getEmployees(companyId)
+    return emps.find((e) => e.id === id) || null
   }
 
   static async deleteEmployee(id: string, companyId: string): Promise<boolean> {
     try {
       const admin = createAdminClient()
-      await (admin as any)
-        .from('employees')
-        .delete()
-        .eq('company_id', companyId)
-        .eq('id', id)
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      if (isUuid) {
+        await (admin as any)
+          .from('employees')
+          .delete()
+          .eq('company_id', companyId)
+          .eq('id', id)
+      }
     } catch (e) {
       console.warn('[WorkforceRepository.deleteEmployee] DB delete fallback:', e)
     }
 
-    return PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id)
+    PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, companyId)
+    PrintERPDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id)
+    return true
   }
 
   // ============================================================================
