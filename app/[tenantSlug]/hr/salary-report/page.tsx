@@ -103,7 +103,7 @@ export default function SalaryReportPage() {
   const filteredItems = React.useMemo(() => {
     if (!selectedPeriod || !selectedPeriod.items) return []
     return selectedPeriod.items.filter((item) => {
-      const emp = employees.find((e) => e.id === item.employee_id)
+      const emp = employees.find((e) => e.id === item.employee_id || (item.employee_id_number && e.employee_id_number === item.employee_id_number) || e.name === item.employee_name)
       const matchSearch =
         !searchTerm.trim() ||
         item.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -149,12 +149,12 @@ export default function SalaryReportPage() {
 
   // Filter channel counts
   const bankCount = selectedPeriod?.items?.filter((item) => {
-    const emp = employees.find((e) => e.id === item.employee_id)
+    const emp = employees.find((e) => e.id === item.employee_id || (item.employee_id_number && e.employee_id_number === item.employee_id_number) || e.name === item.employee_name)
     return Boolean(emp?.bank_payment_info?.account_number)
   }).length || 0
 
   const mfsCount = selectedPeriod?.items?.filter((item) => {
-    const emp = employees.find((e) => e.id === item.employee_id)
+    const emp = employees.find((e) => e.id === item.employee_id || (item.employee_id_number && e.employee_id_number === item.employee_id_number) || e.name === item.employee_name)
     return Boolean(emp?.mfs_payment_info?.wallet_number)
   }).length || 0
 
@@ -183,7 +183,7 @@ export default function SalaryReportPage() {
     ]
 
     const rows = filteredItems.map((item) => {
-      const emp = employees.find((e) => e.id === item.employee_id)
+      const emp = employees.find((e) => e.id === item.employee_id || (item.employee_id_number && e.employee_id_number === item.employee_id_number) || e.name === item.employee_name)
       return [
         `"${item.employee_id_number || ''}"`,
         `"${item.employee_name}"`,

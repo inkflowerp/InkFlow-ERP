@@ -1845,11 +1845,7 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.getPayrollPeriods] DB fallback:', e)
     }
 
-    if (dbPeriods.length > 0) {
-      return dbPeriods
-    }
-
-    // Retrieve from local store across tenant partitions
+    // Retrieve from local store across all tenant partitions (scoped, clean-slug, comp-slug, and global)
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
@@ -1858,60 +1854,147 @@ export class WorkforceRepository {
     const storeScoped3 = compSlug !== companyId ? (PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS, compSlug) || []) : []
     const storeGlobal = PrintERPDataStore.get<PayrollPeriodRecord[]>(STORAGE_KEYS.PAYROLL_PERIODS) || []
 
-    const allPeriods = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
+    const allStorePeriods = [...storeScoped1, ...storeScoped2, ...storeScoped3, ...storeGlobal]
 
-    const filtered = allPeriods.filter((p) => {
+    const filteredStorePeriods = allStorePeriods.filter((p) => {
       if (p.company_id && !isMatchingCompany(p.company_id, companyId)) return false
       if (options?.status && p.status !== options.status) return false
       return true
     })
 
-    // Deduplicate by id
+    // Merge store and DB periods into periodMap
     const periodMap = new Map<string, PayrollPeriodRecord>()
-    for (const p of filtered) {
-      if (p.id && !periodMap.has(p.id)) {
+
+    // 1. Seed store periods first
+    for (const p of filteredStorePeriods) {
+      if (p.id) {
         periodMap.set(p.id, p)
       }
     }
 
-    const uniquePeriods = Array.from(periodMap.values())
-    if (uniquePeriods.length > 0) {
-      return uniquePeriods
+    // 2. Overlay DB periods (preserving items from store if DB items array is empty)
+    for (const d of dbPeriods) {
+      const existing = periodMap.get(d.id)
+      if (existing) {
+        const mergedItems = (d.items && d.items.length > 0) ? d.items : (existing.items || [])
+        periodMap.set(d.id, { ...existing, ...d, items: mergedItems })
+      } else {
+        periodMap.set(d.id, d)
+      }
     }
 
-    // Auto-seed default payroll period for this company
-    return await this.seedDefaultPayrollPeriod(companyId)
+    let resultPeriods = Array.from(periodMap.values())
+
+    // If no periods exist, auto-seed default payroll period for this tenant
+    if (resultPeriods.length === 0) {
+      resultPeriods = await this.seedDefaultPayrollPeriod(companyId)
+    }
+
+    // Ensure every period has its line items populated (never left as empty items)
+    let activeEmployees: EmployeeRecord[] | null = null
+    for (const period of resultPeriods) {
+      if (!period.items || period.items.length === 0) {
+        if (!activeEmployees) {
+          activeEmployees = await this.getEmployees(companyId, { status: 'active' })
+          if (activeEmployees.length === 0) {
+            activeEmployees = await this.seedDefaultEmployees(companyId)
+          }
+        }
+
+        const otHoursMap: Record<string, number> = {
+          'EMP-2024-1001': 14,
+          'EMP-2024-1002': 10,
+          'EMP-2024-1003': 8,
+          'EMP-2024-1004': 12,
+          'EMP-2024-1005': 6,
+          'EMP-2024-1006': 0,
+          'EMP-2024-1007': 16,
+        }
+
+        const generatedItems: PayrollItemRecord[] = activeEmployees.map((emp, idx) => {
+          const otHours = otHoursMap[emp.employee_id_number] || (emp.is_daily_worker ? 10 : 4)
+          const otRate = Number(emp.overtime_hourly_rate || (emp.hourly_rate ? emp.hourly_rate * 1.5 : 150))
+          const otAmount = Math.round(otHours * otRate)
+
+          let baseSalary = Number(emp.base_salary || 0)
+          if (emp.salary_basis === 'daily_rate' || emp.is_daily_worker) {
+            baseSalary = Number(emp.daily_rate || 800) * 26
+          }
+
+          const grossSalary = baseSalary + otAmount
+          const netSalary = grossSalary
+
+          return {
+            id: `pi-${period.id}-${idx + 1}`,
+            company_id: companyId,
+            payroll_period_id: period.id,
+            employee_id: emp.id,
+            employee_name: emp.name,
+            employee_name_bn: emp.name_bn || null,
+            employee_id_number: emp.employee_id_number,
+            role: emp.role,
+            department: emp.department,
+            employee_type: emp.employee_type || 'permanent',
+            salary_basis: emp.salary_basis || (emp.is_daily_worker ? 'daily_rate' : 'monthly'),
+            base_salary: baseSalary,
+            daily_rate: Number(emp.daily_rate || 0),
+            hourly_rate: Number(emp.hourly_rate || (baseSalary > 0 ? Math.round(baseSalary / 208) : 0)),
+            days_present: period.working_days_count || 26,
+            hours_worked: 208,
+            overtime_hours: otHours,
+            overtime_amount: otAmount,
+            allowances_breakdown: emp.salary_structure || {
+              basic: Math.round(baseSalary * 0.6),
+              house_allowance: Math.round(baseSalary * 0.2),
+              transport_allowance: Math.round(baseSalary * 0.1),
+              food_allowance: 0,
+              medical_allowance: Math.round(baseSalary * 0.1),
+              other_allowances: 0,
+            },
+            bonuses: 0,
+            gross_salary: grossSalary,
+            advance_salary_deducted: 0,
+            advance_remaining_balance: Number(emp.current_advance_balance || 0),
+            absence_deduction: 0,
+            late_fine: 0,
+            loan_deduction: 0,
+            other_deductions: 0,
+            net_salary: netSalary,
+            paid_amount: 0,
+            due_amount: netSalary,
+            payment_status: 'unpaid',
+            created_at: period.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+        })
+
+        period.items = generatedItems
+        if (!period.total_gross_salary) {
+          period.total_gross_salary = generatedItems.reduce((sum, i) => sum + i.gross_salary, 0)
+        }
+        if (!period.total_net_salary) {
+          period.total_net_salary = generatedItems.reduce((sum, i) => sum + i.net_salary, 0)
+        }
+        if (period.total_due_amount === undefined || period.total_due_amount === null) {
+          period.total_due_amount = period.total_net_salary
+        }
+
+        // Resync populated period to all store partitions
+        PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, period, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, period, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, period, compSlug)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, period)
+      }
+    }
+
+    resultPeriods.sort((a, b) => new Date(b.created_at || b.start_date || 0).getTime() - new Date(a.created_at || a.start_date || 0).getTime())
+    return resultPeriods
   }
 
   static async getPayrollPeriodById(id: string, companyId: string): Promise<PayrollPeriodRecord | null> {
-    try {
-      const admin = createAdminClient()
-      const { data, error } = await (admin as any)
-        .from('payroll_periods')
-        .select('*, payroll_items(*, employees(name, name_bn, employee_id_number, role, department))')
-        .eq('company_id', companyId)
-        .eq('id', id)
-        .maybeSingle()
-
-      if (!error && data) {
-        return {
-          ...data,
-          items: (data.payroll_items || []).map((i: any) => ({
-            ...i,
-            employee_name: i.employees?.name || i.employee_name || 'Staff',
-            employee_name_bn: i.employees?.name_bn || i.employee_name_bn || null,
-            employee_id_number: i.employees?.employee_id_number || i.employee_id_number || 'EMP',
-            role: i.employees?.role || i.role || 'Staff',
-            department: i.employees?.department || i.department || 'printing',
-          })),
-        } as PayrollPeriodRecord
-      }
-    } catch (e) {
-      console.warn('[WorkforceRepository.getPayrollPeriodById] DB fallback:', e)
-    }
-
     const periods = await this.getPayrollPeriods(companyId)
-    return periods.find((p) => p.id === id || p.period_name.toLowerCase().includes(id.toLowerCase())) || periods[0] || null
+    const found = periods.find((p) => p.id === id || p.period_name.toLowerCase().includes(id.toLowerCase())) || periods[0] || null
+    return found
   }
 
   static async createPayrollPeriod(
@@ -1921,12 +2004,23 @@ export class WorkforceRepository {
     const companyId = period.company_id
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
+    const completePeriod: PayrollPeriodRecord = {
+      ...period,
+      items,
+    }
 
+    // 1. Persist to DataStore across all tenant partition keys (scoped, cleanSlug, compSlug, global)
+    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, compSlug)
+    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod)
+
+    // 2. Best-effort DB upsert
     try {
       const admin = createAdminClient()
       const { data: savedPeriod, error: pErr } = await (admin as any)
         .from('payroll_periods')
-        .insert({
+        .upsert({
           id: period.id,
           company_id: period.company_id,
           branch_id: period.branch_id || null,
@@ -1943,30 +2037,25 @@ export class WorkforceRepository {
           total_paid_amount: period.total_paid_amount,
           total_due_amount: period.total_due_amount,
           notes: period.notes || null,
-        })
+        }, { onConflict: 'id' })
         .select()
         .single()
 
       if (!pErr && savedPeriod && items.length > 0) {
-        await (admin as any).from('payroll_items').insert(
-          items.map((i) => ({
-            ...i,
-            payroll_period_id: savedPeriod.id,
-          }))
-        )
+        try {
+          await (admin as any).from('payroll_items').upsert(
+            items.map((i) => ({
+              ...i,
+              payroll_period_id: savedPeriod.id,
+            })),
+            { onConflict: 'id' }
+          )
+        } catch {}
       }
     } catch (e) {
       console.warn('[WorkforceRepository.createPayrollPeriod] DB insert fallback:', e)
     }
 
-    const completePeriod: PayrollPeriodRecord = {
-      ...period,
-      items,
-    }
-    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod, compSlug)
-    PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, completePeriod)
     return completePeriod
   }
 
@@ -1979,31 +2068,44 @@ export class WorkforceRepository {
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
 
+    // 1. Update in local store across all partitions
+    PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, companyId)
+    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, cleanSlug)
+    if (compSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, compSlug)
+    const storeUpdated = PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload)
+
+    // 2. Best-effort DB update (strip items array so DB update does not fail if column is missing)
     try {
+      const { items, ...dbPayload } = payload
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
         .from('payroll_periods')
-        .update(payload)
+        .update(dbPayload)
         .eq('company_id', companyId)
         .eq('id', id)
         .select()
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, data, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, data, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, data, compSlug)
-        PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, data)
-        return data as PayrollPeriodRecord
+        if (items && Array.isArray(items) && items.length > 0) {
+          try {
+            await (admin as any).from('payroll_items').upsert(
+              items.map((i) => ({
+                ...i,
+                payroll_period_id: id,
+              })),
+              { onConflict: 'id' }
+            )
+          } catch {}
+        }
+        const merged = { ...payload, ...data, items: items || storeUpdated?.items || [] }
+        return merged as PayrollPeriodRecord
       }
     } catch (e) {
       console.warn('[WorkforceRepository.updatePayrollPeriod] DB update fallback:', e)
     }
 
-    PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, companyId)
-    if (cleanSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, cleanSlug)
-    if (compSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload, compSlug)
-    return PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, id, payload)
+    return storeUpdated
   }
 
   static async updatePayrollItem(
@@ -2012,41 +2114,38 @@ export class WorkforceRepository {
     updates: Partial<PayrollItemRecord>
   ): Promise<PayrollItemRecord | null> {
     const payload = { ...updates, updated_at: new Date().toISOString() }
+    const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
 
     try {
       const admin = createAdminClient()
-      const { data, error } = await (admin as any)
+      await (admin as any)
         .from('payroll_items')
         .update(payload)
         .eq('company_id', companyId)
         .eq('id', id)
-        .select()
-        .single()
-
-      if (!error && data) {
-        return data as PayrollItemRecord
-      }
     } catch (e) {
       console.warn('[WorkforceRepository.updatePayrollItem] DB fallback:', e)
     }
 
-    // Update inside local store payroll periods
+    // Update inside local store payroll periods across all partitions
     const periods = await this.getPayrollPeriods(companyId)
+    let updatedItem: PayrollItemRecord | null = null
+
     for (const period of periods) {
       const itemIdx = (period.items || []).findIndex((it) => it.id === id)
       if (itemIdx >= 0) {
-        const updatedItem = { ...period.items[itemIdx], ...payload }
+        updatedItem = { ...period.items[itemIdx], ...payload }
         period.items[itemIdx] = updatedItem
 
         // Recalculate period totals
         period.total_paid_amount = period.items.reduce((sum, it) => sum + Number(it.paid_amount || 0), 0)
         period.total_due_amount = period.items.reduce((sum, it) => sum + Number(it.due_amount || 0), 0)
 
-        await this.updatePayrollPeriod(period.id, companyId, {
-          total_paid_amount: period.total_paid_amount,
-          total_due_amount: period.total_due_amount,
-          items: period.items,
-        })
+        PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, companyId)
+        if (cleanSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, cleanSlug)
+        if (compSlug !== companyId) PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period, compSlug)
+        PrintERPDataStore.updateItem<PayrollPeriodRecord>(STORAGE_KEYS.PAYROLL_PERIODS, period.id, period)
         return updatedItem
       }
     }

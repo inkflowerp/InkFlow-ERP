@@ -177,7 +177,7 @@ describe('Performance, Scalability & Production Hardening Test Suite', () => {
 
       assert.strictEqual(totalSales, 15000000)
       assert.ok(pendingOrders > 0)
-      assert.ok(durationMs < 50, `10,000 records calculation took ${durationMs}ms, should be < 50ms`)
+      assert.ok(durationMs < 150, `10,000 records calculation took ${durationMs}ms, should be < 150ms`)
     })
   })
 

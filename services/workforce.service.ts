@@ -742,11 +742,11 @@ export class WorkforceService {
   }): Promise<PayrollPeriodRecord> {
     const { companyId, branchId, periodName, startDate, endDate, workingDaysCount = 26, actorId, actorName = 'Accounts Manager' } = params
 
-    // 1. Prevent duplicate active payroll period with same name
+    // 1. Prevent regenerating locked payroll periods
     const existingPeriods = await WorkforceRepository.getPayrollPeriods(companyId)
     const duplicate = existingPeriods.find((p) => p.period_name.toLowerCase().trim() === periodName.toLowerCase().trim())
-    if (duplicate && (duplicate.status === 'locked' || duplicate.status === 'approved')) {
-      throw new Error(`Payroll period "${periodName}" is already ${duplicate.status} and cannot be re-generated.`)
+    if (duplicate && duplicate.status === 'locked') {
+      throw new Error(`Payroll period "${periodName}" is already locked and cannot be re-generated.`)
     }
 
     const employees = await WorkforceRepository.getEmployees(companyId, { branchId, status: 'active' })
