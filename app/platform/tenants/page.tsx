@@ -192,6 +192,7 @@ export default function PlatformTenantsPage() {
   // Delete Single Tenant Modal
   const [deleteModalCompany, setDeleteModalCompany] = useState<PlatformTenantCompany | null>(null)
   const [deleteReason, setDeleteReason] = useState('')
+  const [deleteConfirmName, setDeleteConfirmName] = useState('')
   const [isDeletingCompany, setIsDeletingCompany] = useState(false)
 
   // Purge All Tenants Modal
@@ -379,12 +380,17 @@ export default function PlatformTenantsPage() {
   // Handle Delete Single Tenant
   const handleDeleteCompany = async () => {
     if (!deleteModalCompany || !deleteReason.trim()) return
+    const matchesName = deleteConfirmName.trim().toLowerCase() === deleteModalCompany.name.trim().toLowerCase()
+    const matchesDelete = deleteConfirmName.trim().toUpperCase() === 'DELETE'
+    if (!matchesName && !matchesDelete) return
+
     setIsDeletingCompany(true)
     const res = await deleteBusinessAction(deleteModalCompany.id, deleteReason.trim())
     if (res.success) {
-      showNotification(`Tenant "${deleteModalCompany.name}" and all associated workspace data have been deleted.`)
+      showNotification(`Tenant "${deleteModalCompany.name}" and all associated workspace data have been permanently deleted.`)
       setDeleteModalCompany(null)
       setDeleteReason('')
+      setDeleteConfirmName('')
       loadData()
     } else {
       showNotification(res.error || 'Failed to delete tenant.')
@@ -2013,15 +2019,22 @@ export default function PlatformTenantsPage() {
             </CardHeader>
 
             <CardContent className="space-y-3 pt-4 text-xs">
-              <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 space-y-1">
+              <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 space-y-2">
                 <div className="font-semibold flex items-center gap-1.5 text-red-300">
                   <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
-                  Irreversible Action
+                  Permanent Physical Deletion (Cannot be undone)
                 </div>
                 <p className="text-[11px] text-red-300/90 leading-relaxed">
-                  This will permanently delete the tenant and all associated data including users, customer profiles,
-                  orders, invoices, inventory rolls, and ledger balances across PostgreSQL partitions.
+                  This operation will physically wipe all records from PostgreSQL and purge all Supabase Storage files for this tenant:
                 </p>
+                <ul className="text-[10px] text-red-200/80 space-y-0.5 list-disc pl-4">
+                  <li>Company details, branches, and member accounts</li>
+                  <li>Customer databases, contacts, and communication logs</li>
+                  <li>Invoices, payments, financial transactions, and cash book</li>
+                  <li>Products, pricing rules, inventory rolls, and materials</li>
+                  <li>Job orders, production schedules, tasks, and rework logs</li>
+                  <li>Storage attachments (artworks, proofs, challans, receipts)</li>
+                </ul>
               </div>
 
               <div className="space-y-1">
@@ -2037,6 +2050,20 @@ export default function PlatformTenantsPage() {
                   className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500"
                 />
               </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-300 flex items-center gap-1">
+                  <span>Type <strong className="text-red-400">{deleteModalCompany.name}</strong> or <strong className="text-red-400">DELETE</strong> to confirm</span>
+                  <span className="text-red-400">*</span>
+                </label>
+                <Input
+                  required
+                  placeholder={`Type "${deleteModalCompany.name}" or "DELETE"`}
+                  value={deleteConfirmName}
+                  onChange={(e) => setDeleteConfirmName(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500"
+                />
+              </div>
             </CardContent>
 
             <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
@@ -2046,18 +2073,24 @@ export default function PlatformTenantsPage() {
                 onClick={() => {
                   setDeleteModalCompany(null)
                   setDeleteReason('')
+                  setDeleteConfirmName('')
                 }}
                 className="text-xs border-slate-800 bg-slate-900 text-slate-300"
               >
                 Cancel
               </Button>
               <Button
-                disabled={isDeletingCompany || !deleteReason.trim()}
+                disabled={
+                  isDeletingCompany ||
+                  !deleteReason.trim() ||
+                  (deleteConfirmName.trim().toLowerCase() !== deleteModalCompany.name.trim().toLowerCase() &&
+                    deleteConfirmName.trim().toUpperCase() !== 'DELETE')
+                }
                 onClick={handleDeleteCompany}
                 size="sm"
                 className="bg-red-600 hover:bg-red-500 disabled:bg-red-950/60 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold text-xs"
               >
-                {isDeletingCompany ? 'Deleting...' : 'Confirm Permanent Deletion'}
+                {isDeletingCompany ? 'Deleting Permanently...' : 'Confirm Permanent Deletion'}
               </Button>
             </div>
           </Card>

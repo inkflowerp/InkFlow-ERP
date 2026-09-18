@@ -65,6 +65,7 @@ import { AuthEmailService } from './auth-email.service.ts'
 import type { PlatformRole } from '../lib/auth/types.ts'
 import type { ApiResponse } from '../types/common.types.ts'
 import type { SubscriptionPlanRecord } from '../types/subscription.types.ts'
+import { StorageCleanupService } from '../lib/security/storage-cleanup.ts'
 import { DEFAULT_PLANS, DEFAULT_TRIAL_PLAN } from '../lib/subscription/subscription-constants.ts'
 
 function isValidUuid(id?: string | null): boolean {
@@ -1788,61 +1789,124 @@ export class PlatformService {
       // All target keys/slugs for this company
       const targetIds = Array.from(new Set([companyId, cleanSlug, compSlug, companySlug, `comp-${companySlug}`].filter(Boolean)))
 
-      // Comprehensive cascading cleanup of all 60+ database child tables
+      // 1. Invoke PostgreSQL Authoritative Atomic Deletion Function if available
+      let rpcSucceeded = false
+      if (isValidUuid(companyId)) {
+        try {
+          const { data: rpcRes, error: rpcErr } = await (admin as any).rpc('delete_tenant_permanently', {
+            p_company_id: companyId,
+            p_admin_id: null,
+            p_reason: reason || 'Company permanently deleted by platform administrator',
+          })
+          if (!rpcErr && rpcRes && rpcRes.success !== false) {
+            rpcSucceeded = true
+          }
+        } catch {}
+      }
+
+      // 2. Comprehensive cascading database cleanup fallback/reinforcement across all tenant tables
       const childTables = [
         // Support & Sessions
-        'platform_support_sessions',
+        'support_attachments',
         'support_messages',
         'support_conversations',
+        'platform_support_sessions',
+        // Platform Telemetry & Notifications
+        'platform_tenant_exports',
+        'platform_notifications',
+        'platform_background_jobs',
+        'platform_system_health_events',
         // Subscriptions & Billing
+        'saas_subscription_invoice_items',
+        'saas_subscription_invoices',
+        'saas_tenant_storage_usage',
+        'platform_tenant_feature_flags',
+        'platform_subscription_events',
+        'platform_subscriptions',
+        'subscription_events',
+        'gateway_webhooks',
+        'gateway_audit_logs',
+        'gateway_transactions',
+        'gateway_integrations',
         'company_subscriptions',
         'saas_invoices',
         'billing_history',
+        // Workflows & Automations
+        'workflow_execution_logs',
+        'workflow_rules',
+        'workflow_configurations',
+        'automation_rules',
+        'saved_views',
+        // Communications & Devices
+        'email_logs',
+        'email_queue',
+        'email_templates',
+        'communication_messages',
+        'communication_logs',
+        'communication_templates',
+        'communication_channels_config',
+        'message_templates',
+        'in_app_notifications',
+        'tenant_email_configs',
+        'email_gateways',
+        'sms_gateways',
+        'client_devices',
+        'sync_outbox',
         // RBAC & Users
         'user_permission_overrides',
         'user_branch_access',
         'user_roles',
         'company_users',
+        'tenant_memberships',
+        'role_permissions',
+        'roles',
         // Settings & Configurations
         'company_settings',
         'company_tax_settings',
         'branding_settings',
+        'document_sequences',
+        'document_templates_config',
+        'document_number_counters',
         'document_numbering_configs',
-        'tenant_email_configs',
-        'email_gateways',
-        'sms_gateways',
-        'workflow_configurations',
-        'automation_rules',
-        'saved_views',
         // Organization & Branches
-        'client_devices',
+        'branch_transfer_requests',
         'branch_transfers',
         'employee_branch_assignments',
         'branches',
         // CRM
         'customer_communications',
+        'customer_rates',
         'customers',
         'supplier_material_prices',
+        'supplier_price_history',
         'supplier_items',
         'supplier_ledger_entries',
+        'supplier_payments',
+        'supplier_return_items',
+        'supplier_returns',
         'suppliers',
         // Orders & Timeline
         'order_timeline_events',
+        'sales_order_items',
+        'order_items',
         'job_orders',
         'sales_orders',
         'quotation_activities',
+        'quotation_items',
         'quotations',
-        // Production
+        // Production & Machineries
+        'production_problem_reports',
         'production_task_material_requirements',
         'production_tasks',
         'production_reworks',
         'production_jobs',
         'operator_jobs',
-        // Machinery
+        'job_costings',
         'machinery_breakdowns',
         'machinery_maintenances',
         'machinery_assignments',
         'machineries',
+        'machine_profiles',
         // Inventory & Materials
         'material_wastages',
         'mounted_rolls',
@@ -1850,50 +1914,64 @@ export class PlatformService {
         'inventory_transfers',
         'inventory_adjustments',
         'material_requests',
+        'material_request_items',
         'material_issues',
+        'material_issue_items',
         'goods_received_note_items',
         'goods_received_notes',
-        'supplier_return_items',
-        'supplier_returns',
         'purchase_request_items',
         'purchase_requests',
+        'purchase_order_items',
         'purchase_orders',
         'materials',
         'paper_stocks',
-        'machine_profiles',
         'stock_ledger',
         'inventory_stock_balances',
         'inventory_locations',
+        'inventory_rolls',
         // Pricing & Catalog
         'price_overrides',
         'pricing_rules',
-        'customer_rates',
         'price_list_items',
         'price_lists',
         'product_formulas',
         'product_variants',
+        'product_price_history',
         'price_history',
+        'product_supplier_prices',
+        'installation_options',
+        'additional_options',
+        'finishing_options',
+        'material_purchase_configs',
+        'printing_methods',
         'product_categories',
         'products',
         // Logistics
+        'delivery_challan_items',
+        'challan_items',
         'delivery_challans',
         'installations',
         // Finance, Banking & Ledger
+        'tax_transaction_lines',
+        'tax_profiles',
+        'financial_write_offs',
         'payment_adjustments',
+        'payment_allocations',
         'payments',
+        'invoice_items',
         'invoices',
         'expenses',
+        'bank_statement_lines',
         'bank_statements',
         'bank_accounts',
         'cash_book_entries',
         'cash_closings',
         'account_transfers',
+        'inter_branch_financial_transfers',
         'journal_entry_lines',
         'financial_transactions',
         'accounts',
         'financial_periods',
-        'tax_transaction_lines',
-        'tax_profiles',
         // Workforce & Payroll
         'daily_labor_logs',
         'workforce_audit_logs',
@@ -1902,20 +1980,21 @@ export class PlatformService {
         'payroll_periods',
         'salary_advances',
         'overtime_records',
+        'attendance_audit_logs',
+        'attendance_corrections',
+        'attendance_qr_tokens',
         'attendance_daily_summaries',
         'attendance_records',
         'attendance_locations',
+        'attendances',
         'employee_shifts',
         'shifts',
         'employees',
         // Design & Costing
+        'design_feedback_logs',
         'design_versions',
         'design_jobs',
-        'job_costings',
         // Communications & Audits
-        'communication_logs',
-        'communication_messages',
-        'communication_templates',
         'audit_logs',
         // Platform mirrors
         'platform_companies',
@@ -1935,11 +2014,26 @@ export class PlatformService {
         await (admin as any).from('companies').delete().in('slug', targetIds)
       } catch {}
 
-      // Purge completely from DataStore (in-memory, localStorage, and global collections)
+      // 3. Supabase Storage Bucket Cleanup (Purge all files across all buckets)
+      try {
+        await StorageCleanupService.purgeTenantStorage(companyId, companySlug)
+      } catch {}
+
+      // 4. Purge completely from DataStore (in-memory, localStorage, and partitioned collections)
       PrintERPDataStore.purgeTenantData(companyId, targetIds)
 
+      // 5. Purge offline sync outbox items for this tenant
+      try {
+        const outbox = PrintERPDataStore.get<any[]>(STORAGE_KEYS.SYNC_OUTBOX) || []
+        PrintERPDataStore.set(
+          STORAGE_KEYS.SYNC_OUTBOX,
+          outbox.filter((item: any) => !targetIds.includes(item.company_id) && !targetIds.includes(item.tenantSlug))
+        )
+      } catch {}
+
+      // 6. Record Administrative Security Audit Log (Metadata only, zero operational payloads)
       await this.recordAuditLog(
-        'company.delete',
+        'company.permanent_delete',
         'company',
         companyId,
         companyId,
@@ -1948,6 +2042,7 @@ export class PlatformService {
           deleted_company_name: company?.name,
           deleted_company_slug: companySlug,
           reason: reason || 'Company completely deleted and purged by platform administrator',
+          timestamp: new Date().toISOString(),
         }
       )
 
@@ -1983,6 +2078,16 @@ export class PlatformService {
         await this.deleteCompany(cId, reason || 'All companies purged by platform administrator')
       }
 
+      // Purge all storage files across all buckets
+      try {
+        await StorageCleanupService.purgeAllStorage()
+      } catch {}
+
+      // Clear sync outbox
+      try {
+        PrintERPDataStore.set(STORAGE_KEYS.SYNC_OUTBOX, [])
+      } catch {}
+
       await this.recordAuditLog(
         'company.delete_all',
         'company',
@@ -1992,6 +2097,7 @@ export class PlatformService {
         {
           deleted_count: allCompanyIds.length,
           reason: reason || 'All companies purged by platform administrator',
+          timestamp: new Date().toISOString(),
         }
       )
 
