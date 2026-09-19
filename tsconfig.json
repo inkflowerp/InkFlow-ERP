@@ -42,6 +42,8 @@
     ".next",
     "dist",
     ".agents",
-    "coverage"
+    "coverage",
+    "tests",
+    "**/*.test.ts"
   ]
 }

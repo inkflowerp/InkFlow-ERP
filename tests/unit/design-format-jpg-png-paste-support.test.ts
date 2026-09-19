@@ -1,5 +1,5 @@
 import { describe, it, beforeEach } from 'node:test'
-import assert from 'node:assert/strict'
+import assert from 'node:assert'
 import { isRenderableFormat, getFormatBadgeColor } from '../../lib/formatters.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { DesignJobRecord, DesignVersionRecord, DesignFormat } from '../../types/design.types.ts'
