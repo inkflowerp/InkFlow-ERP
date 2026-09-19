@@ -210,7 +210,7 @@ export class CustomerRepository {
       }
 
       if (options.customerType && options.customerType !== 'all') {
-        query = query.or(`customer_type.eq.${options.customerType},customer_category.eq.${options.customerType}`)
+        query = query.eq('customer_type', options.customerType)
       }
 
       if (options.activeFilter === 'active') {
@@ -438,14 +438,14 @@ export class CustomerRepository {
       throw new Error('Authoritative database connection is required to create a customer.')
     }
 
+    const customerType = customer.customer_type || customer.customer_category || 'regular'
     const payload: any = {
       id: customer.id || `cust-${Date.now()}`,
       company_id: customer.company_id,
       name: customer.name.trim(),
       name_bn: customer.name_bn?.trim() || null,
       company_name: customer.company_name?.trim() || null,
-      customer_type: customer.customer_type || customer.customer_category || 'regular',
-      customer_category: customer.customer_category || customer.customer_type || 'regular',
+      customer_type: customerType,
       contact_person: customer.contact_person?.trim() || null,
       mobile: customer.mobile?.trim() || '',
       whatsapp: customer.whatsapp?.trim() || null,
@@ -477,7 +477,11 @@ export class CustomerRepository {
     if (error) {
       throw new Error(`Failed to create customer: ${error.message}`)
     }
-    return data as unknown as CustomerRecord
+    const createdRecord = data as unknown as CustomerRecord
+    return {
+      ...createdRecord,
+      customer_category: (createdRecord.customer_type as any) || 'regular',
+    }
   }
 
   /**
@@ -504,6 +508,10 @@ export class CustomerRepository {
     }
 
     const payload: any = { ...updates, updated_at: new Date().toISOString() }
+    if (payload.customer_category && !payload.customer_type) {
+      payload.customer_type = payload.customer_category
+    }
+    delete payload.customer_category
     delete payload.id
     delete payload.company_id
 
@@ -519,7 +527,11 @@ export class CustomerRepository {
     if (error) {
       throw new Error(`Failed to update customer: ${error.message}`)
     }
-    return data as unknown as CustomerRecord
+    const updatedRecord = data as unknown as CustomerRecord
+    return {
+      ...updatedRecord,
+      customer_category: (updatedRecord.customer_type as any) || 'regular',
+    }
   }
 
   /**

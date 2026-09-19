@@ -1615,7 +1615,7 @@ export class ProductRepository {
               const supabase = await createClient()
               const { data: cust } = await (supabase as any)
                 .from('customers')
-                .select('customer_type, customer_category, price_list_id')
+                .select('customer_type, price_list_id')
                 .eq('id', customerId)
                 .maybeSingle()
 
