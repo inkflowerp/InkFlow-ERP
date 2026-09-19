@@ -15,19 +15,23 @@ export function getTenantBaseUrl(slug: string): string {
   const cleanSlug = (slug || '').toLowerCase().trim()
   const rootDomain = getRootDomain()
 
+  const isLocalhost =
+    rootDomain.includes('localhost') ||
+    rootDomain.includes('127.0.0.1')
+
   if (!cleanSlug) {
-    const isProd = process.env.NODE_ENV === 'production' && !rootDomain.includes('localhost')
+    const isProd = (process.env.NODE_ENV === 'production' || rootDomain.includes('vercel.app')) && !isLocalhost
     return `${isProd ? 'https' : 'http'}://${rootDomain}`
   }
 
   // Handle localhost development
-  if (rootDomain.includes('localhost') || rootDomain.includes('127.0.0.1')) {
+  if (isLocalhost) {
     const port = rootDomain.includes(':') ? `:${rootDomain.split(':')[1]}` : ':3000'
     return `http://${cleanSlug}.localhost${port}`
   }
 
-  // Handle production subdomain
-  const isProd = process.env.NODE_ENV === 'production'
+  // Handle remote / production subdomain (e.g. vision.inkflow.com.bd or vision.inkflow-erp.vercel.app)
+  const isProd = process.env.NODE_ENV === 'production' || rootDomain.includes('vercel.app') || rootDomain.includes('.')
   const protocol = isProd ? 'https' : 'http'
   return `${protocol}://${cleanSlug}.${rootDomain}`
 }

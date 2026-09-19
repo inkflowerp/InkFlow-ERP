@@ -86,7 +86,9 @@ export function getRootDomain(): string {
   const configured =
     process.env.NEXT_PUBLIC_ROOT_DOMAIN ||
     process.env.NEXT_PUBLIC_APP_DOMAIN ||
-    process.env.ROOT_DOMAIN
+    process.env.ROOT_DOMAIN ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.NEXT_PUBLIC_VERCEL_URL
 
   if (configured && configured.trim() !== '') {
     // Strip protocol if present
@@ -96,7 +98,22 @@ export function getRootDomain(): string {
   // Client-side fallback: check window.location.host
   if (typeof window !== 'undefined' && window.location && window.location.host) {
     const browserHost = window.location.host.toLowerCase().trim()
-    if (browserHost.includes('localhost') || browserHost.includes('127.0.0.1')) {
+    if (
+      browserHost.includes('localhost') ||
+      browserHost.includes('127.0.0.1') ||
+      browserHost.endsWith('.vercel.app')
+    ) {
+      if (browserHost.endsWith('.vercel.app')) {
+        const parts = browserHost.split('.')
+        // e.g. inkflow-erp.vercel.app (3 parts)
+        if (parts.length === 3) {
+          return browserHost
+        }
+        // e.g. vision.inkflow-erp.vercel.app (4 parts) -> root is inkflow-erp.vercel.app
+        if (parts.length === 4) {
+          return parts.slice(1).join('.')
+        }
+      }
       return browserHost
     }
   }
@@ -404,18 +421,28 @@ export function extractTenantSlug(
  * In development: Omits domain attribute so localhost and *.localhost share session smoothly.
  */
 export function getAuthCookieOptions(customDomain?: string) {
-  const rootDomain = customDomain || getRootDomain()
+  const rootDomain = (customDomain || getRootDomain()).toLowerCase().trim()
+  const cleanRoot = rootDomain.split(':')[0]
   const isLocalhost =
-    rootDomain.includes('localhost') ||
-    rootDomain.includes('127.0.0.1') ||
-    rootDomain.startsWith('192.168.') ||
-    rootDomain.startsWith('10.') ||
-    rootDomain.startsWith('172.')
+    cleanRoot === 'localhost' ||
+    cleanRoot === '127.0.0.1' ||
+    cleanRoot.endsWith('.localhost') ||
+    cleanRoot.endsWith('.local') ||
+    cleanRoot.startsWith('192.168.') ||
+    cleanRoot.startsWith('10.') ||
+    cleanRoot.startsWith('172.')
+
+  // Domains on the Public Suffix List (like vercel.app, pages.dev, netlify.app)
+  // cannot set wildcard cookies (e.g. .inkflow-erp.vercel.app is rejected by browsers)
+  const isPublicSuffix =
+    cleanRoot.endsWith('.vercel.app') ||
+    cleanRoot.endsWith('.pages.dev') ||
+    cleanRoot.endsWith('.netlify.app')
 
   const isExplicitProdDomain = Boolean(customDomain && !isLocalhost && customDomain.includes('.'))
   const isProd = process.env.NODE_ENV === 'production' || isExplicitProdDomain
 
-  const domain = isProd && !isLocalhost ? `.${rootDomain}` : undefined
+  const domain = isProd && !isLocalhost && !isPublicSuffix ? `.${cleanRoot}` : undefined
 
   return {
     path: '/',

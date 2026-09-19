@@ -162,4 +162,27 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     const link2 = formatWhatsAppShareLink('+8801811223344', 'Hello Vision')
     assert.equal(link2, 'https://wa.me/8801811223344?text=Hello%20Vision')
   })
+
+  test('18. Resolves inkflow-erp.vercel.app as root and *.inkflow-erp.vercel.app as tenant subdomains', () => {
+    const rootRes = resolveHostname('inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    assert.equal(rootRes.hostType, 'root')
+    assert.equal(rootRes.tenantSlug, null)
+
+    const tenantRes1 = resolveHostname('vision.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    assert.equal(tenantRes1.hostType, 'tenant')
+    assert.equal(tenantRes1.tenantSlug, 'vision')
+
+    const tenantRes2 = resolveHostname('abc-print.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    assert.equal(tenantRes2.hostType, 'tenant')
+    assert.equal(tenantRes2.tenantSlug, 'abc-print')
+
+    const reservedRes = resolveHostname('dashboard.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    assert.equal(reservedRes.hostType, 'reserved')
+  })
+
+  test('19. Sets secure host-scoped cookies for PSL domain inkflow-erp.vercel.app', () => {
+    const opts = getAuthCookieOptions('inkflow-erp.vercel.app')
+    assert.equal(opts.domain, undefined, 'PSL domain must omit wildcard domain to prevent browser cookie drop')
+    assert.equal(opts.sameSite, 'lax')
+  })
 })
