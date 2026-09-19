@@ -2023,7 +2023,8 @@ export class PlatformService {
         'platform_companies',
       ]
 
-      if (targetUuids.length > 0) {
+      // 2. Comprehensive cascading database cleanup fallback only if RPC did not execute
+      if (!rpcSucceeded && targetUuids.length > 0) {
         for (const table of childTables) {
           try {
             await (admin as any).from(table).delete().in('company_id', targetUuids)
@@ -2034,10 +2035,10 @@ export class PlatformService {
         }
       }
 
-      // Delete from companies table
+      // Delete from companies table if RPC did not handle it
       let deleteErrorDetails: string | null = null
 
-      if (targetUuids.length > 0) {
+      if (!rpcSucceeded && targetUuids.length > 0) {
         try {
           const { error: delErr } = await (admin as any).from('companies').delete().in('id', targetUuids)
           if (delErr) {
@@ -2049,13 +2050,17 @@ export class PlatformService {
         }
       }
 
-      if (targetSlug) {
+      if (!rpcSucceeded && targetSlug) {
         try {
           const { error: slugDelErr } = await (admin as any).from('companies').delete().eq('slug', targetSlug)
           if (slugDelErr && !deleteErrorDetails) {
             deleteErrorDetails = slugDelErr.message
           }
         } catch {}
+      }
+
+      if (deleteErrorDetails && !rpcSucceeded) {
+        return { success: false, error: deleteErrorDetails }
       }
 
       // 3. Supabase Storage Bucket Cleanup (Purge all files across all buckets)
@@ -2078,23 +2083,21 @@ export class PlatformService {
       } catch {}
 
       // 6. Record Administrative Security Audit Log (Metadata only, zero operational payloads)
+      // Note: target_company_id is null/undefined because the company row has been permanently removed from companies table
       await this.recordAuditLog(
         'company.permanent_delete',
         'company',
         targetUuid || companyIdOrSlug,
-        targetUuid || companyIdOrSlug,
+        undefined,
         undefined,
         {
+          deleted_company_id: targetUuid || companyIdOrSlug,
           deleted_company_name: company?.name,
           deleted_company_slug: targetSlug,
           reason: reason || 'Company completely deleted and purged by platform administrator',
           timestamp: new Date().toISOString(),
         }
       )
-
-      if (deleteErrorDetails && !rpcSucceeded) {
-        console.warn('[PlatformService] Company delete completed with database warning:', deleteErrorDetails)
-      }
 
       return { success: true, data: { companyId: targetUuid || companyIdOrSlug } }
     } catch (err: any) {
