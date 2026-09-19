@@ -1,8 +1,8 @@
-import { createClient } from '../supabase/server.ts'
-import { createAdminClient } from '../supabase/admin.ts'
-import { DeliveryChallanRecord, InstallationRecord } from '../../types/logistics.types.ts'
-import { BillingRepository } from './billing.repository.ts'
-import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { DeliveryChallanRecord, InstallationRecord } from '@/types/logistics.types'
+import { BillingRepository } from '@/lib/repositories/billing.repository'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export class LogisticsRepository {
   static async getChallans(companyId: string): Promise<DeliveryChallanRecord[]> {
@@ -122,6 +122,7 @@ export class LogisticsRepository {
                 order_number: inv.order_number || (inv.invoice_number ? inv.invoice_number.replace('INV-', 'ORD-') : null),
                 status: 'pending_dispatch' as any,
                 delivery_method: 'company_vehicle',
+                transport_cost: Number(inv.transport_cost) || 0,
                 scheduled_date: inv.due_date || inv.invoice_date || new Date().toISOString().split('T')[0],
                 notes: 'Generated from commercial invoice',
                 created_by_name: inv.created_by_name || 'Commercial Billing',
@@ -239,7 +240,12 @@ export class LogisticsRepository {
     return (await this.getChallanById(String(data.id), challan.company_id)) as DeliveryChallanRecord
   }
 
-  static async updateChallanStatus(id: string, status: 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled', companyId: string, extraUpdates?: Partial<DeliveryChallanRecord>): Promise<DeliveryChallanRecord> {
+  static async updateChallanStatus(
+    id: string,
+    status: DeliveryStatus | 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled',
+    companyId: string,
+    extraUpdates?: Partial<DeliveryChallanRecord>
+  ): Promise<DeliveryChallanRecord> {
     const supabase = await createClient()
     const payload: any = {
       status,

@@ -46,7 +46,7 @@ export class LogisticsService {
 
   static async updateChallanStatus(
     id: string,
-    status: 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled',
+    status: DeliveryStatus | 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled',
     companyId: string,
     extraUpdates?: Partial<DeliveryChallanRecord>
   ): Promise<DeliveryChallanRecord> {

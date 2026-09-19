@@ -1,10 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { LogisticsService } from '../services/logistics.service.ts'
-import { LogisticsRepository } from '../lib/repositories/logistics.repository.ts'
-import { getCurrentTenant } from '../lib/auth/tenant-auth.ts'
-import type { DeliveryChallanRecord, InstallationRecord, DeliveryStatus } from '../types/logistics.types.ts'
+import { LogisticsService } from '@/services/logistics.service'
+import { LogisticsRepository } from '@/lib/repositories/logistics.repository'
+import { getCurrentTenant } from '@/lib/auth/tenant-auth'
+import type { DeliveryChallanRecord, InstallationRecord, DeliveryStatus } from '@/types/logistics.types'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -112,7 +112,7 @@ export async function createChallanAction(
  */
 export async function updateChallanStatusAction(
   id: string,
-  status: 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled',
+  status: DeliveryStatus | 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled',
   requestedCompanyId?: string,
   extraUpdates?: Partial<DeliveryChallanRecord>
 ): Promise<ServerActionResult<DeliveryChallanRecord>> {
