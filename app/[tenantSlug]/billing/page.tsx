@@ -245,12 +245,10 @@ export default function BillingPage() {
       ]
 
       const isTenantMatch = (itemCompanyId?: string | null) => {
-        if (!itemCompanyId) return true
+        if (!itemCompanyId) return false
         if (itemCompanyId === company.id || itemCompanyId === company.slug || itemCompanyId === slug) return true
-        if (itemCompanyId === 'c-01' || itemCompanyId === 'comp-01' || itemCompanyId === 'comp-tenant-alpha') return true
         if (typeof company.id === 'string' && typeof itemCompanyId === 'string') {
           if (company.id.toLowerCase() === itemCompanyId.toLowerCase()) return true
-          if (company.id.includes(itemCompanyId) || itemCompanyId.includes(company.id)) return true
         }
         if (typeof company.slug === 'string' && typeof itemCompanyId === 'string') {
           if (company.slug.toLowerCase() === itemCompanyId.toLowerCase()) return true

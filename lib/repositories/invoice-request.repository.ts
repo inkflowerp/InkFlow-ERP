@@ -16,7 +16,7 @@ export class InvoiceRequestRepository {
    * Helper to verify company match with clean slug alias support while maintaining strict tenant isolation
    */
   private static isMatchingCompany(recordCompanyId?: string | null, requestedCompanyId?: string): boolean {
-    if (!recordCompanyId || !requestedCompanyId) return true
+    if (!recordCompanyId || !requestedCompanyId) return false
     if (recordCompanyId === requestedCompanyId) return true
     if (typeof requestedCompanyId === 'string' && typeof recordCompanyId === 'string') {
       if (requestedCompanyId.toLowerCase() === recordCompanyId.toLowerCase()) return true
