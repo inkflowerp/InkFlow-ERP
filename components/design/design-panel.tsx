@@ -228,18 +228,23 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
 
   const [notificationMsg, setNotificationMsg] = useState<{ text: string; type: 'success' | 'warning' | 'info' } | null>(null)
 
-  // Standalone new job creation form
+  // Standalone new job creation form (.JPG / .PNG only)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
   const [newJobTitle, setNewJobTitle] = useState('')
   const [newJobDims, setNewJobDims] = useState('')
   const [newJobPriority, setNewJobPriority] = useState<DesignPriority>('urgent')
-  const [newJobFormat, setNewJobFormat] = useState<DesignFormat>('ai')
+  const [newJobFormat, setNewJobFormat] = useState<DesignFormat>('png')
   const [newJobInstructions, setNewJobInstructions] = useState('')
+  const [newJobProofUrl, setNewJobProofUrl] = useState<string>('')
+  const [newJobFileName, setNewJobFileName] = useState<string>('')
+  const [isNewJobDragging, setIsNewJobDragging] = useState(false)
 
-  // Version upload form
+  // Version upload form (.JPG / .PNG only)
   const [uploadFileName, setUploadFileName] = useState('')
-  const [uploadFormat, setUploadFormat] = useState<DesignFormat>('ai')
+  const [uploadFormat, setUploadFormat] = useState<DesignFormat>('png')
   const [uploadNotes, setUploadNotes] = useState('')
+  const [uploadProofUrl, setUploadProofUrl] = useState<string>('')
+  const [isUploadDragging, setIsUploadDragging] = useState(false)
 
   // Approval form
   const [approverName, setApproverName] = useState('')
@@ -256,6 +261,94 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     setNotificationMsg({ text, type })
     setTimeout(() => setNotificationMsg(null), 4000)
   }
+
+  // Helper: Process file for upload modals
+  const processImageFileForModal = (file: File, target: 'upload' | 'new_job') => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+    const isJpeg = ext === 'jpg' || ext === 'jpeg'
+    const isPng = ext === 'png'
+
+    if (!isJpeg && !isPng) {
+      showNotification('Unsupported file! Only .JPG and .PNG files are supported.', 'warning')
+      return
+    }
+
+    const fmt: DesignFormat = isJpeg ? 'jpg' : 'png'
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string
+      if (dataUrl) {
+        if (target === 'upload') {
+          setUploadProofUrl(dataUrl)
+          setUploadFileName(file.name || `proof_upload_${Date.now()}.${fmt}`)
+          setUploadFormat(fmt)
+          showNotification(`Artwork proof loaded: ${file.name} (${fmt.toUpperCase()})!`, 'success')
+        } else {
+          setNewJobProofUrl(dataUrl)
+          setNewJobFileName(file.name || `brief_proof_${Date.now()}.${fmt}`)
+          setNewJobFormat(fmt)
+          showNotification(`Brief artwork loaded: ${file.name} (${fmt.toUpperCase()})!`, 'success')
+        }
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Global Clipboard Paste (Ctrl+V) listener on Design Studio
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.indexOf('image') !== -1) {
+          e.preventDefault()
+          const file = item.getAsFile()
+          if (!file) continue
+
+          const fmt: DesignFormat = item.type === 'image/jpeg' ? 'jpg' : 'png'
+          const reader = new FileReader()
+          reader.onload = (event) => {
+            const dataUrl = event.target?.result as string
+            if (!dataUrl) return
+
+            if (isUploadModalOpen && selectedJob) {
+              const nextVer = (selectedJob.current_version || 1) + 1
+              setUploadProofUrl(dataUrl)
+              setUploadFileName(`proof_${selectedJob.design_number.toLowerCase()}_v${nextVer}.${fmt}`)
+              setUploadFormat(fmt)
+              showNotification(`Image pasted from clipboard (${fmt.toUpperCase()}) for #${selectedJob.design_number}!`, 'success')
+            } else if (isNewJobOpen) {
+              setNewJobProofUrl(dataUrl)
+              setNewJobFileName(`brief_proof_${Date.now()}.${fmt}`)
+              setNewJobFormat(fmt)
+              showNotification(`Image pasted from clipboard (${fmt.toUpperCase()}) for new design job!`, 'success')
+            } else if (selectedJob) {
+              const nextVer = (selectedJob.current_version || 1) + 1
+              setUploadProofUrl(dataUrl)
+              setUploadFileName(`proof_${selectedJob.design_number.toLowerCase()}_v${nextVer}.${fmt}`)
+              setUploadFormat(fmt)
+              setUploadNotes(`Pasted artwork revision (Ctrl+V) for Version ${nextVer}`)
+              setIsUploadModalOpen(true)
+              showNotification(`Image pasted for #${selectedJob.design_number}! Review and save version.`, 'success')
+            } else {
+              setNewJobProofUrl(dataUrl)
+              setNewJobFileName(`artwork_brief_${Date.now()}.${fmt}`)
+              setNewJobFormat(fmt)
+              setIsNewJobOpen(true)
+              showNotification(`Image pasted! Enter customer & title to launch design job.`, 'success')
+            }
+          }
+          reader.readAsDataURL(file)
+          break
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [isUploadModalOpen, isNewJobOpen, selectedJob])
 
   // Authoritative server synchronization on mount and company change
   useEffect(() => {
@@ -648,9 +741,11 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const handleOpenUploadModal = (job: DesignJobRecord) => {
     setSelectedJob(job)
     const nextVer = (job.versions?.length || 0) + 1
-    const latestFormat = job.versions?.[job.versions.length - 1]?.file_format || 'ai'
-    setUploadFileName(`${job.design_number.toLowerCase()}_v${nextVer}`)
+    const lastFmt = job.versions?.[job.versions.length - 1]?.file_format
+    const latestFormat: DesignFormat = lastFmt === 'jpg' ? 'jpg' : 'png'
+    setUploadFileName(`proof_${job.design_number.toLowerCase()}_v${nextVer}.${latestFormat}`)
     setUploadFormat(latestFormat)
+    setUploadProofUrl('')
     setUploadNotes(`Revision v${nextVer} adjustments per client review.`)
     setIsUploadModalOpen(true)
   }
@@ -662,12 +757,15 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     startTransition(async () => {
       try {
         const nextVer = (selectedJob.current_version || 1) + 1
+        const proofUrl = uploadProofUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80'
+        const fileName = uploadFileName || `proof_v${nextVer}.${uploadFormat}`
+
         const res = await addDesignVersionAction(
           {
             designJobId: selectedJob.id,
             versionNumber: nextVer,
-            fileName: uploadFileName || `proof_v${nextVer}.${uploadFormat}`,
-            fileUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+            fileName: fileName,
+            fileUrl: proofUrl,
             fileType: uploadFormat,
             notes: uploadNotes || 'New design revision uploaded by studio designer.',
           },
@@ -684,12 +782,12 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
           design_job_id: selectedJob.id,
           version_number: nextVer,
           version_label: `Version ${nextVer}`,
-          proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-          proof_file_name: uploadFileName || `proof_v${nextVer}.png`,
-          source_file_name: uploadFileName || `artwork_v${nextVer}.${uploadFormat}`,
+          proof_file_url: proofUrl,
+          proof_file_name: fileName,
+          source_file_name: fileName,
           file_format: uploadFormat,
-          file_size_bytes: 35000000,
-          change_notes: uploadNotes,
+          file_size_bytes: 4500000,
+          change_notes: uploadNotes || `Version ${nextVer} adjustments`,
           uploaded_by_name: currentUser?.profile?.full_name || 'Designer',
           is_approved: false,
           created_at: 'Just now',
@@ -705,7 +803,10 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
 
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, selectedJob.id, updatedJob)
         setIsUploadModalOpen(false)
-        showNotification(`Version v${nextVer} uploaded for #${selectedJob.design_number}!`)
+        setUploadProofUrl('')
+        setUploadFileName('')
+        setUploadNotes('')
+        showNotification(`Version v${nextVer} uploaded for #${selectedJob.design_number}!`, 'success')
       } catch (err: any) {
         showNotification(err.message || 'Upload error', 'warning')
       }
@@ -965,6 +1066,8 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     e.preventDefault()
     const customer = customers.find((c) => c.id === selectedCustomerId) || customers[0]
     const dsnNumber = `DSN-${Date.now().toString().slice(-4)}`
+    const proofUrl = newJobProofUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80'
+    const fileName = newJobFileName || `initial_brief.${newJobFormat}`
 
     const newJob: DesignJobRecord = {
       id: `dsn-${Date.now()}`,
@@ -988,8 +1091,8 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
           design_job_id: `dsn-${Date.now()}`,
           version_number: 1,
           version_label: 'Version 1 (Initial Brief)',
-          proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-          proof_file_name: `initial_brief.${newJobFormat}`,
+          proof_file_url: proofUrl,
+          proof_file_name: fileName,
           file_format: newJobFormat,
           change_notes: 'Client brief and initial requirements registered.',
           uploaded_by_name: currentUser?.profile?.full_name || 'Designer',
@@ -1006,7 +1109,9 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     setNewJobTitle('')
     setNewJobDims('')
     setNewJobInstructions('')
-    showNotification(`Design Job #${dsnNumber} assigned to your workbench!`)
+    setNewJobProofUrl('')
+    setNewJobFileName('')
+    showNotification(`Design Job #${dsnNumber} assigned to your workbench!`, 'success')
   }
 
   return (
@@ -2566,9 +2671,76 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         open={isNewJobOpen}
         onOpenChange={setIsNewJobOpen}
         title="Create New Pre-Press Design Job"
-        description="Assign customer brief, specifications, and primary format to designer workbench."
+        description="Upload or paste (.JPG / .PNG) brief artwork, assign specs, and launch designer workbench."
       >
         <form onSubmit={handleCreateStandaloneJob} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1 text-xs">
+          {/* DRAG & DROP / PASTE / FILE PICKER DROPZONE */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault()
+              setIsNewJobDragging(true)
+            }}
+            onDragLeave={() => setIsNewJobDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setIsNewJobDragging(false)
+              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                processImageFileForModal(e.dataTransfer.files[0], 'new_job')
+              }
+            }}
+            onClick={() => document.getElementById('djFileInput')?.click()}
+            className={cn(
+              "border-2 border-dashed rounded-xl p-3.5 text-center transition-all cursor-pointer",
+              isNewJobDragging
+                ? "border-pink-500 bg-pink-50/60 dark:bg-pink-950/40"
+                : "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+            )}
+          >
+            <input
+              id="djFileInput"
+              type="file"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  processImageFileForModal(e.target.files[0], 'new_job')
+                }
+              }}
+            />
+            {newJobProofUrl ? (
+              <div className="space-y-1.5">
+                <div className="relative max-h-40 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center p-1">
+                  <img
+                    src={newJobProofUrl}
+                    alt="Brief Preview"
+                    className="max-h-36 object-contain mx-auto"
+                  />
+                </div>
+                <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>Brief Artwork Loaded ({newJobFormat.toUpperCase()}) — Click to replace or paste</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-2.5 space-y-1">
+                <div className="h-8 w-8 mx-auto rounded-full bg-pink-100 text-pink-600 dark:bg-pink-950 dark:text-pink-400 flex items-center justify-center">
+                  <Upload className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    Click to browse or Drag & Drop .JPG / .PNG
+                  </p>
+                  <p className="text-[11px] text-pink-600 dark:text-pink-400 font-semibold">
+                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px]">Ctrl+V</kbd> anywhere to paste screenshot
+                  </p>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Supported formats: <strong>.JPG, .JPEG, .PNG</strong>
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="djCust" required>Customer Profile</Label>
             <select
@@ -2590,7 +2762,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             <Label htmlFor="djTitle" required>Artwork / Design Title</Label>
             <Input
               id="djTitle"
-              placeholder="e.g. 3D Acrylic Facade Signboard Vector Layout"
+              placeholder="e.g. 3D Acrylic Facade Signboard Layout"
               value={newJobTitle}
               onChange={(e) => setNewJobTitle(e.target.value)}
               required
@@ -2617,12 +2789,8 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                 onChange={(e) => setNewJobFormat(e.target.value as DesignFormat)}
                 className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold uppercase"
               >
-                <option value="ai">.AI (Adobe Illustrator)</option>
-                <option value="psd">.PSD (Photoshop)</option>
-                <option value="cdr">.CDR (CorelDRAW)</option>
-                <option value="pdf">.PDF (Print Press Ready)</option>
-                <option value="svg">.SVG (Vector)</option>
-                <option value="zip">.ZIP (Package)</option>
+                <option value="png">.PNG (Raster Proof / Transparency)</option>
+                <option value="jpg">.JPG / .JPEG (High-Res Image / Proof)</option>
               </select>
             </div>
 
@@ -2676,10 +2844,77 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         }
       >
         <form onSubmit={handleSaveUploadVersion} className="space-y-4 pt-2 text-xs">
+          {/* DRAG & DROP / PASTE / FILE PICKER DROPZONE */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault()
+              setIsUploadDragging(true)
+            }}
+            onDragLeave={() => setIsUploadDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setIsUploadDragging(false)
+              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                processImageFileForModal(e.dataTransfer.files[0], 'upload')
+              }
+            }}
+            onClick={() => document.getElementById('uploadVerFileInput')?.click()}
+            className={cn(
+              "border-2 border-dashed rounded-xl p-3.5 text-center transition-all cursor-pointer",
+              isUploadDragging
+                ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40"
+                : "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+            )}
+          >
+            <input
+              id="uploadVerFileInput"
+              type="file"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  processImageFileForModal(e.target.files[0], 'upload')
+                }
+              }}
+            />
+            {uploadProofUrl ? (
+              <div className="space-y-1.5">
+                <div className="relative max-h-40 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center p-1">
+                  <img
+                    src={uploadProofUrl}
+                    alt="Proof Preview"
+                    className="max-h-36 object-contain mx-auto"
+                  />
+                </div>
+                <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>Image Loaded ({uploadFormat.toUpperCase()}) — Click to replace or paste</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-2.5 space-y-1">
+                <div className="h-8 w-8 mx-auto rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 flex items-center justify-center">
+                  <Upload className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    Click to browse or Drag & Drop .JPG / .PNG
+                  </p>
+                  <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px]">Ctrl+V</kbd> anywhere to paste screenshot
+                  </p>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Supported formats: <strong>.JPG, .JPEG, .PNG</strong>
+                </p>
+              </div>
+            )}
+          </div>
+
           <div>
             <Label className="text-xs font-semibold mb-1 block">Artwork File Name / Asset Label</Label>
             <Input
-              placeholder="e.g. frontlit_banner_v2.ai"
+              placeholder="e.g. proof_banner_v2.png"
               value={uploadFileName}
               onChange={(e) => setUploadFileName(e.target.value)}
               className="text-xs h-9 font-mono font-bold"
@@ -2695,12 +2930,8 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                 onChange={(e) => setUploadFormat(e.target.value as DesignFormat)}
                 className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold uppercase"
               >
-                <option value="ai">.AI (Illustrator)</option>
-                <option value="psd">.PSD (Photoshop)</option>
-                <option value="cdr">.CDR (CorelDRAW)</option>
-                <option value="pdf">.PDF (Press Ready)</option>
-                <option value="svg">.SVG (Vector)</option>
-                <option value="zip">.ZIP (Package)</option>
+                <option value="png">.PNG (Raster Proof / Transparency)</option>
+                <option value="jpg">.JPG / .JPEG (High-Res Image / Proof)</option>
               </select>
             </div>
 
@@ -2726,7 +2957,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             <Button type="button" variant="outline" size="sm" onClick={() => setIsUploadModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="bg-indigo-600 text-white font-bold">
+            <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
               <Upload className="h-3.5 w-3.5 mr-1" />
               Save Version & Send Proof
             </Button>

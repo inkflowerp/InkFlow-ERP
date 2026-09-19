@@ -426,12 +426,17 @@ export function isRenderableFormat(format: string): boolean {
  */
 export function getFormatBadgeColor(format: string): string {
   switch (format.toLowerCase()) {
+    case 'png':
+      return 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+    case 'jpg':
+    case 'jpeg':
+      return 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300'
     case 'ai':
       return 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950 dark:text-orange-300'
     case 'psd':
-      return 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300'
+      return 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-300'
     case 'cdr':
-      return 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+      return 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-950 dark:text-teal-300'
     case 'pdf':
       return 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950 dark:text-red-300'
     case 'svg':

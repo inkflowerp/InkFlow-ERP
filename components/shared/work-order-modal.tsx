@@ -112,10 +112,12 @@ export function WorkOrderModal({
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
-  // Work Order Routing & Notes
+  // Work Order Routing & Notes (.JPG / .PNG only with paste support)
   const [workflowRouting, setWorkflowRouting] = useState<'design_required' | 'design_ok' | 'ready_production'>('design_required')
   const [notes, setNotes] = useState('')
   const [referenceFileName, setReferenceFileName] = useState<string | null>(null)
+  const [referenceProofUrl, setReferenceProofUrl] = useState<string | null>(null)
+  const [isRefDragging, setIsRefDragging] = useState(false)
 
   // Work Order Items State (Matching Reference Image 2 without pricing)
   const [items, setItems] = useState<WorkOrderItemState[]>([
@@ -139,6 +141,64 @@ export function WorkOrderModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Process reference image file (.JPG / .PNG only)
+  const processReferenceImageFile = (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+    const isJpeg = ext === 'jpg' || ext === 'jpeg'
+    const isPng = ext === 'png'
+
+    if (!isJpeg && !isPng) {
+      setErrorMessage('Unsupported format! Only .JPG and .PNG files are supported.')
+      return
+    }
+
+    const fmt = isJpeg ? 'jpg' : 'png'
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string
+      if (dataUrl) {
+        setReferenceProofUrl(dataUrl)
+        setReferenceFileName(file.name || `artwork_${Date.now()}.${fmt}`)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Window Clipboard Paste (Ctrl+V) listener when Work Order modal is open
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.indexOf('image') !== -1) {
+          e.preventDefault()
+          const file = item.getAsFile()
+          if (!file) continue
+
+          const fmt = item.type === 'image/jpeg' ? 'jpg' : 'png'
+          const customName = `pasted_brief_${Date.now()}.${fmt}`
+          const reader = new FileReader()
+          reader.onload = (event) => {
+            const dataUrl = event.target?.result as string
+            if (dataUrl) {
+              setReferenceProofUrl(dataUrl)
+              setReferenceFileName(customName)
+            }
+          }
+          reader.readAsDataURL(file)
+          break
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [isOpen])
 
   // Load catalog products
   useEffect(() => {
@@ -619,10 +679,11 @@ export function WorkOrderModal({
               design_job_id: designJobId,
               version_number: 1,
               version_label: isDesignOk ? 'Version 1 (Customer Supplied Artwork)' : 'Version 1 (Initial Brief)',
-              proof_file_name: referenceFileName || (isDesignOk ? 'customer_artwork.pdf' : 'customer_brief.pdf'),
+              proof_file_name: referenceFileName || (isDesignOk ? 'customer_artwork.png' : 'customer_brief.png'),
               proof_file_url:
+                referenceProofUrl ||
                 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-              file_format: 'ai',
+              file_format: (referenceFileName?.endsWith('.jpg') || referenceFileName?.endsWith('.jpeg') ? 'jpg' : 'png') as any,
               change_notes: isDesignOk
                 ? 'Customer supplied artwork registered for pre-press check.'
                 : 'Initial work order artwork brief registered.',
@@ -1443,26 +1504,71 @@ export function WorkOrderModal({
             </h3>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50">
-            <Upload className="h-5 w-5 text-slate-400 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
-                {referenceFileName ||
-                  tBilingual('No file uploaded yet (Click to browse)', 'কোন ফাইল সংযুক্ত করা হয়নি')}
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                AI, EPS, PDF, CDR, TIFF, JPG up to 100MB
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setReferenceFileName(`client_brief_${Date.now().toString().slice(-4)}.ai`)}
-              className="h-8 text-xs"
-            >
-              {tBilingual('Simulate Upload', 'ফাইল যুক্ত')}
-            </Button>
+          {/* DRAG & DROP / PASTE / FILE PICKER ZONE (.JPG / .PNG only) */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault()
+              setIsRefDragging(true)
+            }}
+            onDragLeave={() => setIsRefDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setIsRefDragging(false)
+              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                processReferenceImageFile(e.dataTransfer.files[0])
+              }
+            }}
+            onClick={() => document.getElementById('woRefFileInput')?.click()}
+            className={cn(
+              "p-3.5 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center",
+              isRefDragging
+                ? "border-blue-500 bg-blue-50/60 dark:bg-blue-950/40"
+                : "border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900"
+            )}
+          >
+            <input
+              id="woRefFileInput"
+              type="file"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  processReferenceImageFile(e.target.files[0])
+                }
+              }}
+            />
+            {referenceProofUrl ? (
+              <div className="space-y-1.5">
+                <div className="relative max-h-36 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center p-1">
+                  <img
+                    src={referenceProofUrl}
+                    alt="Reference Artwork"
+                    className="max-h-32 object-contain mx-auto"
+                  />
+                </div>
+                <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>{referenceFileName} — Click to replace or paste another</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-2 space-y-1">
+                <div className="h-8 w-8 mx-auto rounded-full bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400 flex items-center justify-center">
+                  <Upload className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {tBilingual('Click to browse or Drag & Drop .JPG / .PNG', 'ফাইল নির্বাচন করুন অথবা ড্র্যাগ করুন')}
+                  </p>
+                  <p className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold">
+                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px]">Ctrl+V</kbd> anywhere to paste screenshot
+                  </p>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Supported formats: <strong>.JPG, .JPEG, .PNG</strong>
+                </p>
+              </div>
+            )}
           </div>
 
           <div>

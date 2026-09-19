@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition } from 'react'
+import React, { useState, useEffect, useRef, useTransition } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import {
@@ -26,6 +26,10 @@ import {
   Receipt,
   Send,
   HelpCircle,
+  Image as ImageIcon,
+  Check,
+  Clipboard,
+  X,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -89,10 +93,12 @@ export default function DesignDetailPage() {
   const [isInvoiceRequestOpen, setIsInvoiceRequestOpen] = useState(false)
   const [notification, setNotification] = useState<{ type: 'success' | 'warning' | 'info'; text: string } | null>(null)
 
-  // New Version Form State
+  // New Version Form State (.JPG / .PNG only with paste support)
   const [newVersionNotes, setNewVersionNotes] = useState('')
-  const [newVersionFormat, setNewVersionFormat] = useState<DesignFormat>('ai')
+  const [newVersionFormat, setNewVersionFormat] = useState<DesignFormat>('png')
   const [newVersionFileName, setNewVersionFileName] = useState('')
+  const [newVersionProofUrl, setNewVersionProofUrl] = useState<string>('')
+  const [isDraggingOver, setIsDraggingOver] = useState(false)
 
   // Approval Form State
   const [approverName, setApproverName] = useState('')
@@ -109,6 +115,76 @@ export default function DesignDetailPage() {
     setNotification({ text, type })
     setTimeout(() => setNotification(null), 4000)
   }
+
+  // Process image file for upload (supporting only .jpg, .jpeg, .png)
+  const processImageFile = (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+    const isJpeg = ext === 'jpg' || ext === 'jpeg'
+    const isPng = ext === 'png'
+
+    if (!isJpeg && !isPng) {
+      showNotification('Unsupported format! Only .JPG and .PNG images are supported.', 'warning')
+      return
+    }
+
+    const fmt: DesignFormat = isJpeg ? 'jpg' : 'png'
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string
+      if (dataUrl) {
+        setNewVersionProofUrl(dataUrl)
+        setNewVersionFileName(file.name || `proof_${Date.now()}.${fmt}`)
+        setNewVersionFormat(fmt)
+        if (!newVersionNotes) {
+          setNewVersionNotes(`Uploaded ${file.name} (${fmt.toUpperCase()})`)
+        }
+        setIsUploadOpen(true)
+        showNotification(`Image loaded: ${file.name} (${fmt.toUpperCase()})!`, 'success')
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Global Clipboard Paste (Ctrl+V) listener
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.indexOf('image') !== -1) {
+          e.preventDefault()
+          const file = item.getAsFile()
+          if (file) {
+            const nextVerNum = (job?.versions?.length || 0) + 1
+            const fmt: DesignFormat = item.type === 'image/jpeg' ? 'jpg' : 'png'
+            const customName = `proof_${job?.design_number?.toLowerCase() || 'artwork'}_v${nextVerNum}.${fmt}`
+
+            const reader = new FileReader()
+            reader.onload = (event) => {
+              const dataUrl = event.target?.result as string
+              if (dataUrl) {
+                setNewVersionProofUrl(dataUrl)
+                setNewVersionFileName(customName)
+                setNewVersionFormat(fmt)
+                if (!newVersionNotes) {
+                  setNewVersionNotes(`Pasted screenshot artwork (Ctrl+V) for v${nextVerNum}`)
+                }
+                setIsUploadOpen(true)
+                showNotification(`Image pasted from clipboard (${fmt.toUpperCase()})! Ready to save.`, 'success')
+              }
+            }
+            reader.readAsDataURL(file)
+            break
+          }
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [job, isUploadOpen, newVersionNotes])
 
   if (!job) {
     return (
@@ -250,18 +326,21 @@ export default function DesignDetailPage() {
     }
 
     const nextVerNum = (job.versions?.length || 0) + 1
+    const proofUrl = newVersionProofUrl || 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80'
+    const fileName = newVersionFileName || `proof_${job.design_number.toLowerCase()}_v${nextVerNum}.${newVersionFormat}`
+
     const newVer: DesignVersionRecord = {
       id: `dv-${Date.now()}`,
       design_job_id: job.id,
       version_number: nextVerNum,
       version_label: `Version ${nextVerNum}`,
-      proof_file_url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80',
-      proof_file_name: `proof_${newVersionFileName.replace(/\.[^/.]+$/, '')}.png`,
-      source_file_url: `/storage/artworks/${newVersionFileName}`,
-      source_file_name: newVersionFileName,
+      proof_file_url: proofUrl,
+      proof_file_name: fileName,
+      source_file_url: proofUrl,
+      source_file_name: fileName,
       file_format: newVersionFormat,
-      file_size_bytes: 45000000,
-      change_notes: newVersionNotes,
+      file_size_bytes: 4500000,
+      change_notes: newVersionNotes || `Version ${nextVerNum} artwork revision`,
       uploaded_by_name: 'Current Designer',
       is_approved: false,
       created_at: 'Just now',
@@ -277,6 +356,9 @@ export default function DesignDetailPage() {
     PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
     setActiveVersionNumber(nextVerNum)
     setIsUploadOpen(false)
+    setNewVersionProofUrl('')
+    setNewVersionFileName('')
+    setNewVersionNotes('')
     showNotification(`Version ${nextVerNum} created and dispatched for customer proof approval!`)
   }
 
@@ -636,31 +718,72 @@ export default function DesignDetailPage() {
                   </CardDescription>
                 </div>
 
-                <span
-                  className={`uppercase text-xs font-black px-2 py-0.5 rounded border ${getFormatBadgeColor(
-                    currentFormat
-                  )}`}
-                >
-                  .{currentFormat}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`uppercase text-xs font-black px-2.5 py-0.5 rounded border font-mono ${getFormatBadgeColor(
+                      currentFormat
+                    )}`}
+                  >
+                    .{currentFormat}
+                  </span>
+                  {!job.is_locked && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsUploadOpen(true)
+                      }}
+                      className="h-7 text-xs font-bold gap-1 bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      Upload / Paste (Ctrl+V)
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
 
             <CardContent className="p-4 space-y-4">
-              {/* SAFE FORMAT RENDERING ENGINE */}
-              {isRenderable ? (
-                <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center min-h-[360px] relative group">
+              {/* IMAGE RENDERING ENGINE (.JPG / .PNG / PREVIEW) */}
+              {activeVersion.proof_file_url ? (
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    setIsDraggingOver(true)
+                  }}
+                  onDragLeave={() => setIsDraggingOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    setIsDraggingOver(false)
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      processImageFile(e.dataTransfer.files[0])
+                    }
+                  }}
+                  className={cn(
+                    "rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center min-h-[380px] relative group transition-all",
+                    isDraggingOver && "ring-4 ring-indigo-500 ring-offset-2"
+                  )}
+                >
                   <img
                     src={activeVersion.proof_file_url}
-                    alt={activeVersion.proof_file_name}
-                    className="max-h-[480px] w-full object-contain"
+                    alt={activeVersion.proof_file_name || 'Design Proof'}
+                    className="max-h-[500px] w-full object-contain"
                   />
-                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                  {/* Top-Right Format & Paste Helper Badge */}
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded bg-black/70 text-white backdrop-blur-xs border border-white/10">
+                      <Clipboard className="h-3 w-3 text-indigo-400" /> Paste anytime (<kbd className="font-mono text-[10px]">Ctrl+V</kbd>)
+                    </span>
+                  </div>
+
+                  {/* Bottom-Right Fullscreen Action */}
+                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
                     <a
                       href={activeVersion.proof_file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-black/80 text-white text-xs font-bold hover:bg-black"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/80 text-white text-xs font-bold hover:bg-black transition-colors"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                       Fullscreen Proof
@@ -668,16 +791,19 @@ export default function DesignDetailPage() {
                   </div>
                 </div>
               ) : (
-                <div className="p-8 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-center space-y-3">
-                  <div className="h-16 w-16 mx-auto rounded-2xl bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 flex items-center justify-center font-black text-2xl">
-                    .{currentFormat.toUpperCase()}
+                <div
+                  onClick={() => setIsUploadOpen(true)}
+                  className="p-10 rounded-xl border-2 border-dashed border-indigo-300 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-950/20 text-center space-y-3 cursor-pointer hover:bg-indigo-50/70 dark:hover:bg-indigo-950/40 transition-all"
+                >
+                  <div className="h-14 w-14 mx-auto rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 flex items-center justify-center font-black">
+                    <Upload className="h-7 w-7" />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Raw Vector/Raster Production File
+                      Drop .JPG / .PNG Artwork or Press Ctrl+V
                     </h3>
                     <p className="text-xs text-slate-500 max-w-md mx-auto">
-                      Format <code>.{currentFormat.toUpperCase()}</code> contains native layers, spot colors, and contour paths. Browser rendering is bypassed to protect vector accuracy.
+                      Click to browse or paste screenshot from clipboard directly to render customer proof.
                     </p>
                   </div>
                 </div>
@@ -687,7 +813,7 @@ export default function DesignDetailPage() {
               <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-lg text-xs">
                 <div className="space-y-0.5">
                   <div className="font-bold text-slate-700 dark:text-slate-300">File Reference:</div>
-                  <code className="text-[11px] text-slate-500">{activeVersion.source_file_name || activeVersion.proof_file_name}</code>
+                  <code className="text-[11px] text-slate-500 font-mono">{activeVersion.source_file_name || activeVersion.proof_file_name || 'proof.png'}</code>
                 </div>
                 {activeVersion.change_notes && (
                   <div className="text-slate-600 dark:text-slate-400 text-right max-w-xs">
@@ -849,9 +975,76 @@ export default function DesignDetailPage() {
         open={isUploadOpen}
         onOpenChange={setIsUploadOpen}
         title="Upload Artwork Revision"
-        description="Creates a new version increment (e.g. Version 2, Version 3) and records changelog."
+        description="Upload or paste (.JPG / .PNG) artwork proofs. Supports clipboard paste (Ctrl+V)."
       >
         <form onSubmit={handleUploadVersion} className="space-y-4 pt-1">
+          {/* DRAG & DROP / PASTE / FILE PICKER DROPZONE */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault()
+              setIsDraggingOver(true)
+            }}
+            onDragLeave={() => setIsDraggingOver(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setIsDraggingOver(false)
+              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                processImageFile(e.dataTransfer.files[0])
+              }
+            }}
+            onClick={() => document.getElementById('vFileInputModal')?.click()}
+            className={cn(
+              "border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer",
+              isDraggingOver
+                ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40"
+                : "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+            )}
+          >
+            <input
+              id="vFileInputModal"
+              type="file"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  processImageFile(e.target.files[0])
+                }
+              }}
+            />
+            {newVersionProofUrl ? (
+              <div className="space-y-2">
+                <div className="relative max-h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center p-1">
+                  <img
+                    src={newVersionProofUrl}
+                    alt="Proof Preview"
+                    className="max-h-44 object-contain mx-auto"
+                  />
+                </div>
+                <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Image Loaded ({newVersionFormat.toUpperCase()}) — Click to replace or paste another</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-4 space-y-2">
+                <div className="h-10 w-10 mx-auto rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 flex items-center justify-center">
+                  <Upload className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    Click to browse or Drag & Drop .JPG / .PNG
+                  </p>
+                  <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold mt-0.5">
+                    💡 Tip: Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px]">Ctrl+V</kbd> anywhere to paste screenshot
+                  </p>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Supported formats: <strong>.JPG, .JPEG, .PNG</strong> only
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="vFmt" required>File Format</Label>
@@ -861,13 +1054,8 @@ export default function DesignDetailPage() {
                 onChange={(e) => setNewVersionFormat(e.target.value as DesignFormat)}
                 className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold uppercase"
               >
-                <option value="ai">.AI (Illustrator)</option>
-                <option value="psd">.PSD (Photoshop)</option>
-                <option value="cdr">.CDR (CorelDRAW)</option>
-                <option value="pdf">.PDF (Print Proof)</option>
-                <option value="png">.PNG (Raster)</option>
-                <option value="svg">.SVG (Vector)</option>
-                <option value="zip">.ZIP (Package)</option>
+                <option value="png">.PNG (Raster Proof / Transparency)</option>
+                <option value="jpg">.JPG / .JPEG (High-Res Image / Proof)</option>
               </select>
             </div>
 
@@ -877,6 +1065,7 @@ export default function DesignDetailPage() {
                 id="vFile"
                 value={newVersionFileName}
                 onChange={(e) => setNewVersionFileName(e.target.value)}
+                placeholder="e.g. proof_v2.png"
                 required
               />
             </div>
@@ -899,7 +1088,7 @@ export default function DesignDetailPage() {
             <Button type="button" variant="outline" onClick={() => setIsUploadOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
               Upload Version & Notify Client
             </Button>
           </div>
