@@ -93,6 +93,14 @@ export function getRootDomain(): string {
     return configured.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim()
   }
 
+  // Client-side fallback: check window.location.host
+  if (typeof window !== 'undefined' && window.location && window.location.host) {
+    const browserHost = window.location.host.toLowerCase().trim()
+    if (browserHost.includes('localhost') || browserHost.includes('127.0.0.1')) {
+      return browserHost
+    }
+  }
+
   if (process.env.NODE_ENV === 'production') {
     return 'inkflow.com.bd'
   }

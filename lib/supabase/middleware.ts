@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database.types'
 import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '@/lib/auth/types'
-import { resolveHostname } from '@/lib/tenant/tenant-resolution'
+import { resolveHostname, isReservedSlug, isValidSlugFormat } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 export async function updateSession(request: NextRequest) {
@@ -289,46 +289,7 @@ export async function updateSession(request: NextRequest) {
     // C. ROOT DOMAIN ROUTING (e.g. inkflow.com.bd, localhost:3000)
     // --------------------------------------------------------------------------
     if (hostType === 'root') {
-      // 1. If user visits path with tenant slug on root domain (e.g. inkflow.com.bd/vision/invoices):
-      // Redirect to canonical tenant subdomain https://vision.inkflow.com.bd/invoices
-      const pathParts = pathname.split('/').filter(Boolean)
-      const firstSegment = pathParts[0] || ''
-
-      const isKnownRootSegment =
-        firstSegment === '' ||
-        firstSegment === 'login' ||
-        firstSegment === 'register' ||
-        firstSegment === 'verify' ||
-        firstSegment === 'forgot-password' ||
-        firstSegment === 'reset-password' ||
-        firstSegment === 'onboarding' ||
-        firstSegment === 'platform' ||
-        firstSegment === 'platform-admin' ||
-        firstSegment === 'api' ||
-        firstSegment === 'pricing' ||
-        firstSegment === 'features' ||
-        firstSegment === 'solutions' ||
-        firstSegment === 'about' ||
-        firstSegment === 'contact' ||
-        firstSegment === 'faq' ||
-        firstSegment === 'terms' ||
-        firstSegment === 'privacy' ||
-        firstSegment === '403' ||
-        firstSegment === '404' ||
-        firstSegment === 'logout' ||
-        firstSegment === 'tenant-not-found' ||
-        firstSegment === 'tenant-suspended' ||
-        firstSegment === 'icons' ||
-        firstSegment.startsWith('_')
-
-      if (!isKnownRootSegment && pathParts.length > 0) {
-        const potentialSlug = firstSegment.toLowerCase().trim()
-        const subPath = pathParts.slice(1).join('/')
-        const tenantUrl = getTenantLink(potentialSlug, subPath ? `/${subPath}${search}` : `/dashboard${search}`)
-        return NextResponse.redirect(new URL(tenantUrl))
-      }
-
-      // 2. If authenticated tenant user visits /login on root domain -> redirect to their tenant workspace
+      // 1. If authenticated tenant user visits /login on root domain -> redirect to their tenant workspace
       if (pathname === '/login') {
         const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
         if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
@@ -342,7 +303,9 @@ export async function updateSession(request: NextRequest) {
         }
       }
 
-      // 3. If authenticated user visits /dashboard on root domain -> redirect to their tenant workspace
+      // 2. If user visits /dashboard on root domain:
+      // If logged in as tenant -> redirect to their actual tenant workspace (e.g. vision.inkflow.com.bd/dashboard)
+      // Otherwise redirect to /login
       if (pathname === '/dashboard') {
         if (hasValidTenantCookie && tenantSessionData?.companySlug) {
           const targetSlug = tenantSessionData.companySlug
@@ -353,6 +316,29 @@ export async function updateSession(request: NextRequest) {
           loginUrl.pathname = '/login'
           return NextResponse.redirect(loginUrl)
         }
+      }
+
+      // 3. If user visits path with legitimate tenant slug on root domain (e.g. inkflow.com.bd/vision/invoices):
+      // Redirect to canonical tenant subdomain https://vision.inkflow.com.bd/invoices
+      const pathParts = pathname.split('/').filter(Boolean)
+      const firstSegment = pathParts[0] || ''
+
+      const isKnownRootSegment =
+        firstSegment === '' ||
+        isReservedSlug(firstSegment) ||
+        firstSegment === 'dashboard' ||
+        firstSegment === 'platform' ||
+        firstSegment === 'platform-admin' ||
+        firstSegment === 'icons' ||
+        firstSegment === 'tenant-not-found' ||
+        firstSegment === 'tenant-suspended' ||
+        firstSegment.startsWith('_')
+
+      if (!isKnownRootSegment && pathParts.length > 0 && isValidSlugFormat(firstSegment)) {
+        const potentialSlug = firstSegment.toLowerCase().trim()
+        const subPath = pathParts.slice(1).join('/')
+        const tenantUrl = getTenantLink(potentialSlug, subPath ? `/${subPath}${search}` : `/dashboard${search}`)
+        return NextResponse.redirect(new URL(tenantUrl))
       }
 
       const res = NextResponse.next({ request })
