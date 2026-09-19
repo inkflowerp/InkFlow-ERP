@@ -769,68 +769,6 @@ export function NewInvoiceModal({
     })
   }
 
-  const handleAddItem = () => {
-    const defaultProduct = servicesList[0] || products[0]
-    const defaultPrice = defaultProduct
-      ? Number(defaultProduct.selling_price) || Number((defaultProduct as any).base_price) || 25
-      : 25
-    const defaultUnit = defaultProduct ? defaultProduct.unit || (defaultProduct as any).unit_of_measure || 'sft' : 'sft'
-
-    setItems((prev) => [
-      ...prev,
-      {
-        id: `item-${Date.now()}-${prev.length + 1}`,
-        productId: defaultProduct?.id || '',
-        item_kind: 'service',
-        workflow_routing: 'design_required',
-        itemName: defaultProduct?.name || 'Printing Service Item',
-        width: '4',
-        height: '6',
-        dimension_unit: 'ft',
-        quantity: 1,
-        unit: defaultUnit,
-        rate: defaultPrice,
-        finishing: 'None',
-        rateSource: 'default',
-        design_required: true,
-        customer_approval_required: true,
-        showAdvanced: false,
-      },
-    ])
-  }
-
-  const handleAddReadyProductItem = () => {
-    const defaultProduct = readyProductsList[0] || products.find((p) => p.entity_type === 'product')
-    const defaultPrice = defaultProduct ? Number(defaultProduct.selling_price) || 500 : 500
-    const defaultUnit = defaultProduct ? defaultProduct.selling_unit || defaultProduct.unit || 'pcs' : 'pcs'
-
-    setItems((prev) => [
-      ...prev,
-      {
-        id: `item-${Date.now()}-${prev.length + 1}`,
-        productId: defaultProduct?.id || '',
-        item_kind: 'ready_product',
-        workflow_routing: 'ready_product',
-        itemName: defaultProduct?.name || 'Ready Product / Display Stand',
-        width: '0',
-        height: '0',
-        dimension_unit: 'ft',
-        quantity: 1,
-        unit: defaultUnit,
-        rate: defaultPrice,
-        finishing: 'None',
-        rateSource: 'default',
-        dimensions_spec: defaultProduct?.dimensions_spec || undefined,
-        moq: defaultProduct?.min_order_quantity || undefined,
-        pcs_per_carton: (defaultProduct as any)?.pcs_per_carton || undefined,
-        unit_cost: Number(defaultProduct?.effective_unit_cost ?? defaultProduct?.base_cost) || 0,
-        design_required: false,
-        customer_approval_required: false,
-        showAdvanced: false,
-      },
-    ])
-  }
-
   const handleAddCustomItem = () => {
     setItems((prev) => [
       ...prev,
@@ -1054,20 +992,7 @@ export function NewInvoiceModal({
     }
   }
 
-  // Action: Save & Send directly to Design Panel
-  const hasDesignRequiredItems = useMemo(() => {
-    return items.some((it) => it.design_required === true)
-  }, [items])
 
-  const handleSaveAndSendToDesign = async () => {
-    setSubmittingAction('design')
-    const invoice = await persistInvoice()
-    setSubmittingAction(null)
-    if (invoice) {
-      onOpenChange(false)
-      router.push(`/${tenantSlug}/designer`)
-    }
-  }
 
   // Action: Save & Print PDF
   const handleSaveAndPrint = async () => {
@@ -1413,28 +1338,8 @@ export function NewInvoiceModal({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={handleAddItem}
-                className="h-7 text-xs font-bold gap-1 text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/30 cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add Service / Catalog Item
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddReadyProductItem}
-                className="h-7 text-xs font-bold gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30 cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add Ready Product
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
                 onClick={handleAddCustomItem}
-                className="h-7 text-xs font-bold gap-1 text-amber-700 border-amber-300 bg-amber-50/50 hover:bg-amber-100 dark:bg-amber-950/30 cursor-pointer"
+                className="h-8 text-xs font-bold gap-1.5 text-amber-700 border-amber-300 bg-amber-50/60 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 cursor-pointer px-3 rounded-lg shadow-2xs"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 Add Custom Item
@@ -1929,110 +1834,65 @@ export function NewInvoiceModal({
                     </div>
                   )}
 
-                  {/* WORKFLOW ROUTING ENGINE (3-Way: Ready Product | Design Required | Design OK) */}
-                  <div className="p-3 bg-slate-100/80 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                      <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <Palette className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                        Workflow Routing (কাজের গতিপথ):
-                      </span>
-                      {(() => {
-                        const currentRouting =
-                          item.workflow_routing ||
-                          (item.item_kind === 'ready_product'
-                            ? 'ready_product'
-                            : item.design_required === false
-                            ? 'design_ok'
-                            : 'design_required')
-                        if (currentRouting === 'ready_product') {
-                          return (
-                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 font-bold text-[10px]">
-                              🚚 Direct ➔ Delivery Panel
-                            </Badge>
-                          )
-                        }
-                        if (currentRouting === 'design_required') {
-                          return (
-                            <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-300 font-bold text-[10px]">
-                              🎨 Design Panel ➔ Tab: Design Request
-                            </Badge>
-                          )
-                        }
-                        return (
-                          <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-300 font-bold text-[10px]">
-                            🔍 Design Panel ➔ Tab: Design Check
-                          </Badge>
-                        )
-                      })()}
+                  {/* SERVICE DESIGN STATUS TOGGLE (Design Required vs Design OK) */}
+                  {isService && (
+                    <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-slate-100/80 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                          <Palette className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                          Design Status:
+                        </span>
+                        <div className="inline-flex p-0.5 bg-slate-200/80 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleItemChange(index, 'workflow_routing', 'design_required')
+                              handleItemChange(index, 'design_required', true)
+                              handleItemChange(index, 'customer_approval_required', true)
+                            }}
+                            className={cn(
+                              'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
+                              item.workflow_routing === 'design_required' || (item.design_required !== false && item.workflow_routing !== 'design_ok')
+                                ? 'bg-indigo-600 text-white shadow-xs'
+                                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                            )}
+                          >
+                            <span>🎨 Design Required</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleItemChange(index, 'workflow_routing', 'design_ok')
+                              handleItemChange(index, 'design_required', false)
+                              handleItemChange(index, 'customer_approval_required', false)
+                            }}
+                            className={cn(
+                              'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
+                              item.workflow_routing === 'design_ok' || item.design_required === false
+                                ? 'bg-cyan-600 text-white shadow-xs'
+                                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                            )}
+                          >
+                            <span>🔍 Design OK</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-[10px] font-bold px-2 py-0.5',
+                          item.workflow_routing === 'design_ok' || item.design_required === false
+                            ? 'bg-cyan-50 text-cyan-700 border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300'
+                            : 'bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300'
+                        )}
+                      >
+                        {item.workflow_routing === 'design_ok' || item.design_required === false
+                          ? 'Design Panel ➔ Tab: Design Check'
+                          : 'Design Panel ➔ Tab: Design Request'}
+                      </Badge>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                      {/* 1. Ready Product */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleItemChange(index, 'workflow_routing', 'ready_product')
-                          handleItemChange(index, 'item_kind', 'ready_product')
-                          handleItemChange(index, 'design_required', false)
-                        }}
-                        className={cn(
-                          'p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between',
-                          (item.workflow_routing === 'ready_product' || item.item_kind === 'ready_product')
-                            ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40 ring-1 ring-emerald-500'
-                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-50'
-                        )}
-                      >
-                        <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-xs">
-                          <span>📦 Ready Product</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-1">রেডি প্রোডাক্ট (সরাসরি ডেলিভারি প্যানেল)</p>
-                      </button>
-
-                      {/* 2. Design Required */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleItemChange(index, 'workflow_routing', 'design_required')
-                          handleItemChange(index, 'item_kind', 'service')
-                          handleItemChange(index, 'design_required', true)
-                          handleItemChange(index, 'customer_approval_required', true)
-                        }}
-                        className={cn(
-                          'p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between',
-                          (item.workflow_routing === 'design_required' || (!item.workflow_routing && item.item_kind !== 'ready_product' && item.design_required !== false))
-                            ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/40 ring-1 ring-indigo-500'
-                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-50'
-                        )}
-                      >
-                        <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-xs">
-                          <span>🎨 Design Required</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-1">ডিজাইন প্রয়োজন (Tab: Design Request)</p>
-                      </button>
-
-                      {/* 3. Design OK */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleItemChange(index, 'workflow_routing', 'design_ok')
-                          handleItemChange(index, 'item_kind', 'service')
-                          handleItemChange(index, 'design_required', false)
-                          handleItemChange(index, 'customer_approval_required', false)
-                        }}
-                        className={cn(
-                          'p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between',
-                          item.workflow_routing === 'design_ok'
-                            ? 'border-cyan-500 bg-cyan-50/80 dark:bg-cyan-950/40 ring-1 ring-cyan-500'
-                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-50'
-                        )}
-                      >
-                        <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-xs">
-                          <span>🔍 Design OK</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-1">ডিজাইন ওকে (Tab: Design Check)</p>
-                      </button>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Advanced Specs Drawer */}
                   {(item.showAdvanced || isAdvancedMode) && (
@@ -2292,19 +2152,7 @@ export function NewInvoiceModal({
             )}
           </div>
 
-          {/* Send to Design Panel Button when design-required items exist */}
-          {hasDesignRequiredItems && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSaveAndSendToDesign}
-              disabled={isSubmitting}
-              className="h-10 px-4 rounded-xl font-bold border-pink-300 text-pink-700 bg-pink-50 hover:bg-pink-100 dark:border-pink-700 dark:text-pink-300 dark:bg-pink-950/40 gap-1.5"
-            >
-              <Palette className="h-4 w-4 text-pink-600" />
-              <span>Save & Send to Design Panel</span>
-            </Button>
-          )}
+
 
           {/* Primary Save Button */}
           <Button
