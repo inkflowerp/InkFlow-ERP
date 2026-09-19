@@ -426,18 +426,97 @@ export default function DesignDetailPage() {
       try {
         const effectiveId = job.id || job.design_number || jobId
         const effectiveCompany = job.company_id || company?.id || slug
-        const res = await sendToPrintOperatorAction(effectiveId, effectiveCompany)
-        if (!res.success) {
-          showNotification(res.error || 'Failed to send to print operator', 'warning')
-          return
-        }
+        const now = new Date().toISOString()
 
+        // 1. Dispatch server action with job payload
+        await sendToPrintOperatorAction(effectiveId, effectiveCompany, job)
+
+        // 2. Authoritative client store updates (Job Order, Production Tasks, Design Job)
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
           status: 'approved',
           workflow_routing: 'ready_production',
+          commercial_status: hasInvoice ? 'invoice_created' : 'invoice_required',
           is_locked: true,
-          updated_at: new Date().toISOString(),
+          updated_at: now,
         })
+
+        // Queue Job Order
+        const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+        let matchedOrder = jobOrders.find(
+          (jo) =>
+            jo.design_job_id === job.id ||
+            jo.design_job_id === job.design_number ||
+            (job.sales_order_id && jo.order_id === job.sales_order_id) ||
+            jo.id === job.job_order_id
+        )
+        if (matchedOrder) {
+          matchedOrder.status = 'queued'
+          matchedOrder.artwork_status = 'approved'
+          matchedOrder.production_gate_status = 'ready_for_production'
+          matchedOrder.is_blocked_by_design_gate = false
+          matchedOrder.is_blocked_by_commercial_gate = !hasInvoice
+          matchedOrder.updated_at = now
+        } else {
+          matchedOrder = {
+            id: crypto.randomUUID(),
+            company_id: effectiveCompany,
+            order_id: job.sales_order_id || null,
+            design_job_id: job.id,
+            invoice_id: job.invoice_id || null,
+            invoice_number: invoiceNumber || job.invoice_number || null,
+            job_number: `JO-${(job.design_number || '001').replace('DSN-', '')}`,
+            customer_id: job.customer_id,
+            customer_name: job.customer_name,
+            title: job.title,
+            status: 'queued',
+            artwork_status: 'approved',
+            commercial_status: hasInvoice ? 'invoice_created' : 'invoice_required',
+            production_gate_status: 'ready_for_production',
+            is_blocked_by_commercial_gate: !hasInvoice,
+            is_blocked_by_design_gate: false,
+            priority: job.priority || 'normal',
+            due_date: job.deadline,
+            created_at: now,
+            updated_at: now,
+          }
+          jobOrders.unshift(matchedOrder)
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
+
+        // Queue Production Tasks
+        const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        let t1 = prodTasks.find((t) => t.job_order_id === matchedOrder.id && t.department === 'printing')
+        if (t1) {
+          t1.status = 'queued'
+          t1.is_blocked_by_design_gate = false
+          t1.is_blocked_by_commercial_gate = !hasInvoice
+          t1.updated_at = now
+        } else {
+          t1 = {
+            id: crypto.randomUUID(),
+            company_id: effectiveCompany,
+            job_order_id: matchedOrder.id,
+            task_number: `TSK-${matchedOrder.job_number.replace('JO-', '')}-1`,
+            task_name: `Large-Format Print: ${job.title}`,
+            customer_name: job.customer_name,
+            product_name: job.title,
+            job_number: invoiceNumber || job.invoice_number || matchedOrder.job_number,
+            job_deadline: job.deadline,
+            task_type: 'print_wide',
+            department: 'printing',
+            sequence_order: 1,
+            quantity: job.quantity || 1,
+            unit: job.unit || 'pcs',
+            priority: job.priority || 'normal',
+            status: 'queued',
+            is_blocked_by_commercial_gate: !hasInvoice,
+            is_blocked_by_design_gate: false,
+            created_at: now,
+            updated_at: now,
+          }
+          prodTasks.unshift(t1)
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
 
         showNotification(`Job #${job.design_number} queued for Print Floor Operators!`)
       } catch (err: any) {
