@@ -23,8 +23,9 @@ interface OperatorDashboardProps {
 export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) {
   const { tBilingual } = useI18n()
 
-  const activeCount = tasks.filter((t) => t.status === 'in_progress').length
-  const completedTodayCount = tasks.filter((t) => t.status === 'completed').length
+  const safeTasks = Array.isArray(tasks) ? tasks : []
+  const activeCount = safeTasks.filter((t) => t.status === 'in_progress').length
+  const completedTodayCount = safeTasks.filter((t) => t.status === 'completed').length
 
   return (
     <div className="space-y-5 max-w-4xl mx-auto pb-12">

@@ -29,6 +29,13 @@ interface StoreDashboardProps {
 export function StoreDashboard({ metrics, onRefresh }: StoreDashboardProps) {
   const { tBilingual } = useI18n()
 
+  const safeMetrics = {
+    lowStockCount: metrics?.lowStockCount ?? 0,
+    pendingRequisitionsCount: metrics?.pendingRequisitionsCount ?? 0,
+    todayIssuesCount: metrics?.todayIssuesCount ?? 0,
+    todayReceivedCount: metrics?.todayReceivedCount ?? 0,
+  }
+
   return (
     <div className="space-y-6">
       <div className="p-5 bg-gradient-to-r from-amber-700 to-orange-800 text-white rounded-2xl shadow-md flex items-center justify-between">
@@ -49,7 +56,7 @@ export function StoreDashboard({ metrics, onRefresh }: StoreDashboardProps) {
         <KpiCard
           titleEn="Pending Material Requests"
           titleBn="বিলি করার অপেক্ষায়"
-          value={metrics.pendingRequisitionsCount}
+          value={safeMetrics.pendingRequisitionsCount}
           icon={Clock}
           colorVariant="warning"
           badge={tBilingual('Requisitions', 'রিকুইজিশন')}
@@ -57,7 +64,7 @@ export function StoreDashboard({ metrics, onRefresh }: StoreDashboardProps) {
         <KpiCard
           titleEn="Low Stock Warnings"
           titleBn="কম স্টক সতর্কতা"
-          value={metrics.lowStockCount}
+          value={safeMetrics.lowStockCount}
           icon={AlertTriangle}
           colorVariant="danger"
           badge={tBilingual('Reorder Needed', 'অর্ডার প্রয়োজন')}
@@ -65,14 +72,14 @@ export function StoreDashboard({ metrics, onRefresh }: StoreDashboardProps) {
         <KpiCard
           titleEn="Today's Material Issues"
           titleBn="আজকে ফ্লোরে মাল বিলি"
-          value={metrics.todayIssuesCount}
+          value={safeMetrics.todayIssuesCount}
           icon={ArrowUpRight}
           colorVariant="primary"
         />
         <KpiCard
           titleEn="Goods Received Today"
           titleBn="আজকের মাল রিসিভ"
-          value={metrics.todayReceivedCount}
+          value={safeMetrics.todayReceivedCount}
           icon={ArrowDownLeft}
           colorVariant="success"
         />

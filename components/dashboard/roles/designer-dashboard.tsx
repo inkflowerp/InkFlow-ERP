@@ -27,7 +27,8 @@ interface DesignerDashboardProps {
 export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) {
   const { tBilingual } = useI18n()
 
-  const designTasks = tasks.filter((t) => ((t as any).stage_name || t.department)?.toLowerCase().includes('design') || t.task_name?.toLowerCase().includes('design'))
+  const safeTasks = Array.isArray(tasks) ? tasks : []
+  const designTasks = safeTasks.filter((t) => ((t as any).stage_name || t.department)?.toLowerCase().includes('design') || t.task_name?.toLowerCase().includes('design'))
   const pendingApproval = designTasks.filter((t) => t.status === 'paused' || t.hold_reason === 'customer_approval')
   const approvedReady = designTasks.filter((t) => t.status === 'completed' || (t.status as any) === 'ready')
 

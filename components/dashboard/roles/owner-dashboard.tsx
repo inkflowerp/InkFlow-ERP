@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   TrendingUp,
@@ -83,7 +83,7 @@ export function OwnerDashboard({
   const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
 
   const [isMounted, setIsMounted] = useState(false)
-  React.useEffect(() => {
+  useEffect(() => {
     setIsMounted(true)
   }, [])
 
@@ -97,8 +97,93 @@ export function OwnerDashboard({
   const [reminderItem, setReminderItem] = useState<OverdueReceivableSummary | null>(null)
   const [isMoreActionsOpen, setIsMoreActionsOpen] = useState(false)
 
+  // Fail-Safe Data Normalization
+  const safeData = useMemo(() => {
+    const raw = data || ({} as Partial<OwnerDashboardSnapshot>)
+    return {
+      timestamp: raw.timestamp || new Date().toISOString(),
+      companyId: raw.companyId || company?.id || '',
+      branchId: raw.branchId || null,
+      businessDate: raw.businessDate || getBangladeshTodayDateString(),
+      hasFinancialPermission: raw.hasFinancialPermission !== false,
+      salesMetrics: {
+        isRestricted: Boolean(raw.salesMetrics?.isRestricted),
+        todaySales: raw.salesMetrics?.todaySales ?? 0,
+        todaySalesCount: raw.salesMetrics?.todaySalesCount ?? 0,
+        yesterdaySales: raw.salesMetrics?.yesterdaySales ?? 0,
+        yesterdaySalesCount: raw.salesMetrics?.yesterdaySalesCount ?? 0,
+        salesChangePercent: raw.salesMetrics?.salesChangePercent ?? null,
+        currency: 'BDT' as const,
+      },
+      collectionMetrics: {
+        isRestricted: Boolean(raw.collectionMetrics?.isRestricted),
+        todayCollection: raw.collectionMetrics?.todayCollection ?? 0,
+        todayCollectionCount: raw.collectionMetrics?.todayCollectionCount ?? 0,
+        yesterdayCollection: raw.collectionMetrics?.yesterdayCollection ?? 0,
+        yesterdayCollectionCount: raw.collectionMetrics?.yesterdayCollectionCount ?? 0,
+        collectionChangePercent: raw.collectionMetrics?.collectionChangePercent ?? null,
+        currency: 'BDT' as const,
+      },
+      receivablesMetrics: {
+        isRestricted: Boolean(raw.receivablesMetrics?.isRestricted),
+        totalDue: raw.receivablesMetrics?.totalDue ?? 0,
+        overdueCount: raw.receivablesMetrics?.overdueCount ?? 0,
+        overdueTotal: raw.receivablesMetrics?.overdueTotal ?? 0,
+        unpaidInvoicesCount: raw.receivablesMetrics?.unpaidInvoicesCount ?? 0,
+        currency: 'BDT' as const,
+      },
+      profitMetrics: {
+        isRestricted: Boolean(raw.profitMetrics?.isRestricted),
+        hasReliableCostData: Boolean(raw.profitMetrics?.hasReliableCostData),
+        totalRevenue: raw.profitMetrics?.totalRevenue ?? 0,
+        totalCost: raw.profitMetrics?.totalCost ?? 0,
+        grossProfit: raw.profitMetrics?.grossProfit ?? 0,
+        marginPercent: raw.profitMetrics?.marginPercent ?? 0,
+        currency: 'BDT' as const,
+        costBreakdown: raw.profitMetrics?.costBreakdown ?? {
+          materialCost: 0,
+          laborCost: 0,
+          machineCost: 0,
+          otherCost: 0,
+        },
+      },
+      attentionItems: Array.isArray(raw.attentionItems) ? raw.attentionItems : [],
+      blockedWorkItems: Array.isArray(raw.blockedWorkItems) ? raw.blockedWorkItems : [],
+      productionSummary: {
+        activeCount: raw.productionSummary?.activeCount ?? 0,
+        runningCount: raw.productionSummary?.runningCount ?? 0,
+        queuedCount: raw.productionSummary?.queuedCount ?? 0,
+        waitingCount: raw.productionSummary?.waitingCount ?? 0,
+        finishingCount: raw.productionSummary?.finishingCount ?? 0,
+        atRiskCount: raw.productionSummary?.atRiskCount ?? 0,
+        completedTodayCount: raw.productionSummary?.completedTodayCount ?? 0,
+        topJobs: Array.isArray(raw.productionSummary?.topJobs) ? raw.productionSummary.topJobs : [],
+      },
+      deliverySummary: {
+        scheduledCount: raw.deliverySummary?.scheduledCount ?? 0,
+        assignedCount: raw.deliverySummary?.assignedCount ?? 0,
+        outForDeliveryCount: raw.deliverySummary?.outForDeliveryCount ?? 0,
+        deliveredCount: raw.deliverySummary?.deliveredCount ?? 0,
+        delayedCount: raw.deliverySummary?.delayedCount ?? 0,
+        topDeliveries: Array.isArray(raw.deliverySummary?.topDeliveries) ? raw.deliverySummary.topDeliveries : [],
+      },
+      moneyToCollect: Array.isArray(raw.moneyToCollect) ? raw.moneyToCollect : [],
+      pipelineCounts: {
+        newWork: raw.pipelineCounts?.newWork ?? 0,
+        quotation: raw.pipelineCounts?.quotation ?? 0,
+        approved: raw.pipelineCounts?.approved ?? 0,
+        design: raw.pipelineCounts?.design ?? 0,
+        production: raw.pipelineCounts?.production ?? 0,
+        ready: raw.pipelineCounts?.ready ?? 0,
+        delivered: raw.pipelineCounts?.delivered ?? 0,
+      },
+      trendData: Array.isArray(raw.trendData) ? raw.trendData : [],
+      branchCount: raw.branchCount ?? 1,
+    }
+  }, [data, company?.id])
+
   // Filtered Production Jobs
-  const filteredProductionJobs = (data.productionSummary.topJobs || []).filter((j) => {
+  const filteredProductionJobs = (safeData.productionSummary.topJobs || []).filter((j) => {
     if (prodFilter === 'running') return j.currentStage === 'printing'
     if (prodFilter === 'queued') return j.currentStage !== 'printing' && j.currentStage !== 'finishing'
     if (prodFilter === 'at_risk') return j.riskLevel === 'critical' || j.riskLevel === 'at_risk'
@@ -230,17 +315,17 @@ export function OwnerDashboard({
                 <Badge
                   variant="outline"
                   className={`text-xs font-mono font-bold ${
-                    data.attentionItems.length > 0
+                    safeData.attentionItems.length > 0
                       ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
                       : 'bg-emerald-50 text-emerald-800 border-emerald-300'
                   }`}
                 >
-                  {data.attentionItems.length} {tBilingual('Items', 'টি সমস্যা')}
+                  {safeData.attentionItems.length} {tBilingual('Items', 'টি সমস্যা')}
                 </Badge>
               </div>
 
               {/* Content Area */}
-              {data.attentionItems.length === 0 ? (
+              {safeData.attentionItems.length === 0 ? (
                 <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-xl sm:rounded-2xl flex items-center gap-3">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
                   <div>
@@ -254,7 +339,7 @@ export function OwnerDashboard({
                 </div>
               ) : (
                 <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-0.5">
-                  {data.attentionItems.map((item) => {
+                  {safeData.attentionItems.map((item) => {
                   const isUrgent = item.severity === 'urgent'
                   return (
                     <div
@@ -329,7 +414,7 @@ export function OwnerDashboard({
           </span>
         </div>
 
-        {data.hasFinancialPermission === false || data.salesMetrics.isRestricted ? (
+        {safeData.hasFinancialPermission === false || safeData.salesMetrics.isRestricted ? (
           <Card className="p-6 border-slate-200 dark:border-slate-800 text-center bg-slate-50/50 dark:bg-slate-900/40">
             <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 mb-2">
               <ShieldCheck className="h-6 w-6" />
@@ -350,26 +435,26 @@ export function OwnerDashboard({
             <KpiCard
               titleEn="Sales Today"
               titleBn="আজকের বিক্রয়"
-              value={data.salesMetrics.todaySales}
+              value={safeData.salesMetrics.todaySales}
               isCurrency={true}
               icon={TrendingUp}
               colorVariant="primary"
               badge={
-                (data.salesMetrics.todaySalesCount ?? 0) > 0
-                  ? `${num(data.salesMetrics.todaySalesCount ?? 0)} ${tBilingual('Orders', 'টি অর্ডার')}`
+                (safeData.salesMetrics.todaySalesCount ?? 0) > 0
+                  ? `${num(safeData.salesMetrics.todaySalesCount ?? 0)} ${tBilingual('Orders', 'টি অর্ডার')}`
                   : undefined
               }
               trend={
-                data.salesMetrics.salesChangePercent !== null
+                safeData.salesMetrics.salesChangePercent !== null
                   ? {
-                      value: `${data.salesMetrics.salesChangePercent >= 0 ? '+' : ''}${data.salesMetrics.salesChangePercent}% vs yesterday`,
-                      direction: data.salesMetrics.salesChangePercent >= 0 ? 'up' : 'down',
+                      value: `${safeData.salesMetrics.salesChangePercent >= 0 ? '+' : ''}${safeData.salesMetrics.salesChangePercent}% vs yesterday`,
+                      direction: safeData.salesMetrics.salesChangePercent >= 0 ? 'up' : 'down',
                     }
                   : undefined
               }
               subtitleEn={
-                data.salesMetrics.salesChangePercent === null && data.salesMetrics.todaySalesCount !== null
-                  ? `${data.salesMetrics.todaySalesCount} booked order(s)`
+                safeData.salesMetrics.salesChangePercent === null && safeData.salesMetrics.todaySalesCount !== null
+                  ? `${safeData.salesMetrics.todaySalesCount} booked order(s)`
                   : undefined
               }
             />
@@ -378,26 +463,26 @@ export function OwnerDashboard({
             <KpiCard
               titleEn="Collection Today"
               titleBn="আজকের নগদ আদায়"
-              value={data.collectionMetrics.todayCollection}
+              value={safeData.collectionMetrics.todayCollection}
               isCurrency={true}
               icon={DollarSign}
               colorVariant="success"
               badge={
-                (data.collectionMetrics.todayCollectionCount ?? 0) > 0
-                  ? `${num(data.collectionMetrics.todayCollectionCount ?? 0)} ${tBilingual('Entries', 'টি মানি রিসিট')}`
+                (safeData.collectionMetrics.todayCollectionCount ?? 0) > 0
+                  ? `${num(safeData.collectionMetrics.todayCollectionCount ?? 0)} ${tBilingual('Entries', 'টি মানি রিসিট')}`
                   : undefined
               }
               trend={
-                data.collectionMetrics.collectionChangePercent !== null
+                safeData.collectionMetrics.collectionChangePercent !== null
                   ? {
-                      value: `${data.collectionMetrics.collectionChangePercent >= 0 ? '+' : ''}${data.collectionMetrics.collectionChangePercent}% vs yesterday`,
-                      direction: data.collectionMetrics.collectionChangePercent >= 0 ? 'up' : 'down',
+                      value: `${safeData.collectionMetrics.collectionChangePercent >= 0 ? '+' : ''}${safeData.collectionMetrics.collectionChangePercent}% vs yesterday`,
+                      direction: safeData.collectionMetrics.collectionChangePercent >= 0 ? 'up' : 'down',
                     }
                   : undefined
               }
               subtitleEn={
-                data.collectionMetrics.collectionChangePercent === null && data.collectionMetrics.todayCollectionCount !== null
-                  ? `${data.collectionMetrics.todayCollectionCount} payments received`
+                safeData.collectionMetrics.collectionChangePercent === null && safeData.collectionMetrics.todayCollectionCount !== null
+                  ? `${safeData.collectionMetrics.todayCollectionCount} payments received`
                   : undefined
               }
             />
@@ -406,30 +491,30 @@ export function OwnerDashboard({
             <KpiCard
               titleEn="Customer Due (বাকি টাকা)"
               titleBn="মোট বকেয়া বাকি"
-              value={data.receivablesMetrics.totalDue}
+              value={safeData.receivablesMetrics.totalDue}
               isCurrency={true}
               icon={Receipt}
-              colorVariant={(data.receivablesMetrics.totalDue ?? 0) > 0 ? 'danger' : 'success'}
+              colorVariant={(safeData.receivablesMetrics.totalDue ?? 0) > 0 ? 'danger' : 'success'}
               badge={
-                (data.receivablesMetrics.overdueCount ?? 0) > 0
-                  ? `${num(data.receivablesMetrics.overdueCount ?? 0)} ${tBilingual('Overdue', 'টি মেয়াদোত্তীর্ণ')}`
+                (safeData.receivablesMetrics.overdueCount ?? 0) > 0
+                  ? `${num(safeData.receivablesMetrics.overdueCount ?? 0)} ${tBilingual('Overdue', 'টি মেয়াদোত্তীর্ণ')}`
                   : undefined
               }
-              subtitleEn={`${data.receivablesMetrics.unpaidInvoicesCount ?? 0} unpaid invoices`}
-              subtitleBn={`${data.receivablesMetrics.unpaidInvoicesCount ?? 0}টি বকেয়া ইনভয়েস`}
+              subtitleEn={`${safeData.receivablesMetrics.unpaidInvoicesCount ?? 0} unpaid invoices`}
+              subtitleBn={`${safeData.receivablesMetrics.unpaidInvoicesCount ?? 0}টি বকেয়া ইনভয়েস`}
             />
 
             {/* KPI 4: Profit / Margin */}
-            {data.profitMetrics.hasReliableCostData ? (
+            {safeData.profitMetrics.hasReliableCostData ? (
               <KpiCard
                 titleEn="Gross Profit & Margin"
                 titleBn="লাভের মার্জিন"
-                value={data.profitMetrics.grossProfit}
+                value={safeData.profitMetrics.grossProfit}
                 isCurrency={true}
                 icon={BarChart3}
                 colorVariant="info"
-                badge={`${data.profitMetrics.marginPercent}%`}
-                subtitleEn={`Revenue: ${formatBDT(data.profitMetrics.totalRevenue ?? 0)} • Cost: ${formatBDT(data.profitMetrics.totalCost ?? 0)}`}
+                badge={`${safeData.profitMetrics.marginPercent}%`}
+                subtitleEn={`Revenue: ${formatBDT(safeData.profitMetrics.totalRevenue ?? 0)} • Cost: ${formatBDT(safeData.profitMetrics.totalCost ?? 0)}`}
               />
             ) : (
               <Card className="p-4 border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex flex-col justify-between">
@@ -476,7 +561,7 @@ export function OwnerDashboard({
                   {tBilingual('Production Today', 'আজকের প্রোডাকশন ও প্রিন্টিং')}
                 </CardTitle>
                 <Badge variant="outline" className="text-xs font-mono font-bold bg-purple-50 text-purple-700 border-purple-200">
-                  {data.productionSummary.activeCount} {tBilingual('Active', 'চলতি')}
+                  {safeData.productionSummary.activeCount} {tBilingual('Active', 'চলতি')}
                 </Badge>
               </div>
               <CardDescription className="text-xs bangla-text">
@@ -487,11 +572,11 @@ export function OwnerDashboard({
             {/* Stage Status Pills */}
             <div className="flex flex-wrap items-center gap-1.5 text-xs">
               {[
-                { key: 'all', labelEn: 'All', count: data.productionSummary.activeCount },
-                { key: 'running', labelEn: 'Running', count: data.productionSummary.runningCount },
-                { key: 'queued', labelEn: 'Queued', count: data.productionSummary.queuedCount },
-                { key: 'finishing', labelEn: 'Finishing', count: data.productionSummary.finishingCount },
-                { key: 'at_risk', labelEn: 'At Risk', count: data.productionSummary.atRiskCount },
+                { key: 'all', labelEn: 'All', count: safeData.productionSummary.activeCount },
+                { key: 'running', labelEn: 'Running', count: safeData.productionSummary.runningCount },
+                { key: 'queued', labelEn: 'Queued', count: safeData.productionSummary.queuedCount },
+                { key: 'finishing', labelEn: 'Finishing', count: safeData.productionSummary.finishingCount },
+                { key: 'at_risk', labelEn: 'At Risk', count: safeData.productionSummary.atRiskCount },
               ].map((pill) => (
                 <button
                   key={pill.key}
@@ -612,22 +697,22 @@ export function OwnerDashboard({
               </div>
               <div className="flex items-center gap-1.5 text-xs">
                 <Badge variant="outline" className="bg-cyan-50 text-cyan-800 border-cyan-200 font-bold">
-                  {data.deliverySummary.outForDeliveryCount} {tBilingual('Out', 'রাস্তায়')}
+                  {safeData.deliverySummary.outForDeliveryCount} {tBilingual('Out', 'রাস্তায়')}
                 </Badge>
                 <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 font-bold">
-                  {data.deliverySummary.deliveredCount} {tBilingual('Done', 'ডেলিভার্ড')}
+                  {safeData.deliverySummary.deliveredCount} {tBilingual('Done', 'ডেলিভার্ড')}
                 </Badge>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-4 space-y-3">
-            {data.deliverySummary.topDeliveries.length === 0 ? (
+            {safeData.deliverySummary.topDeliveries.length === 0 ? (
               <div className="py-6 text-center text-xs text-slate-500 bangla-text">
                 {tBilingual('No pending deliveries scheduled for today.', 'আজকের জন্য কোনো ডেলিভারি বাকি নেই।')}
               </div>
             ) : (
               <div className="space-y-2">
-                {data.deliverySummary.topDeliveries.map((del) => (
+                {safeData.deliverySummary.topDeliveries.map((del) => (
                   <div
                     key={del.id}
                     className="p-3 bg-slate-50/70 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
@@ -681,17 +766,17 @@ export function OwnerDashboard({
             </div>
           </CardHeader>
           <CardContent className="p-4 space-y-3">
-            {data.hasFinancialPermission === false || data.receivablesMetrics.isRestricted ? (
+            {safeData.hasFinancialPermission === false || safeData.receivablesMetrics.isRestricted ? (
               <div className="py-6 text-center text-xs text-slate-500 bangla-text">
                 {tBilingual('Financial receivables data restricted by permissions.', 'আর্থিক বাকি তথ্য দেখতে বিশেষ অনুমতি প্রয়োজন।')}
               </div>
-            ) : data.moneyToCollect.length === 0 ? (
+            ) : safeData.moneyToCollect.length === 0 ? (
               <div className="py-6 text-center text-xs text-emerald-600 font-semibold bangla-text">
                 {tBilingual('All accounts are clear! No overdue invoices found.', 'সকল বাকি পরিশোধিত! কোনো মেয়াদোত্তীর্ণ বিল নেই।')}
               </div>
             ) : (
               <div className="space-y-2">
-                {data.moneyToCollect.map((item) => (
+                {safeData.moneyToCollect.map((item) => (
                   <div
                     key={item.invoiceId}
                     className="p-3 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-3 text-xs"
@@ -762,13 +847,13 @@ export function OwnerDashboard({
         <CardContent className="p-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
             {[
-              { labelEn: 'New Work', labelBn: 'নতুন কাজ', count: data.pipelineCounts.newWork, route: '/orders', color: 'blue' },
-              { labelEn: 'Quotation', labelBn: 'কোটেশন', count: data.pipelineCounts.quotation, route: '/quotations', color: 'purple' },
-              { labelEn: 'Approved', labelBn: 'অনুমোদিত', count: data.pipelineCounts.approved, route: '/orders', color: 'indigo' },
-              { labelEn: 'Design', labelBn: 'ডিজাইন', count: data.pipelineCounts.design, route: '/design', color: 'cyan' },
-              { labelEn: 'Production', labelBn: 'প্রোডাকশন', count: data.pipelineCounts.production, route: '/production', color: 'amber' },
-              { labelEn: 'Ready', labelBn: 'প্রস্তুত', count: data.pipelineCounts.ready, route: '/delivery', color: 'emerald' },
-              { labelEn: 'Delivered', labelBn: 'ডেলিভার্ড', count: data.pipelineCounts.delivered, route: '/delivery', color: 'teal' },
+              { labelEn: 'New Work', labelBn: 'নতুন কাজ', count: safeData.pipelineCounts.newWork, route: '/orders', color: 'blue' },
+              { labelEn: 'Quotation', labelBn: 'কোটেশন', count: safeData.pipelineCounts.quotation, route: '/quotations', color: 'purple' },
+              { labelEn: 'Approved', labelBn: 'অনুমোদিত', count: safeData.pipelineCounts.approved, route: '/orders', color: 'indigo' },
+              { labelEn: 'Design', labelBn: 'ডিজাইন', count: safeData.pipelineCounts.design, route: '/design', color: 'cyan' },
+              { labelEn: 'Production', labelBn: 'প্রোডাকশন', count: safeData.pipelineCounts.production, route: '/production', color: 'amber' },
+              { labelEn: 'Ready', labelBn: 'প্রস্তুত', count: safeData.pipelineCounts.ready, route: '/delivery', color: 'emerald' },
+              { labelEn: 'Delivered', labelBn: 'ডেলিভার্ড', count: safeData.pipelineCounts.delivered, route: '/delivery', color: 'teal' },
             ].map((stage, idx) => (
               <div
                 key={stage.labelEn}
@@ -790,7 +875,7 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {/* 7. BUSINESS TREND (7-Day Sales vs Collection Chart)                       */}
       {/* ========================================================================= */}
-      {data.hasFinancialPermission !== false && (
+      {safeData.hasFinancialPermission !== false && (
         <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -816,7 +901,7 @@ export function OwnerDashboard({
             <div className="h-64 w-full">
               {isMounted ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.trendData}>
+                  <AreaChart data={safeData.trendData}>
                     <defs>
                       <linearGradient id="ownerSalesGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />

@@ -45,6 +45,15 @@ export function SalesDashboard({
 }: SalesDashboardProps) {
   const { tBilingual } = useI18n()
 
+  const safeMetrics = {
+    todaySales: metrics?.todaySales ?? 0,
+    pendingQuotations: metrics?.pendingQuotations ?? 0,
+    unpaidInvoicesCount: metrics?.unpaidInvoicesCount ?? 0,
+    unpaidDuesTotal: metrics?.unpaidDuesTotal ?? 0,
+    customerFollowupsCount: metrics?.customerFollowupsCount ?? 0,
+  }
+  const safeTasks = Array.isArray(tasks) ? tasks : []
+
   return (
     <div className="space-y-6">
       {/* Banner */}
@@ -77,7 +86,7 @@ export function SalesDashboard({
         <KpiCard
           titleEn="Today's Billed Sales"
           titleBn="আজকের বিক্রয়"
-          value={metrics.todaySales}
+          value={safeMetrics.todaySales}
           isCurrency={true}
           icon={TrendingUp}
           colorVariant="primary"
@@ -85,7 +94,7 @@ export function SalesDashboard({
         <KpiCard
           titleEn="Quotations Awaiting Approval"
           titleBn="দরপ্রস্তাব / কোটেশন"
-          value={metrics.pendingQuotations}
+          value={safeMetrics.pendingQuotations}
           icon={FileSpreadsheet}
           colorVariant="warning"
           badge={tBilingual('Pending', 'অপেক্ষমাণ')}
@@ -93,22 +102,22 @@ export function SalesDashboard({
         <KpiCard
           titleEn="Unpaid Invoices (বাকি বিল)"
           titleBn="বাকি ইনভয়েস"
-          value={metrics.unpaidInvoicesCount}
+          value={safeMetrics.unpaidInvoicesCount}
           icon={Receipt}
           colorVariant="danger"
-          badge={formatBDT(metrics.unpaidDuesTotal)}
+          badge={formatBDT(safeMetrics.unpaidDuesTotal)}
         />
         <KpiCard
           titleEn="Follow-ups & Contacts"
           titleBn="কাস্টমার ফলোআপ"
-          value={metrics.customerFollowupsCount}
+          value={safeMetrics.customerFollowupsCount}
           icon={Users}
           colorVariant="purple"
         />
       </KpiGrid>
 
       {/* Actionable Today's Work Feed */}
-      <TodaysWorkFeed tasks={tasks} onRefresh={onRefresh} onOpenNewWork={onOpenNewWork} />
+      <TodaysWorkFeed tasks={safeTasks} onRefresh={onRefresh} onOpenNewWork={onOpenNewWork} />
     </div>
   )
 }

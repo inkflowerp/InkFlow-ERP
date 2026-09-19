@@ -29,6 +29,13 @@ interface DeliveryDashboardProps {
 export function DeliveryDashboard({ metrics, onRefresh }: DeliveryDashboardProps) {
   const { tBilingual } = useI18n()
 
+  const safeMetrics = {
+    readyForDispatchCount: metrics?.readyForDispatchCount ?? 0,
+    outForDeliveryCount: metrics?.outForDeliveryCount ?? 0,
+    deliveredTodayCount: metrics?.deliveredTodayCount ?? 0,
+    cashCollectedCount: metrics?.cashCollectedCount ?? 0,
+  }
+
   return (
     <div className="space-y-6">
       <div className="p-5 bg-gradient-to-r from-emerald-700 to-teal-800 text-white rounded-2xl shadow-md flex items-center justify-between">
@@ -49,7 +56,7 @@ export function DeliveryDashboard({ metrics, onRefresh }: DeliveryDashboardProps
         <KpiCard
           titleEn="Ready for Dispatch"
           titleBn="ডেলিভারি প্রস্তুত"
-          value={metrics.readyForDispatchCount}
+          value={safeMetrics.readyForDispatchCount}
           icon={Clock}
           colorVariant="warning"
           badge={tBilingual('On Shelf', 'তৈরি আছে')}
@@ -57,21 +64,21 @@ export function DeliveryDashboard({ metrics, onRefresh }: DeliveryDashboardProps
         <KpiCard
           titleEn="Out for Delivery"
           titleBn="পথে আছে"
-          value={metrics.outForDeliveryCount}
+          value={safeMetrics.outForDeliveryCount}
           icon={Truck}
           colorVariant="primary"
         />
         <KpiCard
           titleEn="Delivered Today"
           titleBn="আজকের ডেলিভারি সম্পন্ন"
-          value={metrics.deliveredTodayCount}
+          value={safeMetrics.deliveredTodayCount}
           icon={CheckCircle2}
           colorVariant="success"
         />
         <KpiCard
           titleEn="COD Collected"
           titleBn="নগদ আদায়"
-          value={metrics.cashCollectedCount}
+          value={safeMetrics.cashCollectedCount}
           icon={DollarSign}
           colorVariant="purple"
         />

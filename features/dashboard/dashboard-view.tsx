@@ -165,16 +165,25 @@ export function DashboardView() {
 
   // Owner Snapshot & Realtime State with Stale-While-Revalidate Instant Hydration
   const [ownerSnapshot, setOwnerSnapshot] = useState<OwnerDashboardSnapshot | null>(() => {
+    if (typeof window === 'undefined') return null
     try {
-      return PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any) || null
+      const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any)
+      if (cached && cached.companyId && company?.id && cached.companyId === company.id) {
+        return cached
+      }
+      return null
     } catch {
       return null
     }
   })
   const [isLoadingOwner, setIsLoadingOwner] = useState(() => {
+    if (typeof window === 'undefined') return true
     try {
       const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any)
-      return !cached
+      if (cached && cached.companyId && company?.id && cached.companyId === company.id) {
+        return false
+      }
+      return true
     } catch {
       return true
     }
@@ -636,20 +645,42 @@ export function DashboardView() {
       )
     }
 
+    if (!ownerSnapshot) {
+      return (
+        <div className="space-y-6 pb-12 animate-pulse">
+          {/* Header Skeleton */}
+          <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl">
+            <div className="h-4 w-40 bg-white/20 rounded-full mb-3" />
+            <div className="h-8 w-64 bg-white/30 rounded-lg mb-2" />
+            <div className="h-4 w-96 bg-white/20 rounded-md" />
+          </div>
+
+          {/* 4 KPIs Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-28 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+            ))}
+          </div>
+
+          {/* Needs Attention & Production Feed Skeletons */}
+          <div className="h-48 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+          <div className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+        </div>
+      )
+    }
+
     return (
       <div className="space-y-6">
-        {ownerSnapshot && (
-          <OwnerDashboard
-            data={ownerSnapshot}
-            onOpenNewWork={() => setActiveModal('new_work')}
-            onOpenPaymentModal={(invId) => {
-              setSelectedInvoiceId(invId)
-              setActiveModal('record_payment')
-            }}
-            onRefresh={() => fetchOwnerSnapshot(false)}
-            isUpdating={isUpdatingOwner}
-          />
-        )}
+        <OwnerDashboard
+          data={ownerSnapshot}
+          onOpenNewWork={() => setActiveModal('new_work')}
+          onOpenPaymentModal={(invId) => {
+            setSelectedInvoiceId(invId)
+            setActiveModal('record_payment')
+          }}
+          onRefresh={() => fetchOwnerSnapshot(false)}
+          isUpdating={isUpdatingOwner}
+        />
 
         {/* Executive Modals */}
         {activeModal === 'new_work' && (
@@ -720,10 +751,10 @@ export function DashboardView() {
           <SalesDashboard
             metrics={{
               pendingQuotations: (quotations || []).filter((q) => q.status === 'draft' || q.status === 'sent').length,
-              unpaidInvoicesCount: invoices.filter((i) => i.status === 'unpaid').length,
+              unpaidInvoicesCount: (invoices || []).filter((i) => i.status === 'unpaid').length,
               unpaidDuesTotal: totalReceivableDue,
               todaySales: todaySales,
-              customerFollowupsCount: customers.length,
+              customerFollowupsCount: (customers || []).length,
             }}
             tasks={convertedTasks}
             onOpenNewWork={() => setActiveModal('new_work')}
@@ -761,8 +792,8 @@ export function DashboardView() {
           <DeliveryDashboard
             metrics={{
               readyForDispatchCount: readyDeliveriesCount,
-              outForDeliveryCount: deliveryChallans.filter((d) => d.status === 'out_for_delivery' || (d as any).status === 'in_transit').length,
-              deliveredTodayCount: deliveryChallans.filter((d) => d.status === 'delivered').length,
+              outForDeliveryCount: (deliveryChallans || []).filter((d) => d.status === 'out_for_delivery' || (d as any).status === 'in_transit').length,
+              deliveredTodayCount: (deliveryChallans || []).filter((d) => d.status === 'delivered').length,
               cashCollectedCount: 0,
             }}
             onRefresh={orderHelpers.reload}
