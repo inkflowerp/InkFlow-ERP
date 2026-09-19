@@ -565,6 +565,9 @@ begin
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'company_tax_settings') then
         delete from public.company_tax_settings where company_id = p_company_id;
     end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'tenant_domains') then
+        delete from public.tenant_domains where tenant_id = p_company_id;
+    end if;
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'company_settings') then
         delete from public.company_settings where company_id = p_company_id;
     end if;

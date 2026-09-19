@@ -8,8 +8,22 @@ import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { createClient } from '@/lib/supabase/server'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { TENANT_SESSION_COOKIE, TenantSessionData } from '@/lib/auth/types'
+import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
+import { getTenantBaseUrl } from '@/lib/tenant/tenant-url'
+import type { ApiResponse } from '@/types/common.types'
+import type { CompanyRow } from '@/types/tenant.types'
 
-export async function createCompanyAction(data: CreateCompanyInput, fallbackUserId?: string) {
+/**
+ * Server action for real-time slug availability check during onboarding
+ */
+export async function checkSlugAvailabilityAction(slug: string) {
+  return await TenantService.checkSlugAvailability(slug)
+}
+
+export async function createCompanyAction(
+  data: CreateCompanyInput,
+  fallbackUserId?: string
+): Promise<ApiResponse<CompanyRow> & { subdomainUrl?: string }> {
   const tenant = await getCurrentTenant()
   let resolvedUserId = tenant?.userId
 
@@ -52,21 +66,22 @@ export async function createCompanyAction(data: CreateCompanyInput, fallbackUser
     }
 
     const cookieStore = await cookies()
-    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionData)), {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    })
+    cookieStore.set(
+      TENANT_SESSION_COOKIE,
+      encodeURIComponent(JSON.stringify(sessionData)),
+      getAuthCookieOptions()
+    )
   }
 
   revalidatePath('/', 'layout')
-  return { success: true, data: result.data }
+  const subdomainUrl = `${getTenantBaseUrl(company.slug)}/dashboard`
+  return { success: true, data: result.data, subdomainUrl }
 }
 
 export async function switchCompanyAction(slug: string) {
   revalidatePath('/', 'layout')
-  redirect(`/${slug}/dashboard`)
+  const targetSubdomainUrl = `${getTenantBaseUrl(slug)}/dashboard`
+  redirect(targetSubdomainUrl)
 }
 
 export async function updateCompanyAction(companyId: string, data: any) {

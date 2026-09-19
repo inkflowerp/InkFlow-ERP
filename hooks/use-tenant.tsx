@@ -13,6 +13,7 @@ import {
 import { TENANT_SESSION_COOKIE, TenantSessionData, TenantContext as ServerTenantContext } from '@/lib/auth/types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { PlatformTenantCompany } from '@/types/platform.types'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 const TenantContext = createContext<TenantContextType | null>(null)
 
@@ -352,25 +353,27 @@ export function TenantProvider({
   const switchCompany = async (slug: string) => {
     setIsLoading(true)
     const target = availableCompanies.find((c) => c.slug === slug)
+    const targetSlug = target?.slug || slug
     if (target) {
       setCompany(target)
-      if (typeof window !== 'undefined') {
-        try {
-          const storedSession = getSessionFromCookie() || session
-          if (storedSession) {
-            const updatedSession: TenantSessionData = {
-              ...storedSession,
-              companyId: target.id,
-              companySlug: target.slug,
-              companyName: target.name,
-              companyNameBn: target.name_bn || null,
-            }
-            setSession(updatedSession)
-            document.cookie = `${TENANT_SESSION_COOKIE}=${encodeURIComponent(JSON.stringify(updatedSession))}; path=/; max-age=604800; SameSite=Lax`
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        const storedSession = getSessionFromCookie() || session
+        if (storedSession && target) {
+          const updatedSession: TenantSessionData = {
+            ...storedSession,
+            companyId: target.id,
+            companySlug: target.slug,
+            companyName: target.name,
+            companyNameBn: target.name_bn || null,
           }
-        } catch {}
-      }
-      router.push(`/${target.slug}/dashboard`)
+          setSession(updatedSession)
+          document.cookie = `${TENANT_SESSION_COOKIE}=${encodeURIComponent(JSON.stringify(updatedSession))}; path=/; max-age=604800; SameSite=Lax`
+        }
+      } catch {}
+      window.location.href = getTenantLink(targetSlug, '/dashboard')
+      return
     }
     setIsLoading(false)
   }
@@ -463,7 +466,7 @@ function getFallbackTenantContext(): TenantContextType {
     isLoading: false,
     switchCompany: async (slug: string) => {
       if (typeof window !== 'undefined') {
-        window.location.href = `/${slug}/dashboard`
+        window.location.href = getTenantLink(slug, '/dashboard')
       }
     },
     refreshTenant: async () => {},

@@ -1861,6 +1861,7 @@ export class PlatformService {
         'role_permissions',
         'roles',
         // Settings & Configurations
+        'tenant_domains',
         'company_settings',
         'company_tax_settings',
         'branding_settings',
@@ -2004,6 +2005,9 @@ export class PlatformService {
       for (const table of childTables) {
         try {
           await (admin as any).from(table).delete().in('company_id', targetIds)
+        } catch {}
+        try {
+          await (admin as any).from(table).delete().in('tenant_id', targetIds)
         } catch {}
       }
 

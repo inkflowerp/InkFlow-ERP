@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import type { Database } from '../../types/database.types.ts'
+import { getAuthCookieOptions } from '../tenant/tenant-resolution.ts'
 
 export async function createClient() {
   let cookieStore: any = {
@@ -30,10 +31,13 @@ export async function createClient() {
     )
   }
 
+  const baseCookieOptions = getAuthCookieOptions()
+
   return createServerClient<Database>(
     supabaseUrl,
     supabaseAnonKey,
     {
+      cookieOptions: baseCookieOptions.domain ? { domain: baseCookieOptions.domain } : undefined,
       cookies: {
         getAll() {
           return typeof cookieStore.getAll === 'function' ? cookieStore.getAll() : []
@@ -42,7 +46,10 @@ export async function createClient() {
           try {
             if (typeof cookieStore.set === 'function') {
               cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
+                cookieStore.set(name, value, {
+                  ...options,
+                  ...(baseCookieOptions.domain ? { domain: baseCookieOptions.domain } : {}),
+                })
               )
             }
           } catch {
@@ -53,3 +60,4 @@ export async function createClient() {
     }
   )
 }
+

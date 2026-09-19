@@ -193,6 +193,7 @@ export default function PlatformTenantsPage() {
   const [deleteModalCompany, setDeleteModalCompany] = useState<PlatformTenantCompany | null>(null)
   const [deleteReason, setDeleteReason] = useState('')
   const [deleteConfirmName, setDeleteConfirmName] = useState('')
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeletingCompany, setIsDeletingCompany] = useState(false)
 
   // Purge All Tenants Modal
@@ -379,23 +380,47 @@ export default function PlatformTenantsPage() {
 
   // Handle Delete Single Tenant
   const handleDeleteCompany = async () => {
-    if (!deleteModalCompany || !deleteReason.trim()) return
-    const matchesName = deleteConfirmName.trim().toLowerCase() === deleteModalCompany.name.trim().toLowerCase()
+    if (!deleteModalCompany) return
+    const reasonTrimmed = deleteReason.trim()
+    if (!reasonTrimmed) {
+      setDeleteError('Reason for deletion (Audit Trail) is mandatory.')
+      return
+    }
+
+    const inputTrimmed = deleteConfirmName.trim().toLowerCase()
+    const targetName = deleteModalCompany.name.trim().toLowerCase()
+    const targetSlug = deleteModalCompany.slug ? deleteModalCompany.slug.trim().toLowerCase() : ''
+    const matchesName = inputTrimmed === targetName
+    const matchesSlug = Boolean(targetSlug && inputTrimmed === targetSlug)
     const matchesDelete = deleteConfirmName.trim().toUpperCase() === 'DELETE'
-    if (!matchesName && !matchesDelete) return
+
+    if (!matchesName && !matchesSlug && !matchesDelete) {
+      setDeleteError(`Please type "${deleteModalCompany.name}", "${deleteModalCompany.slug}", or "DELETE" to confirm.`)
+      return
+    }
 
     setIsDeletingCompany(true)
-    const res = await deleteBusinessAction(deleteModalCompany.id, deleteReason.trim())
-    if (res.success) {
-      showNotification(`Tenant "${deleteModalCompany.name}" and all associated workspace data have been permanently deleted.`)
-      setDeleteModalCompany(null)
-      setDeleteReason('')
-      setDeleteConfirmName('')
-      loadData()
-    } else {
-      showNotification(res.error || 'Failed to delete tenant.')
+    setDeleteError(null)
+
+    try {
+      const res = await deleteBusinessAction(deleteModalCompany.id, reasonTrimmed)
+      if (res.success) {
+        showNotification(`Tenant "${deleteModalCompany.name}" and all associated workspace data have been permanently deleted.`)
+        setDeleteModalCompany(null)
+        setDeleteReason('')
+        setDeleteConfirmName('')
+        setDeleteError(null)
+        await loadData()
+      } else {
+        setDeleteError(res.error || 'Failed to delete tenant.')
+        showNotification(res.error || 'Failed to delete tenant.')
+      }
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Failed to delete tenant.')
+      showNotification('Failed to delete tenant.')
+    } finally {
+      setIsDeletingCompany(false)
     }
-    setIsDeletingCompany(false)
   }
 
   // Handle Purge All Tenants
@@ -1201,6 +1226,8 @@ export default function PlatformTenantsPage() {
                             onClick={() => {
                               setDeleteModalCompany(c)
                               setDeleteReason('')
+                              setDeleteConfirmName('')
+                              setDeleteError(null)
                             }}
                             className="h-7 px-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 text-xs"
                             title="Delete Tenant"
@@ -2005,94 +2032,236 @@ export default function PlatformTenantsPage() {
 
       {/* 4. DELETE SINGLE TENANT MODAL */}
       {deleteModalCompany && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-md bg-slate-900 border-red-800/60 text-slate-100 shadow-2xl shadow-red-950/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200 overflow-y-auto">
+          <Card className="w-full max-w-md bg-slate-900 border-red-800/60 text-slate-100 shadow-2xl shadow-red-950/40 my-8">
             <CardHeader className="border-b border-slate-800 pb-3">
-              <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
-                <Trash2 className="h-5 w-5 text-red-500" />
-                Delete Tenant Organization
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
+                  <Trash2 className="h-5 w-5 text-red-500" />
+                  Delete Tenant Organization
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDeleteModalCompany(null)
+                    setDeleteReason('')
+                    setDeleteConfirmName('')
+                    setDeleteError(null)
+                  }}
+                  className="h-7 w-7 p-0 text-slate-400 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
               <CardDescription className="text-xs text-slate-400">
                 Are you sure you want to permanently delete{' '}
                 <strong className="text-white">{deleteModalCompany.name}</strong> (/{deleteModalCompany.slug})?
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="space-y-3 pt-4 text-xs">
-              <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 space-y-2">
-                <div className="font-semibold flex items-center gap-1.5 text-red-300">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
-                  Permanent Physical Deletion (Cannot be undone)
-                </div>
-                <p className="text-[11px] text-red-300/90 leading-relaxed">
-                  This operation will physically wipe all records from PostgreSQL and purge all Supabase Storage files for this tenant:
-                </p>
-                <ul className="text-[10px] text-red-200/80 space-y-0.5 list-disc pl-4">
-                  <li>Company details, branches, and member accounts</li>
-                  <li>Customer databases, contacts, and communication logs</li>
-                  <li>Invoices, payments, financial transactions, and cash book</li>
-                  <li>Products, pricing rules, inventory rolls, and materials</li>
-                  <li>Job orders, production schedules, tasks, and rework logs</li>
-                  <li>Storage attachments (artworks, proofs, challans, receipts)</li>
-                </ul>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-slate-300 flex items-center gap-1">
-                  <span>Reason for Deletion (Audit Trail)</span>
-                  <span className="text-red-400">*</span>
-                </label>
-                <Input
-                  required
-                  placeholder="e.g. Account closed at owner request / Testing cleanup..."
-                  value={deleteReason}
-                  onChange={(e) => setDeleteReason(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-slate-300 flex items-center gap-1">
-                  <span>Type <strong className="text-red-400">{deleteModalCompany.name}</strong> or <strong className="text-red-400">DELETE</strong> to confirm</span>
-                  <span className="text-red-400">*</span>
-                </label>
-                <Input
-                  required
-                  placeholder={`Type "${deleteModalCompany.name}" or "DELETE"`}
-                  value={deleteConfirmName}
-                  onChange={(e) => setDeleteConfirmName(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500"
-                />
-              </div>
-            </CardContent>
-
-            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setDeleteModalCompany(null)
-                  setDeleteReason('')
-                  setDeleteConfirmName('')
-                }}
-                className="text-xs border-slate-800 bg-slate-900 text-slate-300"
-              >
-                Cancel
-              </Button>
-              <Button
-                disabled={
-                  isDeletingCompany ||
-                  !deleteReason.trim() ||
-                  (deleteConfirmName.trim().toLowerCase() !== deleteModalCompany.name.trim().toLowerCase() &&
-                    deleteConfirmName.trim().toUpperCase() !== 'DELETE')
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const isConfirmed = Boolean(
+                  deleteReason.trim() &&
+                  (
+                    deleteConfirmName.trim().toLowerCase() === deleteModalCompany.name.trim().toLowerCase() ||
+                    (deleteModalCompany.slug && deleteConfirmName.trim().toLowerCase() === deleteModalCompany.slug.trim().toLowerCase()) ||
+                    deleteConfirmName.trim().toUpperCase() === 'DELETE'
+                  )
+                )
+                if (isConfirmed && !isDeletingCompany) {
+                  handleDeleteCompany()
                 }
-                onClick={handleDeleteCompany}
-                size="sm"
-                className="bg-red-600 hover:bg-red-500 disabled:bg-red-950/60 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold text-xs"
-              >
-                {isDeletingCompany ? 'Deleting Permanently...' : 'Confirm Permanent Deletion'}
-              </Button>
-            </div>
+              }}
+            >
+              <CardContent className="space-y-3.5 pt-4 text-xs">
+                {deleteError && (
+                  <div className="p-2.5 rounded-lg bg-red-950/80 border border-red-700/80 text-red-200 flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-400 mt-0.5" />
+                    <div className="text-xs font-medium leading-relaxed">{deleteError}</div>
+                  </div>
+                )}
+
+                <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/60 text-red-200 space-y-2">
+                  <div className="font-semibold flex items-center gap-1.5 text-red-300">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+                    Permanent Physical Deletion (Cannot be undone)
+                  </div>
+                  <p className="text-[11px] text-red-300/90 leading-relaxed">
+                    This operation will physically wipe all records from PostgreSQL and purge all Supabase Storage files for this tenant:
+                  </p>
+                  <ul className="text-[10px] text-red-200/80 space-y-0.5 list-disc pl-4">
+                    <li>Company details, branches, and member accounts</li>
+                    <li>Customer databases, contacts, and communication logs</li>
+                    <li>Invoices, payments, financial transactions, and cash book</li>
+                    <li>Products, pricing rules, inventory rolls, and materials</li>
+                    <li>Job orders, production schedules, tasks, and rework logs</li>
+                    <li>Storage attachments (artworks, proofs, challans, receipts)</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-slate-300 flex items-center gap-1">
+                    <span>Reason for Deletion (Audit Trail)</span>
+                    <span className="text-red-400">*</span>
+                  </label>
+                  <Input
+                    required
+                    placeholder="e.g. Account closed at owner request / Testing cleanup..."
+                    value={deleteReason}
+                    onChange={(e) => {
+                      setDeleteReason(e.target.value)
+                      if (deleteError) setDeleteError(null)
+                    }}
+                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500"
+                  />
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[10px] text-slate-500">Quick fill:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteReason('Testing cleanup')
+                        if (deleteError) setDeleteError(null)
+                      }}
+                      className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                    >
+                      Testing cleanup
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteReason('Account closed at owner request')
+                        if (deleteError) setDeleteError(null)
+                      }}
+                      className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                    >
+                      Owner request
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteReason('Duplicate / abandoned registration')
+                        if (deleteError) setDeleteError(null)
+                      }}
+                      className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                    >
+                      Duplicate
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-slate-300 flex items-center gap-1">
+                    <span>Type <strong className="text-red-400">{deleteModalCompany.name}</strong>, <strong className="text-red-400">{deleteModalCompany.slug}</strong>, or <strong className="text-red-400">DELETE</strong></span>
+                    <span className="text-red-400">*</span>
+                  </label>
+                  <Input
+                    required
+                    placeholder={`Type "${deleteModalCompany.name}", "${deleteModalCompany.slug}", or "DELETE"`}
+                    value={deleteConfirmName}
+                    onChange={(e) => {
+                      setDeleteConfirmName(e.target.value)
+                      if (deleteError) setDeleteError(null)
+                    }}
+                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500 font-medium"
+                  />
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[10px] text-slate-500">Quick fill:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteConfirmName('DELETE')
+                        if (deleteError) setDeleteError(null)
+                      }}
+                      className="px-2 py-0.5 rounded text-[10px] bg-red-950/80 hover:bg-red-900 text-red-300 font-mono font-bold border border-red-700 transition-colors"
+                    >
+                      DELETE
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteConfirmName(deleteModalCompany.name)
+                        if (deleteError) setDeleteError(null)
+                      }}
+                      className="px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors truncate max-w-[140px]"
+                      title={deleteModalCompany.name}
+                    >
+                      {deleteModalCompany.name}
+                    </button>
+                    {deleteModalCompany.slug && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeleteConfirmName(deleteModalCompany.slug)
+                          if (deleteError) setDeleteError(null)
+                        }}
+                        className="px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-mono transition-colors truncate max-w-[120px]"
+                        title={deleteModalCompany.slug}
+                      >
+                        {deleteModalCompany.slug}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+
+              <div className="p-4 border-t border-slate-800 flex items-center justify-between gap-2 bg-slate-950/60">
+                <div className="text-[11px]">
+                  {Boolean(
+                    deleteReason.trim() &&
+                    (
+                      deleteConfirmName.trim().toLowerCase() === deleteModalCompany.name.trim().toLowerCase() ||
+                      (deleteModalCompany.slug && deleteConfirmName.trim().toLowerCase() === deleteModalCompany.slug.trim().toLowerCase()) ||
+                      deleteConfirmName.trim().toUpperCase() === 'DELETE'
+                    )
+                  ) ? (
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Ready to delete
+                    </span>
+                  ) : !deleteReason.trim() ? (
+                    <span className="text-amber-400 text-[10px]">Reason required</span>
+                  ) : (
+                    <span className="text-slate-400 text-[10px]">Awaiting confirmation</span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setDeleteModalCompany(null)
+                      setDeleteReason('')
+                      setDeleteConfirmName('')
+                      setDeleteError(null)
+                    }}
+                    className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      isDeletingCompany ||
+                      !deleteReason.trim() ||
+                      (
+                        deleteConfirmName.trim().toLowerCase() !== deleteModalCompany.name.trim().toLowerCase() &&
+                        (!deleteModalCompany.slug || deleteConfirmName.trim().toLowerCase() !== deleteModalCompany.slug.trim().toLowerCase()) &&
+                        deleteConfirmName.trim().toUpperCase() !== 'DELETE'
+                      )
+                    }
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-500 disabled:bg-red-950/60 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold text-xs"
+                  >
+                    {isDeletingCompany ? 'Deleting Permanently...' : 'Confirm Permanent Deletion'}
+                  </Button>
+                </div>
+              </div>
+            </form>
           </Card>
         </div>
       )}

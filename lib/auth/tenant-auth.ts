@@ -68,6 +68,19 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     const { cookies } = await import('next/headers')
     const cookieStore = await cookies()
 
+    // 0. Resolve targetSlugOrId from argument or incoming request headers
+    let targetSlugOrId = requestedSlugOrId
+    if (!targetSlugOrId) {
+      try {
+        const { headers } = await import('next/headers')
+        const headerStore = await headers()
+        const headerSlug = headerStore.get('x-tenant-slug')
+        if (headerSlug) {
+          targetSlugOrId = headerSlug
+        }
+      } catch {}
+    }
+
     // 1. Check for Platform Support Mode session if platform admin is viewing as tenant
     const supportSessionCookie = cookieStore.get(SUPPORT_COOKIE_NAME)?.value
     if (supportSessionCookie) {
@@ -153,7 +166,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     }
 
     // Fast-path in-memory tenant context check
-    const contextCacheKey = `${user.id}:${requestedSlugOrId || 'any'}`
+    const contextCacheKey = `${user.id}:${targetSlugOrId || 'any'}`
     const cachedContext = tenantContextCache.get(contextCacheKey)
     if (cachedContext && cachedContext.expiresAt > Date.now()) {
       return cachedContext.context
@@ -192,7 +205,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     // 3. Authoritative DB membership resolution from company_users & companies
     let membership: any = null
     try {
-      membership = await TenantRepository.resolveUserMembership(user.id, requestedSlugOrId)
+      membership = await TenantRepository.resolveUserMembership(user.id, targetSlugOrId)
     } catch {
       return null // FAIL CLOSED
     }
@@ -206,9 +219,9 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
 
     // Validate tenant boundary if specific slug/id requested
     if (
-      requestedSlugOrId &&
-      company.slug !== requestedSlugOrId.toLowerCase().trim() &&
-      company.id !== requestedSlugOrId
+      targetSlugOrId &&
+      company.slug !== targetSlugOrId.toLowerCase().trim() &&
+      company.id !== targetSlugOrId
     ) {
       tenantContextCache.set(contextCacheKey, { context: null, expiresAt: Date.now() + 5000 })
       return null // FAIL CLOSED: Access to non-member company denied
@@ -262,10 +275,22 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
 
 /**
  * Strict server-side guard for tenant routes (e.g. /app/* or /[tenantSlug]/*).
- * Throws redirect to /login if user lacks access to this tenant.
+ * Throws redirect to /login or 403 if user lacks access to this tenant.
  */
 export async function requireTenantUser(requestedSlugOrId?: string): Promise<TenantContext> {
-  const tenant = await getCurrentTenant(requestedSlugOrId)
+  let targetSlug = requestedSlugOrId
+  if (!targetSlug) {
+    try {
+      const { headers } = await import('next/headers')
+      const headerStore = await headers()
+      const headerSlug = headerStore.get('x-tenant-slug')
+      if (headerSlug) {
+        targetSlug = headerSlug
+      }
+    } catch {}
+  }
+
+  const tenant = await getCurrentTenant(targetSlug)
 
   if (!tenant) {
     let hasPlatformCookie = false
@@ -279,7 +304,23 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
       await performRedirect('/platform')
     }
 
-    await performRedirect(`/login${requestedSlugOrId ? `?error=unauthorized&redirectTo=/${requestedSlugOrId}/dashboard` : '?error=unauthorized'}`)
+    // Check if the user is authenticated in Supabase but lacks access to THIS tenant (Cross-tenant access attempt)
+    let isUserLoggedIn = false
+    try {
+      const supabase = await createClient()
+      const { data } = await supabase.auth.getUser()
+      isUserLoggedIn = Boolean(data?.user?.id)
+    } catch {}
+
+    if (isUserLoggedIn && targetSlug) {
+      // 403 Forbidden: User is logged in to PrintERP but does not have active membership in targetSlug
+      await performRedirect(`/403?type=tenant&tenant=${encodeURIComponent(targetSlug)}`)
+      throw new Error('Forbidden: Cross-Tenant Access Denied')
+    }
+
+    await performRedirect(
+      `/login${targetSlug ? `?error=unauthorized&redirectTo=/${targetSlug}/dashboard` : '?error=unauthorized'}`
+    )
     throw new Error('Unauthorized')
   }
 

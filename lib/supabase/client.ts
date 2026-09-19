@@ -1,5 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '../../types/database.types.ts'
+import { getAuthCookieOptions } from '../tenant/tenant-resolution.ts'
 
 let cachedBrowserClient: ReturnType<typeof createBrowserClient<Database>> | null = null
 let hasLoggedConfigWarning = false
@@ -60,7 +61,12 @@ export function createClient() {
     return fallbackClient
   }
 
-  const client = createBrowserClient<Database>(supabaseUrl!, supabaseAnonKey!)
+  const baseCookieOptions = getAuthCookieOptions()
+  const client = createBrowserClient<Database>(
+    supabaseUrl!,
+    supabaseAnonKey!,
+    baseCookieOptions.domain ? { cookieOptions: { domain: baseCookieOptions.domain } } : undefined
+  )
 
   if (typeof window !== 'undefined') {
     cachedBrowserClient = client

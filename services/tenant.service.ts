@@ -2,6 +2,7 @@ import { CompanyRow, CompanySettingsRow } from '@/types/tenant.types'
 import { ApiResponse } from '@/types/common.types'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isValidSlugFormat, isReservedSlug } from '@/lib/tenant/tenant-resolution'
 
 export interface CreateCompanyInput {
   name: string
@@ -47,13 +48,25 @@ export class TenantService {
         return { success: false, error: 'Company name and slug are required' }
       }
 
-      const admin = createAdminClient()
-      let resolvedOwnerId = ownerUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerUserId)
-        ? ownerUserId
-        : null
-
-      const normalizedOwnerEmail = (data.owner_email || data.email || '').trim().toLowerCase()
       const normalizedSlug = data.slug.toLowerCase().trim()
+
+      if (!isValidSlugFormat(normalizedSlug)) {
+        return {
+          success: false,
+          error: `URL Slug '${data.slug}' is invalid. Slugs must be 2-63 characters, lowercase alphanumeric with hyphens, and cannot start/end with a hyphen.`,
+        }
+      }
+
+      if (isReservedSlug(normalizedSlug)) {
+        return {
+          success: false,
+          error: `URL Slug '${data.slug}' is reserved for system use. Please choose another slug.`,
+        }
+      }
+
+      const admin = createAdminClient()
+      let resolvedOwnerId = ownerUserId || null
+      const normalizedOwnerEmail = data.owner_email ? data.owner_email.toLowerCase().trim() : null
       const existingCompany = await TenantRepository.getCompanyBySlug(normalizedSlug)
 
       if (existingCompany) {
@@ -301,12 +314,62 @@ export class TenantService {
   }
 
   /**
-   * Check if a slug is available
+   * Check if a slug is available (boolean response)
    */
   static async isSlugAvailable(slug: string): Promise<boolean> {
+    const result = await TenantService.checkSlugAvailability(slug)
+    return result.available
+  }
+
+  /**
+   * Comprehensive slug availability evaluation with descriptive status
+   */
+  static async checkSlugAvailability(slug: string): Promise<{
+    available: boolean
+    status: 'available' | 'unavailable' | 'reserved' | 'invalid'
+    message: string
+  }> {
+    if (!slug || typeof slug !== 'string') {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'Please enter a subdomain slug.',
+      }
+    }
+
     const normalizedSlug = slug.toLowerCase().trim()
-    const company = await TenantRepository.getCompanyBySlug(normalizedSlug)
-    return !company
+
+    if (!isValidSlugFormat(normalizedSlug)) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'Slug must be 2-63 characters, lowercase alphanumeric with hyphens, and cannot start/end with a hyphen.',
+      }
+    }
+
+    if (isReservedSlug(normalizedSlug)) {
+      return {
+        available: false,
+        status: 'reserved',
+        message: `'${normalizedSlug}' is reserved for system use. Please choose another name.`,
+      }
+    }
+
+    const existingCompany = await TenantRepository.getCompanyBySlug(normalizedSlug)
+    if (existingCompany) {
+      return {
+        available: false,
+        status: 'unavailable',
+        message: `'${normalizedSlug}' is already taken by another organization.`,
+      }
+    }
+
+    return {
+      available: true,
+      status: 'available',
+      message: `'${normalizedSlug}' is available!`,
+    }
   }
 }
+
 

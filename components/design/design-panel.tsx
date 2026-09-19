@@ -2568,7 +2568,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                 </div>
                 <div className="flex items-center gap-2 text-emerald-600 font-semibold">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  <span>Bleed: 2.0" Margins for Welding/Frame</span>
+                  <span>Bleed: 2.0&quot; Margins for Welding/Frame</span>
                 </div>
               </div>
             </div>

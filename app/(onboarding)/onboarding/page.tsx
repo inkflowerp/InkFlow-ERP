@@ -29,7 +29,7 @@ import {
   Lock,
 } from 'lucide-react'
 import { onboardingSchema, OnboardingFormData } from '@/features/tenant/tenant.schemas'
-import { createCompanyAction } from '@/actions/tenant.actions'
+import { createCompanyAction, checkSlugAvailabilityAction } from '@/actions/tenant.actions'
 import { initiateSubscriptionCheckoutAction } from '@/actions/subscription.actions'
 import { ONBOARDING_BUSINESS_TYPES } from '@/config/business-types.config'
 import { Input } from '@/components/ui/input'
@@ -42,12 +42,20 @@ import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
 import { PAYMENT_GATEWAY_METADATA_LIST } from '@/lib/payments/types'
+import { getTenantLink, getTenantBaseUrl } from '@/lib/tenant/tenant-url'
+import { getRootDomain } from '@/lib/tenant/tenant-resolution'
 import type { PlanCode, BillingInterval, PaymentGatewayType } from '@/types/subscription.types'
 
 function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState<number>(1)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [slugStatus, setSlugStatus] = useState<{
+    checking: boolean
+    status: 'available' | 'unavailable' | 'reserved' | 'invalid' | 'idle'
+    message: string
+  }>({ checking: false, status: 'idle', message: '' })
+
   const router = useRouter()
   const searchParams = useSearchParams()
   const planParam = (searchParams.get('plan') as any) || 'trial'
@@ -66,6 +74,10 @@ function OnboardingWizard() {
   })
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly')
   const [selectedGateway, setSelectedGateway] = useState<PaymentGatewayType>('bkash')
+
+  const rootDomain = typeof window !== 'undefined'
+    ? window.location.host.replace(/^onboarding\./i, '').replace(/^www\./i, '')
+    : getRootDomain()
 
   const {
     register,
@@ -127,6 +139,40 @@ function OnboardingWizard() {
   const watchedBusinessType = watch('business_type')
   const watchedLanguage = watch('default_language')
   const watchedCurrency = watch('currency')
+  const watchedSlug = watch('slug')
+
+  // Live debounced slug availability check
+  React.useEffect(() => {
+    if (!watchedSlug || watchedSlug.trim().length < 2) {
+      setSlugStatus({ checking: false, status: 'idle', message: '' })
+      return
+    }
+
+    let isMounted = true
+    setSlugStatus((prev) => ({ ...prev, checking: true }))
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await checkSlugAvailabilityAction(watchedSlug)
+        if (isMounted) {
+          setSlugStatus({
+            checking: false,
+            status: res.status,
+            message: res.message,
+          })
+        }
+      } catch {
+        if (isMounted) {
+          setSlugStatus({ checking: false, status: 'idle', message: '' })
+        }
+      }
+    }, 300)
+
+    return () => {
+      isMounted = false
+      clearTimeout(timer)
+    }
+  }, [watchedSlug])
 
   // Auto-generate slug from name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,6 +200,12 @@ function OnboardingWizard() {
     const fieldsToValidate = stepFields[currentStep] || []
     const isValid = fieldsToValidate.length > 0 ? await trigger(fieldsToValidate) : true
     if (isValid) {
+      if (currentStep === 1) {
+        if (slugStatus.status === 'unavailable' || slugStatus.status === 'reserved' || slugStatus.status === 'invalid') {
+          setError(slugStatus.message || 'Please choose a valid and available subdomain slug.')
+          return
+        }
+      }
       setError(null)
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps))
     }
@@ -238,6 +290,8 @@ function OnboardingWizard() {
         } catch {}
       }
 
+      const targetSubdomainDashboard = res.subdomainUrl || getTenantLink(companySlug, '/dashboard')
+
       // 2. If Paid Plan, initiate subscription checkout
       if (isPaidPlan) {
         try {
@@ -249,8 +303,8 @@ function OnboardingWizard() {
             customerName: data.owner_name || data.name,
             customerPhone: data.owner_phone || data.phone,
             customerEmail: data.owner_email || data.email,
-            successUrl: `/${companySlug}/dashboard?payment=success&plan=${selectedPlan}`,
-            cancelUrl: `/${companySlug}/dashboard?payment=cancelled`,
+            successUrl: getTenantLink(companySlug, `/dashboard?payment=success&plan=${selectedPlan}`),
+            cancelUrl: getTenantLink(companySlug, `/dashboard?payment=cancelled`),
           })
 
           if (checkoutRes.success && checkoutRes.data?.checkoutUrl) {
@@ -259,22 +313,22 @@ function OnboardingWizard() {
             return
           } else if (checkoutRes.success) {
             // Offline / Bank wire / direct activation
-            window.location.href = `/${companySlug}/dashboard?payment=initiated&trx=${checkoutRes.data?.internalTrxId || ''}`
+            window.location.href = getTenantLink(companySlug, `/dashboard?payment=initiated&trx=${checkoutRes.data?.internalTrxId || ''}`)
             return
           } else {
             console.warn('Checkout warning:', checkoutRes.error)
-            window.location.href = `/${companySlug}/dashboard?payment=pending`
+            window.location.href = getTenantLink(companySlug, `/dashboard?payment=pending`)
             return
           }
         } catch (checkoutErr) {
           console.warn('Checkout initiation error:', checkoutErr)
-          window.location.href = `/${companySlug}/dashboard`
+          window.location.href = targetSubdomainDashboard
           return
         }
       }
 
-      // 3. For trial / free plan: Hard redirect directly to the new company dashboard
-      window.location.href = `/${companySlug}/dashboard`
+      // 3. For trial / free plan: Hard redirect directly to the new company subdomain dashboard
+      window.location.href = targetSubdomainDashboard
     } catch (err: any) {
       setError(err?.message || 'An unexpected error occurred during setup')
       setIsLoading(false)
@@ -436,21 +490,48 @@ function OnboardingWizard() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="slug" required>
-                        Unique Workspace Slug / URL
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="slug" required>
+                          Workspace Subdomain / URL (কাস্টম সাবডোমেইন)
+                        </Label>
+                        {slugStatus.checking ? (
+                          <span className="text-[11px] text-slate-500 animate-pulse">Checking availability...</span>
+                        ) : slugStatus.status === 'available' ? (
+                          <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> Subdomain Available
+                          </span>
+                        ) : slugStatus.status === 'unavailable' ? (
+                          <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            ✗ Subdomain Taken
+                          </span>
+                        ) : slugStatus.status === 'reserved' ? (
+                          <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                            ⚠ Reserved Subdomain
+                          </span>
+                        ) : slugStatus.status === 'invalid' ? (
+                          <span className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 flex items-center gap-1">
+                            ✗ Invalid Subdomain
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="flex rounded-md shadow-xs">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-slate-500 text-xs dark:border-slate-700 dark:bg-slate-800">
-                          printerp.com.bd/
+                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-slate-500 text-xs dark:border-slate-700 dark:bg-slate-800 font-mono">
+                          https://
                         </span>
                         <Input
                           id="slug"
-                          className="rounded-l-none"
-                          placeholder="company-slug"
+                          className="rounded-none font-mono"
+                          placeholder="vision-sign"
                           {...register('slug')}
                           error={errors.slug?.message}
                         />
+                        <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-100 text-slate-500 text-xs dark:border-slate-700 dark:bg-slate-800 font-mono">
+                          .{rootDomain}
+                        </span>
                       </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Your team will access this workspace at: <strong className="text-blue-600 dark:text-blue-400">https://{watchedSlug || 'your-company'}.{rootDomain}</strong>
+                      </p>
                     </div>
                   </div>
                 )}
@@ -725,9 +806,9 @@ function OnboardingWizard() {
                           </span>
                         </div>
                         <div>
-                          <span className="text-slate-400 dark:text-slate-500 block">Workspace:</span>
-                          <span className="font-mono text-blue-600 dark:text-blue-400 truncate block">
-                            /{watch('slug') || 'workspace'}
+                          <span className="text-slate-400 dark:text-slate-500 block">Workspace Subdomain:</span>
+                          <span className="font-mono text-blue-600 dark:text-blue-400 truncate block font-bold">
+                            https://{watch('slug') || 'workspace'}.{rootDomain}
                           </span>
                         </div>
                         <div>

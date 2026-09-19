@@ -8,8 +8,10 @@ import { AuditService } from '@/services/audit.service'
 import { checkRateLimit } from '@/lib/security/rate-limiter'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { createClient } from '@/lib/supabase/server'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
+import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { createClient } from '@/lib/supabase/server'
 
 async function getRequestBaseUrl(): Promise<string> {
   try {
@@ -47,14 +49,9 @@ export async function loginAction(formData: FormData) {
 
   const session = result.data.session
 
-  // Store server-side tenant session cookie
+  // Store server-side tenant session cookie across subdomains
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(session), {
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  })
+  cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(session), getAuthCookieOptions())
 
   // Audit track successful login with the verified user ID and company
   if (session.companyId) {
@@ -71,8 +68,11 @@ export async function loginAction(formData: FormData) {
     redirect('/onboarding')
   }
 
-  const targetUrl = redirectTo || `/${session.companySlug}/dashboard`
-  redirect(targetUrl)
+  const targetPath = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
+    ? redirectTo
+    : '/dashboard'
+  const targetSubdomainUrl = getTenantLink(session.companySlug, targetPath)
+  redirect(targetSubdomainUrl)
 }
 
 export async function signInAction(email: string, pass: string) {
@@ -97,12 +97,7 @@ export async function signInAction(email: string, pass: string) {
 
   const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(session), {
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  })
+  cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(session), getAuthCookieOptions())
 
   if (session.companyId) {
     try {
@@ -191,12 +186,7 @@ export async function verifyRegistrationOtpAction(email: string, otp: string) {
 
   const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  })
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
 
   revalidatePath('/', 'layout')
   return result
@@ -214,12 +204,7 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
 
   const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  })
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
 
   revalidatePath('/', 'layout')
   return result
@@ -234,12 +219,7 @@ export async function checkEmailVerificationStatusAction(email: string) {
   if (result.success && result.data?.isVerified && result.data.session) {
     const session = result.data.session
     const cookieStore = await cookies()
-    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    })
+    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
     revalidatePath('/', 'layout')
   }
 
