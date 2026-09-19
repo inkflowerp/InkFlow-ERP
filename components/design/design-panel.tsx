@@ -157,11 +157,13 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
 
   // Helper for strict tenant scoping
   const isMatchingCompany = (id?: string | null) => {
-    if (!id) return false
+    if (!id) return true
     return (
       (company?.id && id === company.id) ||
       (company?.slug && id === company.slug) ||
-      (slug && id === slug)
+      (slug && id === slug) ||
+      (companyId && id === companyId) ||
+      id === 'default'
     )
   }
 
@@ -270,10 +272,16 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         if (!isMounted) return
 
         if (jobsRes.success && jobsRes.data) {
-          const serverJobs = jobsRes.data
+          const serverJobs = jobsRes.data || []
           const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-          const otherTenantJobs = allStored.filter((j) => j.company_id && !isMatchingCompany(j.company_id))
-          const merged = [...otherTenantJobs, ...serverJobs]
+          const jobMap = new Map<string, DesignJobRecord>()
+          for (const j of allStored) {
+            if (j && j.id) jobMap.set(j.id, j)
+          }
+          for (const j of serverJobs) {
+            if (j && j.id) jobMap.set(j.id, j)
+          }
+          const merged = Array.from(jobMap.values())
           PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, merged)
           setJobs(merged)
         }

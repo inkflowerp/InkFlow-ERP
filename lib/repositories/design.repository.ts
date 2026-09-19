@@ -4,6 +4,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export class DesignRepository {
   static async getDesignJobs(companyId: string): Promise<DesignJobRecord[]> {
+    let dbJobs: DesignJobRecord[] = []
     try {
       const supabase = await createClient()
       const { data, error } = await (supabase as any)
@@ -12,14 +13,27 @@ export class DesignRepository {
         .eq('company_id', companyId)
         .order('created_at', { ascending: false })
 
-      if (error) {
-        throw new Error(`Failed to fetch design jobs: ${error.message}`)
+      if (!error && data) {
+        dbJobs = data as unknown as DesignJobRecord[]
       }
-      return (data || []) as unknown as DesignJobRecord[]
     } catch (err: any) {
-      const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-      return all.filter((d: DesignJobRecord) => d.company_id === companyId)
+      // Database offline or uninitialized
     }
+
+    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const localJobs = all.filter(
+      (d: DesignJobRecord) => !d.company_id || d.company_id === companyId || companyId === 'default'
+    )
+
+    const jobMap = new Map<string, DesignJobRecord>()
+    for (const j of localJobs) {
+      if (j?.id) jobMap.set(j.id, j)
+    }
+    for (const j of dbJobs) {
+      if (j?.id) jobMap.set(j.id, j)
+    }
+
+    return Array.from(jobMap.values())
   }
 
   static async getDesignJobById(id: string, companyId: string): Promise<DesignJobRecord | null> {
@@ -32,14 +46,13 @@ export class DesignRepository {
         .eq('company_id', companyId)
         .maybeSingle()
 
-      if (error) {
-        throw new Error(`Failed to fetch design job ${id}: ${error.message}`)
+      if (!error && data) {
+        return data as unknown as DesignJobRecord
       }
-      return (data as unknown as DesignJobRecord) || null
-    } catch (err: any) {
-      const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-      return all.find((d: DesignJobRecord) => d.id === id && d.company_id === companyId) || null
-    }
+    } catch (err: any) {}
+
+    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    return all.find((d: DesignJobRecord) => d.id === id && (!d.company_id || d.company_id === companyId)) || null
   }
 
   static async createDesignJob(job: Partial<DesignJobRecord> & {
