@@ -49,11 +49,15 @@ export class DesignRepository {
     customer_name: string
   }): Promise<DesignJobRecord> {
     const now = new Date().toISOString()
-    const dsnId = job.id || `dsn-${Date.now()}`
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    const dsnId = job.id && uuidRegex.test(job.id) ? job.id : crypto.randomUUID()
     const dsnNum = job.design_number || `DSN-${Date.now().toString().slice(-6)}`
+    const dbCustomerId = job.customer_id && uuidRegex.test(job.customer_id) ? job.customer_id : null
+    const dbSalesOrderId = job.sales_order_id && uuidRegex.test(job.sales_order_id) ? job.sales_order_id : null
+    const dbJobOrderId = job.job_order_id && uuidRegex.test(job.job_order_id) ? job.job_order_id : null
 
     const payload: any = {
-      id: dsnId,
+      id: job.id || dsnId,
       company_id: job.company_id,
       title: job.title.trim(),
       customer_id: job.customer_id || null,
@@ -92,9 +96,16 @@ export class DesignRepository {
 
     try {
       const supabase = await createClient()
+      const dbPayload = {
+        ...payload,
+        id: dsnId,
+        customer_id: dbCustomerId,
+        sales_order_id: dbSalesOrderId,
+        job_order_id: dbJobOrderId,
+      }
       const { data, error } = await (supabase as any)
         .from('design_jobs')
-        .insert(payload)
+        .insert(dbPayload)
         .select()
         .single()
 

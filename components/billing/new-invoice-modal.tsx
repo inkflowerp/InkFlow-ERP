@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Receipt,
   Plus,
@@ -151,6 +152,7 @@ export function NewInvoiceModal({
   preselectedAdvanceAmount,
   onInvoiceCreated,
 }: NewInvoiceModalProps) {
+  const router = useRouter()
   const { company } = useTenant()
   const { locale } = useI18n()
   const tenantSlug = company?.slug || 'my-company'
@@ -220,7 +222,7 @@ export function NewInvoiceModal({
 
   // Feedback & Action states
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submittingAction, setSubmittingAction] = useState<'save' | 'print' | 'send' | null>(null)
+  const [submittingAction, setSubmittingAction] = useState<'save' | 'print' | 'send' | 'design' | null>(null)
   const [savedInvoice, setSavedInvoice] = useState<InvoiceRecord | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [communicationStatus, setCommunicationStatus] = useState<{
@@ -1018,6 +1020,21 @@ export function NewInvoiceModal({
     setSubmittingAction(null)
     if (invoice) {
       onOpenChange(false)
+    }
+  }
+
+  // Action: Save & Send directly to Design Panel
+  const hasDesignRequiredItems = useMemo(() => {
+    return items.some((it) => it.design_required === true)
+  }, [items])
+
+  const handleSaveAndSendToDesign = async () => {
+    setSubmittingAction('design')
+    const invoice = await persistInvoice()
+    setSubmittingAction(null)
+    if (invoice) {
+      onOpenChange(false)
+      router.push(`/${tenantSlug}/designer`)
     }
   }
 
@@ -2184,6 +2201,20 @@ export function NewInvoiceModal({
               </div>
             )}
           </div>
+
+          {/* Send to Design Panel Button when design-required items exist */}
+          {hasDesignRequiredItems && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSaveAndSendToDesign}
+              disabled={isSubmitting}
+              className="h-10 px-4 rounded-xl font-bold border-pink-300 text-pink-700 bg-pink-50 hover:bg-pink-100 dark:border-pink-700 dark:text-pink-300 dark:bg-pink-950/40 gap-1.5"
+            >
+              <Palette className="h-4 w-4 text-pink-600" />
+              <span>Save & Send to Design Panel</span>
+            </Button>
+          )}
 
           {/* Primary Save Button */}
           <Button

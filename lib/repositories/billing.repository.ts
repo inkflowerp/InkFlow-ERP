@@ -831,8 +831,13 @@ export class BillingRepository {
           )
 
           if (!existingJob) {
-            const dsnId = `dsn-${Date.now()}-${i + 1}`
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+            const dsnId = crypto.randomUUID()
+            const versionId = crypto.randomUUID()
             const dsnNum = `DSN-${invoice.invoice_number.replace('INV-', '')}${designItems.length > 1 ? `-${i + 1}` : ''}`
+            const dbCustomerId = invoice.customer_id && uuidRegex.test(invoice.customer_id) ? invoice.customer_id : null
+            const dbSalesOrderId = invoice.sales_order_id && uuidRegex.test(invoice.sales_order_id) ? invoice.sales_order_id : null
+
             const newDesignJob: any = {
               id: dsnId,
               company_id: companyId,
@@ -863,7 +868,7 @@ export class BillingRepository {
               is_locked: false,
               versions: [
                 {
-                  id: `dv-${Date.now()}-${i + 1}`,
+                  id: versionId,
                   design_job_id: dsnId,
                   version_number: 1,
                   version_label: 'Version 1 (Initial Brief)',
@@ -885,12 +890,12 @@ export class BillingRepository {
             try {
               const supabase = await createClient()
               await (supabase as any).from('design_jobs').insert({
-                id: newDesignJob.id,
+                id: dsnId,
                 company_id: companyId,
-                invoice_id: invoice.id,
+                invoice_id: invoice.id && uuidRegex.test(invoice.id) ? invoice.id : null,
                 invoice_number: invoice.invoice_number,
-                sales_order_id: invoice.sales_order_id || null,
-                customer_id: invoice.customer_id || null,
+                sales_order_id: dbSalesOrderId,
+                customer_id: dbCustomerId,
                 customer_name: invoice.customer_name,
                 design_number: dsnNum,
                 title: newDesignJob.title,
@@ -904,6 +909,18 @@ export class BillingRepository {
                 current_version: 1,
                 revision_count: 0,
                 is_locked: false,
+              })
+
+              await (supabase as any).from('design_versions').insert({
+                id: versionId,
+                design_job_id: dsnId,
+                version_number: 1,
+                proof_file_name: 'customer_brief.pdf',
+                proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                file_format: 'ai',
+                change_notes: 'Design task automatically created from invoice line item.',
+                uploaded_by_name: invoice.created_by_name || 'Manager / Billing',
+                is_approved: false,
               })
             } catch {}
 
