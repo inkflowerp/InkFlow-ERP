@@ -204,7 +204,21 @@ export async function updateSession(request: NextRequest) {
         return res
       }
 
-      // 2. Tenant Auth Paths on Subdomain (e.g. vision.inkflow.com.bd/login)
+      // 2. Canonical Subdomain URL Normalization:
+      // If a request arrives with redundant tenant slug in pathname on a tenant subdomain
+      // e.g. https://rangao.inkflow-erp.vercel.app/rangao/dashboard -> 307 redirect to https://rangao.inkflow-erp.vercel.app/dashboard
+      // e.g. https://rangao.inkflow-erp.vercel.app/rangao -> 307 redirect to https://rangao.inkflow-erp.vercel.app/dashboard
+      if (pathname === `/${tenantSlug}` || pathname === `/${tenantSlug}/`) {
+        const cleanUrl = new URL(`/dashboard${search}`, request.url)
+        return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 307))
+      }
+      if (pathname.startsWith(`/${tenantSlug}/`)) {
+        const cleanPath = pathname.slice(`/${tenantSlug}`.length) || '/dashboard'
+        const cleanUrl = new URL(`${cleanPath}${search}`, request.url)
+        return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 307))
+      }
+
+      // 3. Tenant Auth Paths on Subdomain (e.g. vision.inkflow.com.bd/login)
       if (isAuthPage) {
         if (pathname === '/login') {
           const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
@@ -235,7 +249,7 @@ export async function updateSession(request: NextRequest) {
         return res
       }
 
-      // 3. Protected Tenant Operational Routes (e.g. /invoices, /dashboard, /quotations, /customers)
+      // 4. Protected Tenant Operational Routes (e.g. /invoices, /dashboard, /quotations, /customers)
       // Check authentication: If unauthenticated, redirect to tenant login
       if (!isTenantAuthenticated) {
         const loginUrl = new URL('/login', request.url)
@@ -246,19 +260,14 @@ export async function updateSession(request: NextRequest) {
         return applyNoCacheHeaders(NextResponse.redirect(loginUrl))
       }
 
-      // 4. Internal URL Rewrite: Map subdomain path to app/[tenantSlug]/...
+      // 5. Internal URL Rewrite: Map clean subdomain path to Next.js App Router app/[tenantSlug]/...
       const rewriteUrl = request.nextUrl.clone()
       let internalPath: string
 
       if (pathname === '/' || pathname === '') {
         internalPath = `/${tenantSlug}/dashboard`
-      } else if (pathname.startsWith(`/${tenantSlug}/`)) {
-        // Redundant tenant slug in pathname: normalize to prevent double prefix
-        internalPath = pathname
-      } else if (pathname === `/${tenantSlug}`) {
-        internalPath = `/${tenantSlug}/dashboard`
       } else {
-        // Standard subdomain route: /invoices -> /[tenantSlug]/invoices
+        // Standard clean subdomain route: /invoices -> /[tenantSlug]/invoices
         internalPath = `/${tenantSlug}${pathname}`
       }
 

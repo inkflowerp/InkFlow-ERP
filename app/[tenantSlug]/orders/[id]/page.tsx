@@ -179,7 +179,7 @@ export default function OrderDetailPage() {
     return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href={`/${slug}/orders`}
+          href="/orders"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -192,7 +192,7 @@ export default function OrderDetailPage() {
             The sales order record you are looking for does not exist in your organization.
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/orders`}>View All Orders</Link>
+            <Link href="/orders">View All Orders</Link>
           </Button>
         </Card>
       </div>
@@ -305,7 +305,7 @@ export default function OrderDetailPage() {
       {/* Back Link & Header */}
       <div>
         <Link
-          href={`/${slug}/orders`}
+          href="/orders"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -446,7 +446,7 @@ export default function OrderDetailPage() {
                 Invoice Request Dispatched
               </span>
             )}
-            <Link href={`/${slug}/billing?action=create_invoice&order_id=${order.id}`}>
+            <Link href={`/billing?action=create_invoice&order_id=${order.id}`}>
               <Button size="sm" variant="outline" className="text-xs">
                 Create Invoice
               </Button>

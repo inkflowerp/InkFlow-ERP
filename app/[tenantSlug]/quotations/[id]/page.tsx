@@ -288,7 +288,7 @@ export default function QuotationDetailPage() {
       <FeatureGate feature="quotation_pdf">
         <div className="space-y-6 max-w-6xl">
           <Link
-            href={`/${slug}/quotations`}
+            href="/quotations"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -301,7 +301,7 @@ export default function QuotationDetailPage() {
               The quotation you are trying to view does not exist or has been removed.
             </p>
             <Button asChild className="mt-4" size="sm">
-              <Link href={`/${slug}/quotations`}>Return to Directory</Link>
+              <Link href="/quotations">Return to Directory</Link>
             </Button>
           </Card>
         </div>
@@ -376,7 +376,7 @@ export default function QuotationDetailPage() {
     }
     PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, duplicated)
     showNotification(`Quotation cloned into new Draft ${dupNumber}.`)
-    router.push(`/${slug}/quotations/${duplicated.id}`)
+    router.push(`/quotations/${duplicated.id}`)
   }
 
   // Send WhatsApp Action
@@ -447,7 +447,7 @@ export default function QuotationDetailPage() {
         <div className="print:hidden space-y-3">
           <div className="flex items-center justify-between">
             <Link
-              href={`/${slug}/quotations`}
+              href="/quotations"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
             >
               <ArrowLeft className="h-3.5 w-3.5" />

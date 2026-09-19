@@ -466,7 +466,7 @@ export default function ProductDetailPage() {
           loadProductData()
         } else {
           showNotification(`Product permanently deleted.`)
-          router.push(`/${slug}/products`)
+          router.push('/products')
         }
       } catch (err: any) {
         showNotification(err.message || 'Failed to delete.', 'error')
@@ -492,7 +492,7 @@ export default function ProductDetailPage() {
     return (
       <div className="space-y-6 max-w-6xl pb-12">
         <Link
-          href={`/${slug}/products`}
+          href="/products"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -509,7 +509,7 @@ export default function ProductDetailPage() {
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Retry
             </Button>
             <Button asChild size="sm" className="text-xs bg-blue-600 hover:bg-blue-700">
-              <Link href={`/${slug}/products`}>View All Products</Link>
+              <Link href="/products">View All Products</Link>
             </Button>
           </div>
         </Card>
@@ -524,7 +524,7 @@ export default function ProductDetailPage() {
       {/* Back Link */}
       <div>
         <Link
-          href={`/${slug}/products`}
+          href="/products"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -595,7 +595,7 @@ export default function ProductDetailPage() {
               Adjust Price
             </Button>
 
-            <Link href={`/${slug}/pricing`}>
+            <Link href="/pricing">
               <Button size="sm" variant="outline" className="text-xs font-bold">
                 <Tag className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
                 Customer Pricing

@@ -294,7 +294,7 @@ export default function JobCostingPage() {
                     {/* Job & Customer */}
                     <td className="py-3.5 px-4">
                       <Link
-                        href={`/${slug}/costing/${cst.id}`}
+                        href={`/costing/${cst.id}`}
                         className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
                       >
                         <span>{cst.job_number}</span>
@@ -409,7 +409,7 @@ export default function JobCostingPage() {
                         )}
 
                         <Link
-                          href={`/${slug}/costing/${cst.id}`}
+                          href={`/costing/${cst.id}`}
                           className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold text-blue-600 hover:bg-blue-50"
                         >
                           Details
@@ -436,7 +436,7 @@ export default function JobCostingPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <Link
-                      href={`/${slug}/costing/${cst.id}`}
+                      href={`/costing/${cst.id}`}
                       className="font-mono font-bold text-xs text-blue-600 hover:underline"
                     >
                       {cst.job_number}
@@ -536,7 +536,7 @@ export default function JobCostingPage() {
                   )}
 
                   <Link
-                    href={`/${slug}/costing/${cst.id}`}
+                    href={`/costing/${cst.id}`}
                     className="inline-flex items-center justify-center h-9 px-3 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     Details

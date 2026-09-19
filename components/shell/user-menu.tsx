@@ -78,7 +78,7 @@ export function UserMenu() {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
               onClick={() => {
                 setIsOpen(false)
-                router.push(`/${slug}/settings/users`)
+                router.push('/settings/users')
               }}
             >
               <UserIcon className="h-3.5 w-3.5 text-slate-400" />
@@ -89,7 +89,7 @@ export function UserMenu() {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
               onClick={() => {
                 setIsOpen(false)
-                router.push(`/${slug}/settings/company`)
+                router.push('/settings/company')
               }}
             >
               <Settings className="h-3.5 w-3.5 text-slate-400" />
@@ -100,7 +100,7 @@ export function UserMenu() {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
               onClick={() => {
                 setIsOpen(false)
-                router.push(`/${slug}/settings/subscription`)
+                router.push('/settings/subscription')
               }}
             >
               <Shield className="h-3.5 w-3.5 text-amber-500" />
@@ -111,7 +111,7 @@ export function UserMenu() {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
               onClick={() => {
                 setIsOpen(false)
-                router.push(`/${slug}/support`)
+                router.push('/support')
               }}
             >
               <Headphones className="h-3.5 w-3.5 text-indigo-500" />

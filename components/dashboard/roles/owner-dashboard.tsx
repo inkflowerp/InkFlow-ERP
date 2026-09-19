@@ -80,8 +80,12 @@ export function OwnerDashboard({
   const { tBilingual, locale } = useI18n()
   const { company, currentBranch, currentUser } = useTenant()
   const router = useRouter()
-  const slug = company?.slug || 'my-company'
   const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
+
+  const [isMounted, setIsMounted] = useState(false)
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const greeting = getBangladeshGreeting(locale as 'en' | 'bn')
   const userFirstName = currentUser?.profile?.full_name?.split(' ')[0] || (locale === 'bn' ? 'মালিক' : 'Owner')
@@ -286,7 +290,8 @@ export function OwnerDashboard({
                         size="sm"
                         onClick={() => {
                           if (item.actionType === 'route') {
-                            router.push(`/${slug}${item.actionTarget}`)
+                            const fullRoute = item.actionTarget.startsWith('/') ? item.actionTarget : `/${item.actionTarget}`
+                            router.push(fullRoute)
                           }
                         }}
                         className={`h-8 sm:h-9 px-3 text-xs font-bold shrink-0 bangla-text cursor-pointer self-start sm:self-center ${
@@ -446,7 +451,7 @@ export function OwnerDashboard({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => router.push(`/${slug}/costing`)}
+                    onClick={() => router.push('/costing')}
                     className="h-7 text-[11px] font-bold text-blue-600 border-blue-200"
                   >
                     {tBilingual('View Costing', 'কস্টিং দেখুন')}
@@ -513,7 +518,7 @@ export function OwnerDashboard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => router.push(`/${slug}/production`)}
+                onClick={() => router.push('/production')}
                 className="text-xs font-bold"
               >
                 {tBilingual('Open Production Board', 'প্রোডাকশন বোর্ড দেখুন')}
@@ -577,7 +582,7 @@ export function OwnerDashboard({
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => router.push(`/${slug}/production`)}
+                        onClick={() => router.push('/production')}
                         className="h-7 text-xs font-bold text-blue-600 hover:text-blue-700 p-0"
                       >
                         {tBilingual('Open Job', 'বিস্তারিত')} <ArrowRight className="h-3 w-3 ml-0.5" />
@@ -643,7 +648,7 @@ export function OwnerDashboard({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => router.push(`/${slug}/delivery`)}
+                      onClick={() => router.push('/delivery')}
                       className="h-8 text-xs font-semibold shrink-0"
                     >
                       {tBilingual('Details', 'বিস্তারিত')}
@@ -668,7 +673,7 @@ export function OwnerDashboard({
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => router.push(`/${slug}/billing?tab=due`)}
+                onClick={() => router.push('/billing?tab=due')}
                 className="text-xs font-bold text-blue-600 h-7"
               >
                 {tBilingual('View All Dues', 'সকল বাকি')} <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
@@ -767,7 +772,7 @@ export function OwnerDashboard({
             ].map((stage, idx) => (
               <div
                 key={stage.labelEn}
-                onClick={() => router.push(`/${slug}${stage.route}`)}
+                onClick={() => router.push(stage.route)}
                 className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-center cursor-pointer hover:border-blue-400 hover:shadow-xs transition-all space-y-1"
               >
                 <div className="text-[11px] text-slate-500 font-semibold bangla-text">
@@ -809,26 +814,30 @@ export function OwnerDashboard({
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data.trendData}>
-                  <defs>
-                    <linearGradient id="ownerSalesGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="ownerColGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
-                  <XAxis dataKey="dayLabelEn" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
-                  <Tooltip formatter={(value: any) => [`৳ ${formatBDT(Number(value))}`, '']} />
-                  <Area type="monotone" dataKey="sales" stroke="#2563eb" strokeWidth={2.5} fillOpacity={1} fill="url(#ownerSalesGrad)" name="Sales" />
-                  <Area type="monotone" dataKey="collections" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#ownerColGrad)" name="Collections" />
-                </AreaChart>
-              </ResponsiveContainer>
+              {isMounted ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data.trendData}>
+                    <defs>
+                      <linearGradient id="ownerSalesGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="ownerColGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
+                    <XAxis dataKey="dayLabelEn" tickLine={false} axisLine={false} fontSize={12} />
+                    <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
+                    <Tooltip formatter={(value: any) => [`৳ ${formatBDT(Number(value))}`, '']} />
+                    <Area type="monotone" dataKey="sales" stroke="#2563eb" strokeWidth={2.5} fillOpacity={1} fill="url(#ownerSalesGrad)" name="Sales" />
+                    <Area type="monotone" dataKey="collections" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#ownerColGrad)" name="Collections" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full w-full animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg" />
+              )}
             </div>
           </CardContent>
         </Card>

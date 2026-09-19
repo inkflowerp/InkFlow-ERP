@@ -152,7 +152,7 @@ export default function SupplierProfilePage() {
     return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href={`/${slug}/suppliers`}
+          href="/suppliers"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -167,7 +167,7 @@ export default function SupplierProfilePage() {
             The supplier record you are looking for does not exist in your organization or was removed.
           </p>
           <Button asChild className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold" size="sm">
-            <Link href={`/${slug}/suppliers`}>View All Suppliers</Link>
+            <Link href="/suppliers">View All Suppliers</Link>
           </Button>
         </Card>
       </div>
@@ -185,7 +185,7 @@ export default function SupplierProfilePage() {
       {/* Top Breadcrumb & Action Header */}
       <div>
         <Link
-          href={`/${slug}/suppliers`}
+          href="/suppliers"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

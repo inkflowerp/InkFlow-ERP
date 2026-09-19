@@ -431,7 +431,7 @@ export function PricingCalculatorSimulator({
               asChild
               className="w-full h-10 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md text-xs cursor-pointer"
             >
-              <a href={`/${tenantSlug}/quotations?new=true`}>
+              <a href="/quotations?new=true">
                 <span>{tBilingual('Create Quotation with this Tariff', 'এই দর দিয়ে কোটেশন তৈরি করুন')}</span>
                 <ArrowRight className="h-4 w-4 ml-1.5" />
               </a>

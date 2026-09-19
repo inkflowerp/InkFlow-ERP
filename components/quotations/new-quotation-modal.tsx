@@ -969,7 +969,7 @@ export function NewQuotationModal({
     if (!quoteToPrint) return
 
     const slug = company?.slug || PrintERPDataStore.getActiveTenantSlug() || 'classic-printer'
-    window.open(`/${slug}/quotations/${quoteToPrint.id}?print=true`, '_blank')
+    window.open(`/quotations/${quoteToPrint.id}?print=true`, '_blank')
   }
 
   // Handle Send Action (Saves first)

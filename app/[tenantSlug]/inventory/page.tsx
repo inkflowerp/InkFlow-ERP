@@ -708,7 +708,7 @@ export default function UnifiedInventoryPage() {
                           <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
                             <td className="p-3">
                               <Link
-                                href={`/${slug}/inventory/${mat.id}`}
+                                href={`/inventory/${mat.id}`}
                                 className="font-bold text-slate-900 dark:text-white hover:text-emerald-600 flex items-center gap-1.5"
                               >
                                 <span>{mat.name}</span>
@@ -885,7 +885,7 @@ export default function UnifiedInventoryPage() {
                             </td>
                             <td className="p-3 text-right">
                               <div className="flex items-center justify-end gap-1.5">
-                                <Link href={`/${slug}/products/${p.id}`}>
+                                <Link href={`/products/${p.id}`}>
                                   <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]">
                                     <Eye className="h-3.5 w-3.5 mr-1" />
                                     View
@@ -1440,7 +1440,7 @@ export default function UnifiedInventoryPage() {
                       filteredOrders.map((po) => (
                         <tr key={po.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
                           <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
-                            <Link href={`/${slug}/purchases/${po.id}`} className="hover:underline text-indigo-600 dark:text-indigo-400">
+                            <Link href={`/purchases/${po.id}`} className="hover:underline text-indigo-600 dark:text-indigo-400">
                               {po.po_number}
                             </Link>
                           </td>
@@ -1486,7 +1486,7 @@ export default function UnifiedInventoryPage() {
                                 </Button>
                               )}
                               <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-[11px]">
-                                <Link href={`/${slug}/purchases/${po.id}`}>
+                                <Link href={`/purchases/${po.id}`}>
                                   <Eye className="h-3.5 w-3.5" />
                                 </Link>
                               </Button>

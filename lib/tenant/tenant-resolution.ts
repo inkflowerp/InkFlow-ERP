@@ -269,7 +269,7 @@ export function resolveHostname(
     }
   }
 
-  // 2. Vercel preview / deployment URLs (e.g. printerp-xxx.vercel.app)
+  // 2. Vercel preview / deployment URLs (e.g. printerp-xxx.vercel.app or rangao.inkflow-erp.vercel.app)
   if (hostWithoutPort.endsWith('.vercel.app')) {
     if (hostWithoutPort === cleanRoot) {
       return {
@@ -290,6 +290,39 @@ export function resolveHostname(
         isLocalhost,
         isDevelopment,
         rootDomain,
+      }
+    }
+    // Handle tenant subdomain on Vercel: e.g. rangao.inkflow-erp.vercel.app (4 parts)
+    if (vercelParts.length === 4) {
+      const slug = vercelParts[0].toLowerCase().trim()
+      const vercelRoot = vercelParts.slice(1).join('.')
+      if (isReservedSlug(slug)) {
+        return {
+          hostname: fullHost,
+          hostType: slug === 'platform' ? 'platform' : 'reserved',
+          tenantSlug: slug,
+          isLocalhost,
+          isDevelopment,
+          rootDomain: vercelRoot,
+        }
+      }
+      if (!isValidSlugFormat(slug)) {
+        return {
+          hostname: fullHost,
+          hostType: 'invalid',
+          tenantSlug: null,
+          isLocalhost,
+          isDevelopment,
+          rootDomain: vercelRoot,
+        }
+      }
+      return {
+        hostname: fullHost,
+        hostType: 'tenant',
+        tenantSlug: slug,
+        isLocalhost,
+        isDevelopment,
+        rootDomain: vercelRoot,
       }
     }
   }

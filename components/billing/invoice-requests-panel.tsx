@@ -395,14 +395,14 @@ export function InvoiceRequestsPanel({
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
                           {req.order_number && (
-                            <Link href={`/${tenantSlug}/orders/${req.sales_order_id || ''}`}>
+                            <Link href={`/orders/${req.sales_order_id || ''}`}>
                               <Badge variant="outline" className="text-[11px] font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Order #{req.order_number}
                               </Badge>
                             </Link>
                           )}
                           {req.design_number && (
-                            <Link href={`/${tenantSlug}/design/${req.design_job_id || ''}`}>
+                            <Link href={`/design/${req.design_job_id || ''}`}>
                               <Badge variant="outline" className="text-[11px] font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Design #{req.design_number}
                               </Badge>
@@ -481,7 +481,7 @@ export function InvoiceRequestsPanel({
                     ) : req.status === 'invoice_created' ? (
                       <div className="flex items-center gap-2">
                         {req.invoice_id ? (
-                          <Link href={`/${tenantSlug}/billing/${req.invoice_id}`}>
+                          <Link href={`/billing/${req.invoice_id}`}>
                             <Button
                               size="sm"
                               variant="outline"

@@ -301,7 +301,7 @@ export default function QuotationsPage() {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
 
-              <Link href={`/${slug}/pricing`}>
+              <Link href="/pricing">
                 <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium bangla-text">
                   <Calculator className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Live Estimator', 'লাইভ ক্যালকুলেটর')}

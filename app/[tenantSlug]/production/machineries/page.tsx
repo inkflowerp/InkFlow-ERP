@@ -381,7 +381,7 @@ export default function MachineriesListPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
                     <Link
-                      href={`/${tenantSlug}/production/machineries/${m.id}`}
+                      href={`/production/machineries/${m.id}`}
                       className="font-black text-sm text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1"
                     >
                       {m.name}
@@ -448,7 +448,7 @@ export default function MachineriesListPage() {
               {/* Action Buttons Toolbar */}
               <div className="px-4 py-2.5 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1">
                 <Link
-                  href={`/${tenantSlug}/production/machineries/${m.id}`}
+                  href={`/production/machineries/${m.id}`}
                   className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"
                 >
                   <Eye className="h-3.5 w-3.5" />
@@ -530,7 +530,7 @@ export default function MachineriesListPage() {
                 <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="p-3">
                     <Link
-                      href={`/${tenantSlug}/production/machineries/${m.id}`}
+                      href={`/production/machineries/${m.id}`}
                       className="font-bold text-slate-900 dark:text-white hover:text-blue-600"
                     >
                       {m.name}
@@ -549,7 +549,7 @@ export default function MachineriesListPage() {
                   <td className="p-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Link
-                        href={`/${tenantSlug}/production/machineries/${m.id}`}
+                        href={`/production/machineries/${m.id}`}
                         className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-blue-600 font-bold"
                         title="View Details"
                       >

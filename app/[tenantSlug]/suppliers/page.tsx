@@ -574,7 +574,7 @@ export default function SuppliersPage() {
                             </div>
                             <div>
                               <Link
-                                href={`/${slug}/suppliers/${supplier.id}`}
+                                href={`/suppliers/${supplier.id}`}
                                 className="font-bold text-slate-900 dark:text-white hover:text-teal-600 flex items-center gap-1 group"
                               >
                                 <span>{supplier.supplier_name}</span>
@@ -727,7 +727,7 @@ export default function SuppliersPage() {
                               <Edit2 className="h-3.5 w-3.5 text-slate-500" />
                             </Button>
 
-                            <Link href={`/${slug}/suppliers/${supplier.id}`}>
+                            <Link href={`/suppliers/${supplier.id}`}>
                               <Button size="sm" className="h-8 px-2.5 text-[11px] bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 font-bold">
                                 {tBilingual('Profile & Rates', 'রেটশিট ও লেজার')}
                               </Button>
@@ -773,7 +773,7 @@ export default function SuppliersPage() {
                         </div>
                         <div>
                           <Link
-                            href={`/${slug}/suppliers/${supplier.id}`}
+                            href={`/suppliers/${supplier.id}`}
                             className="font-bold text-slate-900 dark:text-white hover:text-teal-600 text-sm flex items-center gap-1 group"
                           >
                             <span>{supplier.supplier_name}</span>
@@ -891,7 +891,7 @@ export default function SuppliersPage() {
                       </Button>
                     )}
 
-                    <Link href={`/${slug}/suppliers/${supplier.id}`}>
+                    <Link href={`/suppliers/${supplier.id}`}>
                       <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs font-bold">
                         {tBilingual('Profile', 'প্রোফাইল')} <ArrowRight className="h-3 w-3 ml-1" />
                       </Button>

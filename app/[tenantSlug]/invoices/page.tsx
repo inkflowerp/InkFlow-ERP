@@ -16,9 +16,9 @@ export default function InvoicesRedirectPage() {
     if (!currentQuery.has('view')) {
       currentQuery.set('view', 'invoices')
     }
-    const targetUrl = `/${tenantSlug}/billing?${currentQuery.toString()}`
+    const targetUrl = `/billing?${currentQuery.toString()}`
     router.replace(targetUrl)
-  }, [tenantSlug, searchParams, router])
+  }, [searchParams, router])
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center">

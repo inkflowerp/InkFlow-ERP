@@ -61,6 +61,7 @@ import {
 import { PlatformSupportConsole } from '@/components/support/platform-support-console'
 import { getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
 import { PlatformUserRecord } from '@/lib/auth/types'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 export default function PlatformSupportPage() {
   const [supportView, setSupportView] = useState<'chat' | 'sessions'>('chat')
@@ -222,7 +223,7 @@ export default function PlatformSupportPage() {
   }
 
   const handleCopyLink = (slug: string, id: string) => {
-    const url = `${window.location.origin}/${slug}/dashboard`
+    const url = getTenantLink(slug, '/dashboard')
     navigator.clipboard.writeText(url)
     setCopiedId(id)
     showToast('Tenant dashboard URL copied to clipboard')

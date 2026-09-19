@@ -1000,7 +1000,7 @@ export function NewInvoiceModal({
     const invoice = await persistInvoice()
     setSubmittingAction(null)
     if (invoice) {
-      window.open(`/${tenantSlug}/billing/${invoice.id}`, '_blank')
+      window.open(`/billing/${invoice.id}`, '_blank')
       onOpenChange(false)
     }
   }

@@ -83,7 +83,7 @@ export default function PurchaseOrderDetailPage() {
     return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href={`/${slug}/inventory?view=purchases`}
+          href="/inventory?view=purchases"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -96,7 +96,7 @@ export default function PurchaseOrderDetailPage() {
             The purchase order record you are looking for does not exist in your organization.
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/inventory?view=purchases`}>View All Purchase Orders</Link>
+            <Link href="/inventory?view=purchases">View All Purchase Orders</Link>
           </Button>
         </Card>
       </div>
@@ -252,7 +252,7 @@ export default function PurchaseOrderDetailPage() {
       {/* Back Link & Header */}
       <div>
         <Link
-          href={`/${slug}/inventory?view=purchases`}
+          href="/inventory?view=purchases"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

@@ -1713,7 +1713,7 @@ export default function ProductsCatalogPage() {
               <span>Masters</span>
             </Button>
 
-            <Link href={`/${slug}/pricing`}>
+            <Link href="/pricing">
               <Button
                 size="sm"
                 variant="outline"
@@ -2669,7 +2669,7 @@ export default function ProductsCatalogPage() {
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/${slug}/products/${item.id}`}
+                              href={`/products/${item.id}`}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -2881,7 +2881,7 @@ export default function ProductsCatalogPage() {
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/${slug}/products/${item.id}`}
+                              href={`/products/${item.id}`}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -3079,7 +3079,7 @@ export default function ProductsCatalogPage() {
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/${slug}/products/${item.id}`}
+                              href={`/products/${item.id}`}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -3272,7 +3272,7 @@ export default function ProductsCatalogPage() {
                           {/* Item & SKU */}
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/${slug}/products/${item.id}`}
+                              href={`/products/${item.id}`}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -3467,7 +3467,7 @@ export default function ProductsCatalogPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <Link
-                            href={`/${slug}/products/${item.id}`}
+                            href={`/products/${item.id}`}
                             className="font-bold text-sm text-slate-900 dark:text-white hover:text-blue-600"
                           >
                             {item.name}
@@ -3555,7 +3555,7 @@ export default function ProductsCatalogPage() {
                           Edit
                         </Button>
                         <Link
-                          href={`/${slug}/products/${item.id}`}
+                          href={`/products/${item.id}`}
                           className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                         >
                           Detail
@@ -3612,7 +3612,7 @@ export default function ProductsCatalogPage() {
                   The quotation has been saved authoritatively in PostgreSQL and can now be dispatched to the client.
                 </p>
                 <div className="flex items-center gap-2 pt-1">
-                  <Link href={`/${slug}/quotations`}>
+                  <Link href="/quotations">
                     <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
                       View in Quotations Module
                     </Button>

@@ -562,7 +562,7 @@ export default function PayrollPage() {
                   )}
 
                   <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1 border-slate-200 dark:border-slate-800">
-                    <Link href={`/${tenantSlug}/hr/salary-report`}>
+                    <Link href={`/hr/salary-report`}>
                       <Printer className="w-3 h-3" />
                       {tBilingual('Print Sheet', 'প্রিন্ট শিট')}
                     </Link>
@@ -768,7 +768,7 @@ export default function PayrollPage() {
                                 </Button>
                               )}
                               <Button asChild size="sm" variant="outline" className="h-7 text-xs px-2 border-slate-200 dark:border-slate-800">
-                                <Link href={`/${tenantSlug}/hr/payroll/${selectedPeriod.id}`}>
+                                <Link href={`/hr/payroll/${selectedPeriod.id}`}>
                                   <FileText className="w-3 h-3" />
                                 </Link>
                               </Button>

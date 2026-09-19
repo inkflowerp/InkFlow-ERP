@@ -94,7 +94,7 @@ export default function MaterialDetailPage() {
     return (
       <div className="p-8 text-center space-y-3">
         <p className="text-sm font-bold text-slate-700">Material not found.</p>
-        <Link href={`/${slug}/inventory`}>
+        <Link href="/inventory">
           <Button size="sm" variant="outline">
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Inventory Hub
           </Button>
@@ -114,7 +114,7 @@ export default function MaterialDetailPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link href={`/${slug}/inventory`}>
+            <Link href="/inventory">
               <Button size="sm" variant="outline" className="h-9 w-9 p-0">
                 <ArrowLeft className="h-4 w-4" />
               </Button>

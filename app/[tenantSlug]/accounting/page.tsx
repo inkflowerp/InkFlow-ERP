@@ -403,7 +403,7 @@ export default function AccountingPage() {
       <FinanceQuickActions
         onReceiveMoney={() => {
           // Open customer payment modal or invoice link
-          window.location.href = `/${slug}/billing`
+          window.location.href = '/billing'
         }}
         onSpendMoney={() => setIsSpendModalOpen(true)}
         onTransferMoney={() => setIsTransferModalOpen(true)}
@@ -555,7 +555,7 @@ export default function AccountingPage() {
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
                   <span>{tBilingual('Top Overdue Customers (তাগাদা দিন)', 'বাকি তাগাদা')}</span>
                 </CardTitle>
-                <Link href={`/${slug}/customers`}>
+                <Link href="/customers">
                   <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-800">
                     {tBilingual('View All', 'সব দেখুন')}
                   </Button>
@@ -576,7 +576,7 @@ export default function AccountingPage() {
                         size="sm"
                         variant="outline"
                         className="h-6 text-[10px] px-2 mt-1 rounded-md"
-                        onClick={() => window.location.href = `/${slug}/billing`}
+                        onClick={() => window.location.href = '/billing'}
                       >
                         {tBilingual('Receive', 'পেমেন্ট')}
                       </Button>

@@ -222,7 +222,7 @@ export default function DesignDetailPage() {
     return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href={`/${slug}/design`}
+          href="/design"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -235,7 +235,7 @@ export default function DesignDetailPage() {
             The design job record you are looking for does not exist in your organization.
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/design`}>View All Design Jobs</Link>
+            <Link href="/design">View All Design Jobs</Link>
           </Button>
         </Card>
       </div>
@@ -575,7 +575,7 @@ export default function DesignDetailPage() {
       {/* Top Header & Back Link */}
       <div>
         <Link
-          href={`/${slug}/design`}
+          href="/design"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

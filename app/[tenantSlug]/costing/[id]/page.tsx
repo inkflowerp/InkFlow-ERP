@@ -50,7 +50,7 @@ export default function JobCostingDetailPage() {
       <FeatureGate feature="job_costing">
         <div className="space-y-6 max-w-5xl">
           <Link
-            href={`/${slug}/costing`}
+            href="/costing"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -63,7 +63,7 @@ export default function JobCostingDetailPage() {
               The job costing calculation sheet you are looking for does not exist in your organization.
             </p>
             <Button asChild className="mt-4" size="sm">
-              <Link href={`/${slug}/costing`}>View All Costings</Link>
+              <Link href="/costing">View All Costings</Link>
             </Button>
           </Card>
         </div>
@@ -89,7 +89,7 @@ export default function JobCostingDetailPage() {
         {/* Non-Print Action Bar */}
       <div className="print:hidden flex items-center justify-between">
         <Link
-          href={`/${slug}/costing`}
+          href="/costing"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

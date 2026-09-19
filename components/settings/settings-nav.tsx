@@ -27,91 +27,90 @@ export function SettingsNav() {
   const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'app'
 
   const links = [
     {
       title: 'Company Profile',
       titleBn: 'প্রতিষ্ঠান তথ্য',
-      href: `/${slug}/settings/company`,
+      href: '/settings/company',
       icon: Building2,
     },
     {
       title: 'Branding & Theme',
       titleBn: 'ব্র্যান্ডিং ও লোগো',
-      href: `/${slug}/settings/branding`,
+      href: '/settings/branding',
       icon: Palette,
     },
     {
       title: 'Localization & Formats',
       titleBn: 'ভাষা ও মুদ্রা',
-      href: `/${slug}/settings/localization`,
+      href: '/settings/localization',
       icon: Globe2,
     },
     {
       title: 'Tax & NBR BIN/TIN',
       titleBn: 'ট্যাক্স ও ভ্যাট',
-      href: `/${slug}/settings/tax`,
+      href: '/settings/tax',
       icon: FileCheck2,
     },
     {
       title: 'Document Numbering',
       titleBn: 'ডকুমেন্ট নাম্বারিং',
-      href: `/${slug}/settings/document-numbering`,
+      href: '/settings/document-numbering',
       icon: Hash,
     },
     {
       title: 'Document Templates',
       titleBn: 'ডকুমেন্ট টেমপ্লেট',
-      href: `/${slug}/settings/documents`,
+      href: '/settings/documents',
       icon: FileText,
     },
     {
       title: 'Workflow Automations',
       titleBn: 'কাজের অটোমেশন',
-      href: `/${slug}/settings/automations`,
+      href: '/settings/automations',
       icon: Workflow,
     },
     {
       title: 'Branches & Hubs',
       titleBn: 'শাখা ও কারখানা',
-      href: `/${slug}/settings/branches`,
+      href: '/settings/branches',
       icon: GitBranch,
     },
     {
       title: 'Attendance & QR',
       titleBn: 'হাজিরা ও কিউআর',
-      href: `/${slug}/settings/attendance`,
+      href: '/settings/attendance',
       icon: QrCode,
     },
     {
       title: 'Notifications & SMS',
       titleBn: 'নোটিফিকেশন ও এসএমএস',
-      href: `/${slug}/settings/notifications`,
+      href: '/settings/notifications',
       icon: Bell,
     },
     {
       title: 'Email Gateway',
       titleBn: 'ইমেইল গেটওয়ে',
-      href: `/${slug}/settings/email`,
+      href: '/settings/email',
       icon: Mail,
     },
     {
       title: 'Team Users',
       titleBn: 'টিম মেম্বার',
-      href: `/${slug}/settings/users`,
+      href: '/settings/users',
       icon: Users,
     },
     {
       title: 'Roles & Matrix',
       titleBn: 'অনুমতি ম্যাট্রিক্স',
-      href: `/${slug}/settings/roles`,
+      href: '/settings/roles',
       icon: ShieldCheck,
     },
     {
       title: 'Subscription',
       titleBn: 'সাবস্ক্রিপশন',
-      href: `/${slug}/settings/subscription`,
+      href: '/settings/subscription',
       icon: Crown,
     },
   ]
@@ -120,7 +119,10 @@ export function SettingsNav() {
     <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto gap-1 pb-px scrollbar-none mb-6 touch-scroll">
       {links.map((link) => {
         const Icon = link.icon
-        const isActive = pathname === link.href
+        const cleanPath = (company?.slug && pathname?.startsWith(`/${company.slug}`))
+          ? pathname.slice(`/${company.slug}`.length) || '/'
+          : (pathname || '')
+        const isActive = pathname === link.href || cleanPath === link.href
         return (
           <Link
             key={link.href}

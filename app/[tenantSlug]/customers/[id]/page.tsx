@@ -377,7 +377,7 @@ export default function CustomerProfilePage() {
               <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
               Retry
             </Button>
-            <Link href={`/${slug}/customers`}>
+            <Link href="/customers">
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                 Back to Customer Directory
               </Button>
@@ -407,7 +407,7 @@ export default function CustomerProfilePage() {
       {/* Back to Customer Directory link */}
       <div className="flex items-center justify-between">
         <Link
-          href={`/${slug}/customers`}
+          href="/customers"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -563,7 +563,7 @@ export default function CustomerProfilePage() {
               + Create Invoice
             </Button>
 
-            <Link href={`/${slug}/quotations/new?customerId=${customer.id}`}>
+            <Link href={`/quotations/new?customerId=${customer.id}`}>
               <Button size="sm" variant="outline" className="text-xs font-semibold h-8">
                 <Send className="h-3.5 w-3.5 mr-1.5" />
                 + New Quotation
@@ -685,7 +685,7 @@ export default function CustomerProfilePage() {
                           >
                             <div>
                               <Link
-                                href={`/${slug}/billing/invoices/${inv.id}`}
+                                href={`/billing/invoices/${inv.id}`}
                                 className="font-bold text-blue-600 hover:underline flex items-center gap-1"
                               >
                                 {inv.invoice_number}
@@ -716,7 +716,7 @@ export default function CustomerProfilePage() {
                         Open Quotations ({openQuotations.length})
                       </span>
                       <Link
-                        href={`/${slug}/quotations/new?customerId=${customer.id}`}
+                        href={`/quotations/new?customerId=${customer.id}`}
                         className="text-[10px] font-bold text-blue-600 hover:underline"
                       >
                         + New
@@ -733,7 +733,7 @@ export default function CustomerProfilePage() {
                           >
                             <div>
                               <Link
-                                href={`/${slug}/quotations`}
+                                href="/quotations"
                                 className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
                               >
                                 {q.quotation_number}
@@ -759,7 +759,7 @@ export default function CustomerProfilePage() {
                         Active Orders ({activeOrders.length})
                       </span>
                       <Link
-                        href={`/${slug}/orders`}
+                        href="/orders"
                         className="text-[10px] font-bold text-blue-600 hover:underline"
                       >
                         View
@@ -776,7 +776,7 @@ export default function CustomerProfilePage() {
                           >
                             <div>
                               <Link
-                                href={`/${slug}/orders`}
+                                href="/orders"
                                 className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
                               >
                                 {ord.order_number}
@@ -1026,7 +1026,7 @@ export default function CustomerProfilePage() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Link
-                          href={`/${slug}/billing/invoices/${inv.id}`}
+                          href={`/billing/invoices/${inv.id}`}
                           className="inline-flex items-center text-blue-600 hover:underline font-semibold"
                         >
                           View &rarr;
@@ -1119,7 +1119,7 @@ export default function CustomerProfilePage() {
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Customer Quotations</h3>
               <p className="text-xs text-slate-400">Price proposals and estimates</p>
             </div>
-            <Link href={`/${slug}/quotations/new?customerId=${customer.id}`}>
+            <Link href={`/quotations/new?customerId=${customer.id}`}>
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8">
                 + New Quotation
               </Button>
@@ -1163,7 +1163,7 @@ export default function CustomerProfilePage() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Link
-                          href={`/${slug}/quotations`}
+                          href="/quotations"
                           className="text-blue-600 hover:underline font-semibold"
                         >
                           View &rarr;

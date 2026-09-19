@@ -12,11 +12,11 @@ export default function InvoiceDetailRedirectPage() {
 
   useEffect(() => {
     if (id) {
-      router.replace(`/${tenantSlug}/billing/${id}`)
+      router.replace(`/billing/${id}`)
     } else {
-      router.replace(`/${tenantSlug}/billing?view=invoices`)
+      router.replace('/billing?view=invoices')
     }
-  }, [tenantSlug, id, router])
+  }, [id, router])
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center">

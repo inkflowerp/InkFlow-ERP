@@ -594,7 +594,7 @@ export default function DeliveryLogisticsPage() {
                         {/* Challan & Invoice ID */}
                         <td className="py-3.5 px-4">
                           <Link
-                            href={`/${slug}/delivery/${ch.id}`}
+                            href={`/delivery/${ch.id}`}
                             className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
                           >
                             <span>{ch.challan_number}</span>
@@ -668,7 +668,7 @@ export default function DeliveryLogisticsPage() {
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5 flex-wrap">
                             <Link
-                              href={`/${slug}/delivery/${ch.id}`}
+                              href={`/delivery/${ch.id}`}
                               className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
                             >
                               PDF
@@ -720,7 +720,7 @@ export default function DeliveryLogisticsPage() {
                       {/* Top: Challan # & Status */}
                       <div className="flex items-center justify-between gap-2">
                         <Link
-                          href={`/${slug}/delivery/${ch.id}`}
+                          href={`/delivery/${ch.id}`}
                           className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                         >
                           <span>{ch.challan_number}</span>
@@ -788,7 +788,7 @@ export default function DeliveryLogisticsPage() {
                       {/* Actions */}
                       <div className="flex items-center justify-end gap-2 pt-1">
                         <Link
-                          href={`/${slug}/delivery/${ch.id}`}
+                          href={`/delivery/${ch.id}`}
                           className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 min-h-[36px]"
                         >
                           Challan PDF

@@ -112,8 +112,7 @@ export function MobileNav() {
   const { tBilingual } = useI18n()
 
   const pathSlug = pathname ? pathname.split('/')[1] : null
-  const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
-  const navSections = useMemo(() => getNavigationConfig(tenantSlug), [tenantSlug])
+  const navSections = useMemo(() => getNavigationConfig(), [])
 
   // Close drawer automatically on route navigation
   useEffect(() => {
@@ -159,47 +158,44 @@ export function MobileNav() {
     setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }))
   }, [])
 
-  // Filter sections by search query in real-time
+  // Filter sections by search and permissions
   const filteredNavSections = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim()
     return navSections
       .map((section) => {
         const allowedItems = section.items.filter(isNavItemAllowed)
-        if (!q) return { ...section, items: allowedItems }
-
+        if (!searchQuery.trim()) {
+          return { ...section, items: allowedItems }
+        }
+        const q = searchQuery.toLowerCase()
         const matchedItems = allowedItems.filter(
           (item) =>
             item.title.toLowerCase().includes(q) ||
             item.titleBn.toLowerCase().includes(q) ||
-            item.href.toLowerCase().includes(q) ||
-            section.title.toLowerCase().includes(q) ||
-            section.titleBn.toLowerCase().includes(q)
+            item.key.toLowerCase().includes(q)
         )
         return { ...section, items: matchedItems }
       })
       .filter((section) => section.items.length > 0)
-  }, [navSections, searchQuery, isNavItemAllowed])
+  }, [navSections, isNavItemAllowed, searchQuery])
 
   return (
     <div className="lg:hidden">
-      {/* Elevated Hamburger Trigger Button */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-xl border border-slate-200/90 bg-white/90 p-2 text-slate-700 hover:bg-slate-100/80 hover:text-blue-600 hover:border-blue-400/40 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-400 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center shadow-xs active:scale-95 transition-all"
-        aria-label="Open Navigation Menu"
-        aria-expanded={open}
+        className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-100/70 p-2 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 cursor-pointer shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-label="Open Navigation Drawer"
+        title="Open Menu"
       >
         <Menu className="h-5 w-5" />
       </button>
 
-      <Sheet open={open} onOpenChange={setOpen} side="left">
-        {/* Custom Header with Brand, Language Toggle, and Close Button */}
-        <SheetHeader onClose={() => setOpen(false)}>
-          <div className="flex items-center justify-between w-full pr-1">
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetHeader className="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+          <div className="flex items-center justify-between">
             {/* Logo and Brand */}
             <Link
-              href={`/${tenantSlug}/dashboard`}
+              href="/dashboard"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 group cursor-pointer"
             >
@@ -283,7 +279,7 @@ export function MobileNav() {
             {/* Quick Actions Shortcuts Chips */}
             <div className="grid grid-cols-3 gap-1.5">
               <Link
-                href={`/${tenantSlug}/sales`}
+                href="/sales"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 transition-colors min-h-[38px] bangla-text"
               >
@@ -291,7 +287,7 @@ export function MobileNav() {
                 <span>{tBilingual('Quotes', 'কোটেশন')}</span>
               </Link>
               <Link
-                href={`/${tenantSlug}/sales/new-work`}
+                href="/sales/new-work"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 transition-colors min-h-[38px] bangla-text"
               >
@@ -299,7 +295,7 @@ export function MobileNav() {
                 <span>{tBilingual('New Work', 'নতুন কাজ')}</span>
               </Link>
               <Link
-                href={`/${tenantSlug}/production`}
+                href="/production"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200/70 dark:border-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-xs font-semibold hover:bg-cyan-100 transition-colors min-h-[38px] bangla-text"
               >
@@ -359,7 +355,10 @@ export function MobileNav() {
                       <div className="space-y-0.5">
                         {section.items.map((item) => {
                           const Icon = iconMap[item.icon] || Sparkles
-                          const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== `/${tenantSlug}`)
+                          const cleanPath = (company?.slug && pathname?.startsWith(`/${company.slug}`))
+                            ? pathname.slice(`/${company.slug}`.length) || '/'
+                            : (pathname || '')
+                          const isActive = pathname === item.href || cleanPath === item.href || (cleanPath.startsWith(`${item.href}/`) && item.href !== '/')
                           const itemTitle = tBilingual(item.title, item.titleBn)
                           const isPrimary = item.isPrimaryAction
 
@@ -452,7 +451,7 @@ export function MobileNav() {
         <SheetFooter className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
           <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 px-1">
             <Link
-              href={`/${tenantSlug}/support`}
+              href="/support"
               onClick={() => setOpen(false)}
               className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline"
             >

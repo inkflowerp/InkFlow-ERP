@@ -294,7 +294,7 @@ export function DashboardView() {
     if (qa.actionType === 'modal') {
       setActiveModal(qa.target)
     } else if (qa.actionType === 'route') {
-      const fullRoute = qa.target.startsWith('/') ? `/${slug}${qa.target}` : `/${slug}/${qa.target}`
+      const fullRoute = qa.target.startsWith('/') ? qa.target : `/${qa.target}`
       router.push(fullRoute)
     }
   }
@@ -317,7 +317,7 @@ export function DashboardView() {
       setActiveWorkItem(item)
       setActiveModal('report_problem')
     } else if (actionType === 'open_design') {
-      router.push(`/${slug}/design`)
+      router.push('/design')
     } else if (actionType === 'send_proof') {
       showNotification(`WhatsApp proof preview sent to ${item.customerName}.`)
     } else if (actionType === 'dispatch_delivery') {
@@ -964,7 +964,8 @@ export function DashboardView() {
                   variant="outline"
                   onClick={() => {
                     if (item.actionType === 'route') {
-                      router.push(`/${slug}${item.actionTarget}`)
+                      const fullRoute = item.actionTarget.startsWith('/') ? item.actionTarget : `/${item.actionTarget}`
+                      router.push(fullRoute)
                     } else if (item.actionType === 'modal') {
                       setActiveModal(item.actionTarget)
                     }
@@ -1146,7 +1147,7 @@ export function DashboardView() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => router.push(`/${slug}/orders`)}
+              onClick={() => router.push('/orders')}
               className="text-xs bangla-text min-h-[36px] cursor-pointer"
             >
               {tBilingual('View All Orders', 'সকল অর্ডার দেখুন')}
@@ -1159,7 +1160,7 @@ export function DashboardView() {
               columns={columns}
               data={recentOrdersData}
               keyExtractor={(row) => row.id}
-              onRowClick={(row) => router.push(`/${slug}/orders/${row.id}`)}
+              onRowClick={(row) => router.push(`/orders/${row.id}`)}
             />
           ) : (
             <div className="p-8 text-center space-y-2">

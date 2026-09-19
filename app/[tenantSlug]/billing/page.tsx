@@ -210,7 +210,7 @@ export default function BillingPage() {
     setActiveTab(tab)
     const currentQuery = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
     currentQuery.set('view', tab)
-    router.replace(`/${slug}/billing?${currentQuery.toString()}`)
+    router.replace(`/billing?${currentQuery.toString()}`)
   }
 
   // Pending Invoice Requests count
@@ -1100,7 +1100,7 @@ export default function BillingPage() {
                               <span>Collect</span>
                             </Button>
 
-                            <Link href={`/${slug}/billing/${item.invoiceId}`}>
+                            <Link href={`/billing/${item.invoiceId}`}>
                               <Button
                                 size="sm"
                                 variant="ghost"
@@ -1248,7 +1248,7 @@ export default function BillingPage() {
                         <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
                           <td className="p-3">
                             <Link
-                              href={`/${slug}/billing/${inv.id}`}
+                              href={`/billing/${inv.id}`}
                               className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                             >
                               <span>{inv.invoice_number}</span>
@@ -1302,7 +1302,7 @@ export default function BillingPage() {
                                 </Button>
                               )}
 
-                              <Link href={`/${slug}/billing/${inv.id}`}>
+                              <Link href={`/billing/${inv.id}`}>
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -1355,7 +1355,7 @@ export default function BillingPage() {
                     <div key={inv.id} className="p-3.5 space-y-2.5">
                       <div className="flex items-center justify-between">
                         <Link
-                          href={`/${slug}/billing/${inv.id}`}
+                          href={`/billing/${inv.id}`}
                           className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400"
                         >
                           #{inv.invoice_number}
@@ -1399,7 +1399,7 @@ export default function BillingPage() {
                               Collect Due
                             </Button>
                           )}
-                          <Link href={`/${slug}/billing/${inv.id}`}>
+                          <Link href={`/billing/${inv.id}`}>
                             <Button size="sm" variant="outline" className="h-8 text-xs px-2.5">
                               View
                             </Button>

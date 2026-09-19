@@ -143,7 +143,7 @@ export default function SalesManagerPage() {
           </Badge>
         }
         actions={
-          <Link href={`/${slug}/quotations`}>
+          <Link href="/quotations">
             <Button className="bg-blue-600 hover:bg-blue-700 bangla-text">
               <Plus className="mr-1.5 h-4 w-4" />
               {tBilingual('New Quotation', 'নতুন কোটেশন')}
@@ -210,7 +210,7 @@ export default function SalesManagerPage() {
             {orders.filter((o) => o.status === 'ready_for_delivery').length} Orders
           </div>
           <div className="text-[11px] text-purple-600 mt-1">
-            <Link href={`/${slug}/delivery`} className="hover:underline">
+            <Link href="/delivery" className="hover:underline">
               Generate Challans &rarr;
             </Link>
           </div>
@@ -265,7 +265,7 @@ export default function SalesManagerPage() {
                   {(quotations || []).map((q) => (
                     <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                       <td className="py-3.5 px-4 font-mono text-xs font-bold text-blue-600">
-                        <Link href={`/${slug}/quotations/${q.id}`} className="hover:underline">
+                        <Link href={`/quotations/${q.id}`} className="hover:underline">
                           {q.quotation_number}
                         </Link>
                       </td>
@@ -315,7 +315,7 @@ export default function SalesManagerPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <Link
-                        href={`/${slug}/quotations/${q.id}`}
+                        href={`/quotations/${q.id}`}
                         className="font-mono text-xs font-bold text-blue-600 hover:underline"
                       >
                         {q.quotation_number}
@@ -389,7 +389,7 @@ export default function SalesManagerPage() {
                   {(orders || []).map((o) => (
                     <tr key={o.id} className="hover:bg-slate-50/50">
                       <td className="py-3.5 px-4 font-mono text-xs font-bold text-blue-600">
-                        <Link href={`/${slug}/orders/${o.id}`} className="hover:underline">
+                        <Link href={`/orders/${o.id}`} className="hover:underline">
                           {o.order_number}
                         </Link>
                       </td>
@@ -428,7 +428,7 @@ export default function SalesManagerPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <Link
-                        href={`/${slug}/orders/${o.id}`}
+                        href={`/orders/${o.id}`}
                         className="font-mono text-xs font-bold text-blue-600 hover:underline"
                       >
                         {o.order_number}

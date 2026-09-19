@@ -321,7 +321,7 @@ export function NewWorkWizard({
             labelEn: 'Go to Floor Terminal',
             labelBn: 'ফ্লোর টার্মিনালে যান (কাজ শুরু করুন)',
             onClick: () => {
-              router.push(`/${tenantSlug}/operator`)
+              router.push('/operator')
               onSuccess?.(res.data)
               onClose?.()
             },

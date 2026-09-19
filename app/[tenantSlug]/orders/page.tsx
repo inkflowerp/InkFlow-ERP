@@ -402,7 +402,7 @@ export default function OrdersPage() {
                     {/* Order Number & Priority */}
                     <td className="py-3.5 px-4">
                       <Link
-                        href={`/${slug}/orders/${order.id}`}
+                        href={`/orders/${order.id}`}
                         className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 group"
                       >
                         <span>{order.order_number}</span>
@@ -492,7 +492,7 @@ export default function OrdersPage() {
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
                       <Link
-                        href={`/${slug}/orders/${order.id}`}
+                        href={`/orders/${order.id}`}
                         className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                       >
                         Shop Floor Board
@@ -516,7 +516,7 @@ export default function OrdersPage() {
                   {/* Top Bar: Order # & Priority */}
                   <div className="flex items-center justify-between gap-2">
                     <Link
-                      href={`/${slug}/orders/${order.id}`}
+                      href={`/orders/${order.id}`}
                       className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
                     >
                       <span>{order.order_number}</span>
@@ -608,7 +608,7 @@ export default function OrdersPage() {
                       {order.jobs_count || order.items.length} Jobs
                     </span>
                     <Link
-                      href={`/${slug}/orders/${order.id}`}
+                      href={`/orders/${order.id}`}
                       className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 min-h-[36px]"
                     >
                       Shop Floor Board →

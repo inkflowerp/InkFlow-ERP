@@ -122,7 +122,7 @@ export function QuotationTable({
                   {/* Quote Number */}
                   <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
                     <Link
-                      href={`/${tenantSlug}/quotations/${q.id}`}
+                      href={`/quotations/${q.id}`}
                       className="hover:underline flex items-center gap-1 group"
                     >
                       <span>{q.quotation_number}</span>
@@ -209,7 +209,7 @@ export function QuotationTable({
                         Follow
                       </Button>
                       <Link
-                        href={`/${tenantSlug}/quotations/${q.id}`}
+                        href={`/quotations/${q.id}`}
                         className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                       >
                         Cockpit →
@@ -239,7 +239,7 @@ export function QuotationTable({
               {/* Header: Quote #, Status & Expiry */}
               <div className="flex items-center justify-between gap-2">
                 <Link
-                  href={`/${tenantSlug}/quotations/${q.id}`}
+                  href={`/quotations/${q.id}`}
                   className="font-mono font-bold text-sm text-blue-600 hover:underline flex items-center gap-1"
                 >
                   <span>{q.quotation_number}</span>
@@ -320,7 +320,7 @@ export function QuotationTable({
                 </Button>
 
                 <Link
-                  href={`/${tenantSlug}/quotations/${q.id}`}
+                  href={`/quotations/${q.id}`}
                   className="inline-flex items-center justify-center h-9 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Cockpit →

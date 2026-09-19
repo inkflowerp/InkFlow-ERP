@@ -197,7 +197,7 @@ export default function CompanyProfileSettingsPage() {
             </div>
           </div>
 
-          <Link href={`/${slug}/settings/subscription`}>
+          <Link href="/settings/subscription">
             <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shrink-0">
               <span>{isTrial ? 'Upgrade Account' : 'Manage Subscription'}</span>
               <ArrowRight className="ml-1 h-3.5 w-3.5" />

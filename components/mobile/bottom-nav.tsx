@@ -33,7 +33,7 @@ export function MobileBottomNav() {
   const [newWorkOpen, setNewWorkOpen] = useState(false)
   const [syncOpen, setSyncOpen] = useState(false)
 
-  const isDashboardActive = pathname === `/${tenantSlug}/dashboard` || pathname === `/${tenantSlug}`
+  const isDashboardActive = pathname === '/dashboard' || pathname === '/'
   const isOperatorActive = pathname?.includes('/operator')
   const isMessagesActive = pathname?.includes('/communications')
 
@@ -50,7 +50,7 @@ export function MobileBottomNav() {
         <div className="grid grid-cols-5 h-16 items-center px-1">
           {/* 1. Dashboard */}
           <Link
-            href={`/${tenantSlug}/dashboard`}
+            href="/dashboard"
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isDashboardActive
                 ? 'text-blue-400 font-bold'
@@ -65,7 +65,7 @@ export function MobileBottomNav() {
 
           {/* 2. My Work / Operator Terminal */}
           <Link
-            href={`/${tenantSlug}/operator`}
+            href="/operator"
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isOperatorActive
                 ? 'text-blue-400 font-bold'
@@ -95,7 +95,7 @@ export function MobileBottomNav() {
 
           {/* 4. Messages / Notifications */}
           <Link
-            href={`/${tenantSlug}/communications`}
+            href="/communications"
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isMessagesActive
                 ? 'text-blue-400 font-bold'

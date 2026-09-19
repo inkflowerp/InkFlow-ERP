@@ -206,19 +206,19 @@ export default function HrmDashboardPage() {
               <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">{tBilingual('Refresh', 'রিফ্রেশ')}</span>
             </Button>
-            <Link href={`/${tenantSlug}/hr/attendance`}>
+            <Link href={`/hr/attendance`}>
               <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium bangla-text">
                 <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
                 {tBilingual('Floor Attendance', 'হাজিরা')}
               </Button>
             </Link>
-            <Link href={`/${tenantSlug}/hr/payroll`}>
+            <Link href={`/hr/payroll`}>
               <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium bangla-text">
                 <Wallet className="h-3.5 w-3.5 text-blue-600" />
                 {tBilingual('Payroll & Salary', 'পেরোল ও বেতন')}
               </Button>
             </Link>
-            <Link href={`/${tenantSlug}/hr/employees?action=new`}>
+            <Link href={`/hr/employees?action=new`}>
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9 font-bold px-4 gap-1.5 shadow-sm hover:shadow">
                 <UserPlus className="h-4 w-4" />
                 {tBilingual('Add Employee', 'নতুন কর্মী')}
@@ -245,7 +245,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span className="truncate">{employees.filter((e) => e.employee_type === 'permanent').length} {tBilingual('Perm', 'স্থায়ী')}</span>
-            <Link href={`/${tenantSlug}/hr/employees`} className="text-blue-600 hover:underline font-semibold shrink-0">
+            <Link href={`/hr/employees`} className="text-blue-600 hover:underline font-semibold shrink-0">
               {tBilingual('List', 'তালিকা')}
             </Link>
           </div>
@@ -267,7 +267,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 text-[10px] text-emerald-600/90 dark:text-emerald-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('On Floor', 'ফ্লোরে আছেন')}</span>
-            <Link href={`/${tenantSlug}/hr/attendance`} className="text-emerald-600 hover:underline font-semibold shrink-0">
+            <Link href={`/hr/attendance`} className="text-emerald-600 hover:underline font-semibold shrink-0">
               {tBilingual('Live', 'লাইভ')}
             </Link>
           </div>
@@ -309,7 +309,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 text-[10px] text-amber-600/90 dark:text-amber-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('Check Grace', 'গ্রেস টাইম')}</span>
-            <Link href={`/${tenantSlug}/hr/attendance`} className="text-amber-600 hover:underline font-semibold shrink-0">
+            <Link href={`/hr/attendance`} className="text-amber-600 hover:underline font-semibold shrink-0">
               {tBilingual('Logs', 'লগ')}
             </Link>
           </div>
@@ -332,7 +332,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('Unpaid Due', 'বকেয়া বেতন')}</span>
-            <Link href={`/${tenantSlug}/hr/payroll`} className="text-rose-600 hover:underline font-semibold shrink-0">
+            <Link href={`/hr/payroll`} className="text-rose-600 hover:underline font-semibold shrink-0">
               {tBilingual('Clear', 'পরিশোধ')}
             </Link>
           </div>
@@ -355,7 +355,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('Gross Est.', 'মোট হিসাব')}</span>
-            <Link href={`/${tenantSlug}/hr/payroll`} className="text-purple-600 hover:underline font-semibold shrink-0">
+            <Link href={`/hr/payroll`} className="text-purple-600 hover:underline font-semibold shrink-0">
               {tBilingual('Sheet', 'শিট')}
             </Link>
           </div>
@@ -378,7 +378,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('Sales Incentives', 'বিক্রয় ইনসেন্টিভ')}</span>
-            <Link href={`/${tenantSlug}/hr/salary-report`} className="text-indigo-600 hover:underline font-semibold shrink-0">
+            <Link href={`/hr/salary-report`} className="text-indigo-600 hover:underline font-semibold shrink-0">
               {tBilingual('Audit', 'অডিট')}
             </Link>
           </div>
@@ -401,7 +401,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{recentAdvances.length} {tBilingual('Pending Settl.', 'অনিষ্পন্ন')}</span>
-            <Link href={`/${tenantSlug}/hr/payroll`} className="text-teal-600 hover:underline font-semibold shrink-0">
+            <Link href={`/hr/payroll`} className="text-teal-600 hover:underline font-semibold shrink-0">
               {tBilingual('Deduct', 'কাটতি')}
             </Link>
           </div>
@@ -426,7 +426,7 @@ export default function HrmDashboardPage() {
                 </CardDescription>
               </div>
             </div>
-            <Link href={`/${tenantSlug}/hr/payroll`}>
+            <Link href={`/hr/payroll`}>
               <Button variant="ghost" size="sm" className="text-xs text-blue-600 dark:text-blue-400 font-semibold gap-1 h-8">
                 {tBilingual('Payroll Sheet', 'পেরোল শিট')}
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -505,7 +505,7 @@ export default function HrmDashboardPage() {
                 </CardDescription>
               </div>
             </div>
-            <Link href={`/${tenantSlug}/hr/attendance`}>
+            <Link href={`/hr/attendance`}>
               <Button variant="ghost" size="sm" className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold gap-1 h-8">
                 {tBilingual('Floor Radar', 'ফ্লোর হাজিরা')}
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -608,7 +608,7 @@ export default function HrmDashboardPage() {
                 </CardDescription>
               </div>
               <Button asChild variant="ghost" size="sm" className="text-xs text-blue-600 dark:text-blue-400 gap-1 font-semibold">
-                <Link href={`/${tenantSlug}/hr/attendance`}>
+                <Link href={`/hr/attendance`}>
                   {tBilingual('Manage', 'পরিচালনা')}
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
@@ -620,7 +620,7 @@ export default function HrmDashboardPage() {
                   <Calendar className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
                   <p>{tBilingual('No punch records logged yet today.', 'আজকের দিনে এখনও কোন হাজিরার তথ্য রেকর্ড হয়নি।')}</p>
                   <Button asChild size="sm" variant="outline" className="mt-3 text-xs">
-                    <Link href={`/${tenantSlug}/hr/attendance`}>
+                    <Link href={`/hr/attendance`}>
                       {tBilingual('Mark Manual Attendance', 'ম্যানুয়াল হাজিরা দিন')}
                     </Link>
                   </Button>
@@ -810,7 +810,7 @@ export default function HrmDashboardPage() {
             </CardHeader>
             <CardContent className="p-3.5 space-y-2">
               <Link
-                href={`/${tenantSlug}/hr/employees`}
+                href={`/hr/employees`}
                 className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-900 hover:border-blue-300 dark:hover:border-blue-700 transition-all flex items-center justify-between group"
               >
                 <div className="flex items-center gap-2.5">
@@ -826,7 +826,7 @@ export default function HrmDashboardPage() {
               </Link>
 
               <Link
-                href={`/${tenantSlug}/hr/attendance`}
+                href={`/hr/attendance`}
                 className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-900 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all flex items-center justify-between group"
               >
                 <div className="flex items-center gap-2.5">
@@ -842,7 +842,7 @@ export default function HrmDashboardPage() {
               </Link>
 
               <Link
-                href={`/${tenantSlug}/hr/payroll`}
+                href={`/hr/payroll`}
                 className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-900 hover:border-purple-300 dark:hover:border-purple-700 transition-all flex items-center justify-between group"
               >
                 <div className="flex items-center gap-2.5">
@@ -858,7 +858,7 @@ export default function HrmDashboardPage() {
               </Link>
 
               <Link
-                href={`/${tenantSlug}/hr/salary-report`}
+                href={`/hr/salary-report`}
                 className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-900 hover:border-amber-300 dark:hover:border-amber-700 transition-all flex items-center justify-between group"
               >
                 <div className="flex items-center gap-2.5">

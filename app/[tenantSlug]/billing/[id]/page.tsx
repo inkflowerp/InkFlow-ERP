@@ -134,7 +134,7 @@ export default function InvoiceCockpitPage() {
     return (
       <div className="space-y-6 max-w-5xl">
         <Link
-          href={`/${slug}/billing`}
+          href="/billing"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -147,7 +147,7 @@ export default function InvoiceCockpitPage() {
           </p>
           <div>
             <Link
-              href={`/${slug}/billing`}
+              href="/billing"
               className="inline-flex items-center text-xs font-bold text-blue-600 hover:underline"
             >
               Return to Invoices &rarr;
@@ -174,7 +174,7 @@ export default function InvoiceCockpitPage() {
       {/* Non-Print Action Bar */}
       <div className="print:hidden space-y-3">
         <Link
-          href={`/${slug}/billing`}
+          href="/billing"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

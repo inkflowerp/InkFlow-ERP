@@ -62,7 +62,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
         assert.ok(item.key && item.key.trim().length > 0, `Item in ${section.id} must have a key`)
         assert.ok(item.title && item.title.trim().length > 0, `Item ${item.key} must have an English title`)
         assert.ok(item.titleBn && item.titleBn.trim().length > 0, `Item ${item.key} must have a Bengali title`)
-        assert.ok(item.href && item.href.startsWith(`/${sampleSlug}`), `Item ${item.key} href must be scoped to tenantSlug`)
+        assert.ok(item.href && item.href.startsWith('/'), `Item ${item.key} href must be a clean relative path`)
         assert.ok(item.icon && item.icon.trim().length > 0, `Item ${item.key} must have an icon string`)
       }
     }
@@ -73,8 +73,8 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
 
     for (const section of navSections) {
       for (const item of section.items) {
-        // Strip the tenant prefix: /sampleSlug/sales -> sales
-        const relativeRoute = item.href.replace(`/${sampleSlug}`, '').replace(/^\//, '')
+        // Strip the leading slash: /sales -> sales
+        const relativeRoute = item.href.replace(/^\//, '')
         const targetPath = relativeRoute ? path.join(appDir, relativeRoute) : appDir
 
         // Check if page.tsx exists at target directory or file

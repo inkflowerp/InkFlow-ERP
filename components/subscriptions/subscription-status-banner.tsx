@@ -63,7 +63,7 @@ export function SubscriptionStatusBanner() {
             </span>
           </div>
 
-          <Link href={`/${slug}/settings/subscription`}>
+          <Link href="/settings/subscription">
             <Button
               size="sm"
               variant="outline"
@@ -91,7 +91,7 @@ export function SubscriptionStatusBanner() {
             </span>
           </div>
 
-          <Link href={`/${slug}/settings/subscription`}>
+          <Link href="/settings/subscription">
             <Button
               size="sm"
               className="h-7 text-xs bg-white text-amber-900 hover:bg-amber-50 font-black bangla-text shadow-sm"

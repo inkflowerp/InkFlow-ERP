@@ -537,7 +537,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     }
     const currentQuery = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
     currentQuery.set('tab', tab)
-    router.replace(`/${slug}/design?${currentQuery.toString()}`)
+    router.replace(`/design?${currentQuery.toString()}`)
   }
 
   // Tenant-scoped jobs
@@ -1805,7 +1805,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                           <div className="flex items-center gap-2">
                             {hasInvoice && (job.status === 'approved' || job.is_locked) && (
                               <Link
-                                href={`/${slug}/production`}
+                                href="/production"
                                 className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:underline text-[11px]"
                                 title="Sent to Production Floor"
                               >
@@ -1814,7 +1814,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                               </Link>
                             )}
                             <Link
-                              href={`/${slug}/design/${job.id}`}
+                              href={`/design/${job.id}`}
                               className="inline-flex items-center gap-1 text-pink-600 dark:text-pink-400 font-bold hover:underline"
                             >
                               <span>Studio</span>
@@ -1979,7 +1979,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                                 <Link
-                                  href={`/${slug}/design/${job.id}`}
+                                  href={`/design/${job.id}`}
                                   className="inline-flex items-center gap-0.5 text-xs font-bold text-pink-600 hover:underline ml-1"
                                 >
                                   <span>Studio</span>
@@ -2138,7 +2138,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
 
                             {job.status === 'approved' && hasInvoice && (
                               <Link
-                                href={`/${slug}/production`}
+                                href="/production"
                                 className="inline-flex items-center gap-1.5 h-8 text-xs px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm"
                               >
                                 <Printer className="h-3.5 w-3.5" />
@@ -2170,7 +2170,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                             <Link
-                              href={`/${slug}/design/${job.id}`}
+                              href={`/design/${job.id}`}
                               className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:underline"
                             >
                               <span>Workbench &rarr;</span>
@@ -2459,7 +2459,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                   asChild
                   className="bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs"
                 >
-                  <Link href={`/${slug}/design/${lightboxJob.id}`}>
+                  <Link href={`/design/${lightboxJob.id}`}>
                     <ExternalLink className="h-3.5 w-3.5 mr-1" />
                     <span>Open Full Studio</span>
                   </Link>

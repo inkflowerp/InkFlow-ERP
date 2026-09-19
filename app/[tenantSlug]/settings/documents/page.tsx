@@ -251,7 +251,7 @@ export default function DocumentDesignerPage() {
           <div>
             <div className="flex items-center gap-2">
               <Link
-                href={`/${slug}/settings`}
+                href="/settings"
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />

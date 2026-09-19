@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React from 'react'
 import Link from 'next/link'
@@ -172,7 +172,7 @@ export function TrialDashboardCard() {
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
             </Button>
 
-            <Link href={`/${slug}/settings/subscription`} className="hidden sm:inline-block">
+            <Link href="/settings/subscription" className="hidden sm:inline-block">
               <Button size="sm" variant="outline" className="text-xs bangla-text">
                 {tBilingual('Compare Plans', 'প্ল্যান দেখুন')}
               </Button>

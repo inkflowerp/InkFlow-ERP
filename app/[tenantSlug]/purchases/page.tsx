@@ -4,7 +4,6 @@ interface PageProps {
   params: Promise<{ tenantSlug: string }>
 }
 
-export default async function LegacyPurchasesPage({ params }: PageProps) {
-  const { tenantSlug } = await params
-  redirect(`/${tenantSlug}/inventory?view=purchases`)
+export default async function LegacyPurchasesPage() {
+  redirect('/inventory?view=purchases')
 }

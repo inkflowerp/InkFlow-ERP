@@ -4,7 +4,6 @@ interface TenantPageProps {
   params: Promise<{ tenantSlug: string }>
 }
 
-export default async function TenantPage({ params }: TenantPageProps) {
-  const { tenantSlug } = await params
-  redirect(`/${tenantSlug}/dashboard`)
+export default async function TenantPage() {
+  redirect('/dashboard')
 }

@@ -133,7 +133,7 @@ export function NeedsAttentionPanel({
                 <div>
                   <div className="flex items-center justify-between gap-1 mb-1">
                     <Link
-                      href={`/${tenantSlug}/quotations/${q.id}`}
+                      href={`/quotations/${q.id}`}
                       className="font-mono font-bold text-xs text-blue-600 hover:underline flex items-center gap-1"
                     >
                       <span>{q.quotation_number}</span>

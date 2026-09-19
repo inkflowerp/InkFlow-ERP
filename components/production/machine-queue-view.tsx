@@ -71,7 +71,7 @@ export function MachineQueueView({
           )}
         </p>
         <div className="mt-4">
-          <Link href={`/${tenantSlug}/production/machineries`}>
+          <Link href={`/production/machineries`}>
             <Button size="sm" variant="outline" className="text-xs">
               {tBilingual('Manage Machineries Fleet', 'মেশিনারি বহর পরিচালনা')}
             </Button>

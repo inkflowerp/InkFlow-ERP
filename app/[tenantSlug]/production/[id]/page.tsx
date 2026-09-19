@@ -70,7 +70,7 @@ export default function ProductionJobDetailPage() {
     return (
       <div className="space-y-6 max-w-6xl">
         <Link
-          href={`/${slug}/production`}
+          href="/production"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -83,7 +83,7 @@ export default function ProductionJobDetailPage() {
             The production job record you are looking for does not exist in your queue.
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/production`}>View All Production Jobs</Link>
+            <Link href="/production">View All Production Jobs</Link>
           </Button>
         </Card>
       </div>
@@ -95,7 +95,7 @@ export default function ProductionJobDetailPage() {
       {/* Header & Back Link */}
       <div>
         <Link
-          href={`/${slug}/production`}
+          href="/production"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

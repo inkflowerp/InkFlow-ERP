@@ -240,13 +240,13 @@ export default function AdvancedProductionPage() {
           iconColor="text-blue-600"
           actions={
             <div className="flex items-center gap-2">
-              <Link href={`/${slug}/production/machineries`}>
+              <Link href={`/production/machineries`}>
                 <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5">
                   <Cpu className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Machinery Fleet', 'মেশিনারি বহর')}
                 </Button>
               </Link>
-              <Link href={`/${slug}/operator`}>
+              <Link href="/operator">
                 <Button variant="default" size="sm" className="text-xs bangla-text bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-xs">
                   <Printer className="h-3.5 w-3.5" />
                   {tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}
