@@ -68,7 +68,18 @@ export default function DesignDetailPage() {
   const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
   const [invoiceRequests] = useDataStore<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS, [])
 
-  const job = jobs.find((j: DesignJobRecord) => j.id === jobId || j.design_number === jobId)
+  const isMatchingCompany = (id?: string | null) => {
+    if (!id) return false
+    return (
+      (company?.id && id === company.id) ||
+      (company?.slug && id === company.slug) ||
+      (slug && id === slug)
+    )
+  }
+
+  const job = jobs.find(
+    (j: DesignJobRecord) => (j.id === jobId || j.design_number === jobId) && isMatchingCompany(j.company_id)
+  )
   const [activeVersionNumber, setActiveVersionNumber] = useState<number>(job?.current_version || 1)
 
   // Modals

@@ -611,6 +611,53 @@ export class DesignRepository {
 
     return { success: true, designJob: updatedJob || job }
   }
+
+  static async deleteDesignJob(id: string, companyId: string): Promise<boolean> {
+    try {
+      const supabase = await createClient()
+      await (supabase as any)
+        .from('design_versions')
+        .delete()
+        .eq('design_job_id', id)
+        .eq('company_id', companyId)
+
+      await (supabase as any)
+        .from('design_jobs')
+        .delete()
+        .eq('id', id)
+        .eq('company_id', companyId)
+    } catch {
+      // Local fallback
+    }
+
+    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const filtered = all.filter((d) => !(d.id === id && (d.company_id === companyId || !d.company_id)))
+    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, filtered)
+    return true
+  }
+
+  static async purgeAllDesignJobs(companyId: string): Promise<boolean> {
+    try {
+      const supabase = await createClient()
+      await (supabase as any)
+        .from('design_versions')
+        .delete()
+        .eq('company_id', companyId)
+
+      await (supabase as any)
+        .from('design_jobs')
+        .delete()
+        .eq('company_id', companyId)
+    } catch {
+      // Local fallback
+    }
+
+    const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const filtered = all.filter((d) => d.company_id && d.company_id !== companyId)
+    PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, filtered)
+    return true
+  }
 }
+
 
 

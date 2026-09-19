@@ -100,5 +100,16 @@ export class DesignService {
     if (!id || !companyId) return { success: false, error: 'Design job ID and company context required.' }
     return await DesignRepository.sendToPrintOperator(id, companyId, actorName)
   }
+
+  static async deleteJob(id: string, companyId: string): Promise<boolean> {
+    if (!id || !companyId) return false
+    return await DesignRepository.deleteDesignJob(id, companyId)
+  }
+
+  static async purgeAllJobs(companyId: string): Promise<boolean> {
+    if (!companyId) return false
+    return await DesignRepository.purgeAllDesignJobs(companyId)
+  }
 }
+
 

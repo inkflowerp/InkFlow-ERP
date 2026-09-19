@@ -231,3 +231,83 @@ export async function sendToPrintOperatorAction(
   }
 }
 
+/**
+ * Server Action: Delete a single design job
+ */
+export async function deleteDesignJobAction(
+  designJobId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<boolean>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const ok = await DesignService.deleteJob(designJobId, companyId)
+    if (!ok) {
+      return { success: false, error: 'Failed to delete design job.' }
+    }
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'design.delete',
+        'design_job',
+        designJobId,
+        null,
+        {},
+        `Deleted design job ${designJobId}`
+      )
+    } catch {}
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: true }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to delete design job' }
+  }
+}
+
+/**
+ * Server Action: Purge all design jobs for tenant
+ */
+export async function purgeAllDesignJobsAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<boolean>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const ok = await DesignService.purgeAllJobs(companyId)
+    if (!ok) {
+      return { success: false, error: 'Failed to purge design jobs.' }
+    }
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'design.purge_all',
+        'design_job',
+        null,
+        null,
+        {},
+        `Purged all design jobs for company ${companyId}`
+      )
+    } catch {}
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: true }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to purge design jobs' }
+  }
+}
+
+

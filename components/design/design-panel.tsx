@@ -56,6 +56,7 @@ import {
   Split,
   Sparkle,
   Download,
+  Trash2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -87,6 +88,9 @@ import {
   updateDesignVersionApprovalAction,
   addDesignVersionAction,
   sendToPrintOperatorAction,
+  getDesignJobsAction,
+  deleteDesignJobAction,
+  purgeAllDesignJobsAction,
 } from '@/actions/design.actions'
 import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
 import { cn } from '@/lib/utils'
@@ -141,7 +145,17 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const { company, currentUser } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
-  const companyId = company?.id || 'c-01'
+  const companyId = company?.id || (slug !== 'my-company' ? slug : '2af84f1d-1ebd-48e7-9795-fd5c24c38a96')
+
+  // Helper for strict tenant scoping
+  const isMatchingCompany = (id?: string | null) => {
+    if (!id) return false
+    return (
+      (company?.id && id === company.id) ||
+      (company?.slug && id === company.slug) ||
+      (slug && id === slug)
+    )
+  }
 
   // URL Tab Parameter Sync
   const tabParam = searchParams?.get('tab') as DesignPanelTab | null
@@ -224,6 +238,81 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     setTimeout(() => setNotificationMsg(null), 4000)
   }
 
+  // Authoritative server synchronization on mount and company change
+  useEffect(() => {
+    let isMounted = true
+    async function syncServerJobs() {
+      if (!company?.id) return
+      try {
+        const res = await getDesignJobsAction(company.id)
+        if (res.success && res.data && isMounted) {
+          const serverJobs = res.data
+          const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+          const otherTenantJobs = allStored.filter((j) => j.company_id && !isMatchingCompany(j.company_id))
+          const merged = [...otherTenantJobs, ...serverJobs]
+          PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, merged)
+          setJobs(merged)
+        }
+      } catch (err) {
+        console.error('Failed to sync design jobs:', err)
+      }
+    }
+    syncServerJobs()
+    return () => {
+      isMounted = false
+    }
+  }, [company?.id, slug])
+
+  // Delete Job handler
+  const handleDeleteJob = async (jobId: string) => {
+    if (!confirm('Are you sure you want to delete this design job? This action cannot be undone.')) {
+      return
+    }
+    startTransition(async () => {
+      try {
+        const res = await deleteDesignJobAction(jobId, companyId)
+        if (!res.success) {
+          showNotification(res.error || 'Failed to delete job', 'warning')
+          return
+        }
+        const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const updated = allStored.filter((j) => j.id !== jobId)
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, updated)
+        setJobs(updated)
+        showNotification('Design job deleted successfully!')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to delete job', 'warning')
+      }
+    })
+  }
+
+  // Purge all jobs handler
+  const handlePurgeAllJobs = async () => {
+    if (
+      !confirm(
+        'WARNING: Are you sure you want to delete ALL design jobs in this pipeline? This will permanently wipe all artwork files and revision history for this organization.'
+      )
+    ) {
+      return
+    }
+    startTransition(async () => {
+      try {
+        const res = await purgeAllDesignJobsAction(companyId)
+        if (!res.success) {
+          showNotification(res.error || 'Failed to delete all jobs', 'warning')
+          return
+        }
+        const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const remaining = allStored.filter((j) => j.company_id && !isMatchingCompany(j.company_id))
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, remaining)
+        setJobs(remaining)
+        showNotification('All design jobs have been permanently deleted!')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to purge jobs', 'warning')
+      }
+    })
+  }
+
   // Handle Tab Switch
   const handleTabChange = (tab: DesignPanelTab) => {
     setActiveTab(tab)
@@ -239,13 +328,14 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
 
   // Tenant-scoped jobs
   const tenantJobs = useMemo(() => {
-    return (jobs || []).filter((j) => !j.company_id || j.company_id === companyId)
-  }, [jobs, companyId])
+    return (jobs || []).filter((j) => isMatchingCompany(j.company_id))
+  }, [jobs, company, slug])
 
   // Tenant-scoped invoice requests
   const tenantRequests = useMemo(() => {
-    return (invoiceRequests || []).filter((r) => !r.company_id || r.company_id === companyId)
-  }, [invoiceRequests, companyId])
+    return (invoiceRequests || []).filter((r) => isMatchingCompany(r.company_id))
+  }, [invoiceRequests, company, slug])
+
 
   // Operational KPIs
   const kpiStats = useMemo(() => {
@@ -807,6 +897,19 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('New Design Job', 'নতুন ডিজাইন জব')}
             </Button>
+
+            {/* Delete All Jobs Button */}
+            {tenantJobs.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handlePurgeAllJobs}
+                className="border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 text-xs font-bold bangla-text shadow-xs"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                {tBilingual('Delete All Jobs', 'সকল জব মুছুন')}
+              </Button>
+            )}
           </div>
         }
       />
@@ -1359,6 +1462,15 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                             >
                               <Printer className="h-3.5 w-3.5" />
                             </button>
+
+                            {/* Delete Job */}
+                            <button
+                              onClick={() => handleDeleteJob(job.id)}
+                              title="Delete design job"
+                              className="h-7 w-7 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950 hover:text-rose-600 hover:border-rose-300 flex items-center justify-center text-slate-400 transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           </div>
 
                           <div className="flex items-center gap-2">
@@ -1398,158 +1510,312 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
       )}
 
       {/* =========================================================================
-          VIEW MODE 2: CARDS GRID VIEW
+          VIEW MODE 2: CARDS GRID & TABLE VIEW
          ========================================================================= */}
-      {(viewMode === 'cards' || activeTab !== 'kanban') && (
+      {(viewMode === 'cards' || viewMode === 'table' || activeTab !== 'kanban') && (
         <div className="space-y-4">
-          {/* Main Grid of Jobs */}
+          {/* Main Grid / Table of Jobs */}
           {activeTab !== 'overview' && activeTab !== 'notifications' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredJobs.map((job) => {
-                const latestVersion = job.versions?.[job.versions.length - 1]
-                const format = latestVersion?.file_format || 'ai'
-                const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
-                const isInvoicePending = job.commercial_status === 'invoice_requested'
+            <>
+              {viewMode === 'table' ? (
+                <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
+                      <tr>
+                        <th className="py-3 px-4">Job #</th>
+                        <th className="py-3 px-4">Artwork & Title</th>
+                        <th className="py-3 px-4">Customer</th>
+                        <th className="py-3 px-4">Format / Version</th>
+                        <th className="py-3 px-4">Priority</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4">Commercial Gate</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {filteredJobs.map((job) => {
+                        const latestVersion = job.versions?.[job.versions.length - 1]
+                        const format = latestVersion?.file_format || 'ai'
+                        const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
+                        const isInvoicePending = job.commercial_status === 'invoice_requested'
 
-                return (
-                  <Card key={job.id} className="p-4 border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all space-y-3">
-                    {/* Header Spec */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs font-black text-pink-600 dark:text-pink-400">
-                            #{job.design_number}
-                          </span>
-                          <span className={`uppercase text-[9px] font-black px-1.5 py-0.2 rounded border ${getFormatBadgeColor(format)}`}>
-                            .{format}
-                          </span>
-                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                            v{job.current_version || 1}
-                          </span>
+                        return (
+                          <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                            <td className="py-3 px-4 font-mono font-bold text-pink-600 dark:text-pink-400">
+                              #{job.design_number}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div
+                                  onClick={() => handleOpenLightbox(job)}
+                                  className="h-9 w-9 rounded-md overflow-hidden bg-slate-100 shrink-0 border border-slate-200 cursor-pointer"
+                                >
+                                  <img
+                                    src={latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=100&q=80'}
+                                    alt={job.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div>
+                                  <div className="font-bold text-slate-900 dark:text-slate-100 line-clamp-1">{job.title}</div>
+                                  <div className="text-[11px] text-slate-500 font-mono">{job.dimensions_spec || 'Standard'}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-300">
+                              {job.customer_name}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-1">
+                                <span className={`uppercase text-[9px] font-black px-1.5 py-0.2 rounded border ${getFormatBadgeColor(format)}`}>
+                                  .{format}
+                                </span>
+                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                  v{job.current_version || 1}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="capitalize text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                {job.priority}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 inline-block">
+                                {job.status.replace('_', ' ')}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              {hasInvoice ? (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 inline-flex items-center gap-1">
+                                  <Receipt className="h-3 w-3" /> Invoiced
+                                </span>
+                              ) : isInvoicePending ? (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950 dark:text-amber-300 inline-flex items-center gap-1">
+                                  <Clock className="h-3 w-3" /> Request Sent
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-400">No Invoice</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleOpenWhatsApp(job)}
+                                  className="h-7 w-7 p-0 text-emerald-600 hover:bg-emerald-50"
+                                  title="WhatsApp"
+                                >
+                                  <Phone className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleOpenUploadModal(job)}
+                                  className="h-7 w-7 p-0 text-slate-600 hover:bg-slate-100"
+                                  title="Upload Version"
+                                >
+                                  <Upload className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteJob(job.id)}
+                                  className="h-7 w-7 p-0 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                                  title="Delete Job"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                                <Link
+                                  href={`/${slug}/design/${job.id}`}
+                                  className="inline-flex items-center gap-0.5 text-xs font-bold text-pink-600 hover:underline ml-1"
+                                >
+                                  <span>Studio</span>
+                                  <ExternalLink className="h-3 w-3" />
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                  {filteredJobs.length === 0 && (
+                    <div className="p-12 text-center text-slate-400 text-xs">
+                      No design jobs found in pipeline.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredJobs.map((job) => {
+                    const latestVersion = job.versions?.[job.versions.length - 1]
+                    const format = latestVersion?.file_format || 'ai'
+                    const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
+                    const isInvoicePending = job.commercial_status === 'invoice_requested'
+
+                    return (
+                      <Card key={job.id} className="p-4 border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all space-y-3">
+                        {/* Header Spec */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-xs font-black text-pink-600 dark:text-pink-400">
+                                #{job.design_number}
+                              </span>
+                              <span className={`uppercase text-[9px] font-black px-1.5 py-0.2 rounded border ${getFormatBadgeColor(format)}`}>
+                                .{format}
+                              </span>
+                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                v{job.current_version || 1}
+                              </span>
+                            </div>
+                            <h3 className="font-bold text-sm text-slate-900 dark:text-white mt-1 line-clamp-1">{job.title}</h3>
+                          </div>
+
+                          <div className="text-right flex items-center gap-1">
+                            <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 block">
+                              {job.status.replace('_', ' ')}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteJob(job.id)}
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                              title="Delete Job"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </div>
-                        <h3 className="font-bold text-sm text-slate-900 dark:text-white mt-1 line-clamp-1">{job.title}</h3>
-                      </div>
 
-                      <div className="text-right">
-                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 block">
-                          {job.status.replace('_', ' ')}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Artwork Preview Card with Lightbox Trigger */}
-                    <div
-                      onClick={() => handleOpenLightbox(job)}
-                      className="relative aspect-video rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer group"
-                    >
-                      <img
-                        src={latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=400&q=80'}
-                        alt={job.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
-                        <Eye className="h-4 w-4" />
-                        <span>Inspect Artwork</span>
-                      </div>
-                      {job.is_locked && (
-                        <div className="absolute bottom-2 right-2">
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow">
-                            <Lock className="h-3 w-3" /> Locked & Approved
-                          </span>
+                        {/* Artwork Preview Card with Lightbox Trigger */}
+                        <div
+                          onClick={() => handleOpenLightbox(job)}
+                          className="relative aspect-video rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer group"
+                        >
+                          <img
+                            src={latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=400&q=80'}
+                            alt={job.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
+                            <Eye className="h-4 w-4" />
+                            <span>Inspect Artwork</span>
+                          </div>
+                          {job.is_locked && (
+                            <div className="absolute bottom-2 right-2">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow">
+                                <Lock className="h-3 w-3" /> Locked & Approved
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
+
+                        {/* Client & Specs Info */}
+                        <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 text-xs space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">Customer:</span>
+                            <strong className="text-slate-800 dark:text-slate-200">{job.customer_name}</strong>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">Dimensions:</span>
+                            <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{job.dimensions_spec || 'Standard'}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">Designer:</span>
+                            <span className="text-slate-700 dark:text-slate-300">{job.designer_name}</span>
+                          </div>
+                        </div>
+
+                        {/* Action Bar */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleOpenWhatsApp(job)}
+                              className="h-8 text-xs px-2 text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100"
+                            >
+                              <Phone className="h-3.5 w-3.5 mr-1" />
+                              <span>WhatsApp</span>
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleOpenUploadModal(job)}
+                              className="h-8 text-xs px-2"
+                            >
+                              <Upload className="h-3.5 w-3.5 mr-1" />
+                              <span>Upload v+1</span>
+                            </Button>
+
+                            {job.status === 'customer_approval' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleOpenApprovalModal(job)}
+                                className="h-8 text-xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                              >
+                                <Check className="h-3.5 w-3.5 mr-1" />
+                                <span>Approve</span>
+                              </Button>
+                            )}
+
+                            {job.status === 'approved' && hasInvoice && (
+                              <Link
+                                href={`/${slug}/production`}
+                                className="inline-flex items-center gap-1.5 h-8 text-xs px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm"
+                              >
+                                <Printer className="h-3.5 w-3.5" />
+                                <span>Production &rarr;</span>
+                              </Link>
+                            )}
+
+                            {job.status === 'approved' && !hasInvoice && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleOpenInvoiceRequest(job)}
+                                className="h-8 text-xs px-2 border-rose-300 text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 font-bold"
+                              >
+                                <Send className="h-3.5 w-3.5 mr-1" />
+                                <span>Req Invoice</span>
+                              </Button>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteJob(job.id)}
+                              className="h-8 text-xs px-2 text-rose-600 hover:bg-rose-50"
+                              title="Delete Job"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                            <Link
+                              href={`/${slug}/design/${job.id}`}
+                              className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:underline"
+                            >
+                              <span>Workbench &rarr;</span>
+                            </Link>
+                          </div>
+                        </div>
+                      </Card>
+                    )
+                  })}
+
+                  {filteredJobs.length === 0 && (
+                    <div className="col-span-full p-12 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                      No design jobs found in pipeline.
                     </div>
-
-                    {/* Client & Specs Info */}
-                    <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 text-xs space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Customer:</span>
-                        <strong className="text-slate-800 dark:text-slate-200">{job.customer_name}</strong>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Dimensions:</span>
-                        <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{job.dimensions_spec || 'Standard'}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Designer:</span>
-                        <span className="text-slate-700 dark:text-slate-300">{job.designer_name}</span>
-                      </div>
-                    </div>
-
-                    {/* Action Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleOpenWhatsApp(job)}
-                          className="h-8 text-xs px-2 text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100"
-                        >
-                          <Phone className="h-3.5 w-3.5 mr-1" />
-                          <span>WhatsApp</span>
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleOpenUploadModal(job)}
-                          className="h-8 text-xs px-2"
-                        >
-                          <Upload className="h-3.5 w-3.5 mr-1" />
-                          <span>Upload v+1</span>
-                        </Button>
-
-                        {job.status === 'customer_approval' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleOpenApprovalModal(job)}
-                            className="h-8 text-xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                          >
-                            <Check className="h-3.5 w-3.5 mr-1" />
-                            <span>Approve</span>
-                          </Button>
-                        )}
-
-                        {job.status === 'approved' && hasInvoice && (
-                          <Link
-                            href={`/${slug}/production`}
-                            className="inline-flex items-center gap-1.5 h-8 text-xs px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm"
-                          >
-                            <Printer className="h-3.5 w-3.5" />
-                            <span>Production &rarr;</span>
-                          </Link>
-                        )}
-
-                        {job.status === 'approved' && !hasInvoice && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenInvoiceRequest(job)}
-                            className="h-8 text-xs px-2 border-rose-300 text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 font-bold"
-                          >
-                            <Send className="h-3.5 w-3.5 mr-1" />
-                            <span>Req Invoice</span>
-                          </Button>
-                        )}
-                      </div>
-
-                      <Link
-                        href={`/${slug}/design/${job.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:underline"
-                      >
-                        <span>Workbench &rarr;</span>
-                      </Link>
-                    </div>
-                  </Card>
-                )
-              })}
-
-              {filteredJobs.length === 0 && (
-                <div className="col-span-full p-12 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                  No design jobs found for current filter.
+                  )}
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {/* OVERVIEW ANALYTICS TAB */}
