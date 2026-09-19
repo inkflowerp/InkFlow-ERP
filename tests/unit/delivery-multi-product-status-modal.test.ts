@@ -308,4 +308,59 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     const allReadyNow = remainingAfterPartial.every((i) => i.status === 'ready_for_delivery')
     assert.strictEqual(allReadyNow, true, 'All remaining items are now ready for final full delivery')
   })
+
+  it('6. BillingService.createInvoice preserves item_kind & workflow_routing for Ready Products and populates Delivery Panel', async () => {
+    const { BillingService } = await import('../../services/billing.service.ts')
+    const ACTION_TENANT = `tenant-service-delivery-${Date.now()}`
+
+    const rawItems = [
+      {
+        item_name: 'X-stand',
+        dimensions_spec: '60cm x 160cm',
+        width: 0,
+        height: 0,
+        quantity: 2,
+        unit: 'pcs',
+        unit_price: 650,
+        total_price: 1300,
+        item_kind: 'ready_product',
+        workflow_routing: 'ready_product',
+        design_required: false,
+        customer_approval_required: false,
+      },
+    ]
+
+    const invoice = await BillingService.createInvoice({
+      company_id: ACTION_TENANT,
+      customer_name: 'Ready Goods Corp',
+      customer_phone: '+8801999887766',
+      customer_address: 'Uttara Sector 3, Dhaka',
+      due_date: '2026-10-10',
+      grand_total: 1300,
+      paid_amount: 0,
+      due_amount: 1300,
+      created_by_name: 'Commercial Executive',
+      items: rawItems as any,
+    })
+
+    assert.ok(invoice.id, 'Invoice ID must be generated')
+    assert.strictEqual(invoice.items.length, 1)
+    assert.strictEqual(invoice.items[0].item_kind, 'ready_product')
+    assert.strictEqual(invoice.items[0].workflow_routing, 'ready_product')
+
+    // Verify Delivery Challan exists and has ready_for_delivery status
+    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challan = challans.find((c) => c.company_id === ACTION_TENANT && c.invoice_id === invoice.id)
+    assert.ok(challan, 'Delivery challan must be created in datastore')
+    assert.strictEqual(challan.items.length, 1)
+    assert.strictEqual(challan.items[0].status, 'ready_for_delivery')
+    assert.strictEqual(challan.items[0].item_kind, 'ready_product')
+    assert.strictEqual(challan.items[0].workflow_routing, 'ready_product')
+
+    // Verify 0 production tasks were created for this ready product
+    const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const xstandTasks = prodTasks.filter((t) => t.company_id === ACTION_TENANT)
+    assert.strictEqual(xstandTasks.length, 0, 'Zero production tasks must be generated for ready products')
+  })
 })
+

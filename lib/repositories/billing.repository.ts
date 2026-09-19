@@ -997,6 +997,21 @@ export class BillingRepository {
               notes: newChallan.notes,
               created_by_name: newChallan.created_by_name,
             })
+
+            const chlDbItems = challanItems.map((ci) => ({
+              challan_id: chlId,
+              product_description: ci.product_description,
+              dimensions_spec: ci.dimensions_spec,
+              quantity: ci.quantity,
+              unit: ci.unit,
+              remarks: ci.remarks,
+              status: ci.status,
+              workflow_routing: ci.workflow_routing,
+              item_kind: ci.item_kind,
+              is_delivered: false,
+              delivered_quantity: 0,
+            }))
+            await (supabase as any).from('delivery_challan_items').insert(chlDbItems)
           } catch {}
         } else {
           existingChallan.invoice_id = invoice.id

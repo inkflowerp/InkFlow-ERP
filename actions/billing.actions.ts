@@ -287,20 +287,34 @@ export async function createInvoiceAction(
 
       calculatedSubtotal += lineTotal
 
-      const dimensionStr = w > 0 && h > 0 ? `${w} × ${h} ${it.unit || 'inch'}` : null
+      const dimensionStr = it.dimensions_spec || (w > 0 && h > 0 ? `${w} × ${h} ${it.unit || 'inch'}` : null)
       const finishingStr = it.finishing && it.finishing !== 'None' ? ` (${it.finishing})` : ''
+
+      const isReady = it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product'
+      const routing =
+        it.workflow_routing ||
+        (isReady
+          ? 'ready_product'
+          : it.design_required
+          ? 'design_required'
+          : 'ready_production')
 
       return {
         product_id: it.product_id || null,
+        item_name: it.item_name || 'Printing Item',
         item_description: `${it.item_name || 'Printing Item'}${finishingStr}`,
         dimensions_spec: dimensionStr,
+        width: w || undefined,
+        height: h || undefined,
         quantity: qty,
         unit: it.unit || 'pcs',
         unit_price: rate,
         vat_percentage: 0,
         total_price: lineTotal,
         finishing: it.finishing || null,
-        design_required: Boolean(it.design_required),
+        item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),
+        workflow_routing: routing,
+        design_required: Boolean(it.design_required || routing === 'design_required'),
         customer_approval_required: Boolean(it.customer_approval_required),
       }
     })
@@ -361,6 +375,10 @@ export async function createInvoiceAction(
       revalidatePath('/[tenantSlug]/invoices', 'page')
       revalidatePath('/[tenantSlug]/billing', 'page')
       revalidatePath('/[tenantSlug]/billing/[id]', 'page')
+      revalidatePath('/[tenantSlug]/delivery', 'page')
+      revalidatePath('/[tenantSlug]/design', 'page')
+      revalidatePath('/[tenantSlug]/production', 'page')
+      revalidatePath('/[tenantSlug]/orders', 'page')
       revalidatePath('/', 'layout')
     } catch {}
 

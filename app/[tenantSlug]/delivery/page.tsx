@@ -98,7 +98,9 @@ export default function DeliveryLogisticsPage() {
   // Dynamic Live Status Resolver per Item
   const getLiveItemStatus = (it: any, ch?: DeliveryChallanRecord | null): string => {
     if (it.is_delivered) return 'delivered'
-    if (it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product') return 'ready_for_delivery'
+    if (it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product' || it.status === 'ready_for_delivery') {
+      return 'ready_for_delivery'
+    }
 
     if (ch) {
       const matchedTasks = productionTasks.filter(
@@ -282,15 +284,50 @@ export default function DeliveryLogisticsPage() {
     showNotification(`Installation job ${insNum} scheduled at ${insSite}.`)
   }
 
+  // Tenant-scoped Challans & Installations
+  const tenantChallans = React.useMemo(() => {
+    if (!company?.id && !company?.slug) return challans
+    return challans.filter((ch: DeliveryChallanRecord) => {
+      if (company?.id && ch.company_id === company.id) return true
+      if (company?.slug && (ch.company_id === company.slug || (ch as any).tenant_slug === company.slug)) return true
+      if (!ch.company_id || ch.company_id === 'c-01' || ch.company_id === 'default-company') return true
+      return false
+    })
+  }, [challans, company])
+
+  const tenantInstallations = React.useMemo(() => {
+    if (!company?.id && !company?.slug) return installations
+    return installations.filter((ins: InstallationRecord) => {
+      if (company?.id && ins.company_id === company.id) return true
+      if (company?.slug && (ins.company_id === company.slug || (ins as any).tenant_slug === company.slug)) return true
+      if (!ins.company_id || ins.company_id === 'c-01' || ins.company_id === 'default-company') return true
+      return false
+    })
+  }, [installations, company])
+
+  const filteredChallans = React.useMemo(() => {
+    if (!search.trim()) return tenantChallans
+    const q = search.toLowerCase()
+    return tenantChallans.filter(
+      (ch) =>
+        ch.challan_number?.toLowerCase().includes(q) ||
+        ch.invoice_number?.toLowerCase().includes(q) ||
+        ch.order_number?.toLowerCase().includes(q) ||
+        ch.customer_name?.toLowerCase().includes(q) ||
+        ch.delivery_address?.toLowerCase().includes(q) ||
+        ch.items?.some((i) => i.product_description?.toLowerCase().includes(q))
+    )
+  }, [tenantChallans, search])
+
   // Executive Metrics
-  const countScheduledToday = challans.filter(
+  const countScheduledToday = tenantChallans.filter(
     (ch: DeliveryChallanRecord) => ch.scheduled_date === new Date().toISOString().split('T')[0]
   ).length
-  const countOutForDelivery = challans.filter((ch: DeliveryChallanRecord) => ch.status === 'out_for_delivery').length
-  const countActiveInstallations = installations.filter(
+  const countOutForDelivery = tenantChallans.filter((ch: DeliveryChallanRecord) => ch.status === 'out_for_delivery').length
+  const countActiveInstallations = tenantInstallations.filter(
     (ins: InstallationRecord) => ins.status === 'on_site' || ins.status === 'scheduled'
   ).length
-  const countDelivered = challans.filter((ch: DeliveryChallanRecord) => ch.status === 'delivered').length
+  const countDelivered = tenantChallans.filter((ch: DeliveryChallanRecord) => ch.status === 'delivered').length
 
   const getMethodBadge = (method: DeliveryMethod) => {
     switch (method) {
@@ -563,7 +600,7 @@ export default function DeliveryLogisticsPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Delivery Challans & Dispatches ({challans.length})</CardTitle>
+              <CardTitle className="text-base">Delivery Challans & Dispatches ({filteredChallans.length})</CardTitle>
               <span className="text-xs text-slate-400">Transit slips with receiver verification</span>
             </div>
           </CardHeader>
@@ -583,7 +620,14 @@ export default function DeliveryLogisticsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {challans.map((ch: DeliveryChallanRecord) => {
+                  {filteredChallans.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-xs text-slate-400">
+                        {search ? tBilingual('No challans matching search criteria.', 'অনুসন্ধানের সাথে মিল রেখে কোন চালান পাওয়া যায়নি।') : tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredChallans.map((ch: DeliveryChallanRecord) => {
                     const items = ch.items || []
                     const readyCount = items.filter((it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product')).length
                     const pendingCount = items.filter((it) => !it.is_delivered && getLiveItemStatus(it, ch) !== 'ready_for_delivery').length
@@ -697,19 +741,20 @@ export default function DeliveryLogisticsPage() {
                         </td>
                       </tr>
                     )
-                  })}
+                  })
+                )}
                 </tbody>
               </table>
             </div>
 
             {/* Mobile Card List View */}
             <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-              {challans.length === 0 ? (
+              {filteredChallans.length === 0 ? (
                 <div className="p-6 text-center text-xs text-slate-400">
-                  {tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
+                  {search ? tBilingual('No challans matching search criteria.', 'অনুসন্ধানের সাথে মিল রেখে কোন চালান পাওয়া যায়নি।') : tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
                 </div>
               ) : (
-                challans.map((ch: DeliveryChallanRecord) => {
+                filteredChallans.map((ch: DeliveryChallanRecord) => {
                   const items = ch.items || []
                   const readyCount = items.filter((it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product')).length
                   const pendingCount = items.filter((it) => !it.is_delivered && getLiveItemStatus(it, ch) !== 'ready_for_delivery').length
