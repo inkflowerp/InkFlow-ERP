@@ -50,10 +50,13 @@ CREATE POLICY "tenant_domains_manage_policy" ON public.tenant_domains
     FOR ALL
     USING (
         tenant_id IN (
-            SELECT company_id FROM public.company_users
-            WHERE user_id = auth.uid() 
-            AND status = 'active' 
-            AND role IN ('business_owner', 'system_admin')
+            SELECT cu.company_id 
+            FROM public.company_users cu
+            JOIN public.user_roles ur ON ur.company_user_id = cu.id
+            JOIN public.roles r ON r.id = ur.role_id
+            WHERE cu.user_id = auth.uid() 
+            AND cu.status = 'active' 
+            AND (r.slug IN ('business_owner', 'system_admin', 'owner', 'admin') OR r.name IN ('Business Owner', 'System Admin', 'Owner', 'Admin'))
         )
         OR EXISTS (
             SELECT 1 FROM public.platform_admins
