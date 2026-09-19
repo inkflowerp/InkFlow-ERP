@@ -109,7 +109,7 @@ export interface DesignPanelProps {
   defaultTab?: DesignPanelTab
 }
 
-export function DesignPanel({ defaultTab = 'kanban' }: DesignPanelProps) {
+function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -334,15 +334,13 @@ export function DesignPanel({ defaultTab = 'kanban' }: DesignPanelProps) {
       try {
         const nextVer = (selectedJob.current_version || 1) + 1
         const res = await addDesignVersionAction(
-          selectedJob.id,
           {
+            designJobId: selectedJob.id,
             versionNumber: nextVer,
-            versionLabel: `Version ${nextVer}`,
             fileName: uploadFileName || `proof_v${nextVer}.${uploadFormat}`,
             fileUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-            fileFormat: uploadFormat,
-            changeNotes: uploadNotes || 'New design revision uploaded by studio designer.',
-            uploadedByName: currentUser?.profile?.full_name || 'Studio Designer',
+            fileType: uploadFormat,
+            notes: uploadNotes || 'New design revision uploaded by studio designer.',
           },
           companyId
         )
@@ -352,6 +350,31 @@ export function DesignPanel({ defaultTab = 'kanban' }: DesignPanelProps) {
           return
         }
 
+        const newVer: DesignVersionRecord = {
+          id: res.data?.id || `dv-${Date.now()}`,
+          design_job_id: selectedJob.id,
+          version_number: nextVer,
+          version_label: `Version ${nextVer}`,
+          proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+          proof_file_name: uploadFileName || `proof_v${nextVer}.png`,
+          source_file_name: uploadFileName || `artwork_v${nextVer}.${uploadFormat}`,
+          file_format: uploadFormat,
+          file_size_bytes: 35000000,
+          change_notes: uploadNotes,
+          uploaded_by_name: currentUser?.profile?.full_name || 'Designer',
+          is_approved: false,
+          created_at: 'Just now',
+        }
+
+        const updatedJob = {
+          ...selectedJob,
+          current_version: nextVer,
+          versions: [...(selectedJob.versions || []), newVer],
+          status: 'customer_approval' as const,
+          updated_at: new Date().toISOString(),
+        }
+
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, selectedJob.id, updatedJob)
         setIsUploadModalOpen(false)
         showNotification(`Version v${nextVer} uploaded for #${selectedJob.design_number}!`)
       } catch (err: any) {
@@ -373,12 +396,17 @@ export function DesignPanel({ defaultTab = 'kanban' }: DesignPanelProps) {
 
     startTransition(async () => {
       try {
+        const verNum = selectedJob.current_version || selectedJob.versions?.length || 1
+        const targetVersion = selectedJob.versions?.find((v) => v.version_number === verNum) || selectedJob.versions?.[0]
+        const versionId = targetVersion?.id || `dv-${selectedJob.id}-${verNum}`
+
         const res = await updateDesignVersionApprovalAction(
-          selectedJob.id,
-          selectedJob.current_version || 1,
-          true,
-          approverName,
-          approvalNotes,
+          {
+            designJobId: selectedJob.id,
+            versionId: versionId,
+            approvalStatus: 'approved',
+            customerFeedback: approvalNotes,
+          },
           companyId
         )
 
@@ -387,6 +415,24 @@ export function DesignPanel({ defaultTab = 'kanban' }: DesignPanelProps) {
           return
         }
 
+        const updatedVersions = (selectedJob.versions || []).map((v) => ({
+          ...v,
+          is_approved: v.version_number === verNum,
+        }))
+
+        const updatedJob = {
+          ...selectedJob,
+          status: 'approved' as const,
+          approved_version: verNum,
+          approved_by: approverName || selectedJob.customer_name,
+          approval_timestamp: new Date().toISOString(),
+          approval_note: approvalNotes,
+          is_locked: true,
+          versions: updatedVersions,
+          updated_at: new Date().toISOString(),
+        }
+
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, selectedJob.id, updatedJob)
         setIsApprovalModalOpen(false)
         showNotification(`Artwork #${selectedJob.design_number} approved & locked!`)
       } catch (err: any) {
@@ -1680,5 +1726,22 @@ export function DesignPanel({ defaultTab = 'kanban' }: DesignPanelProps) {
         </form>
       </ModalDialog>
     </div>
+  )
+}
+
+export function DesignPanel(props: DesignPanelProps) {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
+            <Palette className="h-5 w-5 animate-spin" />
+          </div>
+          <p className="text-sm font-semibold text-slate-500">Loading Design Panel...</p>
+        </div>
+      }
+    >
+      <DesignPanelInner {...props} />
+    </React.Suspense>
   )
 }
