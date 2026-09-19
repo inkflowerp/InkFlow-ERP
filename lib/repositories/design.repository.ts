@@ -37,14 +37,27 @@ export class DesignRepository {
   }
 
   static async getDesignJobById(id: string, companyId: string): Promise<DesignJobRecord | null> {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    const isIdUuid = uuidRegex.test(id)
+    const isCompanyUuid = uuidRegex.test(companyId)
+
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('design_jobs')
         .select('*, versions:design_versions(*)')
-        .eq('id', id)
-        .eq('company_id', companyId)
-        .maybeSingle()
+
+      if (isIdUuid) {
+        query = query.or(`id.eq.${id},design_number.eq.${id}`)
+      } else {
+        query = query.eq('design_number', id)
+      }
+
+      if (companyId && companyId !== 'default' && isCompanyUuid) {
+        query = query.eq('company_id', companyId)
+      }
+
+      const { data, error } = await query.maybeSingle()
 
       if (!error && data) {
         return data as unknown as DesignJobRecord
@@ -52,7 +65,69 @@ export class DesignRepository {
     } catch (err: any) {}
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    return all.find((d: DesignJobRecord) => d.id === id && (!d.company_id || d.company_id === companyId)) || null
+    const foundLocal = all.find(
+      (d: DesignJobRecord) =>
+        (d.id === id || d.design_number === id) &&
+        (!d.company_id || !companyId || companyId === 'default' || d.company_id === companyId || (d as any).company_slug === companyId)
+    )
+    if (foundLocal) return foundLocal
+
+    // Check if the design job can be synthesized from invoices
+    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const inv = invoices.find(
+      (i) =>
+        (!i.company_id || !companyId || companyId === 'default' || i.company_id === companyId) &&
+        (i.id === id ||
+          i.invoice_number === id ||
+          (id.startsWith('DSN-') && i.invoice_number === `INV-${id.replace('DSN-', '')}`) ||
+          (i.items && i.items.some((it: any) => it.id === id || it.design_job_id === id)))
+    )
+    if (inv) {
+      const matchingItem = inv.items?.find((it: any) => it.id === id || it.design_job_id === id) || inv.items?.[0]
+      const synthesizedJob: DesignJobRecord = {
+        id: id.startsWith('DSN-') ? crypto.randomUUID() : id,
+        company_id: inv.company_id || companyId,
+        invoice_id: inv.id,
+        invoice_number: inv.invoice_number,
+        customer_id: inv.customer_id,
+        customer_name: inv.customer_name,
+        design_number: id.startsWith('DSN-') ? id : `DSN-${inv.invoice_number?.replace('INV-', '') || '001'}`,
+        title: matchingItem?.item_description || matchingItem?.item_name || 'Design Artwork',
+        designer_name: 'Design Team',
+        priority: 'normal',
+        deadline: inv.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+        dimensions_spec: matchingItem?.dimensions_spec || null,
+        product_name: matchingItem?.item_name || null,
+        status: 'approved',
+        workflow_routing: 'ready_production',
+        commercial_status: 'invoice_created',
+        intake_source: 'manager_billing',
+        customer_approval_required: false,
+        is_locked: true,
+        current_version: 1,
+        versions: [
+          {
+            id: `dv-${Date.now()}`,
+            design_job_id: id,
+            version_number: 1,
+            version_label: 'Version 1 (Customer Artwork)',
+            proof_file_name: 'artwork.png',
+            proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+            file_format: 'png',
+            uploaded_by_name: 'Billing / Manager',
+            is_approved: true,
+            created_at: new Date().toISOString(),
+          },
+        ],
+        created_at: inv.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      all.unshift(synthesizedJob)
+      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
+      return synthesizedJob
+    }
+
+    return null
   }
 
   static async createDesignJob(job: Partial<DesignJobRecord> & {
@@ -225,11 +300,15 @@ export class DesignRepository {
     }
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const job = all.find((d) => d.id === version.design_job_id && d.company_id === version.company_id)
+    const job = all.find(
+      (d) =>
+        (d.id === version.design_job_id || d.design_number === version.design_job_id) &&
+        (!d.company_id || !version.company_id || version.company_id === 'default' || d.company_id === version.company_id)
+    )
     if (job) {
       if (!job.versions) job.versions = []
       job.versions.push(newVer)
-      job.current_version = `V${version.version_number}` as any
+      job.current_version = version.version_number
       job.version_count = version.version_number
       job.updated_at = now
       PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
@@ -278,7 +357,11 @@ export class DesignRepository {
     }
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const job = all.find((d) => d.id === params.design_job_id && (!d.company_id || d.company_id === params.company_id || params.company_id === 'default'))
+    const job = all.find(
+      (d) =>
+        (d.id === params.design_job_id || d.design_number === params.design_job_id) &&
+        (!d.company_id || !params.company_id || params.company_id === 'default' || d.company_id === params.company_id)
+    )
     if (job) {
       job.status = nextJobStatus as any
       job.is_locked = params.approval_status === 'approved'
@@ -335,9 +418,13 @@ export class DesignRepository {
 
     const now = new Date().toISOString()
 
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    const isIdUuid = uuidRegex.test(id)
+    const isCompanyUuid = uuidRegex.test(companyId)
+
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('design_jobs')
         .update({
           status: nextStatus,
@@ -346,10 +433,20 @@ export class DesignRepository {
           instructions: notes ? `${job.instructions || ''}\n[Design Ready Note]: ${notes}`.trim() : job.instructions,
           updated_at: now,
         })
-        .eq('id', id)
-        .eq('company_id', companyId)
+
+      if (isIdUuid) {
+        query = query.eq('id', id)
+      } else {
+        query = query.eq('design_number', id)
+      }
+
+      if (companyId && companyId !== 'default' && isCompanyUuid) {
+        query = query.eq('company_id', companyId)
+      }
+
+      const { data, error } = await query
         .select('*, versions:design_versions(*)')
-        .single()
+        .maybeSingle()
 
       if (!error && data) {
         if (isReadyForProd) {
@@ -364,7 +461,15 @@ export class DesignRepository {
     }
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const idx = all.findIndex((d) => d.id === id && (!d.company_id || d.company_id === companyId || companyId === 'default'))
+    let idx = all.findIndex(
+      (d) =>
+        (d.id === id || d.design_number === id) &&
+        (!d.company_id || d.company_id === companyId || companyId === 'default' || (d as any).company_slug === companyId)
+    )
+    if (idx < 0) {
+      idx = all.findIndex((d) => d.id === id || d.design_number === id)
+    }
+
     if (idx >= 0) {
       all[idx].status = nextStatus as any
       all[idx].commercial_status = nextCommercialStatus as any
@@ -388,18 +493,32 @@ export class DesignRepository {
     updates: Partial<DesignJobRecord>
   ): Promise<DesignJobRecord | null> {
     const now = new Date().toISOString()
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    const isIdUuid = uuidRegex.test(id)
+    const isCompanyUuid = uuidRegex.test(companyId)
+
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('design_jobs')
         .update({
           ...updates,
           updated_at: now,
         })
-        .eq('id', id)
-        .eq('company_id', companyId)
+
+      if (isIdUuid) {
+        query = query.eq('id', id)
+      } else {
+        query = query.eq('design_number', id)
+      }
+
+      if (companyId && companyId !== 'default' && isCompanyUuid) {
+        query = query.eq('company_id', companyId)
+      }
+
+      const { data, error } = await query
         .select('*, versions:design_versions(*)')
-        .single()
+        .maybeSingle()
 
       if (!error && data) {
         return data as unknown as DesignJobRecord
@@ -409,7 +528,15 @@ export class DesignRepository {
     }
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const idx = all.findIndex((d) => d.id === id && (!d.company_id || d.company_id === companyId || companyId === 'default'))
+    let idx = all.findIndex(
+      (d) =>
+        (d.id === id || d.design_number === id) &&
+        (!d.company_id || d.company_id === companyId || companyId === 'default' || (d as any).company_slug === companyId)
+    )
+    if (idx < 0) {
+      idx = all.findIndex((d) => d.id === id || d.design_number === id)
+    }
+
     if (idx >= 0) {
       all[idx] = { ...all[idx], ...updates, updated_at: now }
       PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
@@ -746,7 +873,13 @@ export class DesignRepository {
     }
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const filtered = all.filter((d) => !(d.id === id && (d.company_id === companyId || !d.company_id)))
+    const filtered = all.filter(
+      (d) =>
+        !(
+          (d.id === id || d.design_number === id) &&
+          (d.company_id === companyId || !d.company_id || companyId === 'default')
+        )
+    )
     PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, filtered)
     return true
   }

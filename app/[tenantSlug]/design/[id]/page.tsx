@@ -73,17 +73,49 @@ export default function DesignDetailPage() {
   const [invoiceRequests] = useDataStore<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS, [])
 
   const isMatchingCompany = (id?: string | null) => {
-    if (!id) return false
+    if (!id || id === 'default') return true
     return (
       (company?.id && id === company.id) ||
       (company?.slug && id === company.slug) ||
-      (slug && id === slug)
+      (slug && id === slug) ||
+      id === 'default'
     )
   }
 
-  const job = jobs.find(
-    (j: DesignJobRecord) => (j.id === jobId || j.design_number === jobId) && isMatchingCompany(j.company_id)
-  )
+  const job =
+    jobs.find(
+      (j: DesignJobRecord) =>
+        (j.id === jobId ||
+          j.design_number === jobId ||
+          j.id?.toLowerCase() === jobId?.toLowerCase() ||
+          j.design_number?.toLowerCase() === jobId?.toLowerCase()) &&
+        isMatchingCompany(j.company_id)
+    ) ||
+    jobs.find(
+      (j: DesignJobRecord) =>
+        j.id === jobId ||
+        j.design_number === jobId ||
+        j.id?.toLowerCase() === jobId?.toLowerCase() ||
+        j.design_number?.toLowerCase() === jobId?.toLowerCase()
+    )
+
+  // Sync from server if not found in local store
+  useEffect(() => {
+    if (!job && jobId) {
+      import('@/actions/design.actions').then(({ getDesignJobByIdAction }) => {
+        getDesignJobByIdAction(jobId, company?.id || slug).then((res) => {
+          if (res.success && res.data) {
+            const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+            if (!allStored.some((j) => j.id === res.data?.id || j.design_number === res.data?.design_number)) {
+              allStored.unshift(res.data)
+              PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, allStored)
+            }
+          }
+        })
+      })
+    }
+  }, [job, jobId, company?.id, slug])
+
   const [activeVersionNumber, setActiveVersionNumber] = useState<number>(job?.current_version || 1)
 
   // Modals
@@ -255,7 +287,9 @@ export default function DesignDetailPage() {
   const handleMarkDesignReady = async () => {
     startTransition(async () => {
       try {
-        await markDesignReadyAction(job.id, 'Designer marked design ready for production proofing', job.company_id)
+        const effectiveId = job.id || job.design_number || jobId
+        const effectiveCompany = job.company_id || company?.id || slug
+        await markDesignReadyAction(effectiveId, 'Designer marked design ready for production proofing', effectiveCompany)
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
           status: 'customer_approval',
           commercial_status: hasInvoice ? 'invoice_created' : 'invoice_required',
@@ -390,7 +424,9 @@ export default function DesignDetailPage() {
   const handleSendToPrint = async () => {
     startTransition(async () => {
       try {
-        const res = await sendToPrintOperatorAction(job.id, job.company_id)
+        const effectiveId = job.id || job.design_number || jobId
+        const effectiveCompany = job.company_id || company?.id || slug
+        const res = await sendToPrintOperatorAction(effectiveId, effectiveCompany)
         if (!res.success) {
           showNotification(res.error || 'Failed to send to print operator', 'warning')
           return
