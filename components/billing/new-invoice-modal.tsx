@@ -356,9 +356,9 @@ export function NewInvoiceModal({
           const resolvedRate =
             (Number(it.rate) > 0 ? Number(it.rate) : undefined) ??
             (Number(it.unit_price) > 0 ? Number(it.unit_price) : undefined) ??
-            Number(matchingProduct?.selling_price) ||
-            Number((matchingProduct as any)?.base_price) ||
-            (isReady ? 50 : 25)
+            (Number(matchingProduct?.selling_price) ||
+              Number((matchingProduct as any)?.base_price) ||
+              (isReady ? 50 : 25))
 
           return {
             id: `item-${Date.now()}-${idx + 1}`,
