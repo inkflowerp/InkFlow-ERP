@@ -244,16 +244,24 @@ export function NewInvoiceModal({
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
 
-  // Auto-fill when preselected customer ID is provided
+  // Auto-fill when preselected customer ID or sales order ID is provided
   useEffect(() => {
-    if (open && preselectedCustomerId) {
-      searchInvoiceCustomersAction(preselectedCustomerId, company?.id).then((res) => {
-        if (res.success && res.data && res.data.length > 0) {
-          handleSelectCustomer(res.data[0])
-        }
-      })
+    if (open) {
+      if (preselectedSalesOrderId) {
+        setSalesOrderId(preselectedSalesOrderId)
+      }
+      if (preselectedQuotationId) {
+        setQuotationId(preselectedQuotationId)
+      }
+      if (preselectedCustomerId) {
+        searchInvoiceCustomersAction(preselectedCustomerId, company?.id).then((res) => {
+          if (res.success && res.data && res.data.length > 0) {
+            handleSelectCustomer(res.data[0])
+          }
+        })
+      }
     }
-  }, [open, preselectedCustomerId, company?.id])
+  }, [open, preselectedCustomerId, preselectedSalesOrderId, preselectedQuotationId, company?.id])
 
   // Customer keyword search
   useEffect(() => {

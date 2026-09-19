@@ -49,6 +49,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
+import { InvoiceRequestsPanel } from '@/components/billing/invoice-requests-panel'
 import { RecordPaymentModal, ReceivePaymentModal } from '@/components/billing/record-payment-modal'
 import { MoneyReceiptModal } from '@/components/billing/money-receipt-modal'
 import {
@@ -65,6 +66,7 @@ import {
   PaymentMethodSummaryItem,
 } from '@/types/billing.types'
 import { CustomerRecord } from '@/types/crm.types'
+import type { InvoiceRequestRecord } from '@/types/workflow.types'
 import { formatBDT, calculateDaysOverdue } from '@/lib/formatters'
 import { usePermissions } from '@/hooks/use-permissions'
 import {
@@ -77,7 +79,13 @@ import {
   sendInvoiceAction,
   sendPaymentReminderAction,
 } from '@/actions/billing.actions'
+import {
+  getInvoiceRequestsAction,
+  cancelInvoiceRequestAction,
+} from '@/actions/invoice-request.actions'
 import { cn } from '@/lib/utils'
+
+export type BillingTab = 'overview' | 'invoices' | 'requests' | 'payments' | 'receivables'
 
 export default function BillingPage() {
   const router = useRouter()
@@ -88,13 +96,18 @@ export default function BillingPage() {
   const { locale } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
-  // View Mode: 'overview' | 'invoices' | 'payments' | 'receivables'
+  // View Mode: 'overview' | 'invoices' | 'requests' | 'payments' | 'receivables'
   const viewParam = searchParams?.get('view')
-  const initialTab = (viewParam === 'overview' || viewParam === 'invoices' || viewParam === 'payments' || viewParam === 'receivables')
-    ? viewParam
-    : 'overview'
+  const initialTab: BillingTab =
+    viewParam === 'overview' ||
+    viewParam === 'invoices' ||
+    viewParam === 'requests' ||
+    viewParam === 'payments' ||
+    viewParam === 'receivables'
+      ? (viewParam as BillingTab)
+      : 'overview'
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'invoices' | 'payments' | 'receivables'>(initialTab)
+  const [activeTab, setActiveTab] = useState<BillingTab>(initialTab)
 
   // Period & Filters
   const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>('this_month')
@@ -114,6 +127,7 @@ export default function BillingPage() {
   // Data State
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([])
   const [payments, setPayments] = useState<PaymentRecord[]>([])
+  const [invoiceRequests, setInvoiceRequests] = useState<InvoiceRequestRecord[]>([])
   const [overviewMetrics, setOverviewMetrics] = useState<BillingOverviewMetrics | null>(null)
   const [priorityItems, setPriorityItems] = useState<CollectionPriorityItem[]>([])
   const [paymentMethodsSummary, setPaymentMethodsSummary] = useState<PaymentMethodSummaryItem[]>([])
@@ -124,6 +138,8 @@ export default function BillingPage() {
   const actionParam = searchParams?.get('action')
   const orderIdParam = searchParams?.get('order_id') || undefined
   const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(actionParam === 'create_invoice')
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<string | undefined>(undefined)
+  const [selectedCustomerForInvoice, setSelectedCustomerForInvoice] = useState<string | undefined>(undefined)
   const [isReceivePaymentOpen, setIsReceivePaymentOpen] = useState(false)
   const [selectedCustomerIdForPayment, setSelectedCustomerIdForPayment] = useState<string | undefined>(undefined)
   const [selectedInvoiceIdForPayment, setSelectedInvoiceIdForPayment] = useState<string | undefined>(undefined)
@@ -150,12 +166,17 @@ export default function BillingPage() {
   }
 
   // Sync tab changes with URL search parameter
-  const handleTabChange = (tab: 'overview' | 'invoices' | 'payments' | 'receivables') => {
+  const handleTabChange = (tab: BillingTab) => {
     setActiveTab(tab)
     const currentQuery = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
     currentQuery.set('view', tab)
     router.replace(`/${slug}/billing?${currentQuery.toString()}`)
   }
+
+  // Pending Invoice Requests count
+  const pendingRequestsCount = useMemo(() => {
+    return invoiceRequests.filter((r) => r.status === 'pending').length
+  }, [invoiceRequests])
 
   // Load authoritative data from PostgreSQL
   const loadBillingData = useCallback(async () => {
@@ -168,11 +189,12 @@ export default function BillingPage() {
           ? { start: customStartDate, end: customEndDate }
           : undefined
 
-      const [overviewRes, invRes, payRes, agingRes] = await Promise.all([
+      const [overviewRes, invRes, payRes, agingRes, reqRes] = await Promise.all([
         getBillingOverviewAction(selectedPeriod, customRange, company.id),
         getInvoicesAction(undefined, company.id),
         getPaymentsAction(undefined, company.id),
         getReceivablesAgingAction(company.id),
+        getInvoiceRequestsAction(undefined, company.id),
       ])
 
       if (overviewRes.success && overviewRes.data) {
@@ -192,6 +214,10 @@ export default function BillingPage() {
 
       if (agingRes.success && agingRes.data) {
         setReceivablesAging(agingRes.data)
+      }
+
+      if (reqRes.success && reqRes.data) {
+        setInvoiceRequests(reqRes.data)
       }
     } catch (err) {
       console.error('Failed to load authoritative billing data:', err)
@@ -671,6 +697,28 @@ export default function BillingPage() {
           </button>
 
           <button
+            onClick={() => handleTabChange('requests')}
+            className={cn(
+              'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
+              activeTab === 'requests'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            )}
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            <span>Invoice Requests</span>
+            {pendingRequestsCount > 0 ? (
+              <Badge className={cn('text-[10px] py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
+                {pendingRequestsCount} Hold
+              </Badge>
+            ) : (
+              <Badge className={cn('text-[10px] py-0 px-1.5', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-slate-200 text-slate-700')}>
+                {invoiceRequests.length}
+              </Badge>
+            )}
+          </button>
+
+          <button
             onClick={() => handleTabChange('payments')}
             className={cn(
               'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
@@ -708,6 +756,37 @@ export default function BillingPage() {
            ------------------------------------------------------------------------- */}
         {activeTab === 'overview' && (
           <div className="space-y-4">
+            {/* Commercial Hold Alert Banner */}
+            {pendingRequestsCount > 0 && (
+              <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-sm shrink-0">
+                    ⚠️
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                      <span>Commercial Hold Alert</span>
+                      <Badge className="bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200 text-[10px] py-0 font-bold">
+                        {pendingRequestsCount} Pending Billing
+                      </Badge>
+                    </div>
+                    <div className="text-[11px] text-amber-800/90 dark:text-amber-300/80">
+                      Artwork is marked Design Ready by Prepress, but production floor is locked until invoices are generated.
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  size="sm"
+                  onClick={() => handleTabChange('requests')}
+                  className="h-8 px-3 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs shrink-0 cursor-pointer gap-1"
+                >
+                  <span>Review Requests</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+
             {/* Collection Today Action Hub */}
             <Card className="border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
               <CardHeader className="p-4 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1153,7 +1232,33 @@ export default function BillingPage() {
         )}
 
         {/* -------------------------------------------------------------------------
-            TAB 3: PAYMENTS HISTORY & MONEY RECEIPTS
+            TAB 3: INVOICE REQUESTS QUEUE (COMMERCIAL HOLD & PREPRESS BILLING)
+           ------------------------------------------------------------------------- */}
+        {activeTab === 'requests' && (
+          <InvoiceRequestsPanel
+            requests={invoiceRequests}
+            isLoading={isLoading}
+            tenantSlug={slug}
+            onCreateInvoice={(req) => {
+              setSelectedCustomerForInvoice(req.customer_id || undefined)
+              setSelectedOrderForInvoice(req.sales_order_id || undefined)
+              setIsNewInvoiceOpen(true)
+            }}
+            onCancelRequest={async (requestId, reason) => {
+              const res = await cancelInvoiceRequestAction(requestId, reason, company?.id)
+              if (res.success) {
+                showNotification('Invoice request cancelled successfully.')
+                loadBillingData()
+              } else {
+                showNotification(res.error || 'Failed to cancel invoice request.')
+              }
+            }}
+            onRefresh={loadBillingData}
+          />
+        )}
+
+        {/* -------------------------------------------------------------------------
+            TAB 4: PAYMENTS HISTORY & MONEY RECEIPTS
            ------------------------------------------------------------------------- */}
         {activeTab === 'payments' && (
           <div className="space-y-4">
@@ -1526,8 +1631,15 @@ export default function BillingPage() {
       {/* 3. NEW INVOICE MODAL */}
       <NewInvoiceModal
         open={isNewInvoiceOpen}
-        onOpenChange={setIsNewInvoiceOpen}
-        preselectedSalesOrderId={orderIdParam}
+        onOpenChange={(v) => {
+          setIsNewInvoiceOpen(v)
+          if (!v) {
+            setSelectedOrderForInvoice(undefined)
+            setSelectedCustomerForInvoice(undefined)
+          }
+        }}
+        preselectedSalesOrderId={selectedOrderForInvoice || orderIdParam}
+        preselectedCustomerId={selectedCustomerForInvoice}
         onInvoiceCreated={(inv) => {
           showNotification(`Invoice #${inv.invoice_number} created successfully.`)
           loadBillingData()
