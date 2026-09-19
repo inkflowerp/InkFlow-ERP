@@ -1,3 +1,5 @@
+import type { ProductRecord } from '@/types/product.types'
+
 /**
  * InkFlow ERP — Centralized Commercial Unit & Conversion Engine
  * Standardizes units, conversions, wastage calculations, and margin metrics.
@@ -1464,5 +1466,70 @@ export function validateCircularBOM(
   }
 
   return { hasCycle: false }
+}
+
+/**
+ * Authoritative Entity Type Classification
+ * Standardizes categorization across Catalog, Detail Pages, Quoting, Invoicing, and Order Processing.
+ */
+export function isServiceProduct(p: Partial<ProductRecord> | null | undefined): boolean {
+  if (!p) return false
+  return Boolean(
+    p.entity_type === 'service' ||
+    p.is_service === true ||
+    p.product_type === 'print_service' ||
+    p.product_type === 'service' ||
+    p.product_type === 'fabrication_service' ||
+    p.product_type === 'installation_service' ||
+    p.commercial_type === 'service' ||
+    p.commercial_type === 'installation' ||
+    p.commercial_type === 'delivery' ||
+    (p.service_config && typeof p.service_config === 'object' && Object.keys(p.service_config).length > 0 && p.entity_type !== 'product' && !p.is_ready_product && p.product_type !== 'ready_product')
+  )
+}
+
+export function isReadyProduct(p: Partial<ProductRecord> | null | undefined): boolean {
+  if (!p) return false
+  if (isServiceProduct(p)) return false
+  return Boolean(
+    p.entity_type === 'product' ||
+    p.is_ready_product === true ||
+    p.product_type === 'ready_product' ||
+    p.product_type === 'PRODUCT' ||
+    p.product_type === 'finished_product' ||
+    p.commercial_type === 'ready_product' ||
+    (p.sku && typeof p.sku === 'string' && p.sku.startsWith('RP-')) ||
+    ['display_stands', 'frames_hardware', 'signage_accessories', 'acrylic_displays', 'promo_items', 'apparel_blanks', 'ready_products'].includes(p.category || '')
+  )
+}
+
+export function isMaterialProduct(p: Partial<ProductRecord> | null | undefined): boolean {
+  if (!p) return false
+  if (isServiceProduct(p) || isReadyProduct(p)) return false
+  return Boolean(
+    p.entity_type === 'material' ||
+    p.product_type === 'material' ||
+    p.commercial_type === 'material' ||
+    p.category === 'materials' ||
+    p.category === 'roll_media' ||
+    p.category === 'rigid_sheets' ||
+    p.category === 'inks' ||
+    (p.sku && typeof p.sku === 'string' && (p.sku.startsWith('MAT-') || p.sku.startsWith('RM-'))) ||
+    (p.material_config && typeof p.material_config === 'object' && Object.keys(p.material_config).length > 0)
+  )
+}
+
+export function getProductEntityKind(p: Partial<ProductRecord> | null | undefined): 'service' | 'material' | 'product' {
+  if (!p) return 'product'
+  if (isServiceProduct(p)) return 'service'
+  if (isMaterialProduct(p)) return 'material'
+  return 'product'
+}
+
+export function getProductEntityKindLabel(p: Partial<ProductRecord> | null | undefined): 'Service' | 'Raw Material' | 'Ready Product' {
+  const kind = getProductEntityKind(p)
+  if (kind === 'service') return 'Service'
+  if (kind === 'material') return 'Raw Material'
+  return 'Ready Product'
 }
 

@@ -77,6 +77,11 @@ import {
   calculateGrossMargin,
   calculateSuggestedSellingPrice,
   normalizePricingMethod,
+  isServiceProduct,
+  isReadyProduct,
+  isMaterialProduct,
+  getProductEntityKind,
+  getProductEntityKindLabel,
 } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
@@ -146,27 +151,9 @@ export default function ProductDetailPage() {
 
   const handleOpenEdit = () => {
     if (!product) return
-    const isService =
-      product.entity_type === 'service' ||
-      product.product_type === 'print_service' ||
-      product.product_type === 'service' ||
-      product.commercial_type === 'service' ||
-      product.commercial_type === 'installation' ||
-      product.commercial_type === 'delivery'
-    const isMaterial =
-      product.entity_type === 'material' ||
-      product.product_type === 'material' ||
-      product.commercial_type === 'material' ||
-      product.category === 'materials' ||
-      product.category === 'roll_media' ||
-      product.category === 'rigid_sheets' ||
-      product.category === 'inks' ||
-      product.category === 'hardware_stock' ||
-      Boolean(product.material_config)
-
-    if (isService) {
+    if (isServiceProduct(product)) {
       setIsServiceModalOpen(true)
-    } else if (isMaterial) {
+    } else if (isMaterialProduct(product)) {
       setIsMaterialModalOpen(true)
     } else {
       setIsReadyProductModalOpen(true)
@@ -538,8 +525,17 @@ export default function ProductDetailPage() {
               <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 {product.name}
               </h1>
-              <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
-                {(product.commercial_type || product.product_type)?.replace('_', ' ')}
+              <span
+                className={cn(
+                  'capitalize px-2 py-0.5 rounded text-xs font-bold border',
+                  isServiceProduct(product)
+                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                    : isMaterialProduct(product)
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                )}
+              >
+                {getProductEntityKindLabel(product)}
               </span>
               <span className="px-2 py-0.5 rounded text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 uppercase">
                 {commercialEconomics?.pricingMethod?.replace('_', ' ') || 'Per Area'}
@@ -582,7 +578,7 @@ export default function ProductDetailPage() {
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs"
             >
               <Boxes className="mr-1.5 h-3.5 w-3.5" />
-              Edit {product.entity_type === 'material' || product.product_type === 'material' || product.commercial_type === 'material' || Boolean(product.material_config) ? 'Material' : 'Product'}
+              Edit {isServiceProduct(product) ? 'Service' : isMaterialProduct(product) ? 'Material' : 'Product'}
             </Button>
 
             <Button

@@ -28,6 +28,10 @@ import {
   calculateCommercialPricing,
   normalizePricingMethod,
   validateCircularBOM,
+  getProductEntityKind,
+  isServiceProduct,
+  isReadyProduct,
+  isMaterialProduct,
 } from '../units.ts'
 
 export function sanitizeProductDbPayload(raw: Record<string, any>): Record<string, any> {
@@ -193,6 +197,7 @@ export function enrichProductRecord(p: any): ProductRecord {
     ? Number(p.production_length_allowance)
     : Number(formula.production_length_allowance) || 0
 
+  const resolvedEntityKind = getProductEntityKind(p)
   const entityType =
     p.entity_type ||
     formula.entity_type ||
@@ -206,9 +211,7 @@ export function enrichProductRecord(p: any): ProductRecord {
       ? 'additional'
       : p.product_type === 'installation'
       ? 'installation'
-      : p.commercial_type === 'service' || p.product_type === 'print_service'
-      ? 'service'
-      : 'product')
+      : resolvedEntityKind)
 
   return {
     ...p,
@@ -219,9 +222,9 @@ export function enrichProductRecord(p: any): ProductRecord {
     available_widths_ft: availableWidths,
     standard_roll_length_ft: standardRollLength,
     available_sheet_sizes: availableSheetSizes,
-    is_service: p.is_service !== undefined ? Boolean(p.is_service) : entityType === 'service',
-    is_ready_product: p.is_ready_product !== undefined ? Boolean(p.is_ready_product) : entityType === 'product',
-    commercial_type: p.commercial_type || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'production_product' : 'service'),
+    is_service: p.is_service !== undefined ? Boolean(p.is_service) : entityType === 'service' || isServiceProduct(p),
+    is_ready_product: p.is_ready_product !== undefined ? Boolean(p.is_ready_product) : entityType === 'product' || isReadyProduct(p),
+    commercial_type: p.commercial_type || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'production_product' : entityType === 'service' ? 'service' : 'ready_product'),
     measurement_type: p.measurement_type || 'area',
     pricing_method: pricingMethod,
     selling_unit: p.selling_unit || p.unit,
@@ -580,11 +583,11 @@ export class ProductRepository {
         requires_finishing: Boolean(product.requires_finishing),
         requires_installation: Boolean(product.requires_installation),
         requires_delivery: Boolean(product.requires_delivery),
-        entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : 'product'),
+        entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : product.product_type === 'ready_product' || product.sku?.startsWith('RP-') ? 'product' : getProductEntityKind(product)),
         service_config: product.service_config || {},
         material_config: product.material_config || {},
-        is_service: product.is_service !== undefined ? Boolean(product.is_service) : (product.entity_type === 'service' || product.product_type === 'print_service'),
-        is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (product.entity_type === 'product' || product.product_type === 'ready_product'),
+        is_service: product.is_service !== undefined ? Boolean(product.is_service) : (product.entity_type === 'service' || product.product_type === 'print_service' || isServiceProduct(product)),
+        is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (product.entity_type === 'product' || product.product_type === 'ready_product' || isReadyProduct(product)),
         default_department: product.default_department || 'printing',
         estimated_production_time_hours: product.estimated_production_time_hours !== undefined && product.estimated_production_time_hours !== null && !isNaN(Number(product.estimated_production_time_hours)) ? Number(product.estimated_production_time_hours) : 4.0,
         default_finishing: product.default_finishing?.trim() || null,

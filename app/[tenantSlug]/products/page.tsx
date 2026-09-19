@@ -136,6 +136,11 @@ import {
   COMMON_SELLING_UNITS,
   PRICING_METHODS,
   PRICING_METHOD_OPTIONS,
+  isServiceProduct,
+  isReadyProduct,
+  isMaterialProduct,
+  getProductEntityKind,
+  getProductEntityKindLabel,
 } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
@@ -818,27 +823,9 @@ export default function ProductsCatalogPage() {
 
   const handleOpenEdit = (p: ProductRecord) => {
     setEditingProduct(p)
-    const isService =
-      p.entity_type === 'service' ||
-      p.product_type === 'print_service' ||
-      p.product_type === 'service' ||
-      p.commercial_type === 'service' ||
-      p.commercial_type === 'installation' ||
-      p.commercial_type === 'delivery'
-    const isMaterial =
-      p.entity_type === 'material' ||
-      p.product_type === 'material' ||
-      p.commercial_type === 'material' ||
-      p.category === 'materials' ||
-      p.category === 'roll_media' ||
-      p.category === 'rigid_sheets' ||
-      p.category === 'inks' ||
-      p.category === 'hardware_stock' ||
-      Boolean(p.material_config)
-
-    if (isService) {
+    if (isServiceProduct(p)) {
       setIsServiceModalOpen(true)
-    } else if (isMaterial) {
+    } else if (isMaterialProduct(p)) {
       setIsMaterialModalOpen(true)
     } else {
       setIsReadyProductModalOpen(true)
@@ -1464,30 +1451,9 @@ export default function ProductsCatalogPage() {
   }
 
   // Entity Type Helpers
-  const isServiceItem = (p: ProductRecord) =>
-    p.entity_type === 'service' ||
-    p.product_type === 'print_service' ||
-    p.product_type === 'service' ||
-    p.commercial_type === 'service' ||
-    p.commercial_type === 'installation' ||
-    p.commercial_type === 'delivery'
-
-  const isMaterialItem = (p: ProductRecord) =>
-    p.entity_type === 'material' ||
-    p.product_type === 'material' ||
-    p.commercial_type === 'material' ||
-    p.category === 'materials' ||
-    p.category === 'roll_media' ||
-    p.category === 'rigid_sheets' ||
-    p.category === 'inks' ||
-    p.category === 'hardware_stock' ||
-    Boolean(p.material_config)
-
-  const isReadyProductItem = (p: ProductRecord) =>
-    p.entity_type === 'product' ||
-    p.product_type === 'ready_product' ||
-    p.commercial_type === 'production_product' ||
-    (!isServiceItem(p) && !isMaterialItem(p))
+  const isServiceItem = isServiceProduct
+  const isMaterialItem = isMaterialProduct
+  const isReadyProductItem = isReadyProduct
 
   // Live Tab Counts Memo
   const tabCounts = useMemo(() => {
@@ -3291,14 +3257,14 @@ export default function ProductsCatalogPage() {
                             <span
                               className={cn(
                                 'capitalize px-2 py-0.5 rounded text-[11px] font-semibold border',
-                                isService
+                                isServiceProduct(item)
                                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-                                  : isMaterial
+                                  : isMaterialProduct(item)
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
                               )}
                             >
-                              {isService ? 'Service' : isMaterial ? 'Raw Material' : 'Ready Product'}
+                              {getProductEntityKindLabel(item)}
                             </span>
                           </td>
 
@@ -3479,8 +3445,17 @@ export default function ProductsCatalogPage() {
                             {item.sku} • {item.material_spec || 'Standard Spec'}
                           </div>
                         </div>
-                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 shrink-0">
-                          {(item.commercial_type || item.product_type)?.replace('_', ' ')}
+                        <span
+                          className={cn(
+                            'capitalize px-2 py-0.5 rounded text-[10px] font-semibold border shrink-0',
+                            isServiceProduct(item)
+                              ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                              : isMaterialProduct(item)
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                              : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                          )}
+                        >
+                          {getProductEntityKindLabel(item)}
                         </span>
                       </div>
 
