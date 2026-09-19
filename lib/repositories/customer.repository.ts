@@ -425,7 +425,7 @@ export class CustomerRepository {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
         const newRecord: any = {
-          id: customer.id || `cust-${Date.now()}`,
+          id: customer.id || crypto.randomUUID(),
           ...customer,
           is_active: customer.is_active !== undefined ? customer.is_active : true,
           created_at: customer.created_at || new Date().toISOString(),
@@ -439,8 +439,11 @@ export class CustomerRepository {
     }
 
     const customerType = customer.customer_type || customer.customer_category || 'regular'
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    const resolvedId = customer.id && uuidRegex.test(customer.id) ? customer.id : crypto.randomUUID()
+
     const payload: any = {
-      id: customer.id || `cust-${Date.now()}`,
+      id: resolvedId,
       company_id: customer.company_id,
       name: customer.name.trim(),
       name_bn: customer.name_bn?.trim() || null,
