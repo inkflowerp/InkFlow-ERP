@@ -907,68 +907,103 @@ export class BillingRepository {
         }
       }
 
-      // 4. BRANCH 1: Ready Products -> Direct to Delivery Panel (STORAGE_KEYS.DELIVERY_CHALLANS)
-      if (invoice.items && Array.isArray(invoice.items)) {
-        const readyProducts = invoice.items.filter((it: any) => it.item_kind === 'ready_product')
-        if (readyProducts.length > 0) {
-          const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
-          const chlNum = `CHL-${invoice.invoice_number.replace('INV-', '')}`
-          const hasChallan = challans.some(
-            (c) => c.company_id === companyId && (c.challan_number === chlNum || c.invoice_id === invoice.id)
-          )
-          if (!hasChallan) {
-            const chlId = crypto.randomUUID()
-            const newChallan = {
+      // 4. Delivery Panel Integration: Unified Challan with ALL products and their workflow statuses
+      if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
+        const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+        const chlNum = `CHL-${invoice.invoice_number.replace('INV-', '')}`
+        let existingChallan = challans.find(
+          (c) => c.company_id === companyId && (c.challan_number === chlNum || c.invoice_id === invoice.id)
+        )
+
+        const challanItems = invoice.items.map((it: any, idx: number) => {
+          const isReady = it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product'
+          const isDesignReq = it.workflow_routing === 'design_required' || it.design_required === true
+          const isDesignOk = it.workflow_routing === 'design_ok'
+
+          let initialStatus: string = 'ready_for_delivery'
+          if (isDesignReq) initialStatus = 'design_pending'
+          else if (isDesignOk) initialStatus = 'design_check'
+          else if (it.workflow_routing === 'ready_production') initialStatus = 'in_production'
+
+          return {
+            id: it.id || crypto.randomUUID(),
+            challan_id: existingChallan?.id || undefined,
+            invoice_item_id: it.id || null,
+            product_description: it.item_description || it.description || it.item_name || `Item ${idx + 1}`,
+            dimensions_spec:
+              it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : null),
+            quantity: Number(it.quantity) || 1,
+            unit: it.unit || 'pcs',
+            item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),
+            workflow_routing:
+              it.workflow_routing ||
+              (isReady ? 'ready_product' : isDesignReq ? 'design_required' : isDesignOk ? 'design_ok' : 'ready_production'),
+            status: initialStatus,
+            is_delivered: false,
+            delivered_quantity: 0,
+            remarks: it.remarks || it.finishing || null,
+          }
+        })
+
+        const allReady = challanItems.every((it) => it.status === 'ready_for_delivery')
+        const initialChallanStatus = 'pending_dispatch'
+
+        if (!existingChallan) {
+          const chlId = crypto.randomUUID()
+          const newChallan = {
+            id: chlId,
+            company_id: companyId,
+            challan_number: chlNum,
+            customer_id: invoice.customer_id,
+            customer_name: invoice.customer_name,
+            customer_phone: invoice.customer_phone,
+            delivery_address: invoice.customer_address || 'Customer Delivery Address',
+            invoice_id: invoice.id,
+            invoice_number: invoice.invoice_number,
+            sales_order_id: effectiveSalesOrderId,
+            order_number: effectiveOrderNumber,
+            status: initialChallanStatus,
+            delivery_method: 'company_vehicle',
+            scheduled_date: invoice.due_date || new Date().toISOString().split('T')[0],
+            notes: allReady
+              ? 'Ready Product direct dispatch from invoice (No design/production required)'
+              : 'Invoice dispatched to delivery panel with live product workflow tracking',
+            created_by_name: invoice.created_by_name || 'Billing System',
+            items: challanItems.map((ci) => ({ ...ci, challan_id: chlId })),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+          challans.unshift(newChallan)
+          PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+
+          try {
+            const supabase = await createClient()
+            await (supabase as any).from('delivery_challans').insert({
               id: chlId,
               company_id: companyId,
               challan_number: chlNum,
               customer_id: invoice.customer_id,
               customer_name: invoice.customer_name,
               customer_phone: invoice.customer_phone,
-              delivery_address: invoice.customer_address || 'Customer Delivery Address',
+              delivery_address: newChallan.delivery_address,
               invoice_id: invoice.id,
               invoice_number: invoice.invoice_number,
               sales_order_id: effectiveSalesOrderId,
               order_number: effectiveOrderNumber,
-              status: 'pending_dispatch',
+              status: initialChallanStatus,
               delivery_method: 'company_vehicle',
-              scheduled_date: invoice.due_date || new Date().toISOString().split('T')[0],
-              notes: 'Ready Product direct dispatch from invoice (No design/production required)',
-              created_by_name: invoice.created_by_name || 'Billing System',
-              items: readyProducts.map((rp: any) => ({
-                id: crypto.randomUUID(),
-                challan_id: chlId,
-                product_description: rp.item_description || rp.description || rp.item_name || 'Ready Product',
-                quantity: Number(rp.quantity) || 1,
-                unit: rp.unit || 'pcs',
-                remarks: 'Ready Product Fulfillment',
-              })),
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }
-            challans.unshift(newChallan)
-            PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
-
-            try {
-              const supabase = await createClient()
-              await (supabase as any).from('delivery_challans').insert({
-                id: chlId,
-                company_id: companyId,
-                challan_number: chlNum,
-                customer_id: invoice.customer_id,
-                customer_name: invoice.customer_name,
-                customer_phone: invoice.customer_phone,
-                delivery_address: newChallan.delivery_address,
-                sales_order_id: effectiveSalesOrderId,
-                order_number: effectiveOrderNumber,
-                status: 'pending_dispatch',
-                delivery_method: 'company_vehicle',
-                scheduled_date: newChallan.scheduled_date,
-                notes: newChallan.notes,
-                created_by_name: newChallan.created_by_name,
-              })
-            } catch {}
-          }
+              scheduled_date: newChallan.scheduled_date,
+              notes: newChallan.notes,
+              created_by_name: newChallan.created_by_name,
+            })
+          } catch {}
+        } else {
+          existingChallan.invoice_id = invoice.id
+          existingChallan.invoice_number = invoice.invoice_number
+          existingChallan.sales_order_id = effectiveSalesOrderId
+          existingChallan.order_number = effectiveOrderNumber
+          existingChallan.items = challanItems.map((ci) => ({ ...ci, challan_id: existingChallan!.id }))
+          PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
         }
       }
 

@@ -21,6 +21,7 @@ import {
   FileCheck2,
   Send,
   Sparkles,
+  Layers,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -52,6 +53,8 @@ export default function DeliveryLogisticsPage() {
   const [challans, setChallans] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
   const [installations, setInstallations] = useDataStore<InstallationRecord[]>(STORAGE_KEYS.INSTALLATIONS, [])
   const [customers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
+  const [designJobs] = useDataStore<any[]>(STORAGE_KEYS.DESIGN_JOBS, [])
+  const [productionTasks] = useDataStore<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, [])
   const [viewMode, setViewMode] = useState<'challans' | 'installations' | 'calendar'>('challans')
   const [search, setSearch] = useState('')
 
@@ -59,6 +62,7 @@ export default function DeliveryLogisticsPage() {
   const [isNewChallanOpen, setIsNewChallanOpen] = useState(false)
   const [isNewInstallationOpen, setIsNewInstallationOpen] = useState(false)
   const [selectedChallanForDelivery, setSelectedChallanForDelivery] = useState<DeliveryChallanRecord | null>(null)
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([])
   const [notification, setNotification] = useState<string | null>(null)
 
   // Delivery Confirmation State
@@ -91,23 +95,108 @@ export default function DeliveryLogisticsPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  // Quick Action: Confirm Delivery
+  // Dynamic Live Status Resolver per Item
+  const getLiveItemStatus = (it: any, ch?: DeliveryChallanRecord | null): string => {
+    if (it.is_delivered) return 'delivered'
+    if (it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product') return 'ready_for_delivery'
+
+    if (ch) {
+      const matchedTasks = productionTasks.filter(
+        (t) =>
+          t.company_id === ch.company_id &&
+          (t.job_number === ch.invoice_number ||
+            t.job_number === ch.order_number ||
+            t.task_name?.toLowerCase().includes(it.product_description?.toLowerCase() || ''))
+      )
+
+      if (matchedTasks.length > 0) {
+        const allCompleted = matchedTasks.every((t) => t.status === 'completed')
+        if (allCompleted) return 'ready_for_delivery'
+
+        const hasFinishing = matchedTasks.some((t) => t.task_type === 'finishing' || t.department === 'finishing')
+        const printingTask = matchedTasks.find((t) => t.task_type === 'printing' || t.department === 'printing')
+        if (printingTask && printingTask.status === 'completed' && hasFinishing) {
+          return 'finishing_pending'
+        }
+        return 'in_production'
+      }
+
+      const matchedDsn = designJobs.find(
+        (d) =>
+          d.company_id === ch.company_id &&
+          (d.invoice_id === ch.invoice_id ||
+            d.invoice_number === ch.invoice_number ||
+            (ch.sales_order_id && d.sales_order_id === ch.sales_order_id) ||
+            d.title?.toLowerCase().includes(it.product_description?.toLowerCase() || ''))
+      )
+
+      if (matchedDsn) {
+        if (matchedDsn.status === 'approved' || matchedDsn.workflow_routing === 'ready_production') {
+          return 'printing_pending'
+        }
+        if (matchedDsn.workflow_routing === 'design_ok' || it.workflow_routing === 'design_ok') {
+          return 'design_check'
+        }
+        return 'design_pending'
+      }
+    }
+
+    return it.status || 'ready_for_delivery'
+  }
+
+  // Open Delivery Modal with intelligent item selection
+  const openDeliveryModal = (ch: DeliveryChallanRecord) => {
+    setSelectedChallanForDelivery(ch)
+    const items = ch.items || []
+    const readyIds = items
+      .filter((it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product'))
+      .map((it) => it.id)
+
+    setSelectedItemIds(readyIds)
+    setReceiverName(ch.customer_name || '')
+    setReceiverPhone(ch.customer_phone || '')
+    setReceiverSignature('')
+  }
+
+  // Quick Action: Confirm Delivery (Full or Partial)
   const handleConfirmDelivery = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedChallanForDelivery) return
 
+    const items = selectedChallanForDelivery.items || []
+    const now = new Date().toISOString()
+
+    const updatedItems = items.map((it) => {
+      if (selectedItemIds.includes(it.id)) {
+        return {
+          ...it,
+          is_delivered: true,
+          delivered_at: now,
+          status: 'delivered' as const,
+        }
+      }
+      return it
+    })
+
+    const remainingNonDelivered = updatedItems.filter((it) => !it.is_delivered)
+    const isAllDelivered = remainingNonDelivered.length === 0
+    const nextChallanStatus: DeliveryStatus = isAllDelivered ? 'delivered' : 'partially_delivered'
+
     PrintERPDataStore.updateItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, selectedChallanForDelivery.id, {
-      status: 'delivered',
-      delivered_at: 'Just now',
+      status: nextChallanStatus,
+      delivered_at: isAllDelivered ? now : (selectedChallanForDelivery.delivered_at || null),
       receiver_name: receiverName,
       receiver_phone: receiverPhone,
       receiver_signature: receiverSignature,
-      updated_at: new Date().toISOString(),
+      items: updatedItems,
+      updated_at: now,
     })
 
     setSelectedChallanForDelivery(null)
     showNotification(
-      `Challan ${selectedChallanForDelivery.challan_number} marked DELIVERED! Receiver: ${receiverName} signed.`
+      isAllDelivered
+        ? `Challan ${selectedChallanForDelivery.challan_number} (Invoice #${selectedChallanForDelivery.invoice_number || 'N/A'}) fully MARKED AS DELIVERED!`
+        : `Partial Delivery confirmed for ${selectedChallanForDelivery.challan_number} (${selectedItemIds.length} item(s) delivered).`
     )
   }
 
@@ -236,27 +325,87 @@ export default function DeliveryLogisticsPage() {
     switch (status) {
       case 'delivered':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
             <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Delivered
+          </span>
+        )
+      case 'partially_delivered':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+            <Package className="h-3 w-3 text-amber-600" /> Partially Delivered
           </span>
         )
       case 'out_for_delivery':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300 animate-pulse">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300 animate-pulse dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
             <Truck className="h-3 w-3 text-blue-600" /> Out for Delivery
           </span>
         )
       case 'assigned':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/50 dark:text-amber-300">
             Vehicle Assigned
+          </span>
+        )
+      case 'pending_dispatch':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <Sparkles className="h-3 w-3 text-emerald-600" /> Ready to Dispatch
           </span>
         )
       case 'scheduled':
       default:
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700">
+          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             Scheduled
+          </span>
+        )
+    }
+  }
+
+  const getItemStatusBadge = (status?: string) => {
+    switch (status) {
+      case 'delivered':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Delivered
+          </span>
+        )
+      case 'ready_for_delivery':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Ready for Delivery
+          </span>
+        )
+      case 'design_pending':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
+            <Clock className="h-3 w-3 text-amber-600" /> Design Pending
+          </span>
+        )
+      case 'design_check':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+            <FileCheck2 className="h-3 w-3 text-blue-600" /> Design Check (Pre-Press)
+          </span>
+        )
+      case 'in_production':
+      case 'printing_pending':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300">
+            <Wrench className="h-3 w-3 text-cyan-600" /> Printing Pending
+          </span>
+        )
+      case 'finishing_pending':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
+            <Layers className="h-3 w-3 text-purple-600" /> Finishing Pending
+          </span>
+        )
+      default:
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            {status || 'Pending'}
           </span>
         )
     }
@@ -434,87 +583,121 @@ export default function DeliveryLogisticsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {challans.map((ch: DeliveryChallanRecord) => (
-                    <tr key={ch.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                      {/* Challan # */}
-                      <td className="py-3.5 px-4">
-                        <Link
-                          href={`/${slug}/delivery/${ch.id}`}
-                          className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
-                        >
-                          <span>{ch.challan_number}</span>
-                          <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Link>
-                        <div className="text-[10px] font-mono text-slate-400 mt-0.5">{ch.order_number}</div>
-                      </td>
+                  {challans.map((ch: DeliveryChallanRecord) => {
+                    const items = ch.items || []
+                    const readyCount = items.filter((it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product')).length
+                    const pendingCount = items.filter((it) => !it.is_delivered && getLiveItemStatus(it, ch) !== 'ready_for_delivery').length
+                    const deliveredCount = items.filter((it) => it.is_delivered).length
 
-                      {/* Customer & Address */}
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                          {ch.customer_name}
-                        </div>
-                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[220px]">
-                          <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
-                          <span className="truncate">{ch.delivery_address}</span>
-                        </div>
-                      </td>
-
-                      {/* Delivery Method */}
-                      <td className="py-3.5 px-4">
-                        {getMethodBadge(ch.delivery_method)}
-                      </td>
-
-                      {/* Vehicle */}
-                      <td className="py-3.5 px-4 text-xs font-mono">
-                        <div className="font-medium text-slate-800 dark:text-slate-200">
-                          {ch.vehicle_info || 'Factory Pickup'}
-                        </div>
-                        <div className="text-[10px] text-slate-400">{ch.delivery_person_name}</div>
-                      </td>
-
-                      {/* Scheduled Date */}
-                      <td className="py-3.5 px-4 text-xs font-mono text-slate-600 dark:text-slate-300">
-                        {ch.scheduled_date}
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-3.5 px-4">
-                        {getDeliveryStatusBadge(ch.status)}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                    return (
+                      <tr key={ch.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        {/* Challan & Invoice ID */}
+                        <td className="py-3.5 px-4">
                           <Link
                             href={`/${slug}/delivery/${ch.id}`}
-                            className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                            className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
                           >
-                            Challan PDF
+                            <span>{ch.challan_number}</span>
+                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </Link>
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap font-mono">
+                            <Badge variant="outline" className="text-[10px] py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                              {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
+                            </Badge>
+                            {ch.order_number && (
+                              <span className="text-[10px] text-slate-400">({ch.order_number})</span>
+                            )}
+                          </div>
+                        </td>
 
-                          {ch.status === 'scheduled' && (
+                        {/* Customer & Destination + Products Breakdown */}
+                        <td className="py-3.5 px-4">
+                          <div className="font-semibold text-slate-900 dark:text-white text-xs">
+                            {ch.customer_name}
+                          </div>
+                          <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[220px]">
+                            <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+                            <span className="truncate">{ch.delivery_address}</span>
+                          </div>
+                          {items.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                              <span className="text-[10px] text-slate-400 font-medium">{items.length} Item(s):</span>
+                              {readyCount > 0 && (
+                                <Badge className="text-[9px] py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
+                                  {readyCount} Ready
+                                </Badge>
+                              )}
+                              {pendingCount > 0 && (
+                                <Badge className="text-[9px] py-0 px-1 bg-amber-50 text-amber-700 border-amber-200">
+                                  {pendingCount} Pending
+                                </Badge>
+                              )}
+                              {deliveredCount > 0 && (
+                                <Badge className="text-[9px] py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
+                                  {deliveredCount} Delivered
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Delivery Method */}
+                        <td className="py-3.5 px-4">
+                          {getMethodBadge(ch.delivery_method)}
+                        </td>
+
+                        {/* Vehicle */}
+                        <td className="py-3.5 px-4 text-xs font-mono">
+                          <div className="font-medium text-slate-800 dark:text-slate-200">
+                            {ch.vehicle_info || 'Company Vehicle'}
+                          </div>
+                          <div className="text-[10px] text-slate-400">{ch.delivery_person_name}</div>
+                        </td>
+
+                        {/* Scheduled Date */}
+                        <td className="py-3.5 px-4 text-xs font-mono text-slate-600 dark:text-slate-300">
+                          {ch.scheduled_date}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3.5 px-4">
+                          {getDeliveryStatusBadge(ch.status)}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                            <Link
+                              href={`/${slug}/delivery/${ch.id}`}
+                              className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                            >
+                              PDF
+                            </Link>
+
                             <Button
                               size="sm"
-                              onClick={() => handleMarkOutForDelivery(ch.id)}
-                              className="h-7 text-[11px] px-2 bg-blue-600 hover:bg-blue-700 text-white"
+                              onClick={() => openDeliveryModal(ch)}
+                              className={`h-7 text-[11px] px-2.5 font-bold shadow-xs ${
+                                ch.status === 'delivered'
+                                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
+                                  : ch.status === 'partially_delivered'
+                                  ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                                  : readyCount > 0
+                                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                              }`}
                             >
-                              Dispatch Van
+                              {ch.status === 'delivered'
+                                ? 'View Sign-off'
+                                : ch.status === 'partially_delivered'
+                                ? 'Fulfill Balance'
+                                : 'Deliver / Dispatch'}
                             </Button>
-                          )}
-
-                          {ch.status === 'out_for_delivery' && (
-                            <Button
-                              size="sm"
-                              onClick={() => setSelectedChallanForDelivery(ch)}
-                              className="h-7 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                            >
-                              Confirm Delivery
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -526,78 +709,114 @@ export default function DeliveryLogisticsPage() {
                   {tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
                 </div>
               ) : (
-                challans.map((ch: DeliveryChallanRecord) => (
-                  <div key={ch.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Top: Challan # & Status */}
-                    <div className="flex items-center justify-between gap-2">
-                      <Link
-                        href={`/${slug}/delivery/${ch.id}`}
-                        className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                      >
-                        <span>{ch.challan_number}</span>
-                        <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-                      </Link>
-                      {getDeliveryStatusBadge(ch.status)}
-                    </div>
+                challans.map((ch: DeliveryChallanRecord) => {
+                  const items = ch.items || []
+                  const readyCount = items.filter((it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product')).length
+                  const pendingCount = items.filter((it) => !it.is_delivered && getLiveItemStatus(it, ch) !== 'ready_for_delivery').length
+                  const deliveredCount = items.filter((it) => it.is_delivered).length
 
-                    {/* Customer & Address */}
-                    <div>
-                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{ch.customer_name}</div>
-                      <div className="text-xs text-slate-500 flex items-start gap-1 mt-0.5">
-                        <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
-                        <span>{ch.delivery_address}</span>
+                  return (
+                    <div key={ch.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      {/* Top: Challan # & Status */}
+                      <div className="flex items-center justify-between gap-2">
+                        <Link
+                          href={`/${slug}/delivery/${ch.id}`}
+                          className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                        >
+                          <span>{ch.challan_number}</span>
+                          <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                        </Link>
+                        {getDeliveryStatusBadge(ch.status)}
                       </div>
-                    </div>
 
-                    {/* Meta Grid */}
-                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
-                      <div>
-                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Method</span>
-                        <div className="mt-0.5">{getMethodBadge(ch.delivery_method)}</div>
+                      <div className="flex items-center gap-2 font-mono">
+                        <Badge variant="outline" className="text-[10px] py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                          {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
+                        </Badge>
+                        {ch.order_number && (
+                          <span className="text-[10px] text-slate-400">({ch.order_number})</span>
+                        )}
                       </div>
+
+                      {/* Customer & Address */}
                       <div>
-                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Scheduled Date</span>
-                        <span className="font-mono text-slate-700 dark:text-slate-300">{ch.scheduled_date}</span>
-                      </div>
-                      {ch.vehicle_info && (
-                        <div className="col-span-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                          Vehicle: <strong className="font-mono text-slate-800 dark:text-slate-200">{ch.vehicle_info}</strong>
-                          {ch.delivery_person_name && <span> ({ch.delivery_person_name})</span>}
+                        <div className="font-semibold text-sm text-slate-900 dark:text-white">{ch.customer_name}</div>
+                        <div className="text-xs text-slate-500 flex items-start gap-1 mt-0.5">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
+                          <span>{ch.delivery_address}</span>
                         </div>
-                      )}
-                    </div>
+                        {items.length > 0 && (
+                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                            <span className="text-[10px] text-slate-400 font-medium">{items.length} Items:</span>
+                            {readyCount > 0 && (
+                              <Badge className="text-[9px] py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
+                                {readyCount} Ready
+                              </Badge>
+                            )}
+                            {pendingCount > 0 && (
+                              <Badge className="text-[9px] py-0 px-1 bg-amber-50 text-amber-700 border-amber-200">
+                                {pendingCount} Pending
+                              </Badge>
+                            )}
+                            {deliveredCount > 0 && (
+                              <Badge className="text-[9px] py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
+                                {deliveredCount} Delivered
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <Link
-                        href={`/${slug}/delivery/${ch.id}`}
-                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 min-h-[36px]"
-                      >
-                        Challan PDF
-                      </Link>
+                      {/* Meta Grid */}
+                      <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+                        <div>
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 block">Method</span>
+                          <div className="mt-0.5">{getMethodBadge(ch.delivery_method)}</div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 block">Scheduled Date</span>
+                          <span className="font-mono text-slate-700 dark:text-slate-300">{ch.scheduled_date}</span>
+                        </div>
+                        {ch.vehicle_info && (
+                          <div className="col-span-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                            Vehicle: <strong className="font-mono text-slate-800 dark:text-slate-200">{ch.vehicle_info}</strong>
+                            {ch.delivery_person_name && <span> ({ch.delivery_person_name})</span>}
+                          </div>
+                        )}
+                      </div>
 
-                      {ch.status === 'scheduled' && (
+                      {/* Actions */}
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <Link
+                          href={`/${slug}/delivery/${ch.id}`}
+                          className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 min-h-[36px]"
+                        >
+                          Challan PDF
+                        </Link>
+
                         <Button
                           size="sm"
-                          onClick={() => handleMarkOutForDelivery(ch.id)}
-                          className="h-9 text-xs px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                          onClick={() => openDeliveryModal(ch)}
+                          className={`h-9 text-xs px-3 font-bold ${
+                            ch.status === 'delivered'
+                              ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
+                              : ch.status === 'partially_delivered'
+                              ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                              : readyCount > 0
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white'
+                          }`}
                         >
-                          Dispatch Van
+                          {ch.status === 'delivered'
+                            ? 'View Sign-off'
+                            : ch.status === 'partially_delivered'
+                            ? 'Fulfill Balance'
+                            : 'Deliver / Dispatch'}
                         </Button>
-                      )}
-
-                      {ch.status === 'out_for_delivery' && (
-                        <Button
-                          size="sm"
-                          onClick={() => setSelectedChallanForDelivery(ch)}
-                          className="h-9 text-xs px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                        >
-                          Confirm Delivery
-                        </Button>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  )
+                })
               )}
             </div>
           </CardContent>
@@ -849,108 +1068,245 @@ export default function DeliveryLogisticsPage() {
         </Card>
       )}
 
-      {/* MODAL: CONFIRM DELIVERY SIGN-OFF */}
+      {/* MODAL: DELIVERY CONSIGNMENT HANDOVER & STATUS TRACKING */}
       <ModalDialog
         open={Boolean(selectedChallanForDelivery)}
         onOpenChange={(open) => !open && setSelectedChallanForDelivery(null)}
-        size="lg"
+        size="2xl"
         title={
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 font-bold shrink-0">
-              <CheckCircle2 className="h-5 w-5" />
+              <Truck className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-base font-black text-slate-900 dark:text-white">
-                  {tBilingual('Record Delivery Sign-Off', 'ডেলিভারি প্রাপ্তিস্বীকার রেকর্ড')}
+                  {tBilingual('Delivery & Consignment Handover', 'ডেলিভারি হ্যান্ডওভার ও প্রাপ্তিস্বীকার')}
                 </span>
                 <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
-                  Proof of Delivery
+                  {selectedChallanForDelivery?.status === 'partially_delivered' ? 'Partial Fulfillment' : 'Consignment Proof'}
                 </Badge>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {tBilingual('Verify goods handed over to the client representative on site', 'গ্রাহকের প্রতিনিধির নিকট মালামাল বুঝিয়ে দেওয়ার বিবরণ')}
+                {tBilingual('Review line-item fulfillment statuses, select items to dispatch, and record sign-off.', 'আইটেমভিত্তিক ডেলিভারি স্ট্যাটাস পর্যালোচনা করুন এবং প্রাপ্তিস্বীকার সম্পন্ন করুন।')}
               </p>
             </div>
           </div>
         }
       >
-        {selectedChallanForDelivery && (
-          <form onSubmit={handleConfirmDelivery} className="space-y-4 pt-1">
-            <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 p-3.5 space-y-1 text-xs">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-blue-700 dark:text-blue-300 font-mono">
-                  {selectedChallanForDelivery.challan_number}
-                </span>
-                <span className="font-semibold text-slate-900 dark:text-slate-100">
-                  {selectedChallanForDelivery.customer_name}
-                </span>
-              </div>
-              <div className="text-slate-600 dark:text-slate-400 text-[11px] truncate">
-                📍 {selectedChallanForDelivery.delivery_address}
-              </div>
-            </div>
+        {selectedChallanForDelivery && (() => {
+          const items = selectedChallanForDelivery.items || []
+          const nonDeliveredItems = items.filter((it) => !it.is_delivered)
+          const allItemsReady =
+            nonDeliveredItems.length > 0 &&
+            nonDeliveredItems.every((it) => getLiveItemStatus(it, selectedChallanForDelivery) === 'ready_for_delivery')
+          const isAllSelected =
+            nonDeliveredItems.length > 0 &&
+            nonDeliveredItems.every((it) => selectedItemIds.includes(it.id))
+          const isFullDelivery = (allItemsReady && isAllSelected) || (nonDeliveredItems.length === 0)
 
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          return (
+            <form onSubmit={handleConfirmDelivery} className="space-y-4 pt-1">
+              {/* 1. Header: Invoice ID & Customer Information */}
+              <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 dark:from-blue-950/40 dark:to-indigo-950/30 p-4 space-y-2 text-xs">
+                <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-blue-200/60 dark:border-blue-800/50">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Invoice ID:</span>
+                    <Badge className="font-mono font-black text-xs bg-blue-600 text-white px-2.5 py-0.5 shadow-xs">
+                      {selectedChallanForDelivery.invoice_number || `INV-${selectedChallanForDelivery.challan_number.replace('CHL-', '').replace('CH-', '')}`}
+                    </Badge>
+                    {selectedChallanForDelivery.order_number && (
+                      <Badge variant="outline" className="font-mono text-[10px] text-slate-600 dark:text-slate-300">
+                        Order: {selectedChallanForDelivery.order_number}
+                      </Badge>
+                    )}
+                  </div>
+                  <Badge variant="outline" className="font-mono text-[11px] bg-white dark:bg-slate-900 font-bold">
+                    Challan #{selectedChallanForDelivery.challan_number}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+                  <div>
+                    <span className="text-slate-500 block font-medium">Customer:</span>
+                    <strong className="text-slate-900 dark:text-slate-100 text-xs">{selectedChallanForDelivery.customer_name}</strong>
+                    <div className="text-slate-600 dark:text-slate-400 font-mono mt-0.5">📞 {selectedChallanForDelivery.customer_phone}</div>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block font-medium">Destination & Dispatch:</span>
+                    <div className="text-slate-700 dark:text-slate-300 line-clamp-2">📍 {selectedChallanForDelivery.delivery_address}</div>
+                    <div className="text-slate-500 text-[10px] mt-0.5">
+                      📅 Scheduled: <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{selectedChallanForDelivery.scheduled_date}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Itemized Products & Services with Status Badges */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                    <Package className="h-3.5 w-3.5 text-blue-600" />
+                    Invoice Products & Operational Status ({items.length})
+                  </Label>
+                  <span className="text-[10px] text-slate-500">
+                    {nonDeliveredItems.length === 0
+                      ? 'All items delivered'
+                      : `${selectedItemIds.length} of ${nonDeliveredItems.length} selected for delivery`}
+                  </span>
+                </div>
+
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 border rounded-lg border-slate-200 dark:border-slate-800 overflow-hidden">
+                  {items.map((it, idx) => {
+                    const liveStatus = getLiveItemStatus(it, selectedChallanForDelivery)
+                    const isDelivered = it.is_delivered
+                    const isSelected = selectedItemIds.includes(it.id)
+
+                    return (
+                      <div
+                        key={it.id || idx}
+                        onClick={() => {
+                          if (isDelivered) return
+                          if (isSelected) {
+                            setSelectedItemIds(selectedItemIds.filter((id) => id !== it.id))
+                          } else {
+                            setSelectedItemIds([...selectedItemIds, it.id])
+                          }
+                        }}
+                        className={`p-3 flex items-start justify-between gap-3 text-xs transition-colors cursor-pointer ${
+                          isDelivered
+                            ? 'bg-slate-50/70 dark:bg-slate-900/40 opacity-75 cursor-default'
+                            : isSelected
+                            ? 'bg-blue-50/40 dark:bg-blue-950/20'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                        }`}
+                      >
+                        <div className="flex items-start gap-2.5 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={isDelivered || isSelected}
+                            disabled={isDelivered}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              if (isDelivered) return
+                              if (e.target.checked) {
+                                setSelectedItemIds([...selectedItemIds, it.id])
+                              } else {
+                                setSelectedItemIds(selectedItemIds.filter((id) => id !== it.id))
+                              }
+                            }}
+                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <div className="min-w-0">
+                            <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                              <span>Item {idx + 1}: {it.product_description}</span>
+                              <span className="font-mono text-slate-500 text-[11px]">
+                                - {it.quantity} {it.unit}
+                              </span>
+                            </div>
+                            {it.dimensions_spec && (
+                              <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                                📐 Specs: {it.dimensions_spec}
+                              </div>
+                            )}
+                            {it.remarks && (
+                              <div className="text-[10px] text-slate-400 mt-0.5">
+                                Note: {it.remarks}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 flex items-center gap-1.5">
+                          {getItemStatusBadge(liveStatus)}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* 3. Receiver Information */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      {tBilingual('Receiver Full Name', 'গ্রহণকারীর নাম')} <span className="text-rose-500">*</span>
+                    </Label>
+                    <Input
+                      value={receiverName}
+                      onChange={(e) => setReceiverName(e.target.value)}
+                      className="text-xs h-9"
+                      placeholder="e.g. Md. Zahid Hassan"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      {tBilingual('Receiver Mobile Number', 'মোবাইল নম্বর')} <span className="text-rose-500">*</span>
+                    </Label>
+                    <Input
+                      value={receiverPhone}
+                      onChange={(e) => setReceiverPhone(e.target.value)}
+                      className="text-xs h-9 font-mono"
+                      placeholder="+8801700000000"
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Receiver Full Name', 'গ্রহণকারীর নাম')} <span className="text-rose-500">*</span>
+                    {tBilingual('Receiver Signature / Remarks', 'প্রাপ্তিস্বীকার বা মন্তব্য')} <span className="text-rose-500">*</span>
                   </Label>
                   <Input
-                    value={receiverName}
-                    onChange={(e) => setReceiverName(e.target.value)}
+                    placeholder="e.g. Received by client representative"
+                    value={receiverSignature}
+                    onChange={(e) => setReceiverSignature(e.target.value)}
                     className="text-xs h-9"
                     required
                   />
                 </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Receiver Mobile Number', 'মোবাইল নম্বর')} <span className="text-rose-500">*</span>
-                  </Label>
-                  <Input
-                    value={receiverPhone}
-                    onChange={(e) => setReceiverPhone(e.target.value)}
-                    className="text-xs h-9 font-mono"
-                    required
-                  />
-                </div>
               </div>
 
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Receiver Signature / Remarks', 'প্রাপ্তিস্বীকার বা মন্তব্য')} <span className="text-rose-500">*</span>
-                </Label>
-                <Input
-                  placeholder="e.g. Received by Md. Zahid Hassan (Official Store Seal)"
-                  value={receiverSignature}
-                  onChange={(e) => setReceiverSignature(e.target.value)}
-                  className="text-xs h-9"
-                  required
-                />
-              </div>
-            </div>
+              {/* 4. Action Footer: [Close] and Dynamic [Mark as delivered] vs [Partial Delivery] */}
+              <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSelectedChallanForDelivery(null)}
+                  className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+                >
+                  {tBilingual('Close', 'বন্ধ করুন')}
+                </Button>
 
-            {/* Action Footer */}
-            <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setSelectedChallanForDelivery(null)}
-                className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
-              >
-                {tBilingual('Cancel', 'বাতিল')}
-              </Button>
-              <Button
-                type="submit"
-                className="w-full sm:w-auto min-h-[40px] text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm px-5"
-              >
-                {tBilingual('Confirm Delivery & Archive Challan', 'ডেলিভারি নিশ্চিত ও আর্কাইভ করুন')}
-              </Button>
-            </div>
-          </form>
-        )}
+                {isFullDelivery ? (
+                  <Button
+                    type="submit"
+                    disabled={selectedItemIds.length === 0}
+                    className="w-full sm:w-auto min-h-[40px] text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm px-6 flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    {tBilingual('Mark as delivered', 'ডেলিভারি সম্পন্ন করুন')}
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={selectedItemIds.length === 0}
+                    className="w-full sm:w-auto min-h-[40px] text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-sm px-6 flex items-center gap-1.5"
+                  >
+                    <Truck className="h-4 w-4" />
+                    {tBilingual(
+                      `Partial Delivery (${selectedItemIds.length} Selected)`,
+                      `আংশিক ডেলিভারি (${selectedItemIds.length}টি নির্বাচিত)`
+                    )}
+                  </Button>
+                )}
+              </div>
+            </form>
+          )
+        })()}
       </ModalDialog>
 
       {/* MODAL: GENERATE DELIVERY CHALLAN */}

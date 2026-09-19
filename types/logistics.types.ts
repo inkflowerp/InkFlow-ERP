@@ -5,9 +5,11 @@ export type DeliveryMethod =
   | 'customer_pickup'
 
 export type DeliveryStatus =
+  | 'pending_dispatch'
   | 'scheduled'
   | 'assigned'
   | 'out_for_delivery'
+  | 'partially_delivered'
   | 'delivered'
   | 'failed'
   | 'returned'
@@ -20,13 +22,31 @@ export type InstallationStatus =
   | 'failed'
   | 'rescheduled'
 
+export type ChallanItemStatus =
+  | 'ready_for_delivery'
+  | 'design_pending'
+  | 'in_design'
+  | 'design_check'
+  | 'in_production'
+  | 'printing_pending'
+  | 'finishing_pending'
+  | 'delivered'
+  | 'cancelled'
+
 export interface ChallanItemRecord {
   id: string
   challan_id?: string
+  invoice_item_id?: string | null
   product_description: string
   dimensions_spec?: string | null
   quantity: number
   unit: string
+  item_kind?: 'ready_product' | 'custom_manufacturing' | 'service'
+  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production'
+  status?: ChallanItemStatus
+  is_delivered?: boolean
+  delivered_at?: string | null
+  delivered_quantity?: number
   remarks?: string | null
 }
 
@@ -34,6 +54,8 @@ export interface DeliveryChallanRecord {
   id: string
   company_id: string
   challan_number: string
+  invoice_id?: string | null
+  invoice_number?: string | null
   sales_order_id?: string | null
   order_number?: string | null
   customer_id: string
@@ -51,6 +73,8 @@ export interface DeliveryChallanRecord {
   receiver_name?: string | null
   receiver_phone?: string | null
   receiver_signature?: string | null
+  received_by?: string | null
+  received_date?: string | null
   notes?: string | null
   created_by_name: string
   items: ChallanItemRecord[]

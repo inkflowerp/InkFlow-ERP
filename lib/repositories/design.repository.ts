@@ -602,6 +602,38 @@ export class DesignRepository {
       } catch {}
     }
 
+    // 6.1 Update Delivery Challan Item Status to Printing / In Production
+    try {
+      const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      let chlUpdated = false
+      for (const ch of challans) {
+        if (
+          ch.company_id === companyId &&
+          (ch.invoice_id === job.invoice_id ||
+            ch.invoice_number === job.invoice_number ||
+            (job.sales_order_id && ch.sales_order_id === job.sales_order_id))
+        ) {
+          if (ch.items && Array.isArray(ch.items)) {
+            for (const it of ch.items) {
+              if (
+                it.product_description?.includes(job.title) ||
+                job.title?.includes(it.product_description) ||
+                it.id === job.invoice_item_id
+              ) {
+                if (it.status === 'design_pending' || it.status === 'design_check') {
+                  it.status = 'printing_pending'
+                  chlUpdated = true
+                }
+              }
+            }
+          }
+        }
+      }
+      if (chlUpdated) {
+        PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+      }
+    } catch {}
+
     // 7. In-App Notification to Print Operator / Shop Floor
     try {
       const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
