@@ -769,235 +769,30 @@ export function NewInvoiceModal({
     })
   }
 
-  const handleAddItem = (kind: 'service' | 'ready_product' | 'material' | 'custom' = 'service') => {
-    const tempId = `item-${Date.now()}-${items.length + 1}`
-    let newItem: ItemRowState
-
-    if (kind === 'ready_product') {
-      const firstReady = readyProductsList[0]
-      if (firstReady) {
-        let defaultPrice = Number(firstReady.selling_price) || Number((firstReady as any).base_price) || 100
-        let rateSrc: 'custom' | 'last_invoice' | 'default' = 'default'
-        let tierApplied: string | undefined = undefined
-
-        if (customerId && customerRates.length > 0) {
-          const resolved = customerRates.find((r) => r.productId === firstReady.id)
-          if (resolved) {
-            defaultPrice = resolved.effectiveRate
-            rateSrc = resolved.source
-          }
-        }
-
-        if (firstReady.price_tiers && rateSrc === 'default') {
-          const cType = (customerType || selectedCustomer?.customer_type || 'retail').toLowerCase()
-          if (cType === 'corporate' && (firstReady.price_tiers['corporate'] || firstReady.price_tiers['corporate_price'])) {
-            defaultPrice = Number(firstReady.price_tiers['corporate'] ?? firstReady.price_tiers['corporate_price'])
-            tierApplied = 'Corporate Tier'
-          } else if ((cType === 'reseller' || cType === 'dealer') && (firstReady.price_tiers['dealer'] || firstReady.price_tiers['dealer_price'])) {
-            defaultPrice = Number(firstReady.price_tiers['dealer'] ?? firstReady.price_tiers['dealer_price'])
-            tierApplied = 'Dealer Tier'
-          } else if (cType === 'wholesale' && (firstReady.price_tiers['wholesale'] || firstReady.price_tiers['wholesale_price'])) {
-            defaultPrice = Number(firstReady.price_tiers['wholesale'] ?? firstReady.price_tiers['wholesale_price'])
-            tierApplied = 'Wholesale Tier'
-          } else if (cType === 'vip' && (firstReady.price_tiers['vip'] || firstReady.price_tiers['vip_price'])) {
-            defaultPrice = Number(firstReady.price_tiers['vip'] ?? firstReady.price_tiers['vip_price'])
-            tierApplied = 'VIP Tier'
-          }
-        }
-
-        const prdUnit = firstReady.selling_unit || firstReady.unit || (firstReady as any).unit_of_measure || 'pcs'
-        newItem = {
-          id: tempId,
-          productId: firstReady.id,
-          item_kind: 'ready_product',
-          product_type: firstReady.product_type,
-          itemName: firstReady.name,
-          dimensions_spec: (firstReady.dimensions_spec || (firstReady as any).size_spec) || undefined,
-          width: '0',
-          height: '0',
-          dimension_unit: 'ft',
-          quantity: 1,
-          unit: prdUnit,
-          rate: defaultPrice,
-          finishing: 'None',
-          rateSource: rateSrc,
-          tier_applied: tierApplied,
-          moq: firstReady.min_order_quantity || undefined,
-          pcs_per_carton: (firstReady as any).pcs_per_carton || undefined,
-          unit_cost: Number(firstReady.effective_unit_cost ?? firstReady.base_cost) || 0,
-          isManualRate: false,
-          workflow_routing: 'ready_product',
-          design_required: false,
-          customer_approval_required: false,
-          showAdvanced: false,
-        }
-      } else {
-        newItem = {
-          id: tempId,
-          productId: '',
-          item_kind: 'ready_product',
-          product_type: 'ready_product',
-          itemName: 'Ready Display Product',
-          width: '0',
-          height: '0',
-          dimension_unit: 'ft',
-          quantity: 1,
-          unit: 'pcs',
-          rate: 0,
-          finishing: 'None',
-          rateSource: 'custom',
-          workflow_routing: 'ready_product',
-          design_required: false,
-          customer_approval_required: false,
-          showAdvanced: false,
-        }
-      }
-    } else if (kind === 'material') {
-      const firstMat = materialsList[0]
-      if (firstMat) {
-        let defaultPrice = Number(firstMat.selling_price) || Number((firstMat as any).base_price) || 0
-        let rateSrc: 'custom' | 'last_invoice' | 'default' = 'default'
-
-        if (customerId && customerRates.length > 0) {
-          const resolved = customerRates.find((r) => r.productId === firstMat.id)
-          if (resolved) {
-            defaultPrice = resolved.effectiveRate
-            rateSrc = resolved.source
-          }
-        }
-
-        const prdUnit = firstMat.selling_unit || firstMat.unit || 'roll'
-        newItem = {
-          id: tempId,
-          productId: firstMat.id,
-          item_kind: 'material',
-          product_type: firstMat.product_type,
-          itemName: firstMat.name,
-          dimensions_spec: firstMat.material_spec || undefined,
-          width: '0',
-          height: '0',
-          dimension_unit: 'ft',
-          quantity: 1,
-          unit: prdUnit,
-          rate: defaultPrice,
-          finishing: 'None',
-          rateSource: rateSrc,
-          unit_cost: Number(firstMat.effective_unit_cost ?? firstMat.base_cost) || 0,
-          isManualRate: false,
-          workflow_routing: 'ready_production',
-          design_required: false,
-          customer_approval_required: false,
-          showAdvanced: false,
-        }
-      } else {
-        newItem = {
-          id: tempId,
-          productId: '',
-          item_kind: 'material',
-          product_type: 'material',
-          itemName: 'Raw Substrate Media',
-          width: '0',
-          height: '0',
-          dimension_unit: 'ft',
-          quantity: 1,
-          unit: 'roll',
-          rate: 0,
-          finishing: 'None',
-          rateSource: 'custom',
-          workflow_routing: 'ready_production',
-          design_required: false,
-          customer_approval_required: false,
-          showAdvanced: false,
-        }
-      }
-    } else if (kind === 'custom') {
-      newItem = {
-        id: tempId,
+  const handleAddItem = (kind: 'service' | 'ready_product' | 'custom' = 'service') => {
+    const isReady = kind === 'ready_product'
+    const isCustom = kind === 'custom'
+    setItems((prev) => [
+      ...prev,
+      {
+        id: `item-${Date.now()}-${prev.length + 1}`,
         productId: '',
-        item_kind: 'custom',
-        workflow_routing: 'design_required',
-        itemName: 'Custom Line Item',
-        width: '4',
-        height: '6',
+        item_kind: kind,
+        workflow_routing: isReady ? 'ready_product' : 'design_required',
+        itemName: isCustom ? 'Custom Line Item' : '',
+        width: isReady ? '0' : '4',
+        height: isReady ? '0' : '6',
         dimension_unit: 'ft',
         quantity: 1,
-        unit: 'sft',
+        unit: isReady ? 'pcs' : 'sft',
         rate: 0,
         finishing: 'None',
-        rateSource: 'custom',
-        design_required: true,
-        customer_approval_required: true,
+        rateSource: isCustom ? 'custom' : 'default',
+        design_required: !isReady,
+        customer_approval_required: !isReady,
         showAdvanced: false,
-      }
-    } else {
-      // Default: service
-      const firstService = servicesList[0]
-      if (firstService) {
-        let defaultPrice = Number(firstService.selling_price) || Number((firstService as any).base_price) || 25
-        let rateSrc: 'custom' | 'last_invoice' | 'default' = 'default'
-
-        if (customerId && customerRates.length > 0) {
-          const resolved = customerRates.find((r) => r.productId === firstService.id)
-          if (resolved) {
-            defaultPrice = resolved.effectiveRate
-            rateSrc = resolved.source
-          }
-        }
-
-        const dimPresets = firstService.service_config?.dimension_presets || firstService.service_config?.presets || []
-        const w = dimPresets[0]?.width ? String(dimPresets[0].width) : '4'
-        const h = dimPresets[0]?.length ? String(dimPresets[0].length) : '6'
-        const dimUnit = dimPresets[0]?.unit || (firstService.service_config?.default_unit as any) || 'ft'
-        const finishingOpts = firstService.service_config?.finishing_options || []
-
-        newItem = {
-          id: tempId,
-          productId: firstService.id,
-          item_kind: 'service',
-          product_type: firstService.product_type,
-          itemName: firstService.name,
-          dimensions_spec: firstService.dimensions_spec || undefined,
-          width: w,
-          height: h,
-          dimension_unit: dimUnit,
-          quantity: 1,
-          unit: firstService.selling_unit || firstService.unit || 'sft',
-          rate: defaultPrice,
-          finishing: 'None',
-          rateSource: rateSrc,
-          unit_cost: Number(firstService.effective_unit_cost ?? firstService.base_cost) || 0,
-          isManualRate: false,
-          workflow_routing: 'design_required',
-          design_required: true,
-          customer_approval_required: true,
-          available_dimension_presets: dimPresets,
-          available_finishing_options: finishingOpts,
-          printable_material_name: firstService.service_config?.printable_material_name || firstService.printable_material_name || firstService.material_spec || undefined,
-          showAdvanced: false,
-        }
-      } else {
-        newItem = {
-          id: tempId,
-          productId: '',
-          item_kind: 'service',
-          workflow_routing: 'design_required',
-          itemName: 'Printing Service Item',
-          width: '4',
-          height: '6',
-          dimension_unit: 'ft',
-          quantity: 1,
-          unit: 'sft',
-          rate: 0,
-          finishing: 'None',
-          rateSource: 'default',
-          design_required: true,
-          customer_approval_required: true,
-          showAdvanced: false,
-        }
-      }
-    }
-
-    setItems((prev) => [...prev, newItem])
+      },
+    ])
   }
 
   const handleAddCustomItem = () => handleAddItem('custom')
@@ -1542,38 +1337,26 @@ export function NewInvoiceModal({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => handleAddItem('service')}
-                className="h-8 text-xs font-bold gap-1 text-blue-700 border-blue-300 bg-blue-50/60 hover:bg-blue-100 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 cursor-pointer px-2.5 rounded-lg shadow-2xs"
+                className="h-8 text-xs font-bold gap-1.5 text-blue-700 border-blue-300 bg-blue-50/60 hover:bg-blue-100 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 cursor-pointer px-3 rounded-lg shadow-2xs"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Add Item
               </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleAddItem('ready_product')}
-                className="h-8 text-xs font-bold gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 cursor-pointer px-2.5 rounded-lg shadow-2xs"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add Ready Product
-              </Button>
-
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => handleAddItem('custom')}
-                className="h-8 text-xs font-bold gap-1 text-amber-700 border-amber-300 bg-amber-50/60 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 cursor-pointer px-2.5 rounded-lg shadow-2xs"
+                className="h-8 text-xs font-bold gap-1.5 text-amber-700 border-amber-300 bg-amber-50/60 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 cursor-pointer px-3 rounded-lg shadow-2xs"
               >
                 <Sparkles className="h-3.5 w-3.5" />
-                Add Custom
+                Add Custom Item
               </Button>
             </div>
           </div>
@@ -2187,35 +1970,33 @@ export function NewInvoiceModal({
             })}
 
             {/* Add Item Actions below items */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+            <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-200/70 dark:border-slate-800">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleAddItem('service')}
-                className="w-full h-9 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 rounded-lg cursor-pointer transition-all"
+                className="h-9 px-4 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/60 hover:bg-blue-100/80 dark:bg-blue-950/30 dark:hover:bg-blue-950/50 rounded-lg cursor-pointer transition-all shadow-2xs"
               >
                 <Plus className="h-4 w-4" />
-                Add Printing Service Item
+                Add Item (Printing / Service)
               </Button>
-
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleAddItem('ready_product')}
-                className="w-full h-9 text-xs font-bold gap-1.5 text-emerald-700 dark:text-emerald-400 border border-dashed border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 hover:bg-emerald-100/70 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40 rounded-lg cursor-pointer transition-all"
+                className="h-9 px-4 text-xs font-bold gap-1.5 text-emerald-700 dark:text-emerald-400 border border-dashed border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 hover:bg-emerald-100/80 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 rounded-lg cursor-pointer transition-all shadow-2xs"
               >
                 <Plus className="h-4 w-4" />
-                Add Ready Product Item
+                Add Ready Product
               </Button>
-
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleAddItem('custom')}
-                className="w-full h-9 text-xs font-bold gap-1.5 text-amber-700 dark:text-amber-400 border border-dashed border-amber-300 dark:border-amber-800 bg-amber-50/50 hover:bg-amber-100/70 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 rounded-lg cursor-pointer transition-all"
+                className="h-9 px-4 text-xs font-bold gap-1.5 text-amber-700 dark:text-amber-400 border border-dashed border-amber-300 dark:border-amber-800 bg-amber-50/60 hover:bg-amber-100/80 dark:bg-amber-950/30 dark:hover:bg-amber-950/50 rounded-lg cursor-pointer transition-all shadow-2xs"
               >
                 <Sparkles className="h-4 w-4" />
-                Add Custom Line Item
+                Add Custom Item
               </Button>
             </div>
           </div>
