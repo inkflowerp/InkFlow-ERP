@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Select } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,16 @@ interface BangladeshAddressPickerProps {
   upazilaId?: number
   address?: string
   addressBn?: string
+  errors?: {
+    division_id?: string
+    district_id?: string
+    upazila_id?: string
+    address?: string
+    address_bn?: string
+  }
+  addressError?: string
+  divisionError?: string
+  districtError?: string
   onChange: (addressData: {
     divisionId?: number
     districtId?: number
@@ -28,6 +38,10 @@ export function BangladeshAddressPicker({
   upazilaId,
   address = '',
   addressBn = '',
+  errors,
+  addressError,
+  divisionError,
+  districtError,
   onChange,
 }: BangladeshAddressPickerProps) {
   const { locale, t, tBilingual } = useI18n()
@@ -37,6 +51,26 @@ export function BangladeshAddressPicker({
   const [selectedUpazila, setSelectedUpazila] = useState<number | undefined>(upazilaId)
   const [streetAddress, setStreetAddress] = useState<string>(address)
   const [streetAddressBn, setStreetAddressBn] = useState<string>(addressBn)
+
+  useEffect(() => {
+    if (divisionId !== undefined) setSelectedDivision(divisionId)
+  }, [divisionId])
+
+  useEffect(() => {
+    if (districtId !== undefined) setSelectedDistrict(districtId)
+  }, [districtId])
+
+  useEffect(() => {
+    if (upazilaId !== undefined) setSelectedUpazila(upazilaId)
+  }, [upazilaId])
+
+  useEffect(() => {
+    if (address !== undefined) setStreetAddress(address)
+  }, [address])
+
+  useEffect(() => {
+    if (addressBn !== undefined) setStreetAddressBn(addressBn)
+  }, [addressBn])
 
   // Filter districts by division
   const availableDistricts = BD_DISTRICTS.filter((d) => d.division_id === selectedDivision)
@@ -115,6 +149,7 @@ export function BangladeshAddressPicker({
           <Select
             value={selectedDivision}
             onChange={(e) => handleDivisionChange(Number(e.target.value))}
+            error={divisionError || errors?.division_id}
           >
             {BD_DIVISIONS.map((div) => (
               <option key={div.id} value={div.id}>
@@ -130,6 +165,7 @@ export function BangladeshAddressPicker({
           <Select
             value={selectedDistrict}
             onChange={(e) => handleDistrictChange(Number(e.target.value))}
+            error={districtError || errors?.district_id}
           >
             {availableDistricts.map((dist) => (
               <option key={dist.id} value={dist.id}>
@@ -145,6 +181,7 @@ export function BangladeshAddressPicker({
           <Select
             value={selectedUpazila || ''}
             onChange={(e) => handleUpazilaChange(Number(e.target.value))}
+            error={errors?.upazila_id}
           >
             <option value="">{t('common.select_option')}</option>
             {availableUpazilas.map((up) => (
@@ -164,6 +201,7 @@ export function BangladeshAddressPicker({
             value={streetAddress}
             onChange={(e) => handleAddressChange(e.target.value)}
             placeholder="e.g., Plot 12, Fakirapool Printing Market, Motijheel"
+            error={addressError || errors?.address}
           />
         </div>
         <div className="space-y-1.5">
@@ -172,6 +210,7 @@ export function BangladeshAddressPicker({
             value={streetAddressBn}
             onChange={(e) => handleAddressBnChange(e.target.value)}
             placeholder="যেমন: প্লট ১২, ফকিরাপুল প্রিন্টিং মার্কেট, মতিঝিল"
+            error={errors?.address_bn}
           />
         </div>
       </div>

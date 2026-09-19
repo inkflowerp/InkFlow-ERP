@@ -208,6 +208,29 @@ function OnboardingWizard() {
       }
       setError(null)
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps))
+    } else {
+      // Find the first error in fieldsToValidate and display a prominent warning banner
+      const errorMap: Record<string, string | undefined> = {
+        name: 'Company Name is required (minimum 2 characters).',
+        slug: 'Workspace subdomain is required (minimum 3 characters).',
+        business_type: 'Please select your business type.',
+        phone: 'Valid 11-digit phone number is required.',
+        email: 'Valid official email address is required.',
+        division_id: 'Please select your division.',
+        district_id: 'Please select your district.',
+        address: 'Street Address (ঠিকানা) is required (minimum 3 characters).',
+        owner_name: 'Owner full name is required.',
+        owner_email: 'Owner email address is required.',
+        owner_phone: 'Owner mobile number is required.',
+        owner_password: 'Password must be at least 6 characters.',
+      }
+      const firstErrorField = fieldsToValidate.find((f) => errors[f])
+      const errorMsg = firstErrorField && errors[firstErrorField]?.message
+        ? String(errors[firstErrorField]?.message)
+        : firstErrorField && errorMap[firstErrorField]
+        ? errorMap[firstErrorField]
+        : 'Please fill in all required fields marked with * before continuing.'
+      setError(errorMsg)
     }
   }
 
@@ -602,6 +625,7 @@ function OnboardingWizard() {
                         id="whatsapp"
                         placeholder="01711XXXXXX (For client order updates)"
                         {...register('whatsapp')}
+                        error={errors.whatsapp?.message}
                       />
                       <span className="text-[11px] text-slate-500">
                         Used for sending automated job order proofs and delivery challan PDFs.
@@ -632,12 +656,23 @@ function OnboardingWizard() {
                       upazilaId={watch('upazila_id')}
                       address={watch('address')}
                       addressBn={watch('address_bn')}
+                      errors={{
+                        division_id: errors.division_id?.message,
+                        district_id: errors.district_id?.message,
+                        upazila_id: errors.upazila_id?.message,
+                        address: errors.address?.message,
+                        address_bn: errors.address_bn?.message,
+                      }}
+                      addressError={errors.address?.message}
+                      divisionError={errors.division_id?.message}
+                      districtError={errors.district_id?.message}
                       onChange={(data) => {
                         if (data.divisionId) setValue('division_id', data.divisionId, { shouldValidate: true })
                         if (data.districtId) setValue('district_id', data.districtId, { shouldValidate: true })
                         if (data.upazilaId !== undefined) setValue('upazila_id', data.upazilaId)
                         if (data.address !== undefined) setValue('address', data.address, { shouldValidate: true })
                         if (data.addressBn !== undefined) setValue('address_bn', data.addressBn)
+                        if (error) setError(null)
                       }}
                     />
 
@@ -649,6 +684,7 @@ function OnboardingWizard() {
                         id="area"
                         placeholder="e.g. Fakirapool, Motijheel, Banglabazar, Nilkhet, Anderkilla"
                         {...register('area')}
+                        error={errors.area?.message}
                       />
                     </div>
                   </div>
