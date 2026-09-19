@@ -66,6 +66,10 @@ export interface NewInvoiceModalProps {
   preselectedDesignJobId?: string
   preselectedItemsSummary?: string
   preselectedEstimatedAmount?: number
+  preselectedNotes?: string
+  preselectedDiscountAmount?: number
+  preselectedVatPercentage?: number
+  preselectedAdvanceAmount?: number
   onInvoiceCreated?: (invoice: InvoiceRecord) => void
 }
 
@@ -141,6 +145,10 @@ export function NewInvoiceModal({
   preselectedDesignJobId,
   preselectedItemsSummary,
   preselectedEstimatedAmount,
+  preselectedNotes,
+  preselectedDiscountAmount,
+  preselectedVatPercentage,
+  preselectedAdvanceAmount,
   onInvoiceCreated,
 }: NewInvoiceModalProps) {
   const { company } = useTenant()
@@ -276,10 +284,28 @@ export function NewInvoiceModal({
       if (preselectedQuotationId) {
         setQuotationId(preselectedQuotationId)
       }
+      if (preselectedNotes) {
+        setNotes(preselectedNotes)
+      }
+      if (preselectedDiscountAmount !== undefined) {
+        setDiscountAmount(Number(preselectedDiscountAmount) || 0)
+      }
+      if (preselectedVatPercentage !== undefined) {
+        setVatPercentage(Number(preselectedVatPercentage) || 0)
+      }
+      if (preselectedAdvanceAmount !== undefined) {
+        setAdvanceAmount(Number(preselectedAdvanceAmount) || 0)
+      }
+
       if (preselectedCustomerId) {
         searchInvoiceCustomersAction(preselectedCustomerId, company?.id).then((res) => {
           if (res.success && res.data && res.data.length > 0) {
             handleSelectCustomer(res.data[0])
+            // If explicit overrides were passed alongside customerId, respect them
+            if (preselectedCustomerPhone) setPhoneNumber(preselectedCustomerPhone)
+            if (preselectedCustomerAddress) setAddress(preselectedCustomerAddress)
+            if (preselectedCompanyName) setCompanyName(preselectedCompanyName)
+            if (preselectedCustomerEmail) setEmailAddress(preselectedCustomerEmail)
           }
         })
       } else if (preselectedCustomerName) {
@@ -326,11 +352,12 @@ export function NewInvoiceModal({
             (matchingProduct?.product_type as any) === 'raw_material' ||
             matchingProduct?.product_type === 'material'
 
+          // Strictly prioritize the rate filled on the order / invoice request
           const resolvedRate =
+            (Number(it.rate) > 0 ? Number(it.rate) : undefined) ??
+            (Number(it.unit_price) > 0 ? Number(it.unit_price) : undefined) ??
             Number(matchingProduct?.selling_price) ||
             Number((matchingProduct as any)?.base_price) ||
-            Number(it.rate) ||
-            Number(it.unit_price) ||
             (isReady ? 50 : 25)
 
           return {
@@ -347,7 +374,7 @@ export function NewInvoiceModal({
             unit: it.unit || matchingProduct?.selling_unit || matchingProduct?.unit || (isService ? 'sft' : 'pcs'),
             rate: resolvedRate,
             finishing: it.finishing || 'None',
-            rateSource: matchingProduct ? 'default' : 'manual',
+            rateSource: it.rate || it.unit_price ? 'custom' : matchingProduct ? 'default' : 'manual',
             available_dimension_presets:
               matchingProduct?.service_config?.dimension_presets ||
               (matchingProduct as any)?.dimension_presets ||
@@ -357,6 +384,7 @@ export function NewInvoiceModal({
               (matchingProduct as any)?.finishing_options ||
               [],
             printable_material_name:
+              it.material_spec ||
               matchingProduct?.service_config?.printable_material_name ||
               (matchingProduct as any)?.material_spec,
             design_required: Boolean(it.design_required),
@@ -371,7 +399,8 @@ export function NewInvoiceModal({
             prev.length === 1 &&
             (!prev[0].productId ||
               prev[0].itemName === 'Printing Service Item' ||
-              prev[0].itemName === 'Flex Banner 10x4')
+              prev[0].itemName === 'Flex Banner 10x4' ||
+              prev[0].itemName === 'Pana Flex Banner Print')
           ) {
             return [
               {
@@ -402,6 +431,10 @@ export function NewInvoiceModal({
     preselectedItems,
     preselectedItemsSummary,
     preselectedEstimatedAmount,
+    preselectedNotes,
+    preselectedDiscountAmount,
+    preselectedVatPercentage,
+    preselectedAdvanceAmount,
     products,
     company?.id,
   ])

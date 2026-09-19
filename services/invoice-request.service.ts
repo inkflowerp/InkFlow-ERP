@@ -86,52 +86,160 @@ export class InvoiceRequestService {
     const designJobId = input.designJobId || input.design_job_id || null
     const designNumber = input.designNumber || input.design_number || null
 
-    // 1. Create or return existing pending invoice request
+    let resolvedSalesOrderId = salesOrderId
+    let resolvedOrderNumber = orderNumber
+    let resolvedJobOrderId = jobOrderId
+    let resolvedJobNumber = jobNumber
+    let resolvedDesignJobId = designJobId
+    let resolvedDesignNumber = designNumber
+
+    let resolvedCustomerId = input.customerId || input.customer_id || null
+    let resolvedCustomerName = customerName
+    let resolvedCustomerPhone = input.customerPhone || input.customer_phone || null
+    let resolvedCustomerEmail = input.customerEmail || input.customer_email || null
+    let resolvedCustomerAddress = input.customerAddress || input.customer_address || null
+    let resolvedCompanyName = input.companyName || input.company_name || null
+    let resolvedItems = Array.isArray(input.items) && input.items.length > 0 ? input.items : undefined
+    let resolvedItemsSummary = input.itemsSummary || input.items_summary || null
+    let resolvedEstimatedAmount = input.estimatedAmount ?? input.estimated_amount ?? 0
+
+    // Smart backfill from linked Sales Order
+    if (salesOrderId || orderNumber) {
+      try {
+        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const linkedOrder = orders.find(
+          (o) => (salesOrderId && o.id === salesOrderId) || (orderNumber && o.order_number === orderNumber)
+        )
+        if (linkedOrder) {
+          if (!resolvedSalesOrderId && linkedOrder.id) resolvedSalesOrderId = linkedOrder.id
+          if (!resolvedOrderNumber && linkedOrder.order_number) resolvedOrderNumber = linkedOrder.order_number
+          if (!resolvedCustomerId && linkedOrder.customer_id) resolvedCustomerId = linkedOrder.customer_id
+          if (!resolvedCustomerName && linkedOrder.customer_name) resolvedCustomerName = linkedOrder.customer_name
+          if (!resolvedCustomerPhone && linkedOrder.customer_phone) resolvedCustomerPhone = linkedOrder.customer_phone
+          if (!resolvedCustomerEmail && (linkedOrder.customer_email || linkedOrder.email)) {
+            resolvedCustomerEmail = linkedOrder.customer_email || linkedOrder.email
+          }
+          if (!resolvedCustomerAddress && (linkedOrder.customer_address || linkedOrder.delivery_address || linkedOrder.shipping_address)) {
+            resolvedCustomerAddress = linkedOrder.customer_address || linkedOrder.delivery_address || linkedOrder.shipping_address
+          }
+          if (!resolvedCompanyName && (linkedOrder.company_name || linkedOrder.customer_company)) {
+            resolvedCompanyName = linkedOrder.company_name || linkedOrder.customer_company
+          }
+          if (!resolvedItems && Array.isArray(linkedOrder.items) && linkedOrder.items.length > 0) {
+            resolvedItems = linkedOrder.items.map((it: any) => ({
+              productId: it.product_id || it.productId || undefined,
+              product_id: it.product_id || it.productId || undefined,
+              item_kind: it.item_kind || 'service',
+              product_type: it.product_type || undefined,
+              itemName: it.item_name || it.itemName || 'Work Order Item',
+              item_name: it.item_name || it.itemName || 'Work Order Item',
+              material_spec: it.material_spec || undefined,
+              dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : undefined),
+              width: String(it.width ?? '0'),
+              height: String(it.height ?? '0'),
+              dimension_unit: it.dimension_unit || 'ft',
+              quantity: Number(it.quantity) || 1,
+              unit: it.unit || 'sft',
+              rate: Number(it.unit_price ?? it.rate ?? 0),
+              unit_price: Number(it.unit_price ?? it.rate ?? 0),
+              total_price: Number(it.total_price ?? 0),
+              finishing: it.finishing || 'None',
+              design_required: Boolean(it.design_required),
+            }))
+          }
+          if (!resolvedItemsSummary && linkedOrder.items && linkedOrder.items.length > 0) {
+            resolvedItemsSummary = linkedOrder.items
+              .map((it: any) => `${it.item_name || it.itemName} (${it.width || 0}×${it.height || 0} ${it.dimension_unit || 'ft'}, Qty: ${it.quantity || 1})`)
+              .join('; ')
+          }
+          if (!resolvedEstimatedAmount) {
+            resolvedEstimatedAmount = Number(linkedOrder.final_price || linkedOrder.subtotal || 0)
+          }
+        }
+      } catch {}
+    }
+
+    // Smart backfill from linked Customer record
+    if (resolvedCustomerId && (!resolvedCustomerPhone || !resolvedCustomerAddress || !resolvedCompanyName || !resolvedCustomerEmail)) {
+      try {
+        const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+        const linkedCust = customers.find((c) => c.id === resolvedCustomerId)
+        if (linkedCust) {
+          if (!resolvedCustomerPhone && linkedCust.mobile) resolvedCustomerPhone = linkedCust.mobile
+          if (!resolvedCustomerEmail && linkedCust.email) resolvedCustomerEmail = linkedCust.email
+          if (!resolvedCustomerAddress && linkedCust.address) resolvedCustomerAddress = linkedCust.address
+          if (!resolvedCompanyName && linkedCust.company_name) resolvedCompanyName = linkedCust.company_name
+        }
+      } catch {}
+    }
+
+    // Smart backfill from linked Design Job
+    if (designJobId || designNumber) {
+      try {
+        const designs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const linkedDesign = designs.find(
+          (d) => (designJobId && d.id === designJobId) || (designNumber && d.design_number === designNumber)
+        )
+        if (linkedDesign) {
+          if (!resolvedDesignJobId && linkedDesign.id) resolvedDesignJobId = linkedDesign.id
+          if (!resolvedDesignNumber && linkedDesign.design_number) resolvedDesignNumber = linkedDesign.design_number
+          if (!resolvedCustomerName && linkedDesign.customer_name) resolvedCustomerName = linkedDesign.customer_name
+          if (!resolvedCustomerPhone && linkedDesign.customer_phone) resolvedCustomerPhone = linkedDesign.customer_phone
+          if (!resolvedCustomerAddress && linkedDesign.customer_address) resolvedCustomerAddress = linkedDesign.customer_address
+          if (!resolvedCompanyName && linkedDesign.company_name) resolvedCompanyName = linkedDesign.company_name
+          if (!resolvedItemsSummary && linkedDesign.title) {
+            resolvedItemsSummary = `${linkedDesign.title} (${linkedDesign.dimensions_spec || 'Standard'})`
+          }
+        }
+      } catch {}
+    }
+
+    // 1. Create or return existing pending invoice request with merged information
     const request = await InvoiceRequestRepository.createRequest({
       company_id: companyId,
-      customer_id: input.customerId || input.customer_id || null,
-      customer_name: customerName,
-      customer_phone: input.customerPhone || input.customer_phone || null,
-      customer_email: input.customerEmail || input.customer_email || null,
-      customer_address: input.customerAddress || input.customer_address || null,
-      company_name: input.companyName || input.company_name || null,
-      items: input.items || undefined,
-      sales_order_id: salesOrderId,
-      order_number: orderNumber,
-      job_order_id: jobOrderId,
-      job_number: jobNumber,
-      design_job_id: designJobId,
-      design_number: designNumber,
+      customer_id: resolvedCustomerId,
+      customer_name: resolvedCustomerName,
+      customer_phone: resolvedCustomerPhone,
+      customer_email: resolvedCustomerEmail,
+      customer_address: resolvedCustomerAddress,
+      company_name: resolvedCompanyName,
+      items: resolvedItems,
+      sales_order_id: resolvedSalesOrderId,
+      order_number: resolvedOrderNumber,
+      job_order_id: resolvedJobOrderId,
+      job_number: resolvedJobNumber,
+      design_job_id: resolvedDesignJobId,
+      design_number: resolvedDesignNumber,
       requested_by_id: input.requestedById || input.requested_by_id || null,
       requested_by_name: input.requestedByName || input.requested_by_name || 'Designer',
-      items_summary: input.itemsSummary || input.items_summary || null,
-      estimated_amount: input.estimatedAmount || input.estimated_amount || 0,
+      items_summary: resolvedItemsSummary,
+      estimated_amount: resolvedEstimatedAmount,
       notes: input.notes || null,
     })
 
     // 2. Update commercial status on related Sales Order and Design Job
     try {
       const supabase = await createClient()
-      if (input.salesOrderId) {
+      if (salesOrderId) {
         await (supabase as any)
           .from('sales_orders')
           .update({
             commercial_status: 'invoice_requested',
             invoice_requested_at: new Date().toISOString(),
           })
-          .eq('id', input.salesOrderId)
-          .eq('company_id', input.companyId)
+          .eq('id', salesOrderId)
+          .eq('company_id', companyId)
       }
 
-      if (input.designJobId) {
+      if (designJobId) {
         await (supabase as any)
           .from('design_jobs')
           .update({
             commercial_status: 'invoice_requested',
             invoice_request_id: request.id,
           })
-          .eq('id', input.designJobId)
-          .eq('company_id', input.companyId)
+          .eq('id', designJobId)
+          .eq('company_id', companyId)
       }
     } catch {
       // Local fallback updates

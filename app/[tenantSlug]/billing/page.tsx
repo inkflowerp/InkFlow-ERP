@@ -151,6 +151,10 @@ export default function BillingPage() {
   const [selectedDesignJobIdForInvoice, setSelectedDesignJobIdForInvoice] = useState<string | undefined>(undefined)
   const [selectedItemsSummaryForInvoice, setSelectedItemsSummaryForInvoice] = useState<string | undefined>(undefined)
   const [selectedEstimatedAmountForInvoice, setSelectedEstimatedAmountForInvoice] = useState<number | undefined>(undefined)
+  const [selectedNotesForInvoice, setSelectedNotesForInvoice] = useState<string | undefined>(undefined)
+  const [selectedDiscountForInvoice, setSelectedDiscountForInvoice] = useState<number | undefined>(undefined)
+  const [selectedVatForInvoice, setSelectedVatForInvoice] = useState<number | undefined>(undefined)
+  const [selectedAdvanceForInvoice, setSelectedAdvanceForInvoice] = useState<number | undefined>(undefined)
   const [isReceivePaymentOpen, setIsReceivePaymentOpen] = useState(false)
   const [selectedCustomerIdForPayment, setSelectedCustomerIdForPayment] = useState<string | undefined>(undefined)
   const [selectedInvoiceIdForPayment, setSelectedInvoiceIdForPayment] = useState<string | undefined>(undefined)
@@ -1406,18 +1410,73 @@ export default function BillingPage() {
             isLoading={isLoading}
             tenantSlug={slug}
             onCreateInvoice={(req) => {
+              let itemsToUse = req.items
+              let phoneToUse = req.customer_phone
+              let emailToUse = req.customer_email
+              let addressToUse = req.customer_address
+              let companyToUse = req.company_name
+              let estAmountToUse = Number(req.estimated_amount) || undefined
+              let notesToUse = req.notes || undefined
+              let discountToUse: number | undefined = undefined
+              let vatToUse: number | undefined = undefined
+              let advanceToUse: number | undefined = undefined
+
+              if (req.sales_order_id) {
+                const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+                const linkedOrder = orders.find((o) => o.id === req.sales_order_id)
+                if (linkedOrder) {
+                  if (!phoneToUse) phoneToUse = linkedOrder.customer_phone
+                  if (!addressToUse) addressToUse = linkedOrder.customer_address
+                  if (!companyToUse) companyToUse = linkedOrder.company_name
+                  if (!emailToUse && (linkedOrder.customer_email || linkedOrder.email)) {
+                    emailToUse = linkedOrder.customer_email || linkedOrder.email
+                  }
+                  if (!estAmountToUse) estAmountToUse = Number(linkedOrder.final_price || linkedOrder.subtotal || 0)
+                  if (!notesToUse && linkedOrder.notes) notesToUse = linkedOrder.notes
+                  if (linkedOrder.discount_amount) discountToUse = Number(linkedOrder.discount_amount)
+                  if (linkedOrder.advance_amount) advanceToUse = Number(linkedOrder.advance_amount)
+
+                  if ((!itemsToUse || itemsToUse.length === 0) && Array.isArray(linkedOrder.items) && linkedOrder.items.length > 0) {
+                    itemsToUse = linkedOrder.items.map((it: any) => ({
+                      productId: it.product_id || it.productId || undefined,
+                      product_id: it.product_id || it.productId || undefined,
+                      item_kind: it.item_kind || 'service',
+                      product_type: it.product_type || undefined,
+                      itemName: it.item_name || it.itemName || 'Work Order Item',
+                      item_name: it.item_name || it.itemName || 'Work Order Item',
+                      material_spec: it.material_spec || undefined,
+                      dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : undefined),
+                      width: String(it.width ?? '0'),
+                      height: String(it.height ?? '0'),
+                      dimension_unit: it.dimension_unit || 'ft',
+                      quantity: Number(it.quantity) || 1,
+                      unit: it.unit || 'sft',
+                      rate: Number(it.unit_price ?? it.rate ?? 0),
+                      unit_price: Number(it.unit_price ?? it.rate ?? 0),
+                      total_price: Number(it.total_price ?? 0),
+                      finishing: it.finishing || 'None',
+                      design_required: Boolean(it.design_required),
+                    }))
+                  }
+                }
+              }
+
               setSelectedCustomerForInvoice(req.customer_id || undefined)
               setSelectedOrderForInvoice(req.sales_order_id || undefined)
               setSelectedCustomerNameForInvoice(req.customer_name || undefined)
-              setSelectedCustomerPhoneForInvoice(req.customer_phone || undefined)
-              setSelectedCustomerEmailForInvoice(req.customer_email || undefined)
-              setSelectedCustomerAddressForInvoice(req.customer_address || undefined)
-              setSelectedCompanyNameForInvoice(req.company_name || undefined)
-              setSelectedItemsForInvoice(req.items || undefined)
+              setSelectedCustomerPhoneForInvoice(phoneToUse || undefined)
+              setSelectedCustomerEmailForInvoice(emailToUse || undefined)
+              setSelectedCustomerAddressForInvoice(addressToUse || undefined)
+              setSelectedCompanyNameForInvoice(companyToUse || undefined)
+              setSelectedItemsForInvoice(itemsToUse || undefined)
               setSelectedRequestIdForInvoice(req.id || undefined)
               setSelectedDesignJobIdForInvoice(req.design_job_id || undefined)
               setSelectedItemsSummaryForInvoice(req.items_summary || undefined)
-              setSelectedEstimatedAmountForInvoice(Number(req.estimated_amount) || undefined)
+              setSelectedEstimatedAmountForInvoice(estAmountToUse)
+              setSelectedNotesForInvoice(notesToUse)
+              setSelectedDiscountForInvoice(discountToUse)
+              setSelectedVatForInvoice(vatToUse)
+              setSelectedAdvanceForInvoice(advanceToUse)
               setIsNewInvoiceOpen(true)
             }}
             onCancelRequest={async (requestId, reason) => {
@@ -1822,6 +1881,10 @@ export default function BillingPage() {
             setSelectedDesignJobIdForInvoice(undefined)
             setSelectedItemsSummaryForInvoice(undefined)
             setSelectedEstimatedAmountForInvoice(undefined)
+            setSelectedNotesForInvoice(undefined)
+            setSelectedDiscountForInvoice(undefined)
+            setSelectedVatForInvoice(undefined)
+            setSelectedAdvanceForInvoice(undefined)
           }
         }}
         preselectedSalesOrderId={selectedOrderForInvoice || orderIdParam}
@@ -1836,6 +1899,10 @@ export default function BillingPage() {
         preselectedDesignJobId={selectedDesignJobIdForInvoice}
         preselectedItemsSummary={selectedItemsSummaryForInvoice}
         preselectedEstimatedAmount={selectedEstimatedAmountForInvoice}
+        preselectedNotes={selectedNotesForInvoice}
+        preselectedDiscountAmount={selectedDiscountForInvoice}
+        preselectedVatPercentage={selectedVatForInvoice}
+        preselectedAdvanceAmount={selectedAdvanceForInvoice}
         onInvoiceCreated={async (inv) => {
           if (selectedRequestIdForInvoice) {
             try {

@@ -106,12 +106,55 @@ export default function OrderDetailPage() {
     if (!order) return
     setIsSubmittingInvoiceRequest(true)
     try {
+      const itemsSummary =
+        order.items && order.items.length > 0
+          ? order.items
+              .map(
+                (it) =>
+                  `${it.item_name} (${it.width || 0}×${it.height || 0} ${it.dimension_unit || 'ft'}, Qty: ${it.quantity || 1})`
+              )
+              .join('; ')
+          : 'Sales Order Line Items'
+
+      const mappedItems = (order.items || []).map((it) => ({
+        productId: it.product_id || undefined,
+        product_id: it.product_id || undefined,
+        item_kind: (it as any).item_kind || 'service',
+        product_type: (it as any).product_type || undefined,
+        itemName: it.item_name,
+        item_name: it.item_name,
+        material_spec: it.material_spec || undefined,
+        dimensions_spec:
+          (it as any).dimensions_spec ||
+          (it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : undefined),
+        width: String(it.width ?? '0'),
+        height: String(it.height ?? '0'),
+        dimension_unit: it.dimension_unit || 'ft',
+        quantity: Number(it.quantity) || 1,
+        unit: it.unit || 'sft',
+        rate: Number(it.unit_price ?? (it as any).rate ?? 0),
+        unit_price: Number(it.unit_price ?? (it as any).rate ?? 0),
+        total_price: Number(it.total_price ?? 0),
+        finishing: (it as any).finishing || 'None',
+        design_required: Boolean((it as any).design_required),
+      }))
+
       const res = await createInvoiceRequestAction({
-        order_id: order.id,
-        order_number: order.order_number,
-        customer_id: order.customer_id,
-        customer_name: order.customer_name,
-        notes: invoiceNotes || 'Commercial invoice requested for production gating clearance.',
+        companyId: order.company_id || company?.id,
+        salesOrderId: order.id,
+        orderId: order.id,
+        orderNumber: order.order_number,
+        customerId: order.customer_id || null,
+        customerName: order.customer_name,
+        customerPhone: order.customer_phone || (order as any).phone || null,
+        customerEmail: (order as any).customer_email || (order as any).email || null,
+        customerAddress:
+          order.customer_address || (order as any).delivery_address || (order as any).shipping_address || null,
+        companyName: (order as any).company_name || (order as any).customer_company || null,
+        items: mappedItems,
+        itemsSummary,
+        estimatedAmount: Number(order.final_price || order.subtotal || 0),
+        notes: invoiceNotes || order.notes || 'Commercial invoice requested for production gating clearance.',
         priority: order.priority === 'very_urgent' ? 'urgent' : 'normal',
       })
       if (res.success) {

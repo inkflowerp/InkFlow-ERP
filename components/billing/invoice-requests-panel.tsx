@@ -365,6 +365,11 @@ export function InvoiceRequestsPanel({
                           <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                           <span>{req.customer_name}</span>
                         </div>
+                        {req.company_name && (
+                          <div className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">
+                            {req.company_name}
+                          </div>
+                        )}
                         {req.customer_phone && (
                           <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
                             <Phone className="h-3 w-3 text-slate-400 shrink-0" />
@@ -374,6 +379,11 @@ export function InvoiceRequestsPanel({
                             >
                               {req.customer_phone}
                             </a>
+                          </div>
+                        )}
+                        {req.customer_address && (
+                          <div className="text-[10px] text-slate-400 truncate max-w-xs" title={req.customer_address}>
+                            📍 {req.customer_address}
                           </div>
                         )}
                       </div>

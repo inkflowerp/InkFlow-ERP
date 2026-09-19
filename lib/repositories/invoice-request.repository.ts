@@ -189,7 +189,7 @@ export class InvoiceRequestRepository {
       throw new Error('Company context is required to create an invoice request.')
     }
 
-    // 1. Duplicate Prevention Check: Check if an active pending request already exists for this document
+    // 1. Duplicate Prevention Check & Merge: If an active pending request already exists, merge/update with new filled information
     if (data.sales_order_id || data.design_job_id || data.job_order_id) {
       const existing = await this.getRequests(data.company_id, {
         status: 'pending',
@@ -199,8 +199,52 @@ export class InvoiceRequestRepository {
       })
 
       if (existing.length > 0) {
-        // Return existing pending request to avoid duplicates
-        return existing[0]
+        const target = existing[0]
+        const mergedUpdates: Partial<InvoiceRequestRecord> = {
+          updated_at: new Date().toISOString(),
+        }
+        if (data.customer_id) mergedUpdates.customer_id = data.customer_id
+        if (data.customer_name) mergedUpdates.customer_name = data.customer_name
+        if (data.customer_phone) mergedUpdates.customer_phone = data.customer_phone
+        if (data.customer_email) mergedUpdates.customer_email = data.customer_email
+        if (data.customer_address) mergedUpdates.customer_address = data.customer_address
+        if (data.company_name) mergedUpdates.company_name = data.company_name
+        if (Array.isArray(data.items) && data.items.length > 0) mergedUpdates.items = data.items
+        if (data.items_summary) mergedUpdates.items_summary = data.items_summary
+        if (data.estimated_amount !== undefined && data.estimated_amount > 0) {
+          mergedUpdates.estimated_amount = data.estimated_amount
+        }
+        if (data.notes) mergedUpdates.notes = data.notes
+
+        try {
+          let supabase: any
+          try {
+            supabase = await createClient()
+          } catch {
+            supabase = createAdminClient()
+          }
+          await (supabase as any)
+            .from('invoice_requests')
+            .update(mergedUpdates)
+            .eq('id', target.id)
+            .eq('company_id', data.company_id)
+        } catch {}
+
+        const updatedTarget: InvoiceRequestRecord = {
+          ...target,
+          ...mergedUpdates,
+        }
+
+        try {
+          const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+          const idx = all.findIndex((r) => r.id === target.id)
+          if (idx >= 0) all[idx] = updatedTarget
+          else all.unshift(updatedTarget)
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, data.company_id)
+        } catch {}
+
+        return updatedTarget
       }
     }
 
