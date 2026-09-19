@@ -769,33 +769,29 @@ export function NewInvoiceModal({
     })
   }
 
-  const handleAddItem = (kind: 'service' | 'ready_product' | 'custom' = 'service') => {
-    const isReady = kind === 'ready_product'
-    const isCustom = kind === 'custom'
+  const handleAddItem = () => {
     setItems((prev) => [
       ...prev,
       {
         id: `item-${Date.now()}-${prev.length + 1}`,
         productId: '',
-        item_kind: kind,
-        workflow_routing: isReady ? 'ready_product' : 'design_required',
-        itemName: isCustom ? 'Custom Line Item' : '',
-        width: isReady ? '0' : '4',
-        height: isReady ? '0' : '6',
+        item_kind: 'service',
+        workflow_routing: 'design_required',
+        itemName: '',
+        width: '4',
+        height: '6',
         dimension_unit: 'ft',
         quantity: 1,
-        unit: isReady ? 'pcs' : 'sft',
+        unit: 'sft',
         rate: 0,
         finishing: 'None',
-        rateSource: isCustom ? 'custom' : 'default',
-        design_required: !isReady,
-        customer_approval_required: !isReady,
+        rateSource: 'custom',
+        design_required: true,
+        customer_approval_required: true,
         showAdvanced: false,
       },
     ])
   }
-
-  const handleAddCustomItem = () => handleAddItem('custom')
 
   const handleRemoveItem = (index: number) => {
     if (items.length <= 1) return
@@ -1322,14 +1318,14 @@ export function NewInvoiceModal({
             SECTION 2: INVOICE ITEMS & SPECS (PRODUCT & SERVICE AWARE)
            ========================================================================= */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 2
               </div>
               <div>
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Invoice Items & Specs ({items.length})
+                  Invoice Items & Specs
                 </h3>
                 <p className="text-[10px] text-slate-400">
                   Billing & Fulfillment: Supports Printing Services, Ready Products & Hardware, and Materials.
@@ -1337,28 +1333,9 @@ export function NewInvoiceModal({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleAddItem('service')}
-                className="h-8 text-xs font-bold gap-1.5 text-blue-700 border-blue-300 bg-blue-50/60 hover:bg-blue-100 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 cursor-pointer px-3 rounded-lg shadow-2xs"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add Item
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleAddItem('custom')}
-                className="h-8 text-xs font-bold gap-1.5 text-amber-700 border-amber-300 bg-amber-50/60 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 cursor-pointer px-3 rounded-lg shadow-2xs"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                Add Custom Item
-              </Button>
-            </div>
+            <Badge variant="outline" className="text-[10px] font-mono uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+              {items.length} Item{items.length > 1 ? 's' : ''}
+            </Badge>
           </div>
 
           <div className="space-y-4">
@@ -1969,34 +1946,16 @@ export function NewInvoiceModal({
               )
             })}
 
-            {/* Add Item Actions below items */}
-            <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-200/70 dark:border-slate-800">
+            {/* Add Item Button below item */}
+            <div className="pt-1">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => handleAddItem('service')}
-                className="h-9 px-4 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/60 hover:bg-blue-100/80 dark:bg-blue-950/30 dark:hover:bg-blue-950/50 rounded-lg cursor-pointer transition-all shadow-2xs"
+                onClick={handleAddItem}
+                className="w-full h-9 text-xs font-bold gap-1.5 text-blue-600 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 rounded-xl cursor-pointer shadow-2xs transition-all"
               >
                 <Plus className="h-4 w-4" />
-                Add Item (Printing / Service)
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleAddItem('ready_product')}
-                className="h-9 px-4 text-xs font-bold gap-1.5 text-emerald-700 dark:text-emerald-400 border border-dashed border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 hover:bg-emerald-100/80 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 rounded-lg cursor-pointer transition-all shadow-2xs"
-              >
-                <Plus className="h-4 w-4" />
-                Add Ready Product
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleAddItem('custom')}
-                className="h-9 px-4 text-xs font-bold gap-1.5 text-amber-700 dark:text-amber-400 border border-dashed border-amber-300 dark:border-amber-800 bg-amber-50/60 hover:bg-amber-100/80 dark:bg-amber-950/30 dark:hover:bg-amber-950/50 rounded-lg cursor-pointer transition-all shadow-2xs"
-              >
-                <Sparkles className="h-4 w-4" />
-                Add Custom Item
+                Add Item
               </Button>
             </div>
           </div>
