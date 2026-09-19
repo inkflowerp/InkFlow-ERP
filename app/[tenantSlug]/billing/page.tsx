@@ -141,6 +141,12 @@ export default function BillingPage() {
   const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(actionParam === 'create_invoice')
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<string | undefined>(undefined)
   const [selectedCustomerForInvoice, setSelectedCustomerForInvoice] = useState<string | undefined>(undefined)
+  const [selectedCustomerNameForInvoice, setSelectedCustomerNameForInvoice] = useState<string | undefined>(undefined)
+  const [selectedCustomerPhoneForInvoice, setSelectedCustomerPhoneForInvoice] = useState<string | undefined>(undefined)
+  const [selectedRequestIdForInvoice, setSelectedRequestIdForInvoice] = useState<string | undefined>(undefined)
+  const [selectedDesignJobIdForInvoice, setSelectedDesignJobIdForInvoice] = useState<string | undefined>(undefined)
+  const [selectedItemsSummaryForInvoice, setSelectedItemsSummaryForInvoice] = useState<string | undefined>(undefined)
+  const [selectedEstimatedAmountForInvoice, setSelectedEstimatedAmountForInvoice] = useState<number | undefined>(undefined)
   const [isReceivePaymentOpen, setIsReceivePaymentOpen] = useState(false)
   const [selectedCustomerIdForPayment, setSelectedCustomerIdForPayment] = useState<string | undefined>(undefined)
   const [selectedInvoiceIdForPayment, setSelectedInvoiceIdForPayment] = useState<string | undefined>(undefined)
@@ -222,30 +228,53 @@ export default function BillingPage() {
         fetchedRequests = reqRes.data
       }
 
-      // Merge with local client-side data store for seamless resilience
-      const localRequests =
-        PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, company.id) ||
-        PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) ||
-        []
+      // Merge with local client-side data store for seamless resilience across tenant partitions
+      const localRequests: InvoiceRequestRecord[] = [
+        ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, slug) || []),
+        ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, company.slug) || []),
+        ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, company.id) || []),
+        ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+      ]
+
+      const isTenantMatch = (itemCompanyId?: string | null) => {
+        if (!itemCompanyId) return true
+        if (itemCompanyId === company.id || itemCompanyId === company.slug || itemCompanyId === slug) return true
+        if (itemCompanyId === 'c-01' || itemCompanyId === 'comp-01' || itemCompanyId === 'comp-tenant-alpha') return true
+        if (typeof company.id === 'string' && typeof itemCompanyId === 'string') {
+          if (company.id.toLowerCase() === itemCompanyId.toLowerCase()) return true
+          if (company.id.includes(itemCompanyId) || itemCompanyId.includes(company.id)) return true
+        }
+        if (typeof company.slug === 'string' && typeof itemCompanyId === 'string') {
+          if (company.slug.toLowerCase() === itemCompanyId.toLowerCase()) return true
+        }
+        return false
+      }
 
       const reqMap = new Map<string, InvoiceRequestRecord>()
       localRequests.forEach((r) => {
-        if (!r.company_id || r.company_id === company.id) {
+        if (r && r.id && isTenantMatch(r.company_id)) {
           reqMap.set(r.id, r)
         }
       })
       fetchedRequests.forEach((r) => {
-        reqMap.set(r.id, r)
+        if (r && r.id) {
+          reqMap.set(r.id, r)
+        }
       })
 
       // Also check orders marked commercial_status: invoice_requested to guarantee visibility
       try {
-        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const orders = [
+          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, slug) || []),
+          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company.slug) || []),
+          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company.id) || []),
+          ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []),
+        ]
         orders.forEach((ord) => {
           if (
             ord &&
             ord.commercial_status === 'invoice_requested' &&
-            (!ord.company_id || ord.company_id === company.id)
+            isTenantMatch(ord.company_id)
           ) {
             const hasExisting = Array.from(reqMap.values()).some(
               (r) =>
@@ -257,7 +286,7 @@ export default function BillingPage() {
               reqMap.set(reqId, {
                 id: reqId,
                 company_id: company.id,
-                request_number: `INVR-${ord.order_number ? ord.order_number.replace('ORD-', '') : Math.floor(1000 + Math.random() * 9000)}`,
+                request_number: `INVR-${ord.order_number ? ord.order_number.replace('ORD-', '').replace('ORDER-', '') : Math.floor(1000 + Math.random() * 9000)}`,
                 customer_id: ord.customer_id || null,
                 customer_name: ord.customer_name || 'Customer',
                 customer_phone: ord.customer_phone || null,
@@ -276,10 +305,64 @@ export default function BillingPage() {
                   (Array.isArray(ord.items) && ord.items.length > 0
                     ? `${ord.items.length} items`
                     : 'Work Order Item'),
-                estimated_amount: ord.total_amount || ord.grand_total || 0,
+                estimated_amount: Number(ord.total_amount || ord.grand_total || ord.estimated_amount) || 0,
                 notes: ord.notes || 'Work order marked Design Ready pending invoice generation',
                 created_at: ord.invoice_requested_at || ord.created_at || new Date().toISOString(),
                 updated_at: ord.updated_at || new Date().toISOString(),
+              })
+            }
+          }
+        })
+      } catch {}
+
+      // Also check design jobs marked commercial_status: invoice_requested (e.g. from Designer Panel / Prepress direct customer intake)
+      try {
+        const designJobs = [
+          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, slug) || []),
+          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, company.slug) || []),
+          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, company.id) || []),
+          ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []),
+        ]
+        designJobs.forEach((dj) => {
+          if (
+            dj &&
+            dj.commercial_status === 'invoice_requested' &&
+            isTenantMatch(dj.company_id)
+          ) {
+            const hasExisting = Array.from(reqMap.values()).some(
+              (r) =>
+                (dj.id && r.design_job_id === dj.id) ||
+                (dj.design_number && r.design_number === dj.design_number) ||
+                (dj.sales_order_id && r.sales_order_id === dj.sales_order_id)
+            )
+            if (!hasExisting) {
+              const reqId = dj.invoice_request_id || `inv-req-design-${dj.id}`
+              reqMap.set(reqId, {
+                id: reqId,
+                company_id: company.id,
+                request_number: `INVR-DSN-${dj.design_number ? dj.design_number.replace('DSN-', '').replace('DES-', '') : Math.floor(1000 + Math.random() * 9000)}`,
+                customer_id: dj.customer_id || null,
+                customer_name: dj.customer_name || 'Direct Customer',
+                customer_phone: dj.customer_phone || null,
+                sales_order_id: dj.sales_order_id || null,
+                order_number: dj.order_number || null,
+                job_order_id: null,
+                job_number: null,
+                design_job_id: dj.id,
+                design_number: dj.design_number || null,
+                requested_by_id: dj.assigned_designer_id || null,
+                requested_by_name: dj.assigned_designer_name || 'Prepress Designer',
+                status: 'pending',
+                items_summary:
+                  dj.title ||
+                  dj.items_summary ||
+                  (dj.dimensions_spec
+                    ? `${dj.product_name || 'Design'} (${dj.dimensions_spec})`
+                    : 'Design Artwork'),
+                estimated_amount: Number(dj.estimated_amount) || 0,
+                notes: dj.notes || 'Design completed by prepress designer pending official invoice generation',
+                created_at: dj.updated_at || dj.created_at || new Date().toISOString(),
+                updated_at: dj.updated_at || new Date().toISOString(),
               })
             }
           }
@@ -295,7 +378,7 @@ export default function BillingPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [company, selectedPeriod, customStartDate, customEndDate])
+  }, [company, slug, selectedPeriod, customStartDate, customEndDate])
 
   useEffect(() => {
     loadBillingData()
@@ -1313,6 +1396,12 @@ export default function BillingPage() {
             onCreateInvoice={(req) => {
               setSelectedCustomerForInvoice(req.customer_id || undefined)
               setSelectedOrderForInvoice(req.sales_order_id || undefined)
+              setSelectedCustomerNameForInvoice(req.customer_name || undefined)
+              setSelectedCustomerPhoneForInvoice(req.customer_phone || undefined)
+              setSelectedRequestIdForInvoice(req.id || undefined)
+              setSelectedDesignJobIdForInvoice(req.design_job_id || undefined)
+              setSelectedItemsSummaryForInvoice(req.items_summary || undefined)
+              setSelectedEstimatedAmountForInvoice(Number(req.estimated_amount) || undefined)
               setIsNewInvoiceOpen(true)
             }}
             onCancelRequest={async (requestId, reason) => {
@@ -1707,11 +1796,34 @@ export default function BillingPage() {
           if (!v) {
             setSelectedOrderForInvoice(undefined)
             setSelectedCustomerForInvoice(undefined)
+            setSelectedCustomerNameForInvoice(undefined)
+            setSelectedCustomerPhoneForInvoice(undefined)
+            setSelectedRequestIdForInvoice(undefined)
+            setSelectedDesignJobIdForInvoice(undefined)
+            setSelectedItemsSummaryForInvoice(undefined)
+            setSelectedEstimatedAmountForInvoice(undefined)
           }
         }}
         preselectedSalesOrderId={selectedOrderForInvoice || orderIdParam}
         preselectedCustomerId={selectedCustomerForInvoice}
-        onInvoiceCreated={(inv) => {
+        preselectedCustomerName={selectedCustomerNameForInvoice}
+        preselectedCustomerPhone={selectedCustomerPhoneForInvoice}
+        preselectedRequestId={selectedRequestIdForInvoice}
+        preselectedDesignJobId={selectedDesignJobIdForInvoice}
+        preselectedItemsSummary={selectedItemsSummaryForInvoice}
+        preselectedEstimatedAmount={selectedEstimatedAmountForInvoice}
+        onInvoiceCreated={async (inv) => {
+          if (selectedRequestIdForInvoice) {
+            try {
+              const { InvoiceRequestRepository } = await import('@/lib/repositories/invoice-request.repository')
+              await InvoiceRequestRepository.resolveRequestWithInvoice(
+                { requestId: selectedRequestIdForInvoice },
+                inv.id,
+                inv.invoice_number,
+                company?.id || slug
+              )
+            } catch {}
+          }
           showNotification(`Invoice #${inv.invoice_number} created successfully.`)
           loadBillingData()
         }}

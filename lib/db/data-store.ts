@@ -264,6 +264,7 @@ export function isTransactionalKey(key: string): boolean {
     key === STORAGE_KEYS.PRODUCTION_JOBS ||
     key === STORAGE_KEYS.REWORKS ||
     key === STORAGE_KEYS.INVOICES ||
+    key === STORAGE_KEYS.INVOICE_REQUESTS ||
     key === STORAGE_KEYS.PAYMENTS ||
     key === STORAGE_KEYS.EXPENSES ||
     key === STORAGE_KEYS.BANK_ACCOUNTS ||

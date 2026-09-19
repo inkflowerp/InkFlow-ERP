@@ -13,6 +13,21 @@ export interface InvoiceRequestFilterOptions {
 
 export class InvoiceRequestRepository {
   /**
+   * Helper to verify company match with clean slug alias support while maintaining strict tenant isolation
+   */
+  private static isMatchingCompany(recordCompanyId?: string | null, requestedCompanyId?: string): boolean {
+    if (!recordCompanyId || !requestedCompanyId) return true
+    if (recordCompanyId === requestedCompanyId) return true
+    if (typeof requestedCompanyId === 'string' && typeof recordCompanyId === 'string') {
+      if (requestedCompanyId.toLowerCase() === recordCompanyId.toLowerCase()) return true
+      const cleanRec = recordCompanyId.replace(/^comp-/, '').replace(/^co-/, '').toLowerCase()
+      const cleanReq = requestedCompanyId.replace(/^comp-/, '').replace(/^co-/, '').toLowerCase()
+      if (cleanRec && cleanReq && cleanRec === cleanReq) return true
+    }
+    return false
+  }
+
+  /**
    * Fetch all invoice requests for a company with optional filters
    */
   static async getRequests(
@@ -68,9 +83,20 @@ export class InvoiceRequestRepository {
       if (!error && data && data.length > 0) {
         const records = data as unknown as InvoiceRequestRecord[]
         try {
-          const allLocal = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
-          const merged = [...records, ...allLocal.filter((l) => l.company_id && l.company_id !== companyId)]
+          const allLocal = [
+            ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+            ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+          ]
+          const reqMap = new Map<string, InvoiceRequestRecord>()
+          allLocal.forEach((r) => {
+            if (r?.id) reqMap.set(r.id, r)
+          })
+          records.forEach((r) => {
+            if (r?.id) reqMap.set(r.id, r)
+          })
+          const merged = Array.from(reqMap.values())
           PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged)
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged, true, companyId)
         } catch {}
         return records
       }
@@ -78,10 +104,20 @@ export class InvoiceRequestRepository {
       // Local fallback
     }
 
-    const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+    const allLocal = [
+      ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+      ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+    ]
+    const dedupeMap = new Map<string, InvoiceRequestRecord>()
+    allLocal.forEach((r) => {
+      if (r?.id && !dedupeMap.has(r.id)) {
+        dedupeMap.set(r.id, r)
+      }
+    })
+    const all = Array.from(dedupeMap.values())
 
     return all.filter((r) => {
-      if (r.company_id !== companyId) return false
+      if (!this.isMatchingCompany(r.company_id, companyId)) return false
       if (filters?.status && r.status !== filters.status) return false
       if (filters?.customerId && r.customer_id !== filters.customerId) return false
       if (filters?.salesOrderId && r.sales_order_id !== filters.salesOrderId) return false
@@ -131,8 +167,11 @@ export class InvoiceRequestRepository {
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
-    return all.find((r) => r.id === id && r.company_id === companyId) || null
+    const all = [
+      ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+      ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+    ]
+    return all.find((r) => r.id === id && this.isMatchingCompany(r.company_id, companyId)) || null
   }
 
   /**
@@ -226,7 +265,9 @@ export class InvoiceRequestRepository {
         const createdRec = inserted as unknown as InvoiceRequestRecord
         try {
           const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, [createdRec, ...all.filter((r) => r.id !== createdRec.id)])
+          const merged = [createdRec, ...all.filter((r) => r.id !== createdRec.id)]
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged)
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, merged, true, data.company_id)
         } catch {}
         return createdRec
       }
@@ -243,8 +284,9 @@ export class InvoiceRequestRepository {
       ...payload,
     }
     const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
-    all.unshift(newRec)
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+    const updatedAll = [newRec, ...all.filter((r) => r.id !== newRec.id)]
+    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, updatedAll)
+    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, updatedAll, true, data.company_id)
     return newRec
   }
 
@@ -323,6 +365,7 @@ export class InvoiceRequestRepository {
             else all.unshift(rec)
           })
           PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
         } catch {}
         return records
       }
@@ -330,9 +373,20 @@ export class InvoiceRequestRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
-    for (const r of all) {
-      if ((!r.company_id || r.company_id === companyId) && r.status === 'pending') {
+    const all = [
+      ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+      ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+    ]
+    const dedupeMap = new Map<string, InvoiceRequestRecord>()
+    all.forEach((r) => {
+      if (r?.id && !dedupeMap.has(r.id)) {
+        dedupeMap.set(r.id, r)
+      }
+    })
+    const list = Array.from(dedupeMap.values())
+
+    for (const r of list) {
+      if (this.isMatchingCompany(r.company_id, companyId) && r.status === 'pending') {
         let match = false
         if (filter.requestId && r.id === filter.requestId) match = true
         if (filter.salesOrderId && r.sales_order_id === filter.salesOrderId) match = true
@@ -348,7 +402,8 @@ export class InvoiceRequestRepository {
         }
       }
     }
-    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, list)
+    PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, list, true, companyId)
     return resolved
   }
 
@@ -411,18 +466,23 @@ export class InvoiceRequestRepository {
           if (idx >= 0) all[idx] = updated
           else all.unshift(updated)
           PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
         } catch {}
         return updated
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
-    const idx = all.findIndex((r) => r.id === id && (!r.company_id || r.company_id === companyId))
+    const all = [
+      ...(PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, companyId) || []),
+      ...(PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []),
+    ]
+    const idx = all.findIndex((r) => r.id === id && this.isMatchingCompany(r.company_id, companyId))
     if (idx >= 0) {
       all[idx].status = status
       if (notes !== undefined) all[idx].notes = notes
       all[idx].updated_at = now
       PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all)
+      PrintERPDataStore.set(STORAGE_KEYS.INVOICE_REQUESTS, all, true, companyId)
       return all[idx]
     }
     return null

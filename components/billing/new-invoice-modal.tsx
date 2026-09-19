@@ -56,6 +56,12 @@ export interface NewInvoiceModalProps {
   preselectedCustomerId?: string
   preselectedQuotationId?: string
   preselectedSalesOrderId?: string
+  preselectedCustomerName?: string
+  preselectedCustomerPhone?: string
+  preselectedRequestId?: string
+  preselectedDesignJobId?: string
+  preselectedItemsSummary?: string
+  preselectedEstimatedAmount?: number
   onInvoiceCreated?: (invoice: InvoiceRecord) => void
 }
 
@@ -121,6 +127,12 @@ export function NewInvoiceModal({
   preselectedCustomerId,
   preselectedQuotationId,
   preselectedSalesOrderId,
+  preselectedCustomerName,
+  preselectedCustomerPhone,
+  preselectedRequestId,
+  preselectedDesignJobId,
+  preselectedItemsSummary,
+  preselectedEstimatedAmount,
   onInvoiceCreated,
 }: NewInvoiceModalProps) {
   const { company } = useTenant()
@@ -247,7 +259,7 @@ export function NewInvoiceModal({
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
 
-  // Auto-fill when preselected customer ID or sales order ID is provided
+  // Auto-fill when preselected customer ID, sales order ID, or request details are provided
   useEffect(() => {
     if (open) {
       if (preselectedSalesOrderId) {
@@ -262,9 +274,48 @@ export function NewInvoiceModal({
             handleSelectCustomer(res.data[0])
           }
         })
+      } else if (preselectedCustomerName) {
+        setCustomerName(preselectedCustomerName)
+        if (preselectedCustomerPhone) {
+          setPhoneNumber(preselectedCustomerPhone)
+        }
+      }
+
+      if (preselectedItemsSummary) {
+        setItems((prev) => {
+          if (
+            prev.length === 1 &&
+            (!prev[0].productId ||
+              prev[0].itemName === 'Printing Service Item' ||
+              prev[0].itemName === 'Flex Banner 10x4')
+          ) {
+            return [
+              {
+                ...prev[0],
+                itemName: preselectedItemsSummary,
+                rate:
+                  preselectedEstimatedAmount && preselectedEstimatedAmount > 0
+                    ? preselectedEstimatedAmount
+                    : prev[0].rate,
+                quantity: 1,
+              },
+            ]
+          }
+          return prev
+        })
       }
     }
-  }, [open, preselectedCustomerId, preselectedSalesOrderId, preselectedQuotationId, company?.id])
+  }, [
+    open,
+    preselectedCustomerId,
+    preselectedSalesOrderId,
+    preselectedQuotationId,
+    preselectedCustomerName,
+    preselectedCustomerPhone,
+    preselectedItemsSummary,
+    preselectedEstimatedAmount,
+    company?.id,
+  ])
 
   // Customer keyword search
   useEffect(() => {
