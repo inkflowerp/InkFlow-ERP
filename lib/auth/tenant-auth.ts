@@ -36,9 +36,30 @@ async function performRedirect(url: string): Promise<never> {
 
 const SUPPORT_COOKIE_NAME = 'printerp_support_tenant'
 
+// High-speed in-memory short-lived cache for concurrent server action deduplication
+const platformAdminCheckCache = new Map<string, { isAdmin: boolean; expiresAt: number }>()
+const tenantContextCache = new Map<string, { context: TenantContext | null; expiresAt: number }>()
+
+export function invalidateTenantAuthCache(userId?: string) {
+  if (userId) {
+    platformAdminCheckCache.delete(userId)
+    for (const key of tenantContextCache.keys()) {
+      if (key.startsWith(`${userId}:`)) {
+        tenantContextCache.delete(key)
+      }
+    }
+    TenantRepository.invalidateMembershipCache(userId)
+  } else {
+    platformAdminCheckCache.clear()
+    tenantContextCache.clear()
+    TenantRepository.invalidateMembershipCache()
+  }
+}
+
 /**
  * Resolves verified tenant context for the currently authenticated user from Supabase.
- * Wrapped in React cache() for request-scoped deduplication across server layouts and components.
+ * Wrapped in React cache() for request-scoped deduplication across server layouts and components,
+ * with fast-path in-memory TTL caching for concurrent server actions.
  */
 export const getCurrentTenant = cache(async function getCurrentTenant(
   requestedSlugOrId?: string
@@ -131,21 +152,41 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       return null // FAIL CLOSED
     }
 
-    // Hard Security Boundary: Platform Administrator accounts cannot resolve tenant context as a tenant user
-    try {
-      const adminClient = createAdminClient()
-      const { data: platformAdmin } = await (adminClient as any)
-        .from('platform_admins')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .maybeSingle()
+    // Fast-path in-memory tenant context check
+    const contextCacheKey = `${user.id}:${requestedSlugOrId || 'any'}`
+    const cachedContext = tenantContextCache.get(contextCacheKey)
+    if (cachedContext && cachedContext.expiresAt > Date.now()) {
+      return cachedContext.context
+    }
 
-      if (platformAdmin) {
-        return null // Platform admins must use explicit support mode to access tenant scope
+    // Hard Security Boundary: Platform Administrator accounts cannot resolve tenant context as a tenant user
+    const adminCheck = platformAdminCheckCache.get(user.id)
+    if (adminCheck && adminCheck.expiresAt > Date.now()) {
+      if (adminCheck.isAdmin) {
+        return null
       }
-    } catch {
-      // Non-blocking
+    } else {
+      try {
+        const adminClient = createAdminClient()
+        const { data: platformAdmin } = await (adminClient as any)
+          .from('platform_admins')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle()
+
+        const isAdmin = Boolean(platformAdmin)
+        platformAdminCheckCache.set(user.id, {
+          isAdmin,
+          expiresAt: Date.now() + 60000,
+        })
+
+        if (isAdmin) {
+          return null // Platform admins must use explicit support mode to access tenant scope
+        }
+      } catch {
+        // Non-blocking
+      }
     }
 
     // 3. Authoritative DB membership resolution from company_users & companies
@@ -157,6 +198,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     }
 
     if (!membership || !membership.company || !membership.companyUser) {
+      tenantContextCache.set(contextCacheKey, { context: null, expiresAt: Date.now() + 5000 })
       return null // FAIL CLOSED: No active company membership found
     }
 
@@ -168,6 +210,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       company.slug !== requestedSlugOrId.toLowerCase().trim() &&
       company.id !== requestedSlugOrId
     ) {
+      tenantContextCache.set(contextCacheKey, { context: null, expiresAt: Date.now() + 5000 })
       return null // FAIL CLOSED: Access to non-member company denied
     }
 
@@ -187,7 +230,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       // Non-blocking
     }
 
-    return {
+    const tenantCtx: TenantContext = {
       userId: user.id,
       userEmail: user.email || companyUser.profile?.email || '',
       fullName: companyUser.profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
@@ -204,6 +247,14 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       responsibilities: companyUser.responsibilities || [primaryRole],
       permissions: effectivePermissions || [],
     }
+
+    // Cache verified tenant context for 30s
+    tenantContextCache.set(contextCacheKey, {
+      context: tenantCtx,
+      expiresAt: Date.now() + 30000,
+    })
+
+    return tenantCtx
   } catch {
     return null // FAIL CLOSED
   }

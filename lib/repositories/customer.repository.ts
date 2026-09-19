@@ -92,29 +92,29 @@ export class CustomerRepository {
 
       const supabase = await createClient()
 
-      // 1. Total and Active Customers count
-      const { data: customerList, error: custErr } = await (supabase as any)
-        .from('customers')
-        .select('id, is_active')
-        .eq('company_id', companyId)
+      const [custResult, invResult] = await Promise.all([
+        (supabase as any)
+          .from('customers')
+          .select('id, is_active')
+          .eq('company_id', companyId),
+        (supabase as any)
+          .from('invoices')
+          .select('customer_id, due_amount, status')
+          .eq('company_id', companyId)
+          .neq('status', 'cancelled'),
+      ])
 
-      if (custErr) {
-        throw new Error(`Failed to fetch customer summary stats: ${custErr.message}`)
+      if (custResult.error) {
+        throw new Error(`Failed to fetch customer summary stats: ${custResult.error.message}`)
+      }
+      if (invResult.error) {
+        throw new Error(`Failed to calculate customer due statistics: ${invResult.error.message}`)
       }
 
+      const customerList = custResult.data
+      const invoices = invResult.data
       const totalCustomers = customerList?.length || 0
       const activeCustomers = customerList?.filter((c: any) => c.is_active !== false).length || 0
-
-      // 2. Outstanding Invoices & Due Aggregation
-      const { data: invoices, error: invErr } = await (supabase as any)
-        .from('invoices')
-        .select('customer_id, due_amount, status')
-        .eq('company_id', companyId)
-        .neq('status', 'cancelled')
-
-      if (invErr) {
-        throw new Error(`Failed to calculate customer due statistics: ${invErr.message}`)
-      }
 
       const customersWithDueSet = new Set<string>()
       let totalOutstandingDue = 0

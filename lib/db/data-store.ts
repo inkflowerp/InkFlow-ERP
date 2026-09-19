@@ -531,6 +531,18 @@ export function getInitialSeedData(key: StorageKey, tenantSlug?: string): any {
 // In-memory cache for server-side & fallback execution
 const inMemoryStore: Record<string, any> = {}
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key && e.newValue) {
+      try {
+        inMemoryStore[e.key] = JSON.parse(e.newValue)
+      } catch {}
+    } else if (e.key && !e.newValue) {
+      delete inMemoryStore[e.key]
+    }
+  })
+}
+
 export const CLIENT_TAB_ID =
   typeof window !== 'undefined'
     ? `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
@@ -582,11 +594,16 @@ export class PrintERPDataStore {
   }
 
   /**
-   * Retrieves data for a given collection key with SSR-safe LocalStorage fallback
+   * Retrieves data for a given collection key with zero-latency in-memory cache and SSR-safe LocalStorage fallback
    */
   static get<T = any>(key: StorageKey, tenantSlug?: string): T {
     const effectiveKey = this.getEffectiveKey(key, tenantSlug)
     const effectiveSlug = tenantSlug || this.getActiveTenantSlug()
+
+    // 1. Fast-path in-memory object cache lookup (0ms, zero JSON serialization overhead)
+    if (inMemoryStore[effectiveKey] !== undefined) {
+      return inMemoryStore[effectiveKey] as T
+    }
 
     if (typeof window !== 'undefined') {
       try {
@@ -597,19 +614,23 @@ export class PrintERPDataStore {
           return parsed as T
         }
         // Seed default if not in localStorage
-        const defaultData = inMemoryStore[effectiveKey] ?? getInitialSeedData(key, effectiveSlug)
+        const defaultData = getInitialSeedData(key, effectiveSlug)
         if (defaultData !== null && defaultData !== undefined) {
           inMemoryStore[effectiveKey] = defaultData
           try {
             localStorage.setItem(effectiveKey, JSON.stringify(defaultData))
           } catch {}
         }
-        return (defaultData ?? inMemoryStore[effectiveKey]) as T
+        return defaultData as T
       } catch {
-        return (inMemoryStore[effectiveKey] ?? getInitialSeedData(key, effectiveSlug)) as T
+        const defaultData = getInitialSeedData(key, effectiveSlug)
+        inMemoryStore[effectiveKey] = defaultData
+        return defaultData as T
       }
     }
-    return (inMemoryStore[effectiveKey] ?? getInitialSeedData(key, effectiveSlug)) as T
+    const defaultData = getInitialSeedData(key, effectiveSlug)
+    inMemoryStore[effectiveKey] = defaultData
+    return defaultData as T
   }
 
   /**

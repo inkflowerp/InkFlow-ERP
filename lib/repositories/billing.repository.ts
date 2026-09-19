@@ -237,18 +237,19 @@ export class BillingRepository {
       if (res.error) {
         // 2. Resilient fallback query with items only
         res = await buildQuery(supabase, '*, items:invoice_items(*)')
-      }
-      if (res.error) {
-        // 3. Resilient fallback query with base table
-        res = await buildQuery(supabase, '*')
+        if (res.error) {
+          // 3. Resilient fallback query with base table
+          res = await buildQuery(supabase, '*')
+        }
       }
 
-      if (res.error || (!res.data || res.data.length === 0)) {
+      // If database returned an error (e.g. RLS failure with standard user client), attempt admin query once
+      if (res.error) {
         const admin = createAdminClient()
         let adminRes = await buildQuery(admin, '*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
         if (adminRes.error) adminRes = await buildQuery(admin, '*, items:invoice_items(*)')
         if (adminRes.error) adminRes = await buildQuery(admin, '*')
-        if (!adminRes.error && adminRes.data && adminRes.data.length > 0) {
+        if (!adminRes.error && adminRes.data) {
           res = adminRes
         }
       }

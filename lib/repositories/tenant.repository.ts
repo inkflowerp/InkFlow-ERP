@@ -12,6 +12,33 @@ import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
 import { checkPermission } from '../auth/rbac.client.ts'
 
 export class TenantRepository {
+  private static membershipCache = new Map<string, { data: any; expiresAt: number }>()
+  private static companySlugCache = new Map<string, { data: CompanyRow | null; expiresAt: number }>()
+  private static companyIdCache = new Map<string, { data: CompanyRow | null; expiresAt: number }>()
+
+  static invalidateMembershipCache(userId?: string): void {
+    if (userId) {
+      for (const key of TenantRepository.membershipCache.keys()) {
+        if (key.startsWith(`${userId}:`)) {
+          TenantRepository.membershipCache.delete(key)
+        }
+      }
+    } else {
+      TenantRepository.membershipCache.clear()
+    }
+  }
+
+  static invalidateCompanyCache(slugOrId?: string): void {
+    if (slugOrId) {
+      const clean = slugOrId.toLowerCase().trim()
+      TenantRepository.companySlugCache.delete(clean)
+      TenantRepository.companyIdCache.delete(slugOrId)
+    } else {
+      TenantRepository.companySlugCache.clear()
+      TenantRepository.companyIdCache.clear()
+    }
+  }
+
   static async createCompany(
     companyData: Partial<CompanyRow> & {
       name: string
@@ -220,24 +247,50 @@ export class TenantRepository {
   }
 
   static async getCompanyBySlug(slug: string): Promise<CompanyRow | null> {
+    const cleanSlug = (slug || '').toLowerCase().trim()
+    if (!cleanSlug) return null
+
+    const cached = TenantRepository.companySlugCache.get(cleanSlug)
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data
+    }
+
     try {
       const admin = createAdminClient()
       const { data, error } = await admin
         .from('companies')
         .select('*')
-        .ilike('slug', slug.toLowerCase().trim())
+        .ilike('slug', cleanSlug)
         .maybeSingle()
 
       if (error) {
         return null
       }
-      return (data as CompanyRow) || null
+      const company = (data as CompanyRow) || null
+      TenantRepository.companySlugCache.set(cleanSlug, {
+        data: company,
+        expiresAt: Date.now() + 60000,
+      })
+      if (company?.id) {
+        TenantRepository.companyIdCache.set(company.id, {
+          data: company,
+          expiresAt: Date.now() + 60000,
+        })
+      }
+      return company
     } catch {
       return null
     }
   }
 
   static async getCompanyById(id: string): Promise<CompanyRow | null> {
+    if (!id) return null
+
+    const cached = TenantRepository.companyIdCache.get(id)
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data
+    }
+
     try {
       const admin = createAdminClient()
       const { data, error } = await admin
@@ -249,7 +302,18 @@ export class TenantRepository {
       if (error) {
         return null
       }
-      return (data as CompanyRow) || null
+      const company = (data as CompanyRow) || null
+      TenantRepository.companyIdCache.set(id, {
+        data: company,
+        expiresAt: Date.now() + 60000,
+      })
+      if (company?.slug) {
+        TenantRepository.companySlugCache.set(company.slug.toLowerCase().trim(), {
+          data: company,
+          expiresAt: Date.now() + 60000,
+        })
+      }
+      return company
     } catch {
       return null
     }
@@ -736,6 +800,14 @@ export class TenantRepository {
     effectivePermissions: string[]
     primaryRole: string
   } | null> {
+    if (!userId) return null
+
+    const cacheKey = `${userId}:${requestedSlugOrId || 'any'}`
+    const cached = TenantRepository.membershipCache.get(cacheKey)
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data
+    }
+
     const admin = createAdminClient()
 
     let targetCompanyId: string | null = null
@@ -747,6 +819,7 @@ export class TenantRepository {
       } else {
         const targetCompany = await TenantRepository.getCompanyBySlug(requestedSlugOrId)
         if (!targetCompany) {
+          TenantRepository.membershipCache.set(cacheKey, { data: null, expiresAt: Date.now() + 5000 })
           return null
         }
         targetCompanyId = targetCompany.id
@@ -771,12 +844,14 @@ export class TenantRepository {
     let { data: records, error } = await query
 
     if (error || !records || records.length === 0) {
+      TenantRepository.membershipCache.set(cacheKey, { data: null, expiresAt: Date.now() + 5000 })
       return null
     }
 
     const cu: any = records[0]
     const company = cu.company as CompanyRow
     if (!company.is_active) {
+      TenantRepository.membershipCache.set(cacheKey, { data: null, expiresAt: Date.now() + 5000 })
       return null
     }
 
@@ -883,12 +958,20 @@ export class TenantRepository {
       branch: cu.branch || null,
     }
 
-    return {
+    const resolved = {
       company,
       companyUser,
       effectivePermissions: Array.from(effectivePermSet),
       primaryRole,
     }
+
+    // Cache resolved membership for 30s
+    TenantRepository.membershipCache.set(cacheKey, {
+      data: resolved,
+      expiresAt: Date.now() + 30000,
+    })
+
+    return resolved
   }
 }
 

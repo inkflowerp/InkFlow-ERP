@@ -123,12 +123,37 @@ export default function BillingPage() {
   const [invoiceFilterTab, setInvoiceFilterTab] = useState<string>('all')
   const [priorityTab, setPriorityTab] = useState<'all' | 'due_today' | 'overdue' | 'high_value'>('all')
   const [search, setSearch] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(() => {
+    try {
+      const cached = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
+      return !cached || cached.length === 0
+    } catch {
+      return true
+    }
+  })
 
-  // Data State
-  const [invoices, setInvoices] = useState<InvoiceRecord[]>([])
-  const [payments, setPayments] = useState<PaymentRecord[]>([])
-  const [invoiceRequests, setInvoiceRequests] = useState<InvoiceRequestRecord[]>([])
+  // Data State with Stale-While-Revalidate Instant Hydration
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    } catch {
+      return []
+    }
+  })
+  const [payments, setPayments] = useState<PaymentRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+    } catch {
+      return []
+    }
+  })
+  const [invoiceRequests, setInvoiceRequests] = useState<InvoiceRequestRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+    } catch {
+      return []
+    }
+  })
   const [overviewMetrics, setOverviewMetrics] = useState<BillingOverviewMetrics | null>(null)
   const [priorityItems, setPriorityItems] = useState<CollectionPriorityItem[]>([])
   const [paymentMethodsSummary, setPaymentMethodsSummary] = useState<PaymentMethodSummaryItem[]>([])

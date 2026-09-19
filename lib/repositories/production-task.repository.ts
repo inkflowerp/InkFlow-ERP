@@ -88,35 +88,31 @@ export class ProductionTaskRepository {
           query = query.eq('status', filters.status)
         }
 
-        let { data, error } = await query
-
-        if (error) {
-          let fallbackQuery = (supabase as any)
-            .from('production_tasks')
-            .select('*')
-            .eq('company_id', companyId)
-            .order('sequence_order', { ascending: true })
-            .order('created_at', { ascending: false })
-
-          const fbRes = await fallbackQuery
-          if (!fbRes.error && fbRes.data) {
-            data = fbRes.data
+        const taskQueryPromise = query.then(async ({ data, error }: any) => {
+          if (error) {
+            const fallbackQuery = (supabase as any)
+              .from('production_tasks')
+              .select('*')
+              .eq('company_id', companyId)
+              .order('sequence_order', { ascending: true })
+              .order('created_at', { ascending: false })
+            const fbRes = await fallbackQuery
+            return (!fbRes.error && fbRes.data) ? fbRes.data : []
           }
-        }
+          return data || []
+        }).catch(() => [])
 
-        if (data) {
-          dbTasks = data
-        }
+        const appJobsPromise = (supabase as any)
+          .from('design_jobs')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('status', 'approved')
+          .then(({ data }: any) => data || [])
+          .catch(() => [])
 
-        try {
-          const { data: appJobs } = await (supabase as any)
-            .from('design_jobs')
-            .select('*')
-            .eq('company_id', companyId)
-            .eq('status', 'approved')
-
-          if (appJobs) dbApprovedJobs = appJobs
-        } catch {}
+        const [tasksResult, appJobsResult] = await Promise.all([taskQueryPromise, appJobsPromise])
+        dbTasks = tasksResult
+        dbApprovedJobs = appJobsResult
       } catch {}
     }
 

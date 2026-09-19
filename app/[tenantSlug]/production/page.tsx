@@ -58,6 +58,7 @@ import { MachineQueueView } from '@/components/production/machine-queue-view'
 import { ScheduleTaskModal } from '@/components/production/schedule-task-modal'
 import { HoldTaskModal } from '@/components/production/hold-task-modal'
 import { ReworkTaskModal } from '@/components/production/rework-task-modal'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 const DEPARTMENTS = [
   { id: 'all', label: 'All Operations', labelBn: 'সকল অপারেশন', icon: Printer },
@@ -73,11 +74,24 @@ export default function AdvancedProductionPage() {
   const slug = company?.slug || 'my-company'
 
   const [activeTab, setActiveTab] = useState<'board' | 'machine_queues' | 'table'>('board')
-  const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
+  const [tasks, setTasks] = useState<ProductionTaskRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    } catch {
+      return []
+    }
+  })
   const [machineQueues, setMachineQueues] = useState<MachineQueueGroup[]>([])
   const [selectedDept, setSelectedDept] = useState<string>('all')
   const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS)
+      return !cached || cached.length === 0
+    } catch {
+      return true
+    }
+  })
   const [notification, setNotification] = useState<string | null>(null)
 
   // Interactive Modals State
@@ -91,7 +105,9 @@ export default function AdvancedProductionPage() {
   }
 
   const loadData = async () => {
-    setLoading(true)
+    if (tasks.length === 0) {
+      setLoading(true)
+    }
     try {
       const [taskRes, queueRes] = await Promise.all([
         getProductionTasksAction({ department: selectedDept }),

@@ -69,11 +69,11 @@ export class InvoiceRequestRepository {
 
       let { data, error } = await buildQuery(supabase)
 
-      if (error || !data || data.length === 0) {
+      if (error) {
         try {
           const admin = createAdminClient()
           const adminRes = await buildQuery(admin)
-          if (!adminRes.error && adminRes.data && adminRes.data.length > 0) {
+          if (!adminRes.error && adminRes.data) {
             data = adminRes.data
             error = null
           }

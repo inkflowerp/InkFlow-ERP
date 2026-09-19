@@ -163,9 +163,22 @@ export function DashboardView() {
   const [errorState, setErrorState] = useState<string | null>(null)
   const [activeWorkItem, setActiveWorkItem] = useState<MyWorkItem | null>(null)
 
-  // Owner Snapshot & Realtime State
-  const [ownerSnapshot, setOwnerSnapshot] = useState<OwnerDashboardSnapshot | null>(null)
-  const [isLoadingOwner, setIsLoadingOwner] = useState(true)
+  // Owner Snapshot & Realtime State with Stale-While-Revalidate Instant Hydration
+  const [ownerSnapshot, setOwnerSnapshot] = useState<OwnerDashboardSnapshot | null>(() => {
+    try {
+      return PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any) || null
+    } catch {
+      return null
+    }
+  })
+  const [isLoadingOwner, setIsLoadingOwner] = useState(() => {
+    try {
+      const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any)
+      return !cached
+    } catch {
+      return true
+    }
+  })
   const [isUpdatingOwner, setIsUpdatingOwner] = useState(false)
   const [ownerError, setOwnerError] = useState<string | null>(null)
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | undefined>(undefined)
@@ -174,7 +187,7 @@ export function DashboardView() {
 
   const fetchOwnerSnapshot = useCallback(async (isBackground = false) => {
     if (!isOwner) return
-    if (!isBackground) {
+    if (!isBackground && !ownerSnapshot) {
       setIsLoadingOwner(true)
     } else {
       setIsUpdatingOwner(true)
@@ -184,6 +197,9 @@ export function DashboardView() {
       const res = await getOwnerDashboardDataAction(currentBranch?.id)
       if (res.success && res.data) {
         setOwnerSnapshot(res.data)
+        try {
+          PrintERPDataStore.set('printerp_dashboard_snapshot_cache' as any, res.data, false)
+        } catch {}
       } else {
         if (!ownerSnapshot) {
           setOwnerError(res.error || 'Failed to fetch business owner metrics.')
