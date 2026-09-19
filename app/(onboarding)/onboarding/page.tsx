@@ -537,23 +537,23 @@ function OnboardingWizard() {
                           </span>
                         ) : null}
                       </div>
-                      <div className="flex rounded-md shadow-xs">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-slate-500 text-xs dark:border-slate-700 dark:bg-slate-800 font-mono">
+                      <div className="flex rounded-md shadow-xs items-stretch">
+                        <span className="inline-flex items-center px-2.5 sm:px-3 rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-slate-500 text-xs dark:border-slate-700 dark:bg-slate-800 font-mono shrink-0 whitespace-nowrap select-none">
                           https://
                         </span>
                         <Input
                           id="slug"
-                          className="rounded-none font-mono"
+                          className="rounded-none font-mono text-xs sm:text-sm flex-1 min-w-[80px]"
                           placeholder="vision-sign"
                           {...register('slug')}
                           error={errors.slug?.message}
                         />
-                        <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-100 text-slate-500 text-xs dark:border-slate-700 dark:bg-slate-800 font-mono">
+                        <span className="inline-flex items-center px-2.5 sm:px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 font-mono shrink-0 whitespace-nowrap select-none">
                           .{rootDomain}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Your team will access this workspace at: <strong className="text-blue-600 dark:text-blue-400">https://{watchedSlug || 'your-company'}.{rootDomain}</strong>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 break-all">
+                        Your team will access this workspace at: <strong className="text-blue-600 dark:text-blue-400 font-mono">https://{watchedSlug || 'your-company'}.{rootDomain}</strong>
                       </p>
                     </div>
                   </div>
