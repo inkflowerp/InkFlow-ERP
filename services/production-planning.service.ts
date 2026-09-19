@@ -110,12 +110,18 @@ export class ProductionPlanningService {
       // Check commercial gate
       const jo = jobOrders.find((j) => j.id === task.job_order_id)
       const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id) : null
-      const hasInvoice = Boolean(
+      const hasJobContext = Boolean(jo || so)
+
+      const hasInvoiceInStore = Boolean(
         jo?.invoice_id ||
         so?.invoice_id ||
         (so && invoices.some((inv) => inv.sales_order_id === so.id)) ||
         (jo && invoices.some((inv) => inv.job_order_id === jo.id))
       )
+
+      const hasInvoice = hasJobContext
+        ? hasInvoiceInStore
+        : Boolean(task.is_blocked_by_commercial_gate === false || (task as any).commercial_gate_status === 'ready_for_production')
 
       if (!hasInvoice && task.department !== 'design') {
         task.is_blocked_by_commercial_gate = true
@@ -134,12 +140,11 @@ export class ProductionPlanningService {
            (jo && (dj.id === jo.design_job_id || dj.order_id === jo.order_id || dj.job_order_id === jo.id))) &&
           dj.status === 'approved'
       )
-      const routing = jo?.workflow_routing || so?.workflow_routing || 'design_required'
-      const isDesignApproved =
-        jo?.artwork_status === 'approved' ||
-        routing === 'design_ok' ||
-        routing === 'ready_production' ||
-        isDesignJobApproved
+
+      const routing = jo?.workflow_routing || so?.workflow_routing || (hasJobContext ? 'design_required' : (task.is_blocked_by_design_gate === false ? 'design_ok' : 'design_required'))
+      const isDesignApproved = hasJobContext
+        ? (jo?.artwork_status === 'approved' || routing === 'design_ok' || routing === 'ready_production' || isDesignJobApproved)
+        : Boolean(task.is_blocked_by_design_gate === false || (task as any).commercial_gate_status === 'ready_for_production')
 
       if (routing === 'design_required' && !isDesignApproved && task.department !== 'design') {
         task.is_blocked_by_design_gate = true
@@ -179,12 +184,18 @@ export class ProductionPlanningService {
 
     const jo = jobOrders.find((j) => j.id === task.job_order_id)
     const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id) : null
-    const hasInvoice = Boolean(
+    const hasJobContext = Boolean(jo || so)
+
+    const hasInvoiceInStore = Boolean(
       jo?.invoice_id ||
       so?.invoice_id ||
       (so && invoices.some((inv) => inv.sales_order_id === so.id)) ||
       (jo && invoices.some((inv) => inv.job_order_id === jo.id))
     )
+
+    const hasInvoice = hasJobContext
+      ? hasInvoiceInStore
+      : Boolean(task.is_blocked_by_commercial_gate === false || (task as any).commercial_gate_status === 'ready_for_production')
 
     if (!hasInvoice && task.department !== 'design') {
       task.is_blocked_by_commercial_gate = true
@@ -202,12 +213,11 @@ export class ProductionPlanningService {
          (jo && (dj.id === jo.design_job_id || dj.order_id === jo.order_id || dj.job_order_id === jo.id))) &&
         dj.status === 'approved'
     )
-    const routing = jo?.workflow_routing || so?.workflow_routing || 'design_required'
-    const isDesignApproved =
-      jo?.artwork_status === 'approved' ||
-      routing === 'design_ok' ||
-      routing === 'ready_production' ||
-      isDesignJobApproved
+
+    const routing = jo?.workflow_routing || so?.workflow_routing || (hasJobContext ? 'design_required' : (task.is_blocked_by_design_gate === false ? 'design_ok' : 'design_required'))
+    const isDesignApproved = hasJobContext
+      ? (jo?.artwork_status === 'approved' || routing === 'design_ok' || routing === 'ready_production' || isDesignJobApproved)
+      : Boolean(task.is_blocked_by_design_gate === false || (task as any).commercial_gate_status === 'ready_for_production')
 
     if (routing === 'design_required' && !isDesignApproved && task.department !== 'design') {
       task.is_blocked_by_design_gate = true

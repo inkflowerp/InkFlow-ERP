@@ -171,10 +171,10 @@ export interface ProductionTaskRecord {
   updated_at: string
 
   // Computed/Hydrated fields
-  job_number?: string
-  customer_name?: string
-  product_name?: string
-  job_deadline?: string
+  job_number?: string | null
+  customer_name?: string | null
+  product_name?: string | null
+  job_deadline?: string | null
   is_blocked_by_dependency?: boolean
   blocking_dependency_task_name?: string | null
   is_blocked_by_commercial_gate?: boolean

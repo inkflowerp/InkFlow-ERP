@@ -291,11 +291,19 @@ export class DesignRepository {
             ((salesOrderId && jo.order_id === salesOrderId) || jo.id === job.job_order_id || jo.design_job_id === job.id)
           ) {
             jo.artwork_status = 'approved'
+            jo.production_gate_status = 'ready_for_production'
             updatedAny = true
           }
         }
         if (updatedAny) {
           PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
+        }
+
+        const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
+        if (hasInvoice) {
+          try {
+            await this.sendToPrintOperator(params.design_job_id, params.company_id, 'Customer Approval')
+          } catch {}
         }
       }
     }
@@ -429,6 +437,7 @@ export class DesignRepository {
     })
 
     // 4. Update / Create Job Order in Production Queue
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
     const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
     let matchedOrder = jobOrders.find(
       (jo) =>
@@ -436,18 +445,25 @@ export class DesignRepository {
         (jo.design_job_id === id || (job.sales_order_id && jo.order_id === job.sales_order_id) || jo.id === job.job_order_id)
     )
 
+    const generatedJoId = crypto.randomUUID()
+    const generatedPjId = crypto.randomUUID()
+
     if (matchedOrder) {
       matchedOrder.status = 'queued'
       matchedOrder.artwork_status = 'approved'
       matchedOrder.commercial_status = 'invoice_created'
       matchedOrder.production_gate_status = 'ready_for_production'
+      matchedOrder.invoice_id = job.invoice_id || matchedOrder.invoice_id || null
+      matchedOrder.invoice_number = job.invoice_number || matchedOrder.invoice_number || null
       matchedOrder.updated_at = now
     } else {
       matchedOrder = {
-        id: `jo-${Date.now()}`,
+        id: generatedJoId,
         company_id: companyId,
         order_id: job.sales_order_id || null,
         design_job_id: job.id,
+        invoice_id: job.invoice_id || null,
+        invoice_number: job.invoice_number || null,
         job_number: `JO-${job.design_number.replace('DSN-', '')}`,
         customer_id: job.customer_id,
         customer_name: job.customer_name,
@@ -480,7 +496,7 @@ export class DesignRepository {
       matchedProdJob.updated_at = now
     } else {
       matchedProdJob = {
-        id: `pj-${Date.now()}`,
+        id: generatedPjId,
         company_id: companyId,
         job_order_id: matchedOrder.id,
         sales_order_id: job.sales_order_id || null,
@@ -503,13 +519,19 @@ export class DesignRepository {
     const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const hasExistingTasks = prodTasks.some((t) => t.job_order_id === matchedOrder.id)
     if (!hasExistingTasks) {
+      const task1Id = crypto.randomUUID()
+      const task2Id = crypto.randomUUID()
       const task1 = {
-        id: crypto.randomUUID(),
+        id: task1Id,
         company_id: companyId,
         job_order_id: matchedOrder.id,
         production_job_id: matchedProdJob.id,
         task_number: `TSK-${matchedOrder.job_number.replace('JO-', '')}-1`,
         task_name: `Print: ${job.title}`,
+        customer_name: job.customer_name,
+        product_name: job.title,
+        job_number: matchedOrder.job_number,
+        job_deadline: job.deadline,
         task_type: 'printing',
         department: 'printing',
         sequence_order: 1,
@@ -523,12 +545,16 @@ export class DesignRepository {
         updated_at: now,
       }
       const task2 = {
-        id: crypto.randomUUID(),
+        id: task2Id,
         company_id: companyId,
         job_order_id: matchedOrder.id,
         production_job_id: matchedProdJob.id,
         task_number: `TSK-${matchedOrder.job_number.replace('JO-', '')}-2`,
         task_name: `Finishing & QC: ${job.title}`,
+        customer_name: job.customer_name,
+        product_name: job.title,
+        job_number: matchedOrder.job_number,
+        job_deadline: job.deadline,
         task_type: 'finishing',
         department: 'finishing',
         sequence_order: 2,
@@ -546,7 +572,6 @@ export class DesignRepository {
 
       try {
         const supabase = await createClient()
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
         const dbJobOrderId = matchedOrder.id && uuidRegex.test(matchedOrder.id) ? matchedOrder.id : null
         const dbProdJobId = matchedProdJob.id && uuidRegex.test(matchedProdJob.id) ? matchedProdJob.id : null
 

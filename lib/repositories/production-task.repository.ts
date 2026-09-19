@@ -21,67 +21,196 @@ export class ProductionTaskRepository {
     companyId: string,
     filters?: TaskFilterOptions
   ): Promise<ProductionTaskRecord[]> {
-    try {
-      const supabase = await createClient()
-      let query = (supabase as any)
-        .from('production_tasks')
-        .select(`
-          *,
-          job_order:job_orders(
-            id,
-            job_number,
-            customer_name,
-            product_name,
-            deadline
-          )
-        `)
-        .eq('company_id', companyId)
-        .order('sequence_order', { ascending: true })
-        .order('created_at', { ascending: false })
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-      if (filters?.branch_id) {
-        query = query.eq('branch_id', filters.branch_id)
-      }
-      if (filters?.job_order_id) {
-        query = query.eq('job_order_id', filters.job_order_id)
-      }
-      if (filters?.department && filters.department !== 'all') {
-        query = query.eq('department', filters.department)
-      }
-      if (filters?.assigned_operator_id) {
-        query = query.eq('assigned_operator_id', filters.assigned_operator_id)
-      }
-      if (filters?.assigned_machine_id) {
-        query = query.eq('assigned_machine_id', filters.assigned_machine_id)
-      }
-      if (filters?.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status)
+    if (uuidRegex.test(companyId)) {
+      try {
+        const supabase = await createClient()
+        let query = (supabase as any)
+          .from('production_tasks')
+          .select(`
+            *,
+            job_order:job_orders(
+              id,
+              job_number,
+              customer_name,
+              product_name,
+              deadline
+            )
+          `)
+          .eq('company_id', companyId)
+          .order('sequence_order', { ascending: true })
+          .order('created_at', { ascending: false })
+
+        if (filters?.branch_id && uuidRegex.test(filters.branch_id)) {
+          query = query.eq('branch_id', filters.branch_id)
+        }
+        if (filters?.job_order_id && uuidRegex.test(filters.job_order_id)) {
+          query = query.eq('job_order_id', filters.job_order_id)
+        }
+        if (filters?.department && filters.department !== 'all') {
+          query = query.eq('department', filters.department)
+        }
+        if (filters?.assigned_operator_id && uuidRegex.test(filters.assigned_operator_id)) {
+          query = query.eq('assigned_operator_id', filters.assigned_operator_id)
+        }
+        if (filters?.assigned_machine_id && uuidRegex.test(filters.assigned_machine_id)) {
+          query = query.eq('assigned_machine_id', filters.assigned_machine_id)
+        }
+        if (filters?.status && filters.status !== 'all') {
+          query = query.eq('status', filters.status)
+        }
+
+      let { data, error } = await query
+
+      if (error) {
+        // Resilient fallback query without relational join
+        let fallbackQuery = (supabase as any)
+          .from('production_tasks')
+          .select('*')
+          .eq('company_id', companyId)
+          .order('sequence_order', { ascending: true })
+          .order('created_at', { ascending: false })
+
+        if (filters?.branch_id) fallbackQuery = fallbackQuery.eq('branch_id', filters.branch_id)
+        if (filters?.job_order_id) fallbackQuery = fallbackQuery.eq('job_order_id', filters.job_order_id)
+        if (filters?.department && filters.department !== 'all') fallbackQuery = fallbackQuery.eq('department', filters.department)
+        if (filters?.assigned_operator_id) fallbackQuery = fallbackQuery.eq('assigned_operator_id', filters.assigned_operator_id)
+        if (filters?.assigned_machine_id) fallbackQuery = fallbackQuery.eq('assigned_machine_id', filters.assigned_machine_id)
+        if (filters?.status && filters.status !== 'all') fallbackQuery = fallbackQuery.eq('status', filters.status)
+
+        const fbRes = await fallbackQuery
+        if (!fbRes.error) {
+          data = fbRes.data
+          error = null
+        }
       }
 
-      const { data, error } = await query
+      // Check if there are approved & invoiced design jobs in Supabase that need auto-provisioned tasks
+      try {
+        const { data: approvedDesignJobs } = await (supabase as any)
+          .from('design_jobs')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('status', 'approved')
 
-      if (!error && data) {
+        if (approvedDesignJobs && approvedDesignJobs.length > 0) {
+          const currentTasks = (data || []) as any[]
+          for (const dj of approvedDesignJobs) {
+            const hasInvoice = Boolean(dj.invoice_id) || dj.commercial_status === 'invoice_created'
+            if (!hasInvoice) continue
+
+            const taskNum1 = `TSK-${(dj.design_number || '').replace('DSN-', '')}-1`
+            const hasTask = currentTasks.some(
+              (t) => (dj.job_order_id && t.job_order_id === dj.job_order_id) || t.task_number === taskNum1 || t.task_name?.includes(dj.title)
+            )
+
+            if (!hasTask) {
+              const now = new Date().toISOString()
+              const task1Id = crypto.randomUUID()
+              const task2Id = crypto.randomUUID()
+
+              const task1Payload: any = {
+                id: task1Id,
+                company_id: companyId,
+                task_number: taskNum1,
+                task_name: `Print: ${dj.title}`,
+                task_type: 'printing',
+                department: 'printing',
+                sequence_order: 1,
+                quantity: dj.quantity || 1,
+                unit: dj.unit || 'pcs',
+                priority: dj.priority || 'normal',
+                status: 'queued',
+                created_at: now,
+                updated_at: now,
+              }
+              const task2Payload: any = {
+                id: task2Id,
+                company_id: companyId,
+                task_number: `TSK-${(dj.design_number || '').replace('DSN-', '')}-2`,
+                task_name: `Finishing & QC: ${dj.title}`,
+                task_type: 'finishing',
+                department: 'finishing',
+                sequence_order: 2,
+                quantity: dj.quantity || 1,
+                unit: dj.unit || 'pcs',
+                priority: dj.priority || 'normal',
+                status: 'queued',
+                created_at: now,
+                updated_at: now,
+              }
+
+              await (supabase as any).from('production_tasks').insert([task1Payload, task2Payload])
+
+              const augmentedTask1 = {
+                ...task1Payload,
+                customer_name: dj.customer_name,
+                product_name: dj.title,
+                job_number: dj.design_number,
+                job_deadline: dj.deadline,
+                is_blocked_by_commercial_gate: false,
+                is_blocked_by_design_gate: false,
+              }
+              const augmentedTask2 = {
+                ...task2Payload,
+                customer_name: dj.customer_name,
+                product_name: dj.title,
+                job_number: dj.design_number,
+                job_deadline: dj.deadline,
+                is_blocked_by_commercial_gate: false,
+                is_blocked_by_design_gate: false,
+              }
+              currentTasks.unshift(augmentedTask1, augmentedTask2)
+            }
+          }
+          data = currentTasks
+        }
+      } catch {}
+
+      if (!error && data && data.length > 0) {
         const rawTasks = (data || []) as any[]
-        return rawTasks.map((t) => ({
-          ...t,
-          job_number: t.job_order?.job_number || 'N/A',
-          customer_name: t.job_order?.customer_name || 'N/A',
-          product_name: t.job_order?.product_name || 'N/A',
-          job_deadline: t.job_order?.deadline || null,
-        })) as ProductionTaskRecord[]
+        return rawTasks.map((t) => {
+          const rawName = t.task_name || ''
+          const inferredProduct = rawName.includes(': ') ? rawName.split(': ')[1] : rawName
+          return {
+            ...t,
+            job_number: t.job_number || t.job_order?.job_number || (t.task_number ? `JO-${t.task_number.replace('TSK-', '').split('-')[0]}` : 'N/A'),
+            customer_name: t.customer_name || t.job_order?.customer_name || 'Direct Customer',
+            product_name: t.product_name || t.job_order?.product_name || inferredProduct || 'Print Job',
+            job_deadline: t.job_deadline || t.job_order?.deadline || null,
+            is_blocked_by_commercial_gate: t.is_blocked_by_commercial_gate,
+            is_blocked_by_design_gate: t.is_blocked_by_design_gate,
+          }
+        }) as ProductionTaskRecord[]
       }
     } catch {}
+    }
 
     const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-    return all.filter((t: ProductionTaskRecord) => {
-      if (t.company_id && t.company_id !== companyId) return false
-      if (filters?.branch_id && t.branch_id !== filters.branch_id) return false
-      if (filters?.job_order_id && t.job_order_id !== filters.job_order_id) return false
-      if (filters?.department && filters.department !== 'all' && t.department !== filters.department) return false
-      if (filters?.assigned_operator_id && t.assigned_operator_id !== filters.assigned_operator_id) return false
-      if (filters?.status && filters.status !== 'all' && t.status !== filters.status) return false
-      return true
-    })
+    return all
+      .filter((t: ProductionTaskRecord) => {
+        if (t.company_id && t.company_id !== companyId) return false
+        if (filters?.branch_id && t.branch_id !== filters.branch_id) return false
+        if (filters?.job_order_id && t.job_order_id !== filters.job_order_id) return false
+        if (filters?.department && filters.department !== 'all' && t.department !== filters.department) return false
+        if (filters?.assigned_operator_id && t.assigned_operator_id !== filters.assigned_operator_id) return false
+        if (filters?.status && filters.status !== 'all' && t.status !== filters.status) return false
+        return true
+      })
+      .map((t) => {
+        const rawName = t.task_name || ''
+        const inferredProduct = rawName.includes(': ') ? rawName.split(': ')[1] : rawName
+        return {
+          ...t,
+          job_number: t.job_number || (t.task_number ? `JO-${t.task_number.replace('TSK-', '').split('-')[0]}` : 'N/A'),
+          customer_name: t.customer_name || 'Direct Customer',
+          product_name: t.product_name || inferredProduct || 'Print Job',
+          job_deadline: t.job_deadline || null,
+          is_blocked_by_commercial_gate: t.is_blocked_by_commercial_gate ?? false,
+          is_blocked_by_design_gate: t.is_blocked_by_design_gate ?? false,
+        }
+      })
   }
 
   static async getTaskById(id: string, companyId: string): Promise<ProductionTaskRecord | null> {
@@ -104,12 +233,16 @@ export class ProductionTaskRepository {
         .maybeSingle()
 
       if (!error && data) {
+        const rawName = data.task_name || ''
+        const inferredProduct = rawName.includes(': ') ? rawName.split(': ')[1] : rawName
         return {
           ...data,
-          job_number: data.job_order?.job_number || 'N/A',
-          customer_name: data.job_order?.customer_name || 'N/A',
-          product_name: data.job_order?.product_name || 'N/A',
-          job_deadline: data.job_order?.deadline || null,
+          job_number: data.job_number || data.job_order?.job_number || (data.task_number ? `JO-${data.task_number.replace('TSK-', '').split('-')[0]}` : 'N/A'),
+          customer_name: data.customer_name || data.job_order?.customer_name || 'Direct Customer',
+          product_name: data.product_name || data.job_order?.product_name || inferredProduct || 'Print Job',
+          job_deadline: data.job_deadline || data.job_order?.deadline || null,
+          is_blocked_by_commercial_gate: data.is_blocked_by_commercial_gate ?? false,
+          is_blocked_by_design_gate: data.is_blocked_by_design_gate ?? false,
         } as ProductionTaskRecord
       }
     } catch {}
@@ -169,6 +302,9 @@ export class ProductionTaskRepository {
       scheduled_end: task.scheduled_end || null,
       status: task.status || (task.scheduled_start ? 'scheduled' : 'queued'),
       notes: task.notes || null,
+      is_blocked_by_commercial_gate: task.is_blocked_by_commercial_gate ?? false,
+      is_blocked_by_design_gate: task.is_blocked_by_design_gate ?? false,
+      commercial_gate_status: (task as any).commercial_gate_status || 'ready_for_production',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }

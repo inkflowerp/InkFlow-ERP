@@ -103,68 +103,70 @@ export class BillingRepository {
   ): Promise<string> {
     const mode = getFinancialPersistenceMode()
 
-    try {
-      const supabase = await createClient()
-      const { data, error } = await (supabase as any).rpc('get_next_document_number', {
-        p_company_id: companyId,
-        p_doc_type: docType,
-      })
+    if (isValidUUID(companyId)) {
+      try {
+        const supabase = await createClient()
+        const { data, error } = await (supabase as any).rpc('get_next_document_number', {
+          p_company_id: companyId,
+          p_doc_type: docType,
+        })
 
-      if (!error && data) {
-        return String(data)
+        if (!error && data) {
+          return String(data)
+        }
+
+        // If RPC is unavailable, use atomic sequence query with padding
+        const admin = createAdminClient()
+        const { data: seq } = await (admin as any)
+          .from('document_sequences')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('doc_type', docType)
+          .maybeSingle()
+
+        const prefixMap: Record<string, string> = {
+          invoice: 'INV',
+          quotation: 'QUO',
+          order: 'ORD',
+          challan: 'CHL',
+          payment: 'PAY',
+          purchase: 'PUR',
+        }
+        const prefix = seq?.prefix || prefixMap[docType] || 'DOC'
+        const nextVal = (seq?.current_val ? Number(seq.current_val) : 0) + 1
+
+        await (admin as any).from('document_sequences').upsert({
+          company_id: companyId,
+          doc_type: docType,
+          prefix,
+          current_val: nextVal,
+          padding: 6,
+          updated_at: new Date().toISOString(),
+        })
+
+        return `${prefix}-${String(nextVal).padStart(6, '0')}`
+      } catch (err: any) {
+        if (mode === 'production') {
+          throw new Error(`Database sequence generator failed for ${docType}: ${err.message || 'Supabase unreachable'}`)
+        }
       }
-
-      // If RPC is unavailable, use atomic sequence query with padding
-      const admin = createAdminClient()
-      const { data: seq } = await (admin as any)
-        .from('document_sequences')
-        .select('*')
-        .eq('company_id', companyId)
-        .eq('doc_type', docType)
-        .maybeSingle()
-
-      const prefixMap: Record<string, string> = {
-        invoice: 'INV',
-        quotation: 'QUO',
-        order: 'ORD',
-        challan: 'CHL',
-        payment: 'PAY',
-        purchase: 'PUR',
-      }
-      const prefix = seq?.prefix || prefixMap[docType] || 'DOC'
-      const nextVal = (seq?.current_val ? Number(seq.current_val) : 0) + 1
-
-      await (admin as any).from('document_sequences').upsert({
-        company_id: companyId,
-        doc_type: docType,
-        prefix,
-        current_val: nextVal,
-        padding: 6,
-        updated_at: new Date().toISOString(),
-      })
-
-      return `${prefix}-${String(nextVal).padStart(6, '0')}`
-    } catch (err: any) {
-      if (mode === 'production') {
-        throw new Error(`Database sequence generator failed for ${docType}: ${err.message || 'Supabase unreachable'}`)
-      }
-
-      // Offline/Test in-memory sequence store (deterministic, concurrency-safe simulation)
-      const seqKey = `${companyId}:${docType}`
-      const current = (BillingRepository.memorySequences.get(seqKey) || 0) + 1
-      BillingRepository.memorySequences.set(seqKey, current)
-
-      const prefixMap: Record<string, string> = {
-        invoice: 'INV',
-        quotation: 'QUO',
-        order: 'ORD',
-        challan: 'CHL',
-        payment: 'PAY',
-        purchase: 'PUR',
-      }
-      const prefix = prefixMap[docType] || 'DOC'
-      return `${prefix}-${String(current).padStart(6, '0')}`
     }
+
+    // Offline/Test in-memory sequence store (deterministic, concurrency-safe simulation)
+    const seqKey = `${companyId}:${docType}`
+    const current = (BillingRepository.memorySequences.get(seqKey) || 0) + 1
+    BillingRepository.memorySequences.set(seqKey, current)
+
+    const prefixMap: Record<string, string> = {
+      invoice: 'INV',
+      quotation: 'QUO',
+      order: 'ORD',
+      challan: 'CHL',
+      payment: 'PAY',
+      purchase: 'PUR',
+    }
+    const prefix = prefixMap[docType] || 'DOC'
+    return `${prefix}-${String(current).padStart(6, '0')}`
   }
 
   static async getInvoices(
@@ -485,13 +487,14 @@ export class BillingRepository {
       updated_at: new Date().toISOString(),
     }
 
-    try {
-      let supabase: any
+    if (isValidUUID(invoice.company_id)) {
       try {
-        supabase = await createClient()
-      } catch {
-        supabase = createAdminClient()
-      }
+        let supabase: any
+        try {
+          supabase = await createClient()
+        } catch {
+          supabase = createAdminClient()
+        }
 
       // Idempotency check in database
       if (payload.idempotency_key) {
@@ -686,6 +689,7 @@ export class BillingRepository {
       if (mode === 'production') {
         throw new Error(`Invoice transaction failed: ${err.message}`)
       }
+    }
     }
 
     // In-memory simulation only for explicit test/training mode
@@ -999,6 +1003,81 @@ export class BillingRepository {
         }
       }
       PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, prodJobs)
+
+      // 5b. Auto-provision Production Tasks for items that do NOT require design (ready to print)
+      if (invoice.items && Array.isArray(invoice.items)) {
+        const readyItems = invoice.items.filter((it: any) => it.design_required !== true)
+        const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        const now = new Date().toISOString()
+        const newDbTasks: any[] = []
+
+        for (let idx = 0; idx < readyItems.length; idx++) {
+          const item = readyItems[idx]
+          const taskBaseNum = `TSK-${(invoice.invoice_number || 'INV-001').replace('INV-', '')}${readyItems.length > 1 ? `-${idx + 1}` : ''}`
+          const task1Num = `${taskBaseNum}-1`
+          const task2Num = `${taskBaseNum}-2`
+
+          const hasTasks = prodTasks.some(
+            (t) =>
+              t.company_id === companyId &&
+              (t.task_number === task1Num || (t.task_name?.includes(item.item_description || '') && t.job_number === invoice.invoice_number))
+          )
+          if (!hasTasks) {
+            const task1 = {
+              id: crypto.randomUUID(),
+              company_id: companyId,
+              task_number: task1Num,
+              task_name: `Print: ${item.item_description || (item as any).description || 'Print Item'}`,
+              customer_name: invoice.customer_name,
+              product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
+              job_number: invoice.invoice_number,
+              job_deadline: invoice.due_date,
+              task_type: 'printing',
+              department: 'printing',
+              sequence_order: 1,
+              quantity: item.quantity || 1,
+              unit: item.unit || 'pcs',
+              priority: 'normal',
+              status: 'queued',
+              is_blocked_by_commercial_gate: false,
+              is_blocked_by_design_gate: false,
+              created_at: now,
+              updated_at: now,
+            }
+            const task2 = {
+              id: crypto.randomUUID(),
+              company_id: companyId,
+              task_number: task2Num,
+              task_name: `Finishing & QC: ${item.item_description || (item as any).description || 'Print Item'}`,
+              customer_name: invoice.customer_name,
+              product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
+              job_number: invoice.invoice_number,
+              job_deadline: invoice.due_date,
+              task_type: 'finishing',
+              department: 'finishing',
+              sequence_order: 2,
+              quantity: item.quantity || 1,
+              unit: item.unit || 'pcs',
+              priority: 'normal',
+              status: 'queued',
+              is_blocked_by_commercial_gate: false,
+              is_blocked_by_design_gate: false,
+              created_at: now,
+              updated_at: now,
+            }
+            prodTasks.unshift(task2, task1)
+            newDbTasks.push(task1, task2)
+          }
+        }
+
+        if (newDbTasks.length > 0) {
+          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
+          try {
+            const supabase = await createClient()
+            await (supabase as any).from('production_tasks').insert(newDbTasks)
+          } catch {}
+        }
+      }
 
       // 6. Dispatch In-App Notification to Production & Prepress Teams
       const notifActionUrl = invoice.sales_order_id ? `/orders/${invoice.sales_order_id}` : `/billing?id=${invoice.id}`
