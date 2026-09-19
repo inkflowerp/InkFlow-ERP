@@ -138,4 +138,54 @@ describe('Unit: Product Entity Type Classification (Ready Product vs Raw Materia
     assert.strictEqual(isMaterialProduct(legacyReadyProduct), false)
     assert.strictEqual(getProductEntityKindLabel(legacyReadyProduct), 'Ready Product')
   })
+
+  it('5. Correctly classifies Finishing Services (Glossy Lamination & Matte Lamication) as Service (NOT Raw Material)', async () => {
+    const glossyLamination = {
+      name: 'Glossy Lamination',
+      unit: 'sft',
+      selling_unit: 'sft',
+      selling_price: 10,
+      base_cost: 4,
+      category: 'finishing',
+      pricing_method: 'per_sqft' as const,
+    }
+
+    const matteLamication = {
+      name: 'Matte Lamication', // user typo tolerance
+      unit: 'sft',
+      selling_price: 10,
+      base_cost: 4,
+    }
+
+    assert.strictEqual(isServiceProduct(glossyLamination), true, 'Glossy Lamination must be a service')
+    assert.strictEqual(isMaterialProduct(glossyLamination), false, 'Glossy Lamination must not be material')
+    assert.strictEqual(isReadyProduct(glossyLamination), false, 'Glossy Lamination must not be ready product')
+    assert.strictEqual(getProductEntityKind(glossyLamination), 'service')
+    assert.strictEqual(getProductEntityKindLabel(glossyLamination), 'Service')
+
+    assert.strictEqual(isServiceProduct(matteLamication), true, 'Matte Lamication must be a service')
+    assert.strictEqual(isMaterialProduct(matteLamication), false, 'Matte Lamication must not be material')
+    assert.strictEqual(isReadyProduct(matteLamication), false, 'Matte Lamication must not be ready product')
+    assert.strictEqual(getProductEntityKind(matteLamication), 'service')
+    assert.strictEqual(getProductEntityKindLabel(matteLamication), 'Service')
+  })
+
+  it('6. Correctly classifies Consumable Raw Material (Eyelet piece) as Raw Material', async () => {
+    const eyelet = {
+      name: 'Eyelet',
+      unit: 'piece',
+      selling_unit: 'piece',
+      selling_price: 5,
+      base_cost: 2,
+      entity_type: 'material' as const,
+      product_type: 'material' as const,
+      category: 'materials',
+    }
+
+    assert.strictEqual(isServiceProduct(eyelet), false, 'Eyelet must not be a service')
+    assert.strictEqual(isMaterialProduct(eyelet), true, 'Eyelet must be a raw material')
+    assert.strictEqual(isReadyProduct(eyelet), false, 'Eyelet must not be a ready product')
+    assert.strictEqual(getProductEntityKind(eyelet), 'material')
+    assert.strictEqual(getProductEntityKindLabel(eyelet), 'Raw Material')
+  })
 })

@@ -59,7 +59,7 @@ import { DEFAULT_QUOTATION_TERMS, DEFAULT_QUOTATION_TERMS_BN } from '@/types/quo
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { calculateCommercialPricing } from '@/lib/units'
+import { calculateCommercialPricing, isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
 
 export interface NewQuotationModalProps {
   open: boolean
@@ -466,40 +466,16 @@ export function NewQuotationModal({
 
   // Categorized Catalog Lists for intelligent dropdown grouping
   const servicesCatalogList = useMemo(() => {
-    return productsCatalog.filter(
-      (p) =>
-        p.is_service ||
-        p.entity_type === 'service' ||
-        p.product_type === 'service' ||
-        p.product_type === 'print_service' ||
-        p.product_type === 'fabrication_service' ||
-        p.product_type === 'installation_service' ||
-        p.pricing_method?.startsWith('per_') ||
-        p.unit === 'sft' ||
-        p.unit === 'sqft' ||
-        p.unit === 'rft'
-    )
+    return productsCatalog.filter((p) => isServiceProduct(p))
   }, [productsCatalog])
 
   const readyProductsCatalogList = useMemo(() => {
-    return productsCatalog.filter(
-      (p) =>
-        p.is_ready_product ||
-        p.entity_type === 'product' ||
-        p.commercial_type === 'ready_product' ||
-        p.product_type === 'ready_product' ||
-        p.product_type === 'finished_product'
-    )
+    return productsCatalog.filter((p) => isReadyProduct(p))
   }, [productsCatalog])
 
   const materialsCatalogList = useMemo(() => {
-    return productsCatalog.filter(
-      (p) =>
-        p.entity_type === 'material' ||
-        p.product_type === 'material' ||
-        (!servicesCatalogList.some((s) => s.id === p.id) && !readyProductsCatalogList.some((r) => r.id === p.id))
-    )
-  }, [productsCatalog, servicesCatalogList, readyProductsCatalogList])
+    return productsCatalog.filter((p) => isMaterialProduct(p))
+  }, [productsCatalog])
 
   const handleProductSelect = (index: number, productId: string) => {
     if (!productId) {

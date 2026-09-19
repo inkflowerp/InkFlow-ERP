@@ -40,6 +40,7 @@ import { SalesOrderRecord } from '@/types/order.types'
 import { DesignJobRecord } from '@/types/design.types'
 import { ProductRecord } from '@/types/product.types'
 import { getInvoiceProductsAction } from '@/actions/billing.actions'
+import { isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
 
 interface WorkOrderModalProps {
   isOpen: boolean
@@ -234,17 +235,17 @@ export function WorkOrderModal({
 
   // Partitioned product lists for dropdown
   const servicesList = useMemo(
-    () => products.filter((p) => p.is_active && (p.product_type === 'service' || p.product_type === 'print_service' || p.product_type === 'fabrication_service' || (p as any).is_service || p.service_config)),
+    () => products.filter((p) => p.is_active && isServiceProduct(p)),
     [products]
   )
 
   const readyProductsList = useMemo(
-    () => products.filter((p) => p.is_active && (p.product_type === 'ready_product' || p.product_type === 'finished_product' || (p.product_type as any) === 'finished_good') && !(p as any).is_service && !p.service_config),
+    () => products.filter((p) => p.is_active && isReadyProduct(p)),
     [products]
   )
 
   const materialsList = useMemo(
-    () => products.filter((p) => p.is_active && (p.product_type === 'material' || (p.product_type as any) === 'raw_material')),
+    () => products.filter((p) => p.is_active && isMaterialProduct(p)),
     [products]
   )
 

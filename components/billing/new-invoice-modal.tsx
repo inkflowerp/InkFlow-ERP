@@ -50,6 +50,7 @@ import {
 import { evaluateStockAvailability, StockAvailabilityResult } from '@/lib/domain/stock-availability'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type { MaterialRecord, InventoryRollRecord, InventoryStockBalanceRecord, InventoryRemnantRecord } from '@/types/inventory.types'
+import { isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
 
 export interface NewInvoiceModalProps {
   open: boolean
@@ -136,54 +137,9 @@ const UNIT_OPTIONS = [
 
 export function detectProductKind(p: ProductRecord | any): 'ready_product' | 'material' | 'service' {
   if (!p) return 'service'
-
-  const isReady =
-    p.is_ready_product === true ||
-    p.entity_type === 'product' ||
-    p.entity_type === 'ready_product' ||
-    p.commercial_type === 'ready_product' ||
-    p.product_type === 'ready_product' ||
-    p.product_type === 'finished_product' ||
-    p.product_type === 'finished_good' ||
-    (!p.is_service &&
-      p.entity_type !== 'service' &&
-      p.product_type !== 'service' &&
-      p.product_type !== 'print_service' &&
-      p.product_type !== 'fabrication_service' &&
-      p.product_type !== 'installation_service' &&
-      p.product_type !== 'finishing' &&
-      p.product_type !== 'material' &&
-      p.entity_type !== 'material' &&
-      (p.unit === 'pcs' ||
-        p.unit === 'piece' ||
-        p.unit === 'set' ||
-        p.unit === 'box' ||
-        p.unit === 'pack' ||
-        p.unit === 'pair' ||
-        p.unit === 'carton' ||
-        p.unit === 'kg' ||
-        p.selling_unit === 'pcs' ||
-        p.selling_unit === 'piece' ||
-        p.selling_unit === 'set' ||
-        p.selling_unit === 'box' ||
-        p.selling_unit === 'pack' ||
-        p.selling_unit === 'pair' ||
-        p.selling_unit === 'carton' ||
-        p.selling_unit === 'kg' ||
-        p.pricing_method === 'per_piece' ||
-        p.pricing_method === 'fixed' ||
-        p.pricing_method === 'per_item' ||
-        p.pricing_method === 'per_unit'))
-
-  if (isReady) return 'ready_product'
-
-  const isMat =
-    p.entity_type === 'material' ||
-    p.product_type === 'material' ||
-    p.product_type === 'raw_material'
-
-  if (isMat) return 'material'
-
+  if (isServiceProduct(p)) return 'service'
+  if (isReadyProduct(p)) return 'ready_product'
+  if (isMaterialProduct(p)) return 'material'
   return 'service'
 }
 
