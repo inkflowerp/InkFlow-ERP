@@ -135,8 +135,16 @@ export class ProductionTaskRepository {
   ): Promise<ProductionTaskRecord> {
     const taskName = (task.task_name || (task as any).name || 'Production Task').trim()
     const taskNumber = (task.task_number || (task as any).job_number || `TSK-${Date.now().toString().slice(-6)}`).trim()
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    const resolvedId = task.id && uuidRegex.test(task.id) ? task.id : crypto.randomUUID()
+    const validBranchId = task.branch_id && uuidRegex.test(task.branch_id) ? task.branch_id : null
+    const validJobOrderId = task.job_order_id && uuidRegex.test(task.job_order_id) ? task.job_order_id : null
+    const validProdJobId = task.production_job_id && uuidRegex.test(task.production_job_id) ? task.production_job_id : null
+    const validMachineId = task.assigned_machine_id && uuidRegex.test(task.assigned_machine_id) ? task.assigned_machine_id : null
+    const validOperatorId = task.assigned_operator_id && uuidRegex.test(task.assigned_operator_id) ? task.assigned_operator_id : null
+
     const payload: any = {
-      id: task.id || `ptask-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: task.id || resolvedId,
       company_id: task.company_id,
       branch_id: task.branch_id || null,
       job_order_id: task.job_order_id || null,
@@ -167,9 +175,18 @@ export class ProductionTaskRepository {
 
     try {
       const supabase = await createClient()
+      const dbPayload = {
+        ...payload,
+        id: resolvedId,
+        branch_id: validBranchId,
+        job_order_id: validJobOrderId,
+        production_job_id: validProdJobId,
+        assigned_machine_id: validMachineId,
+        assigned_operator_id: validOperatorId,
+      }
       const { data, error } = await (supabase as any)
         .from('production_tasks')
-        .insert(payload)
+        .insert(dbPayload)
         .select()
         .single()
 

@@ -488,7 +488,73 @@ export class DesignRepository {
     }
     PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, prodJobs)
 
-    // 6. In-App Notification to Print Operator / Shop Floor
+    // 6. Create Production Tasks for the Production Board
+    const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const hasExistingTasks = prodTasks.some((t) => t.job_order_id === matchedOrder.id)
+    if (!hasExistingTasks) {
+      const task1 = {
+        id: crypto.randomUUID(),
+        company_id: companyId,
+        job_order_id: matchedOrder.id,
+        production_job_id: matchedProdJob.id,
+        task_number: `TSK-${matchedOrder.job_number.replace('JO-', '')}-1`,
+        task_name: `Print: ${job.title}`,
+        task_type: 'printing',
+        department: 'printing',
+        sequence_order: 1,
+        quantity: job.quantity || 1,
+        unit: 'pcs',
+        priority: job.priority || 'normal',
+        status: 'queued',
+        is_blocked_by_commercial_gate: false,
+        is_blocked_by_design_gate: false,
+        created_at: now,
+        updated_at: now,
+      }
+      const task2 = {
+        id: crypto.randomUUID(),
+        company_id: companyId,
+        job_order_id: matchedOrder.id,
+        production_job_id: matchedProdJob.id,
+        task_number: `TSK-${matchedOrder.job_number.replace('JO-', '')}-2`,
+        task_name: `Finishing & QC: ${job.title}`,
+        task_type: 'finishing',
+        department: 'finishing',
+        sequence_order: 2,
+        quantity: job.quantity || 1,
+        unit: 'pcs',
+        priority: job.priority || 'normal',
+        status: 'queued',
+        is_blocked_by_commercial_gate: false,
+        is_blocked_by_design_gate: false,
+        created_at: now,
+        updated_at: now,
+      }
+      prodTasks.unshift(task2, task1)
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
+
+      try {
+        const supabase = await createClient()
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        const dbJobOrderId = matchedOrder.id && uuidRegex.test(matchedOrder.id) ? matchedOrder.id : null
+        const dbProdJobId = matchedProdJob.id && uuidRegex.test(matchedProdJob.id) ? matchedProdJob.id : null
+
+        await (supabase as any).from('production_tasks').insert([
+          {
+            ...task1,
+            job_order_id: dbJobOrderId,
+            production_job_id: dbProdJobId,
+          },
+          {
+            ...task2,
+            job_order_id: dbJobOrderId,
+            production_job_id: dbProdJobId,
+          },
+        ])
+      } catch {}
+    }
+
+    // 7. In-App Notification to Print Operator / Shop Floor
     try {
       const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
       notifs.unshift({
@@ -500,7 +566,7 @@ export class DesignRepository {
         title_bn: `নতুন প্রিন্ট জব: ${job.design_number}`,
         message: `Design ${job.design_number} for ${job.customer_name} is approved and queued on the print floor.`,
         message_bn: `${job.customer_name}-এর ডিজাইন ${job.design_number} অনুমোদিত এবং প্রিন্ট ফ্লোরে কিউ করা হয়েছে।`,
-        action_url: `/${companyId}/operator`,
+        action_url: `/${companyId}/production`,
         is_read: false,
         created_at: now,
       })

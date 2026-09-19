@@ -517,9 +517,20 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
           updated_at: new Date().toISOString(),
         }
 
+        const hasInvoice = Boolean(selectedJob.invoice_id) || selectedJob.commercial_status === 'invoice_created'
+        if (hasInvoice) {
+          try {
+            await sendToPrintOperatorAction(selectedJob.id, companyId)
+          } catch {}
+        }
+
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, selectedJob.id, updatedJob)
         setIsApprovalModalOpen(false)
-        showNotification(`Artwork #${selectedJob.design_number} approved & locked for production!`)
+        showNotification(
+          hasInvoice
+            ? `Artwork #${selectedJob.design_number} approved & released to Production Floor!`
+            : `Artwork #${selectedJob.design_number} approved & locked! Invoice required before print start.`
+        )
       } catch (err: any) {
         showNotification(err.message || 'Approval error', 'warning')
       }
@@ -1350,13 +1361,25 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                             </button>
                           </div>
 
-                          <Link
-                            href={`/${slug}/design/${job.id}`}
-                            className="inline-flex items-center gap-1 text-pink-600 dark:text-pink-400 font-bold hover:underline"
-                          >
-                            <span>Studio</span>
-                            <ExternalLink className="h-3 w-3" />
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            {hasInvoice && (job.status === 'approved' || job.is_locked) && (
+                              <Link
+                                href={`/${slug}/production`}
+                                className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:underline text-[11px]"
+                                title="Sent to Production Floor"
+                              >
+                                <Printer className="h-3 w-3" />
+                                <span>Production &rarr;</span>
+                              </Link>
+                            )}
+                            <Link
+                              href={`/${slug}/design/${job.id}`}
+                              className="inline-flex items-center gap-1 text-pink-600 dark:text-pink-400 font-bold hover:underline"
+                            >
+                              <span>Studio</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </Link>
+                          </div>
                         </div>
                       </Card>
                     )
@@ -1485,6 +1508,16 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                             <Check className="h-3.5 w-3.5 mr-1" />
                             <span>Approve</span>
                           </Button>
+                        )}
+
+                        {job.status === 'approved' && hasInvoice && (
+                          <Link
+                            href={`/${slug}/production`}
+                            className="inline-flex items-center gap-1.5 h-8 text-xs px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                            <span>Production &rarr;</span>
+                          </Link>
                         )}
 
                         {job.status === 'approved' && !hasInvoice && (
