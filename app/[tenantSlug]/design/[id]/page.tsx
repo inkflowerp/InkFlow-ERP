@@ -371,7 +371,7 @@ export default function DesignDetailPage() {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Design Studio
+          {tBilingual('Back to Design Panel', 'ডিজাইন প্যানেলে ফিরে যান')}
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

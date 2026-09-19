@@ -190,8 +190,8 @@ export function getNavigationConfig(tenantSlug: string): NavSection[] {
         },
         {
           key: 'design',
-          title: 'Design',
-          titleBn: 'ডিজাইন',
+          title: 'Design Panel',
+          titleBn: 'ডিজাইন প্যানেল',
           href: `/${tenantSlug}/design`,
           icon: 'Palette',
           permission: { action: 'view', resource: 'design' },
