@@ -113,6 +113,11 @@ export function InvoiceRequestsPanel({
           (req.request_number && req.request_number.toLowerCase().includes(q)) ||
           (req.customer_name && req.customer_name.toLowerCase().includes(q)) ||
           (req.customer_phone && req.customer_phone.toLowerCase().includes(q)) ||
+          (req.company_name && req.company_name.toLowerCase().includes(q)) ||
+          ((req as any).customer_company && (req as any).customer_company.toLowerCase().includes(q)) ||
+          (req.customer_email && req.customer_email.toLowerCase().includes(q)) ||
+          (req.customer_address && req.customer_address.toLowerCase().includes(q)) ||
+          ((req as any).billing_address && (req as any).billing_address.toLowerCase().includes(q)) ||
           (req.order_number && req.order_number.toLowerCase().includes(q)) ||
           (req.job_number && req.job_number.toLowerCase().includes(q)) ||
           (req.design_number && req.design_number.toLowerCase().includes(q)) ||

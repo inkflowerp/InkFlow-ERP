@@ -189,17 +189,19 @@ export class InvoiceRequestRepository {
       throw new Error('Company context is required to create an invoice request.')
     }
 
-    // 1. Duplicate Prevention Check: Check if an active pending request already exists
-    const existing = await this.getRequests(data.company_id, {
-      status: 'pending',
-      salesOrderId: data.sales_order_id || undefined,
-      designJobId: data.design_job_id || undefined,
-      jobOrderId: data.job_order_id || undefined,
-    })
+    // 1. Duplicate Prevention Check: Check if an active pending request already exists for this document
+    if (data.sales_order_id || data.design_job_id || data.job_order_id) {
+      const existing = await this.getRequests(data.company_id, {
+        status: 'pending',
+        salesOrderId: data.sales_order_id || undefined,
+        designJobId: data.design_job_id || undefined,
+        jobOrderId: data.job_order_id || undefined,
+      })
 
-    if (existing.length > 0) {
-      // Return existing pending request to avoid duplicates
-      return existing[0]
+      if (existing.length > 0) {
+        // Return existing pending request to avoid duplicates
+        return existing[0]
+      }
     }
 
     const requestNumber =
@@ -212,6 +214,10 @@ export class InvoiceRequestRepository {
       customer_id: data.customer_id || null,
       customer_name: data.customer_name,
       customer_phone: data.customer_phone || null,
+      customer_email: data.customer_email || null,
+      customer_address: data.customer_address || null,
+      company_name: data.company_name || null,
+      items: data.items || [],
       sales_order_id: data.sales_order_id || null,
       order_number: data.order_number || null,
       job_order_id: data.job_order_id || null,

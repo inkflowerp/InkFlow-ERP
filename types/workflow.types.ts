@@ -229,6 +229,9 @@ export interface InvoiceRequestRecord {
   customer_id?: string | null
   customer_name: string
   customer_phone?: string | null
+  customer_email?: string | null
+  customer_address?: string | null
+  company_name?: string | null
   sales_order_id?: string | null
   order_number?: string | null
   job_order_id?: string | null
@@ -241,6 +244,7 @@ export interface InvoiceRequestRecord {
   invoice_id?: string | null
   invoice_number?: string | null
   items_summary?: string | null
+  items?: any[]
   estimated_amount: number
   notes?: string | null
   created_at: string

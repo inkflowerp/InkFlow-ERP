@@ -58,6 +58,10 @@ export interface NewInvoiceModalProps {
   preselectedSalesOrderId?: string
   preselectedCustomerName?: string
   preselectedCustomerPhone?: string
+  preselectedCustomerEmail?: string
+  preselectedCustomerAddress?: string
+  preselectedCompanyName?: string
+  preselectedItems?: any[]
   preselectedRequestId?: string
   preselectedDesignJobId?: string
   preselectedItemsSummary?: string
@@ -129,6 +133,10 @@ export function NewInvoiceModal({
   preselectedSalesOrderId,
   preselectedCustomerName,
   preselectedCustomerPhone,
+  preselectedCustomerEmail,
+  preselectedCustomerAddress,
+  preselectedCompanyName,
+  preselectedItems,
   preselectedRequestId,
   preselectedDesignJobId,
   preselectedItemsSummary,
@@ -281,7 +289,83 @@ export function NewInvoiceModal({
         }
       }
 
-      if (preselectedItemsSummary) {
+      if (preselectedCompanyName) {
+        setCompanyName(preselectedCompanyName)
+      }
+      if (preselectedCustomerAddress) {
+        setAddress(preselectedCustomerAddress)
+      }
+      if (preselectedCustomerEmail) {
+        setEmailAddress(preselectedCustomerEmail)
+      }
+
+      if (Array.isArray(preselectedItems) && preselectedItems.length > 0) {
+        const mappedItems: ItemRowState[] = preselectedItems.map((it, idx) => {
+          const matchingProduct = products.find(
+            (p) =>
+              p.id === it.productId ||
+              p.id === it.product_id ||
+              p.name.toLowerCase() === (it.itemName || it.item_name || '').toLowerCase()
+          )
+
+          const isService =
+            it.item_kind === 'service' ||
+            (it.item_kind !== 'ready_product' &&
+              it.item_kind !== 'material' &&
+              Boolean(Number(it.width) > 0 && Number(it.height) > 0)) ||
+            matchingProduct?.product_type === 'service' ||
+            matchingProduct?.product_type === 'print_service' ||
+            matchingProduct?.product_type === 'fabrication_service'
+          const isReady =
+            it.item_kind === 'ready_product' ||
+            matchingProduct?.product_type === 'ready_product' ||
+            matchingProduct?.product_type === 'finished_product' ||
+            (matchingProduct?.product_type as any) === 'finished_good'
+          const isMat =
+            it.item_kind === 'material' ||
+            (matchingProduct?.product_type as any) === 'raw_material' ||
+            matchingProduct?.product_type === 'material'
+
+          const resolvedRate =
+            Number(matchingProduct?.selling_price) ||
+            Number((matchingProduct as any)?.base_price) ||
+            Number(it.rate) ||
+            Number(it.unit_price) ||
+            (isReady ? 50 : 25)
+
+          return {
+            id: `item-${Date.now()}-${idx + 1}`,
+            productId: matchingProduct?.id || it.productId || it.product_id || '',
+            item_kind: isService ? 'service' : isReady ? 'ready_product' : isMat ? 'material' : 'service',
+            product_type: matchingProduct?.product_type || it.product_type,
+            itemName: it.itemName || it.item_name || matchingProduct?.name || 'Printing Service Item',
+            dimensions_spec: it.dimensions_spec || (matchingProduct as any)?.dimensions_spec || undefined,
+            width: String(it.width ?? (isService ? '4' : '0')),
+            height: String(it.height ?? (isService ? '6' : '0')),
+            dimension_unit: it.dimension_unit || (matchingProduct?.service_config?.default_unit as any) || 'ft',
+            quantity: Number(it.quantity) || 1,
+            unit: it.unit || matchingProduct?.selling_unit || matchingProduct?.unit || (isService ? 'sft' : 'pcs'),
+            rate: resolvedRate,
+            finishing: it.finishing || 'None',
+            rateSource: matchingProduct ? 'default' : 'manual',
+            available_dimension_presets:
+              matchingProduct?.service_config?.dimension_presets ||
+              (matchingProduct as any)?.dimension_presets ||
+              [],
+            available_finishing_options:
+              matchingProduct?.service_config?.finishing_options ||
+              (matchingProduct as any)?.finishing_options ||
+              [],
+            printable_material_name:
+              matchingProduct?.service_config?.printable_material_name ||
+              (matchingProduct as any)?.material_spec,
+            design_required: Boolean(it.design_required),
+            customer_approval_required: it.customer_approval_required !== false,
+            showAdvanced: Boolean(it.showAdvanced),
+          }
+        })
+        setItems(mappedItems)
+      } else if (preselectedItemsSummary) {
         setItems((prev) => {
           if (
             prev.length === 1 &&
@@ -312,8 +396,13 @@ export function NewInvoiceModal({
     preselectedQuotationId,
     preselectedCustomerName,
     preselectedCustomerPhone,
+    preselectedCustomerEmail,
+    preselectedCustomerAddress,
+    preselectedCompanyName,
+    preselectedItems,
     preselectedItemsSummary,
     preselectedEstimatedAmount,
+    products,
     company?.id,
   ])
 

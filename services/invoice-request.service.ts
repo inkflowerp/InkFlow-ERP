@@ -13,6 +13,13 @@ export interface CreateInvoiceRequestInput {
   customer_name?: string
   customerPhone?: string | null
   customer_phone?: string | null
+  customerEmail?: string | null
+  customer_email?: string | null
+  customerAddress?: string | null
+  customer_address?: string | null
+  companyName?: string | null
+  company_name?: string | null
+  items?: any[]
   salesOrderId?: string | null
   sales_order_id?: string | null
   orderId?: string | null
@@ -85,6 +92,10 @@ export class InvoiceRequestService {
       customer_id: input.customerId || input.customer_id || null,
       customer_name: customerName,
       customer_phone: input.customerPhone || input.customer_phone || null,
+      customer_email: input.customerEmail || input.customer_email || null,
+      customer_address: input.customerAddress || input.customer_address || null,
+      company_name: input.companyName || input.company_name || null,
+      items: input.items || undefined,
       sales_order_id: salesOrderId,
       order_number: orderNumber,
       job_order_id: jobOrderId,

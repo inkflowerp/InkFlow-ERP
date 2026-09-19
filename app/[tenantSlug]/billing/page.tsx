@@ -143,6 +143,10 @@ export default function BillingPage() {
   const [selectedCustomerForInvoice, setSelectedCustomerForInvoice] = useState<string | undefined>(undefined)
   const [selectedCustomerNameForInvoice, setSelectedCustomerNameForInvoice] = useState<string | undefined>(undefined)
   const [selectedCustomerPhoneForInvoice, setSelectedCustomerPhoneForInvoice] = useState<string | undefined>(undefined)
+  const [selectedCustomerEmailForInvoice, setSelectedCustomerEmailForInvoice] = useState<string | undefined>(undefined)
+  const [selectedCustomerAddressForInvoice, setSelectedCustomerAddressForInvoice] = useState<string | undefined>(undefined)
+  const [selectedCompanyNameForInvoice, setSelectedCompanyNameForInvoice] = useState<string | undefined>(undefined)
+  const [selectedItemsForInvoice, setSelectedItemsForInvoice] = useState<any[] | undefined>(undefined)
   const [selectedRequestIdForInvoice, setSelectedRequestIdForInvoice] = useState<string | undefined>(undefined)
   const [selectedDesignJobIdForInvoice, setSelectedDesignJobIdForInvoice] = useState<string | undefined>(undefined)
   const [selectedItemsSummaryForInvoice, setSelectedItemsSummaryForInvoice] = useState<string | undefined>(undefined)
@@ -290,6 +294,10 @@ export default function BillingPage() {
                 customer_id: ord.customer_id || null,
                 customer_name: ord.customer_name || 'Customer',
                 customer_phone: ord.customer_phone || null,
+                customer_email: ord.customer_email || null,
+                customer_address: ord.customer_address || null,
+                company_name: ord.customer_company || ord.company_name || null,
+                items: ord.items || [],
                 sales_order_id: ord.id,
                 order_number: ord.order_number || null,
                 job_order_id: null,
@@ -344,6 +352,10 @@ export default function BillingPage() {
                 customer_id: dj.customer_id || null,
                 customer_name: dj.customer_name || 'Direct Customer',
                 customer_phone: dj.customer_phone || null,
+                customer_email: dj.customer_email || null,
+                customer_address: dj.customer_address || null,
+                company_name: dj.company_name || null,
+                items: dj.items || [],
                 sales_order_id: dj.sales_order_id || null,
                 order_number: dj.order_number || null,
                 job_order_id: null,
@@ -1398,6 +1410,10 @@ export default function BillingPage() {
               setSelectedOrderForInvoice(req.sales_order_id || undefined)
               setSelectedCustomerNameForInvoice(req.customer_name || undefined)
               setSelectedCustomerPhoneForInvoice(req.customer_phone || undefined)
+              setSelectedCustomerEmailForInvoice(req.customer_email || undefined)
+              setSelectedCustomerAddressForInvoice(req.customer_address || undefined)
+              setSelectedCompanyNameForInvoice(req.company_name || undefined)
+              setSelectedItemsForInvoice(req.items || undefined)
               setSelectedRequestIdForInvoice(req.id || undefined)
               setSelectedDesignJobIdForInvoice(req.design_job_id || undefined)
               setSelectedItemsSummaryForInvoice(req.items_summary || undefined)
@@ -1798,6 +1814,10 @@ export default function BillingPage() {
             setSelectedCustomerForInvoice(undefined)
             setSelectedCustomerNameForInvoice(undefined)
             setSelectedCustomerPhoneForInvoice(undefined)
+            setSelectedCustomerEmailForInvoice(undefined)
+            setSelectedCustomerAddressForInvoice(undefined)
+            setSelectedCompanyNameForInvoice(undefined)
+            setSelectedItemsForInvoice(undefined)
             setSelectedRequestIdForInvoice(undefined)
             setSelectedDesignJobIdForInvoice(undefined)
             setSelectedItemsSummaryForInvoice(undefined)
@@ -1808,6 +1828,10 @@ export default function BillingPage() {
         preselectedCustomerId={selectedCustomerForInvoice}
         preselectedCustomerName={selectedCustomerNameForInvoice}
         preselectedCustomerPhone={selectedCustomerPhoneForInvoice}
+        preselectedCustomerEmail={selectedCustomerEmailForInvoice}
+        preselectedCustomerAddress={selectedCustomerAddressForInvoice}
+        preselectedCompanyName={selectedCompanyNameForInvoice}
+        preselectedItems={selectedItemsForInvoice}
         preselectedRequestId={selectedRequestIdForInvoice}
         preselectedDesignJobId={selectedDesignJobIdForInvoice}
         preselectedItemsSummary={selectedItemsSummaryForInvoice}
