@@ -92,6 +92,12 @@ import {
   deleteDesignJobAction,
   purgeAllDesignJobsAction,
 } from '@/actions/design.actions'
+import { getOrdersAction, purgeAllOrdersAction } from '@/actions/order.actions'
+import {
+  getInAppNotificationsAction,
+  deleteNotificationAction,
+  purgeAllNotificationsAction,
+} from '@/actions/notification.actions'
 import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
 import { cn } from '@/lib/utils'
 
@@ -181,9 +187,9 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const [jobs, setJobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [])
   const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
   const [invoiceRequests] = useDataStore<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS, [])
-  const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
+  const [orders, setOrders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
   const [customers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
-  const [notifications] = useDataStore<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS, [])
+  const [notifications, setNotifications] = useDataStore<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS, [])
 
   // Modals state
   const [isWorkOrderOpen, setIsWorkOrderOpen] = useState(false)
@@ -241,23 +247,48 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   // Authoritative server synchronization on mount and company change
   useEffect(() => {
     let isMounted = true
-    async function syncServerJobs() {
+    async function syncServerData() {
       if (!company?.id) return
       try {
-        const res = await getDesignJobsAction(company.id)
-        if (res.success && res.data && isMounted) {
-          const serverJobs = res.data
+        const [jobsRes, ordersRes, notifsRes] = await Promise.all([
+          getDesignJobsAction(company.id),
+          getOrdersAction(company.id),
+          getInAppNotificationsAction(company.id),
+        ])
+
+        if (!isMounted) return
+
+        if (jobsRes.success && jobsRes.data) {
+          const serverJobs = jobsRes.data
           const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
           const otherTenantJobs = allStored.filter((j) => j.company_id && !isMatchingCompany(j.company_id))
           const merged = [...otherTenantJobs, ...serverJobs]
           PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, merged)
           setJobs(merged)
         }
+
+        if (ordersRes.success && ordersRes.data) {
+          const serverOrders = ordersRes.data
+          const allStoredOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+          const otherTenantOrders = allStoredOrders.filter((o) => o.company_id && !isMatchingCompany(o.company_id))
+          const mergedOrders = [...otherTenantOrders, ...serverOrders]
+          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, mergedOrders)
+          setOrders(mergedOrders)
+        }
+
+        if (notifsRes.success && notifsRes.data) {
+          const serverNotifs = notifsRes.data
+          const allStoredNotifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+          const otherTenantNotifs = allStoredNotifs.filter((n) => n.company_id && !isMatchingCompany(n.company_id))
+          const mergedNotifs = [...otherTenantNotifs, ...serverNotifs]
+          PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, mergedNotifs)
+          setNotifications(mergedNotifs)
+        }
       } catch (err) {
-        console.error('Failed to sync design jobs:', err)
+        console.error('Failed to sync design panel server data:', err)
       }
     }
-    syncServerJobs()
+    syncServerData()
     return () => {
       isMounted = false
     }
@@ -313,6 +344,77 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     })
   }
 
+  // Purge all work orders handler
+  const handlePurgeAllOrders = async () => {
+    if (
+      !confirm(
+        'WARNING: Are you sure you want to delete ALL work orders for this organization? This action cannot be undone.'
+      )
+    ) {
+      return
+    }
+    startTransition(async () => {
+      try {
+        const res = await purgeAllOrdersAction(companyId)
+        if (!res.success) {
+          showNotification(res.error || 'Failed to delete work orders', 'warning')
+          return
+        }
+        const allStored = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+        const remaining = allStored.filter((o) => o.company_id && !isMatchingCompany(o.company_id))
+        PrintERPDataStore.set(STORAGE_KEYS.ORDERS, remaining)
+        setOrders(remaining)
+
+        const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+        const remainingJobs = allJobs.filter((j) => j.company_id && !isMatchingCompany(j.company_id))
+        PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, remainingJobs)
+
+        showNotification('All work orders have been deleted!')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to purge work orders', 'warning')
+      }
+    })
+  }
+
+  // Purge all alerts / notifications handler
+  const handlePurgeAllNotifications = async () => {
+    if (!confirm('Are you sure you want to delete ALL alerts and studio notifications?')) {
+      return
+    }
+    startTransition(async () => {
+      try {
+        const res = await purgeAllNotificationsAction(companyId)
+        if (!res.success) {
+          showNotification(res.error || 'Failed to delete notifications', 'warning')
+          return
+        }
+        const allStored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+        const remaining = allStored.filter((n) => n.company_id && !isMatchingCompany(n.company_id))
+        PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, remaining)
+        setNotifications(remaining)
+        showNotification('All studio alerts have been deleted!')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to purge alerts', 'warning')
+      }
+    })
+  }
+
+  // Delete single notification handler
+  const handleDeleteNotification = async (notificationId: string) => {
+    startTransition(async () => {
+      try {
+        await deleteNotificationAction(notificationId, companyId)
+        const allStored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+        const remaining = allStored.filter((n) => n.id !== notificationId)
+        PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, remaining)
+        setNotifications(remaining)
+        showNotification('Alert deleted')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to delete alert', 'warning')
+      }
+    })
+  }
+
   // Handle Tab Switch
   const handleTabChange = (tab: DesignPanelTab) => {
     setActiveTab(tab)
@@ -335,6 +437,17 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const tenantRequests = useMemo(() => {
     return (invoiceRequests || []).filter((r) => isMatchingCompany(r.company_id))
   }, [invoiceRequests, company, slug])
+
+  // Tenant-scoped orders / work orders
+  const tenantOrders = useMemo(() => {
+    return (orders || []).filter((o) => isMatchingCompany(o.company_id))
+  }, [orders, company, slug])
+
+  // Tenant-scoped notifications
+  const tenantNotifications = useMemo(() => {
+    return (notifications || []).filter((n) => isMatchingCompany(n.company_id))
+  }, [notifications, company, slug])
+
 
 
   // Operational KPIs
@@ -904,10 +1017,25 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                 size="sm"
                 variant="outline"
                 onClick={handlePurgeAllJobs}
+                disabled={isPending}
                 className="border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 text-xs font-bold bangla-text shadow-xs"
               >
                 <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('Delete All Jobs', 'সকল জব মুছুন')}
+              </Button>
+            )}
+
+            {/* Delete All Work Orders Button */}
+            {tenantOrders.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handlePurgeAllOrders}
+                disabled={isPending}
+                className="border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 text-xs font-bold bangla-text shadow-xs"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                {tBilingual('Delete All Work Orders', 'সকল ওয়ার্ক অর্ডার মুছুন')}
               </Button>
             )}
           </div>
@@ -1057,7 +1185,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             <span>Work Orders</span>
             <Layers className="h-3.5 w-3.5 text-blue-500" />
           </div>
-          <div className="text-xl font-black text-slate-900 dark:text-white mt-1">{orders.length}</div>
+          <div className="text-xl font-black text-slate-900 dark:text-white mt-1">{tenantOrders.length}</div>
           <div className="text-[10px] text-blue-600 font-medium mt-0.5">Intake linked</div>
         </Card>
 
@@ -1139,7 +1267,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             <Layers className="h-4 w-4" />
             <span>Work Orders</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-              {orders.length}
+              {tenantOrders.length}
             </Badge>
           </button>
 
@@ -1193,9 +1321,9 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
           >
             <Bell className="h-4 w-4" />
             <span>Alerts</span>
-            {notifications.length > 0 && (
+            {tenantNotifications.length > 0 && (
               <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 bg-red-600">
-                {notifications.length}
+                {tenantNotifications.length}
               </Badge>
             )}
           </button>
@@ -1892,25 +2020,51 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
           {activeTab === 'notifications' && (
             <Card className="p-4">
               <div className="space-y-3">
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                  <Bell className="h-4 w-4 text-pink-600" />
-                  <span>Studio & Workflow Alerts</span>
-                </h3>
-                {notifications.length === 0 ? (
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-pink-600" />
+                    <span>Studio & Workflow Alerts</span>
+                  </h3>
+                  {tenantNotifications.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handlePurgeAllNotifications}
+                      disabled={isPending}
+                      className="h-8 text-xs font-semibold gap-1.5"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span>Delete All Alerts</span>
+                    </Button>
+                  )}
+                </div>
+                {tenantNotifications.length === 0 ? (
                   <div className="p-8 text-center text-slate-400 text-xs">
                     No unread studio alerts. All clear!
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {notifications.map((n, idx) => (
-                      <div key={n.id || idx} className="py-3 flex items-start gap-3">
-                        <div className="h-8 w-8 rounded-full bg-pink-50 text-pink-600 dark:bg-pink-950/40 flex items-center justify-center shrink-0">
-                          <Palette className="h-4 w-4" />
+                    {tenantNotifications.map((n, idx) => (
+                      <div key={n.id || idx} className="py-3 flex items-center justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <div className="h-8 w-8 rounded-full bg-pink-50 text-pink-600 dark:bg-pink-950/40 flex items-center justify-center shrink-0">
+                            <Palette className="h-4 w-4" />
+                          </div>
+                          <div className="flex-1 text-xs">
+                            <p className="font-semibold text-slate-800 dark:text-slate-200">{n.title || n.message}</p>
+                            <p className="text-slate-500 text-[11px] mt-0.5">{n.created_at || 'Recently'}</p>
+                          </div>
                         </div>
-                        <div className="flex-1 text-xs">
-                          <p className="font-semibold text-slate-800 dark:text-slate-200">{n.title || n.message}</p>
-                          <p className="text-slate-500 text-[11px] mt-0.5">{n.created_at || 'Recently'}</p>
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteNotification(n.id)}
+                          disabled={isPending}
+                          className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+                          title="Delete alert"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     ))}
                   </div>

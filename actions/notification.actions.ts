@@ -177,3 +177,38 @@ export async function deleteNotificationAction(
     }
   }
 }
+
+/**
+ * Server Action: Purge all notifications for tenant
+ */
+export async function purgeAllNotificationsAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<boolean>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return {
+        success: false,
+        error: 'Unauthorized: Valid authenticated tenant session required.',
+      }
+    }
+    const companyId = tenant.companyId
+
+    const supabase = await createClient()
+    const { error } = await (supabase.from('in_app_notifications' as any) as any)
+      .delete()
+      .eq('company_id', companyId)
+
+    if (error) {
+      console.warn('[purgeAllNotificationsAction] Delete error:', error.message)
+    }
+
+    return { success: true, data: true }
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err?.message || 'Failed to purge notifications.',
+    }
+  }
+}
+

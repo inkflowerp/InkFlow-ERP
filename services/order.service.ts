@@ -79,4 +79,10 @@ export class OrderService {
   }): Promise<JobOrderRecord> {
     return await OrderRepository.createJobOrder(data)
   }
+
+  static async purgeAllOrders(companyId: string): Promise<boolean> {
+    if (!companyId) return false
+    return await OrderRepository.purgeAllOrders(companyId)
+  }
 }
+

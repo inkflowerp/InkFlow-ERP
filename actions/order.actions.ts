@@ -360,4 +360,62 @@ export async function createNewWorkIntakeAction(
   }
 }
 
+/**
+ * Server Action: Fetch sales orders for tenant
+ */
+export async function getOrdersAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<SalesOrderRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const data = await OrderService.getOrders(tenant.companyId)
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch orders' }
+  }
+}
+
+/**
+ * Server Action: Purge all sales orders and job orders for tenant
+ */
+export async function purgeAllOrdersAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<boolean>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const ok = await OrderService.purgeAllOrders(companyId)
+    if (!ok) {
+      return { success: false, error: 'Failed to purge orders.' }
+    }
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'order.purge_all',
+        'order',
+        null,
+        null,
+        {},
+        `Purged all sales orders and job orders for company ${companyId}`
+      )
+    } catch {}
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: true }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to purge orders' }
+  }
+}
+
+
 

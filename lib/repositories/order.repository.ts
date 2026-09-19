@@ -371,4 +371,41 @@ export class OrderRepository {
     return localJob
   }
 
+  static async purgeAllOrders(companyId: string): Promise<boolean> {
+    try {
+      const supabase = await createClient()
+      await (supabase as any)
+        .from('order_timeline_events')
+        .delete()
+        .eq('company_id', companyId)
+
+      await (supabase as any)
+        .from('sales_order_items')
+        .delete()
+        .eq('company_id', companyId)
+
+      await (supabase as any)
+        .from('job_orders')
+        .delete()
+        .eq('company_id', companyId)
+
+      await (supabase as any)
+        .from('sales_orders')
+        .delete()
+        .eq('company_id', companyId)
+    } catch {
+      // Local fallback
+    }
+
+    const allOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const remainingOrders = allOrders.filter((o) => o.company_id && o.company_id !== companyId)
+    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, remainingOrders)
+
+    const allJobs = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const remainingJobs = allJobs.filter((j) => j.company_id && j.company_id !== companyId)
+    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, remainingJobs)
+
+    return true
+  }
+
 }
