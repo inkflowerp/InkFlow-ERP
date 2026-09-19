@@ -121,6 +121,7 @@ const FINISHING_OPTIONS = [
 const UNIT_OPTIONS = [
   { value: 'sft', label: 'SFT (স্কয়ার ফুট)' },
   { value: 'pcs', label: 'PCS (পিস)' },
+  { value: 'piece', label: 'Piece (পিস)' },
   { value: 'set', label: 'SET (সেট)' },
   { value: 'rft', label: 'RFT (রানিং ফুট)' },
   { value: 'roll', label: 'ROLL (রোল)' },
@@ -128,8 +129,63 @@ const UNIT_OPTIONS = [
   { value: 'box', label: 'BOX (বক্স)' },
   { value: 'pack', label: 'PACK (প্যাক)' },
   { value: 'pair', label: 'PAIR (জোড়া)' },
+  { value: 'carton', label: 'CARTON (কার্টুন)' },
+  { value: 'kg', label: 'KG (কেজি)' },
   { value: 'sqin', label: 'SQIN (ইঞ্চি)' },
 ]
+
+export function detectProductKind(p: ProductRecord | any): 'ready_product' | 'material' | 'service' {
+  if (!p) return 'service'
+
+  const isReady =
+    p.is_ready_product === true ||
+    p.entity_type === 'product' ||
+    p.entity_type === 'ready_product' ||
+    p.commercial_type === 'ready_product' ||
+    p.product_type === 'ready_product' ||
+    p.product_type === 'finished_product' ||
+    p.product_type === 'finished_good' ||
+    (!p.is_service &&
+      p.entity_type !== 'service' &&
+      p.product_type !== 'service' &&
+      p.product_type !== 'print_service' &&
+      p.product_type !== 'fabrication_service' &&
+      p.product_type !== 'installation_service' &&
+      p.product_type !== 'finishing' &&
+      p.product_type !== 'material' &&
+      p.entity_type !== 'material' &&
+      (p.unit === 'pcs' ||
+        p.unit === 'piece' ||
+        p.unit === 'set' ||
+        p.unit === 'box' ||
+        p.unit === 'pack' ||
+        p.unit === 'pair' ||
+        p.unit === 'carton' ||
+        p.unit === 'kg' ||
+        p.selling_unit === 'pcs' ||
+        p.selling_unit === 'piece' ||
+        p.selling_unit === 'set' ||
+        p.selling_unit === 'box' ||
+        p.selling_unit === 'pack' ||
+        p.selling_unit === 'pair' ||
+        p.selling_unit === 'carton' ||
+        p.selling_unit === 'kg' ||
+        p.pricing_method === 'per_piece' ||
+        p.pricing_method === 'fixed' ||
+        p.pricing_method === 'per_item' ||
+        p.pricing_method === 'per_unit'))
+
+  if (isReady) return 'ready_product'
+
+  const isMat =
+    p.entity_type === 'material' ||
+    p.product_type === 'material' ||
+    p.product_type === 'raw_material'
+
+  if (isMat) return 'material'
+
+  return 'service'
+}
 
 export function NewInvoiceModal({
   open,
@@ -340,23 +396,10 @@ export function NewInvoiceModal({
               p.name.toLowerCase() === (it.itemName || it.item_name || '').toLowerCase()
           )
 
-          const isService =
-            it.item_kind === 'service' ||
-            (it.item_kind !== 'ready_product' &&
-              it.item_kind !== 'material' &&
-              Boolean(Number(it.width) > 0 && Number(it.height) > 0)) ||
-            matchingProduct?.product_type === 'service' ||
-            matchingProduct?.product_type === 'print_service' ||
-            matchingProduct?.product_type === 'fabrication_service'
-          const isReady =
-            it.item_kind === 'ready_product' ||
-            matchingProduct?.product_type === 'ready_product' ||
-            matchingProduct?.product_type === 'finished_product' ||
-            (matchingProduct?.product_type as any) === 'finished_good'
-          const isMat =
-            it.item_kind === 'material' ||
-            (matchingProduct?.product_type as any) === 'raw_material' ||
-            matchingProduct?.product_type === 'material'
+          const detectedKind = matchingProduct ? detectProductKind(matchingProduct) : undefined
+          const isReady = it.item_kind === 'ready_product' || detectedKind === 'ready_product'
+          const isMat = !isReady && (it.item_kind === 'material' || detectedKind === 'material')
+          const isService = !isReady && !isMat
 
           // Strictly prioritize the rate filled on the order / invoice request
           const resolvedRate =
@@ -369,17 +412,17 @@ export function NewInvoiceModal({
           return {
             id: `item-${Date.now()}-${idx + 1}`,
             productId: matchingProduct?.id || it.productId || it.product_id || '',
-            item_kind: isService ? 'service' : isReady ? 'ready_product' : isMat ? 'material' : 'service',
+            item_kind: isReady ? 'ready_product' : isMat ? 'material' : 'service',
             product_type: matchingProduct?.product_type || it.product_type,
-            itemName: it.itemName || it.item_name || matchingProduct?.name || 'Printing Service Item',
+            itemName: it.itemName || it.item_name || matchingProduct?.name || (isReady ? 'Ready Display Product' : 'Printing Service Item'),
             dimensions_spec: it.dimensions_spec || (matchingProduct as any)?.dimensions_spec || undefined,
-            width: String(it.width ?? (isService ? '4' : '0')),
-            height: String(it.height ?? (isService ? '6' : '0')),
-            dimension_unit: it.dimension_unit || (matchingProduct?.service_config?.default_unit as any) || 'ft',
+            width: String(isReady || isMat ? '0' : (it.width ?? '4')),
+            height: String(isReady || isMat ? '0' : (it.height ?? '6')),
+            dimension_unit: isReady ? (it.unit || matchingProduct?.selling_unit || 'pcs') : (it.dimension_unit || (matchingProduct?.service_config?.default_unit as any) || 'ft'),
             quantity: Number(it.quantity) || 1,
-            unit: it.unit || matchingProduct?.selling_unit || matchingProduct?.unit || (isService ? 'sft' : 'pcs'),
+            unit: it.unit || matchingProduct?.selling_unit || matchingProduct?.unit || (isReady ? 'pcs' : isMat ? 'roll' : 'sft'),
             rate: resolvedRate,
-            finishing: it.finishing || 'None',
+            finishing: isReady ? 'None' : (it.finishing || 'None'),
             rateSource: it.rate || it.unit_price ? 'custom' : matchingProduct ? 'default' : 'manual',
             available_dimension_presets:
               matchingProduct?.service_config?.dimension_presets ||
@@ -393,9 +436,9 @@ export function NewInvoiceModal({
               it.material_spec ||
               matchingProduct?.service_config?.printable_material_name ||
               (matchingProduct as any)?.material_spec,
-            design_required: Boolean(it.design_required),
-            customer_approval_required: it.customer_approval_required !== false,
-            workflow_routing: it.workflow_routing || (isReady ? 'ready_product' : it.design_required ? 'design_required' : 'design_ok'),
+            design_required: isService && Boolean(it.design_required),
+            customer_approval_required: isService && it.customer_approval_required !== false,
+            workflow_routing: isReady ? 'ready_product' : isMat ? 'ready_production' : (it.workflow_routing || (it.design_required ? 'design_required' : 'design_ok')),
             showAdvanced: Boolean(it.showAdvanced),
           }
         })
@@ -529,41 +572,17 @@ export function NewInvoiceModal({
   }
 
   // Categorized product catalog lists
-  const servicesList = useMemo(() => {
-    return products.filter(
-      (p) =>
-        p.is_service ||
-        p.entity_type === 'service' ||
-        p.product_type === 'service' ||
-        p.product_type === 'print_service' ||
-        p.product_type === 'fabrication_service' ||
-        p.product_type === 'installation_service' ||
-        p.pricing_method?.startsWith('per_') ||
-        p.unit === 'sft' ||
-        p.unit === 'sqft' ||
-        p.unit === 'rft'
-    )
-  }, [products])
-
   const readyProductsList = useMemo(() => {
-    return products.filter(
-      (p) =>
-        p.is_ready_product ||
-        p.entity_type === 'product' ||
-        p.commercial_type === 'ready_product' ||
-        p.product_type === 'ready_product' ||
-        p.product_type === 'finished_product'
-    )
+    return products.filter((p) => detectProductKind(p) === 'ready_product')
   }, [products])
 
   const materialsList = useMemo(() => {
-    return products.filter(
-      (p) =>
-        p.entity_type === 'material' ||
-        p.product_type === 'material' ||
-        (!servicesList.some((s) => s.id === p.id) && !readyProductsList.some((r) => r.id === p.id))
-    )
-  }, [products, servicesList, readyProductsList])
+    return products.filter((p) => detectProductKind(p) === 'material')
+  }, [products])
+
+  const servicesList = useMemo(() => {
+    return products.filter((p) => detectProductKind(p) === 'service')
+  }, [products])
 
   // Line Item Handlers
   const handleProductSelect = (index: number, productId: string) => {
@@ -606,34 +625,10 @@ export function NewInvoiceModal({
         }
       }
 
-      const isService =
-        prd.is_service ||
-        prd.entity_type === 'service' ||
-        prd.product_type === 'service' ||
-        prd.product_type === 'print_service' ||
-        prd.product_type === 'fabrication_service' ||
-        prd.product_type === 'installation_service' ||
-        prd.pricing_method?.startsWith('per_') ||
-        prd.unit === 'sft' ||
-        prd.unit === 'sqft' ||
-        prd.unit === 'rft'
-
-      const isReady =
-        prd.is_ready_product ||
-        prd.entity_type === 'product' ||
-        prd.commercial_type === 'ready_product' ||
-        prd.product_type === 'ready_product' ||
-        prd.product_type === 'finished_product'
-
-      const isMat = prd.entity_type === 'material' || prd.product_type === 'material'
-
-      const itemKind: 'service' | 'ready_product' | 'material' | 'custom' = isService
-        ? 'service'
-        : isReady
-        ? 'ready_product'
-        : isMat
-        ? 'material'
-        : 'service'
+      const itemKind = detectProductKind(prd)
+      const isReady = itemKind === 'ready_product'
+      const isMat = itemKind === 'material'
+      const isService = itemKind === 'service'
 
       // Tier price resolution for ready products if not overridden by rate map
       if (isReady && prd.price_tiers && rateSrc === 'default') {
@@ -669,9 +664,9 @@ export function NewInvoiceModal({
         prd.printable_material_name ||
         prd.material_spec
 
-      let w = isReady ? '0' : (current.width || '4')
-      let h = isReady ? '0' : (current.height || '6')
-      let dimUnit = current.dimension_unit || (prd.service_config?.default_unit as any) || 'ft'
+      let w = isReady || isMat ? '0' : (current.width && current.width !== '0' ? current.width : '4')
+      let h = isReady || isMat ? '0' : (current.height && current.height !== '0' ? current.height : '6')
+      let dimUnit = isReady ? (prd.selling_unit || prd.unit || 'pcs') : (current.dimension_unit || (prd.service_config?.default_unit as any) || 'ft')
 
       if (isService && (!current.width || current.width === '0') && (!current.height || current.height === '0')) {
         if (dimensionPresets.length > 0) {
@@ -686,6 +681,8 @@ export function NewInvoiceModal({
 
       const prdUnit = isReady
         ? prd.selling_unit || prd.unit || (prd as any).unit_of_measure || 'pcs'
+        : isMat
+        ? prd.purchase_unit || prd.unit || 'roll'
         : prd.selling_unit || prd.unit || (prd as any).unit_of_measure || 'sft'
 
       next[index] = {
@@ -706,12 +703,13 @@ export function NewInvoiceModal({
         pcs_per_carton: (prd as any).pcs_per_carton || undefined,
         unit_cost: Number(prd.effective_unit_cost ?? prd.base_cost) || 0,
         isManualRate: false,
-        workflow_routing: itemKind === 'ready_product' ? 'ready_product' : (current.workflow_routing || 'design_required'),
-        design_required: itemKind === 'ready_product' ? false : current.design_required !== false,
-        customer_approval_required: itemKind === 'ready_product' ? false : current.customer_approval_required !== false,
+        workflow_routing: isReady ? 'ready_product' : isMat ? 'ready_production' : (current.workflow_routing || 'design_required'),
+        design_required: isService,
+        customer_approval_required: isService,
         available_dimension_presets: dimensionPresets,
         available_finishing_options: finishingOptions,
         printable_material_name: printableMaterial || undefined,
+        finishing: isReady ? 'None' : (current.finishing || 'None'),
       }
       return next
     })
@@ -727,9 +725,11 @@ export function NewInvoiceModal({
         workflow_routing: newKind === 'ready_product' ? 'ready_product' : 'design_required',
         design_required: newKind === 'service',
         customer_approval_required: newKind === 'service',
-        width: newKind === 'service' ? (current.width || '4') : '0',
-        height: newKind === 'service' ? (current.height || '6') : '0',
+        width: newKind === 'service' ? (current.width && current.width !== '0' ? current.width : '4') : '0',
+        height: newKind === 'service' ? (current.height && current.height !== '0' ? current.height : '6') : '0',
         unit: newKind === 'service' ? 'sft' : 'pcs',
+        dimension_unit: newKind === 'service' ? 'ft' : 'pcs',
+        finishing: newKind === 'ready_product' ? 'None' : (current.finishing || 'None'),
       }
       return next
     })
@@ -1738,11 +1738,16 @@ export function NewInvoiceModal({
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
                           <option value="pcs">pcs (পিস)</option>
+                          <option value="piece">piece (পিস)</option>
                           <option value="set">set (সেট)</option>
-                          <option value="pack">pack (প্যাক)</option>
                           <option value="box">box (বক্স)</option>
+                          <option value="pack">pack (প্যাক)</option>
                           <option value="pair">pair (জোড়া)</option>
                           <option value="carton">carton (কার্টুন)</option>
+                          <option value="kg">kg (কেজি)</option>
+                          <option value="sheet">sheet (শিট)</option>
+                          <option value="roll">roll (রোল)</option>
+                          <option value="bag">bag (ব্যাগ)</option>
                         </select>
                       </div>
 
