@@ -233,40 +233,58 @@ export class AuthService {
       const admin = createAdminClient()
       let userId: string | null = null
 
-      // Check if user already exists in auth.users
-      let existingUser: any = null
+      // 1. Check if user already exists in user_profiles
+      let existingProfile: any = null
       try {
-        const { data: userList } = await admin.auth.admin.listUsers()
-        existingUser = userList?.users?.find(
-          (u) => u.email?.toLowerCase() === normalizedEmail
-        )
-      } catch (listErr) {
-        console.warn('[AuthService] listUsers error:', listErr)
-      }
+        const { data: prof } = await (admin as any)
+          .from('user_profiles')
+          .select('id, email, full_name, phone, is_active')
+          .eq('email', normalizedEmail)
+          .maybeSingle()
+        if (prof) existingProfile = prof
+      } catch {}
 
-      if (existingUser) {
-        const isConfirmed = Boolean(existingUser.email_confirmed_at || existingUser.confirmed_at)
-        if (isConfirmed) {
-          return { success: false, error: 'An account with this email already exists. Please sign in.' }
+      if (existingProfile?.id) {
+        // Check if user belongs to an active company
+        let hasActiveCompany = false
+        try {
+          const { data: memberships } = await (admin as any)
+            .from('company_users')
+            .select('id, status, company_id')
+            .eq('user_id', existingProfile.id)
+            .eq('status', 'active')
+            .limit(1)
+          if (memberships && memberships.length > 0) {
+            hasActiveCompany = true
+          }
+        } catch {}
+
+        if (hasActiveCompany) {
+          return {
+            success: false,
+            error: 'An account with this email address has already been registered with an active organization. Please sign in.',
+          }
         }
 
-        // Account exists but email is unconfirmed: update password/profile and re-dispatch verification
-        userId = existingUser.id
-        try {
-          await admin.auth.admin.updateUserById(existingUser.id, {
-            password,
-            email_confirm: false,
-            user_metadata: {
-              full_name: fullName,
-              phone: phone || null,
-              preferred_locale: 'bn',
-            },
-          })
-        } catch (updateErr) {
-          console.warn('[AuthService] updateUserById error:', updateErr)
+        // User exists in auth but has no active company (e.g. previous company was deleted or onboarding incomplete)
+        // Allow them to reuse their account: update password & profile, and re-dispatch verification
+        userId = existingProfile.id
+        if (userId) {
+          try {
+            await admin.auth.admin.updateUserById(userId, {
+              password,
+              user_metadata: {
+                full_name: fullName,
+                phone: phone || null,
+                preferred_locale: 'bn',
+              },
+            })
+          } catch (updateErr) {
+            console.warn('[AuthService] updateUserById error:', updateErr)
+          }
         }
       } else {
-        // 1. Create user in Supabase Auth via Admin client (email_confirm: false until verified)
+        // 2. Create user in Supabase Auth via Admin client (email_confirm: false until verified)
         const { data: newAuthData, error: createAuthErr } = await admin.auth.admin.createUser({
           email: normalizedEmail,
           password,
@@ -282,26 +300,17 @@ export class AuthService {
           if (isTestEnvironment()) {
             userId = `test-user-${normalizedEmail}`
           } else {
-            // Check if error is user already registered
+            // If user already registered in Supabase Auth but not in user_profiles
             if (createAuthErr?.message?.toLowerCase().includes('already registered')) {
-              try {
-                const { data: retryList } = await admin.auth.admin.listUsers()
-                const found = retryList?.users?.find((u) => u.email?.toLowerCase() === normalizedEmail)
-                if (found) {
-                  const isConfirmed = Boolean(found.email_confirmed_at || found.confirmed_at)
-                  if (isConfirmed) {
-                    return { success: false, error: 'An account with this email already exists. Please sign in.' }
-                  }
-                  userId = found.id
-                }
-              } catch {}
-            }
-
-            if (!userId) {
               return {
                 success: false,
-                error: createAuthErr?.message || 'Registration failed',
+                error: 'An account with this email already exists. Please sign in to your workspace or complete setup.',
               }
+            }
+
+            return {
+              success: false,
+              error: createAuthErr?.message || 'Registration failed',
             }
           }
         } else {
