@@ -1041,7 +1041,7 @@ export function ServiceConfigModal({
       setDimensionUnit(cfg.dimension_unit || 'ft')
       setAllowCustomDimensions(cfg.allow_custom_dimensions !== false)
       setAvailableRollWidths(cfg.available_widths_ft || initialData.available_widths_ft || [3.25, 4.25, 5.25, 6, 10])
-      setExtraWidthAllowance(cfg.extra_width_allowance_ft ?? (initialData.production_width_allowance ?? 0.25))
+      setExtraWidthAllowance(cfg.extra_width_allowance_ft != null ? cfg.extra_width_allowance_ft : (initialData.production_width_allowance != null ? initialData.production_width_allowance : 0))
       setStandardRollLength(cfg.standard_roll_length_ft || initialData.standard_roll_length_ft || 164)
       setAvailableSheetSizes(cfg.available_sheet_sizes || [
         { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
@@ -1192,7 +1192,7 @@ export function ServiceConfigModal({
     const rLength = mat.standard_roll_length_ft || (mat as any).material_config?.standard_roll_length_ft || (mat as any).length || 164
     setStandardRollLength(rLength)
 
-    const extraAllowance = (mat as any).production_width_allowance ?? (mat as any).material_config?.extra_width_allowance_ft ?? 0.25
+    const extraAllowance = (mat as any).production_width_allowance !== undefined ? (mat as any).production_width_allowance : ((mat as any).material_config?.extra_width_allowance_ft !== undefined ? (mat as any).material_config.extra_width_allowance_ft : 0)
     setExtraWidthAllowance(extraAllowance)
 
     // 3. Available Sheet Sizes
@@ -1956,7 +1956,7 @@ export function ServiceConfigModal({
         dimension_unit: dimensionUnit,
         allow_custom_dimensions: allowCustomDimensions,
         available_widths_ft: purchaseUnit === 'roll' ? availableRollWidths : undefined,
-        extra_width_allowance_ft: purchaseUnit === 'roll' ? (Number(extraWidthAllowance) || 0.25) : undefined,
+        extra_width_allowance_ft: purchaseUnit === 'roll' ? (extraWidthAllowance !== '' && !isNaN(Number(extraWidthAllowance)) ? Number(extraWidthAllowance) : 0) : undefined,
         standard_roll_length_ft: purchaseUnit === 'roll' ? (Number(standardRollLength) || 164) : undefined,
         available_sheet_sizes: purchaseUnit === 'sheet' ? availableSheetSizes : undefined,
         required_materials: requiredMaterials,
@@ -2087,8 +2087,8 @@ export function ServiceConfigModal({
         default_wastage_percentage: defaultWastagePercent,
         available_widths_ft: purchaseUnit === 'roll' ? availableRollWidths : undefined,
         standard_roll_length_ft: purchaseUnit === 'roll' ? (Number(standardRollLength) || 164) : undefined,
-        production_width_allowance: purchaseUnit === 'roll' ? (Number(extraWidthAllowance) || 0.25) : undefined,
-        production_length_allowance: purchaseUnit === 'roll' ? (Number(extraWidthAllowance) || 0.25) : undefined,
+        production_width_allowance: purchaseUnit === 'roll' ? (extraWidthAllowance !== '' && !isNaN(Number(extraWidthAllowance)) ? Number(extraWidthAllowance) : 0) : undefined,
+        production_length_allowance: purchaseUnit === 'roll' ? (extraWidthAllowance !== '' && !isNaN(Number(extraWidthAllowance)) ? Number(extraWidthAllowance) : 0) : undefined,
         allowance_unit: 'ft',
         vat_applicable: vatApplicable,
         is_tax_inclusive: isTaxInclusive,
