@@ -48,11 +48,13 @@ import type {
 } from '@/types/design.types'
 import type { InvoiceRecord } from '@/types/billing.types'
 import type { InvoiceRequestRecord } from '@/types/workflow.types'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { cn } from '@/lib/utils'
 
 import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
-import { markDesignReadyAction } from '@/actions/design.actions'
+import { markDesignReadyAction, sendToPrintOperatorAction } from '@/actions/design.actions'
+import { Printer } from 'lucide-react'
 
 export default function DesignDetailPage() {
   const params = useParams()
@@ -287,6 +289,30 @@ export default function DesignDetailPage() {
     showNotification(`Version ${activeVersionNumber} officially approved & locked for production!`)
   }
 
+  // Action: Send to Print Operator Queue
+  const handleSendToPrint = async () => {
+    startTransition(async () => {
+      try {
+        const res = await sendToPrintOperatorAction(job.id, job.company_id)
+        if (!res.success) {
+          showNotification(res.error || 'Failed to send to print operator', 'warning')
+          return
+        }
+
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
+          status: 'approved',
+          workflow_routing: 'ready_production',
+          is_locked: true,
+          updated_at: new Date().toISOString(),
+        })
+
+        showNotification(`Job #${job.design_number} queued for Print Floor Operators!`)
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to send to print operator', 'warning')
+      }
+    })
+  }
+
   // Unlock by Supervisor
   const handleToggleLock = () => {
     const nextLocked = !job.is_locked
@@ -368,6 +394,19 @@ export default function DesignDetailPage() {
                   <AlertCircle className="h-3 w-3" /> Invoice Required
                 </span>
               )}
+
+              {/* INTAKE SOURCE BADGE */}
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-xs font-semibold px-2.5 py-0.5',
+                  job.intake_source === 'manager_billing'
+                    ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300'
+                    : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300'
+                )}
+              >
+                Source: {job.intake_source === 'manager_billing' ? 'Manager/Billing' : 'Direct Customer'}
+              </Badge>
 
               {job.is_locked && (
                 <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
@@ -462,6 +501,19 @@ export default function DesignDetailPage() {
               >
                 <Unlock className="h-3.5 w-3.5 mr-1" />
                 Supervisor Unlock
+              </Button>
+            )}
+
+            {/* Send to Print Operator when gates are cleared */}
+            {hasInvoice && (job.status === 'approved' || job.is_locked || job.customer_approval_required === false) && (
+              <Button
+                size="sm"
+                onClick={handleSendToPrint}
+                disabled={isPending}
+                className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
+              >
+                <Printer className="h-3.5 w-3.5 mr-1" />
+                Send to Print Floor
               </Button>
             )}
           </div>

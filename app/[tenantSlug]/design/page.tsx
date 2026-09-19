@@ -170,6 +170,18 @@ export default function DesignDashboardPage() {
 
             <Button
               size="sm"
+              variant="outline"
+              asChild
+              className="text-xs border-indigo-300 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100"
+            >
+              <Link href={`/${slug}/designer`}>
+                <Sparkles className="mr-1.5 h-3.5 w-3.5 text-indigo-600" />
+                {tBilingual('Designer Workbench', 'ডিজাইনার ওয়ার্কবেঞ্চ')}
+              </Link>
+            </Button>
+
+            <Button
+              size="sm"
               onClick={() => setIsWorkOrderOpen(true)}
               className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text shadow-xs"
             >

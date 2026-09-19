@@ -46,6 +46,9 @@ export interface InvoiceItemRecord {
   finishing?: string | null
   selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
   selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
+  design_required?: boolean
+  customer_approval_required?: boolean
+  design_job_id?: string | null
 }
 
 export type FinancialPersistenceMode = 'production' | 'training' | 'test'

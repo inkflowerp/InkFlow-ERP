@@ -24,6 +24,7 @@ import {
   FileText,
   Clock,
   Layers,
+  Palette,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -82,6 +83,8 @@ interface ItemRowState {
   printable_material_name?: string
   showAdvanced?: boolean
   isManualRate?: boolean
+  design_required?: boolean
+  customer_approval_required?: boolean
 }
 
 const FINISHING_OPTIONS = [
@@ -772,6 +775,8 @@ export function NewInvoiceModal({
       moq: it.moq || undefined,
       unit_cost: it.unit_cost || undefined,
       finishing: it.finishing,
+      design_required: Boolean(it.design_required),
+      customer_approval_required: it.customer_approval_required !== false,
       total_price: it.lineTotal,
     }))
 
@@ -1702,6 +1707,52 @@ export function NewInvoiceModal({
                       <span>Linked Substrate: <strong>{item.printable_material_name}</strong></span>
                     </div>
                   )}
+
+                  {/* WORKFLOW GATING CONFIGURATION PER ITEM */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-slate-100/70 dark:bg-slate-900/80 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <label className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(item.design_required)}
+                          onChange={(e) => {
+                            const val = e.target.checked
+                            handleItemChange(index, 'design_required', val)
+                            if (val && item.customer_approval_required === undefined) {
+                              handleItemChange(index, 'customer_approval_required', true)
+                            }
+                          }}
+                          className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
+                        />
+                        <span className="flex items-center gap-1">
+                          <Palette className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                          Design Required (ডিজাইন প্রয়োজন)
+                        </span>
+                      </label>
+
+                      {item.design_required && (
+                        <label className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 cursor-pointer select-none pl-2 border-l border-slate-300 dark:border-slate-700 animate-in fade-in-0">
+                          <input
+                            type="checkbox"
+                            checked={item.customer_approval_required !== false}
+                            onChange={(e) => handleItemChange(index, 'customer_approval_required', e.target.checked)}
+                            className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
+                          />
+                          <span>Customer Approval Required (অনুমোদন প্রয়োজন)</span>
+                        </label>
+                      )}
+                    </div>
+
+                    {item.design_required ? (
+                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold">
+                        Auto Designer Task
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">
+                        Direct Production Ready
+                      </Badge>
+                    )}
+                  </div>
 
                   {/* Advanced Specs Drawer */}
                   {(item.showAdvanced || isAdvancedMode) && (

@@ -48,6 +48,8 @@ export interface CreateInvoiceItemInput {
   unit_cost?: number
   finishing?: string
   selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }>
+  design_required?: boolean
+  customer_approval_required?: boolean
   total_price?: number
 }
 
@@ -297,6 +299,8 @@ export async function createInvoiceAction(
         vat_percentage: 0,
         total_price: lineTotal,
         finishing: it.finishing || null,
+        design_required: Boolean(it.design_required),
+        customer_approval_required: Boolean(it.customer_approval_required),
       }
     })
 

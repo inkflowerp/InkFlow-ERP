@@ -597,7 +597,7 @@ export class BillingRepository {
             id: generateUUID(),
             invoice_id: data.id,
             product_id: it.product_id ? (mode === 'production' && !isValidUUID(it.product_id) ? null : it.product_id) : null,
-            item_description: it.item_description || it.item_name || 'Printing Item',
+            item_description: it.item_description || it.description || it.item_name || 'Printing Item',
             dimensions_spec:
               it.dimensions_spec ||
               (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
@@ -607,6 +607,9 @@ export class BillingRepository {
             vat_percentage: Number(it.vat_percentage) || 0,
             total_price: Number(it.total_price) || (Number(it.quantity) * Number(it.unit_price)),
             finishing: it.finishing || null,
+            design_required: Boolean(it.design_required),
+            customer_approval_required: Boolean(it.customer_approval_required),
+            design_job_id: it.design_job_id || null,
           }))
 
           let itemsRes = await (supabase as any).from('invoice_items').insert(itemsPayload)
@@ -692,7 +695,7 @@ export class BillingRepository {
         id: it.id || generateUUID(),
         invoice_id: payload.id,
         product_id: it.product_id || null,
-        item_description: it.item_description || it.item_name || 'Printing Item',
+        item_description: it.item_description || it.description || it.item_name || 'Printing Item',
         dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
         quantity: Number(it.quantity) || 1,
         unit: it.unit || 'pcs',
@@ -700,6 +703,9 @@ export class BillingRepository {
         vat_percentage: Number(it.vat_percentage) || 0,
         total_price: Number(it.total_price) || (Number(it.quantity) * Number(it.unit_price)),
         finishing: it.finishing || null,
+        design_required: Boolean(it.design_required),
+        customer_approval_required: Boolean(it.customer_approval_required),
+        design_job_id: it.design_job_id || null,
         created_at: new Date().toISOString(),
       })),
       payments: [],
@@ -745,7 +751,7 @@ export class BillingRepository {
   ): Promise<void> {
     try {
       const { InvoiceRequestRepository } = await import('./invoice-request.repository.ts')
-      // 1. Resolve pending invoice requests linked to this sales_order_id, job_order_id, or customer
+      // 1. Resolve pending invoice requests linked to this sales_order_id, job_order_id, or design_jobs
       await InvoiceRequestRepository.resolveRequestWithInvoice(
         {
           salesOrderId: invoice.sales_order_id || undefined,
@@ -755,6 +761,19 @@ export class BillingRepository {
         invoice.invoice_number,
         companyId
       )
+
+      if (invoice.items && Array.isArray(invoice.items)) {
+        for (const it of invoice.items) {
+          if (it.design_job_id) {
+            await InvoiceRequestRepository.resolveRequestWithInvoice(
+              { designJobId: it.design_job_id },
+              invoice.id,
+              invoice.invoice_number,
+              companyId
+            )
+          }
+        }
+      }
 
       // 2. Update Sales Order
       if (invoice.sales_order_id) {
@@ -788,18 +807,128 @@ export class BillingRepository {
         }
       }
 
-      // 3. Update Design Jobs linked to sales_order or customer
+      // 3. Update Design Jobs linked to sales_order, items, or customer
       const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
       for (const dj of designJobs) {
+        const itemMatch = invoice.items?.some((it: any) => it.design_job_id === dj.id)
         if (
           dj.company_id === companyId &&
-          (dj.sales_order_id === invoice.sales_order_id || (dj.customer_id && dj.customer_id === invoice.customer_id))
+          (dj.sales_order_id === invoice.sales_order_id || itemMatch || (dj.customer_id && dj.customer_id === invoice.customer_id))
         ) {
           dj.commercial_status = 'invoice_created'
           dj.invoice_id = invoice.id
           dj.invoice_number = invoice.invoice_number
         }
       }
+
+      // 3b. Automatic Design Job Creation for invoice items marked Design Required
+      if (invoice.items && Array.isArray(invoice.items)) {
+        const designItems = invoice.items.filter((it: any) => it.design_required === true)
+        for (let i = 0; i < designItems.length; i++) {
+          const it = designItems[i]
+          const existingJob = designJobs.find(
+            (dj) => (it.design_job_id && dj.id === it.design_job_id) || (dj.invoice_id === invoice.id && dj.title === (it.item_description || (it as any).description || (it as any).item_name))
+          )
+
+          if (!existingJob) {
+            const dsnId = `dsn-${Date.now()}-${i + 1}`
+            const dsnNum = `DSN-${invoice.invoice_number.replace('INV-', '')}${designItems.length > 1 ? `-${i + 1}` : ''}`
+            const newDesignJob: any = {
+              id: dsnId,
+              company_id: companyId,
+              invoice_id: invoice.id,
+              invoice_number: invoice.invoice_number,
+              sales_order_id: invoice.sales_order_id || null,
+              order_number: invoice.order_number || null,
+              customer_id: invoice.customer_id || null,
+              customer_name: invoice.customer_name,
+              design_number: dsnNum,
+              title: it.item_description || (it as any).description || (it as any).item_name || 'Design Required Item',
+              dimensions_spec: it.dimensions_spec || null,
+              product_name: it.item_name || null,
+              material: it.item_name || null,
+              finishing: it.finishing || null,
+              quantity: it.quantity || 1,
+              unit: it.unit || 'pcs',
+              designer_name: 'Design Team',
+              priority: 'normal',
+              status: 'received',
+              workflow_routing: 'design_required',
+              commercial_status: 'invoice_created',
+              intake_source: 'manager_billing',
+              customer_approval_required: it.customer_approval_required !== false,
+              deadline: invoice.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+              current_version: 1,
+              revision_count: 0,
+              is_locked: false,
+              versions: [
+                {
+                  id: `dv-${Date.now()}-${i + 1}`,
+                  design_job_id: dsnId,
+                  version_number: 1,
+                  version_label: 'Version 1 (Initial Brief)',
+                  proof_file_name: 'customer_brief.pdf',
+                  proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                  file_format: 'ai',
+                  change_notes: 'Design task automatically created from invoice line item.',
+                  uploaded_by_name: invoice.created_by_name || 'Manager / Billing',
+                  is_approved: false,
+                  created_at: new Date().toISOString(),
+                },
+              ],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+
+            designJobs.unshift(newDesignJob)
+
+            try {
+              const supabase = await createClient()
+              await (supabase as any).from('design_jobs').insert({
+                id: newDesignJob.id,
+                company_id: companyId,
+                invoice_id: invoice.id,
+                invoice_number: invoice.invoice_number,
+                sales_order_id: invoice.sales_order_id || null,
+                customer_id: invoice.customer_id || null,
+                customer_name: invoice.customer_name,
+                design_number: dsnNum,
+                title: newDesignJob.title,
+                dimensions_spec: newDesignJob.dimensions_spec,
+                status: 'received',
+                workflow_routing: 'design_required',
+                commercial_status: 'invoice_created',
+                intake_source: 'manager_billing',
+                customer_approval_required: newDesignJob.customer_approval_required,
+                deadline: newDesignJob.deadline,
+                current_version: 1,
+                revision_count: 0,
+                is_locked: false,
+              })
+            } catch {}
+
+            // Send Designer In-App notification
+            try {
+              const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+              notifs.unshift({
+                id: `notif-${Date.now()}-${i + 1}`,
+                company_id: companyId,
+                user_id: null,
+                type: 'design_assigned',
+                title: `New Design Task: ${dsnNum}`,
+                title_bn: `নতুন ডিজাইন টাস্ক: ${dsnNum}`,
+                message: `Invoice ${invoice.invoice_number} created with design required for ${invoice.customer_name} (${newDesignJob.title}).`,
+                message_bn: `ইনভয়েস ${invoice.invoice_number}-এ ${invoice.customer_name}-এর জন্য ডিজাইন রিকোয়ার্ড যুক্ত হয়েছে।`,
+                action_url: `/${companyId}/designer?jobId=${dsnId}`,
+                is_read: false,
+                created_at: new Date().toISOString(),
+              })
+              PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
+            } catch {}
+          }
+        }
+      }
+
       PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
 
       try {

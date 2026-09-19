@@ -91,5 +91,14 @@ export class DesignService {
     if (!id || !companyId) return null
     return await DesignRepository.updateDesignJob(id, companyId, updates)
   }
+
+  static async sendToPrintOperator(
+    id: string,
+    companyId: string,
+    actorName: string = 'Designer'
+  ): Promise<{ success: boolean; error?: string; designJob?: DesignJobRecord }> {
+    if (!id || !companyId) return { success: false, error: 'Design job ID and company context required.' }
+    return await DesignRepository.sendToPrintOperator(id, companyId, actorName)
+  }
 }
 

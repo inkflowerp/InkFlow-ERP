@@ -187,3 +187,47 @@ export async function getDesignJobByIdAction(
     return { success: false, error: error.message || 'Failed to fetch design job' }
   }
 }
+
+/**
+ * Server Action: Send approved and invoiced design to print operator queue
+ */
+export async function sendToPrintOperatorAction(
+  designJobId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<DesignJobRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const result = await DesignService.sendToPrintOperator(designJobId, companyId, tenant.fullName || 'Designer')
+    if (!result.success) {
+      return { success: false, error: result.error || 'Failed to send to print operator' }
+    }
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'design.send_to_print',
+        'design_job',
+        designJobId,
+        null,
+        {
+          design_number: result.designJob?.design_number,
+          status: result.designJob?.status,
+        },
+        `Sent design ${result.designJob?.design_number} to Print Operator queue`
+      )
+    } catch {}
+
+    revalidatePath('/', 'layout')
+    return { success: true, data: result.designJob }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to send to print operator' }
+  }
+}
+

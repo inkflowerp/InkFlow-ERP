@@ -79,6 +79,16 @@ export interface DesignJobRecord {
   invoice_id?: string | null
   invoice_number?: string | null
   invoice_request_id?: string | null
+  intake_source?: 'direct_customer' | 'manager_billing'
+  customer_approval_required?: boolean
+  invoice_item_id?: string | null
+  product_name?: string | null
+  material?: string | null
+  finishing?: string | null
+  quantity?: number | null
+  unit?: string | null
+  items_summary?: string | null
+  work_order_id?: string | null
   is_invoice_created?: boolean
   versions: DesignVersionRecord[]
   feedback_logs?: DesignFeedbackRecord[]
