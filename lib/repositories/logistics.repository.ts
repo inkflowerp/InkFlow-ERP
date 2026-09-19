@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { DeliveryChallanRecord, InstallationRecord } from '@/types/logistics.types'
+import { DeliveryChallanRecord, InstallationRecord, DeliveryStatus } from '@/types/logistics.types'
 import { BillingRepository } from '@/lib/repositories/billing.repository'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 

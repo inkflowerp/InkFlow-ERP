@@ -1,6 +1,7 @@
 import {
   DeliveryChallanRecord,
   InstallationRecord,
+  DeliveryStatus,
 } from '@/types/logistics.types'
 import { LogisticsRepository } from '@/lib/repositories/logistics.repository'
 
