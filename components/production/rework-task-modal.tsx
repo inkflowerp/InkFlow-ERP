@@ -70,7 +70,7 @@ export function ReworkTaskModal({
         notes: notes.trim() || undefined,
       }
 
-      const res = await reworkProductionTaskAction(input)
+      const res = await reworkProductionTaskAction(input, undefined, task)
       if (!res.success || !res.data) {
         setErrorMessage(res.error || 'Failed to create rework ticket.')
         return

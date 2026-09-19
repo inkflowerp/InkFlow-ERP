@@ -48,7 +48,8 @@ export async function getProductionTasksAction(
  */
 export async function getProductionTaskByIdAction(
   id: string,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
@@ -57,7 +58,7 @@ export async function getProductionTaskByIdAction(
     }
     const companyId = tenant.companyId
 
-    const task = await ProductionPlanningService.getTaskById(id, companyId)
+    const task = await ProductionPlanningService.getTaskById(id, companyId, taskPayload)
     if (!task) {
       return { success: false, error: 'Production task not found.' }
     }
@@ -112,7 +113,8 @@ export async function createProductionTaskAction(
  */
 export async function scheduleProductionTaskAction(
   input: ScheduleTaskInput,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
@@ -123,7 +125,7 @@ export async function scheduleProductionTaskAction(
     const userId = tenant.userId
     const userEmail = tenant.userEmail || null
 
-    const task = await ProductionPlanningService.scheduleTask(input, companyId)
+    const task = await ProductionPlanningService.scheduleTask(input, companyId, taskPayload)
 
     try {
       await AuditService.logEvent(
@@ -152,7 +154,8 @@ export async function scheduleProductionTaskAction(
 export async function startProductionTaskAction(
   taskId: string,
   forceOverride: boolean = false,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
@@ -169,7 +172,8 @@ export async function startProductionTaskAction(
       companyId,
       userId,
       userName,
-      forceOverride
+      forceOverride,
+      taskPayload
     )
 
     try {
@@ -200,7 +204,8 @@ export async function startProductionTaskAction(
 export async function pauseProductionTaskAction(
   taskId: string,
   reason: string,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
@@ -209,7 +214,7 @@ export async function pauseProductionTaskAction(
     }
     const companyId = tenant.companyId
 
-    const task = await ProductionPlanningService.pauseTask(taskId, reason, companyId)
+    const task = await ProductionPlanningService.pauseTask(taskId, reason, companyId, taskPayload)
 
     revalidatePath('/[tenantSlug]/production', 'layout')
     revalidatePath('/[tenantSlug]/operator', 'layout')
@@ -229,7 +234,8 @@ export async function completeProductionTaskAction(
     rejected_quantity?: number
     notes?: string
   },
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<
   ServerActionResult<{
     completedTask: ProductionTaskRecord
@@ -245,7 +251,7 @@ export async function completeProductionTaskAction(
     const userId = tenant.userId
     const userEmail = tenant.userEmail || null
 
-    const result = await ProductionPlanningService.completeTask(taskId, companyId, completionData)
+    const result = await ProductionPlanningService.completeTask(taskId, companyId, completionData, taskPayload)
 
     try {
       await AuditService.logEvent(
@@ -274,7 +280,8 @@ export async function completeProductionTaskAction(
  */
 export async function holdProductionTaskAction(
   input: HoldTaskInput,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
@@ -285,7 +292,7 @@ export async function holdProductionTaskAction(
     const userId = tenant.userId
     const userEmail = tenant.userEmail || null
 
-    const task = await ProductionPlanningService.holdTask(input, companyId)
+    const task = await ProductionPlanningService.holdTask(input, companyId, taskPayload)
 
     try {
       await AuditService.logEvent(
@@ -313,7 +320,8 @@ export async function holdProductionTaskAction(
  */
 export async function resumeProductionTaskAction(
   taskId: string,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
@@ -322,7 +330,7 @@ export async function resumeProductionTaskAction(
     }
     const companyId = tenant.companyId
 
-    const task = await ProductionPlanningService.resumeTask(taskId, companyId)
+    const task = await ProductionPlanningService.resumeTask(taskId, companyId, taskPayload)
 
     revalidatePath('/[tenantSlug]/production', 'layout')
     return { success: true, data: task }
@@ -336,7 +344,8 @@ export async function resumeProductionTaskAction(
  */
 export async function reworkProductionTaskAction(
   input: ReworkTaskInput,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
@@ -348,7 +357,7 @@ export async function reworkProductionTaskAction(
     const userEmail = tenant.userEmail || null
     const userName = tenant.fullName || 'QC Inspector'
 
-    const task = await ProductionPlanningService.createReworkTask(input, companyId, userName)
+    const task = await ProductionPlanningService.createReworkTask(input, companyId, userName, taskPayload)
 
     try {
       await AuditService.logEvent(
@@ -424,6 +433,7 @@ export async function reportProductionProblemAction(
     reason: string
     notes?: string
     photo_url?: string
+    taskPayload?: Partial<ProductionTaskRecord>
   },
   requestedCompanyId?: string
 ): Promise<ServerActionResult<any>> {
@@ -441,7 +451,8 @@ export async function reportProductionProblemAction(
         hold_reason: (params.reason as any) || 'customer_approval',
         hold_notes: params.notes,
       },
-      companyId
+      companyId,
+      params.taskPayload
     )
 
     // 2. Log Audit Event

@@ -83,7 +83,7 @@ export default function MobileOperatorPanelPage() {
     if (actionInProgressTaskId) return
     setActionInProgressTaskId(task.id)
     try {
-      const res = await startProductionTaskAction(task.id)
+      const res = await startProductionTaskAction(task.id, false, undefined, task)
       if (res.success) {
         showNotification(`Started production for ${task.task_name}`)
         loadTasks()
@@ -104,7 +104,7 @@ export default function MobileOperatorPanelPage() {
 
     setActionInProgressTaskId(task.id)
     try {
-      const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused')
+      const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused', undefined, task)
       if (res.success) {
         showNotification(`Production paused.`)
         loadTasks()
@@ -131,11 +131,16 @@ export default function MobileOperatorPanelPage() {
 
     setIsSubmittingComplete(true)
     try {
-      const res = await completeProductionTaskAction(selectedTaskForComplete.id, {
-        good_quantity: goodQty,
-        rejected_quantity: rejectedQty,
-        notes: notes.trim() || undefined,
-      })
+      const res = await completeProductionTaskAction(
+        selectedTaskForComplete.id,
+        {
+          good_quantity: goodQty,
+          rejected_quantity: rejectedQty,
+          notes: notes.trim() || undefined,
+        },
+        undefined,
+        selectedTaskForComplete
+      )
 
       if (res.success) {
         showNotification(`Production completed & signed off! Good: ${goodQty}, Scrap: ${rejectedQty}`)

@@ -104,7 +104,7 @@ export function ScheduleTaskModal({
         notes: notes.trim() || undefined,
       }
 
-      const res = await scheduleProductionTaskAction(input)
+      const res = await scheduleProductionTaskAction(input, undefined, task)
       if (!res.success || !res.data) {
         setErrorMessage(res.error || 'Failed to schedule task.')
         return

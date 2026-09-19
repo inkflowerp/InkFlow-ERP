@@ -49,7 +49,7 @@ export function HoldTaskModal({
         hold_notes: holdNotes.trim() || undefined,
       }
 
-      const res = await holdProductionTaskAction(input)
+      const res = await holdProductionTaskAction(input, undefined, task)
       if (!res.success || !res.data) {
         setErrorMessage(res.error || 'Failed to place task on hold.')
         return

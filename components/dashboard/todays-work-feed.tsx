@@ -69,7 +69,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
   const handleStart = async (task: ProductionTaskRecord) => {
     setActionLoadingId(task.id)
     try {
-      await startProductionTaskAction(task.id)
+      await startProductionTaskAction(task.id, false, undefined, task)
       onRefresh?.()
     } finally {
       setActionLoadingId(null)
@@ -79,7 +79,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
   const handlePause = async (task: ProductionTaskRecord) => {
     setActionLoadingId(task.id)
     try {
-      await pauseProductionTaskAction(task.id, 'Operator Pause')
+      await pauseProductionTaskAction(task.id, 'Operator Pause', undefined, task)
       onRefresh?.()
     } finally {
       setActionLoadingId(null)
@@ -96,10 +96,15 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
     if (!completingTask) return
     setIsSubmittingComplete(true)
     try {
-      await completeProductionTaskAction(completingTask.id, {
-        good_quantity: goodQty,
-        rejected_quantity: scrapQty,
-      })
+      await completeProductionTaskAction(
+        completingTask.id,
+        {
+          good_quantity: goodQty,
+          rejected_quantity: scrapQty,
+        },
+        undefined,
+        completingTask
+      )
       setCompletingTask(null)
       onRefresh?.()
     } finally {

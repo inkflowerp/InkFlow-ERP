@@ -95,6 +95,7 @@ export function ReportProblemModal({
         reason: selectedReason,
         notes: notes.trim() || undefined,
         photo_url: photoPreview || undefined,
+        taskPayload: task,
       })
 
       if (!res.success) {

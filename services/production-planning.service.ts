@@ -51,7 +51,7 @@ export class ProductionPlanningService {
       scheduled: ['ready', 'in_progress', 'on_hold', 'cancelled'],
       ready: ['in_progress', 'on_hold', 'cancelled'],
       in_progress: ['paused', 'completed', 'on_hold', 'rework', 'cancelled'],
-      paused: ['in_progress', 'on_hold', 'cancelled'],
+      paused: ['in_progress', 'completed', 'on_hold', 'cancelled'],
       on_hold: ['ready', 'queued', 'scheduled', 'in_progress', 'cancelled'],
       rework: ['in_progress', 'completed', 'cancelled', 'on_hold'],
       completed: ['rework'], // completed cannot transition except spawning rework
@@ -165,9 +165,13 @@ export class ProductionPlanningService {
     return tasks
   }
 
-  static async getTaskById(id: string, companyId: string): Promise<ProductionTaskRecord | null> {
+  static async getTaskById(
+    id: string,
+    companyId: string,
+    taskPayload?: Partial<ProductionTaskRecord>
+  ): Promise<ProductionTaskRecord | null> {
     if (!id || !companyId) return null
-    const task = await ProductionTaskRepository.getTaskById(id, companyId)
+    const task = await ProductionTaskRepository.getTaskById(id, companyId, taskPayload)
     if (!task) return null
 
     // Check upstream dependency
@@ -278,7 +282,8 @@ export class ProductionPlanningService {
    */
   static async scheduleTask(
     input: ScheduleTaskInput,
-    companyId: string
+    companyId: string,
+    taskPayload?: Partial<ProductionTaskRecord>
   ): Promise<ProductionTaskRecord> {
     if (!companyId) throw new Error('Company ID is required')
     if (!input.task_id) throw new Error('Task ID is required')
@@ -287,7 +292,7 @@ export class ProductionPlanningService {
     const lockKey = `${companyId}:${input.assigned_machine_id || 'manual'}`
 
     return await withScheduleLock(lockKey, async () => {
-      const task = await ProductionTaskRepository.getTaskById(input.task_id, companyId)
+      const task = await ProductionTaskRepository.getTaskById(input.task_id, companyId, taskPayload)
       if (!task) throw new Error(`Production task not found: ${input.task_id}`)
 
       if (task.status === 'cancelled') {
@@ -348,11 +353,9 @@ export class ProductionPlanningService {
           !machine.supported_production_types.includes('all')
         ) {
           throw new Error(
-            `Machine compatibility error: ${machine.name} does not support production type "${task.task_type}".`
+            `Machine mismatch: ${machine.name} does not support production type "${task.task_type}". Supported types: ${machine.supported_production_types.join(', ')}`
           )
         }
-
-        machineName = machine.name
 
         // Check maintenance schedule conflict
         const maintenances = await MachineryRepository.getMaintenances(machine.id, companyId)
@@ -390,12 +393,14 @@ export class ProductionPlanningService {
           }
         }
 
-        // Sync with Machinery Assignment record
+        machineName = machine.name
+
+        // Create assignment record in machinery assignments table
         try {
           await MachineryRepository.createAssignment({
             company_id: companyId,
             machine_id: machine.id,
-            job_order_id: task.job_order_id,
+            job_order_id: task.job_order_id || null,
             production_job_id: task.production_job_id || null,
             operator_id: input.assigned_operator_id || null,
             task_type: task.task_type,
@@ -438,9 +443,10 @@ export class ProductionPlanningService {
     companyId: string,
     operatorId?: string,
     operatorName?: string,
-    forceOverrideDependency: boolean = false
+    forceOverrideDependency: boolean = false,
+    taskPayload?: Partial<ProductionTaskRecord>
   ): Promise<ProductionTaskRecord> {
-    const task = await this.getTaskById(taskId, companyId)
+    const task = await this.getTaskById(taskId, companyId, taskPayload)
     if (!task) throw new Error('Task not found')
 
     if (!forceOverrideDependency && task.is_blocked_by_dependency) {
@@ -493,9 +499,10 @@ export class ProductionPlanningService {
   static async pauseTask(
     taskId: string,
     reason: string,
-    companyId: string
+    companyId: string,
+    taskPayload?: Partial<ProductionTaskRecord>
   ): Promise<ProductionTaskRecord> {
-    const task = await this.getTaskById(taskId, companyId)
+    const task = await this.getTaskById(taskId, companyId, taskPayload)
     if (!task) throw new Error('Task not found')
 
     if (!this.isValidStatusTransition(task.status, 'paused')) {
@@ -517,9 +524,10 @@ export class ProductionPlanningService {
       good_quantity?: number
       rejected_quantity?: number
       notes?: string
-    }
+    },
+    taskPayload?: Partial<ProductionTaskRecord>
   ): Promise<{ completedTask: ProductionTaskRecord; nextReadyTask: ProductionTaskRecord | null }> {
-    const task = await this.getTaskById(taskId, companyId)
+    const task = await this.getTaskById(taskId, companyId, taskPayload)
     if (!task) throw new Error('Task not found')
 
     if (task.status === 'on_hold') {
@@ -563,9 +571,10 @@ export class ProductionPlanningService {
    */
   static async holdTask(
     input: HoldTaskInput,
-    companyId: string
+    companyId: string,
+    taskPayload?: Partial<ProductionTaskRecord>
   ): Promise<ProductionTaskRecord> {
-    const task = await this.getTaskById(input.task_id, companyId)
+    const task = await this.getTaskById(input.task_id, companyId, taskPayload)
     if (!task) throw new Error('Task not found')
 
     if (!this.isValidStatusTransition(task.status, 'on_hold')) {
@@ -581,8 +590,12 @@ export class ProductionPlanningService {
   /**
    * Resume a task from hold state.
    */
-  static async resumeTask(taskId: string, companyId: string): Promise<ProductionTaskRecord> {
-    const task = await this.getTaskById(taskId, companyId)
+  static async resumeTask(
+    taskId: string,
+    companyId: string,
+    taskPayload?: Partial<ProductionTaskRecord>
+  ): Promise<ProductionTaskRecord> {
+    const task = await this.getTaskById(taskId, companyId, taskPayload)
     if (!task) throw new Error('Task not found')
 
     if (task.status !== 'on_hold') {
@@ -609,9 +622,10 @@ export class ProductionPlanningService {
   static async createReworkTask(
     input: ReworkTaskInput,
     companyId: string,
-    reporterName?: string
+    reporterName?: string,
+    taskPayload?: Partial<ProductionTaskRecord>
   ): Promise<ProductionTaskRecord> {
-    const parentTask = await this.getTaskById(input.parent_task_id, companyId)
+    const parentTask = await this.getTaskById(input.parent_task_id, companyId, taskPayload)
     if (!parentTask) throw new Error('Parent task not found')
 
     const reworkTaskNumber = `${parentTask.task_number}-RW`

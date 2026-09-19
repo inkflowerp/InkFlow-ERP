@@ -137,7 +137,7 @@ export default function AdvancedProductionPage() {
   // Quick Card Handlers
   const handleStartTask = async (task: ProductionTaskRecord) => {
     try {
-      const res = await startProductionTaskAction(task.id)
+      const res = await startProductionTaskAction(task.id, false, undefined, task)
       if (res.success) {
         showNotification(`Started task: ${task.task_name}`)
         loadData()
@@ -154,7 +154,7 @@ export default function AdvancedProductionPage() {
     if (reason === null) return
 
     try {
-      const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused')
+      const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused', undefined, task)
       if (res.success) {
         showNotification(`Paused task: ${task.task_name}`)
         loadData()
@@ -168,10 +168,15 @@ export default function AdvancedProductionPage() {
 
   const handleCompleteTask = async (task: ProductionTaskRecord) => {
     try {
-      const res = await completeProductionTaskAction(task.id, {
-        good_quantity: task.quantity,
-        rejected_quantity: 0,
-      })
+      const res = await completeProductionTaskAction(
+        task.id,
+        {
+          good_quantity: task.quantity,
+          rejected_quantity: 0,
+        },
+        undefined,
+        task
+      )
       if (res.success) {
         showNotification(`Task completed! ${res.data?.nextReadyTask ? `Next task (${res.data.nextReadyTask.task_name}) is now READY.` : ''}`)
         loadData()
@@ -185,7 +190,7 @@ export default function AdvancedProductionPage() {
 
   const handleResumeTask = async (task: ProductionTaskRecord) => {
     try {
-      const res = await resumeProductionTaskAction(task.id)
+      const res = await resumeProductionTaskAction(task.id, undefined, task)
       if (res.success) {
         showNotification(`Task ${task.task_number} resumed from hold.`)
         loadData()
