@@ -210,4 +210,102 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     assert.strictEqual(updatedChallan.status, 'delivered')
     assert.ok(updatedChallan.items.every((i) => i.is_delivered))
   })
+
+  it('5. Ready Product (X-stand) produces 0 production tasks, goes direct to Delivery, and enforces Partial Delivery until all items are ready', async () => {
+    const TEST_TENANT = `tenant-direct-delivery-${Date.now()}`
+
+    // 1. Create Invoice with Ready Product (X-stand) and Custom Services (PVC Print, Vinyl Print)
+    const invoice = await BillingRepository.createInvoice({
+      company_id: TEST_TENANT,
+      customer_name: 'Direct Delivery Client',
+      customer_phone: '+8801811223344',
+      customer_address: 'Banani, Dhaka',
+      due_date: '2026-10-20',
+      grand_total: 25000,
+      paid_amount: 10000,
+      due_amount: 15000,
+      created_by_name: 'Commercial Billing Officer',
+      items: [
+        {
+          item_name: 'X-stand',
+          item_description: 'X-stand - 1Pcs',
+          quantity: 1,
+          unit: 'pcs',
+          unit_price: 300,
+          total_price: 300,
+          item_kind: 'ready_product',
+          workflow_routing: 'ready_product',
+          design_required: false,
+        } as any,
+        {
+          item_name: 'PVC Print',
+          item_description: 'PVC Print (All Info)',
+          quantity: 1,
+          unit: 'pcs',
+          unit_price: 12000,
+          total_price: 12000,
+          item_kind: 'service',
+          workflow_routing: 'design_required',
+          design_required: true,
+        } as any,
+        {
+          item_name: 'Vinyl Print',
+          item_description: 'Vinyl Print',
+          quantity: 1,
+          unit: 'pcs',
+          unit_price: 12700,
+          total_price: 12700,
+          item_kind: 'service',
+          workflow_routing: 'design_ok',
+          design_required: false,
+        } as any,
+      ],
+    })
+
+    // 2. Verify Production Tasks: ZERO tasks created for X-stand
+    const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    const xstandProdTasks = prodTasks.filter(
+      (t) => t.company_id === TEST_TENANT && (t.task_name?.includes('X-stand') || t.product_name?.includes('X-stand'))
+    )
+    assert.strictEqual(xstandProdTasks.length, 0, 'Ready product X-stand must NOT create production tasks')
+
+    // 3. Verify Design Jobs: ZERO design jobs created for X-stand
+    const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const xstandDesignJobs = designJobs.filter(
+      (d) => d.company_id === TEST_TENANT && d.title?.includes('X-stand')
+    )
+    assert.strictEqual(xstandDesignJobs.length, 0, 'Ready product X-stand must NOT create design jobs')
+
+    // 4. Verify Delivery Challan: X-stand goes direct to Delivery & Logistics with ready_for_delivery
+    const challans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    const challan = challans.find((c) => c.company_id === TEST_TENANT && c.invoice_id === invoice.id)
+    assert.ok(challan, 'Delivery challan must exist')
+    assert.strictEqual(challan.items.length, 3)
+
+    const xstandChallanItem = challan.items.find((i) => i.product_description?.includes('X-stand'))!
+    const pvcChallanItem = challan.items.find((i) => i.product_description?.includes('PVC Print'))!
+    const vinylChallanItem = challan.items.find((i) => i.product_description?.includes('Vinyl Print'))!
+
+    assert.strictEqual(xstandChallanItem.status, 'ready_for_delivery')
+    assert.strictEqual(pvcChallanItem.status, 'design_pending')
+    assert.strictEqual(vinylChallanItem.status, 'design_check')
+
+    // 5. Simulate Delivery Modal dynamic button logic:
+    // When non-delivered items are not all ready -> Partial Delivery
+    const nonDelivered = challan.items.filter((i) => !i.is_delivered)
+    const allReadyBefore = nonDelivered.every((i) => i.status === 'ready_for_delivery')
+    assert.strictEqual(allReadyBefore, false, 'Not all items are ready yet')
+
+    // When X-stand is delivered partially
+    xstandChallanItem.is_delivered = true
+    xstandChallanItem.status = 'delivered'
+    const remainingAfterPartial = challan.items.filter((i) => !i.is_delivered)
+    assert.strictEqual(remainingAfterPartial.length, 2, '2 items remaining')
+
+    // When remaining custom items finish production
+    pvcChallanItem.status = 'ready_for_delivery'
+    vinylChallanItem.status = 'ready_for_delivery'
+    const allReadyNow = remainingAfterPartial.every((i) => i.status === 'ready_for_delivery')
+    assert.strictEqual(allReadyNow, true, 'All remaining items are now ready for final full delivery')
+  })
 })

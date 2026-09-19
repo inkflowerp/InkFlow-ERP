@@ -1156,6 +1156,7 @@ export class BillingRepository {
         const directProdItems = invoice.items.filter(
           (it: any) =>
             it.item_kind !== 'ready_product' &&
+            it.workflow_routing !== 'ready_product' &&
             (it.workflow_routing === 'ready_production' ||
               (it.design_required === false && it.workflow_routing !== 'design_ok' && it.workflow_routing !== 'design_required'))
         )
