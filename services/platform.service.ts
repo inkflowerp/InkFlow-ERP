@@ -1768,40 +1768,61 @@ export class PlatformService {
   /**
    * 4b. Lifecycle: Delete Single Company with Comprehensive Cascading Database & Storage Cleanup
    */
-  static async deleteCompany(companyId: string, reason?: string): Promise<ApiResponse<{ companyId: string }>> {
+  static async deleteCompany(companyIdOrSlug: string, reason?: string): Promise<ApiResponse<{ companyId: string }>> {
     try {
       const admin = createAdminClient()
 
-      let company: { name?: string; slug?: string } | null = null
-      try {
-        const { data } = await (admin as any)
-          .from('companies')
-          .select('name, slug')
-          .eq('id', companyId)
-          .maybeSingle()
-        company = data
-      } catch {}
+      // Resolve company record (by id or by slug)
+      let company: { id: string; name?: string; slug?: string } | null = null
+      if (isValidUuid(companyIdOrSlug)) {
+        try {
+          const { data } = await (admin as any)
+            .from('companies')
+            .select('id, name, slug')
+            .eq('id', companyIdOrSlug)
+            .maybeSingle()
+          if (data) company = data
+        } catch {}
+      }
 
-      const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
-      const compSlug = `comp-${cleanSlug}`
-      const companySlug = company?.slug || cleanSlug
+      if (!company) {
+        const candidateSlug = companyIdOrSlug.replace(/^comp-/, '').replace(/^co-/, '')
+        try {
+          const { data } = await (admin as any)
+            .from('companies')
+            .select('id, name, slug')
+            .eq('slug', candidateSlug)
+            .maybeSingle()
+          if (data) company = data
+        } catch {}
+      }
 
-      // All target keys/slugs for this company
-      const targetIds = Array.from(new Set([companyId, cleanSlug, compSlug, companySlug, `comp-${companySlug}`].filter(Boolean)))
+      const targetUuid = company?.id || (isValidUuid(companyIdOrSlug) ? companyIdOrSlug : null)
+      const targetSlug = company?.slug || companyIdOrSlug.replace(/^comp-/, '').replace(/^co-/, '')
+
+      // Target UUID list (strictly valid UUIDs only for UUID columns to prevent Postgres cast exceptions)
+      const targetUuids = targetUuid ? [targetUuid] : []
+      // Target Slug list (for slug columns and memory datastore)
+      const targetSlugs = Array.from(new Set([targetSlug, `comp-${targetSlug}`, companyIdOrSlug].filter(Boolean)))
+      const allTargetIdentifiers = Array.from(new Set([...targetUuids, ...targetSlugs].filter(Boolean)))
 
       // 1. Invoke PostgreSQL Authoritative Atomic Deletion Function if available
       let rpcSucceeded = false
-      if (isValidUuid(companyId)) {
+      if (targetUuid && isValidUuid(targetUuid)) {
         try {
           const { data: rpcRes, error: rpcErr } = await (admin as any).rpc('delete_tenant_permanently', {
-            p_company_id: companyId,
+            p_company_id: targetUuid,
             p_admin_id: null,
             p_reason: reason || 'Company permanently deleted by platform administrator',
           })
           if (!rpcErr && rpcRes && rpcRes.success !== false) {
             rpcSucceeded = true
+          } else if (rpcErr) {
+            console.warn('[PlatformService] delete_tenant_permanently RPC warning:', rpcErr.message || rpcErr)
           }
-        } catch {}
+        } catch (rpcEx) {
+          console.warn('[PlatformService] delete_tenant_permanently RPC exception:', rpcEx)
+        }
       }
 
       // 2. Comprehensive cascading database cleanup fallback/reinforcement across all tenant tables
@@ -2002,37 +2023,57 @@ export class PlatformService {
         'platform_companies',
       ]
 
-      for (const table of childTables) {
-        try {
-          await (admin as any).from(table).delete().in('company_id', targetIds)
-        } catch {}
-        try {
-          await (admin as any).from(table).delete().in('tenant_id', targetIds)
-        } catch {}
+      if (targetUuids.length > 0) {
+        for (const table of childTables) {
+          try {
+            await (admin as any).from(table).delete().in('company_id', targetUuids)
+          } catch {}
+          try {
+            await (admin as any).from(table).delete().in('tenant_id', targetUuids)
+          } catch {}
+        }
       }
 
       // Delete from companies table
-      try {
-        await (admin as any).from('companies').delete().in('id', targetIds)
-      } catch {}
-      try {
-        await (admin as any).from('companies').delete().in('slug', targetIds)
-      } catch {}
+      let deleteErrorDetails: string | null = null
+
+      if (targetUuids.length > 0) {
+        try {
+          const { error: delErr } = await (admin as any).from('companies').delete().in('id', targetUuids)
+          if (delErr) {
+            console.error('[PlatformService] Error deleting from companies by id:', delErr)
+            deleteErrorDetails = delErr.message
+          }
+        } catch (ex: any) {
+          deleteErrorDetails = ex?.message
+        }
+      }
+
+      if (targetSlug) {
+        try {
+          const { error: slugDelErr } = await (admin as any).from('companies').delete().eq('slug', targetSlug)
+          if (slugDelErr && !deleteErrorDetails) {
+            deleteErrorDetails = slugDelErr.message
+          }
+        } catch {}
+      }
 
       // 3. Supabase Storage Bucket Cleanup (Purge all files across all buckets)
       try {
-        await StorageCleanupService.purgeTenantStorage(companyId, companySlug)
-      } catch {}
+        await StorageCleanupService.purgeTenantStorage(targetUuid || companyIdOrSlug, targetSlug)
+      } catch (storageErr) {
+        console.warn('[PlatformService] Storage purge warning:', storageErr)
+      }
 
       // 4. Purge completely from DataStore (in-memory, localStorage, and partitioned collections)
-      PrintERPDataStore.purgeTenantData(companyId, targetIds)
+      PrintERPDataStore.purgeTenantData(targetUuid || companyIdOrSlug, allTargetIdentifiers)
 
       // 5. Purge offline sync outbox items for this tenant
       try {
         const outbox = PrintERPDataStore.get<any[]>(STORAGE_KEYS.SYNC_OUTBOX) || []
         PrintERPDataStore.set(
           STORAGE_KEYS.SYNC_OUTBOX,
-          outbox.filter((item: any) => !targetIds.includes(item.company_id) && !targetIds.includes(item.tenantSlug))
+          outbox.filter((item: any) => !allTargetIdentifiers.includes(item.company_id) && !allTargetIdentifiers.includes(item.tenantSlug))
         )
       } catch {}
 
@@ -2040,18 +2081,22 @@ export class PlatformService {
       await this.recordAuditLog(
         'company.permanent_delete',
         'company',
-        companyId,
-        companyId,
+        targetUuid || companyIdOrSlug,
+        targetUuid || companyIdOrSlug,
         undefined,
         {
           deleted_company_name: company?.name,
-          deleted_company_slug: companySlug,
+          deleted_company_slug: targetSlug,
           reason: reason || 'Company completely deleted and purged by platform administrator',
           timestamp: new Date().toISOString(),
         }
       )
 
-      return { success: true, data: { companyId } }
+      if (deleteErrorDetails && !rpcSucceeded) {
+        console.warn('[PlatformService] Company delete completed with database warning:', deleteErrorDetails)
+      }
+
+      return { success: true, data: { companyId: targetUuid || companyIdOrSlug } }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to delete company' }
     }
