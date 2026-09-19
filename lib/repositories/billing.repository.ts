@@ -405,6 +405,10 @@ export class BillingRepository {
     )
   }
 
+  static async getNextInvoiceNumber(companyId: string): Promise<string> {
+    return this.getNextDocumentNumber(companyId, 'invoice')
+  }
+
   static async createInvoice(invoice: Partial<InvoiceRecord> & {
     company_id: string
     customer_id?: string | null
@@ -416,8 +420,14 @@ export class BillingRepository {
     idempotency_key?: string | null
   }): Promise<InvoiceRecord> {
     const mode = getFinancialPersistenceMode()
-    const invoiceNumber =
-      invoice.invoice_number || (await this.getNextDocumentNumber(invoice.company_id, 'invoice'))
+    let invoiceNumber = invoice.invoice_number
+    if (!invoiceNumber) {
+      if (invoice.order_number && invoice.order_number.startsWith('ORD-')) {
+        invoiceNumber = invoice.order_number.replace('ORD-', 'INV-')
+      } else {
+        invoiceNumber = await this.getNextDocumentNumber(invoice.company_id, 'invoice')
+      }
+    }
 
     const invoiceId = invoice.id
       ? (mode === 'production' && !isValidUUID(invoice.id) ? generateUUID() : invoice.id)
@@ -460,17 +470,17 @@ export class BillingRepository {
       customer_bin: invoice.customer_bin || null,
       customer_tin: invoice.customer_tin || null,
       customer_address: invoice.customer_address || null,
+      sales_order_id: validSalesOrderId,
+      job_order_id: validJobOrderId,
       quotation_id: validQuotationId,
       quotation_number: invoice.quotation_number || null,
-      sales_order_id: validSalesOrderId,
-      order_number: invoice.order_number || null,
-      job_order_id: validJobOrderId,
+      order_number: invoice.order_number || invoiceNumber.replace('INV-', 'ORD-'),
       job_number: invoice.job_number || null,
       salesperson_id: validSalespersonId,
       salesperson_name: invoice.salesperson_name || null,
-      invoice_date: invoice.invoice_date || getTodayDateString(),
+      invoice_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
       due_date: invoice.due_date,
-      status: paidAmount >= grandTotal ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'unpaid',
+      status: invoice.status || (paidAmount >= grandTotal ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'unpaid'),
       subtotal,
       discount_amount: discountAmt,
       vat_percentage: vatPct,
@@ -478,7 +488,7 @@ export class BillingRepository {
       grand_total: grandTotal,
       paid_amount: paidAmount,
       due_amount: dueAmount,
-      write_off_amount: 0,
+      write_off_amount: Number(invoice.write_off_amount) || 0,
       notes: invoice.notes || null,
       terms_and_conditions: invoice.terms_and_conditions || null,
       created_by_name: invoice.created_by_name,
@@ -707,7 +717,15 @@ export class BillingRepository {
         vat_percentage: Number(it.vat_percentage) || 0,
         total_price: Number(it.total_price) || (Number(it.quantity) * Number(it.unit_price)),
         finishing: it.finishing || null,
-        design_required: Boolean(it.design_required),
+        item_kind: it.item_kind || (it.workflow_routing === 'ready_product' ? 'ready_product' : 'custom_manufacturing'),
+        workflow_routing:
+          it.workflow_routing ||
+          (it.item_kind === 'ready_product'
+            ? 'ready_product'
+            : it.design_required
+              ? 'design_required'
+              : 'ready_production'),
+        design_required: Boolean(it.design_required || it.workflow_routing === 'design_required'),
         customer_approval_required: Boolean(it.customer_approval_required),
         design_job_id: it.design_job_id || null,
         created_at: new Date().toISOString(),
@@ -779,8 +797,11 @@ export class BillingRepository {
         }
       }
 
-      // 2. Update Sales Order
-      if (invoice.sales_order_id) {
+      // 2. Synchronize / Auto-create Matching Sales Order (Ensuring ORD-YYYY-XXXXXX === INV-YYYY-XXXXXX)
+      let effectiveSalesOrderId = invoice.sales_order_id
+      const effectiveOrderNumber = invoice.order_number || invoice.invoice_number.replace('INV-', 'ORD-')
+
+      if (effectiveSalesOrderId) {
         try {
           const supabase = await createClient()
           await (supabase as any)
@@ -801,23 +822,84 @@ export class BillingRepository {
           ord.commercial_status = 'invoice_created'
           ord.invoice_id = invoice.id
           ord.invoice_number = invoice.invoice_number
-          if (
-            !ord.production_gate_status ||
-            ord.production_gate_status === 'blocked_commercial'
-          ) {
+          if (!ord.production_gate_status || ord.production_gate_status === 'blocked_commercial') {
             ord.production_gate_status = 'ready_for_production'
           }
           PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
         }
+      } else {
+        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        let ord = orders.find(
+          (o) =>
+            o.company_id === companyId &&
+            (o.invoice_id === invoice.id || o.order_number === effectiveOrderNumber)
+        )
+        if (!ord) {
+          const ordId = crypto.randomUUID()
+          ord = {
+            id: ordId,
+            company_id: companyId,
+            order_number: effectiveOrderNumber,
+            customer_id: invoice.customer_id,
+            customer_name: invoice.customer_name,
+            customer_phone: invoice.customer_phone,
+            customer_address: invoice.customer_address,
+            salesperson_name: invoice.created_by_name || 'Commercial Manager',
+            order_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
+            delivery_date: invoice.due_date || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+            priority: 'normal',
+            status: 'confirmed',
+            commercial_status: 'invoice_created',
+            production_gate_status: 'ready_for_production',
+            invoice_id: invoice.id,
+            invoice_number: invoice.invoice_number,
+            subtotal: invoice.subtotal,
+            discount_amount: invoice.discount_amount || 0,
+            vat_amount: invoice.vat_amount || 0,
+            final_price: invoice.grand_total,
+            advance_amount: invoice.paid_amount || 0,
+            due_amount: invoice.due_amount || 0,
+            items: invoice.items || [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+          orders.unshift(ord)
+          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+        }
+        effectiveSalesOrderId = ord.id
       }
 
-      // 3. Update Design Jobs linked to sales_order, items, or customer
+      // 2.1 Synchronize Matching Job Orders in Datastore and DB
+      const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+      let jobOrdersChanged = false
+      for (const jo of jobOrders) {
+        if (
+          jo.company_id === companyId &&
+          (jo.sales_order_id === effectiveSalesOrderId ||
+            jo.order_id === effectiveSalesOrderId ||
+            jo.invoice_id === invoice.id ||
+            (invoice.sales_order_id &&
+              (jo.sales_order_id === invoice.sales_order_id || jo.order_id === invoice.sales_order_id)))
+        ) {
+          jo.commercial_status = 'invoice_created'
+          jo.invoice_id = invoice.id
+          jo.invoice_number = invoice.invoice_number
+          jo.production_gate_status = 'ready_for_production'
+          jo.is_blocked_by_commercial_gate = false
+          jobOrdersChanged = true
+        }
+      }
+      if (jobOrdersChanged) {
+        PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
+      }
+
+      // 3. Update Existing Design Jobs
       const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
       for (const dj of designJobs) {
         const itemMatch = invoice.items?.some((it: any) => it.design_job_id === dj.id)
         if (
           dj.company_id === companyId &&
-          (dj.sales_order_id === invoice.sales_order_id || itemMatch || (dj.customer_id && dj.customer_id === invoice.customer_id))
+          (dj.sales_order_id === effectiveSalesOrderId || itemMatch || (dj.customer_id && dj.customer_id === invoice.customer_id))
         ) {
           dj.commercial_status = 'invoice_created'
           dj.invoice_id = invoice.id
@@ -825,34 +907,109 @@ export class BillingRepository {
         }
       }
 
-      // 3b. Automatic Design Job Creation for invoice items marked Design Required
+      // 4. BRANCH 1: Ready Products -> Direct to Delivery Panel (STORAGE_KEYS.DELIVERY_CHALLANS)
       if (invoice.items && Array.isArray(invoice.items)) {
-        const designItems = invoice.items.filter((it: any) => it.design_required === true)
-        for (let i = 0; i < designItems.length; i++) {
-          const it = designItems[i]
+        const readyProducts = invoice.items.filter((it: any) => it.item_kind === 'ready_product')
+        if (readyProducts.length > 0) {
+          const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+          const chlNum = `CHL-${invoice.invoice_number.replace('INV-', '')}`
+          const hasChallan = challans.some(
+            (c) => c.company_id === companyId && (c.challan_number === chlNum || c.invoice_id === invoice.id)
+          )
+          if (!hasChallan) {
+            const chlId = crypto.randomUUID()
+            const newChallan = {
+              id: chlId,
+              company_id: companyId,
+              challan_number: chlNum,
+              customer_id: invoice.customer_id,
+              customer_name: invoice.customer_name,
+              customer_phone: invoice.customer_phone,
+              delivery_address: invoice.customer_address || 'Customer Delivery Address',
+              invoice_id: invoice.id,
+              invoice_number: invoice.invoice_number,
+              sales_order_id: effectiveSalesOrderId,
+              order_number: effectiveOrderNumber,
+              status: 'pending_dispatch',
+              delivery_method: 'company_vehicle',
+              scheduled_date: invoice.due_date || new Date().toISOString().split('T')[0],
+              notes: 'Ready Product direct dispatch from invoice (No design/production required)',
+              created_by_name: invoice.created_by_name || 'Billing System',
+              items: readyProducts.map((rp: any) => ({
+                id: crypto.randomUUID(),
+                challan_id: chlId,
+                product_description: rp.item_description || rp.description || rp.item_name || 'Ready Product',
+                quantity: Number(rp.quantity) || 1,
+                unit: rp.unit || 'pcs',
+                remarks: 'Ready Product Fulfillment',
+              })),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+            challans.unshift(newChallan)
+            PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+
+            try {
+              const supabase = await createClient()
+              await (supabase as any).from('delivery_challans').insert({
+                id: chlId,
+                company_id: companyId,
+                challan_number: chlNum,
+                customer_id: invoice.customer_id,
+                customer_name: invoice.customer_name,
+                customer_phone: invoice.customer_phone,
+                delivery_address: newChallan.delivery_address,
+                sales_order_id: effectiveSalesOrderId,
+                order_number: effectiveOrderNumber,
+                status: 'pending_dispatch',
+                delivery_method: 'company_vehicle',
+                scheduled_date: newChallan.scheduled_date,
+                notes: newChallan.notes,
+                created_by_name: newChallan.created_by_name,
+              })
+            } catch {}
+          }
+        }
+      }
+
+      // 5. BRANCH 2 & BRANCH 3: Design Required (Design Request) and Design OK (Design Check)
+      if (invoice.items && Array.isArray(invoice.items)) {
+        const designNeededItems = invoice.items.filter(
+          (it: any) =>
+            it.item_kind !== 'ready_product' &&
+            (it.design_required === true || it.workflow_routing === 'design_required' || it.workflow_routing === 'design_ok')
+        )
+
+        for (let i = 0; i < designNeededItems.length; i++) {
+          const it = designNeededItems[i]
+          const isDesignOk = it.workflow_routing === 'design_ok' && it.design_required !== true
+          const routingType = isDesignOk ? 'design_ok' : 'design_required'
           const existingJob = designJobs.find(
-            (dj) => (it.design_job_id && dj.id === it.design_job_id) || (dj.invoice_id === invoice.id && dj.title === (it.item_description || (it as any).description || (it as any).item_name))
+            (dj) =>
+              (it.design_job_id && dj.id === it.design_job_id) ||
+              (dj.invoice_id === invoice.id &&
+                dj.title === (it.item_description || (it as any).description || (it as any).item_name))
           )
 
           if (!existingJob) {
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
             const dsnId = crypto.randomUUID()
             const versionId = crypto.randomUUID()
-            const dsnNum = `DSN-${invoice.invoice_number.replace('INV-', '')}${designItems.length > 1 ? `-${i + 1}` : ''}`
+            const dsnNum = `DSN-${invoice.invoice_number.replace('INV-', '')}${designNeededItems.length > 1 ? `-${i + 1}` : ''}`
             const dbCustomerId = invoice.customer_id && uuidRegex.test(invoice.customer_id) ? invoice.customer_id : null
-            const dbSalesOrderId = invoice.sales_order_id && uuidRegex.test(invoice.sales_order_id) ? invoice.sales_order_id : null
+            const dbSalesOrderId = effectiveSalesOrderId && uuidRegex.test(effectiveSalesOrderId) ? effectiveSalesOrderId : null
 
             const newDesignJob: any = {
               id: dsnId,
               company_id: companyId,
               invoice_id: invoice.id,
               invoice_number: invoice.invoice_number,
-              sales_order_id: invoice.sales_order_id || null,
-              order_number: invoice.order_number || null,
+              sales_order_id: effectiveSalesOrderId || null,
+              order_number: effectiveOrderNumber || null,
               customer_id: invoice.customer_id || null,
               customer_name: invoice.customer_name,
               design_number: dsnNum,
-              title: it.item_description || (it as any).description || (it as any).item_name || 'Design Required Item',
+              title: it.item_description || (it as any).description || (it as any).item_name || (isDesignOk ? 'Design Check Item' : 'Design Required Item'),
               dimensions_spec: it.dimensions_spec || null,
               product_name: it.item_name || null,
               material: it.item_name || null,
@@ -862,10 +1019,10 @@ export class BillingRepository {
               designer_name: 'Design Team',
               priority: 'normal',
               status: 'received',
-              workflow_routing: 'design_required',
+              workflow_routing: routingType,
               commercial_status: 'invoice_created',
               intake_source: 'manager_billing',
-              customer_approval_required: it.customer_approval_required !== false,
+              customer_approval_required: !isDesignOk,
               deadline: invoice.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
               current_version: 1,
               revision_count: 0,
@@ -875,13 +1032,15 @@ export class BillingRepository {
                   id: versionId,
                   design_job_id: dsnId,
                   version_number: 1,
-                  version_label: 'Version 1 (Initial Brief)',
-                  proof_file_name: 'customer_brief.pdf',
+                  version_label: isDesignOk ? 'Version 1 (Customer Supplied Artwork)' : 'Version 1 (Initial Brief)',
+                  proof_file_name: isDesignOk ? 'customer_artwork.pdf' : 'customer_brief.pdf',
                   proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
                   file_format: 'ai',
-                  change_notes: 'Design task automatically created from invoice line item.',
+                  change_notes: isDesignOk
+                    ? 'Customer supplied artwork sent for Pre-Press Flightcheck.'
+                    : 'Design brief automatically created from invoice line item.',
                   uploaded_by_name: invoice.created_by_name || 'Manager / Billing',
-                  is_approved: false,
+                  is_approved: isDesignOk,
                   created_at: new Date().toISOString(),
                 },
               ],
@@ -905,7 +1064,7 @@ export class BillingRepository {
                 title: newDesignJob.title,
                 dimensions_spec: newDesignJob.dimensions_spec,
                 status: 'received',
-                workflow_routing: 'design_required',
+                workflow_routing: routingType,
                 commercial_status: 'invoice_created',
                 intake_source: 'manager_billing',
                 customer_approval_required: newDesignJob.customer_approval_required,
@@ -919,16 +1078,16 @@ export class BillingRepository {
                 id: versionId,
                 design_job_id: dsnId,
                 version_number: 1,
-                proof_file_name: 'customer_brief.pdf',
+                proof_file_name: isDesignOk ? 'customer_artwork.pdf' : 'customer_brief.pdf',
                 proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
                 file_format: 'ai',
-                change_notes: 'Design task automatically created from invoice line item.',
+                change_notes: isDesignOk ? 'Customer supplied artwork for Pre-Press Check' : 'Design task from invoice',
                 uploaded_by_name: invoice.created_by_name || 'Manager / Billing',
-                is_approved: false,
+                is_approved: isDesignOk,
               })
             } catch {}
 
-            // Send Designer In-App notification
+            // Send Designer Notification
             try {
               const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
               notifs.unshift({
@@ -936,11 +1095,15 @@ export class BillingRepository {
                 company_id: companyId,
                 user_id: null,
                 type: 'design_assigned',
-                title: `New Design Task: ${dsnNum}`,
-                title_bn: `নতুন ডিজাইন টাস্ক: ${dsnNum}`,
-                message: `Invoice ${invoice.invoice_number} created with design required for ${invoice.customer_name} (${newDesignJob.title}).`,
-                message_bn: `ইনভয়েস ${invoice.invoice_number}-এ ${invoice.customer_name}-এর জন্য ডিজাইন রিকোয়ার্ড যুক্ত হয়েছে।`,
-                action_url: `/${companyId}/designer?jobId=${dsnId}`,
+                title: isDesignOk ? `Pre-Press Check: ${dsnNum}` : `New Design Task: ${dsnNum}`,
+                title_bn: isDesignOk ? `প্রি-প্রেস চেক: ${dsnNum}` : `নতুন ডিজাইন টাস্ক: ${dsnNum}`,
+                message: isDesignOk
+                  ? `Artwork received for #${invoice.invoice_number} (${newDesignJob.title}). Please complete pre-press flightcheck.`
+                  : `Invoice #${invoice.invoice_number} created with design required for ${invoice.customer_name}.`,
+                message_bn: isDesignOk
+                  ? `ইনভয়েস #${invoice.invoice_number}-এর ডিজাইন চেকের জন্য পাঠানো হয়েছে।`
+                  : `ইনভয়েস #${invoice.invoice_number}-এ নতুন ডিজাইন রিকোয়েস্ট তৈরি হয়েছে।`,
+                action_url: `/${companyId}/design?tab=${isDesignOk ? 'design_checks' : 'design_requests'}`,
                 is_read: false,
                 created_at: new Date().toISOString(),
               })
@@ -952,130 +1115,85 @@ export class BillingRepository {
 
       PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
 
-      try {
-        const supabase = await createClient()
-        if (invoice.sales_order_id) {
-          await (supabase as any)
-            .from('design_jobs')
-            .update({
-              commercial_status: 'invoice_created',
-              invoice_id: invoice.id,
-              invoice_number: invoice.invoice_number,
-            })
-            .eq('sales_order_id', invoice.sales_order_id)
-            .eq('company_id', companyId)
-        }
-      } catch {}
-
-      // 4. Update Job Orders & Production Jobs
-      const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
-      for (const jo of jobOrders) {
-        if (
-          jo.company_id === companyId &&
-          (jo.order_id === invoice.sales_order_id || jo.id === invoice.job_order_id)
-        ) {
-          jo.commercial_status = 'invoice_created'
-          jo.invoice_id = invoice.id
-          jo.invoice_number = invoice.invoice_number
-          if (
-            !jo.production_gate_status ||
-            jo.production_gate_status === 'blocked_commercial' ||
-            jo.workflow_routing === 'design_ok' ||
-            jo.workflow_routing === 'ready_production' ||
-            jo.artwork_status === 'approved'
-          ) {
-            jo.production_gate_status = 'ready_for_production'
-          }
-        }
-      }
-      PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
-
-      // 5. Update Production Jobs
-      const prodJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
-      for (const pj of prodJobs) {
-        if (
-          pj.company_id === companyId &&
-          (pj.sales_order_id === invoice.sales_order_id || pj.job_order_id === invoice.job_order_id)
-        ) {
-          pj.commercial_gate_status = 'ready_for_production'
-          pj.is_blocked_by_commercial_gate = false
-          pj.invoice_id = invoice.id
-        }
-      }
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, prodJobs)
-
-      // 5b. Auto-provision Production Tasks for items that do NOT require design (ready to print)
+      // 6. Direct Print/Production Tasks (For non-ready items with workflow_routing === 'ready_production' or design_required === false)
       if (invoice.items && Array.isArray(invoice.items)) {
-        const readyItems = invoice.items.filter((it: any) => it.design_required !== true)
-        const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-        const now = new Date().toISOString()
-        const newDbTasks: any[] = []
+        const directProdItems = invoice.items.filter(
+          (it: any) =>
+            it.item_kind !== 'ready_product' &&
+            (it.workflow_routing === 'ready_production' ||
+              (it.design_required === false && it.workflow_routing !== 'design_ok' && it.workflow_routing !== 'design_required'))
+        )
+        if (directProdItems.length > 0) {
+          const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+          const now = new Date().toISOString()
+          const newDbTasks: any[] = []
 
-        for (let idx = 0; idx < readyItems.length; idx++) {
-          const item = readyItems[idx]
-          const taskBaseNum = `TSK-${(invoice.invoice_number || 'INV-001').replace('INV-', '')}${readyItems.length > 1 ? `-${idx + 1}` : ''}`
-          const task1Num = `${taskBaseNum}-1`
-          const task2Num = `${taskBaseNum}-2`
+          for (let idx = 0; idx < directProdItems.length; idx++) {
+            const item = directProdItems[idx]
+            const taskBaseNum = `TSK-${(invoice.invoice_number || 'INV-001').replace('INV-', '')}${directProdItems.length > 1 ? `-${idx + 1}` : ''}`
+            const task1Num = `${taskBaseNum}-1`
+            const task2Num = `${taskBaseNum}-2`
 
-          const hasTasks = prodTasks.some(
-            (t) =>
-              t.company_id === companyId &&
-              (t.task_number === task1Num || (t.task_name?.includes(item.item_description || '') && t.job_number === invoice.invoice_number))
-          )
-          if (!hasTasks) {
-            const task1 = {
-              id: crypto.randomUUID(),
-              company_id: companyId,
-              task_number: task1Num,
-              task_name: `Print: ${item.item_description || (item as any).description || 'Print Item'}`,
-              customer_name: invoice.customer_name,
-              product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
-              job_number: invoice.invoice_number,
-              job_deadline: invoice.due_date,
-              task_type: 'printing',
-              department: 'printing',
-              sequence_order: 1,
-              quantity: item.quantity || 1,
-              unit: item.unit || 'pcs',
-              priority: 'normal',
-              status: 'queued',
-              is_blocked_by_commercial_gate: false,
-              is_blocked_by_design_gate: false,
-              created_at: now,
-              updated_at: now,
+            const hasTasks = prodTasks.some(
+              (t) =>
+                t.company_id === companyId &&
+                (t.task_number === task1Num || (t.task_name?.includes(item.item_description || '') && t.job_number === invoice.invoice_number))
+            )
+            if (!hasTasks) {
+              const task1 = {
+                id: crypto.randomUUID(),
+                company_id: companyId,
+                task_number: task1Num,
+                task_name: `Print: ${item.item_description || (item as any).description || 'Print Item'}`,
+                customer_name: invoice.customer_name,
+                product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
+                job_number: invoice.invoice_number,
+                job_deadline: invoice.due_date,
+                task_type: 'printing',
+                department: 'printing',
+                sequence_order: 1,
+                quantity: item.quantity || 1,
+                unit: item.unit || 'pcs',
+                priority: 'normal',
+                status: 'queued',
+                is_blocked_by_commercial_gate: false,
+                is_blocked_by_design_gate: false,
+                created_at: now,
+                updated_at: now,
+              }
+              const task2 = {
+                id: crypto.randomUUID(),
+                company_id: companyId,
+                task_number: task2Num,
+                task_name: `Finishing & QC: ${item.item_description || (item as any).description || 'Print Item'}`,
+                customer_name: invoice.customer_name,
+                product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
+                job_number: invoice.invoice_number,
+                job_deadline: invoice.due_date,
+                task_type: 'finishing',
+                department: 'finishing',
+                sequence_order: 2,
+                quantity: item.quantity || 1,
+                unit: item.unit || 'pcs',
+                priority: 'normal',
+                status: 'queued',
+                is_blocked_by_commercial_gate: false,
+                is_blocked_by_design_gate: false,
+                created_at: now,
+                updated_at: now,
+              }
+              prodTasks.unshift(task2, task1)
+              newDbTasks.push(task1, task2)
             }
-            const task2 = {
-              id: crypto.randomUUID(),
-              company_id: companyId,
-              task_number: task2Num,
-              task_name: `Finishing & QC: ${item.item_description || (item as any).description || 'Print Item'}`,
-              customer_name: invoice.customer_name,
-              product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
-              job_number: invoice.invoice_number,
-              job_deadline: invoice.due_date,
-              task_type: 'finishing',
-              department: 'finishing',
-              sequence_order: 2,
-              quantity: item.quantity || 1,
-              unit: item.unit || 'pcs',
-              priority: 'normal',
-              status: 'queued',
-              is_blocked_by_commercial_gate: false,
-              is_blocked_by_design_gate: false,
-              created_at: now,
-              updated_at: now,
-            }
-            prodTasks.unshift(task2, task1)
-            newDbTasks.push(task1, task2)
           }
-        }
 
-        if (newDbTasks.length > 0) {
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
-          try {
-            const supabase = await createClient()
-            await (supabase as any).from('production_tasks').insert(newDbTasks)
-          } catch {}
+          if (newDbTasks.length > 0) {
+            PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
+            try {
+              const supabase = await createClient()
+              await (supabase as any).from('production_tasks').insert(newDbTasks)
+            } catch {}
+          }
         }
       }
 

@@ -584,27 +584,31 @@ export function WorkOrderModal({
       PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, newOrder)
       refreshUsage()
 
-      // 3. Create Pre-Press Design Job Ticket only if Design Required
+      // 3. Create Pre-Press Design Job Ticket for Design Required or Design Check
       let designJobId: string | null = null
-      const hasDesignRequired = workflowRouting === 'design_required' || items.some((i) => i.design_required)
+      const isDesignReq = workflowRouting === 'design_required' || items.some((i) => i.design_required)
+      const isDesignOk = workflowRouting === 'design_ok' && !isDesignReq
 
-      if (hasDesignRequired) {
+      if (isDesignReq || isDesignOk) {
         designJobId = `dsn-${Date.now()}`
+        const routingMode = isDesignOk ? 'design_ok' : 'design_required'
         const newDesignJob: DesignJobRecord = {
           id: designJobId,
           company_id: effectiveCompanyId,
           sales_order_id: newOrder.id,
+          order_number: orderNumber,
           design_number: `DSN-${orderNumber.replace('ORD-', '')}`,
           customer_id: newOrder.customer_id,
           customer_name: finalName,
-          title: items[0]?.itemName || 'Work Order Artwork',
+          title: items[0]?.itemName || (isDesignOk ? 'Customer Supplied Artwork (Check)' : 'Work Order Artwork'),
           designer_name: currentUser?.profile?.full_name || 'Designer Workbench',
           priority: 'urgent',
-          status: 'designing',
-          workflow_routing: 'design_required',
+          status: isDesignOk ? 'received' : 'designing',
+          workflow_routing: routingMode,
           commercial_status: sendInvoiceRequest ? 'invoice_requested' : 'invoice_required',
+          customer_approval_required: !isDesignOk,
           deadline: `${newOrder.delivery_date} 18:00`,
-          instructions: `Items: ${itemsSummary}. Notes: ${notes}`,
+          instructions: `Items: ${itemsSummary}. Routing: ${routingMode}. Notes: ${notes}`,
           dimensions_spec: items[0] ? `${items[0].width}×${items[0].height} ${items[0].dimension_unit || 'ft'} (Qty: ${items[0].quantity})` : 'Custom Specs',
           current_version: 1,
           revision_count: 0,
@@ -614,14 +618,16 @@ export function WorkOrderModal({
               id: `dv-${Date.now()}`,
               design_job_id: designJobId,
               version_number: 1,
-              version_label: 'Version 1 (Initial Brief)',
-              proof_file_name: referenceFileName || 'customer_brief.pdf',
+              version_label: isDesignOk ? 'Version 1 (Customer Supplied Artwork)' : 'Version 1 (Initial Brief)',
+              proof_file_name: referenceFileName || (isDesignOk ? 'customer_artwork.pdf' : 'customer_brief.pdf'),
               proof_file_url:
                 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
               file_format: 'ai',
-              change_notes: 'Initial work order artwork brief registered.',
+              change_notes: isDesignOk
+                ? 'Customer supplied artwork registered for pre-press check.'
+                : 'Initial work order artwork brief registered.',
               uploaded_by_name: currentUser?.profile?.full_name || 'Designer',
-              is_approved: false,
+              is_approved: isDesignOk,
               created_at: 'Just now',
             },
           ],

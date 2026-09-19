@@ -48,6 +48,7 @@ export interface InvoiceItemRecord {
   selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
   design_required?: boolean
   customer_approval_required?: boolean
+  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | string | null
   design_job_id?: string | null
 }
 

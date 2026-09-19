@@ -104,6 +104,8 @@ import { cn } from '@/lib/utils'
 export type DesignPanelTab =
   | 'kanban'
   | 'pipeline'
+  | 'design_requests'
+  | 'design_checks'
   | 'overview'
   | 'work_orders'
   | 'customer_approvals'
@@ -167,9 +169,18 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const tabParam = searchParams?.get('tab') as DesignPanelTab | null
   const initialTab: DesignPanelTab =
     tabParam &&
-    ['kanban', 'pipeline', 'overview', 'work_orders', 'customer_approvals', 'design_versions', 'tasks', 'notifications'].includes(
-      tabParam
-    )
+    [
+      'kanban',
+      'pipeline',
+      'design_requests',
+      'design_checks',
+      'overview',
+      'work_orders',
+      'customer_approvals',
+      'design_versions',
+      'tasks',
+      'notifications',
+    ].includes(tabParam)
       ? tabParam
       : defaultTab
 
@@ -464,6 +475,11 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         (j.commercial_status === 'invoice_created' || Boolean(j.invoice_id))
     ).length
 
+    const designRequestCount = tenantJobs.filter(
+      (j) => j.workflow_routing === 'design_required' || (!j.workflow_routing && j.status !== 'approved')
+    ).length
+    const designCheckCount = tenantJobs.filter((j) => j.workflow_routing === 'design_ok').length
+
     const todayStr = new Date().toISOString().split('T')[0]
     const dueTodayCount = tenantJobs.filter((j) => j.deadline && j.deadline.startsWith(todayStr)).length
 
@@ -475,6 +491,8 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
       invoiceRequestedCount,
       approvedCount,
       readyProdCount,
+      designRequestCount,
+      designCheckCount,
       dueTodayCount,
       total: tenantJobs.length,
     }
@@ -520,6 +538,14 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
       }
 
       // Tab specific constraints
+      if (activeTab === 'design_requests') {
+        return job.workflow_routing === 'design_required' || (!job.workflow_routing && job.status !== 'approved')
+      }
+
+      if (activeTab === 'design_checks') {
+        return job.workflow_routing === 'design_ok'
+      }
+
       if (activeTab === 'customer_approvals') {
         return job.status === 'customer_approval' || job.status === 'revision'
       }
@@ -851,6 +877,29 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         showNotification(`Job #${prepressJob.design_number} authorized & routed to ${machineObj?.name}!`)
       } catch (err: any) {
         showNotification(err.message || 'Print dispatch error', 'warning')
+      }
+    })
+  }
+
+  const handlePrepressVerifyAndRelease = async (job: DesignJobRecord) => {
+    startTransition(async () => {
+      try {
+        const res = await sendToPrintOperatorAction(job.id, companyId)
+        if (!res.success) {
+          showNotification(res.error || 'Failed to dispatch to print operator', 'warning')
+          return
+        }
+        const updatedJob: DesignJobRecord = {
+          ...job,
+          status: 'approved',
+          workflow_routing: 'ready_production',
+          is_locked: true,
+          updated_at: new Date().toISOString(),
+        }
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
+        showNotification(`Artwork #${job.design_number} verified & released to Production Floor!`)
+      } catch (err: any) {
+        showNotification(err.message || 'Dispatch error', 'warning')
       }
     })
   }
@@ -1224,6 +1273,38 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
           </button>
 
           <button
+            onClick={() => handleTabChange('design_requests')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'design_requests'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <Palette className="h-4 w-4" />
+            <span>{tBilingual('Design Request', 'ডিজাইন রিকোয়েস্ট')}</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
+              {kpiStats.designRequestCount}
+            </Badge>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('design_checks')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'design_checks'
+                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400 bg-cyan-50/50 dark:bg-cyan-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <FileCheck2 className="h-4 w-4" />
+            <span>{tBilingual('Design Check', 'ডিজাইন চেক')}</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300">
+              {kpiStats.designCheckCount}
+            </Badge>
+          </button>
+
+          <button
             onClick={() => handleTabChange('pipeline')}
             className={cn(
               'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
@@ -1232,7 +1313,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                 : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             )}
           >
-            <Palette className="h-4 w-4" />
+            <Layers className="h-4 w-4" />
             <span>Designer Queue</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
               {kpiStats.designingCount + kpiStats.newCount}
@@ -1671,6 +1752,16 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                           <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                             <td className="py-3 px-4 font-mono font-bold text-pink-600 dark:text-pink-400">
                               #{job.design_number}
+                              {job.workflow_routing === 'design_ok' && (
+                                <span className="block text-[9px] font-sans font-bold text-cyan-600 dark:text-cyan-400 mt-0.5">
+                                  🔍 Design Check
+                                </span>
+                              )}
+                              {job.workflow_routing === 'design_required' && (
+                                <span className="block text-[9px] font-sans font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
+                                  🎨 Design Request
+                                </span>
+                              )}
                             </td>
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-2">
@@ -1728,6 +1819,18 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-1">
+                                {job.workflow_routing === 'design_ok' && job.status !== 'approved' && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handlePrepressVerifyAndRelease(job)}
+                                    disabled={isPending}
+                                    className="h-7 text-xs px-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold gap-1 shadow-2xs"
+                                    title="Pre-Press Verified ➔ Release to Print Floor"
+                                  >
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    <span>Verify & Release</span>
+                                  </Button>
+                                )}
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -1798,6 +1901,16 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                               <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                                 v{job.current_version || 1}
                               </span>
+                              {job.workflow_routing === 'design_ok' && (
+                                <Badge variant="outline" className="bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300 text-[9px] font-bold">
+                                  🔍 Design Check
+                                </Badge>
+                              )}
+                              {job.workflow_routing === 'design_required' && (
+                                <Badge variant="outline" className="bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-[9px] font-bold">
+                                  🎨 Design Request
+                                </Badge>
+                              )}
                             </div>
                             <h3 className="font-bold text-sm text-slate-900 dark:text-white mt-1 line-clamp-1">{job.title}</h3>
                           </div>
@@ -1860,6 +1973,18 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                         {/* Action Bar */}
                         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                           <div className="flex items-center gap-1">
+                            {job.workflow_routing === 'design_ok' && job.status !== 'approved' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handlePrepressVerifyAndRelease(job)}
+                                disabled={isPending}
+                                className="h-8 text-xs px-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold gap-1 shadow-xs cursor-pointer"
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                <span>Pre-Press Verified ➔ Release</span>
+                              </Button>
+                            )}
+
                             <Button
                               size="sm"
                               variant="outline"

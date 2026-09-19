@@ -50,6 +50,7 @@ export interface CreateInvoiceItemInput {
   selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }>
   design_required?: boolean
   customer_approval_required?: boolean
+  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | string
   total_price?: number
 }
 

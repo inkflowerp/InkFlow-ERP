@@ -100,6 +100,7 @@ interface ItemRowState {
   isManualRate?: boolean
   design_required?: boolean
   customer_approval_required?: boolean
+  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production'
 }
 
 const FINISHING_OPTIONS = [
@@ -202,6 +203,7 @@ export function NewInvoiceModal({
       id: `item-${Date.now()}-1`,
       productId: '',
       item_kind: 'service',
+      workflow_routing: 'design_required',
       itemName: 'Pana Flex Banner Print',
       width: '4',
       height: '6',
@@ -211,6 +213,8 @@ export function NewInvoiceModal({
       rate: 22,
       finishing: 'None',
       rateSource: 'default',
+      design_required: true,
+      customer_approval_required: true,
       showAdvanced: false,
     },
   ])
@@ -391,6 +395,7 @@ export function NewInvoiceModal({
               (matchingProduct as any)?.material_spec,
             design_required: Boolean(it.design_required),
             customer_approval_required: it.customer_approval_required !== false,
+            workflow_routing: it.workflow_routing || (isReady ? 'ready_product' : it.design_required ? 'design_required' : 'design_ok'),
             showAdvanced: Boolean(it.showAdvanced),
           }
         })
@@ -701,6 +706,9 @@ export function NewInvoiceModal({
         pcs_per_carton: (prd as any).pcs_per_carton || undefined,
         unit_cost: Number(prd.effective_unit_cost ?? prd.base_cost) || 0,
         isManualRate: false,
+        workflow_routing: itemKind === 'ready_product' ? 'ready_product' : (current.workflow_routing || 'design_required'),
+        design_required: itemKind === 'ready_product' ? false : current.design_required !== false,
+        customer_approval_required: itemKind === 'ready_product' ? false : current.customer_approval_required !== false,
         available_dimension_presets: dimensionPresets,
         available_finishing_options: finishingOptions,
         printable_material_name: printableMaterial || undefined,
@@ -716,6 +724,9 @@ export function NewInvoiceModal({
       next[index] = {
         ...current,
         item_kind: newKind,
+        workflow_routing: newKind === 'ready_product' ? 'ready_product' : 'design_required',
+        design_required: newKind === 'service',
+        customer_approval_required: newKind === 'service',
         width: newKind === 'service' ? (current.width || '4') : '0',
         height: newKind === 'service' ? (current.height || '6') : '0',
         unit: newKind === 'service' ? 'sft' : 'pcs',
@@ -771,6 +782,7 @@ export function NewInvoiceModal({
         id: `item-${Date.now()}-${prev.length + 1}`,
         productId: defaultProduct?.id || '',
         item_kind: 'service',
+        workflow_routing: 'design_required',
         itemName: defaultProduct?.name || 'Printing Service Item',
         width: '4',
         height: '6',
@@ -780,6 +792,8 @@ export function NewInvoiceModal({
         rate: defaultPrice,
         finishing: 'None',
         rateSource: 'default',
+        design_required: true,
+        customer_approval_required: true,
         showAdvanced: false,
       },
     ])
@@ -796,6 +810,7 @@ export function NewInvoiceModal({
         id: `item-${Date.now()}-${prev.length + 1}`,
         productId: defaultProduct?.id || '',
         item_kind: 'ready_product',
+        workflow_routing: 'ready_product',
         itemName: defaultProduct?.name || 'Ready Product / Display Stand',
         width: '0',
         height: '0',
@@ -809,6 +824,8 @@ export function NewInvoiceModal({
         moq: defaultProduct?.min_order_quantity || undefined,
         pcs_per_carton: (defaultProduct as any)?.pcs_per_carton || undefined,
         unit_cost: Number(defaultProduct?.effective_unit_cost ?? defaultProduct?.base_cost) || 0,
+        design_required: false,
+        customer_approval_required: false,
         showAdvanced: false,
       },
     ])
@@ -821,6 +838,7 @@ export function NewInvoiceModal({
         id: `item-${Date.now()}-${prev.length + 1}`,
         productId: '',
         item_kind: 'custom',
+        workflow_routing: 'design_required',
         itemName: 'Custom Line Item',
         width: '4',
         height: '6',
@@ -830,6 +848,8 @@ export function NewInvoiceModal({
         rate: 0,
         finishing: 'None',
         rateSource: 'custom',
+        design_required: true,
+        customer_approval_required: true,
         showAdvanced: false,
       },
     ])
@@ -933,27 +953,38 @@ export function NewInvoiceModal({
       return null
     }
 
-    const payloadItems: CreateInvoiceItemInput[] = calculatedItems.map((it) => ({
-      product_id: it.productId || undefined,
-      item_kind: it.item_kind || (it.width && it.height ? 'service' : 'ready_product'),
-      product_type: it.product_type || undefined,
-      item_name: it.itemName,
-      dimensions_spec: it.dimensions_spec || undefined,
-      width: Number(it.width) || undefined,
-      height: Number(it.height) || undefined,
-      dimension_unit: it.dimension_unit || undefined,
-      area_sft: it.area ? Number(it.area.toFixed(2)) : undefined,
-      quantity: Number(it.quantity) || 1,
-      unit: it.unit,
-      unit_price: Number(it.rate) || 0,
-      tier_applied: it.tier_applied || undefined,
-      moq: it.moq || undefined,
-      unit_cost: it.unit_cost || undefined,
-      finishing: it.finishing,
-      design_required: Boolean(it.design_required),
-      customer_approval_required: it.customer_approval_required !== false,
-      total_price: it.lineTotal,
-    }))
+    const payloadItems: CreateInvoiceItemInput[] = calculatedItems.map((it) => {
+      const routing =
+        it.workflow_routing ||
+        (it.item_kind === 'ready_product'
+          ? 'ready_product'
+          : it.design_required === false
+          ? 'design_ok'
+          : 'design_required')
+
+      return {
+        product_id: it.productId || undefined,
+        item_kind: it.item_kind || (it.width && it.height ? 'service' : 'ready_product'),
+        product_type: it.product_type || undefined,
+        item_name: it.itemName,
+        dimensions_spec: it.dimensions_spec || undefined,
+        width: Number(it.width) || undefined,
+        height: Number(it.height) || undefined,
+        dimension_unit: it.dimension_unit || undefined,
+        area_sft: it.area ? Number(it.area.toFixed(2)) : undefined,
+        quantity: Number(it.quantity) || 1,
+        unit: it.unit,
+        unit_price: Number(it.rate) || 0,
+        tier_applied: it.tier_applied || undefined,
+        moq: it.moq || undefined,
+        unit_cost: it.unit_cost || undefined,
+        finishing: it.finishing,
+        design_required: routing === 'design_required',
+        customer_approval_required: routing === 'design_required' && it.customer_approval_required !== false,
+        workflow_routing: routing,
+        total_price: it.lineTotal,
+      }
+    })
 
     const payload = {
       customer_id: customerId,
@@ -1898,50 +1929,109 @@ export function NewInvoiceModal({
                     </div>
                   )}
 
-                  {/* WORKFLOW GATING CONFIGURATION PER ITEM */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-slate-100/70 dark:bg-slate-900/80 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                    <div className="flex flex-wrap items-center gap-4">
-                      <label className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={Boolean(item.design_required)}
-                          onChange={(e) => {
-                            const val = e.target.checked
-                            handleItemChange(index, 'design_required', val)
-                            if (val && item.customer_approval_required === undefined) {
-                              handleItemChange(index, 'customer_approval_required', true)
-                            }
-                          }}
-                          className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
-                        />
-                        <span className="flex items-center gap-1">
-                          <Palette className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                          Design Required (ডিজাইন প্রয়োজন)
-                        </span>
-                      </label>
-
-                      {item.design_required && (
-                        <label className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 cursor-pointer select-none pl-2 border-l border-slate-300 dark:border-slate-700 animate-in fade-in-0">
-                          <input
-                            type="checkbox"
-                            checked={item.customer_approval_required !== false}
-                            onChange={(e) => handleItemChange(index, 'customer_approval_required', e.target.checked)}
-                            className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
-                          />
-                          <span>Customer Approval Required (অনুমোদন প্রয়োজন)</span>
-                        </label>
-                      )}
+                  {/* WORKFLOW ROUTING ENGINE (3-Way: Ready Product | Design Required | Design OK) */}
+                  <div className="p-3 bg-slate-100/80 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <Palette className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        Workflow Routing (কাজের গতিপথ):
+                      </span>
+                      {(() => {
+                        const currentRouting =
+                          item.workflow_routing ||
+                          (item.item_kind === 'ready_product'
+                            ? 'ready_product'
+                            : item.design_required === false
+                            ? 'design_ok'
+                            : 'design_required')
+                        if (currentRouting === 'ready_product') {
+                          return (
+                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 font-bold text-[10px]">
+                              🚚 Direct ➔ Delivery Panel
+                            </Badge>
+                          )
+                        }
+                        if (currentRouting === 'design_required') {
+                          return (
+                            <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-300 font-bold text-[10px]">
+                              🎨 Design Panel ➔ Tab: Design Request
+                            </Badge>
+                          )
+                        }
+                        return (
+                          <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-300 font-bold text-[10px]">
+                            🔍 Design Panel ➔ Tab: Design Check
+                          </Badge>
+                        )
+                      })()}
                     </div>
 
-                    {item.design_required ? (
-                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold">
-                        Auto Designer Task
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">
-                        Direct Production Ready
-                      </Badge>
-                    )}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                      {/* 1. Ready Product */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleItemChange(index, 'workflow_routing', 'ready_product')
+                          handleItemChange(index, 'item_kind', 'ready_product')
+                          handleItemChange(index, 'design_required', false)
+                        }}
+                        className={cn(
+                          'p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between',
+                          (item.workflow_routing === 'ready_product' || item.item_kind === 'ready_product')
+                            ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40 ring-1 ring-emerald-500'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-50'
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-xs">
+                          <span>📦 Ready Product</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">রেডি প্রোডাক্ট (সরাসরি ডেলিভারি প্যানেল)</p>
+                      </button>
+
+                      {/* 2. Design Required */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleItemChange(index, 'workflow_routing', 'design_required')
+                          handleItemChange(index, 'item_kind', 'service')
+                          handleItemChange(index, 'design_required', true)
+                          handleItemChange(index, 'customer_approval_required', true)
+                        }}
+                        className={cn(
+                          'p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between',
+                          (item.workflow_routing === 'design_required' || (!item.workflow_routing && item.item_kind !== 'ready_product' && item.design_required !== false))
+                            ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/40 ring-1 ring-indigo-500'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-50'
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-xs">
+                          <span>🎨 Design Required</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">ডিজাইন প্রয়োজন (Tab: Design Request)</p>
+                      </button>
+
+                      {/* 3. Design OK */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleItemChange(index, 'workflow_routing', 'design_ok')
+                          handleItemChange(index, 'item_kind', 'service')
+                          handleItemChange(index, 'design_required', false)
+                          handleItemChange(index, 'customer_approval_required', false)
+                        }}
+                        className={cn(
+                          'p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between',
+                          item.workflow_routing === 'design_ok'
+                            ? 'border-cyan-500 bg-cyan-50/80 dark:bg-cyan-950/40 ring-1 ring-cyan-500'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-50'
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-xs">
+                          <span>🔍 Design OK</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">ডিজাইন ওকে (Tab: Design Check)</p>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Advanced Specs Drawer */}

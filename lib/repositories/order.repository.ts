@@ -130,6 +130,10 @@ export class OrderRepository {
     }
   }
 
+  static async getNextOrderNumber(companyId: string): Promise<string> {
+    return BillingRepository.getNextDocumentNumber(companyId, 'order')
+  }
+
   static async createOrder(order: Partial<SalesOrderRecord> & {
     company_id: string
     customer_id: string
@@ -139,7 +143,14 @@ export class OrderRepository {
     final_price: number
     salesperson_name: string
   }): Promise<SalesOrderRecord> {
-    const orderNumber = order.order_number || (await BillingRepository.getNextDocumentNumber(order.company_id, 'order'))
+    let orderNumber = order.order_number
+    if (!orderNumber) {
+      if (order.invoice_number && order.invoice_number.startsWith('INV-')) {
+        orderNumber = order.invoice_number.replace('INV-', 'ORD-')
+      } else {
+        orderNumber = await BillingRepository.getNextDocumentNumber(order.company_id, 'order')
+      }
+    }
 
     const finalPrice = order.final_price || order.subtotal || 0
     const advancePaid = order.advance_amount || 0

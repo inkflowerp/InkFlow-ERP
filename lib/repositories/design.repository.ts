@@ -394,6 +394,18 @@ export class DesignRepository {
     return null
   }
 
+  static async releaseToProduction(
+    id: string,
+    companyId: string,
+    notes?: string
+  ): Promise<{ success: boolean; error?: string; status?: string; designJob?: DesignJobRecord }> {
+    const res = await this.sendToPrintOperator(id, companyId, notes || 'Pre-Press Check Verified')
+    return {
+      ...res,
+      status: res.success ? 'released_to_production' : 'failed',
+    }
+  }
+
   static async sendToPrintOperator(
     id: string,
     companyId: string,
@@ -530,7 +542,7 @@ export class DesignRepository {
         task_name: `Print: ${job.title}`,
         customer_name: job.customer_name,
         product_name: job.title,
-        job_number: matchedOrder.job_number,
+        job_number: job.invoice_number || matchedOrder.job_number,
         job_deadline: job.deadline,
         task_type: 'printing',
         department: 'printing',
@@ -553,7 +565,7 @@ export class DesignRepository {
         task_name: `Finishing & QC: ${job.title}`,
         customer_name: job.customer_name,
         product_name: job.title,
-        job_number: matchedOrder.job_number,
+        job_number: job.invoice_number || matchedOrder.job_number,
         job_deadline: job.deadline,
         task_type: 'finishing',
         department: 'finishing',
