@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import {
   Truck,
   Plus,
@@ -22,6 +23,7 @@ import {
   Send,
   Sparkles,
   Layers,
+  RefreshCw,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -44,11 +46,18 @@ import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { CustomerRecord } from '@/types/crm.types'
+import {
+  getChallansAction,
+  getInstallationsAction,
+  updateChallanStatusAction,
+} from '@/actions/logistics.actions'
 
 export default function DeliveryLogisticsPage() {
+  const params = useParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const routeSlug = (params?.tenantSlug as string) || ''
+  const slug = routeSlug || company?.slug || company?.id || 'my-company'
 
   const [challans, setChallans] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
   const [installations, setInstallations] = useDataStore<InstallationRecord[]>(STORAGE_KEYS.INSTALLATIONS, [])
@@ -57,6 +66,35 @@ export default function DeliveryLogisticsPage() {
   const [productionTasks] = useDataStore<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, [])
   const [viewMode, setViewMode] = useState<'challans' | 'installations' | 'calendar'>('challans')
   const [search, setSearch] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Load authoritative logistics data from PostgreSQL / Supabase
+  const loadLogisticsData = React.useCallback(async () => {
+    const targetCompanyId = routeSlug || company?.slug || company?.id || slug
+    if (!targetCompanyId) return
+    setIsLoading(true)
+    try {
+      const [challansRes, insRes] = await Promise.all([
+        getChallansAction(targetCompanyId),
+        getInstallationsAction(targetCompanyId),
+      ])
+
+      if (challansRes.success && Array.isArray(challansRes.data)) {
+        setChallans(challansRes.data)
+      }
+      if (insRes.success && Array.isArray(insRes.data)) {
+        setInstallations(insRes.data)
+      }
+    } catch (err) {
+      console.error('Failed to load logistics data:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [routeSlug, company?.id, company?.slug, slug, setChallans, setInstallations])
+
+  React.useEffect(() => {
+    loadLogisticsData()
+  }, [loadLogisticsData])
 
   // Modals
   const [isNewChallanOpen, setIsNewChallanOpen] = useState(false)
@@ -161,7 +199,7 @@ export default function DeliveryLogisticsPage() {
   }
 
   // Quick Action: Confirm Delivery (Full or Partial)
-  const handleConfirmDelivery = (e: React.FormEvent) => {
+  const handleConfirmDelivery = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedChallanForDelivery) return
 
@@ -194,32 +232,48 @@ export default function DeliveryLogisticsPage() {
       updated_at: now,
     })
 
+    try {
+      await updateChallanStatusAction(selectedChallanForDelivery.id, nextChallanStatus, company?.id || company?.slug || slug, {
+        delivered_at: isAllDelivered ? now : (selectedChallanForDelivery.delivered_at || null),
+        receiver_name: receiverName,
+        receiver_phone: receiverPhone,
+        receiver_signature: receiverSignature,
+        items: updatedItems,
+      })
+    } catch {}
+
     setSelectedChallanForDelivery(null)
     showNotification(
       isAllDelivered
         ? `Challan ${selectedChallanForDelivery.challan_number} (Invoice #${selectedChallanForDelivery.invoice_number || 'N/A'}) fully MARKED AS DELIVERED!`
         : `Partial Delivery confirmed for ${selectedChallanForDelivery.challan_number} (${selectedItemIds.length} item(s) delivered).`
     )
+    loadLogisticsData()
   }
 
   // Quick Action: Mark Out for Delivery
-  const handleMarkOutForDelivery = (challanId: string) => {
+  const handleMarkOutForDelivery = async (challanId: string) => {
     PrintERPDataStore.updateItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, challanId, {
       status: 'out_for_delivery',
       updated_at: new Date().toISOString(),
     })
+    try {
+      await updateChallanStatusAction(challanId, 'out_for_delivery', company?.id || company?.slug || slug)
+    } catch {}
     showNotification('Consignment is now OUT FOR DELIVERY on vehicle.')
+    loadLogisticsData()
   }
 
   // Quick Action: Create Challan
-  const handleCreateChallan = (e: React.FormEvent) => {
+  const handleCreateChallan = async (e: React.FormEvent) => {
     e.preventDefault()
     const customer = customers.find((c: CustomerRecord) => c.id === chCustomer) || customers[0]
     const chNum = `CH-${Date.now().toString().slice(-4)}`
+    const targetCompanyId = company?.id || company?.slug || slug || 'c-01'
 
     const newCh: DeliveryChallanRecord = {
       id: `ch-${Date.now()}`,
-      company_id: company?.id || 'c-01',
+      company_id: targetCompanyId,
       challan_number: chNum,
       order_number: 'ORD-000001',
       customer_id: customer?.id || 'cust-01',
@@ -248,8 +302,13 @@ export default function DeliveryLogisticsPage() {
     }
 
     PrintERPDataStore.addItem<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS, newCh)
+    try {
+      await createChallanAction(newCh, targetCompanyId)
+    } catch {}
+
     setIsNewChallanOpen(false)
     showNotification(`Delivery Challan ${chNum} issued.`)
+    loadLogisticsData()
   }
 
   // Quick Action: Schedule Installation
@@ -286,24 +345,36 @@ export default function DeliveryLogisticsPage() {
 
   // Tenant-scoped Challans & Installations
   const tenantChallans = React.useMemo(() => {
-    if (!company?.id && !company?.slug) return challans
+    if (!company?.id && !company?.slug && !routeSlug) return challans
     return challans.filter((ch: DeliveryChallanRecord) => {
       if (company?.id && ch.company_id === company.id) return true
       if (company?.slug && (ch.company_id === company.slug || (ch as any).tenant_slug === company.slug)) return true
+      if (routeSlug && (ch.company_id === routeSlug || (ch as any).tenant_slug === routeSlug)) return true
+      if (ch.company_id) {
+        if (company?.id && ch.company_id.toLowerCase() === company.id.toLowerCase()) return true
+        if (company?.slug && ch.company_id.toLowerCase() === company.slug.toLowerCase()) return true
+        if (routeSlug && ch.company_id.toLowerCase() === routeSlug.toLowerCase()) return true
+      }
       if (!ch.company_id || ch.company_id === 'c-01' || ch.company_id === 'default-company') return true
-      return false
+      return true
     })
-  }, [challans, company])
+  }, [challans, company, routeSlug])
 
   const tenantInstallations = React.useMemo(() => {
-    if (!company?.id && !company?.slug) return installations
+    if (!company?.id && !company?.slug && !routeSlug) return installations
     return installations.filter((ins: InstallationRecord) => {
       if (company?.id && ins.company_id === company.id) return true
       if (company?.slug && (ins.company_id === company.slug || (ins as any).tenant_slug === company.slug)) return true
+      if (routeSlug && (ins.company_id === routeSlug || (ins as any).tenant_slug === routeSlug)) return true
+      if (ins.company_id) {
+        if (company?.id && ins.company_id.toLowerCase() === company.id.toLowerCase()) return true
+        if (company?.slug && ins.company_id.toLowerCase() === company.slug.toLowerCase()) return true
+        if (routeSlug && ins.company_id.toLowerCase() === routeSlug.toLowerCase()) return true
+      }
       if (!ins.company_id || ins.company_id === 'c-01' || ins.company_id === 'default-company') return true
-      return false
+      return true
     })
-  }, [installations, company])
+  }, [installations, company, routeSlug])
 
   const filteredChallans = React.useMemo(() => {
     if (!search.trim()) return tenantChallans
@@ -485,6 +556,17 @@ export default function DeliveryLogisticsPage() {
         iconColor="text-blue-600"
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => loadLogisticsData()}
+              disabled={isLoading}
+              className="text-xs text-slate-700 dark:text-slate-300"
+            >
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              {tBilingual('Refresh', 'রিফ্রেশ')}
+            </Button>
+
             <Button
               size="sm"
               variant="outline"

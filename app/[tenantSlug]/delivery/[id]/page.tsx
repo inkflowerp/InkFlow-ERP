@@ -28,16 +28,41 @@ import { FeatureGate } from '@/components/shared/feature-gate'
 import { DeliveryChallanRecord, DeliveryStatus } from '@/types/logistics.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { getChallanByIdAction } from '@/actions/logistics.actions'
 
 export default function DeliveryChallanDetailPage() {
   const params = useParams()
   const chId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+  const routeSlug = (params?.tenantSlug as string) || ''
+  const slug = routeSlug || company?.slug || company?.id || 'my-company'
 
   const [challans] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
-  const challan = challans.find((c: DeliveryChallanRecord) => c.id === chId || c.challan_number === chId)
+  const [fetchedChallan, setFetchedChallan] = useState<DeliveryChallanRecord | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  React.useEffect(() => {
+    async function loadChallan() {
+      const targetCompanyId = routeSlug || company?.slug || company?.id || slug
+      if (!chId || !targetCompanyId) return
+      try {
+        setIsLoading(true)
+        const res = await getChallanByIdAction(chId, targetCompanyId)
+        if (res.success && res.data) {
+          setFetchedChallan(res.data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch challan:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadChallan()
+  }, [chId, routeSlug, company?.slug, company?.id, slug])
+
+  const storeChallan = challans.find((c: DeliveryChallanRecord) => c.id === chId || c.challan_number === chId)
+  const challan = fetchedChallan || storeChallan
 
   if (!challan) {
     return (

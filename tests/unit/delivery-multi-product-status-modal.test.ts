@@ -362,5 +362,48 @@ describe('Delivery Panel Multi-Product Status & Partial Delivery Workflow Tests'
     const xstandTasks = prodTasks.filter((t) => t.company_id === ACTION_TENANT)
     assert.strictEqual(xstandTasks.length, 0, 'Zero production tasks must be generated for ready products')
   })
+
+  it('7. LogisticsRepository.getChallans dynamically retrieves and populates Delivery Challans for the tenant', async () => {
+    const { LogisticsRepository } = await import('../../lib/repositories/logistics.repository.ts')
+    const { LogisticsService } = await import('../../services/logistics.service.ts')
+    const TENANT = `tenant-repo-challan-${Date.now()}`
+
+    // 1. Create an invoice in Datastore for this tenant
+    const { BillingRepository } = await import('../../lib/repositories/billing.repository.ts')
+    const invoice = await BillingRepository.createInvoice({
+      company_id: TENANT,
+      customer_name: 'Fast Dispatch Ltd',
+      customer_phone: '+8801711223344',
+      due_date: '2026-10-25',
+      grand_total: 5000,
+      created_by_name: 'Billing Officer',
+      items: [
+        {
+          item_name: 'Rollup Banner',
+          quantity: 2,
+          unit: 'pcs',
+          unit_price: 2500,
+          item_kind: 'ready_product',
+          workflow_routing: 'ready_product',
+          design_required: false,
+        } as any,
+      ],
+    })
+
+    // 2. Fetch via LogisticsRepository
+    const challans = await LogisticsRepository.getChallans(TENANT)
+    assert.ok(Array.isArray(challans), 'Challans must be an array')
+    assert.ok(challans.length >= 1, 'At least 1 challan must be returned for this tenant')
+
+    const matchedChallan = challans.find((c) => c.invoice_id === invoice.id || c.invoice_number === invoice.invoice_number)
+    assert.ok(matchedChallan, 'Challan matching invoice must be found')
+    assert.strictEqual(matchedChallan.items.length, 1)
+    assert.strictEqual(matchedChallan.items[0].status, 'ready_for_delivery')
+    assert.strictEqual(matchedChallan.items[0].item_kind, 'ready_product')
+
+    // 3. Fetch via LogisticsService
+    const serviceChallans = await LogisticsService.getChallans(TENANT)
+    assert.ok(serviceChallans.length >= 1)
+  })
 })
 
