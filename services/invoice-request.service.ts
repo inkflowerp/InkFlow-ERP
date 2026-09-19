@@ -220,7 +220,7 @@ export class InvoiceRequestService {
   /**
    * Cancel or reject an invoice request
    */
-  static async cancelRequest(id: string, companyId: string, reason?: string): Promise<boolean> {
+  static async cancelRequest(id: string, companyId: string, reason?: string, cancelledBy?: string): Promise<boolean> {
     const updated = await InvoiceRequestRepository.updateRequestStatus(id, companyId, 'cancelled', reason)
     return Boolean(updated)
   }

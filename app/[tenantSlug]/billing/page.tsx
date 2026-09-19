@@ -83,6 +83,7 @@ import {
   getInvoiceRequestsAction,
   cancelInvoiceRequestAction,
 } from '@/actions/invoice-request.actions'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
 
 export type BillingTab = 'overview' | 'invoices' | 'requests' | 'payments' | 'receivables'
@@ -216,9 +217,79 @@ export default function BillingPage() {
         setReceivablesAging(agingRes.data)
       }
 
-      if (reqRes.success && reqRes.data) {
-        setInvoiceRequests(reqRes.data)
+      let fetchedRequests: InvoiceRequestRecord[] = []
+      if (reqRes && reqRes.success && Array.isArray(reqRes.data)) {
+        fetchedRequests = reqRes.data
       }
+
+      // Merge with local client-side data store for seamless resilience
+      const localRequests =
+        PrintERPDataStore.getAll<InvoiceRequestRecord>(STORAGE_KEYS.INVOICE_REQUESTS, company.id) ||
+        PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) ||
+        []
+
+      const reqMap = new Map<string, InvoiceRequestRecord>()
+      localRequests.forEach((r) => {
+        if (!r.company_id || r.company_id === company.id) {
+          reqMap.set(r.id, r)
+        }
+      })
+      fetchedRequests.forEach((r) => {
+        reqMap.set(r.id, r)
+      })
+
+      // Also check orders marked commercial_status: invoice_requested to guarantee visibility
+      try {
+        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        orders.forEach((ord) => {
+          if (
+            ord &&
+            ord.commercial_status === 'invoice_requested' &&
+            (!ord.company_id || ord.company_id === company.id)
+          ) {
+            const hasExisting = Array.from(reqMap.values()).some(
+              (r) =>
+                (ord.id && r.sales_order_id === ord.id) ||
+                (ord.order_number && r.order_number === ord.order_number)
+            )
+            if (!hasExisting) {
+              const reqId = `inv-req-order-${ord.id}`
+              reqMap.set(reqId, {
+                id: reqId,
+                company_id: company.id,
+                request_number: `INVR-${ord.order_number ? ord.order_number.replace('ORD-', '') : Math.floor(1000 + Math.random() * 9000)}`,
+                customer_id: ord.customer_id || null,
+                customer_name: ord.customer_name || 'Customer',
+                customer_phone: ord.customer_phone || null,
+                sales_order_id: ord.id,
+                order_number: ord.order_number || null,
+                job_order_id: null,
+                job_number: null,
+                design_job_id: null,
+                design_number: null,
+                requested_by_id: null,
+                requested_by_name: ord.created_by_name || 'Floor Staff',
+                status: 'pending',
+                items_summary:
+                  ord.order_title ||
+                  ord.items_summary ||
+                  (Array.isArray(ord.items) && ord.items.length > 0
+                    ? `${ord.items.length} items`
+                    : 'Work Order Item'),
+                estimated_amount: ord.total_amount || ord.grand_total || 0,
+                notes: ord.notes || 'Work order marked Design Ready pending invoice generation',
+                created_at: ord.invoice_requested_at || ord.created_at || new Date().toISOString(),
+                updated_at: ord.updated_at || new Date().toISOString(),
+              })
+            }
+          }
+        })
+      } catch {}
+
+      const mergedList = Array.from(reqMap.values()).sort(
+        (a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+      )
+      setInvoiceRequests(mergedList)
     } catch (err) {
       console.error('Failed to load authoritative billing data:', err)
     } finally {

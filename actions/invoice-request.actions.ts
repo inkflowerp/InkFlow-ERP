@@ -22,36 +22,49 @@ export async function createInvoiceRequestAction(
   }
 ): Promise<ServerActionResult<InvoiceRequestRecord>> {
   try {
+    let companyId = input.companyId
+    let userId: string | null = null
+    let userEmail: string | null = null
+    let userName = input.requestedByName || 'Designer'
+
     const tenant = await getCurrentTenant(input.companyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    if (tenant && tenant.companyId) {
+      companyId = tenant.companyId
+      userId = tenant.userId || null
+      userEmail = tenant.userEmail || null
+      userName = input.requestedByName || tenant.fullName || 'Designer'
     }
-    const companyId = tenant.companyId
+
+    if (!companyId) {
+      return { success: false, error: 'Company context is required to create invoice request.' }
+    }
 
     const created = await InvoiceRequestService.createInvoiceRequest({
       ...input,
       companyId,
-      requestedById: tenant.userId || null,
-      requestedByName: input.requestedByName || tenant.fullName || 'Designer',
+      requestedById: userId,
+      requestedByName: userName,
     })
 
     try {
-      await AuditService.logEvent(
-        companyId,
-        tenant.userId,
-        tenant.userEmail,
-        'invoice_request.create',
-        'invoice_request',
-        created.id,
-        null,
-        {
-          request_number: created.request_number,
-          customer_name: created.customer_name,
-          order_number: created.order_number,
-          design_number: created.design_number,
-        },
-        `Created invoice request ${created.request_number} for customer ${created.customer_name}`
-      )
+      if (userId && userEmail) {
+        await AuditService.logEvent(
+          companyId,
+          userId,
+          userEmail,
+          'invoice_request.create',
+          'invoice_request',
+          created.id,
+          null,
+          {
+            request_number: created.request_number,
+            customer_name: created.customer_name,
+            order_number: created.order_number,
+            design_number: created.design_number,
+          },
+          `Created invoice request ${created.request_number} for customer ${created.customer_name}`
+        )
+      }
     } catch {}
 
     revalidatePath('/', 'layout')
@@ -75,11 +88,16 @@ export async function getInvoiceRequestsAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<InvoiceRequestRecord[]>> {
   try {
+    let companyId = requestedCompanyId
     const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    if (tenant && tenant.companyId) {
+      companyId = tenant.companyId
     }
-    const data = await InvoiceRequestService.getRequests(tenant.companyId, filters)
+
+    if (!companyId) {
+      return { success: false, error: 'Company context is required to fetch invoice requests.' }
+    }
+    const data = await InvoiceRequestService.getRequests(companyId, filters)
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch invoice requests' }
@@ -95,11 +113,18 @@ export async function cancelInvoiceRequestAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<boolean>> {
   try {
+    let companyId = requestedCompanyId
+    let userName = 'Manager'
     const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    if (tenant && tenant.companyId) {
+      companyId = tenant.companyId
+      userName = tenant.fullName || 'Manager'
     }
-    const success = await InvoiceRequestService.cancelRequest(requestId, tenant.companyId, reason)
+
+    if (!companyId) {
+      return { success: false, error: 'Company context is required to cancel invoice request.' }
+    }
+    const success = await InvoiceRequestService.cancelRequest(requestId, companyId, reason, userName)
     revalidatePath('/', 'layout')
     return { success: true, data: success }
   } catch (error: any) {

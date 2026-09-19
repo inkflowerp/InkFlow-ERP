@@ -41,9 +41,11 @@ export interface InvoiceRequestsPanelProps {
   onRefresh: () => void
 }
 
-function timeAgo(dateString: string): string {
+function timeAgo(dateString?: string | null): string {
+  if (!dateString) return 'Recently'
   try {
     const date = new Date(dateString)
+    if (isNaN(date.getTime())) return 'Recently'
     const now = new Date()
     const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000)
 
@@ -56,12 +58,12 @@ function timeAgo(dateString: string): string {
     if (diffDays < 30) return `${diffDays}d ago`
     return date.toLocaleDateString()
   } catch {
-    return dateString
+    return 'Recently'
   }
 }
 
 export function InvoiceRequestsPanel({
-  requests,
+  requests = [],
   isLoading = false,
   tenantSlug,
   onCreateInvoice,
@@ -78,11 +80,12 @@ export function InvoiceRequestsPanel({
 
   // Metrics
   const metrics = useMemo(() => {
-    const total = requests.length
-    const pending = requests.filter((r) => r.status === 'pending')
-    const fulfilled = requests.filter((r) => r.status === 'invoice_created')
-    const cancelled = requests.filter((r) => r.status === 'cancelled' || r.status === 'rejected')
-    const totalEstimatedValue = requests.reduce((sum, r) => sum + (Number(r.estimated_amount) || 0), 0)
+    const safeList = Array.isArray(requests) ? requests : []
+    const total = safeList.length
+    const pending = safeList.filter((r) => r.status === 'pending')
+    const fulfilled = safeList.filter((r) => r.status === 'invoice_created')
+    const cancelled = safeList.filter((r) => r.status === 'cancelled' || r.status === 'rejected')
+    const totalEstimatedValue = safeList.reduce((sum, r) => sum + (Number(r.estimated_amount) || 0), 0)
 
     return {
       total,
@@ -95,7 +98,9 @@ export function InvoiceRequestsPanel({
 
   // Filtered Requests List
   const filteredRequests = useMemo(() => {
-    return requests.filter((req) => {
+    const safeList = Array.isArray(requests) ? requests : []
+    return safeList.filter((req) => {
+      if (!req) return false
       // Sub-filter
       if (activeSubFilter === 'pending' && req.status !== 'pending') return false
       if (activeSubFilter === 'invoice_created' && req.status !== 'invoice_created') return false
@@ -105,13 +110,13 @@ export function InvoiceRequestsPanel({
       if (search.trim()) {
         const q = search.toLowerCase()
         const match =
-          req.request_number.toLowerCase().includes(q) ||
-          req.customer_name.toLowerCase().includes(q) ||
-          (req.customer_phone && req.customer_phone.includes(q)) ||
+          (req.request_number && req.request_number.toLowerCase().includes(q)) ||
+          (req.customer_name && req.customer_name.toLowerCase().includes(q)) ||
+          (req.customer_phone && req.customer_phone.toLowerCase().includes(q)) ||
           (req.order_number && req.order_number.toLowerCase().includes(q)) ||
           (req.job_number && req.job_number.toLowerCase().includes(q)) ||
           (req.design_number && req.design_number.toLowerCase().includes(q)) ||
-          req.requested_by_name.toLowerCase().includes(q) ||
+          (req.requested_by_name && req.requested_by_name.toLowerCase().includes(q)) ||
           (req.items_summary && req.items_summary.toLowerCase().includes(q)) ||
           (req.notes && req.notes.toLowerCase().includes(q))
 

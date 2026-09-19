@@ -1958,6 +1958,7 @@ export class PlatformService {
         'payment_adjustments',
         'payment_allocations',
         'payments',
+        'invoice_requests',
         'invoice_items',
         'invoices',
         'expenses',

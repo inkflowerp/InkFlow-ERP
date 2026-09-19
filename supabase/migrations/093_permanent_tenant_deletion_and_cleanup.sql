@@ -272,6 +272,9 @@ begin
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'invoice_items') then
         delete from public.invoice_items where invoice_id in (select id from public.invoices where company_id = p_company_id);
     end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'invoice_requests') then
+        delete from public.invoice_requests where company_id = p_company_id;
+    end if;
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'invoices') then
         get diagnostics v_count = row_count;
         delete from public.invoices where company_id = p_company_id;
