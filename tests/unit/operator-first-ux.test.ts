@@ -108,7 +108,7 @@ describe('Operator-First UX & New Work Workflow Tests (V9.1)', () => {
     })
 
     // Operator encounters head strike
-    const updated = await ProductionTaskRepository.updateTask(companyId, task.id, {
+    const updated = await ProductionTaskRepository.updateTask(task.id, companyId, {
       status: 'paused',
       hold_reason: 'machine_breakdown',
       hold_notes: 'Print head strike on media edge at 35 pcs',
