@@ -595,6 +595,13 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         updated_at: now,
       }
       PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
+
+      if (targetStatus === 'approved') {
+        try {
+          await sendToPrintOperatorAction(job.id, companyId)
+        } catch {}
+      }
+
       showNotification(`Job #${job.design_number} moved to ${targetStatus.replace('_', ' ')}!`)
     })
   }

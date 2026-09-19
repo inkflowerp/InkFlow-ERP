@@ -278,7 +278,7 @@ export class DesignRepository {
     }
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const job = all.find((d) => d.id === params.design_job_id && d.company_id === params.company_id)
+    const job = all.find((d) => d.id === params.design_job_id && (!d.company_id || d.company_id === params.company_id || params.company_id === 'default'))
     if (job) {
       job.status = nextJobStatus as any
       job.is_locked = params.approval_status === 'approved'
@@ -300,7 +300,7 @@ export class DesignRepository {
         let updatedAny = false
         for (const jo of jobOrders) {
           if (
-            jo.company_id === params.company_id &&
+            (!jo.company_id || jo.company_id === params.company_id || params.company_id === 'default') &&
             ((salesOrderId && jo.order_id === salesOrderId) || jo.id === job.job_order_id || jo.design_job_id === job.id)
           ) {
             jo.artwork_status = 'approved'
@@ -312,12 +312,9 @@ export class DesignRepository {
           PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
         }
 
-        const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
-        if (hasInvoice) {
-          try {
-            await this.sendToPrintOperator(params.design_job_id, params.company_id, 'Customer Approval')
-          } catch {}
-        }
+        try {
+          await this.sendToPrintOperator(params.design_job_id, params.company_id, 'Customer Approval')
+        } catch {}
       }
     }
   }
@@ -333,7 +330,8 @@ export class DesignRepository {
     // Determine invoice status
     const hasInvoice = Boolean(job.invoice_id)
     const nextCommercialStatus = hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required')
-    const nextStatus = 'customer_approval'
+    const isReadyForProd = job.customer_approval_required === false || job.workflow_routing === 'design_ok'
+    const nextStatus = isReadyForProd ? 'approved' : 'customer_approval'
 
     const now = new Date().toISOString()
 
@@ -344,6 +342,7 @@ export class DesignRepository {
         .update({
           status: nextStatus,
           commercial_status: nextCommercialStatus,
+          is_locked: isReadyForProd,
           instructions: notes ? `${job.instructions || ''}\n[Design Ready Note]: ${notes}`.trim() : job.instructions,
           updated_at: now,
         })
@@ -353,6 +352,11 @@ export class DesignRepository {
         .single()
 
       if (!error && data) {
+        if (isReadyForProd) {
+          try {
+            await this.sendToPrintOperator(id, companyId, 'Design Ready Auto-Release')
+          } catch {}
+        }
         return data as unknown as DesignJobRecord
       }
     } catch {
@@ -360,12 +364,19 @@ export class DesignRepository {
     }
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const idx = all.findIndex((d) => d.id === id && d.company_id === companyId)
+    const idx = all.findIndex((d) => d.id === id && (!d.company_id || d.company_id === companyId || companyId === 'default'))
     if (idx >= 0) {
       all[idx].status = nextStatus as any
       all[idx].commercial_status = nextCommercialStatus as any
+      all[idx].is_locked = isReadyForProd
       all[idx].updated_at = now
       PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
+
+      if (isReadyForProd) {
+        try {
+          await this.sendToPrintOperator(id, companyId, 'Design Ready Auto-Release')
+        } catch {}
+      }
       return all[idx]
     }
     return null
@@ -398,7 +409,7 @@ export class DesignRepository {
     }
 
     const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const idx = all.findIndex((d) => d.id === id && d.company_id === companyId)
+    const idx = all.findIndex((d) => d.id === id && (!d.company_id || d.company_id === companyId || companyId === 'default'))
     if (idx >= 0) {
       all[idx] = { ...all[idx], ...updates, updated_at: now }
       PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
@@ -429,8 +440,21 @@ export class DesignRepository {
       return { success: false, error: 'Design job not found.' }
     }
 
-    // 1. Check Commercial Gate: Invoice MUST exist
-    const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
+    // 1. Resolve Commercial Gate: check direct invoice or linked sales orders/invoices
+    const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const matchingInv = invoices.find(
+      (inv) =>
+        (job.invoice_id && (inv.id === job.invoice_id || inv.invoice_number === job.invoice_id)) ||
+        (job.invoice_number && inv.invoice_number === job.invoice_number) ||
+        (job.sales_order_id && inv.sales_order_id === job.sales_order_id) ||
+        (job.order_id && (inv.sales_order_id === job.order_id || inv.order_id === job.order_id)) ||
+        (job.customer_id && inv.customer_id === job.customer_id && inv.items?.some((it: any) => it.item_description?.includes(job.title) || it.item_name?.includes(job.title) || job.title?.includes(it.item_name || it.item_description)))
+    )
+
+    const resolvedInvoiceId = job.invoice_id || matchingInv?.id || null
+    const resolvedInvoiceNum = job.invoice_number || matchingInv?.invoice_number || null
+    const hasInvoice = Boolean(resolvedInvoiceId) || Boolean(resolvedInvoiceNum) || job.commercial_status === 'invoice_created'
+
     if (!hasInvoice) {
       return {
         success: false,
@@ -444,7 +468,10 @@ export class DesignRepository {
       job.status === 'approved' ||
       job.is_locked ||
       (job.versions && job.versions.some((v) => v.is_approved)) ||
+      job.workflow_routing === 'design_ok' ||
+      job.workflow_routing === 'ready_production' ||
       !isApprovalRequired
+
     if (!isApproved) {
       return {
         success: false,
@@ -457,6 +484,9 @@ export class DesignRepository {
     const updatedJob = await this.updateDesignJob(id, companyId, {
       status: 'approved',
       workflow_routing: 'ready_production',
+      commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
+      invoice_id: resolvedInvoiceId || job.invoice_id || null,
+      invoice_number: resolvedInvoiceNum || job.invoice_number || null,
       is_locked: true,
       updated_at: now,
     })
@@ -466,7 +496,7 @@ export class DesignRepository {
     const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
     let matchedOrder = jobOrders.find(
       (jo) =>
-        jo.company_id === companyId &&
+        (!jo.company_id || jo.company_id === companyId || companyId === 'default') &&
         (jo.design_job_id === id || (job.sales_order_id && jo.order_id === job.sales_order_id) || jo.id === job.job_order_id)
     )
 
@@ -476,10 +506,12 @@ export class DesignRepository {
     if (matchedOrder) {
       matchedOrder.status = 'queued'
       matchedOrder.artwork_status = 'approved'
-      matchedOrder.commercial_status = 'invoice_created'
+      matchedOrder.commercial_status = hasInvoice ? 'invoice_created' : 'invoice_required'
       matchedOrder.production_gate_status = 'ready_for_production'
-      matchedOrder.invoice_id = job.invoice_id || matchedOrder.invoice_id || null
-      matchedOrder.invoice_number = job.invoice_number || matchedOrder.invoice_number || null
+      matchedOrder.is_blocked_by_commercial_gate = !hasInvoice
+      matchedOrder.is_blocked_by_design_gate = false
+      matchedOrder.invoice_id = resolvedInvoiceId || matchedOrder.invoice_id || null
+      matchedOrder.invoice_number = resolvedInvoiceNum || matchedOrder.invoice_number || null
       matchedOrder.updated_at = now
     } else {
       matchedOrder = {
@@ -487,16 +519,18 @@ export class DesignRepository {
         company_id: companyId,
         order_id: job.sales_order_id || null,
         design_job_id: job.id,
-        invoice_id: job.invoice_id || null,
-        invoice_number: job.invoice_number || null,
-        job_number: `JO-${job.design_number.replace('DSN-', '')}`,
+        invoice_id: resolvedInvoiceId || null,
+        invoice_number: resolvedInvoiceNum || null,
+        job_number: `JO-${(job.design_number || '001').replace('DSN-', '')}`,
         customer_id: job.customer_id,
         customer_name: job.customer_name,
         title: job.title,
         status: 'queued',
         artwork_status: 'approved',
-        commercial_status: 'invoice_created',
+        commercial_status: hasInvoice ? 'invoice_created' : 'invoice_required',
         production_gate_status: 'ready_for_production',
+        is_blocked_by_commercial_gate: !hasInvoice,
+        is_blocked_by_design_gate: false,
         priority: job.priority || 'normal',
         due_date: job.deadline,
         created_at: now,
@@ -510,12 +544,12 @@ export class DesignRepository {
     const prodJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
     let matchedProdJob = prodJobs.find(
       (pj) =>
-        pj.company_id === companyId &&
+        (!pj.company_id || pj.company_id === companyId || companyId === 'default') &&
         (pj.job_order_id === matchedOrder.id || (job.sales_order_id && pj.sales_order_id === job.sales_order_id))
     )
     if (matchedProdJob) {
       matchedProdJob.commercial_gate_status = 'ready_for_production'
-      matchedProdJob.is_blocked_by_commercial_gate = false
+      matchedProdJob.is_blocked_by_commercial_gate = !hasInvoice
       matchedProdJob.is_blocked_by_design_gate = false
       matchedProdJob.status = 'queued'
       matchedProdJob.updated_at = now
@@ -531,7 +565,7 @@ export class DesignRepository {
         quantity: job.quantity || 1,
         status: 'queued',
         commercial_gate_status: 'ready_for_production',
-        is_blocked_by_commercial_gate: false,
+        is_blocked_by_commercial_gate: !hasInvoice,
         is_blocked_by_design_gate: false,
         created_at: now,
         updated_at: now,
@@ -540,10 +574,33 @@ export class DesignRepository {
     }
     PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, prodJobs)
 
-    // 6. Create Production Tasks for the Production Board
+    // 6. Create or Unblock Production Tasks for the Production Board
     const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-    const hasExistingTasks = prodTasks.some((t) => t.job_order_id === matchedOrder.id)
-    if (!hasExistingTasks) {
+    const existingJobTasks = prodTasks.filter(
+      (t) =>
+        (!t.company_id || t.company_id === companyId || companyId === 'default') &&
+        (t.job_order_id === matchedOrder.id ||
+         t.production_job_id === matchedProdJob.id ||
+         (job.invoice_number && t.job_number === job.invoice_number) ||
+         t.task_number?.startsWith(`TSK-${matchedOrder.job_number.replace('JO-', '')}`))
+    )
+
+    if (existingJobTasks.length > 0) {
+      for (const t of existingJobTasks) {
+        t.is_blocked_by_design_gate = false
+        t.is_blocked_by_commercial_gate = !hasInvoice
+        if (t.status === 'on_hold' && t.hold_reason === 'design_pending') {
+          t.status = 'queued'
+          t.hold_reason = null
+        }
+        t.customer_name = t.customer_name || job.customer_name
+        t.product_name = t.product_name || job.title
+        t.job_number = t.job_number || resolvedInvoiceNum || matchedOrder.job_number
+        t.job_deadline = t.job_deadline || job.deadline
+        t.updated_at = now
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
+    } else {
       const task1Id = crypto.randomUUID()
       const task2Id = crypto.randomUUID()
       const task1 = {
@@ -555,16 +612,16 @@ export class DesignRepository {
         task_name: `Print: ${job.title}`,
         customer_name: job.customer_name,
         product_name: job.title,
-        job_number: job.invoice_number || matchedOrder.job_number,
+        job_number: resolvedInvoiceNum || matchedOrder.job_number,
         job_deadline: job.deadline,
         task_type: 'printing',
         department: 'printing',
         sequence_order: 1,
         quantity: job.quantity || 1,
-        unit: 'pcs',
+        unit: job.unit || 'pcs',
         priority: job.priority || 'normal',
         status: 'queued',
-        is_blocked_by_commercial_gate: false,
+        is_blocked_by_commercial_gate: !hasInvoice,
         is_blocked_by_design_gate: false,
         created_at: now,
         updated_at: now,
@@ -578,16 +635,16 @@ export class DesignRepository {
         task_name: `Finishing & QC: ${job.title}`,
         customer_name: job.customer_name,
         product_name: job.title,
-        job_number: job.invoice_number || matchedOrder.job_number,
+        job_number: resolvedInvoiceNum || matchedOrder.job_number,
         job_deadline: job.deadline,
         task_type: 'finishing',
         department: 'finishing',
         sequence_order: 2,
         quantity: job.quantity || 1,
-        unit: 'pcs',
+        unit: job.unit || 'pcs',
         priority: job.priority || 'normal',
         status: 'queued',
-        is_blocked_by_commercial_gate: false,
+        is_blocked_by_commercial_gate: !hasInvoice,
         is_blocked_by_design_gate: false,
         created_at: now,
         updated_at: now,
@@ -621,9 +678,10 @@ export class DesignRepository {
       let chlUpdated = false
       for (const ch of challans) {
         if (
-          ch.company_id === companyId &&
+          (!ch.company_id || ch.company_id === companyId || companyId === 'default') &&
           (ch.invoice_id === job.invoice_id ||
             ch.invoice_number === job.invoice_number ||
+            (resolvedInvoiceNum && ch.invoice_number === resolvedInvoiceNum) ||
             (job.sales_order_id && ch.sales_order_id === job.sales_order_id))
         ) {
           if (ch.items && Array.isArray(ch.items)) {

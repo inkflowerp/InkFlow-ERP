@@ -108,20 +108,24 @@ export class ProductionPlanningService {
       }
 
       // Check commercial gate
-      const jo = jobOrders.find((j) => j.id === task.job_order_id)
-      const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id) : null
+      const jo = jobOrders.find((j) => (j.id === task.job_order_id || j.id === (task as any).order_id) && ProductionTaskRepository.isMatchingCompany(j.company_id, companyId))
+      const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id && ProductionTaskRepository.isMatchingCompany(s.company_id, companyId)) : null
       const hasJobContext = Boolean(jo || so)
 
       const hasInvoiceInStore = Boolean(
         jo?.invoice_id ||
+        jo?.invoice_number ||
         so?.invoice_id ||
+        so?.invoice_number ||
+        task.job_number?.startsWith('INV-') ||
         (so && invoices.some((inv) => inv.sales_order_id === so.id)) ||
-        (jo && invoices.some((inv) => inv.job_order_id === jo.id))
+        (jo && invoices.some((inv) => inv.job_order_id === jo.id || inv.invoice_number === jo.invoice_number || inv.id === jo.invoice_id)) ||
+        invoices.some((inv) => (task.job_number && inv.invoice_number === task.job_number) || (task.customer_name && inv.customer_name === task.customer_name))
       )
 
       const hasInvoice = hasJobContext
         ? hasInvoiceInStore
-        : Boolean(task.is_blocked_by_commercial_gate === false || (task as any).commercial_gate_status === 'ready_for_production')
+        : Boolean(task.is_blocked_by_commercial_gate === false || (task as any).commercial_gate_status === 'ready_for_production' || hasInvoiceInStore)
 
       if (!hasInvoice && task.department !== 'design') {
         task.is_blocked_by_commercial_gate = true
@@ -135,16 +139,19 @@ export class ProductionPlanningService {
       const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
       const isDesignJobApproved = designJobs.some(
         (dj) =>
-          (!companyId || dj.company_id === companyId) &&
+          ProductionTaskRepository.isMatchingCompany(dj.company_id, companyId) &&
           ((so && (dj.order_id === so.id || dj.sales_order_id === so.id)) ||
-           (jo && (dj.id === jo.design_job_id || dj.order_id === jo.order_id || dj.job_order_id === jo.id))) &&
-          dj.status === 'approved'
+           (jo && (dj.id === jo.design_job_id || dj.order_id === jo.order_id || dj.job_order_id === jo.id || dj.invoice_id === jo.invoice_id || dj.invoice_number === jo.invoice_number)) ||
+           (dj.invoice_number && dj.invoice_number === task.job_number) ||
+           (dj.design_number && dj.design_number === task.job_number) ||
+           (dj.title && task.task_name?.includes(dj.title))) &&
+          (dj.status === 'approved' || dj.is_locked || dj.workflow_routing === 'ready_production' || dj.workflow_routing === 'design_ok' || dj.customer_approval_required === false || (dj.versions && dj.versions.some((v: any) => v.is_approved)))
       )
 
       const routing = jo?.workflow_routing || so?.workflow_routing || (hasJobContext ? 'design_required' : (task.is_blocked_by_design_gate === false ? 'design_ok' : 'design_required'))
       const isDesignApproved = hasJobContext
         ? (jo?.artwork_status === 'approved' || routing === 'design_ok' || routing === 'ready_production' || isDesignJobApproved)
-        : Boolean(task.is_blocked_by_design_gate === false || (task as any).commercial_gate_status === 'ready_for_production')
+        : Boolean(task.is_blocked_by_design_gate === false || (task as any).commercial_gate_status === 'ready_for_production' || isDesignJobApproved)
 
       if (routing === 'design_required' && !isDesignApproved && task.department !== 'design') {
         task.is_blocked_by_design_gate = true
@@ -182,20 +189,24 @@ export class ProductionPlanningService {
     const salesOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
     const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
 
-    const jo = jobOrders.find((j) => j.id === task.job_order_id)
-    const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id) : null
+    const jo = jobOrders.find((j) => (j.id === task.job_order_id || j.id === (task as any).order_id) && ProductionTaskRepository.isMatchingCompany(j.company_id, companyId))
+    const so = jo?.order_id ? salesOrders.find((s) => s.id === jo.order_id && ProductionTaskRepository.isMatchingCompany(s.company_id, companyId)) : null
     const hasJobContext = Boolean(jo || so)
 
     const hasInvoiceInStore = Boolean(
       jo?.invoice_id ||
+      jo?.invoice_number ||
       so?.invoice_id ||
+      so?.invoice_number ||
+      task.job_number?.startsWith('INV-') ||
       (so && invoices.some((inv) => inv.sales_order_id === so.id)) ||
-      (jo && invoices.some((inv) => inv.job_order_id === jo.id))
+      (jo && invoices.some((inv) => inv.job_order_id === jo.id || inv.invoice_number === jo.invoice_number || inv.id === jo.invoice_id)) ||
+      invoices.some((inv) => (task.job_number && inv.invoice_number === task.job_number) || (task.customer_name && inv.customer_name === task.customer_name))
     )
 
     const hasInvoice = hasJobContext
       ? hasInvoiceInStore
-      : Boolean(task.is_blocked_by_commercial_gate === false || (task as any).commercial_gate_status === 'ready_for_production')
+      : Boolean(task.is_blocked_by_commercial_gate === false || (task as any).commercial_gate_status === 'ready_for_production' || hasInvoiceInStore)
 
     if (!hasInvoice && task.department !== 'design') {
       task.is_blocked_by_commercial_gate = true
@@ -208,16 +219,19 @@ export class ProductionPlanningService {
     const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const isDesignJobApproved = designJobs.some(
       (dj) =>
-        (!companyId || dj.company_id === companyId) &&
+        ProductionTaskRepository.isMatchingCompany(dj.company_id, companyId) &&
         ((so && (dj.order_id === so.id || dj.sales_order_id === so.id)) ||
-         (jo && (dj.id === jo.design_job_id || dj.order_id === jo.order_id || dj.job_order_id === jo.id))) &&
-        dj.status === 'approved'
+         (jo && (dj.id === jo.design_job_id || dj.order_id === jo.order_id || dj.job_order_id === jo.id || dj.invoice_id === jo.invoice_id || dj.invoice_number === jo.invoice_number)) ||
+         (dj.invoice_number && dj.invoice_number === task.job_number) ||
+         (dj.design_number && dj.design_number === task.job_number) ||
+         (dj.title && task.task_name?.includes(dj.title))) &&
+        (dj.status === 'approved' || dj.is_locked || dj.workflow_routing === 'ready_production' || dj.workflow_routing === 'design_ok' || dj.customer_approval_required === false || (dj.versions && dj.versions.some((v: any) => v.is_approved)))
     )
 
     const routing = jo?.workflow_routing || so?.workflow_routing || (hasJobContext ? 'design_required' : (task.is_blocked_by_design_gate === false ? 'design_ok' : 'design_required'))
     const isDesignApproved = hasJobContext
       ? (jo?.artwork_status === 'approved' || routing === 'design_ok' || routing === 'ready_production' || isDesignJobApproved)
-      : Boolean(task.is_blocked_by_design_gate === false || (task as any).commercial_gate_status === 'ready_for_production')
+      : Boolean(task.is_blocked_by_design_gate === false || (task as any).commercial_gate_status === 'ready_for_production' || isDesignJobApproved)
 
     if (routing === 'design_required' && !isDesignApproved && task.department !== 'design') {
       task.is_blocked_by_design_gate = true
