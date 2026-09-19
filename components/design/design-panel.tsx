@@ -41,6 +41,21 @@ import {
   FileText,
   Phone,
   ArrowRight,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Share2,
+  Sliders,
+  Scissors,
+  ShieldAlert,
+  CheckCheck,
+  Wrench,
+  FileDown,
+  Copy,
+  RotateCcw,
+  Split,
+  Sparkle,
+  Download,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -97,12 +112,22 @@ export type PipelineSubFilter =
 
 export type ViewMode = 'kanban' | 'cards' | 'table'
 
-const KANBAN_COLUMNS: { id: DesignStatus; title: string; titleBn: string; color: string }[] = [
-  { id: 'received', title: 'Received', titleBn: 'নতুন রিকুয়েস্ট', color: 'border-t-blue-500' },
-  { id: 'designing', title: 'Designing', titleBn: 'ডিজাইন চলছে', color: 'border-t-indigo-500' },
-  { id: 'customer_approval', title: 'Customer Approval', titleBn: 'অনুমোদনের অপেক্ষায়', color: 'border-t-amber-500' },
-  { id: 'revision', title: 'Revision Needed', titleBn: 'সংশোধন', color: 'border-t-purple-500' },
-  { id: 'approved', title: 'Approved & Locked', titleBn: 'অনুমোদিত ও লক', color: 'border-t-emerald-500' },
+const KANBAN_COLUMNS: { id: DesignStatus; title: string; titleBn: string; color: string; badgeBg: string }[] = [
+  { id: 'received', title: 'Received', titleBn: 'নতুন রিকুয়েস্ট', color: 'border-t-blue-500', badgeBg: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' },
+  { id: 'designing', title: 'Designing', titleBn: 'ডিজাইন চলছে', color: 'border-t-indigo-500', badgeBg: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' },
+  { id: 'customer_approval', title: 'Customer Approval', titleBn: 'অনুমোদনের অপেক্ষায়', color: 'border-t-amber-500', badgeBg: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' },
+  { id: 'revision', title: 'Revision Needed', titleBn: 'সংশোধন', color: 'border-t-purple-500', badgeBg: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
+  { id: 'approved', title: 'Approved & Locked', titleBn: 'অনুমোদিত ও লক', color: 'border-t-emerald-500', badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' },
+]
+
+const PRINT_MACHINERY_LIST = [
+  { id: 'roland_eco', name: 'Roland SolJet Pro-4 Eco-Solvent (10ft Outdoor)', type: 'Roll-to-Roll' },
+  { id: 'konica_c4070', name: 'Konica Minolta AccurioPress C4070 (Digital Offset)', type: 'Cut-Sheet' },
+  { id: 'uv_flatbed_8x4', name: 'UV Flatbed 8×4ft (Acrylic/Foam/Wood)', type: 'Flatbed UV' },
+  { id: 'cnc_router', name: 'CNC Router 3D Cutting Bed (ACP/Acrylic)', type: 'Fabrication' },
+  { id: 'laser_bed', name: 'High-Precision Laser Engraver & Cutter', type: 'Cutting' },
+  { id: 'dtf_textile', name: 'DTF 24-inch Industrial Textile Apparel Printer', type: 'Textile' },
+  { id: 'offset_speedmaster', name: 'Heidelberg Speedmaster 4-Color Commercial Offset', type: 'Offset' },
 ]
 
 export interface DesignPanelProps {
@@ -135,6 +160,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const [search, setSearch] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [intakeFilter, setIntakeFilter] = useState<string>('all')
+  const [formatFilter, setFormatFilter] = useState<string>('all')
   const [onlyMyJobs, setOnlyMyJobs] = useState(false)
 
   // Datastore hooks
@@ -153,6 +179,20 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false)
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
   const [isRequestInvoiceModalOpen, setIsRequestInvoiceModalOpen] = useState(false)
+  
+  // Power Upgrade Modals
+  const [lightboxJob, setLightboxJob] = useState<DesignJobRecord | null>(null)
+  const [lightboxVersionIdx, setLightboxVersionIdx] = useState<number>(0)
+  const [lightboxZoom, setLightboxZoom] = useState<number>(1)
+  const [whatsAppJob, setWhatsAppJob] = useState<DesignJobRecord | null>(null)
+  const [whatsAppPhone, setWhatsAppPhone] = useState<string>('')
+  const [whatsAppCopied, setWhatsAppCopied] = useState<boolean>(false)
+  const [prepressJob, setPrepressJob] = useState<DesignJobRecord | null>(null)
+  const [selectedMachine, setSelectedMachine] = useState<string>('roland_eco')
+  const [compareJob, setCompareJob] = useState<DesignJobRecord | null>(null)
+  const [compareVerA, setCompareVerA] = useState<number>(1)
+  const [compareVerB, setCompareVerB] = useState<number>(1)
+
   const [notificationMsg, setNotificationMsg] = useState<{ text: string; type: 'success' | 'warning' | 'info' } | null>(null)
 
   // Standalone new job creation form
@@ -237,7 +277,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     }
   }, [tenantJobs])
 
-  // Filtered jobs based on tab, search, priority, intake source, and subfilter
+  // Filtered jobs based on tab, search, priority, format, intake source, and subfilter
   const filteredJobs = useMemo(() => {
     return tenantJobs.filter((job) => {
       // Search
@@ -262,6 +302,12 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
       // Priority filter
       if (priorityFilter !== 'all' && job.priority !== priorityFilter) {
         return false
+      }
+
+      // Format filter
+      if (formatFilter !== 'all') {
+        const latestVersion = job.versions?.[job.versions.length - 1]
+        if (latestVersion?.file_format !== formatFilter) return false
       }
 
       // Intake source filter
@@ -299,9 +345,23 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
 
       return true
     })
-  }, [tenantJobs, activeTab, workFilter, search, priorityFilter, intakeFilter, onlyMyJobs, currentUser])
+  }, [tenantJobs, activeTab, workFilter, search, priorityFilter, formatFilter, intakeFilter, onlyMyJobs, currentUser])
 
-  // Actions
+  // Interactive Status Transitions
+  const handleQuickStatusMove = async (job: DesignJobRecord, targetStatus: DesignStatus) => {
+    startTransition(async () => {
+      const now = new Date().toISOString()
+      const updatedJob = {
+        ...job,
+        status: targetStatus,
+        is_locked: targetStatus === 'approved' ? true : job.is_locked,
+        updated_at: now,
+      }
+      PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
+      showNotification(`Job #${job.design_number} moved to ${targetStatus.replace('_', ' ')}!`)
+    })
+  }
+
   const handleStartDesign = async (job: DesignJobRecord) => {
     startTransition(async () => {
       const now = new Date().toISOString()
@@ -315,18 +375,43 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     })
   }
 
+  const handleMarkReady = async (job: DesignJobRecord) => {
+    startTransition(async () => {
+      try {
+        const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
+        await markDesignReadyAction(job.id, 'Designer marked design ready', companyId)
+
+        const nextStatus = job.customer_approval_required === false ? 'approved' : 'customer_approval'
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
+          status: nextStatus,
+          commercial_status: hasInvoice ? 'invoice_created' : 'invoice_required',
+          updated_at: new Date().toISOString(),
+        })
+
+        if (!hasInvoice) {
+          showNotification('Design marked READY. Invoice is missing — please request invoice from Manager.', 'warning')
+        } else if (job.customer_approval_required === false) {
+          showNotification('Design marked READY! Customer approval bypassed. Ready for print floor!')
+        } else {
+          showNotification('Design marked READY! Digital proof dispatched for customer approval.')
+        }
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to mark design ready', 'warning')
+      }
+    })
+  }
+
   const handleOpenUploadModal = (job: DesignJobRecord) => {
-    if (job.is_locked) {
-      showNotification('Artwork is approved and locked. Unlock before uploading new version.', 'warning')
-      return
-    }
     setSelectedJob(job)
-    setUploadFileName(`${job.design_number}_v${(job.current_version || 1) + 1}.ai`)
-    setUploadNotes('')
+    const nextVer = (job.versions?.length || 0) + 1
+    const latestFormat = job.versions?.[job.versions.length - 1]?.file_format || 'ai'
+    setUploadFileName(`${job.design_number.toLowerCase()}_v${nextVer}`)
+    setUploadFormat(latestFormat)
+    setUploadNotes(`Revision v${nextVer} adjustments per client review.`)
     setIsUploadModalOpen(true)
   }
 
-  const handleUploadVersion = async (e: React.FormEvent) => {
+  const handleSaveUploadVersion = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedJob) return
 
@@ -386,7 +471,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const handleOpenApprovalModal = (job: DesignJobRecord) => {
     setSelectedJob(job)
     setApproverName(job.customer_name || '')
-    setApprovalNotes('Artwork approved by customer representative.')
+    setApprovalNotes('Artwork proof approved by customer representative.')
     setIsApprovalModalOpen(true)
   }
 
@@ -434,7 +519,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
 
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, selectedJob.id, updatedJob)
         setIsApprovalModalOpen(false)
-        showNotification(`Artwork #${selectedJob.design_number} approved & locked!`)
+        showNotification(`Artwork #${selectedJob.design_number} approved & locked for production!`)
       } catch (err: any) {
         showNotification(err.message || 'Approval error', 'warning')
       }
@@ -523,19 +608,79 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     })
   }
 
-  const handleSendToPrint = async (job: DesignJobRecord) => {
+  const handleOpenPrepress = (job: DesignJobRecord) => {
+    setPrepressJob(job)
+    setSelectedMachine('roland_eco')
+  }
+
+  const handleDispatchToMachine = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!prepressJob) return
+
     startTransition(async () => {
       try {
-        const res = await sendToPrintOperatorAction(job.id, companyId)
+        const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === selectedMachine)
+        const res = await sendToPrintOperatorAction(prepressJob.id, companyId)
         if (!res.success) {
           showNotification(res.error || 'Failed to send to print operator', 'warning')
           return
         }
-        showNotification(`Design #${job.design_number} dispatched to Production Floor & Press Operators!`)
+
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, prepressJob.id, {
+          status: 'approved',
+          workflow_routing: 'ready_production',
+          is_locked: true,
+          updated_at: new Date().toISOString(),
+        })
+
+        setPrepressJob(null)
+        showNotification(`Job #${prepressJob.design_number} authorized & routed to ${machineObj?.name}!`)
       } catch (err: any) {
         showNotification(err.message || 'Print dispatch error', 'warning')
       }
     })
+  }
+
+  const handleOpenWhatsApp = (job: DesignJobRecord) => {
+    const cust = customers.find((c) => c.id === job.customer_id || c.name === job.customer_name)
+    setWhatsAppJob(job)
+    setWhatsAppPhone(cust?.mobile || (job as any).customer_phone || '01711000000')
+    setWhatsAppCopied(false)
+  }
+
+  const handleGenerateWhatsAppText = (job: DesignJobRecord) => {
+    const latestVersion = job.versions?.[job.versions.length - 1]
+    const proofUrl = latestVersion?.proof_file_url || 'https://inkflow-erp.vercel.app/proof'
+    return `Assalamu Alaikum / Hello ${job.customer_name},\n\nYour artwork digital proof for *${job.title}* (Job #${job.design_number}) is ready for review:\n\n📐 Size/Specs: ${job.dimensions_spec || 'Custom'}\n📄 Version: v${job.current_version || 1}\n🖼️ View Digital Proof: ${proofUrl}\n\nPlease reply with *APPROVED* to lock for production printing, or reply with your revision notes.\n\nThank you,\n${company?.name || 'Classic Print & Signage'}`
+  }
+
+  const handleCopyWhatsApp = (job: DesignJobRecord) => {
+    const text = handleGenerateWhatsAppText(job)
+    navigator.clipboard.writeText(text)
+    setWhatsAppCopied(true)
+    setTimeout(() => setWhatsAppCopied(false), 3000)
+    showNotification('WhatsApp message copied to clipboard!')
+  }
+
+  const handleSendWhatsAppWeb = (job: DesignJobRecord) => {
+    const text = encodeURIComponent(handleGenerateWhatsAppText(job))
+    const cleanPhone = whatsAppPhone.replace(/[^0-9]/g, '')
+    const fullPhone = cleanPhone.startsWith('88') ? cleanPhone : `88${cleanPhone}`
+    window.open(`https://wa.me/${fullPhone}?text=${text}`, '_blank')
+  }
+
+  const handleOpenLightbox = (job: DesignJobRecord, versionIndex = -1) => {
+    setLightboxJob(job)
+    const totalVers = job.versions?.length || 1
+    setLightboxVersionIdx(versionIndex >= 0 ? versionIndex : totalVers - 1)
+    setLightboxZoom(1)
+  }
+
+  const handleOpenCompare = (job: DesignJobRecord) => {
+    const vCount = job.versions?.length || 1
+    setCompareJob(job)
+    setCompareVerA(Math.max(1, vCount - 1))
+    setCompareVerB(vCount)
   }
 
   const handleCreateStandaloneJob = (e: React.FormEvent) => {
@@ -587,7 +732,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   }
 
   return (
-    <div className="space-y-5 max-w-7xl">
+    <div className="space-y-5 max-w-7xl mx-auto pb-16">
       {/* 1. TOP HEADER & STUDIO ACTIONS */}
       <PageHeader
         titleEn="Design Panel"
@@ -598,301 +743,460 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         iconColor="text-pink-600"
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {/* View Mode Toggle */}
-            <div className="flex items-center rounded-lg border border-slate-200 dark:border-slate-800 p-0.5 bg-white dark:bg-slate-900 shadow-xs">
+            {/* View Mode Toggle Buttons */}
+            <div className="flex items-center rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900 shadow-2xs">
               <Button
                 size="sm"
                 variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-                onClick={() => setViewMode('kanban')}
-                className={cn('h-7.5 text-xs px-2.5 cursor-pointer font-bold', viewMode === 'kanban' && 'bg-slate-900 text-white dark:bg-white dark:text-slate-900')}
-                title="Kanban Board View"
+                onClick={() => {
+                  setViewMode('kanban')
+                  if (activeTab !== 'kanban') setActiveTab('kanban')
+                }}
+                className="h-7 text-xs px-2.5 bangla-text"
               >
                 <Kanban className="h-3.5 w-3.5 mr-1" />
-                <span>Board</span>
+                {tBilingual('Board', 'বোর্ড')}
               </Button>
               <Button
                 size="sm"
                 variant={viewMode === 'cards' ? 'default' : 'ghost'}
                 onClick={() => setViewMode('cards')}
-                className={cn('h-7.5 text-xs px-2.5 cursor-pointer font-bold', viewMode === 'cards' && 'bg-slate-900 text-white dark:bg-white dark:text-slate-900')}
-                title="Cards Grid View"
+                className="h-7 text-xs px-2.5 bangla-text"
               >
                 <LayoutGrid className="h-3.5 w-3.5 mr-1" />
-                <span>Cards</span>
+                {tBilingual('Cards', 'কার্ড')}
               </Button>
               <Button
                 size="sm"
                 variant={viewMode === 'table' ? 'default' : 'ghost'}
                 onClick={() => setViewMode('table')}
-                className={cn('h-7.5 text-xs px-2.5 cursor-pointer font-bold', viewMode === 'table' && 'bg-slate-900 text-white dark:bg-white dark:text-slate-900')}
-                title="Table List View"
+                className="h-7 text-xs px-2.5 bangla-text"
               >
                 <List className="h-3.5 w-3.5 mr-1" />
-                <span>Table</span>
+                {tBilingual('Table', 'তালিকা')}
               </Button>
             </div>
 
-            {/* Add Work Order Modal Trigger */}
+            {/* PATH A: Direct Customer Work Order */}
             <Button
               size="sm"
               onClick={() => setIsWorkOrderOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-bold shadow-xs cursor-pointer gap-1.5"
+              className="bg-blue-600 hover:bg-blue-700 text-xs text-white font-bold bangla-text shadow-xs"
             >
-              <Plus className="h-3.5 w-3.5" />
-              <span>{tBilingual('Add Work Order', 'ওয়ার্ক অর্ডার')}</span>
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              {tBilingual('Direct Customer Work Order', 'গ্রাহক ওয়ার্ক অর্ডার')}
             </Button>
 
-            {/* Standalone New Design Job Trigger */}
+            {/* New Standalone Design Job */}
             <Button
               size="sm"
               onClick={() => setIsNewJobOpen(true)}
-              className="bg-pink-600 hover:bg-pink-700 text-xs text-white font-bold shadow-xs cursor-pointer gap-1.5"
+              className="bg-pink-600 hover:bg-pink-700 text-xs text-white font-bold bangla-text shadow-xs"
             >
-              <Plus className="h-3.5 w-3.5" />
-              <span>{tBilingual('New Design Job', 'নতুন ডিজাইন জব')}</span>
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              {tBilingual('New Design Job', 'নতুন ডিজাইন জব')}
             </Button>
           </div>
         }
       />
 
-      {/* Notification Toast */}
+      {/* Toast Notification */}
       {notificationMsg && (
         <div
           className={cn(
-            'p-3.5 rounded-xl text-xs font-bold flex items-center gap-2.5 border shadow-sm animate-in fade-in-0',
-            notificationMsg.type === 'success' && 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-            notificationMsg.type === 'warning' && 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
-            notificationMsg.type === 'info' && 'bg-blue-50 text-blue-900 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800'
+            'p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 border shadow-lg animate-in fade-in-0 slide-in-from-top-2 sticky top-4 z-50',
+            notificationMsg.type === 'warning'
+              ? 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800'
+              : 'bg-emerald-50 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800'
           )}
         >
-          {notificationMsg.type === 'success' && <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />}
-          {notificationMsg.type === 'warning' && <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />}
-          {notificationMsg.type === 'info' && <Sparkles className="h-4 w-4 text-blue-600 shrink-0" />}
-          <span>{notificationMsg.text}</span>
+          <div className="flex items-center gap-2">
+            {notificationMsg.type === 'warning' ? (
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            )}
+            <span>{notificationMsg.text}</span>
+          </div>
+          <button onClick={() => setNotificationMsg(null)} className="text-slate-400 hover:text-slate-600">
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
       )}
 
-      {/* 2. TOP OPERATIONAL STAT CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {/* Designing */}
+      {/* 2. OPERATIONAL KPI BAR */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
         <Card
           onClick={() => {
-            setActiveTab('pipeline')
-            setWorkFilter('designing')
+            handleTabChange('pipeline')
+            setWorkFilter('new')
           }}
-          className="p-3 bg-white dark:bg-slate-900 border-l-4 border-l-blue-500 border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:shadow-sm transition-all"
-        >
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-            <span>In Design</span>
-            <Palette className="h-3.5 w-3.5 text-blue-500" />
-          </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-blue-600 mt-1">
-            {kpiStats.designingCount}
-          </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">Active artboards</div>
-        </Card>
-
-        {/* Awaiting Customer Approval */}
-        <Card
-          onClick={() => {
-            setActiveTab('customer_approvals')
-          }}
-          className="p-3 bg-white dark:bg-slate-900 border-l-4 border-l-amber-500 border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:shadow-sm transition-all"
-        >
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-            <span>Approval</span>
-            <Clock className="h-3.5 w-3.5 text-amber-500" />
-          </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-amber-600 mt-1">
-            {kpiStats.approvalCount}
-          </div>
-          <div className="text-[10px] text-amber-600/90 font-medium mt-0.5">Digital proofs sent</div>
-        </Card>
-
-        {/* Revisions Needed */}
-        <Card
-          onClick={() => {
-            setActiveTab('pipeline')
-            setWorkFilter('revision')
-          }}
-          className="p-3 bg-white dark:bg-slate-900 border-l-4 border-l-purple-500 border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:shadow-sm transition-all"
-        >
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-            <span>Revisions</span>
-            <MessageSquare className="h-3.5 w-3.5 text-purple-500" />
-          </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-purple-600 mt-1">
-            {kpiStats.revisionCount}
-          </div>
-          <div className="text-[10px] text-purple-600/90 font-medium mt-0.5">Client adjustments</div>
-        </Card>
-
-        {/* Commercial Hold (Invoice Requested) */}
-        <Card
-          onClick={() => {
-            setActiveTab('pipeline')
-            setWorkFilter('invoice_requested')
-          }}
-          className="p-3 bg-white dark:bg-slate-900 border-l-4 border-l-rose-500 border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:shadow-sm transition-all"
-        >
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-            <span>Invoice Req</span>
-            <Receipt className="h-3.5 w-3.5 text-rose-500" />
-          </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-rose-600 mt-1">
-            {kpiStats.invoiceRequestedCount}
-          </div>
-          <div className="text-[10px] text-rose-600/90 font-medium mt-0.5">Commercial gating</div>
-        </Card>
-
-        {/* Approved & Locked */}
-        <Card
-          onClick={() => {
-            setActiveTab('pipeline')
-            setWorkFilter('ready_for_production')
-          }}
-          className="p-3 bg-white dark:bg-slate-900 border-l-4 border-l-emerald-500 border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:shadow-sm transition-all"
-        >
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-            <span>Approved</span>
-            <Lock className="h-3.5 w-3.5 text-emerald-500" />
-          </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-emerald-600 mt-1">
-            {kpiStats.approvedCount}
-          </div>
-          <div className="text-[10px] text-emerald-600/90 font-medium mt-0.5">Ready for press</div>
-        </Card>
-
-        {/* Due Today */}
-        <Card
           className={cn(
-            'p-3 bg-white dark:bg-slate-900 border-l-4 border-slate-200 dark:border-slate-800 shadow-xs',
-            kpiStats.dueTodayCount > 0 ? 'border-l-red-500 bg-red-50/10' : 'border-l-slate-400'
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            workFilter === 'new' && activeTab === 'pipeline' ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/30' : ''
           )}
         >
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>New Briefs</span>
+            <Sparkles className="h-3.5 w-3.5 text-blue-500" />
+          </div>
+          <div className="text-xl font-black text-slate-900 dark:text-white mt-1">{kpiStats.newCount}</div>
+          <div className="text-[10px] text-blue-600 font-medium mt-0.5">Needs brief intake</div>
+        </Card>
+
+        <Card
+          onClick={() => {
+            handleTabChange('pipeline')
+            setWorkFilter('designing')
+          }}
+          className={cn(
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            workFilter === 'designing' && activeTab === 'pipeline' ? 'ring-2 ring-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30' : ''
+          )}
+        >
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Designing</span>
+            <Palette className="h-3.5 w-3.5 text-indigo-500" />
+          </div>
+          <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{kpiStats.designingCount}</div>
+          <div className="text-[10px] text-indigo-600 font-medium mt-0.5">Active on artboard</div>
+        </Card>
+
+        <Card
+          onClick={() => {
+            handleTabChange('customer_approvals')
+          }}
+          className={cn(
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            activeTab === 'customer_approvals' ? 'ring-2 ring-purple-500 bg-purple-50/50 dark:bg-purple-950/30' : ''
+          )}
+        >
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Awaiting Proof</span>
+            <Clock className="h-3.5 w-3.5 text-purple-500" />
+          </div>
+          <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">{kpiStats.approvalCount}</div>
+          <div className="text-[10px] text-purple-600 font-medium mt-0.5">Sent to customer</div>
+        </Card>
+
+        <Card
+          onClick={() => {
+            handleTabChange('pipeline')
+            setWorkFilter('revision')
+          }}
+          className={cn(
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            workFilter === 'revision' && activeTab === 'pipeline' ? 'ring-2 ring-rose-500 bg-rose-50/50 dark:bg-rose-950/30' : ''
+          )}
+        >
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Revisions</span>
+            <Flame className="h-3.5 w-3.5 text-rose-500" />
+          </div>
+          <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-1">{kpiStats.revisionCount}</div>
+          <div className="text-[10px] text-rose-600 font-medium mt-0.5">Feedback adjustments</div>
+        </Card>
+
+        <Card
+          onClick={() => {
+            handleTabChange('pipeline')
+            setWorkFilter('invoice_requested')
+          }}
+          className={cn(
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            workFilter === 'invoice_requested' && activeTab === 'pipeline' ? 'ring-2 ring-amber-500 bg-amber-50/50 dark:bg-amber-950/30' : ''
+          )}
+        >
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Invoice Req.</span>
+            <Receipt className="h-3.5 w-3.5 text-amber-500" />
+          </div>
+          <div className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">{kpiStats.invoiceRequestedCount}</div>
+          <div className="text-[10px] text-amber-600 font-medium mt-0.5">Billing queue</div>
+        </Card>
+
+        <Card
+          onClick={() => {
+            handleTabChange('pipeline')
+            setWorkFilter('ready_for_production')
+          }}
+          className={cn(
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            workFilter === 'ready_for_production' && activeTab === 'pipeline' ? 'ring-2 ring-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30' : ''
+          )}
+        >
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Ready for Print</span>
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+          </div>
+          <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{kpiStats.readyProdCount}</div>
+          <div className="text-[10px] text-emerald-600 font-medium mt-0.5">Gates cleared</div>
+        </Card>
+
+        <Card
+          onClick={() => {
+            handleTabChange('work_orders')
+          }}
+          className="p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800"
+        >
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Work Orders</span>
+            <Layers className="h-3.5 w-3.5 text-blue-500" />
+          </div>
+          <div className="text-xl font-black text-slate-900 dark:text-white mt-1">{orders.length}</div>
+          <div className="text-[10px] text-blue-600 font-medium mt-0.5">Intake linked</div>
+        </Card>
+
+        <Card
+          onClick={() => {
+            handleTabChange('tasks')
+          }}
+          className="p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800"
+        >
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span>Due Today</span>
-            <Flame className={cn('h-3.5 w-3.5', kpiStats.dueTodayCount > 0 ? 'text-red-500' : 'text-slate-400')} />
+            <AlertCircle className="h-3.5 w-3.5 text-red-500" />
           </div>
-          <div className={cn('text-xl font-bold font-numeric tabular-nums mt-1', kpiStats.dueTodayCount > 0 ? 'text-red-600' : 'text-slate-800 dark:text-white')}>
-            {kpiStats.dueTodayCount}
-          </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">Urgent deadlines</div>
+          <div className="text-xl font-black text-red-600 dark:text-red-400 mt-1">{kpiStats.dueTodayCount}</div>
+          <div className="text-[10px] text-red-600 font-medium mt-0.5">Urgent deadlines</div>
         </Card>
       </div>
 
-      {/* 3. UNIFIED NAVIGATION TABS & SEARCH BAR */}
-      <Card className="border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-        {/* Navigation Tab Bar */}
-        <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto pb-2 text-xs">
-          {[
-            { id: 'kanban', label: 'Kanban Board', icon: Kanban, count: kpiStats.total },
-            { id: 'pipeline', label: 'Active Pipeline', icon: Layers, count: kpiStats.designingCount + kpiStats.newCount + kpiStats.revisionCount },
-            { id: 'overview', label: 'Studio Overview', icon: Sparkles },
-            { id: 'work_orders', label: 'Work Orders', icon: FileText, count: tenantJobs.filter((j) => j.sales_order_id).length },
-            { id: 'customer_approvals', label: 'Approvals & Revisions', icon: FileCheck2, count: kpiStats.approvalCount + kpiStats.revisionCount },
-            { id: 'design_versions', label: 'Artwork Gallery', icon: Eye },
-            { id: 'tasks', label: 'Prepress Tasks', icon: CheckSquare },
-            { id: 'notifications', label: 'Alerts', icon: Bell, count: notifications.filter((n) => !n.is_read).length },
-          ].map((tab) => {
-            const Icon = tab.icon
-            const isActive = activeTab === tab.id
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id as DesignPanelTab)}
-                className={cn(
-                  'px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0',
-                  isActive
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
-                    : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span
-                    className={cn(
-                      'text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold',
-                      isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                    )}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
+      {/* 3. UNIFIED STUDIO NAVIGATION TABS & QUICK SEARCH */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
+          <button
+            onClick={() => handleTabChange('kanban')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'kanban'
+                ? 'border-pink-600 text-pink-600 dark:text-pink-400 bg-pink-50/50 dark:bg-pink-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <Kanban className="h-4 w-4" />
+            <span>Kanban Board</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+              {tenantJobs.length}
+            </Badge>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('pipeline')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'pipeline'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <Palette className="h-4 w-4" />
+            <span>Designer Queue</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+              {kpiStats.designingCount + kpiStats.newCount}
+            </Badge>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('customer_approvals')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'customer_approvals'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <CheckSquare className="h-4 w-4" />
+            <span>Customer Approvals</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+              {kpiStats.approvalCount + kpiStats.revisionCount}
+            </Badge>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('work_orders')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'work_orders'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <Layers className="h-4 w-4" />
+            <span>Work Orders</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+              {orders.length}
+            </Badge>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('design_versions')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'design_versions'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <History className="h-4 w-4" />
+            <span>Artwork Assets</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('tasks')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'tasks'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <FileCode className="h-4 w-4" />
+            <span>Pre-Press Tasks</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('overview')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'overview'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>Studio Overview</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('notifications')}
+            className={cn(
+              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              activeTab === 'notifications'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            )}
+          >
+            <Bell className="h-4 w-4" />
+            <span>Alerts</span>
+            {notifications.length > 0 && (
+              <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 bg-red-600">
+                {notifications.length}
+              </Badge>
+            )}
+          </button>
         </div>
 
-        {/* Search & Filter Controls */}
-        <div className="p-3 bg-white dark:bg-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Search Box */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+        {/* Search & Multi-Filters */}
+        <div className="flex flex-wrap items-center gap-2 pb-1.5 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-56">
+            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input
+              placeholder="Search job #, client, title..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search design #, artwork title, customer, phone, order #, designer..."
-              className="h-9 pl-9 text-xs"
+              className="text-xs h-8 pl-8 pr-7"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                Clear
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
 
-          {/* Quick Filters */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Priority Filter */}
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="h-9 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300"
-            >
-              <option value="all">All Priorities</option>
-              <option value="very_urgent">Very Urgent 🔥</option>
-              <option value="urgent">Urgent</option>
-              <option value="normal">Normal</option>
-            </select>
+          <select
+            value={formatFilter}
+            onChange={(e) => setFormatFilter(e.target.value)}
+            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300"
+          >
+            <option value="all">All Formats</option>
+            <option value="ai">.AI (Illustrator)</option>
+            <option value="psd">.PSD (Photoshop)</option>
+            <option value="cdr">.CDR (CorelDraw)</option>
+            <option value="pdf">.PDF (Print Ready)</option>
+            <option value="svg">.SVG (Vector)</option>
+          </select>
 
-            {/* Intake Source Filter */}
-            <select
-              value={intakeFilter}
-              onChange={(e) => setIntakeFilter(e.target.value)}
-              className="h-9 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300"
-            >
-              <option value="all">All Intake Sources</option>
-              <option value="direct_customer">Direct Customer</option>
-              <option value="manager_billing">Manager / Billing</option>
-            </select>
+          <select
+            value={intakeFilter}
+            onChange={(e) => setIntakeFilter(e.target.value)}
+            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300"
+          >
+            <option value="all">All Intakes</option>
+            <option value="direct_customer">Direct Walk-in</option>
+            <option value="manager_billing">Manager Billing</option>
+          </select>
 
-            {/* My Jobs Toggle */}
-            <Button
-              size="sm"
-              variant={onlyMyJobs ? 'default' : 'outline'}
-              onClick={() => setOnlyMyJobs(!onlyMyJobs)}
-              className={cn('h-9 text-xs font-bold gap-1 cursor-pointer', onlyMyJobs && 'bg-pink-600 text-white hover:bg-pink-700')}
-            >
-              <User className="h-3.5 w-3.5" />
-              <span>{onlyMyJobs ? 'My Jobs' : 'All Studio'}</span>
-            </Button>
-          </div>
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300"
+          >
+            <option value="all">All Priorities</option>
+            <option value="very_urgent">Very Urgent (জরুরি)</option>
+            <option value="urgent">Urgent</option>
+            <option value="normal">Normal</option>
+          </select>
+
+          <Button
+            size="sm"
+            variant={onlyMyJobs ? 'default' : 'outline'}
+            onClick={() => setOnlyMyJobs(!onlyMyJobs)}
+            className="text-xs h-8 px-2.5"
+          >
+            <User className="h-3.5 w-3.5 mr-1" />
+            {onlyMyJobs ? 'My Queue Only' : 'My Queue'}
+          </Button>
         </div>
-      </Card>
+      </div>
 
-      {/* 4. TAB CONTENTS */}
-      {/* -------------------------------------------------------------------------
-          TAB 1: KANBAN BOARD VIEW (5 STAGES)
-         ------------------------------------------------------------------------- */}
-      {(activeTab === 'kanban' || viewMode === 'kanban') && activeTab !== 'overview' && activeTab !== 'notifications' && (
-        <div className="flex md:grid md:grid-cols-5 gap-3.5 overflow-x-auto touch-scroll snap-x snap-mandatory pb-4">
+      {/* Sub-Filters for Pipeline Tab */}
+      {activeTab === 'pipeline' && (
+        <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+          <span className="text-slate-400 mr-1 text-[11px] uppercase tracking-wider">Queue:</span>
+          {[
+            { id: 'all', label: 'All Jobs', count: tenantJobs.length },
+            { id: 'new', label: 'New Briefs', count: kpiStats.newCount },
+            { id: 'designing', label: 'Designing', count: kpiStats.designingCount },
+            { id: 'awaiting_approval', label: 'Awaiting Proof', count: kpiStats.approvalCount },
+            { id: 'revision', label: 'Revisions', count: kpiStats.revisionCount },
+            { id: 'invoice_requested', label: 'Invoice Req.', count: kpiStats.invoiceRequestedCount },
+            { id: 'ready_for_production', label: 'Ready for Print', count: kpiStats.readyProdCount },
+          ].map((sf) => (
+            <button
+              key={sf.id}
+              onClick={() => setWorkFilter(sf.id as PipelineSubFilter)}
+              className={cn(
+                'px-2.5 py-1 rounded-md transition-all text-xs flex items-center gap-1.5 cursor-pointer',
+                workFilter === sf.id
+                  ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+              )}
+            >
+              <span>{sf.label}</span>
+              <span
+                className={cn(
+                  'text-[10px] px-1 rounded-full',
+                  workFilter === sf.id ? 'bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                )}
+              >
+                {sf.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* =========================================================================
+          VIEW MODE 1: KANBAN WORKFLOW BOARD
+         ========================================================================= */}
+      {viewMode === 'kanban' && activeTab === 'kanban' && (
+        <div className="flex md:grid md:grid-cols-5 gap-4 overflow-x-auto touch-scroll snap-x snap-mandatory pb-4">
           {KANBAN_COLUMNS.map((col) => {
-            const colJobs = filteredJobs.filter((j) => {
+            const colJobs = filteredJobs.filter((j: DesignJobRecord) => {
               if (col.id === 'approved') return j.status === 'approved'
               if (col.id === 'revision') return j.status === 'revision'
               if (col.id === 'customer_approval') return j.status === 'customer_approval'
@@ -904,131 +1208,164 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
               <div
                 key={col.id}
                 className={cn(
-                  'bg-slate-50/90 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200 dark:border-slate-800 border-t-4 flex flex-col min-w-[280px] sm:min-w-[260px] md:min-w-0 snap-center shrink-0 md:shrink',
+                  'bg-slate-50/80 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200 dark:border-slate-800 flex flex-col min-w-[280px] sm:min-w-[260px] md:min-w-0 snap-center shrink-0 md:shrink border-t-4',
                   col.color
                 )}
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800 mb-2.5">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-black text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                      {col.title}
-                    </span>
-                    <span className="h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-800 text-[10px] font-mono font-bold flex items-center justify-center text-slate-700 dark:text-slate-300">
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{col.title}</span>
+                    <span className="h-5 px-1.5 rounded-full bg-slate-200 dark:bg-slate-800 text-[11px] font-mono font-bold flex items-center justify-center text-slate-600 dark:text-slate-400">
                       {colJobs.length}
                     </span>
                   </div>
                   {col.id === 'approved' && <Lock className="h-3.5 w-3.5 text-emerald-600" />}
                 </div>
 
-                {/* Column Cards */}
-                <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[650px] pr-0.5">
-                  {colJobs.length === 0 ? (
-                    <div className="p-6 text-center text-[11px] text-slate-400 border border-dashed rounded-lg">
-                      No jobs in {col.title.toLowerCase()}
-                    </div>
-                  ) : (
-                    colJobs.map((job) => {
-                      const latestVersion = job.versions?.[job.versions.length - 1]
-                      const format = latestVersion?.file_format || 'ai'
+                {/* Job Cards in Column */}
+                <div className="space-y-3 flex-1 overflow-y-auto max-h-[650px] pr-0.5">
+                  {colJobs.map((job: DesignJobRecord) => {
+                    const latestVersion = job.versions?.[job.versions.length - 1]
+                    const format = latestVersion?.file_format || 'ai'
+                    const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
+                    const isInvoicePending = job.commercial_status === 'invoice_requested'
 
-                      return (
-                        <Card
-                          key={job.id}
-                          className="p-3 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs hover:shadow-md transition-all space-y-2"
+                    return (
+                      <Card
+                        key={job.id}
+                        className="p-3 hover:shadow-md transition-all border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 group relative"
+                      >
+                        {/* Thumbnail / Lightbox preview trigger */}
+                        <div
+                          onClick={() => handleOpenLightbox(job)}
+                          className="relative aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mb-2.5 cursor-pointer group-hover:opacity-95"
                         >
-                          {/* Image / Thumbnail Preview */}
-                          <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                            <img
-                              src={
-                                latestVersion?.proof_file_url ||
-                                'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=400&q=80'
-                              }
-                              alt={job.title}
-                              className="w-full h-full object-cover"
-                            />
-                            {/* Format Badge */}
-                            <div className="absolute top-1.5 left-1.5">
-                              <span
-                                className={`uppercase text-[9px] font-black px-1.5 py-0.5 rounded border shadow-xs ${getFormatBadgeColor(
-                                  format
-                                )}`}
-                              >
-                                .{format}
+                          <img
+                            src={latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=400&q=80'}
+                            alt={job.title}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                          {/* File Format Badge */}
+                          <div className="absolute top-2 left-2">
+                            <span className={`uppercase text-[10px] font-black px-1.5 py-0.5 rounded border shadow-sm ${getFormatBadgeColor(format)}`}>
+                              .{format}
+                            </span>
+                          </div>
+
+                          {/* Version Counter Badge */}
+                          <div className="absolute top-2 right-2 flex items-center gap-1">
+                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/75 text-white backdrop-blur-xs">
+                              v{job.current_version || 1}
+                            </span>
+                          </div>
+
+                          {/* Lightbox Zoom Icon on Hover */}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 text-xs font-bold">
+                            <Eye className="h-4 w-4" />
+                            <span>Preview</span>
+                          </div>
+
+                          {/* Lock Badge if Approved */}
+                          {job.is_locked && (
+                            <div className="absolute bottom-2 right-2">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow">
+                                <Lock className="h-2.5 w-2.5" /> Locked
                               </span>
                             </div>
+                          )}
+                        </div>
 
-                            {/* Version Pill */}
-                            <div className="absolute top-1.5 right-1.5">
-                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/70 text-white backdrop-blur-xs">
-                                v{job.current_version || 1}
+                        {/* Card Meta & Header */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[11px] font-bold text-pink-600 dark:text-pink-400">
+                              {job.design_number}
+                            </span>
+                            {job.priority === 'very_urgent' ? (
+                              <span className="text-[10px] font-black text-red-600 flex items-center gap-0.5">
+                                <Flame className="h-3 w-3" /> Urgent
                               </span>
-                            </div>
-
-                            {/* Locked Badge */}
-                            {job.is_locked && (
-                              <div className="absolute bottom-1.5 right-1.5">
-                                <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
-                                  <Lock className="h-2.5 w-2.5" /> Locked
-                                </span>
-                              </div>
+                            ) : (
+                              <span className="text-[10px] font-medium text-slate-400 capitalize">
+                                {job.priority}
+                              </span>
                             )}
                           </div>
 
-                          {/* Info Block */}
-                          <div className="space-y-0.5">
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-[11px] font-bold text-pink-600 dark:text-pink-400">
-                                #{job.design_number}
+                          <h4 className="font-bold text-xs text-slate-900 dark:text-white line-clamp-2">
+                            {job.title}
+                          </h4>
+
+                          <div className="text-[11px] text-slate-500 truncate flex items-center justify-between">
+                            <span>{job.customer_name}</span>
+                            <span className="font-mono text-[10px] text-slate-400">{job.dimensions_spec}</span>
+                          </div>
+
+                          {/* Prepress Quality Indicators */}
+                          <div className="flex flex-wrap items-center gap-1 pt-1">
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300">
+                              CMYK 300DPI
+                            </span>
+                            {hasInvoice ? (
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-0.5">
+                                <Receipt className="h-2.5 w-2.5" /> Invoiced
                               </span>
-                              {job.priority === 'very_urgent' && (
-                                <span className="text-[10px] font-black text-rose-600 flex items-center gap-0.5">
-                                  <Flame className="h-3 w-3" /> Urgent
-                                </span>
-                              )}
-                            </div>
-                            <h4 className="font-bold text-xs text-slate-900 dark:text-white line-clamp-1">
-                              {job.title}
-                            </h4>
-                            <div className="text-[11px] text-slate-500 flex items-center justify-between">
-                              <span className="truncate">{job.customer_name}</span>
-                              {job.dimensions_spec && (
-                                <span className="text-[10px] font-mono text-slate-400 shrink-0">
-                                  {job.dimensions_spec}
-                                </span>
-                              )}
-                            </div>
+                            ) : isInvoicePending ? (
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950 dark:text-amber-300 flex items-center gap-0.5">
+                                <Clock className="h-2.5 w-2.5" /> Inv. Req
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        {/* Interactive Quick-Action Toolbar */}
+                        <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1 text-[11px]">
+                          <div className="flex items-center gap-1">
+                            {/* WhatsApp Share Button */}
+                            <button
+                              onClick={() => handleOpenWhatsApp(job)}
+                              title="Share proof via WhatsApp"
+                              className="h-7 w-7 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 hover:text-emerald-600 flex items-center justify-center text-slate-500"
+                            >
+                              <Phone className="h-3.5 w-3.5" />
+                            </button>
+
+                            {/* Upload Version Button */}
+                            <button
+                              onClick={() => handleOpenUploadModal(job)}
+                              title="Upload new version"
+                              className="h-7 w-7 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:text-indigo-600 flex items-center justify-center text-slate-500"
+                            >
+                              <Upload className="h-3.5 w-3.5" />
+                            </button>
+
+                            {/* Flightcheck / Prepress Machine routing */}
+                            <button
+                              onClick={() => handleOpenPrepress(job)}
+                              title="Pre-press flightcheck & machine dispatch"
+                              className="h-7 w-7 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-pink-50 dark:hover:bg-pink-950 hover:text-pink-600 flex items-center justify-center text-slate-500"
+                            >
+                              <Printer className="h-3.5 w-3.5" />
+                            </button>
                           </div>
 
-                          {/* Quick Actions per Stage */}
-                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
-                            <div className="flex items-center gap-1 text-slate-400 text-[10px] font-mono">
-                              <Clock className="h-3 w-3" />
-                              <span>{job.deadline?.split(' ')[0] || 'Flexible'}</span>
-                            </div>
+                          <Link
+                            href={`/${slug}/design/${job.id}`}
+                            className="inline-flex items-center gap-1 text-pink-600 dark:text-pink-400 font-bold hover:underline"
+                          >
+                            <span>Studio</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </Card>
+                    )
+                  })}
 
-                            <div className="flex items-center gap-1">
-                              {job.status === 'received' && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleStartDesign(job)}
-                                  className="h-6 px-2 text-[10px] bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                                >
-                                  Start
-                                </Button>
-                              )}
-                              <Link
-                                href={`/${slug}/design/${job.id}`}
-                                className="inline-flex items-center gap-0.5 font-bold text-pink-600 hover:underline text-[11px]"
-                              >
-                                <span>Open</span>
-                                <ExternalLink className="h-2.5 w-2.5" />
-                              </Link>
-                            </div>
-                          </div>
-                        </Card>
-                      )
-                    })
+                  {colJobs.length === 0 && (
+                    <div className="p-6 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
+                      No jobs in {col.title}
+                    </div>
                   )}
                 </div>
               </div>
@@ -1037,546 +1374,758 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         </div>
       )}
 
-      {/* -------------------------------------------------------------------------
-          TAB 2: ACTIVE PIPELINE & SUBFILTERED QUEUE (CARDS & TABLE)
-         ------------------------------------------------------------------------- */}
-      {(activeTab === 'pipeline' || (activeTab !== 'kanban' && activeTab !== 'overview' && activeTab !== 'notifications')) &&
-        viewMode !== 'kanban' && (
-          <div className="space-y-4">
-            {/* Subfilter Pills */}
-            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold overflow-x-auto">
-              {[
-                { id: 'all', label: 'All Active', count: kpiStats.total },
-                { id: 'new', label: 'New / Received', count: kpiStats.newCount },
-                { id: 'designing', label: 'In Design', count: kpiStats.designingCount },
-                { id: 'awaiting_approval', label: 'Awaiting Approval', count: kpiStats.approvalCount },
-                { id: 'revision', label: 'Revisions', count: kpiStats.revisionCount },
-                { id: 'invoice_requested', label: 'Invoice Requested', count: kpiStats.invoiceRequestedCount },
-                { id: 'ready_for_production', label: 'Ready for Print', count: kpiStats.readyProdCount },
-              ].map((pill) => (
+      {/* =========================================================================
+          VIEW MODE 2: CARDS GRID VIEW
+         ========================================================================= */}
+      {(viewMode === 'cards' || activeTab !== 'kanban') && (
+        <div className="space-y-4">
+          {/* Main Grid of Jobs */}
+          {activeTab !== 'overview' && activeTab !== 'notifications' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredJobs.map((job) => {
+                const latestVersion = job.versions?.[job.versions.length - 1]
+                const format = latestVersion?.file_format || 'ai'
+                const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
+                const isInvoicePending = job.commercial_status === 'invoice_requested'
+
+                return (
+                  <Card key={job.id} className="p-4 border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all space-y-3">
+                    {/* Header Spec */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs font-black text-pink-600 dark:text-pink-400">
+                            #{job.design_number}
+                          </span>
+                          <span className={`uppercase text-[9px] font-black px-1.5 py-0.2 rounded border ${getFormatBadgeColor(format)}`}>
+                            .{format}
+                          </span>
+                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            v{job.current_version || 1}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-sm text-slate-900 dark:text-white mt-1 line-clamp-1">{job.title}</h3>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 block">
+                          {job.status.replace('_', ' ')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Artwork Preview Card with Lightbox Trigger */}
+                    <div
+                      onClick={() => handleOpenLightbox(job)}
+                      className="relative aspect-video rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer group"
+                    >
+                      <img
+                        src={latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=400&q=80'}
+                        alt={job.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
+                        <Eye className="h-4 w-4" />
+                        <span>Inspect Artwork</span>
+                      </div>
+                      {job.is_locked && (
+                        <div className="absolute bottom-2 right-2">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow">
+                            <Lock className="h-3 w-3" /> Locked & Approved
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Client & Specs Info */}
+                    <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 text-xs space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Customer:</span>
+                        <strong className="text-slate-800 dark:text-slate-200">{job.customer_name}</strong>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Dimensions:</span>
+                        <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{job.dimensions_spec || 'Standard'}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Designer:</span>
+                        <span className="text-slate-700 dark:text-slate-300">{job.designer_name}</span>
+                      </div>
+                    </div>
+
+                    {/* Action Bar */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenWhatsApp(job)}
+                          className="h-8 text-xs px-2 text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100"
+                        >
+                          <Phone className="h-3.5 w-3.5 mr-1" />
+                          <span>WhatsApp</span>
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenUploadModal(job)}
+                          className="h-8 text-xs px-2"
+                        >
+                          <Upload className="h-3.5 w-3.5 mr-1" />
+                          <span>Upload v+1</span>
+                        </Button>
+
+                        {job.status === 'customer_approval' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleOpenApprovalModal(job)}
+                            className="h-8 text-xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                          >
+                            <Check className="h-3.5 w-3.5 mr-1" />
+                            <span>Approve</span>
+                          </Button>
+                        )}
+
+                        {job.status === 'approved' && !hasInvoice && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenInvoiceRequest(job)}
+                            className="h-8 text-xs px-2 border-rose-300 text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 font-bold"
+                          >
+                            <Send className="h-3.5 w-3.5 mr-1" />
+                            <span>Req Invoice</span>
+                          </Button>
+                        )}
+                      </div>
+
+                      <Link
+                        href={`/${slug}/design/${job.id}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:underline"
+                      >
+                        <span>Workbench &rarr;</span>
+                      </Link>
+                    </div>
+                  </Card>
+                )
+              })}
+
+              {filteredJobs.length === 0 && (
+                <div className="col-span-full p-12 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                  No design jobs found for current filter.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* OVERVIEW ANALYTICS TAB */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="p-5 border-l-4 border-l-pink-500 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Studio Productivity</span>
+                    <Sparkles className="h-4 w-4 text-pink-500" />
+                  </div>
+                  <div className="text-3xl font-black text-slate-900 dark:text-white">{tenantJobs.length}</div>
+                  <p className="text-xs text-slate-500">Total Pre-Press creative projects initiated</p>
+                  <div className="pt-2 border-t text-xs flex justify-between text-slate-600 dark:text-slate-400">
+                    <span>Active Designing:</span>
+                    <strong>{kpiStats.designingCount}</strong>
+                  </div>
+                </Card>
+
+                <Card className="p-5 border-l-4 border-l-emerald-500 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Production Clearance</span>
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <div className="text-3xl font-black text-emerald-600">{kpiStats.readyProdCount}</div>
+                  <p className="text-xs text-slate-500">Commercial & artwork gates fully cleared for press floor</p>
+                  <div className="pt-2 border-t text-xs flex justify-between text-slate-600 dark:text-slate-400">
+                    <span>Approved & Locked:</span>
+                    <strong>{kpiStats.approvedCount}</strong>
+                  </div>
+                </Card>
+
+                <Card className="p-5 border-l-4 border-l-amber-500 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Billing Gating</span>
+                    <Receipt className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <div className="text-3xl font-black text-amber-600">{kpiStats.invoiceRequestedCount}</div>
+                  <p className="text-xs text-slate-500">Invoice requests dispatched to Sales / Billing Manager</p>
+                  <div className="pt-2 border-t text-xs flex justify-between text-slate-600 dark:text-slate-400">
+                    <span>Awaiting Client Proof:</span>
+                    <strong>{kpiStats.approvalCount}</strong>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Supported Machine Fleet */}
+              <Card className="p-5 space-y-4">
+                <CardHeader className="p-0">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    <Printer className="h-4 w-4 text-indigo-600" />
+                    <span>Pre-Press Connected Machine Floor Routing</span>
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Target separation profiles and RIP formats ready for factory press operators.
+                  </CardDescription>
+                </CardHeader>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {PRINT_MACHINERY_LIST.map((m) => (
+                    <div key={m.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{m.name}</span>
+                        <Badge variant="outline" className="text-[10px]">{m.type}</Badge>
+                      </div>
+                      <p className="text-[11px] text-slate-500">RIP Profile: CMYK Process • Bleed Verified • Hot Folder Ready</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* NOTIFICATIONS TAB */}
+          {activeTab === 'notifications' && (
+            <Card className="p-4">
+              <div className="space-y-3">
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                  <Bell className="h-4 w-4 text-pink-600" />
+                  <span>Studio & Workflow Alerts</span>
+                </h3>
+                {notifications.length === 0 ? (
+                  <div className="p-8 text-center text-slate-400 text-xs">
+                    No unread studio alerts. All clear!
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {notifications.map((n, idx) => (
+                      <div key={n.id || idx} className="py-3 flex items-start gap-3">
+                        <div className="h-8 w-8 rounded-full bg-pink-50 text-pink-600 dark:bg-pink-950/40 flex items-center justify-center shrink-0">
+                          <Palette className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 text-xs">
+                          <p className="font-semibold text-slate-800 dark:text-slate-200">{n.title || n.message}</p>
+                          <p className="text-slate-500 text-[11px] mt-0.5">{n.created_at || 'Recently'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* =========================================================================
+          POWER UPGRADE MODAL 1: HIGH-RES ARTWORK LIGHTBOX & ZOOM INSPECTOR
+         ========================================================================= */}
+      {lightboxJob && (
+        <ModalDialog
+          open={Boolean(lightboxJob)}
+          onOpenChange={(open) => {
+            if (!open) setLightboxJob(null)
+          }}
+          title={
+            <div className="flex items-center justify-between w-full pr-6">
+              <div className="flex items-center gap-2">
+                <Eye className="h-4 w-4 text-pink-600" />
+                <span className="font-bold">Artwork Inspector: #{lightboxJob.design_number} — {lightboxJob.title}</span>
+              </div>
+              <Badge variant="outline" className="font-mono text-xs">
+                v{(lightboxJob.versions?.[lightboxVersionIdx]?.version_number || lightboxVersionIdx + 1)}
+              </Badge>
+            </div>
+          }
+        >
+          <div className="space-y-4 pt-1">
+            {/* Version Switcher Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b">
+              {lightboxJob.versions?.map((ver, idx) => (
                 <button
-                  key={pill.id}
-                  onClick={() => setWorkFilter(pill.id as PipelineSubFilter)}
+                  key={ver.id || idx}
+                  onClick={() => {
+                    setLightboxVersionIdx(idx)
+                    setLightboxZoom(1)
+                  }}
                   className={cn(
-                    'px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0',
-                    workFilter === pill.id
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                    'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
+                    lightboxVersionIdx === idx
+                      ? 'bg-pink-600 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
                   )}
                 >
-                  <span>{pill.label}</span>
-                  <span
-                    className={cn(
-                      'text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold',
-                      workFilter === pill.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800'
-                    )}
-                  >
-                    {pill.count}
-                  </span>
+                  <span>v{ver.version_number}</span>
+                  {ver.is_approved && <Check className="h-3 w-3 text-emerald-400" />}
                 </button>
               ))}
             </div>
 
-            {/* CARDS GRID VIEW */}
-            {viewMode === 'cards' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredJobs.length === 0 ? (
-                  <div className="col-span-full p-12 text-center text-xs text-slate-500 border border-dashed rounded-xl">
-                    No design jobs found matching your filters.
-                  </div>
-                ) : (
-                  filteredJobs.map((job) => {
-                    const latestVersion = job.versions?.[job.versions.length - 1]
-                    const format = latestVersion?.file_format || 'ai'
+            {/* Canvas / Image Viewport */}
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center group">
+              <img
+                src={
+                  lightboxJob.versions?.[lightboxVersionIdx]?.proof_file_url ||
+                  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80'
+                }
+                alt="Artwork Proof"
+                style={{ transform: `scale(${lightboxZoom})`, transition: 'transform 0.2s ease-out' }}
+                className="max-h-full max-w-full object-contain cursor-grab active:cursor-grabbing"
+              />
 
-                    return (
-                      <Card
-                        key={job.id}
-                        className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between"
-                      >
-                        <div>
-                          {/* Image Banner */}
-                          <div className="relative aspect-video bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
-                            <img
-                              src={
-                                latestVersion?.proof_file_url ||
-                                'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=600&q=80'
-                              }
-                              alt={job.title}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                              <span
-                                className={`uppercase text-[10px] font-black px-2 py-0.5 rounded border shadow-xs ${getFormatBadgeColor(
-                                  format
-                                )}`}
-                              >
-                                .{format}
-                              </span>
-                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/70 text-white backdrop-blur-xs">
-                                v{job.current_version || 1}
-                              </span>
-                            </div>
-
-                            <div className="absolute top-2 right-2">
-                              {job.is_locked ? (
-                                <Badge className="bg-emerald-600 text-white text-[10px] font-bold">
-                                  <Lock className="h-3 w-3 mr-1" /> Approved
-                                </Badge>
-                              ) : (
-                                <Badge className="bg-slate-900/80 text-white text-[10px] capitalize">
-                                  {job.status?.replace('_', ' ')}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Content Body */}
-                          <div className="p-4 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono font-bold text-xs text-pink-600 dark:text-pink-400">
-                                #{job.design_number}
-                              </span>
-                              {job.order_number && (
-                                <span className="font-mono text-[11px] text-slate-400">
-                                  Order: #{job.order_number}
-                                </span>
-                              )}
-                            </div>
-
-                            <h3 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">
-                              {job.title}
-                            </h3>
-
-                            <div className="text-xs text-slate-500 space-y-0.5">
-                              <div>Customer: <strong className="text-slate-700 dark:text-slate-300">{job.customer_name}</strong></div>
-                              {job.dimensions_spec && (
-                                <div className="font-mono text-[11px]">Specs: {job.dimensions_spec}</div>
-                              )}
-                            </div>
-
-                            {job.customer_feedback && (
-                              <div className="p-2 bg-purple-50 dark:bg-purple-950/40 rounded-lg text-[11px] text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                                <strong>Feedback:</strong> {job.customer_feedback}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Card Actions Footer */}
-                        <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 text-xs">
-                          <Link
-                            href={`/${slug}/design/${job.id}`}
-                            className="font-bold text-pink-600 hover:underline flex items-center gap-1"
-                          >
-                            <span>Open Details</span>
-                            <ArrowRight className="h-3 w-3" />
-                          </Link>
-
-                          <div className="flex items-center gap-1.5">
-                            {!job.is_locked && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenUploadModal(job)}
-                                className="h-7 text-xs px-2 cursor-pointer"
-                              >
-                                <Upload className="h-3 w-3 mr-1" /> Version
-                              </Button>
-                            )}
-
-                            {job.status === 'customer_approval' && !job.is_locked && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleOpenApprovalModal(job)}
-                                className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                              >
-                                Approve
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </Card>
-                    )
-                  })
-                )}
+              {/* Floating Zoom Controls */}
+              <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-lg p-1 text-white border border-white/10">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setLightboxZoom((z) => Math.min(3, z + 0.25))}
+                  className="h-7 w-7 p-0 text-white hover:bg-white/20"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <span className="text-[10px] font-mono font-bold px-1">{Math.round(lightboxZoom * 100)}%</span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setLightboxZoom((z) => Math.max(0.5, z - 0.25))}
+                  className="h-7 w-7 p-0 text-white hover:bg-white/20"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setLightboxZoom(1)}
+                  className="h-7 w-7 p-0 text-white hover:bg-white/20"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </Button>
               </div>
-            )}
+            </div>
 
-            {/* TABLE LIST VIEW */}
-            {viewMode === 'table' && (
-              <Card className="border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
-                      <tr>
-                        <th className="p-3">Design #</th>
-                        <th className="p-3">Title & Format</th>
-                        <th className="p-3">Customer</th>
-                        <th className="p-3">Designer</th>
-                        <th className="p-3">Version</th>
-                        <th className="p-3 text-center">Status</th>
-                        <th className="p-3">Deadline</th>
-                        <th className="p-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {filteredJobs.length === 0 ? (
-                        <tr>
-                          <td colSpan={8} className="p-8 text-center text-slate-500">
-                            No design jobs found matching current filters.
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredJobs.map((job) => {
-                          const latestVersion = job.versions?.[job.versions.length - 1]
-                          const format = latestVersion?.file_format || 'ai'
+            {/* Pre-Press Flightcheck Metadata Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border">
+              <div>
+                <span className="text-slate-400 block text-[10px]">Dimensions</span>
+                <strong className="font-mono">{lightboxJob.dimensions_spec || 'Standard'}</strong>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Color Separation</span>
+                <span className="font-semibold text-indigo-600 dark:text-indigo-400">CMYK Process Ready</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Resolution</span>
+                <span className="font-semibold text-emerald-600">300 DPI (High Res)</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Cut Bleed Margin</span>
+                <span className="font-semibold">0.125 in (3mm)</span>
+              </div>
+            </div>
 
-                          return (
-                            <tr key={job.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40">
-                              <td className="p-3 font-mono font-bold text-pink-600">
-                                <Link href={`/${slug}/design/${job.id}`} className="hover:underline">
-                                  #{job.design_number}
-                                </Link>
-                                {job.order_number && (
-                                  <span className="text-[10px] text-slate-400 block">
-                                    Ord: #{job.order_number}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="p-3">
-                                <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                  <span>{job.title}</span>
-                                  <span className={`uppercase text-[9px] font-black px-1.5 py-0.2 rounded border ${getFormatBadgeColor(format)}`}>
-                                    .{format}
-                                  </span>
-                                </div>
-                                <div className="text-[11px] text-slate-400 font-mono">{job.dimensions_spec || 'Standard Specs'}</div>
-                              </td>
-                              <td className="p-3">
-                                <div className="font-semibold text-slate-800 dark:text-slate-200">{job.customer_name}</div>
-                              </td>
-                              <td className="p-3 text-slate-600 dark:text-slate-400">{job.designer_name}</td>
-                              <td className="p-3 font-mono font-bold">v{job.current_version || 1}</td>
-                              <td className="p-3 text-center">
-                                {job.is_locked ? (
-                                  <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-300">
-                                    Approved & Locked
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline" className="capitalize text-[10px]">
-                                    {job.status?.replace('_', ' ')}
-                                  </Badge>
-                                )}
-                              </td>
-                              <td className="p-3 font-mono text-slate-500">{job.deadline || '—'}</td>
-                              <td className="p-3 text-right">
-                                <Link href={`/${slug}/design/${job.id}`}>
-                                  <Button size="sm" variant="outline" className="h-7 text-xs font-bold gap-1 cursor-pointer">
-                                    <span>Open</span>
-                                    <ExternalLink className="h-3 w-3" />
-                                  </Button>
-                                </Link>
-                              </td>
-                            </tr>
-                          )
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            )}
+            {/* Notes & Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t">
+              <div className="text-xs text-slate-500">
+                <span>Uploaded by: </span>
+                <strong>{lightboxJob.versions?.[lightboxVersionIdx]?.uploaded_by_name || 'Studio Designer'}</strong>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleOpenWhatsApp(lightboxJob)}
+                  className="text-xs text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+                >
+                  <Phone className="h-3.5 w-3.5 mr-1" />
+                  <span>WhatsApp Proof</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleOpenCompare(lightboxJob)}
+                  className="text-xs"
+                >
+                  <Split className="h-3.5 w-3.5 mr-1" />
+                  <span>Compare Diff</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  asChild
+                  className="bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs"
+                >
+                  <Link href={`/${slug}/design/${lightboxJob.id}`}>
+                    <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                    <span>Open Full Studio</span>
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </div>
-        )}
-
-      {/* -------------------------------------------------------------------------
-          TAB 3: STUDIO OVERVIEW / EXECUTIVE PREPRESS METRICS
-         ------------------------------------------------------------------------- */}
-      {activeTab === 'overview' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Urgent Attention Queue */}
-            <Card className="p-4 border-slate-200 dark:border-slate-800">
-              <CardTitle className="text-xs font-bold text-rose-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <Flame className="h-4 w-4" />
-                <span>Urgent Attention & Blocked Gates</span>
-              </CardTitle>
-              <div className="space-y-2">
-                {tenantJobs
-                  .filter((j) => j.priority === 'very_urgent' || j.commercial_status === 'invoice_requested' || j.status === 'revision')
-                  .slice(0, 5)
-                  .map((j) => (
-                    <div
-                      key={j.id}
-                      className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs"
-                    >
-                      <div>
-                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <span className="font-mono text-pink-600">#{j.design_number}</span>
-                          <span>{j.title}</span>
-                        </div>
-                        <div className="text-[11px] text-slate-500">{j.customer_name} • Deadline: {j.deadline}</div>
-                      </div>
-                      <Link href={`/${slug}/design/${j.id}`}>
-                        <Button size="sm" variant="outline" className="h-7 text-xs font-bold">
-                          Resolve
-                        </Button>
-                      </Link>
-                    </div>
-                  ))}
-              </div>
-            </Card>
-
-            {/* Stage Distribution Stats */}
-            <Card className="p-4 border-slate-200 dark:border-slate-800">
-              <CardTitle className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3">
-                Prepress Stage Distribution
-              </CardTitle>
-              <div className="space-y-2.5 text-xs font-semibold">
-                <div>
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400 mb-1">
-                    <span>Designing Artboards ({kpiStats.designingCount})</span>
-                    <span>{Math.round((kpiStats.designingCount / (kpiStats.total || 1)) * 100)}%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 rounded-full"
-                      style={{ width: `${(kpiStats.designingCount / (kpiStats.total || 1)) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400 mb-1">
-                    <span>Customer Approvals Pending ({kpiStats.approvalCount})</span>
-                    <span>{Math.round((kpiStats.approvalCount / (kpiStats.total || 1)) * 100)}%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className="h-full bg-amber-500 rounded-full"
-                      style={{ width: `${(kpiStats.approvalCount / (kpiStats.total || 1)) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400 mb-1">
-                    <span>Revisions In Progress ({kpiStats.revisionCount})</span>
-                    <span>{Math.round((kpiStats.revisionCount / (kpiStats.total || 1)) * 100)}%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className="h-full bg-purple-500 rounded-full"
-                      style={{ width: `${(kpiStats.revisionCount / (kpiStats.total || 1)) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400 mb-1">
-                    <span>Approved & Locked for Press ({kpiStats.approvedCount})</span>
-                    <span>{Math.round((kpiStats.approvedCount / (kpiStats.total || 1)) * 100)}%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full"
-                      style={{ width: `${(kpiStats.approvedCount / (kpiStats.total || 1)) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {/* -------------------------------------------------------------------------
-          TAB 4: NOTIFICATIONS & COMMERCIAL GATING ALERTS
-         ------------------------------------------------------------------------- */}
-      {activeTab === 'notifications' && (
-        <Card className="border-slate-200 dark:border-slate-800">
-          <CardHeader className="p-4 border-b border-slate-200 dark:border-slate-800">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Bell className="h-4 w-4 text-indigo-600" />
-              <span>Studio Notifications & Workflow Gating Alerts</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-100 dark:divide-slate-800">
-            {notifications.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-500">
-                No active studio notifications.
-              </div>
-            ) : (
-              notifications.map((n: any) => (
-                <div key={n.id} className="p-3.5 flex items-center justify-between text-xs hover:bg-slate-50 dark:hover:bg-slate-900/40">
-                  <div className="space-y-0.5">
-                    <div className="font-bold text-slate-900 dark:text-white">{n.title}</div>
-                    <div className="text-slate-500">{n.message}</div>
-                    <div className="text-[10px] text-slate-400 font-mono">{n.created_at}</div>
-                  </div>
-                  {n.action_url && (
-                    <Link href={`/${slug}${n.action_url}`}>
-                      <Button size="sm" variant="outline" className="h-7 text-xs font-bold">
-                        View
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+        </ModalDialog>
       )}
 
       {/* =========================================================================
-          5. SHARED ACTION MODALS
+          POWER UPGRADE MODAL 2: WHATSAPP DIGITAL PROOF DISPATCHER
          ========================================================================= */}
+      {whatsAppJob && (
+        <ModalDialog
+          open={Boolean(whatsAppJob)}
+          onOpenChange={(open) => {
+            if (!open) setWhatsAppJob(null)
+          }}
+          title={
+            <div className="flex items-center gap-2 text-emerald-600">
+              <Phone className="h-4 w-4" />
+              <span className="font-bold">WhatsApp Proof Dispatcher: #{whatsAppJob.design_number}</span>
+            </div>
+          }
+        >
+          <div className="space-y-4 pt-1 text-xs">
+            <div className="space-y-1.5">
+              <Label className="font-bold">Customer Mobile (WhatsApp Number)</Label>
+              <Input
+                value={whatsAppPhone}
+                onChange={(e) => setWhatsAppPhone(e.target.value)}
+                placeholder="e.g. 01712345678"
+                className="h-9 font-mono font-bold"
+              />
+            </div>
 
-      {/* MODAL 1: WORK ORDER MODAL */}
-      <WorkOrderModal
-        isOpen={isWorkOrderOpen}
-        onClose={() => setIsWorkOrderOpen(false)}
-        companyId={companyId}
-        onSuccess={(order, sentInvoiceReq) => {
-          setIsWorkOrderOpen(false)
-          showNotification(
-            sentInvoiceReq
-              ? `Work Order #${order.order_number} saved & Invoice Request sent to Manager!`
-              : `Work Order #${order.order_number} registered successfully!`
-          )
-        }}
-      />
+            <div className="space-y-1.5">
+              <Label className="font-bold">Generated WhatsApp Notification Message</Label>
+              <textarea
+                rows={6}
+                readOnly
+                value={handleGenerateWhatsAppText(whatsAppJob)}
+                className="w-full p-3 rounded-lg border bg-slate-50 dark:bg-slate-900 font-mono text-[11px] leading-relaxed select-all"
+              />
+            </div>
 
-      {/* MODAL 2: STANDALONE NEW DESIGN JOB */}
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleCopyWhatsApp(whatsAppJob)}
+                className="text-xs"
+              >
+                {whatsAppCopied ? <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+                <span>{whatsAppCopied ? 'Copied!' : 'Copy Text'}</span>
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => handleSendWhatsAppWeb(whatsAppJob)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
+              >
+                <Phone className="h-3.5 w-3.5 mr-1" />
+                <span>Open WhatsApp Web & Send</span>
+              </Button>
+            </div>
+          </div>
+        </ModalDialog>
+      )}
+
+      {/* =========================================================================
+          POWER UPGRADE MODAL 3: PRE-PRESS FLIGHTCHECK & MACHINE ROUTING
+         ========================================================================= */}
+      {prepressJob && (
+        <ModalDialog
+          open={Boolean(prepressJob)}
+          onOpenChange={(open) => {
+            if (!open) setPrepressJob(null)
+          }}
+          title={
+            <div className="flex items-center gap-2 text-indigo-600">
+              <Printer className="h-4 w-4" />
+              <span className="font-bold">Pre-Press Flightcheck & Press Routing: #{prepressJob.design_number}</span>
+            </div>
+          }
+        >
+          <form onSubmit={handleDispatchToMachine} className="space-y-4 pt-1 text-xs">
+            {/* Checklist */}
+            <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border space-y-2">
+              <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Pre-Press Verification Checklist:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="flex items-center gap-2 text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>Color Mode: CMYK Separations</span>
+                </div>
+                <div className="flex items-center gap-2 text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>Resolution: &ge; 300 DPI at 100%</span>
+                </div>
+                <div className="flex items-center gap-2 text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>Fonts: Converted to Outlines/Curves</span>
+                </div>
+                <div className="flex items-center gap-2 text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>Bleed: 2.0" Margins for Welding/Frame</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Target Machine Selection */}
+            <div className="space-y-1.5">
+              <Label className="font-bold">Target Print Floor Machine</Label>
+              <select
+                value={selectedMachine}
+                onChange={(e) => setSelectedMachine(e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border bg-white dark:bg-slate-900 text-xs font-semibold"
+              >
+                {PRINT_MACHINERY_LIST.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.type})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t">
+              <Button type="button" variant="outline" size="sm" onClick={() => setPrepressJob(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
+                <Printer className="h-3.5 w-3.5 mr-1" />
+                <span>Authorize & Route to Machine</span>
+              </Button>
+            </div>
+          </form>
+        </ModalDialog>
+      )}
+
+      {/* =========================================================================
+          POWER UPGRADE MODAL 4: VERSION DIFF COMPARISON
+         ========================================================================= */}
+      {compareJob && (
+        <ModalDialog
+          open={Boolean(compareJob)}
+          onOpenChange={(open) => {
+            if (!open) setCompareJob(null)
+          }}
+          title={
+            <div className="flex items-center gap-2 text-pink-600">
+              <Split className="h-4 w-4" />
+              <span className="font-bold">Side-by-Side Version Diff: #{compareJob.design_number}</span>
+            </div>
+          }
+        >
+          <div className="space-y-4 pt-1 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Version A */}
+              <div className="space-y-2 border rounded-xl p-3 bg-slate-50 dark:bg-slate-900">
+                <div className="flex justify-between items-center">
+                  <strong className="font-mono">Version {compareVerA}</strong>
+                  <span className="text-[10px] text-slate-500">Earlier Version</span>
+                </div>
+                <div className="aspect-video rounded-lg overflow-hidden bg-slate-950">
+                  <img
+                    src={compareJob.versions?.[compareVerA - 1]?.proof_file_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80'}
+                    alt="Version A"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                  {compareJob.versions?.[compareVerA - 1]?.change_notes || 'Initial brief submission.'}
+                </p>
+              </div>
+
+              {/* Version B */}
+              <div className="space-y-2 border rounded-xl p-3 bg-slate-50 dark:bg-slate-900">
+                <div className="flex justify-between items-center">
+                  <strong className="font-mono text-pink-600">Version {compareVerB} (Latest)</strong>
+                  <span className="text-[10px] text-pink-600 font-bold">Revised Proof</span>
+                </div>
+                <div className="aspect-video rounded-lg overflow-hidden bg-slate-950">
+                  <img
+                    src={compareJob.versions?.[compareVerB - 1]?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=600&q=80'}
+                    alt="Version B"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                  {compareJob.versions?.[compareVerB - 1]?.change_notes || 'Adjustments per client review.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2 border-t">
+              <Button type="button" variant="outline" size="sm" onClick={() => setCompareJob(null)}>
+                Close Comparison
+              </Button>
+            </div>
+          </div>
+        </ModalDialog>
+      )}
+
+      {/* STANDARD MODAL: CREATE STANDALONE DESIGN JOB */}
       <ModalDialog
         open={isNewJobOpen}
         onOpenChange={setIsNewJobOpen}
-        title="Create Standalone Design Job"
+        title="Create New Pre-Press Design Job"
         description="Assign customer brief, specifications, and primary format to designer workbench."
       >
-        <form onSubmit={handleCreateStandaloneJob} className="space-y-4 pt-1 text-xs">
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">Select Customer</Label>
+        <form onSubmit={handleCreateStandaloneJob} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1 text-xs">
+          <div className="space-y-1.5">
+            <Label htmlFor="djCust" required>Customer Profile</Label>
             <select
+              id="djCust"
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
-              className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
             >
-              <option value="">Select an existing customer...</option>
-              {customers.map((c) => (
+              <option value="">Select customer...</option>
+              {customers.map((c: CustomerRecord) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} ({c.mobile || 'No phone'})
+                  {c.name} ({c.mobile})
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">Artwork / Job Title</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="djTitle" required>Artwork / Design Title</Label>
             <Input
-              placeholder="e.g. Panaflex Frontlit Banner 10x4 ft"
+              id="djTitle"
+              placeholder="e.g. 3D Acrylic Facade Signboard Vector Layout"
               value={newJobTitle}
               onChange={(e) => setNewJobTitle(e.target.value)}
-              className="h-9 text-xs font-medium"
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label className="font-bold text-xs">Target Dimensions</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="djDims" required>Dimensions (W × H)</Label>
               <Input
-                placeholder="e.g. 10ft x 4ft (120x48 in)"
+                id="djDims"
+                placeholder="e.g. 20ft × 4ft (150 DPI)"
                 value={newJobDims}
                 onChange={(e) => setNewJobDims(e.target.value)}
-                className="h-9 text-xs"
+                required
               />
             </div>
-            <div className="space-y-1">
-              <Label className="font-bold text-xs">Vector Format</Label>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="djFmt" required>Production Format</Label>
               <select
+                id="djFmt"
                 value={newJobFormat}
                 onChange={(e) => setNewJobFormat(e.target.value as DesignFormat)}
-                className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold uppercase"
+                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold uppercase"
               >
-                <option value="ai">AI (Adobe Illustrator)</option>
-                <option value="psd">PSD (Photoshop Document)</option>
-                <option value="pdf">PDF (Print Ready)</option>
-                <option value="cdr">CDR (CorelDraw)</option>
-                <option value="svg">SVG (Scalable Vector)</option>
-                <option value="tiff">TIFF (High Res)</option>
-                <option value="png">PNG (Raster Proof)</option>
-                <option value="dxf">DXF (CNC / Laser Cut)</option>
+                <option value="ai">.AI (Adobe Illustrator)</option>
+                <option value="psd">.PSD (Photoshop)</option>
+                <option value="cdr">.CDR (CorelDRAW)</option>
+                <option value="pdf">.PDF (Print Press Ready)</option>
+                <option value="svg">.SVG (Vector)</option>
+                <option value="zip">.ZIP (Package)</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="djPri" required>Priority</Label>
+              <select
+                id="djPri"
+                value={newJobPriority}
+                onChange={(e) => setNewJobPriority(e.target.value as DesignPriority)}
+                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              >
+                <option value="normal">Normal</option>
+                <option value="urgent">Urgent</option>
+                <option value="very_urgent">Very Urgent (জরুরি)</option>
               </select>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">Customer Brief & Instructions</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="djInst">Design Brief & Client Instructions</Label>
             <textarea
+              id="djInst"
               rows={3}
-              placeholder="e.g. Navy blue background, gold text, keep 1 inch margin around borders..."
+              placeholder="e.g. PMS 300C corporate cyan, 2-inch border margins for welding, include LED holes..."
               value={newJobInstructions}
               onChange={(e) => setNewJobInstructions(e.target.value)}
-              className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+              className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t">
-            <Button type="button" variant="outline" size="sm" onClick={() => setIsNewJobOpen(false)}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => setIsNewJobOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="bg-pink-600 hover:bg-pink-700 text-white font-bold">
-              Assign to Studio
+            <Button type="submit" className="bg-pink-600 hover:bg-pink-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
+              Launch Design Job
             </Button>
           </div>
         </form>
       </ModalDialog>
 
-      {/* MODAL 3: UPLOAD NEW VERSION */}
+      {/* STANDARD MODAL: UPLOAD NEW VERSION */}
       <ModalDialog
         open={isUploadModalOpen}
         onOpenChange={setIsUploadModalOpen}
-        title={`Upload Artwork Version — #${selectedJob?.design_number}`}
+        title={
+          <div className="flex items-center gap-2">
+            <Upload className="h-4 w-4 text-indigo-600" />
+            <span>Upload Artwork Version: {selectedJob?.design_number}</span>
+          </div>
+        }
       >
-        <form onSubmit={handleUploadVersion} className="space-y-4 pt-2 text-xs">
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">Proof File Name</Label>
+        <form onSubmit={handleSaveUploadVersion} className="space-y-4 pt-2 text-xs">
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">Artwork File Name / Asset Label</Label>
             <Input
+              placeholder="e.g. frontlit_banner_v2.ai"
               value={uploadFileName}
               onChange={(e) => setUploadFileName(e.target.value)}
-              className="h-9 text-xs font-mono"
+              className="text-xs h-9 font-mono font-bold"
               required
             />
           </div>
 
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">File Format</Label>
-            <select
-              value={uploadFormat}
-              onChange={(e) => setUploadFormat(e.target.value as DesignFormat)}
-              className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold uppercase"
-            >
-              <option value="ai">AI (Adobe Illustrator)</option>
-              <option value="psd">PSD (Photoshop)</option>
-              <option value="pdf">PDF (Vector Print)</option>
-              <option value="cdr">CDR (CorelDraw)</option>
-              <option value="svg">SVG (Scalable Vector)</option>
-              <option value="tiff">TIFF (High Res)</option>
-              <option value="png">PNG (Raster Proof)</option>
-              <option value="dxf">DXF (Laser / CNC Cut)</option>
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">File Format</Label>
+              <select
+                value={uploadFormat}
+                onChange={(e) => setUploadFormat(e.target.value as DesignFormat)}
+                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold uppercase"
+              >
+                <option value="ai">.AI (Illustrator)</option>
+                <option value="psd">.PSD (Photoshop)</option>
+                <option value="cdr">.CDR (CorelDRAW)</option>
+                <option value="pdf">.PDF (Press Ready)</option>
+                <option value="svg">.SVG (Vector)</option>
+                <option value="zip">.ZIP (Package)</option>
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">New Version Number</Label>
+              <div className="h-9 px-3 rounded-lg border bg-slate-100 dark:bg-slate-800 flex items-center font-mono font-bold text-indigo-600">
+                v{(selectedJob?.current_version || 1) + 1}
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">Version Revision Notes</Label>
-            <textarea
-              rows={3}
-              placeholder="e.g. Updated logo size to 120%, aligned text to center per client request."
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">Designer Notes / Revision Details</Label>
+            <Input
+              placeholder="e.g. Adjusted margins and corrected typo in address"
               value={uploadNotes}
               onChange={(e) => setUploadNotes(e.target.value)}
-              className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+              className="text-xs h-9"
             />
           </div>
 
@@ -1584,46 +2133,50 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             <Button type="button" variant="outline" size="sm" onClick={() => setIsUploadModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
+            <Button type="submit" size="sm" className="bg-indigo-600 text-white font-bold">
               <Upload className="h-3.5 w-3.5 mr-1" />
-              Upload Version
+              Save Version & Send Proof
             </Button>
           </div>
         </form>
       </ModalDialog>
 
-      {/* MODAL 4: CUSTOMER APPROVAL & LOCK */}
+      {/* STANDARD MODAL: APPROVE & LOCK VERSION */}
       <ModalDialog
         open={isApprovalModalOpen}
         onOpenChange={setIsApprovalModalOpen}
-        title={`Approve & Lock Artwork — #${selectedJob?.design_number}`}
+        title={
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <span>Approve & Lock Version: {selectedJob?.design_number}</span>
+          </div>
+        }
       >
         <form onSubmit={handleApproveDesign} className="space-y-4 pt-2 text-xs">
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs">
-            <p className="font-bold">Customer Approval Locking</p>
-            <p className="text-[11px] mt-0.5 opacity-90">
-              Locking prevents further changes to proof files and marks the Design Gate as Cleared.
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200">
+            <p className="font-semibold">
+              Locking version {selectedJob?.current_version || 1} will verify the design gate for print floor release.
             </p>
           </div>
 
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">Approved By (Representative Name)</Label>
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">Approved By (Customer Representative)</Label>
             <Input
               placeholder="e.g. Mr. Kamal (Client WhatsApp Confirmation)"
               value={approverName}
               onChange={(e) => setApproverName(e.target.value)}
-              className="h-9 text-xs"
+              className="text-xs h-9"
               required
             />
           </div>
 
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">Approval Proof Notes</Label>
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">Approval Note / Timestamp Proof</Label>
             <Input
-              placeholder="e.g. Proof confirmed via WhatsApp message at 11:30 AM"
+              placeholder="e.g. Proof confirmed via WhatsApp message on 11:30 AM"
               value={approvalNotes}
               onChange={(e) => setApprovalNotes(e.target.value)}
-              className="h-9 text-xs"
+              className="text-xs h-9"
             />
           </div>
 
@@ -1631,7 +2184,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             <Button type="button" variant="outline" size="sm" onClick={() => setIsApprovalModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+            <Button type="submit" size="sm" className="bg-emerald-600 text-white font-bold">
               <Check className="h-3.5 w-3.5 mr-1" />
               Approve & Lock Artwork
             </Button>
@@ -1639,18 +2192,23 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
         </form>
       </ModalDialog>
 
-      {/* MODAL 5: CUSTOMER REVISION FEEDBACK */}
+      {/* STANDARD MODAL: CUSTOMER REVISION FEEDBACK */}
       <ModalDialog
         open={isFeedbackModalOpen}
         onOpenChange={setIsFeedbackModalOpen}
-        title={`Customer Revision Feedback — #${selectedJob?.design_number}`}
+        title={
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-purple-600" />
+            <span>Customer Revision Feedback: {selectedJob?.design_number}</span>
+          </div>
+        }
       >
         <form onSubmit={handleAddFeedback} className="space-y-4 pt-2 text-xs">
-          <div className="space-y-1">
-            <Label className="font-bold text-xs">Customer Revision Notes</Label>
+          <div>
+            <Label className="text-xs font-semibold mb-1 block">Customer Feedback / Changes Requested</Label>
             <textarea
               rows={4}
-              placeholder="e.g. Make font bolder, replace phone number with new hotline, adjust background color."
+              placeholder="e.g. Make logo 20% larger and change background color to dark navy blue"
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
               className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
@@ -1662,25 +2220,30 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             <Button type="button" variant="outline" size="sm" onClick={() => setIsFeedbackModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="bg-purple-600 hover:bg-purple-700 text-white font-bold">
+            <Button type="submit" size="sm" className="bg-purple-600 text-white font-bold">
               <MessageSquare className="h-3.5 w-3.5 mr-1" />
-              Record Revision
+              Record Revision Task
             </Button>
           </div>
         </form>
       </ModalDialog>
 
-      {/* MODAL 6: REQUEST INVOICE FROM MANAGER */}
+      {/* STANDARD MODAL: REQUEST INVOICE FROM MANAGER */}
       <ModalDialog
         open={isRequestInvoiceModalOpen}
         onOpenChange={setIsRequestInvoiceModalOpen}
-        title="Request Invoice from Manager / Billing"
+        title={
+          <div className="flex items-center gap-2 text-rose-600">
+            <Send className="h-4 w-4" />
+            <span className="font-bold">Request Invoice from Billing Manager</span>
+          </div>
+        }
       >
-        <form onSubmit={handleDispatchInvoiceRequest} className="space-y-4 pt-2 text-xs">
+        <form onSubmit={handleDispatchInvoiceRequest} className="space-y-3 pt-1 text-xs">
           <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border space-y-1">
             <div className="flex justify-between">
               <span className="text-slate-500">Design Job:</span>
-              <strong className="font-mono">#{selectedJob?.design_number}</strong>
+              <strong className="font-mono">{selectedJob?.design_number}</strong>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Customer:</span>
@@ -1725,6 +2288,25 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
           </div>
         </form>
       </ModalDialog>
+
+      {/* WORK ORDER MODAL */}
+      <WorkOrderModal
+        isOpen={isWorkOrderOpen}
+        onClose={() => setIsWorkOrderOpen(false)}
+        onSuccess={(order, sentToManager) => {
+          showNotification(
+            sentToManager
+              ? tBilingual(
+                  `Work Order #${order.order_number} saved & Invoice Request sent to Manager!`,
+                  `ওয়ার্ক অর্ডার #${order.order_number} সংরক্ষিত এবং ম্যানেজারের কাছে ইনভয়েস রিকোয়েস্ট পাঠানো হয়েছে!`
+                )
+              : tBilingual(
+                  `Work Order #${order.order_number} created successfully.`,
+                  `ওয়ার্ক অর্ডার #${order.order_number} সফলভাবে তৈরি হয়েছে।`
+                )
+          )
+        }}
+      />
     </div>
   )
 }
